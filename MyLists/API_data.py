@@ -8,7 +8,7 @@ from urllib import request
 from MyLists import app, db
 from datetime import datetime
 from flask import abort, url_for
-from howlongtobeatpy import HowLongToBeat
+# from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
 from urllib.request import urlretrieve, Request
 from MyLists.models import ListType, MediaType, Series, Anime, SeriesGenre, AnimeGenre, AnimeActors, SeriesActors, \

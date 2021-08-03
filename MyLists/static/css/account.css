@@ -318,7 +318,13 @@ a {
 
 .media-stats-title {
     /*background: #403d3a;*/
-    background: #232120;
+    margin: 0 20px 0 20px;
+}
+
+.evenly-spaced {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .stat-text {
@@ -378,6 +384,15 @@ a {
     .media-container {
         position: relative;
         height: 200px;
+    }
+    .mobile-inline-block {
+        display: flex;
+        justify-content: space-around;
+        margin: 0;
+    }
+    .media-stats-title {
+        margin-bottom: 8px;
+        background: #232120;
     }
 }
 @media (max-width: 490px) {

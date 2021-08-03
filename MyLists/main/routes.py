@@ -6,10 +6,10 @@ from flask_wtf.file import FileAllowed, FileField
 from flask_login import login_required, current_user
 from MyLists.main.media_object import change_air_format
 from MyLists.API_data import ApiData, TMDBMixin, ApiGames
-from MyLists.main.forms import MediaComment, SearchForm, ModelForm
+# from MyLists.main.forms import MediaComment, SearchForm, ModelForm
 from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, get_more_stats, \
-    get_games_stats, UserLastUpdate, get_models_group, get_models_type, get_next_airing
+    get_games_stats, UserLastUpdate, get_models_group, get_models_type, get_next_airing, testing_query
 
 bp = Blueprint('main', __name__)
 
@@ -33,7 +33,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     current_user.add_view_count(user, list_type)
 
     # Initialize the search form
-    search_form = SearchForm()
+    # search_form = SearchForm()
 
     # Get the query if it exists
     q = request.args.get('q')
@@ -52,6 +52,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     # Get the corresponding data depending on the selected category
     if category != 'Stats':
         category, media_data = get_media_query(user.id, list_type, category, genre, sorting, page_val, q)
+        # testing_query(models, user.id, category, genre, page_val)
     else:
         if list_type == ListType.GAMES:
             media_data = get_games_stats(user)

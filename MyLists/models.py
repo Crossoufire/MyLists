@@ -5,11 +5,11 @@ from enum import Enum
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import iso639
+# import iso639
 import json
 import pytz
 import random
-import rq
+# import rq
 from flask import abort, url_for
 from flask_login import UserMixin, current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -218,9 +218,8 @@ class User(UserMixin, db.Model):
         return s.dumps({'user_id': self.id}).decode('utf-8')
 
     def get_frame_info(self):
-        knowledge_level = int((((400+80*self.time_spent_series)**(1/2))-20)/40) + \
-                          int((((400+80*self.time_spent_anime)**(1/2))-20)/40) + \
-                          int((((400+80*self.time_spent_movies)**(1/2))-20)/40)
+        total = (self.time_spent_series + self.time_spent_anime + self.time_spent_movies + self.time_spent_games)
+        knowledge_level = int((((400+80*total)**(1/2))-20)/40)
 
         frame_level = round(knowledge_level/8, 0)+1
         query_frame = Frames.query.filter_by(level=frame_level).first()
@@ -236,6 +235,7 @@ class User(UserMixin, db.Model):
             last_updates = self.last_updates.filter_by(user_id=self.id).all()
         else:
             last_updates = self.last_updates.filter_by(user_id=self.id).limit(7)
+
         user_updates = self._shape_to_dict_updates(last_updates)
 
         return user_updates
@@ -417,11 +417,14 @@ class MediaMixin(object):
         media = eval(self.__class__.__name__)
         media_genre = eval(self.__class__.__name__+'Genre')
 
+        query = SeriesGenre.query.filter(media_genre.media_id == self.id).all()
+
         same_genres = db.session.query(media, media_genre) \
             .join(media, media.id == media_genre.media_id) \
             .filter(media_genre.genre.in_(genres_list), media_genre.media_id != self.id) \
             .group_by(media_genre.media_id) \
             .having(func.group_concat(media_genre.genre.distinct()) == ','.join(genres_list)).limit(8).all()
+
         return same_genres
 
     def in_follows_lists(self):
@@ -431,6 +434,7 @@ class MediaMixin(object):
             .join(User, User.id == followers.c.followed_id) \
             .join(media_list, media_list.user_id == followers.c.followed_id) \
             .filter(followers.c.follower_id == current_user.id, media_list.media_id == self.id).all()
+
         return in_follows_lists
 
     def get_latin_name(self):
@@ -474,8 +478,8 @@ class MediaListMixin(object):
         for media in media_count:
             data[media[0]] = media[1]
 
-        scores = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5,
-                  10.0]
+        scores = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0,
+                  6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
         for sc in scores:
             if sc not in data.keys():
                 data[sc] = 0
@@ -491,22 +495,22 @@ class MediaListMixin(object):
         return data_list
 
     @classmethod
-    def get_media_levels(cls, user):
-        # Get user.time_spent_<media> from the User table
+    def get_media_levels_and_time(cls, user):
+        # Get user.time_spent_<media> from the <User> table
         time_min = getattr(user, f"time_spent_{cls.__name__.replace('List', '').lower()}")
 
-        element_level_tmp = "{:.2f}".format(round((((400+80*time_min)**(1/2))-20)/40, 2))
-        element_level = int(element_level_tmp.split('.')[0])
-        element_percentage = int(element_level_tmp.split('.')[1])
+        media_level_tmp = f"{(((400+80*time_min)**(1/2))-20)/40:.2f}"
+        media_level = int(media_level_tmp.split('.')[0])
+        media_percentage = int(media_level_tmp.split('.')[1])
 
-        query_rank = Ranks.query.filter_by(level=element_level, type='media_rank\n').first()
+        query_rank = Ranks.query.filter_by(level=media_level, type='media_rank\n').first()
         grade_id = url_for('static', filename='img/levels_ranks/ReachRank49')
         grade_title = "Inheritor"
         if query_rank:
             grade_id = url_for('static', filename='img/levels_ranks/{}'.format(query_rank.image_id))
             grade_title = query_rank.name
 
-        return {"level": element_level, "level_percent": element_percentage, "grade_id": grade_id,
+        return {"level": media_level, "level_percent": media_percentage, "grade_id": grade_id,
                 "grade_title": grade_title}, time_min
 
     @classmethod
@@ -524,8 +528,8 @@ class MediaListMixin(object):
         except (ZeroDivisionError, TypeError):
             mean_score = '-'
 
-        return {'scored_media': media_score[0][0], 'total_media': media_score[0][1], 'percentage': percentage,
-                'mean_score': mean_score}
+        return {'scored_media': media_score[0][0], 'total_media': media_score[0][1],
+                'percentage': percentage, 'mean_score': mean_score}
 
     @classmethod
     def get_media_total_eps(cls, user_id):
@@ -537,12 +541,12 @@ class MediaListMixin(object):
 
         return eps_watched
 
-    @classmethod
-    def get_favorites(cls, user_id):
-        favorites = cls.query.filter_by(user_id=user_id, favorite=True).all()
-        random.shuffle(favorites)
-
-        return favorites
+    # @classmethod
+    # def get_favorites(cls, user_id):
+    #     favorites = cls.query.filter_by(user_id=user_id, favorite=True).all()
+    #     random.shuffle(favorites)
+    #
+    #     return favorites
 
     def category_changes(self, new_status):
         #  Set the new status
@@ -607,22 +611,6 @@ class TVBase(db.Model):
         data = dotdict(data)
 
         return data
-
-    @classmethod
-    def get_next_airing(cls):
-        media_list = eval(cls.__name__ + 'List')
-
-        query = db.session.query(cls, media_list) \
-            .join(cls, cls.id == media_list.media_id) \
-            .filter(cls.next_episode_to_air > datetime.utcnow(), media_list.user_id == current_user.id,
-                    and_(media_list.status != Status.RANDOM, media_list.status != Status.DROPPED)) \
-            .order_by(cls.next_episode_to_air.asc()).all()
-
-        formated_dates = []
-        for data in query:
-            formated_dates.append(change_air_format(data[0].next_episode_to_air))
-
-        return list(map(list, zip(query, formated_dates)))
 
 
 # --- SERIES ------------------------------------------------------------------------------------------------------
@@ -1566,6 +1554,70 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
             'items_list': results}
 
     return cat_value, data
+
+
+# Query for <mymedialist> route
+def testing_query(models, user_id, category, genre, page):
+    # Check the category
+    try:
+        category = Status(category)
+        cat_value = category.value
+    except ValueError:
+        return abort(400)
+
+    # Check the genre
+    genre_filter = media_genre.genre.like(genre)
+    if genre == 'All':
+        genre_filter = text('')
+
+    # Check the <filter_val> value - NOT USED FOR NOW
+    filter_val = False
+    com_ids = [-1]
+    if filter_val:
+        v1, v2 = aliased(media_list), aliased(media_list)
+        get_common = db.session.query(v1, v2) \
+            .join(v2, and_(v2.user_id == user_id, v2.media_id == v1.media_id)) \
+            .filter(v1.user_id == current_user.id).all()
+        com_ids = [r[0].media_id for r in get_common]
+
+    query = db.session.query(models[0], models[1]) \
+        .outerjoin(models[0], models[0].id == models[1].media_id) \
+        .filter(models[1].user_id == user_id, models[1].media_id.notin_(com_ids), genre_filter,
+                models[1].status == Status(category))\
+        .group_by(models[0].id).paginate(int(page), 48, error_out=True)
+
+    if category != Status.FAVORITE and category != Status.SEARCH and category != Status.ALL:
+        query = query.filter(media_list.status == category)
+    elif category == Status.FAVORITE:
+        query = query.filter(media_list.favorite)
+    elif category == Status.SEARCH:
+        if list_type == ListType.SERIES or list_type == ListType.ANIME:
+            query = query.filter(or_(media.name.like('%' + q + '%'), media_more.name.like('%' + q + '%'),
+                                     media.original_name.like('%' + q + '%')))
+        elif list_type == ListType.MOVIES:
+            query = query.filter(or_(media.name.like('%' + q + '%'), media_more.name.like('%' + q + '%'),
+                                     media.director_name.like('%' + q + '%'), media.original_name.like('%' + q + '%')))
+        elif list_type == ListType.GAMES:
+            query = query.filter(or_(media.name.like('%' + q + '%'),
+                                     media_more.name.like('%' + q + '%')))
+
+    # Run the query
+    paginate_result = query.group_by(media.id).order_by(sorting).paginate(int(page), 48, error_out=True)
+    results_ids = [x[0].id for x in paginate_result.items]
+    results = media_list.query.filter(media_list.user_id == user_id, media_list.media_id.in_(results_ids)).all()
+
+    # Get <common_media> and <common_elements> between the users
+    common_media, common_elements = get_media_count(user_id, list_type)
+
+    data = {'actual_page': paginate_result.page,
+            'total_pages': paginate_result.pages,
+            'total_media': paginate_result.total,
+            'common_elements': common_elements,
+            'items_list': results}
+
+    return cat_value, data
+
+    return query
 
 
 # Count the number of media in a list type for a user

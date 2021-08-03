@@ -234,21 +234,24 @@
                         </div>
                     </li>
                     <li><b>
+
                         <section class="series-stats m-b-30">
                             <div class="row no-gutters p-2" style="background: #232120;">
-                                <div class="col-3 m-r-8 text-center">
-                                    <h5 class="media-stats-title p-1 m-b-25 m-l-10 m-r-10" style="background: rgba(33, 110, 125, 0.3);">
+                                <div class="col-xl-3 col-lg-12 col-sm-12 text-center evenly-spaced">
+                                    <h6 class="media-stats-title p-1" style="background: rgba(33, 110, 125, 0.3);">
                                         <a class="text-light" href="{{ url_for('main.mymedialist',
                                         media_list='serieslist', user_name=user.username) }}"><b>SERIES</b></a>
-                                    </h5>
-                                    <div><i class="fas fa-clock"></i> &nbsp; {{ media_data['series']['time_spent_day'] }}</div>
-                                    <br>
-                                    <div><i class="fas fa-star"></i> &nbsp; {{ media_data['series']['media_score']['mean_score'] }}/10</div>
-                                     <br>
-                                    <div><i class="fas fa-align-justify"></i> &nbsp;
-                                        {{ media_data['series']['media_score']
-                                        ['scored_media'] }}/{{ media_data['series']['media_score']['total_media'] }}
-                                    </div>
+                                    </h6>
+                                    <div><i class="fas fa-clock"></i>
+                                            &nbsp; {{ media_data['series']['time_spent_day'] }}
+                                        </div>
+                                    <div><i class="fas fa-star"></i>
+                                            &nbsp; {{ media_data['series']['media_score']['mean_score'] }}/10
+                                        </div>
+                                    <div><i class="fas fa-align-justify"></i>
+                                            &nbsp; {{ media_data['series']['media_score']
+                                            ['scored_media'] }}/{{ media_data['series']['media_score']['total_media'] }}
+                                        </div>
                                 </div>
                                 <div class="col">
                                     {% if media_data['series']['media_count_score']|sum != 0 %}
@@ -351,19 +354,22 @@
                                 </div>
                             </div>
                         </section>
+
                         <section class="anime-stats m-b-30">
                             <div class="row no-gutters p-2" style="background: #232120;">
-                                <div class="col-3 m-r-8 text-center">
-                                    <h5 class="media-stats-title p-1 m-b-25 m-l-10 m-r-10" style="background: rgba(148, 81, 65, 0.3);">
+                                <div class="col-xl-3 col-lg-12 col-sm-12 text-center evenly-spaced">
+                                    <h6 class="media-stats-title p-1" style="background: rgba(148, 81, 65, 0.3);">
                                         <a class="text-light" href="{{ url_for('main.mymedialist',
                                         media_list='animelist', user_name=user.username) }}"><b>ANIME</b></a>
-                                    </h5>
-                                    <div><i class="fas fa-clock"></i> &nbsp; {{ media_data['anime']['time_spent_day'] }}</div>
-                                    <br>
-                                    <div><i class="fas fa-star"></i> &nbsp; {{ media_data['anime']['media_score']['mean_score'] }}/10</div>
-                                     <br>
-                                    <div><i class="fas fa-align-justify"></i> &nbsp;
-                                        {{ media_data['anime']['media_score']
+                                    </h6>
+                                    <div><i class="fas fa-clock"></i>
+                                        &nbsp; {{ media_data['anime']['time_spent_day'] }}
+                                    </div>
+                                    <div><i class="fas fa-star"></i>
+                                        &nbsp; {{ media_data['anime']['media_score']['mean_score'] }}/10
+                                    </div>
+                                    <div><i class="fas fa-align-justify"></i>
+                                        &nbsp; {{ media_data['anime']['media_score']
                                         ['scored_media'] }}/{{ media_data['anime']['media_score']['total_media'] }}
                                     </div>
                                 </div>
@@ -491,19 +497,22 @@
                                 </div>
                             </div>
                         </section>
+
                         <section class="movies-stats m-b-30">
                             <div class="row no-gutters p-2" style="background: #232120;">
-                                <div class="col-3 m-r-8 text-center">
-                                    <h5 class="media-stats-title p-1 m-b-15 m-l-10 m-r-10" style="background: rgba(140, 120, 33, 0.3);">
+                                <div class="col-xl-3 col-lg-12 col-sm-12 text-center evenly-spaced">
+                                    <h6 class="media-stats-title p-1" style="background: rgba(140, 120, 33, 0.3);">
                                         <a class="text-light" href="{{ url_for('main.mymedialist',
                                         media_list='movieslist', user_name=user.username) }}"><b>MOVIES</b></a>
-                                    </h5>
-                                    <div><i class="fas fa-clock"></i> &nbsp; {{ media_data['movies']['time_spent_day'] }}</div>
-                                    <hr class="m-0 p-0" style="height: 10px; visibility:hidden;">
-                                    <div><i class="fas fa-star"></i> &nbsp; {{ media_data['movies']['media_score']['mean_score'] }}/10</div>
-                                    <hr class="m-0 p-0" style="height: 10px; visibility:hidden;">
-                                    <div><i class="fas fa-align-justify"></i> &nbsp;
-                                        {{ media_data['movies']['media_score']
+                                    </h6>
+                                    <div><i class="fas fa-clock"></i>
+                                        &nbsp; {{ media_data['movies']['time_spent_day'] }}
+                                    </div>
+                                    <div><i class="fas fa-star"></i>
+                                        &nbsp; {{ media_data['movies']['media_score']['mean_score'] }}/10
+                                    </div>
+                                    <div><i class="fas fa-align-justify"></i>
+                                        &nbsp; {{ media_data['movies']['media_score']
                                         ['scored_media'] }}/{{ media_data['movies']['media_score']['total_media'] }}
                                     </div>
                                 </div>
@@ -567,20 +576,23 @@
                                 </div>
                             </div>
                         </section>
+
                         {% if user.add_games %}
                             <section class="games-stats">
                                 <div class="row no-gutters p-2" style="background: #232120;">
-                                    <div class="col-3 m-r-8 text-center">
-                                        <h5 class="media-stats-title p-1 m-b-15 m-l-10 m-r-10" style="background: rgba(25, 98, 25, 0.3);">
+                                    <div class="col-xl-3 col-lg-12 col-sm-12 text-center evenly-spaced">
+                                        <h6 class="media-stats-title p-1" style="background: rgba(25, 98, 25, 0.3);">
                                             <a class="text-light" href="{{ url_for('main.mymedialist',
                                             media_list='gameslist', user_name=user.username) }}"><b>GAMES</b></a>
-                                        </h5>
-                                        <div><i class="fas fa-clock"></i> &nbsp; {{ media_data['games']['time_spent_day'] }}</div>
-                                        <hr class="m-0 p-0" style="height: 10px; visibility:hidden;">
-                                        <div><i class="fas fa-star"></i> &nbsp; {{ media_data['games']['media_score']['mean_score'] }}/10</div>
-                                        <hr class="m-0 p-0" style="height: 10px; visibility:hidden;">
-                                        <div><i class="fas fa-align-justify"></i> &nbsp;
-                                            {{ media_data['games']['media_score']
+                                        </h6>
+                                        <div><i class="fas fa-clock"></i>
+                                            &nbsp; {{ media_data['games']['time_spent_day'] }}
+                                        </div>
+                                        <div><i class="fas fa-star"></i>
+                                            &nbsp; {{ media_data['games']['media_score']['mean_score'] }}/10
+                                        </div>
+                                        <div><i class="fas fa-align-justify"></i>
+                                            &nbsp; {{ media_data['games']['media_score']
                                             ['scored_media'] }}/{{ media_data['games']['media_score']['total_media'] }}
                                         </div>
                                     </div>
@@ -654,6 +666,7 @@
                                 </div>
                             </section>
                         {% endif %}
+
                     </b></li>
                 </ul>
             </div>
