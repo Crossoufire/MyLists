@@ -4,8 +4,8 @@
 function deleteElement(card, media_list) {
     let element_id = $(card)[0].id.split('_')[1];
     let $load_img = $(card).find('.view.overlay');
-
     $load_img.prepend(Loading());
+
     if (!confirm("Do you want to delete the media from your list?")) {
         $load_img.find('.load-medialist').remove();
         return false;

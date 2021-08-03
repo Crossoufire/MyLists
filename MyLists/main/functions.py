@@ -36,3 +36,4 @@ def compute_time_spent(media=None, list_type=None, old_watched=0, new_watched=0,
     elif list_type == ListType.GAMES:
         old_time = current_user.time_spent_games
         current_user.time_spent_games = old_time + new_gametime - old_gametime
+

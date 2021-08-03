@@ -643,7 +643,7 @@ class Series(MediaMixin, TVBase):
     def get_media_cover(self):
         return url_for('static', filename='covers/series_covers/'+self.image_cover)
 
-    def add_media(self, new_status):
+    def add_media_to_user(self, new_status):
         new_watched = 1
         new_season = 1
         new_episode = 1
@@ -657,27 +657,13 @@ class Series(MediaMixin, TVBase):
 
         user_list = SeriesList(user_id=current_user.id, media_id=self.id, current_season=new_season,
                                last_episode_watched=new_episode, status=new_status, total=new_watched)
-
         db.session.add(user_list)
+
         return new_watched
 
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_series.html'
-
-    @classmethod
-    def compute_time_spent(cls, media, new_data=0, add_=False, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
-
-        old_time = user.time_spent_series
-        if add_:
-            user.time_spent_series = old_time + (new_data * media.media.duration)
-        else:
-            user.time_spent_series = old_time + ((new_data - media.total) * media.media.duration)
 
 
 class SeriesList(MediaListMixin, db.Model):
@@ -703,6 +689,19 @@ class SeriesList(MediaListMixin, db.Model):
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
         self.total = new_total
         return new_total
+
+    def compute_new_time_spent(self, new_data=0, add_=False, user_id=None):
+        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
+        if current_user:
+            user = current_user
+        else:
+            user = User.query.filter(User.id == user_id).first()
+
+        old_time = user.time_spent_series
+        if add_:
+            user.time_spent_series = old_time + (new_data * self.media.duration)
+        else:
+            user.time_spent_series = old_time + ((new_data - self.total) * self.media.duration)
 
     @staticmethod
     def default_sorting():
@@ -769,7 +768,7 @@ class Anime(MediaMixin, TVBase):
     def get_media_cover(self):
         return url_for('static', filename='covers/anime_covers/'+self.image_cover)
 
-    def add_media(self, new_status):
+    def add_media_to_user(self, new_status):
         new_watched = 1
         new_season = 1
         new_episode = 1
@@ -786,20 +785,6 @@ class Anime(MediaMixin, TVBase):
 
         db.session.add(user_list)
         return new_watched
-
-    @classmethod
-    def compute_time_spent(cls, media, new_data=0, add_=False, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
-
-        old_time = user.time_spent_anime
-        if add_:
-            user.time_spent_anime = old_time + (new_data * media.media.duration)
-        else:
-            user.time_spent_anime = old_time + ((new_data - media.total) * media.media.duration)
 
     @staticmethod
     def media_sheet_template():
@@ -829,6 +814,19 @@ class AnimeList(MediaListMixin, db.Model):
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
         self.total = new_total
         return new_total
+
+    def compute_new_time_spent(self, new_data=0, add_=False, user_id=None):
+        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
+        if current_user:
+            user = current_user
+        else:
+            user = User.query.filter(User.id == user_id).first()
+
+        old_time = user.time_spent_anime
+        if add_:
+            user.time_spent_anime = old_time + (new_data * self.media.duration)
+        else:
+            user.time_spent_anime = old_time + ((new_data - self.total) * self.media.duration)
 
     @staticmethod
     def default_sorting():
@@ -908,7 +906,7 @@ class Movies(MediaMixin, db.Model):
     actors = db.relationship('MoviesActors', backref='movies', lazy=True)
     list_info = db.relationship('MoviesList', back_populates='media', lazy='dynamic')
 
-    def add_media(self, new_status):
+    def add_media_to_user(self, new_status):
         if new_status != Status.COMPLETED:
             new_watched = 0
 
@@ -944,23 +942,7 @@ class Movies(MediaMixin, db.Model):
         for data in query:
             formated_dates.append(change_air_format(data[0].release_date))
 
-        print(query)
-
         return list(map(list, zip(query, formated_dates)))
-
-    @classmethod
-    def compute_time_spent(cls, media, new_data=0, add_=False, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
-
-        old_time = user.time_spent_movies
-        if add_:
-            user.time_spent_movies = old_time + (new_data * media.media.duration)
-        else:
-            user.time_spent_movies = old_time + ((new_data - media.total) * media.media.duration)
 
     @staticmethod
     def media_sheet_template():
@@ -1001,6 +983,19 @@ class MoviesList(MediaListMixin, db.Model):
         self.rewatched = 0
 
         return new_total
+
+    def compute_new_time_spent(self, new_data=0, add_=False, user_id=None):
+        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
+        if current_user:
+            user = current_user
+        else:
+            user = User.query.filter(User.id == user_id).first()
+
+        old_time = user.time_spent_movies
+        if add_:
+            user.time_spent_movies = old_time + (new_data * self.media.duration)
+        else:
+            user.time_spent_movies = old_time + ((new_data - self.total) * self.media.duration)
 
     @staticmethod
     def default_sorting():
@@ -1063,7 +1058,7 @@ class Games(MediaMixin, db.Model):
     companies = db.relationship('GamesCompanies', backref='games', lazy=True)
     list_info = db.relationship('GamesList', back_populates='media', lazy='dynamic')
 
-    def add_media(self, new_status):
+    def add_media_to_user(self, new_status):
         user_list = GamesList(user_id=current_user.id, media_id=self.id, status=new_status,
                               completion=False, playtime=0)
         db.session.add(user_list)
@@ -1115,17 +1110,6 @@ class Games(MediaMixin, db.Model):
 
         return list(map(list, zip(query, formated_dates)))
 
-    @classmethod
-    def compute_time_spent(cls, media, new_data=0, add_=False, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
-
-        old_time = user.time_spent_games
-        user.time_spent_games = old_time + (new_data - media.playtime)
-
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_games.html'
@@ -1149,6 +1133,16 @@ class GamesList(MediaListMixin, db.Model):
 
     def category_changes(self, new_status):
         return self.playtime
+
+    def compute_new_time_spent(self, new_data=0, add_=False, user_id=None):
+        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
+        if current_user:
+            user = current_user
+        else:
+            user = User.query.filter(User.id == user_id).first()
+
+        old_time = user.time_spent_games
+        user.time_spent_games = old_time + (new_data - self.playtime)
 
     @classmethod
     def get_media_total_eps(cls, user_id):

@@ -9,7 +9,7 @@ from MyLists.API_data import ApiData, TMDBMixin, ApiGames
 from MyLists.main.forms import MediaComment, SearchForm, ModelForm
 from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, get_more_stats, \
-    get_games_stats, UserLastUpdate, get_models_group, get_models_type
+    get_games_stats, UserLastUpdate, get_models_group, get_models_type, get_next_airing
 
 bp = Blueprint('main', __name__)
 
@@ -149,11 +149,11 @@ def media_sheet(media_type, media_id):
     if media and from_api:
         return redirect(url_for('main.media_sheet', media_type=media_type.value, media_id=media.id))
 
-    # Get the HTML template
-    template = models[0].media_sheet_template()
-
     # Get the list info of the user on this media
     list_info = media.get_user_list_info()
+
+    # Get the HTML template
+    template = models[0].media_sheet_template()
 
     return render_template(template, title=media.name, media=media, list_info=list_info, media_list=list_type.value)
 
@@ -204,13 +204,25 @@ def media_sheet_form(media_type, media_id):
 @bp.route("/your_next_airing", methods=['GET', 'POST'])
 @login_required
 def your_next_airing():
-    models = get_models_type('Media')
+    next_series_airing = get_next_airing(ListType.SERIES)
+    next_anime_airing = get_next_airing(ListType.ANIME)
+    next_movies_airing = get_next_airing(ListType.MOVIES)
 
-    all_data = []
-    for model in models:
-        all_data.append(model.get_next_airing())
+    series_dates = []
+    for series in next_series_airing:
+        series_dates.append(change_air_format(series[0].next_episode_to_air))
 
-    return render_template('your_next_airing.html', title='Your next airing', all_data=all_data)
+    anime_dates = []
+    for anime in next_anime_airing:
+        anime_dates.append(change_air_format(anime[0].next_episode_to_air))
+
+    movies_dates = []
+    for movies in next_movies_airing:
+        movies_dates.append(change_air_format(movies[0].release_date))
+
+    return render_template('your_next_airing.html',title='Your next airing', airing_series=next_series_airing,
+                           series_dates=series_dates, airing_anime=next_anime_airing, anime_dates=anime_dates,
+                           airing_movies=next_movies_airing, movies_dates=movies_dates)
 
 
 @bp.route('/search_media', methods=['GET', 'POST'])
@@ -413,14 +425,11 @@ def update_season():
     # Check if <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
-        models = get_models_group(ListType(media_list))
+        models = get_models_group(list_type)
     except:
-        try:
-            models = get_models_group(MediaType(media_list))
-        except:
-            return '', 400
+        return '', 400
 
-    # Check if the media exists
+    # Check if the <media> exists in <media_list>
     media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return '', 400
@@ -446,7 +455,7 @@ def update_season():
                                    new_season=new_season, new_episode=1, old_episode=old_episode)
 
     # Compute new time spent
-    models[0].compute_time_spent(media=media, new_data=new_total)
+    media.compute_new_time_spent(new_data=new_total)
 
     # Commit the changes
     db.session.commit()
@@ -497,7 +506,7 @@ def update_episode():
                                    new_season=old_season, old_episode=old_episode, new_episode=new_episode)
 
     # Compute new time spent
-    models[0].compute_time_spent(media=media, new_data=new_total)
+    media.compute_new_time_spent(new_data=new_total)
 
     # Commit the changes
     db.session.commit()
@@ -520,12 +529,13 @@ def update_category():
     try:
         list_type = ListType(media_list)
         models = get_models_group(list_type)
-    except ValueError:
+    except:
         return '', 400
 
     # Check the <status> parameter
-    new_status = Status(media_new_cat)
-    if not new_status:
+    try:
+        new_status = Status(media_new_cat)
+    except:
         return '', 400
 
     # Get the media
@@ -533,7 +543,7 @@ def update_category():
     if not media:
         return '', 400
 
-    # Change the status and get data to compute last updates and time spent
+    # Change the <status> and get the data to compute <last_updates> and <new_time_spent>
     new_total = media.category_changes(new_status)
 
     # Set the last updates
@@ -541,7 +551,7 @@ def update_category():
                                    new_status=new_status)
 
     # Compute the new time spent
-    models[0].compute_time_spent(media=media, new_data=new_total)
+    media.compute_new_time_spent(new_data=new_total)
 
     # Commit the session
     db.session.commit()
@@ -616,7 +626,7 @@ def update_playtime():
                                    new_playtime=new_playtime)
 
     # Compute the new time spent
-    models[0].compute_time_spent(media=media, new_data=new_playtime)
+    media.compute_new_time_spent(new_data=new_playtime)
 
     # Commit the changes
     db.session.commit()
@@ -655,7 +665,7 @@ def update_rewatch():
     new_total = media.update_total_watched(new_rewatch)
 
     # Compute the new time spent
-    models[0].compute_time_spent(media=media, new_data=new_total)
+    media.compute_new_time_spent(new_data=new_total)
 
     # Commit the changes
     db.session.commit()
@@ -709,26 +719,27 @@ def add_element():
     try:
         list_type = ListType(media_list)
         models = get_models_group(list_type)
-    except ValueError:
+    except:
         return '', 400
 
-    # Check <status>
-    new_status = Status(media_cat)
-    if not new_status:
+    # Check <status> parameter
+    try:
+        new_status = Status(media_cat)
+    except:
         return '', 400
 
-    # Check <media>
+    # Check that the <media> is not in the user's list
+    in_list = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if in_list:
+        return '', 400
+
+    # Check if <media> exists
     media = models[0].query.filter_by(id=media_id).first()
     if not media:
         return '', 400
 
-    # Check <media> not in user's list
-    in_list = media.list_info.filter_by(user_id=current_user.id).first()
-    if in_list:
-        return '', 400
-
-    # Add media to user
-    new_watched = media.add_media(new_status)
+    # Add the media to the user
+    new_watched = media.add_media_to_user(new_status)
 
     # Commit the changes
     db.session.commit()
@@ -737,8 +748,9 @@ def add_element():
     # Set the last update
     UserLastUpdate.set_last_update(media=media, media_type=list_type, new_status=new_status)
 
-    # Compute the new time spent
-    models[0].compute_time_spent(media=media, new_data=new_watched, add_=True)
+    # Compute new time spent
+    in_list = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    in_list.compute_new_time_spent(new_data=new_watched, add_=True)
 
     # Commit the last updates and the new time spent changes
     db.session.commit()
@@ -760,16 +772,13 @@ def delete_element():
     try:
         models = get_models_group(ListType(media_list))
     except:
-        try:
-            models = get_models_group(MediaType(media_list))
-        except:
-            return '', 400
+        return '', 400
 
     media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return '', 400
 
-    models[0].compute_time_spent(media=media, new_data=0)
+    media.compute_new_time_spent(new_data=0)
 
     # Delete the media from the user's list
     db.session.delete(media)
@@ -798,10 +807,7 @@ def lock_media():
     try:
         models = get_models_group(ListType(media_list))
     except:
-        try:
-            models = get_models_group(MediaType(media_list))
-        except:
-            return '', 400
+        return '', 400
 
     media = models[0].query.filter_by(id=media_id).first()
     if not media:

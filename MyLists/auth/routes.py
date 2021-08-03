@@ -1,8 +1,8 @@
 from datetime import datetime
 from MyLists.models import User
 from MyLists import app, bcrypt, db
-from MyLists.auth.emails import send_register_email, send_reset_email
 from MyLists.auth.functions import check_if_auth
+from MyLists.auth.emails import send_register_email, send_reset_email
 from flask_login import login_user, current_user, logout_user, login_required
 from flask import Blueprint, flash, request, redirect, url_for, render_template
 from MyLists.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm

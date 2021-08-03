@@ -184,7 +184,7 @@ a {
 }
 
 .account-bar {
-    height: 100%;
+    /*height: 100%;*/
     margin: 0 auto;
 }
 
@@ -317,7 +317,8 @@ a {
 }
 
 .media-stats-title {
-    background: #403d3a;
+    /*background: #403d3a;*/
+    background: #232120;
 }
 
 .stat-text {

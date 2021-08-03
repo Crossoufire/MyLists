@@ -90,7 +90,7 @@ def account(user_name):
     # Commit the changes
     db.session.commit()
 
-    return render_template('account.html', title=user.username+"'s account", user=user, frame=user_frame_info,
+    return render_template('account_test.html', title=user.username+"'s account", user=user, frame=user_frame_info,
                            user_updates=user_updates, follows_updates=follows_updates, media_data=media_dict)
 
 
