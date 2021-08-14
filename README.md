@@ -1,7 +1,7 @@
 ### MyLists
 
-MyLists is a website with a nice and clear interface which allows you to track all your TV shows, Anime and Movies. 
-It integrates statistics, so you can see how much time you spent. Moreover, you can follow people, see their lists  
+MyLists is a website with a nice and clear interface which allows you to list all your TV shows, Anime, Movies, Games and Books (Soon). 
+It integrates statistics like watched time, notes, favorites and more. You can follow people, see their lists  
 and compare it to yours. You can see a live version here: [https://mylists.info](https://mylists.info).
 
 ![MyLists](https://raw.githubusercontent.com/Crossoufire/MyLists/master/MyLists/static/img/home2.jpg)
@@ -10,9 +10,9 @@ MyLists uses [Flask](http://flask.pocoo.org/) and [Material Design for Bootstrap
 
 ### Features
 
-* Create a list for all of your series, anime and movies.
+* Create a list for all of your series, anime, movies and games.
 * Get informed of your next series, anime and movies to airs.
-* Compare your list with your follows.
+* Compare your lists with your follows.
 * Get statistics about your lists (Time spent, number of episodes watched, prefered genres, etc...)
 * More to come!
 
