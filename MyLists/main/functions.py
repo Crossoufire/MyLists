@@ -16,10 +16,6 @@ def compute_time_spent(media=None, list_type=None, old_watched=0, new_watched=0,
         old_time = user.time_spent_series
         user.time_spent_series = old_time + ((new_watched-old_watched) * media.duration) + (
                 media.total_episodes * media.duration * (new_rewatch - old_rewatch))
-    elif list_type == ListType.ANIME:
-        old_time = user.time_spent_anime
-        user.time_spent_anime = old_time + ((new_watched-old_watched)*media.duration) + (
-                media.total_episodes*media.duration*(new_rewatch-old_rewatch))
     elif list_type == ListType.MOVIES:
         old_time = user.time_spent_movies
         if movie_delete:

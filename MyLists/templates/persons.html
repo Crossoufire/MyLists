@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+
+{% block css %}
+    <style>
+        .card {
+            border-radius: 0 !important;
+            margin-bottom: 40px;
+        }
+        .card-img-top {
+            border: 1px solid black;
+            border-radius: 0 !important;
+        }
+        .mask.rgba-black-strong {
+            cursor: pointer;
+        }
+        .font-mask {
+            font-size: 17pt;
+            color: lightgrey;
+        }
+        .mask:hover {
+            opacity: 0.8;
+        }
+        @media (max-width: 1025px) {
+            .card {
+                margin-bottom: 0;
+            }
+            .font-mask {
+                font-size: 13pt;
+            }
+        }
+    </style>
+{% endblock css %}
+
+
+{% block content %}
+    <div class="m-t-20"><a class="text-light" href="{{ request.referrer }}"><b>< Return</b></a></div>
+    <h4 class="m-t-25"><b>{{ person }}</b></h4>
+    <hr class="mt-0 p-0 m-b-30">
+    <div class="row m-b-40">
+        {% for item in data %}
+            <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
+                <div class="card bg-transparent">
+                    <div class="view overlay">
+                        <img class="card-img-top" src="{{ item.get_media_cover() }}" alt="" height="300"
+                        width="200" style="height: auto;"/>
+                        <a class="mask flex-center rgba-black-strong" href="{{ url_for('main.media_sheet',
+                        media_type=item.__class__.__name__, media_id=item.id) }}">
+                            <span class="font-mask text-center text-light">{{ item.name }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $(document).ready(function() {
+            let $row = $('.row');
+            function gutter() {
+                if ($(window).width() < 1025) {
+                    return $row.addClass('no-gutters');
+                }
+                $row.removeClass('no-gutters');
+            }
+            $(window).resize(gutter).trigger('resize');
+        });
+    </script>
+{% endblock script %}

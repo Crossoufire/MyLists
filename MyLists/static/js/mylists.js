@@ -3,10 +3,12 @@
 $(function() {
     let media_select = document.getElementById('select-media');
     $('#autocomplete').catcomplete({
-        delay: 250,
+        delay: 800,
         minLength: 2,
         source: function (request, response) {
-            console.log(request.term);
+            if (request.term == null || request.term.trim() === '') {
+                return
+            }
             $.getJSON("/autocomplete",
                 {
                     q: request.term,
@@ -17,15 +19,11 @@ $(function() {
                 });
         },
         select: function (event, ui) {
-            let form = document.createElement('form');
-            form.method = 'POST';
-            if (ui.item.type !== 'User') {
-                form.action = '/media_sheet/'+ui.item.type+'/' + ui.item.api_id + '?search=True';
+            if (ui.item.type === 'User') {
+                window.location.href = '/account/' + ui.item.display_name;
             } else {
-                form.action = '/account/' + ui.item.display_name;
+                window.location.href = '/media_sheet/' + ui.item.type + '/' + ui.item.api_id + '?search=True';
             }
-            document.body.appendChild(form);
-            form.submit();
         }
     });
 });
@@ -51,7 +49,7 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
                 search = $('#autocomplete').val();
                 med_select = $('#select-media').val();
                 $('<li class="text-center p-t-5 p-b-5" style="background: #22748d;">' +
-                     '<a class="text-light" href="/search_media?search='+search+'&media_select='+med_select+'&page=1">' +
+                     '<a class="text-light" href="/search_media?search='+search+'&media_select='+med_select+'&page=1">'+
                         'More results</a>' +
                   '</li>').appendTo(ul);
             }
@@ -61,7 +59,7 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
         },
         _renderItem: function (ul, item) {
             ul.addClass('autocomplete-ul');
-            let $li, $img;
+            let $li, $img, more;
 
             if (item.nb_results === 0) {
                 $li = $('<li class="disabled bg-dark text-light p-l-5">No results found.</li>');
@@ -73,6 +71,11 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
                 $img = '<img src="'+ item.image_cover +'" style="width: 50px; height: 50px;" alt="">'
             }
 
+            more = item.type;
+            if (item.category === 'Books') {
+                more = item.author;
+            }
+
             $li = $('<li class="bg-dark p-t-2 p-b-2" style="border-bottom: solid black 1px;">');
             $li.append(
                 '<div class="row">' +
@@ -82,7 +85,9 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
                         '<div class="col">' +
                             '<a class="text-light">' + item.display_name +
                                 '<br>' +
-                                '<span style="font-size: 10pt;">' + item.type + ' | ' + item.date + '</span>' +
+                                '<span style="font-size: 10pt;">' + more + '</span>' +
+                                '<br>' +
+                                '<span style="font-size: 10pt;">' + item.date + '</span>' +
                             '</a>' +
                         '</div>' +
                 '</div>');
@@ -154,14 +159,14 @@ function display_notifications(data) {
             // Add H-line between notifications except for the last one
             if (i + 1 === resp.length) {
                 add_hr = '';
-            } else {
+            }
+            else {
                 add_hr = '<hr class="p-0 m-t-0 m-b-0 m-l-15 m-r-15">';
             }
 
             if (resp[i]['media_type'] === 'serieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Series/' +
-                     resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Series/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-tv text-series"></i>' +
@@ -176,28 +181,9 @@ function display_notifications(data) {
                     '<div class="notif-items">' + add_hr + '</div>'
                 );
             }
-            else if (resp[i]['media_type'] === 'animelist') {
-                $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Anime/' +
-                    resp[i]['media_id']+'">' +
-                        '<div class="row no-gutters">' +
-                            '<div class="col-2">' +
-                                '<i class="fas fa-torii-gate text-anime"></i>' +
-                            '</div>' +
-                            '<div class="col-10 ellipsis-notif">' +
-                                '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
-                                '<div class="fs-14" style="color: darkgrey;">S' + resp[i]['payload']['season'] + '.E' +
-                                resp[i]['payload']['episode'] + ' will begin on ' + resp[i]['payload']['release_date'] + '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</a>' +
-                    '<div class="notif-items">' + add_hr + '</div>'
-                );
-            }
             else if (resp[i]['media_type'] === 'movieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/' +
-                    resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-film text-movies"></i>' +
@@ -214,8 +200,7 @@ function display_notifications(data) {
             }
             else {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/account/' +
-                    resp[i]['payload']['username']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/account/'+resp[i]['payload']['username']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-user" style="color: #45B29D;"></i>' +

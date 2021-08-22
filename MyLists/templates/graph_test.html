@@ -11,11 +11,6 @@
         <span id="series-labels-graph" values="{{ series_labels }}"></span>
         <span id="series-data-graph" values="{{ series_data }}"></span>
     </section>
-    <section class="anime-graph p-2 m-b-40">
-        <canvas id="anime-graphic"></canvas>
-        <span id="anime-labels-graph" values="{{ anime_labels }}"></span>
-        <span id="anime-data-graph" values="{{ anime_data }}"></span>
-    </section>
     <section class="movies-graph p-2 m-b-40">
         <canvas id="movies-graphic"></canvas>
         <span id="movies-labels-graph" values="{{ movies_labels }}"></span>
@@ -99,74 +94,6 @@
             };
             let series_ctx = document.getElementById('series-graphic').getContext('2d');
             new Chart(series_ctx, series_config);
-
-            let anime_labels = $('#anime-labels-graph').attr('values').split(', ');
-            let anime_data =  $('#anime-data-graph').attr('values').split(', ');
-
-            let anime_config = {
-                type: 'bar',
-                data: {
-                    labels: anime_labels,
-                    datasets: [{
-                        data: anime_data,
-                        backgroundColor: 'grey',
-                    }],
-                },
-                options: {
-                    events: false,
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    tooltips: {
-                        enabled: false
-                    },
-                    hover: {
-                        animation: false,
-                        animationDuration: 0
-                    },
-                    animation: {
-                        duration: 1,
-                        onComplete: function () {
-                            let chartInstance = this.chart,
-                            ctx = chartInstance.ctx;
-
-                            this.data.datasets.forEach(function (dataset, i) {
-                                let meta = chartInstance.controller.getDatasetMeta(i);
-                                meta.data.forEach(function (bar, index) {
-                                    let data = dataset.data[index];
-                                    ctx.fillText(data, bar._model.x - 8, bar._model.y - 5);
-                                });
-                            });
-                        }
-                    },
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        fontColor: '#e2e2e2'
-                    },
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                fontColor: '#e2e2e2'
-                            },
-                            gridLines: {
-                                display: false
-                            }
-                        }],
-                        xAxes: [{
-                            ticks: {
-                                fontColor: '#e2e2e2'
-                            },
-                            gridLines: {
-                                display: false
-                            },
-                        }]
-                    },
-                }
-            };
-            let anime_ctx = document.getElementById('anime-graphic').getContext('2d');
-            new Chart(anime_ctx, anime_config);
 
             let movies_labels = $('#movies-labels-graph').attr('values').split(', ');
             let movies_data =  $('#movies-data-graph').attr('values').split(', ');
@@ -303,7 +230,6 @@
             };
             let games_ctx = document.getElementById('games-graphic').getContext('2d');
             new Chart(games_ctx, games_config);
-
         });
     </script>
 {% endblock %}

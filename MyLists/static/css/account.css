@@ -179,12 +179,7 @@ a {
     margin-left: 13px;
 }
 
-#anime-level {
-    margin-left: 18px;
-}
-
 .account-bar {
-    /*height: 100%;*/
     margin: 0 auto;
 }
 
@@ -317,8 +312,8 @@ a {
 }
 
 .media-stats-title {
-    /*background: #403d3a;*/
-    margin: 0 20px 0 20px;
+    background: #403d3a;
+    /*margin: 0 20px 0 20px;*/
 }
 
 .evenly-spaced {
@@ -345,7 +340,7 @@ a {
     flex-direction: column;
 }
 
-#series-score, #anime-score, #movies-score, #games-score {
+#series-score, #movies-score, #books-score, #games-score {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
@@ -365,14 +360,14 @@ a {
     background: #216e7d;
 }
 
-.histogram-item-anime {
-    width: 100%;
-    background: #945141;
-}
-
 .histogram-item-movies {
     width: 100%;
     background: #8c7821;
+}
+
+.histogram-item-books {
+    width: 100%;
+    background: #945141;
 }
 
 .histogram-item-games {
@@ -390,10 +385,10 @@ a {
         justify-content: space-around;
         margin: 0;
     }
-    .media-stats-title {
-        margin-bottom: 8px;
-        background: #232120;
-    }
+    /*.media-stats-title {*/
+    /*    margin-bottom: 8px;*/
+    /*    background: #232120;*/
+    /*}*/
 }
 @media (max-width: 490px) {
     .stat-text {

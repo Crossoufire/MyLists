@@ -46,7 +46,7 @@ def account(user_name):
     # Commit the changes
     db.session.commit()
 
-    return render_template('account_test.html', title=user.username+"'s account", user=user, frame=user_frame_info,
+    return render_template('account.html', title=user.username+"'s account", user=user, frame=user_frame_info,
                            user_updates=user_updates, follows_updates=follows_updates, media_data=media_dict)
 
 
@@ -63,9 +63,10 @@ def hall_of_fame():
         frame = user.get_frame_info()
 
         user_data["id"] = user.id
-        user_data["username"] = user.username
-        user_data["profile_picture"] = user.image_file
+        user_data["name"] = user.username
+        user_data["profile"] = user.image_file
         user_data["knowledge_frame"] = frame
+        user_data["add_books"] = user.add_books
         user_data["add_games"] = user.add_games
 
         user_data["current_user"] = False
@@ -73,7 +74,7 @@ def hall_of_fame():
             user_data["current_user"] = True
 
         for model in models_type:
-            user_data[f"{model.__name__.replace('List', '').lower()}_data"] = model.get_media_levels_and_time(user)
+            user_data[f"{model.__name__.replace('List', '').lower()}_data"], _ = model.get_media_levels_and_time(user)
 
         all_users_data.append(user_data)
 

@@ -22,8 +22,10 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('FLASK_MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('FLASK_MAIL_PASSWORD')
     THEMOVIEDB_API_KEY = os.environ.get('FLASK_THEMOVIEDB_API_KEY')
+    GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY')
     CLIENT_IGDB = os.environ.get('CLIENT_IGDB')
     SECRET_IGDB = os.environ.get('SECRET_IGDB')
+    CLIENT_MAL = os.environ.get('CLIENT_MAL')
+    SECRET_MAL = os.environ.get('SECRET_MAL')
     IGDB_API_KEY = os.environ.get('IGDB_API_KEY')
-
 

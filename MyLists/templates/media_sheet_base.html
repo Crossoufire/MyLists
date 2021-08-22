@@ -36,30 +36,80 @@
                                 &nbsp;<i id="cat-check" class="fas fa-check" style="display: none;"></i>
                             </div>
                         </div>
+
                         {% block add_more scoped %}
                         {% endblock add_more %}
-                        <div class="m-l-25 m-r-35 m-t-8 m-b-8" style="border: 1px solid grey;"></div>
-                        <div id="score-row" class="row m-l-15 m-r-15" data-toggle="tooltip" title="Score /10">
-                            <div class="col-4"><b>Score:</b></div>
-                            <div class="col-8">
-                                <label for="score-dropdown"></label>
-                                <select id="score-dropdown" class="text-light text-center cat-drop" onchange="updateScore(
-                                 '{{ media.id }}', this, '{{ media_list }}')">
-                                    <option {% if list_info.score == None or list_info.score == -1 %} selected="selected"
-                                    {% endif %}value="---">&nbsp;---&nbsp;</option>
-                                    {% for i in range(0, 21) %}
-                                        <option {% if (i-(i/2)) == list_info.score %} selected="selected" {% endif %}
-                                        value="{{ (i-(i/2)) }}">
-                                            &nbsp;{{ (i-(i/2)) }}&nbsp;
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
-                                &nbsp;<i id="score-check" class="fas fa-check" style="display: none;"></i>
+
+                        {% if current_user.add_feeling %}
+                            <div class="m-l-25 m-r-35 m-t-8 m-b-8" style="border: 1px solid grey;"></div>
+                            <div id="score-row" class="row m-l-15 m-r-15 m-b-5">
+                                    <div class="col-4"><b>Feeling:</b></div>
+                                    <div id="feelings" class="col-8 d-flex" style="justify-content: space-evenly;">
+                                        <a class="feel" data-toggle="tooltip" title="No feeling"
+                                         onclick="updateFeeling('{{ media.id }}', null, '{{ media_list }}', this)"
+                                         {% if list_info.feeling == None %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                         <i>---</i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Excellent"
+                                           onclick="updateFeeling('{{ media.id }}', '5', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '5' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Good"
+                                           onclick="updateFeeling('{{ media.id }}', '4', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '4' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Ok"
+                                           onclick="updateFeeling('{{ media.id }}', '3', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '3' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Meh"
+                                           onclick="updateFeeling('{{ media.id }}', '2', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '2' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Bad"
+                                           onclick="updateFeeling('{{ media.id }}', '1', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '1' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-frown" style="color: indianred;"></i>
+                                        </a>
+                                        <a class="feel" data-toggle="tooltip" title="Awful"
+                                           onclick="updateFeeling('{{ media.id }}', '0', '{{ media_list }}', this)"
+                                                {% if list_info.feeling == '0' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                            <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                        </a>
+                                        <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
+                                        &nbsp;<i id="score-check" class="fas fa-check" style="display: none;"></i>
+                                    </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="m-l-25 m-r-35 m-t-8 m-b-8" style="border: 1px solid grey;"></div>
+                            <div id="score-row" class="row m-l-15 m-r-15" data-toggle="tooltip" title="Score /10">
+                                <div class="col-4"><b>Score:</b></div>
+                                <div class="col-8">
+                                    <label for="score-dropdown"></label>
+                                    <select id="score-dropdown" class="text-light text-center cat-drop" onchange="updateScore(
+                                     '{{ media.id }}', this, '{{ media_list }}')">
+                                        <option {% if list_info.score == None or list_info.score == -1 %} selected="selected"
+                                        {% endif %}value="---">&nbsp;---&nbsp;</option>
+                                        {% for i in range(0, 21) %}
+                                            <option {% if (i-(i/2)) == list_info.score %} selected="selected" {% endif %}
+                                            value="{{ (i-(i/2)) }}">
+                                                &nbsp;{{ (i-(i/2)) }}&nbsp;
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
+                                    &nbsp;<i id="score-check" class="fas fa-check" style="display: none;"></i>
+                                </div>
+                            </div>
+                        {% endif %}
+
                         {% block add_redo scoped %}
                         {% endblock add_redo %}
+
                         <h4 id="comment-title" class="m-l-15 m-r-15 m-t-15">
                             <i class="fas fa-pen-alt m-t-10"></i>&nbsp; <b>Comment</b>
                             <a class="far fa-edit m-t-10" data-toggle="tooltip" title="Add/Edit Comment"
@@ -78,6 +128,7 @@
                             <i id="loading-remove-list" class="fas fa-spinner fast-spin" style="display: none;"></i>
                         </div>
                     </div>
+
                     <div class="text-center">
                         <button id="add-to-list" class="btn btn-smaller btn-info"{% if list_info.in_list %}
                          style="display: none;" {% endif %} onclick="addToUser('{{ media.id }}', '{{ media_list }}')">
@@ -92,7 +143,12 @@
             </div>
             <div class="col-lg-8 col-md-7 col-sm-12" style="margin-top: -10px;">
                 <div class="media-title-pc">
-                    <h3><b>{{ media.name }}</b></h3><hr>
+                    <h3><b>{{ media.name }}</b></h3>
+                    {% set original_name = media.get_original_name() %}
+                    {% if original_name %}
+                        <h5 style="color: darkgray;"><i>{{ original_name }}</i></h5>
+                    {% endif %}
+                    <hr>
                 </div>
                 <div class="row p-t-15">
                     <div class="col-lg-7 col-md-12 col-sm-12">
@@ -105,15 +161,17 @@
                     <div class="col-lg-5 col-md-12 col-sm-12">
                         {% block more_info scoped %}
                         {% endblock more_info %}
-                        <h4><i class="fas fa-thumbs-up m-t-30"></i>&nbsp;&nbsp; <b>Similar Genres</b></h4><hr>
-                        {% for sim_genre in media.get_same_genres() %}
-                            <a class="m-r-10" href="{{ url_for('main.media_sheet', media_type=media._group[1].value,
-                            media_id=sim_genre[0].id) }}">
-                                <img class="m-b-10" height="80" width="53" data-toggle="tooltip"
-                                 title="{{ sim_genre[0].name }}" src="{{ sim_genre[0].get_media_cover() }}" alt=""/>
-                            </a>
-                        {% endfor %}
-                        {% if not media.get_same_genres() %}
+                        <h4><i class="fas fa-thumbs-up"></i>&nbsp;&nbsp; <b>Similar Genres</b></h4><hr>
+                        {% set similar_genres = media.get_similar_genres() %}
+                        {% if similar_genres %}
+                            {% for sim_genre in similar_genres %}
+                                <a class="m-r-10" href="{{ url_for('main.media_sheet', media_type=media._group[1].value,
+                                media_id=sim_genre[0].id) }}">
+                                    <img class="m-b-10" height="80" width="53" data-toggle="tooltip"
+                                     title="{{ sim_genre[0].name }}" src="{{ sim_genre[0].get_media_cover() }}" alt=""/>
+                                </a>
+                            {% endfor %}
+                        {% else %}
                             <i>No media found with the same genres.</i>
                         {% endif %}
                     </div>
@@ -125,8 +183,55 @@
         <div class="follow-margin m-t-40 m-b-30">
             <h4><i class="fas fa-user-check"></i>&nbsp;&nbsp; <b>Follow's list</b></h4><hr>
             <div class="row" style="margin-top: -5px;">
-                {% block follows_info scoped %}
-                {% endblock follows_info %}
+                 {% for follow in media.in_follows_lists() %}
+                    <div class="col col-lg-4 col-md-4 col-sm-6 col-12 m-b-35">
+                        <a href="{{ url_for('users.account', user_name=follow[0].username) }}">
+                            <div class="follow-div text-light">
+                                <div class="text-light">
+                                    <img class="follow-img" src="{{ url_for('static', filename='profile_pics/'
+                                    +follow[0].image_file) }}" alt=""/>
+                                    <h5 style="display: inline-block;"><b>&nbsp;&nbsp;{{ follow[0].username }}</b></h5>
+                                    <i class="fa-sm fa-heart m-l-10{% if follow[1].favorite %} fas f-favorited{% else %}
+                                    far f-no-fav{% endif %}"></i>
+                                </div>
+                                <hr class="m-b-8" style="border-color: gray;">
+                                <i class="fas fa-sm fa-star"></i>
+
+                                {% if follow[0].add_feeling %}
+                                    <b>&nbsp;Feeling:&nbsp;</b>
+                                    <span>
+                                        {% if follow[1].feeling == None %}
+                                            <i>---</i>
+                                        {% elif follow[1].feeling == '5' %}
+                                            <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                        {% elif follow[1].feeling == '4' %}
+                                            <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                        {% elif follow[1].feeling == '3' %}
+                                            <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                        {% elif follow[1].feeling == '2' %}
+                                            <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                        {% elif follow[1].feeling == '1' %}
+                                            <i class="fas fa-frown" style="color: indianred;"></i>
+                                        {% elif follow[1].feeling == '0' %}
+                                            <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                        {% endif %}
+                                    </span>
+                                {% else %}
+                                    <b>{% if follow[1].score == -1 or follow[1].score == None %}&nbsp;Score:&nbsp; ---
+                                    {% else %}&nbsp;Score:&nbsp; {{ follow[1].score }}{% endif %}</b>
+                                {% endif %}
+
+                                {% block follow_more scoped %}
+                                {% endblock %}
+
+                                {% if follow[1].comment %}
+                                    <div class="m-t-10"><b>Comment:</b></div>
+                                    <p class="text-justify commentary"><i>{{ follow[1].comment }}</i></p>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
             </div>
         </div>
 

@@ -66,7 +66,7 @@ function changeCategory(new_category, card_id) {
 // --- Charge the categories buttons from other lists ---------------------------------------------------
 function ChargeButtonsOther(card) {
     removeCat();
-    let $card = $('#'+card.id)
+    let $card = $('#'+card.id);
 
     $(card).find('.view.overlay').prepend(
         '<a class="card-btn-top-right fas fa-times" onclick="removeCat()"></a>' +

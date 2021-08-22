@@ -281,6 +281,15 @@
     left: 40%;
 }
 
+.central-feeling {
+    position: relative;
+    top: 85%;
+}
+
+.feel {
+    cursor: pointer;
+}
+
 .bottom-card-info {
     background-color: #0f0f0f;
     border-right: solid 1px black;
@@ -514,12 +523,6 @@ input[type=number] {
 }
 
 .series-container {
-    position: relative;
-    height: 400px;
-    margin-top: -15px;
-}
-
-.anime-container {
     position: relative;
     height: 400px;
     margin-top: -15px;

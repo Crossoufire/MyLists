@@ -1,5 +1,18 @@
 
-// --- Movies Canvas Data ---------------------------------------------------------------------------------
+let colorArray = [
+    '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+    '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+    '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+	'#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC',
+    '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC',
+    '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399',
+    '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680',
+    '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933',
+    '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3',
+    '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'
+];
+
+
 let movies_lengths_labels = $('#lengths-movies-bar').attr('values-y').split(', ');
 let movies_lengths_data = $('#lengths-movies-bar').attr('values-x').split(', ');
 movies_lengths_labels.pop();
@@ -17,7 +30,8 @@ let movies_lengths_config = {
                 'rgba(255, 205, 86, 0.8)',
                 'rgba(75, 192, 192, 0.8)',
                 'rgba(54, 162, 235, 0.8)',
-                'rgba(153, 102, 255, 0.8)'
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(107,140,92,0.8)'
             ],
         }],
     },
@@ -83,21 +97,14 @@ let movies_periods_data = $('#periods-movies-bar').attr('values-x').split(', ');
 movies_periods_labels.pop();
 movies_periods_data.pop();
 
+
 let movies_periods_config = {
     type: 'bar',
     data: {
         labels: movies_periods_labels,
         datasets: [{
             data: movies_periods_data,
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.8)',
-                'rgba(255, 159, 64, 0.8)',
-                'rgba(255, 205, 86, 0.8)',
-                'rgba(75, 192, 192, 0.8)',
-                'rgba(54, 162, 235, 0.8)',
-                'rgba(153, 102, 255, 0.8)',
-                'rgba(201, 203, 207, 0.8)'
-            ],
+            backgroundColor: '#98979d',
         }],
     },
     options: {
@@ -132,7 +139,8 @@ let movies_periods_config = {
         scales: {
             yAxes: [{
                 ticks: {
-                    fontColor: '#e2e2e2'
+                    fontColor: '#e2e2e2',
+                    fontSize: 14,
                 },
                 gridLines: {
                     display: false
@@ -140,7 +148,8 @@ let movies_periods_config = {
             }],
             xAxes: [{
                 ticks: {
-                    fontColor: '#e2e2e2'
+                    fontColor: '#e2e2e2',
+                    fontSize: 14,
                 },
                 gridLines: {
                     display: false

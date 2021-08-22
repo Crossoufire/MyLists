@@ -84,6 +84,10 @@ ul {
     color: green;
 }
 
+.feel {
+    cursor: pointer;
+}
+
 
 /* --- User's comments ------------------------------------------------------------------ */
 .far.fa-edit {
@@ -205,6 +209,6 @@ ul {
 .giveMeEllipsis {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 6;
+    -webkit-line-clamp: 8;
     overflow: hidden;
 }

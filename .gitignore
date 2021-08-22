@@ -136,4 +136,7 @@ MyLists/static/covers/movies_covers/*
 MyLists/static/covers/games_covers/*
 !MyLists/static/covers/games_covers/default.jpg
 
+MyLists/static/covers/books_covers/*
+!MyLists/static/covers/books_covers/default.jpg
+
 scheduled.log

@@ -55,7 +55,9 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-code"></i><b>&nbsp; Developers</b></h5>
-                <div>{{ media.get_developers() }}</div>
+                {% for dev in media.get_developers() %}
+                    <a class="text-light" href="/persons/Games/creator/{{ dev }}"><div>{{ dev }}</div></a>
+                {% endfor %}
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-money-bill-wave-alt"></i><b>&nbsp; Publishers</b></h5>
@@ -63,7 +65,7 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Release date</b></h5>
-                <div>{{ media.release_date }}</div>
+                <div>{{ media.get_formated_dates() }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-layer-group"></i><b>&nbsp; Collection Name</b></h5>
@@ -106,7 +108,7 @@
     <h4 data-toggle="tooltip" title="HowLongToBeat Time in hours">
         <i class="fas fa-hourglass"></i>&nbsp;&nbsp; <b>HLTB Time [h]</b>
     </h4><hr>
-    <div class="d-flex flex-wrap" style="justify-content: space-evenly;">
+    <div class="d-flex flex-wrap m-b-30" style="justify-content: space-evenly;">
         <div class="game-box text-center" style="background-color: slategrey;">
             <div class="p-t-5"><b>MAIN</b></div>
             {% if not media.hltb_main_time or media.hltb_main_time == -1 %}
@@ -135,34 +137,11 @@
 {% endblock more_info %}
 
 
-{% block follows_info %}
-    {% for follow in media.in_follows_lists() %}
-        <div class="col col-lg-4 col-md-4 col-sm-6 col-12 m-b-35">
-            <a href="{{ url_for('users.account', user_name=follow[0].username) }}">
-                <div class="follow-div text-light">
-                    <div class="text-light">
-                        <img class="follow-img" src="{{ url_for('static', filename='profile_pics/'
-                        +follow[0].image_file) }}" alt=""/>
-                        <h5 style="display: inline-block;"><b>&nbsp;&nbsp;{{ follow[0].username }}</b></h5>
-                        <i class="fa-sm fa-heart m-l-10{% if follow[1].favorite %} fas f-favorited{% else %}
-                        far f-no-fav{% endif %}"></i>
-                    </div>
-                    <hr class="m-b-8" style="border-color: gray;">
-                    <i class="fas fa-sm fa-star"></i>
-                    <b>{% if follow[1].score == -1 or follow[1].score == None %}&nbsp;Score:&nbsp; ---
-                    {% else %}&nbsp;Score:&nbsp; {{ follow[1].score }}{% endif %}</b>
-                    <div class="follow-status" value="{{ follow[1].status.value }}">
-                        <i class="fas fa-list"></i>
-                        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
-                    </div>
-                    <i class="fas fas-sm fa-hourglass"></i>
-                    <b>&nbsp;Playtime:&nbsp; {{ (follow[1].playtime/60)|int }} hours</b>
-                    {% if follow[1].comment %}
-                        <div class="m-t-10"><b>Comment:</b></div>
-                        <p class="text-justify commentary"><i>{{ follow[1].comment }}</i></p>
-                    {% endif %}
-                </div>
-            </a>
-        </div>
-    {% endfor %}
-{% endblock follows_info %}
+{% block follow_more %}
+    <div class="follow-status" value="{{ follow[1].status.value }}">
+        <i class="fas fa-list"></i>
+        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
+    </div>
+    <i class="fas fas-sm fa-hourglass"></i>
+    <b>&nbsp;Playtime:&nbsp; {{ (follow[1].playtime/60)|int }} hours</b>
+{% endblock follow_more %}

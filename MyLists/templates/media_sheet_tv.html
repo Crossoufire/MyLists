@@ -4,6 +4,11 @@
 {% set eps_per_season = media.get_eps_per_season() %}
 
 
+{% block hr_color %}
+    hr {margin-top: 5px; border-top: 1px solid #216e7d;}
+{% endblock hr_color %}
+
+
 {% block cat_select %}
     <select id="category-dropdown" class="text-light text-center cat-drop" onchange="changeCategoryTV(
     '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_list }}')">
@@ -92,15 +97,21 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-video"></i><b>&nbsp; Created by</b></h5>
-                <div>{{ media.created_by }}</div>
+                {% for p in media.created_by.split(', ') %}
+                    {% if p == 'Unknown' %}
+                        <div>{{ p }}</div>
+                    {% else %}
+                        <a class="text-light" href="/persons/Series/creator/{{ p }}"><div>{{ p }}</div></a>
+                    {% endif %}
+                {% endfor %}
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-cog"></i><b>&nbsp; Prod. Status</b></h5>
-                <div>{{ media.in_production }}</div>
+                <div>{{ media.status }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Air dates</b></h5>
-                <div>{{ media.first_air_date }} - {{ media.last_air_date }}</div>
+                <div>{{ media.get_formated_dates() }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-play-circle"></i><b>&nbsp; Seasons</b></h5>
@@ -124,10 +135,13 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-user"></i><b>&nbsp; Main Actors</b></h5>
-                {% if media.actors == 'Unknown' %}
+                {% set actors = media.get_actors() %}
+                {% if actors[0] == 'Unknown' %}
                     <div><i>No actors found</i></div>
                 {% else %}
-                    <div>{{ media.get_actors() }}</div>
+                    {% for actor in actors %}
+                        <a class="text-light" href="/persons/Series/actor/{{ actor }}"><div>{{ actor }}</div></a>
+                    {% endfor %}
                 {% endif %}
             </li>
             <li class="m-b-15">
@@ -165,7 +179,7 @@
 
 {% block more_info %}
     <h4><i class="fas fa-play"></i>&nbsp;&nbsp; <b>Episodes per season</b></h4><hr>
-    <div class="eps-per-season d-flex flex-wrap">
+    <div class="eps-per-season d-flex flex-wrap m-b-30">
         {% for eps in eps_per_season %}
             <div class="m-l-7 m-r-7 m-b-15">
                 <div class="box text-center">
@@ -178,41 +192,18 @@
 {% endblock more_info %}
 
 
-{% block follows_info %}
-    {% for follow in media.in_follows_lists() %}
-        <div class="col col-lg-4 col-md-4 col-sm-6 col-12 m-b-35">
-            <a href="{{ url_for('users.account', user_name=follow[0].username) }}">
-                <div class="follow-div text-light">
-                    <div class="text-light">
-                        <img class="follow-img" src="{{ url_for('static', filename='profile_pics/'
-                        +follow[0].image_file) }}" alt=""/>
-                        <h5 style="display: inline-block;"><b>&nbsp;&nbsp;{{ follow[0].username }}</b></h5>
-                        <i class="fa-sm fa-heart m-l-10{% if follow[1].favorite %} fas f-favorited{% else %}
-                        far f-no-fav{% endif %}"></i>
-                    </div>
-                    <hr class="m-b-8" style="border-color: gray;">
-                    <i class="fas fa-sm fa-star"></i>
-                    <b>{% if follow[1].score == -1 or follow[1].score == None %}&nbsp;Score:&nbsp; ---
-                    {% else %}&nbsp;Score:&nbsp; {{ follow[1].score }}{% endif %}</b>
-                    <div class="follow-status" value="{{ follow[1].status.value }}">
-                        <i class="fas fa-list"></i>
-                        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
-                    </div>
-                    {% set check_status = ['Completed', 'Random', 'Plan to Watch'] %}
-                    {% if follow[1].status.value not in check_status %}
-                        <i class="fas fa-sm fa-play"></i>
-                        <b>&nbsp;Season {{ follow[1].current_season }} - Episode {{ follow[1].last_episode_watched }}</b>
-                    {% endif %}
-                    {% if follow[1].status.value == 'Completed' %}
-                        <i class="fas fas-sm fa-redo"></i>
-                        <b>&nbsp;Rewatched:&nbsp; {{ follow[1].rewatched }}</b>
-                    {% endif %}
-                    {% if follow[1].comment %}
-                        <div class="m-t-10"><b>Comment:</b></div>
-                        <p class="text-justify commentary"><i>{{ follow[1].comment }}</i></p>
-                    {% endif %}
-                </div>
-            </a>
-        </div>
-    {% endfor %}
-{% endblock follows_info %}
+{% block follow_more %}
+    <div class="follow-status" value="{{ follow[1].status.value }}">
+        <i class="fas fa-list"></i>
+        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
+    </div>
+    {% set check_status = ['Completed', 'Random', 'Plan to Watch'] %}
+    {% if follow[1].status.value not in check_status %}
+        <i class="fas fa-sm fa-play"></i>
+        <b>&nbsp;Season {{ follow[1].current_season }} - Episode {{ follow[1].last_episode_watched }}</b>
+    {% endif %}
+    {% if follow[1].status.value == 'Completed' %}
+        <i class="fas fas-sm fa-redo"></i>
+        <b>&nbsp;Rewatched:&nbsp; {{ follow[1].rewatched }}</b>
+    {% endif %}
+{% endblock follow_more %}

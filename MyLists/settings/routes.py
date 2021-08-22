@@ -51,11 +51,21 @@ def settings():
             current_user.private = settings_form.isprivate.data
             app.logger.info('[{}] Settings updated: Old private mode = {}. New private mode = {}'
                             .format(current_user.id, old_value, settings_form.isprivate.data))
+        if settings_form.add_books.data != current_user.add_books:
+            old_value = current_user.add_books
+            current_user.add_books = settings_form.add_books.data
+            app.logger.info('[{}] Settings updated: Old books value = {}. New books mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_books.data))
         if settings_form.add_games.data != current_user.add_games:
             old_value = current_user.add_games
             current_user.add_games = settings_form.add_games.data
             app.logger.info('[{}] Settings updated: Old games value = {}. New games mode = {}'
                             .format(current_user.id, old_value, settings_form.add_games.data))
+        if settings_form.add_feeling.data != current_user.add_feeling:
+            old_value = current_user.add_feeling
+            current_user.add_feeling = settings_form.add_feeling.data
+            app.logger.info('[{}] Settings updated: Old feeling value = {}. New feeling mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_feeling.data))
         if settings_form.email.data != current_user.email:
             old_email = current_user.email
             current_user.transition_email = settings_form.email.data
@@ -82,7 +92,9 @@ def settings():
     settings_form.username.data = current_user.username
     settings_form.email.data = current_user.email
     settings_form.isprivate.data = current_user.private
+    settings_form.add_books.data = current_user.add_books
     settings_form.add_games.data = current_user.add_games
+    settings_form.add_feeling.data = current_user.add_feeling
 
     back_pic, pic = False, False
     if request.args.get('from') == 'back_pic':

@@ -6,10 +6,10 @@
     <style rel="stylesheet">
         {% if media_list == 'serieslist' %}
             hr {border-top: 1px solid #216e7d;}
-        {% elif media_list == 'animelist' %}
-            hr {border-top: 1px solid #945141;}
         {% elif media_list == 'movieslist' %}
             hr {border-top: 1px solid #8c7821;}
+        {% elif media_list == 'bookslist' %}
+            hr {border-top: 1px solid #945141;}
         {% elif media_list == 'gameslist' %}
             hr {border-top: 1px solid #196219;}
         {% endif %}
@@ -24,18 +24,20 @@
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mobile-margin mobile-center">
                     <a class="fas fa-lg fa-user m-r-10 return-icon text-grey" data-toggle="tooltip" title="{{ user.username }}"
                      href="{{ url_for('users.account', user_name=user.username) }}"></a>
-                    <a class="fas fa-lg fa-torii-gate m-r-10 return-icon text-anime {% if media_list == 'animelist' %}
-                     disabled" style="background: #150e0e; {% endif %}" data-toggle="tooltip" title="Animelist"
-                       href="{{ url_for('main.mymedialist', media_list='animelist', user_name=user.username) }}"></a>
                     <a class="fas fa-lg fa-tv m-r-10 return-icon-tv text-series {% if media_list == 'serieslist' %}
-                     disabled" style="background: #150e0e; {% endif %}" data-toggle="tooltip" title="Serieslist"
+                     disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Serieslist"
                      href="{{ url_for('main.mymedialist', media_list='serieslist', user_name=user.username) }}"></a>
                     <a class="fas fa-lg fa-film m-r-10 return-icon text-movies {% if media_list == 'movieslist' %}
-                     disabled" style="background: #150e0e; {% endif %}" data-toggle="tooltip" title="Movieslist"
+                     disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Movieslist"
                      href="{{ url_for('main.mymedialist', media_list='movieslist', user_name=user.username) }}"></a>
                     {% if user.add_games %}
-                        <a class="fas fa-lg fa-gamepad m-r-10 return-icon text-games {% if media_list == 'gameslist' %}
-                         disabled" style="background: #150e0e; {% endif %}" data-toggle="tooltip" title="Gameslist"
+                        <a class="fas fa-lg fa-book m-r-10 return-icon text-books {% if media_list == 'bookslist' %}
+                             disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Bookslist"
+                             href="{{ url_for('main.mymedialist', media_list='bookslist', user_name=user.username) }}"></a>
+                    {% endif %}
+                    {% if user.add_games %}
+                        <a class="fas fa-lg fa-gamepad m-r-10 return-icon-tv text-games {% if media_list == 'gameslist' %}
+                         disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Gameslist"
                          href="{{ url_for('main.mymedialist', media_list='gameslist', user_name=user.username) }}"></a>
                     {% endif %}
 
@@ -121,6 +123,7 @@
             <hr class="mt-2 pb-3 mb-0">
         </section>
     </section>
+
     <section class="media-display">
         {% if category == 'Stats' %}
             {% block stats_block scoped %}
@@ -148,12 +151,12 @@
                                     <a class="card-btn-toop-right fas fa-trash text-light"
                                        onclick="deleteElement(card_{{ item.media.id }}, '{{ media_list }}')"></a>
                                 {% else %}
-{#                                    {% if item.common %}#}
-{#                                        <div class="card-ribbon"></div>#}
-{#                                    {% else %}#}
-{#                                        <a class="card-btn-top-left fas fa-plus text-light"#}
-{#                                           onclick="ChargeButtonsOther(card_{{ item.id }})"></a>#}
-{#                                    {% endif %}#}
+                                    {% if item.media.id in data['common_ids'] %}
+                                        <div class="card-ribbon"></div>
+                                    {% else %}
+                                        <a class="card-btn-top-left fas fa-plus text-light"
+                                           onclick="ChargeButtonsOther(card_{{ item.media.id }})"></a>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                             <div class="bottom-card-info{% if media_list =='movieslist' %}-movie {% endif %}">
@@ -165,13 +168,39 @@
                                            onclick="addFavorite(this,'{{ item.media.id }}','{{ media_list }}')">
                                         </a>
                                     </div>
-                                    <div class="col p-0">
-                                        <a id="score_{{ item.media.id }}" class="{% if current_user.get_id() != user.id %}
-                                           disabled {% endif %}" data-toggle="tooltip" title="Score /10"
-                                           onclick="scoreDrop(this, {{ item.media.id }}, '{{ media_list }}')">
-                                            {{ item.score or '---' }}
-                                        </a>
-                                    </div>
+
+                                    {% if user.add_feeling %}
+                                        <div class="col p-0">
+                                            <a id="feel_{{ item.media.id }}" class="{% if current_user.get_id() != user.id %}
+                                             disabled {% endif %}" data-toggle="tooltip" title="Feeling"
+                                             onclick="feelButtons(card_{{ item.media.id }}, this)">
+                                                {% if item.feeling == None %}
+                                                    <i value="None">---</i>
+                                                 {% elif item.feeling == '5' %}
+                                                    <i class="fas fa-grin-stars" style="color: #019101;" value="5"></i>
+                                                {% elif item.feeling == '4' %}
+                                                    <i class="fas fa-grin-alt" style="color: #59a643;" value="4"></i>
+                                                {% elif item.feeling == '3' %}
+                                                    <i class="fas fa-smile" style="color: darkseagreen;" value="3"></i>
+                                                {% elif item.feeling == '2' %}
+                                                    <i class="fas fa-meh" style="color: #d0a141;" value="2"></i>
+                                                {% elif item.feeling == '1' %}
+                                                    <i class="fas fa-frown" style="color: indianred;" value="1"></i>
+                                                 {% elif item.feeling == '0' %}
+                                                    <i class="fas fa-angry" style="color: #ab0202;" value="0"></i>
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="col p-0">
+                                            <a id="score_{{ item.media.id }}" class="{% if current_user.get_id() != user.id %}
+                                               disabled {% endif %}" data-toggle="tooltip" title="Score /10"
+                                               onclick="scoreDrop(this, {{ item.media.id }}, '{{ media_list }}')">
+                                                {{ item.score or '---' }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+
                                     <div class="col p-0">
                                         <span id="com_{{ item.media.id }}" style="display: none;">{{ item.comment }}</span>
                                         {% if current_user.get_id() == user.id %}
@@ -188,7 +217,7 @@
                                         {% endif %}
                                     </div>
                                     {% if media_list != 'gameslist' %}
-                                        <div class="col" {% if item.status.value == 'Completed' %}style="display: block;"
+                                        <div class="col p-0" {% if item.status.value == 'Completed' %}style="display: block;"
                                          {% else %} style="display: none;"{% endif %}>
                                             <a id="rew_{{ item.media.id }}" class="{% if current_user.get_id() != user.id %}
                                              disabled {% endif %}" data-toggle="tooltip" title="How many time you rewatched this
@@ -218,6 +247,7 @@
             </div>
         {% endif %}
     </section>
+
     {% if category != 'Stats' %}
         <section class="the-pagination">
             <ul class="pagination flex-wrap m-b-50 pagination-css">

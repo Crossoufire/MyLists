@@ -3,9 +3,8 @@ from flask_login import current_user
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin, expose, AdminIndexView
 from MyLists.models import User, UserLastUpdate, Series, SeriesList, SeriesEpisodesPerSeason, SeriesGenre, \
-    SeriesNetwork, SeriesActors, Anime, AnimeEpisodesPerSeason, AnimeGenre, AnimeList, AnimeNetwork, AnimeActors, \
-    Movies, MoviesGenre, MoviesList, MoviesActors, RoleType, Games, GamesList, GamesGenre, GamesCompanies, \
-    GamesPlatforms
+    SeriesNetwork, SeriesActors, Movies, MoviesGenre, MoviesList, MoviesActors, RoleType, Games, GamesList, \
+    GamesGenre, GamesCompanies, GamesPlatforms
 
 
 # --- USER ----------------------------------------------------------------------------------------------------- #
@@ -14,7 +13,7 @@ class UserAdminView(ModelView):
     def is_accessible(self):
         return current_user.role == RoleType.ADMIN
     column_display_pk = True
-    form_excluded_columns = ('series_list', 'anime_list', 'movies_list', 'games_list', 'redis_tasks',
+    form_excluded_columns = ('series_list', 'movies_list', 'games_list', 'redis_tasks',
                              'UserLastUpdate')
     column_exclude_list = ('password', )
 
@@ -65,45 +64,6 @@ class SeriesActorsAdminView(ModelView):
     column_display_pk = True
 
 
-# --- ANIME ---------------------------------------------------------------------------------------------------- #
-
-class AnimeAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-    column_exclude_list = ('synopsis',)
-
-
-class AnimeListAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-
-
-class AnimeEpisodesPerSeasonAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-
-
-class AnimeGenreAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-
-
-class AnimeNetworkAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-
-
-class AnimeActorsAdminView(ModelView):
-    def is_accessible(self):
-        return current_user.role == RoleType.ADMIN
-    column_display_pk = True
-
-
 # --- MOVIES --------------------------------------------------------------------------------------------------- #
 
 class MoviesAdminView(ModelView):
@@ -137,7 +97,7 @@ class GamesAdminView(ModelView):
     def is_accessible(self):
         return current_user.role == RoleType.ADMIN
     column_display_pk = True
-    column_exclude_list = ('storyline', 'summary')
+    column_exclude_list = ('storyline', 'synopsis')
 
 
 class GamesGenreAdminView(ModelView):
@@ -189,13 +149,6 @@ admin.add_view(SeriesGenreAdminView(SeriesGenre, db.session))
 admin.add_view(SeriesNetworkAdminView(SeriesNetwork, db.session))
 admin.add_view(SeriesActorsAdminView(SeriesActors, db.session))
 admin.add_view(SeriesEpisodesPerSeasonAdminView(SeriesEpisodesPerSeason, db.session))
-
-admin.add_view(AnimeAdminView(Anime, db.session))
-admin.add_view(AnimeListAdminView(AnimeList, db.session))
-admin.add_view(AnimeGenreAdminView(AnimeGenre, db.session))
-admin.add_view(AnimeNetworkAdminView(AnimeNetwork, db.session))
-admin.add_view(AnimeActorsAdminView(AnimeActors, db.session))
-admin.add_view(AnimeEpisodesPerSeasonAdminView(AnimeEpisodesPerSeason, db.session))
 
 admin.add_view(MoviesAdminView(Movies, db.session))
 admin.add_view(MoviesListAdminView(MoviesList, db.session))

@@ -14,7 +14,7 @@
 
 
 {% block data %}
-    {{ media_list }}-{{ item.id }}
+    {{ media_list }}-{{ media_list }}-{{ item.media.id }}
 {% endblock data %}
 
 
@@ -22,22 +22,22 @@
     <section class="stats-for-movies">
             <div class="row m-b-40">
                 <div class="col">
-                    <h4><i class="fas fa-caret-square-right"></i>&nbsp;&nbsp; Runtimes</h4>
+                    <h4><i class="fas fa-caret-square-right"></i>&nbsp;&nbsp; By runtimes</h4>
                     <div class="movies-container">
                         <canvas id="lengths-movies"></canvas>
                         <span id="lengths-movies-bar"
-                          values-y="{% for key in data['movies_times'].keys() %} {{ key }}, {% endfor %}"
-                          values-x="{% for value in data['movies_times'].values() %}{{ value }}, {% endfor %}">
+                          values-y="{% for key in data['runtimes'].keys() %} {{ key }}, {% endfor %}"
+                          values-x="{% for value in data['runtimes'].values() %}{{ value }}, {% endfor %}">
                         </span>
                     </div>
                 </div>
                 <div class="col">
-                    <h4><i class="fas fa-calendar-times"></i>&nbsp;&nbsp; Release Dates</h4>
+                    <h4><i class="fas fa-calendar-times"></i>&nbsp;&nbsp; By release Dates (decade)</h4>
                     <div class="movies-container">
                         <canvas id="periods-movies"></canvas>
                         <span id="periods-movies-bar"
-                          values-y="{% for key in data['periods'].keys() %} {{ key }}, {% endfor %}"
-                          values-x="{% for value in data['periods'].values() %}{{ value }}, {% endfor %}">
+                          values-y="{% for d in data['periods'] %}{{ d[3] }}, {% endfor %}"
+                          values-x="{% for d in data['periods'] %}{{ d[2] }}, {% endfor %}">
                         </span>
                     </div>
                 </div>
@@ -76,12 +76,12 @@
                     </div>
                 </div>
                 <div class="col">
-                    <h4><i class="fas fa-user-alt"></i>&nbsp;&nbsp; Top 5 Langages</h4>
+                    <h4><i class="fas fa-user-alt"></i>&nbsp;&nbsp; Top 5 Languages</h4>
                     <div class="movies-container">
                         <canvas id="langage-movies"></canvas>
                         <span id="langage-movies-bar"
-                          values-y="{% for d in data['top_langage'] %}{{ d[0] }}, {% endfor %}"
-                          values-x="{% for d in data['top_langage'] %}{{ d[2] }}, {% endfor %}">
+                          values-y="{% for d in data['top_languages'] %}{{ d[0] }}, {% endfor %}"
+                          values-x="{% for d in data['top_languages'] %}{{ d[2] }}, {% endfor %}">
                         </span>
                     </div>
                 </div>

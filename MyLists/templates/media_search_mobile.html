@@ -14,10 +14,6 @@
                  href="#series"><b>Series ({{ series_results|length }})</b></div>
         </li>
         <li class="nav-item">
-            <div class="nav-link" id="anime-tab" data-toggle="tab"
-                 href="#anime"><b>Anime ({{ anime_results|length }})</b></div>
-        </li>
-        <li class="nav-item">
             <div class="nav-link" id="movies-tab" data-toggle="tab"
                  href="#movies"><b>Movies ({{ movies_results|length }})</b></div>
         </li>
@@ -28,34 +24,6 @@
                 {% for media in series_results %}
                     <a class="card mb-4" style="background: #216c7d; width: 800px; border-radius: 0;"
                        href="/media_sheet/Series/{{ media['tmdb_id'] }}?search=True">
-                        <div class="row no-gutters">
-                            <div class="col-3 p-2">
-                                <img width="70" src="{{ media['poster_path'] }}">
-                            </div>
-                            <div class="col-9">
-                                <div class="card-body p-2">
-                                    <h5 class="card-title">
-                                        <div class="text-light fs-15 giveMeEllipsis2">{{ media['name'] }}</div>
-                                        <div class="fs-12 text-grey"><i>{{ media['first_air_date'] }}</i></div>
-                                    </h5>
-                                    {% if media['overview'] %}
-                                        <p class="fs-12 text-light giveMeEllipsis m-b-0">{{ media['overview'] }}</p>
-                                    {% else %}
-                                        <p class="fs-12 text-light m-b-0"><i>No overview avalaible for this content.</i>
-                                        </p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="tab-pane fade" id="anime">
-            <div class="d-flex flex-wrap justify-content-center m-t-30">
-                {% for media in anime_results %}
-                    <a class="card mb-4" style="background: #945141; width: 800px; border-radius: 0;"
-                       href="/media_sheet/Anime/{{ media['tmdb_id'] }}?search=True">
                         <div class="row no-gutters">
                             <div class="col-3 p-2">
                                 <img width="70" src="{{ media['poster_path'] }}">

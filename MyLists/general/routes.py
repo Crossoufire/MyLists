@@ -1,11 +1,13 @@
 from flask import Blueprint
 from datetime import datetime
 from MyLists import db, bcrypt, app
+from MyLists.API_data import ApiSeries, ApiMovies
 from flask_login import login_required, current_user
 from MyLists.general.trending_data import TrendingData
 from flask import render_template, flash, request, abort
-from MyLists.API_data import ApiSeries, ApiAnime, ApiMovies
+from MyLists.scheduled_tasks import update_Mylists_stats
 from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent
+
 
 bp = Blueprint('general', __name__)
 
@@ -35,6 +37,7 @@ def create_first_data():
                      active=True,
                      registered_on=datetime.utcnow(),
                      activated_on=datetime.utcnow())
+        update_Mylists_stats()
         db.session.add(admin1)
         db.session.add(manager1)
         db.session.add(user1)
@@ -76,13 +79,6 @@ def current_trends():
         flash('The current TV trends from TMDb are not available right now.', 'warning')
 
     try:
-        anime_info = ApiAnime().get_trending()
-    except Exception as e:
-        anime_info = {'top': []}
-        app.logger.error('[ERROR] - Getting the anime trending info: {}.'.format(e))
-        flash('The current anime trends from Jikan are not available right now.', 'warning')
-
-    try:
         movies_info = ApiMovies().get_trending()
     except Exception as e:
         movies_info = {'results': []}
@@ -90,7 +86,6 @@ def current_trends():
         flash('The current movies trends from TMDb are not available right now.', 'warning')
 
     series_results = TrendingData(series_info).get_trending_series()
-    anime_results = TrendingData(anime_info).get_trending_anime()
     movies_results = TrendingData(movies_info).get_trending_movies()
 
     template = 'current_trends_pc.html'
@@ -98,8 +93,7 @@ def current_trends():
     if platform == "iphone" or platform == "android" or not platform or platform == 'None':
         template = 'current_trends_mobile.html'
 
-    return render_template(template, title="Current trends", series_trends=series_results,
-                           anime_trends=anime_results, movies_trends=movies_results)
+    return render_template(template, title="Current trends", series_trends=series_results, movies_trends=movies_results)
 
 
 @bp.route("/privacy_policy", methods=['GET'])

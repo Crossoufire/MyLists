@@ -13,7 +13,9 @@ class UpdateAccountForm(FlaskForm):
     picture = FileField('Profile picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
     back_picture = FileField('Background picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
     isprivate = BooleanField('Private mode')
+    add_books = BooleanField('Activate the BooksList')
     add_games = BooleanField('Activate the GamesList')
+    add_feeling = BooleanField('Activate the Feeling mode (instead of score)')
     submit_account = SubmitField('Update account')
 
     def validate_username(self, username):

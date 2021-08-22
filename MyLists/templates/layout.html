@@ -16,8 +16,8 @@
     <meta name="author" content="Cross">
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="keywords" content="Mylists, lists, series, tv shows, anime, movies, levels, hall of fame">
-    <meta name="description" content="Create your TV shows/anime/movies list, see how much time you spent and gain
+    <meta name="keywords" content="Mylists, lists, series, tv shows, movies, levels, hall of fame">
+    <meta name="description" content="Create your TV shows/movies list, see how much time you spent and gain
     levels and badges."/>
 
     <!--- CDN CSS -------------------------------------------------------------------------------------->
@@ -62,15 +62,6 @@
                                 </div>
                             </a>
                             <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                             media_list='animelist', user_name=current_user.username) }}">
-                                <div class="row">
-                                    <div class="col-3" style="margin-right: -5px;">
-                                        <i class="fas fa-torii-gate text-anime"></i>
-                                    </div>
-                                    <div class="col-9">AnimeList</div>
-                                </div>
-                            </a>
-                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                              media_list='movieslist', user_name=current_user.username) }}">
                                 <div class="row">
                                     <div class="col-3" style="margin-right: -5px;">
@@ -79,6 +70,17 @@
                                     <div class="col-9">MoviesList</div>
                                 </div>
                             </a>
+                            {% if current_user.add_books %}
+                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
+                                 media_list='bookslist', user_name=current_user.username) }}">
+                                    <div class="row">
+                                        <div class="col-3" style="margin-right: -5px;">
+                                            <i class="fas fa-book text-books"></i>
+                                        </div>
+                                        <div class="col-9">BooksList</div>
+                                    </div>
+                                </a>
+                            {% endif %}
                             {% if current_user.add_games %}
                                 <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                                  media_list='gameslist', user_name=current_user.username) }}">
@@ -98,19 +100,23 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="nav-collapse">
-                    <form id="auto-form" class="form-inline nav-form" name="aform" action="{{ url_for('main.search_media') }}">
+                    <form id="auto-form" class="form-inline nav-form" name="aform" method="GET"
+                     action="{{ url_for('main.search_media') }}">
                         <label for="autocomplete"></label>
                         <input id="autocomplete" class="form-control search-ipad-mobile" name="search"
                          placeholder="Search media or users">
                         <label for="select-media"></label>
+                        <select id="select-media" class="auto-select" name="media_select">
+                            <option class="auto-opt" value="TMDB">Media</option>
+                            {% if current_user.add_books %}
+                                <option class="auto-opt" value="BOOKS">Books</option>
+                            {% endif %}
+                            {% if current_user.add_games %}
+                                <option class="auto-opt" value="IGDB">Games</option>
+                            {% endif %}
+                            <option class="auto-opt" value="users">Users</option>
+                        </select>
                     </form>
-                    <select id="select-media" class="auto-select" name="media_select">
-                        <option class="auto-opt" value="TMDB">Media</option>
-                        {% if current_user.add_games %}
-                            <option class="auto-opt" value="IGDB">Games</option>
-                        {% endif %}
-                        <option class="auto-opt" value="users">Users</option>
-                    </select>
                     <ul class="navbar-nav mr-auto nav-ul-1">
                         <li class="nav-item nav-li-1">
                             <a class="nav-link" href="{{ url_for('general.mylists_stats') }}">
@@ -214,7 +220,6 @@
 
 <main role="main" class="container">
     <div class="content">
-
         {% if current_user.is_authenticated %}
             {% with task = current_user.get_task_in_progress('import_list') %}
                 {% if task %}
@@ -224,7 +229,6 @@
                 {% endif %}
             {% endwith %}
         {% endif %}
-
         {% block content %}
         {% endblock content %}
     </div>
@@ -243,34 +247,43 @@
 {% endblock %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/mylists.js') }}"></script>
 <script>
-    $('#select-media').change(function () {
-        $('#autocomplete').val('')
+    $(document).ready(function() {
+        $('#select-media').change(function () {
+            $('#autocomplete').val('')
+        });
+
+        $('#autocomplete').keydown(function(event) {
+            if(event.keyCode == 13 && $('#autocomplete').val().trim() === '') {
+                event.preventDefault();
+                return false;
+            }
+        });
     });
 
-    {% if current_user.is_authenticated %}
-        {% with task = current_user.get_task_in_progress('import_list') %}
-            {% if task %}
-                window.onload = function get_progress() {
-                    $.ajax ({
-                        type: "POST",
-                        url: "/progress_import",
-                        contentType: "application/json",
-                        data: JSON.stringify({task_id: '{{ task.id }}'}),
-                        dataType: "json",
-                        success: function(data) {
-                            if (data.progress.progress === 100) {
-                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} Completed!');
-                                $('#'+'{{ task.id }}'+'-progress').parent().delay(2000).fadeOut();
-                            } else {
-                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} '+data.progress.progress+'%');
-                                setTimeout(get_progress, 2500);
-                            }
-                        }
-                    });
-                }
-            {% endif %}
-        {% endwith %}
-    {% endif %}
+{#    {% if current_user.is_authenticated %}#}
+{#        {% with task = current_user.get_task_in_progress('import_list') %}#}
+{#            {% if task %}#}
+{#                window.onload = function get_progress() {#}
+{#                    $.ajax ({#}
+{#                        type: "POST",#}
+{#                        url: "/progress_import",#}
+{#                        contentType: "application/json",#}
+{#                        data: JSON.stringify({task_id: '{{ task.id }}'}),#}
+{#                        dataType: "json",#}
+{#                        success: function(data) {#}
+{#                            if (data.progress.progress === 100) {#}
+{#                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} Completed!');#}
+{#                                $('#'+'{{ task.id }}'+'-progress').parent().delay(2000).fadeOut();#}
+{#                            } else {#}
+{#                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} '+data.progress.progress+'%');#}
+{#                                setTimeout(get_progress, 2500);#}
+{#                            }#}
+{#                        }#}
+{#                    });#}
+{#                }#}
+{#            {% endif %}#}
+{#        {% endwith %}#}
+{#    {% endif %}#}
 </script>
 <footer class="text-center text-lg-left" style="background-color: #100e0e;">
     {% if current_user.is_authenticated %}
@@ -280,7 +293,7 @@
                 <img class="m-b-5" src="{{ url_for('static', filename='img/favicon.ico') }}">&nbsp;
                 <h5 class="dis-inline text-uppercase" style="color: #3fd3da;"><b>MyLists.info</b></h5>
                 <p class="text-justify m-b-5">
-                    Create your series, anime and movies list, see how much time you spent, follow your friends.
+                    Create your series and movies list, see how much time you spent, follow your friends.
                     Add your favorites, comments, rewatch and gain levels to get to the top of the Hall of Fame.
                 </p>
                 <a href="mailto:contact@mylists.info" class="text-light">

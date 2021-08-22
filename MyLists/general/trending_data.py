@@ -23,16 +23,11 @@ class TrendingData:
     def change_air_format(date):
         return datetime.strptime(date, '%Y-%m-%d').strftime("%d %b %Y")
 
-    def _get_media_cover(self, anime=False):
+    def _get_media_cover(self):
         media_cover = url_for('static', filename="covers/series_covers/default.jpg")
-        if not anime:
-            poster_path = self.result.get('poster_path') or None
-            if poster_path:
-                media_cover = "{}{}".format(self.tmdb_cover_path, poster_path)
-        else:
-            poster_path = self.result.get('image_url') or None
-            if poster_path:
-                media_cover = "{}".format(poster_path)
+        poster_path = self.result.get('poster_path') or None
+        if poster_path:
+            media_cover = "{}{}".format(self.tmdb_cover_path, poster_path)
 
         return media_cover
 
@@ -60,21 +55,6 @@ class TrendingData:
             if i == 11:
                 break
         return series_results
-
-    def get_trending_anime(self):
-        anime_results = []
-        for i, self.result in enumerate(self.trending_data['top']):
-            self.media_data = {'display_name': self.result.get('title', 'Unknown') or 'Unknown',
-                               'release_date': self.result.get('start_date', 'Unknown') or 'Unknown',
-                               'poster_path': self._get_media_cover(anime=True), 'tmdb_link': self.result.get("url"),
-                               "overview": "There is no synopsis from this API. You can check it on "
-                                           "<b><i>MyAnimeList</i></b> by clicking on the title."}
-
-            anime_results.append(self.media_data)
-
-            if i == 11:
-                break
-        return anime_results
 
     def get_trending_movies(self):
         movies_results = []

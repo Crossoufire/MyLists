@@ -49,12 +49,12 @@ class MediaListObj:
         if list_type == ListType.SERIES:
             cover_path = url_for('static', filename='covers/series_covers/')
             self.media = "Series"
-        elif list_type == ListType.ANIME:
-            cover_path = url_for('static', filename='covers/anime_covers/')
-            self.media = "Anime"
         elif list_type == ListType.MOVIES:
             cover_path = url_for('static', filename='covers/movies_covers/')
             self.media = "Movies"
+        elif list_type == ListType.BOOKS:
+            cover_path = url_for('static', filename='covers/books_covers/')
+            self.media = "Books"
         elif list_type == ListType.GAMES:
             cover_path = url_for('static', filename='covers/games_covers/')
             self.media = "Games"

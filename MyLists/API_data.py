@@ -1,4 +1,6 @@
+import re
 import json
+import os.path
 import secrets
 import pykakasi
 import requests
@@ -8,12 +10,12 @@ from urllib import request
 from MyLists import app, db
 from datetime import datetime
 from flask import abort, url_for
-# from howlongtobeatpy import HowLongToBeat
+from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
-from urllib.request import urlretrieve, Request
-from MyLists.models import ListType, MediaType, Series, Anime, SeriesGenre, AnimeGenre, AnimeActors, SeriesActors, \
-    Movies, SeriesNetwork, AnimeNetwork, SeriesEpisodesPerSeason, AnimeEpisodesPerSeason, MoviesGenre, MoviesActors, \
-    GamesCompanies, GamesPlatforms, Games, GamesGenre
+from urllib.request import urlretrieve, Request, urlopen
+from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActors, Movies, SeriesNetwork, \
+    SeriesEpisodesPerSeason, MoviesGenre, MoviesActors, GamesCompanies, GamesPlatforms, Games, GamesGenre, Books, \
+    BooksGenre, BooksAuthors
 
 
 # --- GENERAL ---------------------------------------------------------------------------------------------------
@@ -46,13 +48,13 @@ def latin_alphabet(original_name):
             return False
 
 
-def change_air_format(date, media_sheet=False, games=False):
-    if media_sheet and not games:
+def change_air_format(date, media_sheet=False, games=False, books=False):
+    if media_sheet and not games and not books:
         try:
             return datetime.strptime(date, '%Y-%m-%d').strftime("%b %Y")
         except:
             return 'Unknown'
-    elif not media_sheet and not games:
+    elif not media_sheet and not games and not books:
         try:
             return datetime.strptime(date, '%Y-%m-%d').strftime("%d %b %Y")
         except:
@@ -62,6 +64,21 @@ def change_air_format(date, media_sheet=False, games=False):
             return datetime.utcfromtimestamp(int(date)).strftime('%d %b %Y')
         except:
             return 'Unknown'
+    elif books:
+        try:
+            return re.findall(re.compile('\d{4}'), date)[0]
+        except:
+            return 'Unknown'
+
+
+def clean_text(raw_html):
+    try:
+        cleanr = re.compile('<.*?>')
+        cleantext = re.sub(cleanr, '', raw_html)
+    except:
+        cleantext = 'Unknown'
+
+    return cleantext
 
 
 class ApiData(object):
@@ -112,23 +129,87 @@ class TMDBMixin(ApiData):
 
     def search(self, media_name, page=1):
         response = requests.get("https://api.themoviedb.org/3/search/multi?api_key={0}&query={1}&page={2}"
-                                .format(self.api_key, media_name, page), timeout=15)
+                                .format(self.api_key, media_name, page), timeout=10)
 
         status_code(response.status_code)
         self.API_data = json.loads(response.text)
 
-    def get_media_cover(self):
-        media_cover_name = 'default.jpg'
-        media_cover_path = self.API_data.get('poster_path') or None
-        if media_cover_path:
-            media_cover_name = '{}.jpg'.format(secrets.token_hex(8))
-            try:
-                self.save_api_cover(media_cover_path, media_cover_name)
-            except Exception as e:
-                app.logger.error('[ERROR] - Trying to recover the poster: {}'.format(e))
-                media_cover_name = 'default.jpg'
+    def get_autocomplete_list(self):
+        media_results = []
+        if self.API_data.get('total_results', 0) > 0:
+            for i, result in enumerate(self.API_data["results"]):
+                media_details = {}
+                if i >= self.API_data["total_results"] or i > 19 or len(media_results) >= 7:
+                    break
+                if result.get('known_for_department'):
+                    continue
 
-        return media_cover_name
+                media_details['api_id'] = result.get('id')
+                media_details['image_cover']: url_for("static", filename="covers/series_covers/default.jpg")
+                if result.get('poster_path'):
+                    media_details['image_cover'] = f"{self.poster_base_url}{result.get('poster_path')}"
+
+                if result.get('media_type') == 'tv':
+                    media_details['category'] = 'Series'
+
+                    return_latin = latin_alphabet(result.get('original_name'))
+                    media_details['display_name'] = result.get('name')
+                    if return_latin is True:
+                        media_details['display_name'] = result.get('original_name')
+
+                    media_details['date'] = change_air_format(result.get('first_air_date'))
+                    media_details['type'] = 'Series'
+                elif result.get('media_type') == 'movie':
+                    media_details['category'] = 'Movies'
+
+                    return_latin = latin_alphabet(result.get('original_title'))
+                    media_details['display_name'] = result.get('title')
+                    if return_latin is True:
+                        media_details['display_name'] = result.get('original_title')
+
+                    media_details['date'] = change_air_format(result.get('release_date'))
+                    media_details['type'] = 'Movies'
+
+                media_results.append(media_details)
+
+        return media_results
+
+    def get_search_list(self):
+        media_results = []
+        for result in self.API_data["results"]:
+            if result.get('known_for_department'):
+                continue
+
+            media_data = {'name': result.get('title') or result.get('name'),
+                          'overview': result.get('overview'),
+                          'first_air_date': result.get('first_air_date') or result.get('release_date'),
+                          'api_id': result['id']}
+
+            # Modify the first_air_date / release_date format
+            if media_data['first_air_date'] == "":
+                media_data['first_air_date'] = "Unknown"
+
+            # Recover the poster_path or take a default image
+            media_data["poster_path"] = url_for('static', filename="covers/series_covers/default.jpg")
+            if result["poster_path"]:
+                media_data["poster_path"] = f"{self.poster_base_url}{result['poster_path']}"
+
+            # Put data in different lists in function of media type
+            if result['media_type'] == 'tv':
+                media_data['url'] = f"https://www.themoviedb.org/tv/{result['id']}"
+                media_data['media'] = 'Series'
+                media_data['media_type'] = ListType.SERIES.value
+                media_results.append(media_data)
+            elif result['media_type'] == 'movie':
+                media_data['media'] = 'Movies'
+                media_data['media_type'] = ListType.MOVIES.value
+                media_data['url'] = f"https://www.themoviedb.org/movie/{result['id']}"
+                media_results.append(media_data)
+
+        total_results = self.API_data['total_results']
+        total_pages = self.API_data['total_pages']
+
+        return media_results, total_results, total_pages
 
     def get_genres(self):
         genres = self.API_data.get('genres') or None
@@ -158,53 +239,27 @@ class TMDBMixin(ApiData):
         img = img.resize((300, 450), Image.ANTIALIAS)
         img.save(f"{self.local_covers_path}/{media_cover_name}", quality=90)
 
-    def get_autocomplete_list(self):
-        media_results = []
-        if self.API_data.get('total_results', 0) or 0 > 0:
-            for i, result in enumerate(self.API_data["results"]):
-                media_details = {}
-                if i >= self.API_data["total_results"] or i > 19 or len(media_results) >= 7:
-                    break
-                if result.get('known_for_department'):
-                    continue
+    def get_media_cover(self):
+        media_cover_name = 'default.jpg'
+        media_cover_path = self.API_data.get('poster_path') or None
+        if media_cover_path:
+            media_cover_name = '{}.jpg'.format(secrets.token_hex(8))
+            try:
+                self.save_api_cover(media_cover_path, media_cover_name)
+            except Exception as e:
+                app.logger.error('[ERROR] - Trying to recover the poster: {}'.format(e))
+                media_cover_name = 'default.jpg'
 
-                media_details['api_id'] = result.get('id')
-                media_details['image_cover']: url_for('static', filename="covers/series_covers/default.jpg")
-
-                if result.get('poster_path'):
-                    media_details['image_cover'] = f"{self.poster_base_url}{result.get('poster_path')}"
-
-                if result.get('media_type') == 'tv':
-                    media_details['category'] = 'Series/Anime'
-
-                    return_latin = latin_alphabet(result.get('original_name'))
-                    media_details['display_name'] = result.get('name')
-                    if return_latin is True:
-                        media_details['display_name'] = result.get('original_name')
-
-                    media_details['date'] = change_air_format(result.get('first_air_date'))
-                    media_details['type'] = 'Series'
-                    if result.get('origin_country') == 'JP' or result.get('original_language') == 'ja' \
-                            and 16 in result.get('genre_ids'):
-                        media_details['type'] = 'Anime'
-                elif result.get('media_type') == 'movie':
-                    media_details['category'] = 'Movies'
-
-                    return_latin = latin_alphabet(result.get('original_title'))
-                    media_details['display_name'] = result.get('title')
-                    if return_latin is True:
-                        media_details['display_name'] = result.get('original_title')
-
-                    media_details['date'] = change_air_format(result.get('release_date'))
-                    media_details['type'] = 'Movies'
-
-                media_results.append(media_details)
-
-        return media_results
+        return media_cover_name
 
 
-class ApiTV(TMDBMixin):
-    group = []
+# --- CALL CLASSES -----------------------------------------------------------------------------------------------
+
+
+class ApiSeries(TMDBMixin):
+    _duration = 40
+    group = [ListType.SERIES, MediaType.SERIES]
+    local_covers_path = Path(app.root_path, "static/covers/series_covers/")
 
     def get_details_and_credits_data(self):
         response = requests.get("https://api.themoviedb.org/3/tv/{}?api_key={}&append_to_response=credits"
@@ -290,16 +345,28 @@ class ApiTV(TMDBMixin):
                          'networks_data': networks_list}
 
     def get_anime_genres(self):
-        return []
+        anime_genres_list = []
 
+        try:
+            if self.API_data.get('origin_country')[0] != 'JP':
+                return anime_genres_list
+        except:
+            return anime_genres_list
 
-# --- CALL CLASSES -----------------------------------------------------------------------------------------------
+        try:
+            anime_search = self.api_anime_search(self.API_data.get("name"))
+            anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
+        except Exception as e:
+            app.logger.error('[ERROR] - Requesting the Jikan API: {}'.format(e), {'API': 'Jikan'})
+            anime_genres = None
 
+        if anime_genres:
+            anime_genres_list.append({'genre': 'Animation', 'genre_id': -10})
+            for i in range(0, len(anime_genres)):
+                anime_genres_list.append({'genre': anime_genres[i]['name'],
+                                          'genre_id': int(anime_genres[i]['mal_id'])})
 
-class ApiSeries(ApiTV):
-    _duration = 45
-    group = [ListType.SERIES, MediaType.SERIES]
-    local_covers_path = Path(app.root_path, "static/covers/series_covers/")
+        return anime_genres_list
 
     def get_trending(self):
         response = requests.get("https://api.themoviedb.org/3/trending/tv/week?api_key={}"
@@ -314,8 +381,12 @@ class ApiSeries(ApiTV):
         db.session.add(self.media)
         db.session.commit()
 
-        for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['genres_data']]:
-            db.session.add(SeriesGenre(**genre))
+        if len(self.all_data['anime_genres_data']) != 0:
+            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['anime_genres_data']]:
+                db.session.add(SeriesGenre(**genre))
+        else:
+            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['genres_data']]:
+                db.session.add(SeriesGenre(**genre))
 
         for actor in [{**item, 'media_id': self.media.id} for item in self.all_data['actors_data']]:
             db.session.add(SeriesActors(**actor))
@@ -326,21 +397,14 @@ class ApiSeries(ApiTV):
         for season in [{**item, 'media_id': self.media.id} for item in self.all_data['seasons_data']]:
             db.session.add(SeriesEpisodesPerSeason(**season))
 
-
-class ApiAnime(ApiTV):
-    _duration = 24
-    group = [ListType.ANIME, MediaType.ANIME]
-    local_covers_path = Path(app.root_path, "static/covers/anime_covers/")
-
     @staticmethod
     @sleep_and_retry
     @limits(calls=1, period=4)
     def api_anime_search(anime_name):
         """ Recover the anime title from TMDb to the MyAnimeList API to gather more accurate genres with the
-        <get_anime_genres> function """
+        <get_api_anime_genres> function """
 
         response = requests.get("https://api.jikan.moe/v3/search/anime?q={0}".format(anime_name))
-
         status_code(response.status_code)
 
         return json.loads(response.text)
@@ -350,58 +414,15 @@ class ApiAnime(ApiTV):
     @limits(calls=1, period=4)
     def get_api_anime_genres(mal_id):
         """ Recover the genres of MyAnimeList with the shape: "genres":
-        [{"mal_id": 1, "type": "anime", "name": "Action", "url": ""},
-        {"mal_id": 37, "type": "anime", "name": "Supernatural","url": ""},
-        {"mal_id": 16, "type": "anime", "name": "Magic","url": ""},
-        {"mal_id": 10, "type": "anime", "name": "Fantasy","url": ""}] """
+        [{"mal_id": 1, "type": "anime", "name": "Action"},
+        {"mal_id": 37, "type": "anime", "name": "Supernatural"},
+        {"mal_id": 16, "type": "anime", "name": "Magic"},
+        {"mal_id": 10, "type": "anime", "name": "Fantasy"}] """
 
         response = requests.get("https://api.jikan.moe/v3/anime/{}".format(mal_id))
-
         status_code(response.status_code)
 
         return json.loads(response.text)
-
-    def get_trending(self):
-        response = requests.get("https://api.jikan.moe/v3/top/anime/1/airing", timeout=10)
-        status_code(response.status_code)
-
-        return json.loads(response.text)
-
-    def get_anime_genres(self):
-        anime_genres_list = []
-        try:
-            anime_search = self.api_anime_search(self.API_data.get("name"))
-            anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
-        except Exception as e:
-            app.logger.error('[ERROR] - Requesting the Jikan API: {}'.format(e), {'API': 'Jikan'})
-            anime_genres = None
-
-        if anime_genres:
-            for i in range(0, len(anime_genres)):
-                anime_genres_list.append({'genre': anime_genres[i]['name'], 'genre_id': int(anime_genres[i]['mal_id'])})
-
-        return anime_genres_list
-
-    def add_data_to_db(self):
-        self.media = Anime(**self.all_data['media_data'])
-        db.session.add(self.media)
-        db.session.commit()
-
-        if len(self.all_data['anime_genres_data']) > 0:
-            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['anime_genres_data']]:
-                db.session.add(AnimeGenre(**genre))
-        else:
-            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['genres_data']]:
-                db.session.add(AnimeGenre(**genre))
-
-        for actor in [{**item, 'media_id': self.media.id} for item in self.all_data['actors_data']]:
-            db.session.add(AnimeActors(**actor))
-
-        for network in [{**item, 'media_id': self.media.id} for item in self.all_data['networks_data']]:
-            db.session.add(AnimeNetwork(**network))
-
-        for season in [{**item, 'media_id': self.media.id} for item in self.all_data['seasons_data']]:
-            db.session.add(AnimeEpisodesPerSeason(**season))
 
 
 class ApiMovies(TMDBMixin):
@@ -482,6 +503,7 @@ class ApiGames(ApiData):
 
     def __init__(self, API_id=None):
         super().__init__(API_id)
+        self.query = []
         self.api_key = app.config['IGDB_API_KEY']
         self.client_igdb = app.config['CLIENT_IGDB']
         self.poster_base_url = 'https://images.igdb.com/igdb/image/upload/t_1080p/'
@@ -499,14 +521,68 @@ class ApiGames(ApiData):
 
     @sleep_and_retry
     @limits(calls=4, period=1)
-    def search(self, game_name):
+    def search(self, game_name, page=1):
         headers = {'Client-ID': f"{app.config['CLIENT_IGDB']}",
                    'Authorization': 'Bearer ' + self.api_key}
         body = 'fields id, name, cover.image_id, first_release_date, storyline; search "{}";'.format(game_name)
-        response = requests.post('https://api.igdb.com/v4/games', data=body, headers=headers, timeout=15)
+        response = requests.post('https://api.igdb.com/v4/games', data=body, headers=headers, timeout=10)
+
+        self.query = Games.query.filter(Games.name.ilike('%' + game_name + '%')).all()
 
         status_code(response.status_code)
         self.API_data = json.loads(response.text)
+
+    def get_autocomplete_list(self):
+        db_results = []
+        for game in self.query:
+            media_details = {'api_id': game.api_id, 'display_name': game.name, 'category': 'Games',
+                             'type': 'Games', 'image_cover': game.get_media_cover(),
+                             'date': change_air_format(game.release_date, games=True)}
+            db_results.append(media_details)
+
+        media_results = []
+        if len(self.API_data) > 0:
+            for result in self.API_data:
+                media_details = {}
+                if len(media_results) >= 8:
+                    break
+
+                media_details['api_id'] = result.get('id')
+                media_details['display_name'] = result.get('name')
+                media_details['category'] = 'Games'
+                media_details['type'] = 'Games'
+                media_details['image_cover'] = url_for('static', filename="covers/series_covers/default.jpg")
+                if result.get('cover'):
+                    media_details['image_cover'] = f"{self.poster_base_url}{result['cover']['image_id']}.jpg"
+
+                media_details['date'] = change_air_format(result.get('first_release_date'), games=True)
+
+                media_results.append(media_details)
+
+        media_results = db_results + media_results
+
+        return media_results
+
+    def get_search_list(self):
+        media_results = []
+        if len(self.API_data) > 0:
+            for result in self.API_data:
+                media_data = {'name': result.get('name', 'Unknown'),
+                              'overview': result.get('storyline', 'No storyline found.') or 'No storyline found.',
+                              'first_air_date': change_air_format(result.get('first_release_date'), games=True),
+                              'api_id': result.get('id'),
+                              'poster_path': url_for('static', filename="covers/games_covers/default.jpg")}
+
+                # Recover the poster_path or take a default image
+                if result.get('cover'):
+                    media_data['poster_path'] = "{}{}.jpg".format(self.poster_base_url, result['cover']['image_id'])
+
+                # Put data in different lists in function of media type
+                media_data['media'] = 'Games'
+                media_data['media_type'] = ListType.GAMES.value
+                media_results.append(media_data)
+
+        return media_results, 20, 20
 
     def get_details_and_credits_data(self):
         headers = {'Client-ID': f"{self.client_igdb}",
@@ -523,45 +599,13 @@ class ApiGames(ApiData):
         self.API_data = json.loads(response.text)
         self.API_data = self.API_data[0]
 
-    def save_api_cover(self, media_cover_path, media_cover_name):
-        url_address = f"{self.poster_base_url}{media_cover_path}.jpg"
-        headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) '
-                                 'Chrome/23.0.1271.64 Safari/537.11',
-                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                   'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
-                   'Accept-Encoding': 'none',
-                   'Accept-Language': 'en-US,en;q=0.8',
-                   'Connection': 'keep-alive'}
-        request_ = Request(url_address, None, headers)
-        response = request.urlopen(request_)
-        f = open(f"{self.local_covers_path}/{media_cover_name}", 'wb')
-        f.write(response.read())
-        f.close()
-
-        img = Image.open(f"{self.local_covers_path}/{media_cover_name}")
-        img = img.resize((300, 450), Image.ANTIALIAS)
-        img.save(f"{self.local_covers_path}/{media_cover_name}", quality=90)
-
-    def get_media_cover(self):
-        media_cover_name = 'default.jpg'
-        media_cover_path = self.API_data.get('cover')['image_id'] or None
-        if media_cover_path:
-            media_cover_name = '{}.jpg'.format(secrets.token_hex(8))
-            try:
-                self.save_api_cover(media_cover_path, media_cover_name)
-            except Exception as e:
-                app.logger.error('[ERROR] - Trying to recover the poster: {}'.format(e))
-                media_cover_name = 'default.jpg'
-
-        return media_cover_name
-
     def from_API_to_dict(self):
         self.media_details = {'name': self.API_data.get('name', 'Unknown') or 'Unknown',
                               'release_date': self.API_data.get('first_release_date', 'Unknown') or 'Unknown',
                               'IGDB_url': self.API_data.get('url', 'Unknown') or 'Unknown',
                               'vote_average': self.API_data.get('total_rating', 0) or 0,
                               'vote_count': self.API_data.get('total_rating_count', 0) or 0,
-                              'summary': self.API_data.get('summary', 'No summary found.') or 'No summary found.',
+                              'synopsis': self.API_data.get('summary', 'No synopsis found.') or 'No synopsis found.',
                               'storyline': self.API_data.get('storyline', 'No storyline found.') or 'No storyline found.',
                               'collection_name': self.API_data.get('collection', {'name': 'Unknown'})['name'] or 'Unknown',
                               'game_engine': self.API_data.get('game_engines', [{'name': 'Unknown'}])[0]['name'] or 'Unknown',
@@ -603,7 +647,7 @@ class ApiGames(ApiData):
 
         fusion_list = genres_list + themes_list
         if len(fusion_list) == 0:
-            fusion_list.append({'genre': 'Unknown', 'genre_id': 0})
+            fusion_list.append({'genre': 'Unknown'})
 
         self.all_data = {'media_data': self.media_details, 'companies_data': companies_list, 'genres_data': fusion_list,
                          'platforms_data': platforms_list, 'hltb_time': hltb_time}
@@ -631,24 +675,203 @@ class ApiGames(ApiData):
         for platform in [{**item, 'media_id': self.media.id} for item in self.all_data['platforms_data']]:
             db.session.add(GamesPlatforms(**platform))
 
+    def save_api_cover(self, media_cover_path, media_cover_name):
+        url_address = f"{self.poster_base_url}{media_cover_path}.jpg"
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) '
+                                 'Chrome/23.0.1271.64 Safari/537.11',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                   'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+                   'Accept-Encoding': 'none',
+                   'Accept-Language': 'en-US,en;q=0.8',
+                   'Connection': 'keep-alive'}
+        request_ = Request(url_address, None, headers)
+        response = request.urlopen(request_)
+        f = open(f"{self.local_covers_path}/{media_cover_name}", 'wb')
+        f.write(response.read())
+        f.close()
+
+        img = Image.open(f"{self.local_covers_path}/{media_cover_name}")
+        img = img.resize((300, 450), Image.ANTIALIAS)
+        img.save(f"{self.local_covers_path}/{media_cover_name}", quality=90)
+
+    def get_media_cover(self):
+        media_cover_name = 'default.jpg'
+        media_cover_path = self.API_data.get('cover')['image_id'] or None
+        if media_cover_path:
+            media_cover_name = '{}.jpg'.format(secrets.token_hex(8))
+            try:
+                self.save_api_cover(media_cover_path, media_cover_name)
+            except Exception as e:
+                app.logger.error('[ERROR] - Trying to recover the poster: {}'.format(e))
+                media_cover_name = 'default.jpg'
+
+        return media_cover_name
+
+
+class ApiBooks(ApiData):
+    group = [ListType.BOOKS, MediaType.BOOKS]
+    local_covers_path = Path(app.root_path, "static/covers/books_covers/")
+
+    def __init__(self, API_id=None):
+        super().__init__(API_id)
+        self.query = []
+        self.API_id = API_id
+        self.api_key = app.config['GOOGLE_BOOKS_API_KEY']
+
+    def search(self, qry, page=0):
+        response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q={qry}&startIndex={str(page)}',
+                                timeout=10)
+        # &key={self.api_key}
+
+        self.query = Books.query.filter(Books.name.ilike('%' + qry + '%'))
+
+        status_code(response.status_code)
+        self.API_data = json.loads(response.text)
+
+        # try:
+        #     self.API_id = self.API_data['items'][0]['id']
+        #     self.get_details_and_credits_data()
+        #     self.from_API_to_dict()
+        #     self.add_data_to_db()
+        #     return self.media.id
+        # except:
+        #     return None
+
     def get_autocomplete_list(self):
+        db_results = []
+        for book in self.query:
+            media_details = {'api_id': book.api_id, 'display_name': book.name,
+                             'author': ', '.join(a.name for a in book.authors),
+                             'category': 'Books',
+                             'type': 'Books', 'image_cover': book.get_media_cover(),
+                             'date': change_air_format(book.release_date, books=True)}
+            db_results.append(media_details)
+
         media_results = []
-        if len(self.API_data) > 0:
-            for result in self.API_data:
-                media_details = {}
-                if len(media_results) >= 5:
-                    break
-
-                media_details['api_id'] = result.get('id')
-                media_details['display_name'] = result.get('name')
-                media_details['category'] = 'Games'
-                media_details['type'] = 'Games'
-                media_details['image_cover'] = url_for('static', filename="covers/series_covers/default.jpg")
-                if result.get('cover'):
-                    media_details['image_cover'] = f"{self.poster_base_url}{result['cover']['image_id']}.jpg"
-
-                media_details['date'] = change_air_format(result.get('first_release_date'), games=True)
+        get_qte = self.API_data.get('totalItems')
+        if get_qte and get_qte > 0:
+            for result in self.API_data['items']:
+                info = result['volumeInfo']
+                media_details = {'api_id': result.get('id'),
+                                 'display_name': info.get('title', 'Unknown') or 'Unknown',
+                                 'author': info.get('authors', ['Unknown'])[0] or 'Unknown',
+                                 'date': change_air_format(info.get('publishedDate', 'Unknown'), books=True),
+                                 'image_cover':
+                                     info.get('imageLinks', {'thumbnail': '/static/covers/series_covers/default.jpg'})
+                                     ['thumbnail'] or 'Unknown',
+                                 'category': 'Books',
+                                 'type': 'Books'}
 
                 media_results.append(media_details)
 
+        media_results = db_results + media_results
+
         return media_results
+
+    def get_search_list(self):
+        media_results = []
+        get_qte = self.API_data.get('totalItems')
+        if get_qte and get_qte > 0:
+            for result in self.API_data['items']:
+                info = result['volumeInfo']
+                media_details = {'api_id': result.get('id'),
+                                 'name': info.get('title', 'Unknown') or 'Unknown',
+                                 'author': info.get('authors', ['Unknown'])[0] or 'Unknown',
+                                 'overview': clean_text(info.get('description', 'Unknown')),
+                                 'first_air_date': change_air_format(info.get('publishedDate', 'Unknown'), books=True),
+                                 'poster_path':
+                                     info.get('imageLinks', {'thumbnail': '/static/covers/series_covers/default.jpg'})
+                                     ['thumbnail'] or 'Unknown',
+                                 'media': 'Books'}
+
+                media_results.append(media_details)
+
+        total_results = self.API_data.get('totalItems')
+        try:
+            total_pages = total_results // 10
+        except:
+            total_pages = 1
+
+        return media_results, total_results, total_pages
+
+    def get_details_and_credits_data(self):
+        response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{self.API_id}', timeout=10)
+
+        status_code(response.status_code)
+        self.API_data = json.loads(response.text)
+        self.API_data = self.API_data['volumeInfo']
+
+    def from_API_to_dict(self):
+        self.media_details = {'name': self.API_data.get('title', 'Unknown') or 'Unknown',
+                              'release_date': change_air_format(self.API_data.get('publishedDate', 'Unknown'),
+                                                                books=True),
+                              'pages': self.API_data.get('pageCount', 0) or 0,
+                              'publishers': self.API_data.get('publisher', 'Unknown') or 'Unknown',
+                              'synopsis': clean_text(self.API_data.get('description', 'Unknown')),
+                              'language': self.API_data.get('language', 'Unknown') or 'Unknown',
+                              'api_id': self.API_id,
+                              'image_cover': self.get_media_cover(),
+                              'lock_status': True}
+
+        authors, authors_list = self.API_data.get('authors') or None, []
+        if authors:
+            for author in authors:
+                authors_list.append({'name': author})
+        else:
+            authors_list.append({'name': 'Unknown'})
+
+        genres, genres_list = self.API_data.get('categories') or None, []
+        if genres:
+            genres = ' / '.join(genres)
+            genres = genres.split(' / ')
+            genres = list(set(genres))
+            for genre in genres[:5]:
+                genres_list.append({'genre': genre})
+        else:
+            genres_list.append({'genre': 'Unknown'})
+
+        self.all_data = {'media_data': self.media_details, 'genres_data': genres_list, 'authors_data': authors_list}
+
+    def add_data_to_db(self):
+        self.media = Books(**self.all_data['media_data'])
+        db.session.add(self.media)
+        db.session.commit()
+
+        for genre in self.all_data['genres_data']:
+            genre.update({'media_id': self.media.id})
+            db.session.add(BooksGenre(**genre))
+
+        for author in self.all_data['authors_data']:
+            author.update({'media_id': self.media.id})
+            db.session.add(BooksAuthors(**author))
+
+    def save_api_cover(self, media_cover_path, media_cover_name):
+        urlretrieve(f"{media_cover_path}", f"{self.local_covers_path}/{media_cover_name}")
+        img = Image.open(f"{self.local_covers_path}/{media_cover_name}")
+        img = img.resize((300, 450), Image.ANTIALIAS)
+        img.save(f"{self.local_covers_path}/{media_cover_name}", quality=90)
+
+    def get_media_cover(self):
+        media_cover_name = '{}.jpg'.format(secrets.token_hex(8))
+        try:
+            self.save_api_cover(self.API_data['imageLinks']['medium'], media_cover_name)
+        except:
+            try:
+                self.save_api_cover(self.API_data['imageLinks']['large'], media_cover_name)
+            except:
+                from MyLists.static.books_img_ddl.books import GoogleImages
+                book_image_ddl = GoogleImages()
+                arguments = {"keywords": f'cover {self.API_data["title"]} {self.API_data["authors"][0]}',
+                             "output_directory": str(self.local_covers_path), 'size': 'medium'}
+                try:
+                    all_paths = book_image_ddl.download(arguments)
+                    path = all_paths[0]['image'][-1]
+                    img = Image.open(path)
+                    img = img.resize((300, 450), Image.ANTIALIAS)
+                    img.save(path)
+                    media_cover_name = os.path.basename(path)
+                except:
+                    media_cover_name = 'default.jpg'
+
+        return media_cover_name
+
