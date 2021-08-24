@@ -25,19 +25,19 @@
                     <a class="fas fa-lg fa-user m-r-10 return-icon text-grey" data-toggle="tooltip" title="{{ user.username }}"
                      href="{{ url_for('users.account', user_name=user.username) }}"></a>
                     <a class="fas fa-lg fa-tv m-r-10 return-icon-tv text-series {% if media_list == 'serieslist' %}
-                     disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Serieslist"
+                     disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Serieslist"
                      href="{{ url_for('main.mymedialist', media_list='serieslist', user_name=user.username) }}"></a>
                     <a class="fas fa-lg fa-film m-r-10 return-icon text-movies {% if media_list == 'movieslist' %}
-                     disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Movieslist"
+                     disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Movieslist"
                      href="{{ url_for('main.mymedialist', media_list='movieslist', user_name=user.username) }}"></a>
-                    {% if user.add_games %}
+                    {% if user.add_books %}
                         <a class="fas fa-lg fa-book m-r-10 return-icon text-books {% if media_list == 'bookslist' %}
-                             disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Bookslist"
+                             disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Bookslist"
                              href="{{ url_for('main.mymedialist', media_list='bookslist', user_name=user.username) }}"></a>
                     {% endif %}
                     {% if user.add_games %}
                         <a class="fas fa-lg fa-gamepad m-r-10 return-icon-tv text-games {% if media_list == 'gameslist' %}
-                         disabled" style="border: 1px solid grey; {% endif %}" data-toggle="tooltip" title="Gameslist"
+                         disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Gameslist"
                          href="{{ url_for('main.mymedialist', media_list='gameslist', user_name=user.username) }}"></a>
                     {% endif %}
 

@@ -1,26 +1,22 @@
-import operator
-import time
-
-import pykakasi
+import json
 from collections import OrderedDict
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-import pandas as pd
-import numpy as np
-import iso639
-import json
-import pytz
 import random
+
+import flask_login
+import iso639
+import pykakasi
+import pytz
 import rq
 from flask import abort, url_for
-from flask_login import UserMixin, current_user
+from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy import func, desc, text, and_, or_, cast, extract
-from sqlalchemy.types import Integer
+from sqlalchemy import func, desc, text, and_, or_, extract
 from sqlalchemy.orm import aliased
+
 from MyLists import app, db, login_manager
-from sqlalchemy.dialects import sqlite
 
 
 @login_manager.user_loader
@@ -141,12 +137,9 @@ class HomePage(Enum):
 
 
 class RoleType(Enum):
-    # Can access to the admin dashboard (/admin)
-    ADMIN = "admin"
-    # Can lock and edit media (/lock_media & /media_sheet_form)
-    MANAGER = "manager"
-    # Standard user
-    USER = "user"
+    ADMIN = "admin"         # Can access to the admin dashboard (/admin)
+    MANAGER = "manager"     # Can lock and edit media (/lock_media & /media_sheet_form)
+    USER = "user"           # Standard user
 
 
 # --- USERS -------------------------------------------------------------------------------------------------------
@@ -155,6 +148,15 @@ class RoleType(Enum):
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
                      db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
+
+
+# Override the get_id() method of flask_login to remove the 'text_type'
+class UserMixin(flask_login.UserMixin):
+    def get_id(self):
+        try:
+            return self.id
+        except AttributeError:
+            raise NotImplementedError('No `id` attribute - override `get_id`')
 
 
 class User(UserMixin, db.Model):
@@ -293,7 +295,7 @@ class User(UserMixin, db.Model):
     def get_autocomplete_list(cls, search):
         users = cls.query.filter(cls.username.like('%' + search + '%'), cls.role != RoleType.ADMIN).all()
         users_list = []
-        for user in users[:6]:
+        for user in users[:7]:
             users_list.append({'display_name': user.username,
                                'image_cover': '/static/profile_pics/' + user.image_file,
                                'date': datetime.strftime(user.registered_on, '%d %b %Y'),
@@ -443,20 +445,19 @@ class Notifications(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
 
-# --- OTHER -------------------------------------------------------------------------------------------------------
+# --- CLASS MIXIN -------------------------------------------------------------------------------------------------
 
 
 class MediaMixin(object):
+    """ Methods only used for the <media_sheet> route """
+
     def get_similar_genres(self):
         media = self.__class__
         media_genre = eval(self.__class__.__name__+'Genre')
 
+        genres_list = [r.genre for r in self.genres][:3]
         if media.__name__ == 'Books':
-            genres_list = [r.genre for r in self.genres][:1]
-        elif media.__name__ == 'Games':
-            genres_list = [r.genre for r in self.genres][:3]
-        else:
-            genres_list = [r.genre for r in self.genres][:4]
+            genres_list = [r.genre for r in self.genres][:2]
 
         similar_genres = db.session.query(media, media_genre) \
             .join(media, media.id == media_genre.media_id) \
@@ -465,12 +466,6 @@ class MediaMixin(object):
             .having(func.group_concat(media_genre.genre.distinct()).ilike(','.join(genres_list))).limit(8).all()
 
         return similar_genres
-
-    def get_original_name(self):
-        if self.original_name == self.name:
-            return None
-        return_latin = latin_alphabet(self.original_name)
-        return return_latin
 
     def in_follows_lists(self):
         media_list = eval(self.__class__.__name__+'List')
@@ -482,14 +477,21 @@ class MediaMixin(object):
 
         return in_follows_lists
 
-    def get_networks(self):
-        return ", ".join([d.network for d in self.networks])
-
     def get_genres(self):
         return ", ".join([d.genre for d in self.genres])
 
+    def get_original_name(self):
+        if self.original_name == self.name:
+            return None
+        return_latin = latin_alphabet(self.original_name)
+
+        return return_latin
+
     def get_actors(self):
         return [d.name for d in self.actors]
+
+    def get_networks(self):
+        return ", ".join([d.network for d in self.networks])
 
 
 class MediaListMixin(object):
@@ -626,12 +628,12 @@ class MediaListMixin(object):
 
         return eps_watched
 
-    # @classmethod
-    # def get_favorites(cls, user_id):
-    #     favorites = cls.query.filter_by(user_id=user_id, favorite=True).all()
-    #     random.shuffle(favorites)
-    #
-    #     return favorites
+    @classmethod
+    def get_favorites(cls, user_id):
+        favorites = cls.query.filter_by(user_id=user_id, favorite=True).all()
+        random.shuffle(favorites)
+
+        return favorites
 
     def category_changes(self, new_status):
         self.status = new_status
@@ -754,6 +756,11 @@ class Series(MediaMixin, TVBase):
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_tv.html'
+
+    @staticmethod
+    def form_only():
+        return ['name', 'original_name', 'first_air_date', 'last_air_date', 'homepage', 'created_by',
+                'duration', 'origin_country', 'status', 'synopsis']
 
 
 class SeriesList(MediaListMixin, db.Model):
@@ -922,6 +929,11 @@ class Anime(MediaMixin, TVBase):
     def media_sheet_template():
         return 'media_sheet_anime.html'
 
+    @staticmethod
+    def form_only():
+        return ['name', 'original_name', 'first_air_date', 'last_air_date', 'homepage', 'created_by',
+                'duration', 'origin_country', 'status', 'synopsis']
+
 
 class AnimeList(MediaListMixin, db.Model):
     _group = (ListType.ANIME, MediaType.ANIME)
@@ -1078,6 +1090,11 @@ class Movies(MediaMixin, db.Model):
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_movies.html'
+
+    @staticmethod
+    def form_only():
+        return ['name', 'original_name', 'director_name', 'release_date', 'homepage', 'original_language',
+                'duration', 'synopsis', 'budget', 'revenue', 'tagline']
 
 
 class MoviesList(MediaListMixin, db.Model):
@@ -1257,11 +1274,11 @@ class Books(MediaMixin, db.Model):
 
         return new_watched
 
-    def get_original_name(self):
-        return None
-
     def get_authors(self):
         return [d.name for d in self.authors]
+
+    def get_original_name(self):
+        pass
 
     def get_media_cover(self):
         return url_for('static', filename='covers/books_covers/'+self.image_cover)
@@ -1290,6 +1307,10 @@ class Books(MediaMixin, db.Model):
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_books.html'
+
+    @staticmethod
+    def form_only():
+        return ['name', 'release_date', 'pages', 'language', 'publishers', 'synopsis']
 
 
 class BooksList(MediaListMixin, db.Model):
@@ -1417,9 +1438,6 @@ class Games(MediaMixin, db.Model):
         db.session.add(user_list)
         return 0
 
-    def get_original_name(self):
-        return None
-
     def get_formated_dates(self):
         release_date = change_air_format(self.release_date, media_sheet=True, games=True)
         formated_date = f"{release_date}"
@@ -1456,6 +1474,9 @@ class Games(MediaMixin, db.Model):
                 data.append(company.name)
         return ", ".join(data)
 
+    def get_original_name(self):
+        pass
+
     @classmethod
     def get_persons(cls, job, person):
         if job == 'creator':
@@ -1485,6 +1506,11 @@ class Games(MediaMixin, db.Model):
     @staticmethod
     def media_sheet_template():
         return 'media_sheet_games.html'
+
+    @staticmethod
+    def form_only():
+        return ['name', 'collection_name', 'game_engine', 'game_modes', 'player_perspective', 'release_date',
+                'synopsis', 'hltb_main_time', 'hltb_main_and_extra_time', 'hltb_total_complete_time']
 
 
 class GamesList(MediaListMixin, db.Model):

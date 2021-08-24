@@ -27,7 +27,6 @@ class GenreForm(FlaskForm):
                                           ('Short story', 'Short story'), ('Suspense', 'Suspense'),
                                           ('Thriller', 'Thriller'), ('Western', 'Western'),
                                           ('Young adult', 'Young adult')])
-    submit = SubmitField('Change genres')
 
 
 class MediaComment(FlaskForm):

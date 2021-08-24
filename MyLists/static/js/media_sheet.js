@@ -422,7 +422,7 @@ function updateFeeling(element_id, feeling, media_list, element) {
             $('#score-loading').hide();
             $('.feel').attr('style', 'border: none;');
             $('.feel').removeClass('disabled');
-            $element.attr('style', 'border-bottom: 2px solid #ffffff;"');
+            $element.attr('style', 'box-shadow: 0 -2px 0 lightgray inset;');
             $element.addClass('disabled');
         }
     });

@@ -47,37 +47,37 @@
                                     <div id="feelings" class="col-8 d-flex" style="justify-content: space-evenly;">
                                         <a class="feel" data-toggle="tooltip" title="No feeling"
                                          onclick="updateFeeling('{{ media.id }}', null, '{{ media_list }}', this)"
-                                         {% if list_info.feeling == None %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                         {% if list_info.feeling == None %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                          <i>---</i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Excellent"
                                            onclick="updateFeeling('{{ media.id }}', '5', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '5' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '5' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-stars" style="color: #019101;"></i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Good"
                                            onclick="updateFeeling('{{ media.id }}', '4', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '4' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '4' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-alt" style="color: #59a643;"></i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Ok"
                                            onclick="updateFeeling('{{ media.id }}', '3', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '3' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '3' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-smile" style="color: darkseagreen;"></i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Meh"
                                            onclick="updateFeeling('{{ media.id }}', '2', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '2' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '2' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-meh" style="color: #d0a141;"></i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Bad"
                                            onclick="updateFeeling('{{ media.id }}', '1', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '1' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '1' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-frown" style="color: indianred;"></i>
                                         </a>
                                         <a class="feel" data-toggle="tooltip" title="Awful"
                                            onclick="updateFeeling('{{ media.id }}', '0', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '0' %} style="border-bottom: 2px solid #ffffff;"{% endif %}>
+                                                {% if list_info.feeling == '0' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-angry" style="color: #ab0202;"></i>
                                         </a>
                                         <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>

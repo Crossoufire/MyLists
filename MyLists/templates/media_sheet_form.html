@@ -12,11 +12,6 @@
         ul {
             border: transparent !important;
         }
-        .vertical-line {
-            width: 5px;
-            border-left: 2px solid rgba(44, 57, 70, 1);
-            height: 100wh;
-        }
     </style>
 {% endblock css %}
 
@@ -28,37 +23,35 @@
     <div class="row">
         <div class="col-7">
             <form class="m-l-10 m-t-30 m-b-50" action="" method="POST" enctype="multipart/form-data">
-            {{ form.hidden_tag() }}
-            <div class="row">
-                {% for field in form %}
-                    <div class="col-xl-3 col-lg-3 col-md-12 p-2">{{ field.label() }}</div>
-                    <div class="col-xl-9 col-lg-9 col-md-12 p-2">
-                        {{ field(class="text-justify text-light", rows="8", cols="50", style="background: transparent;
-                        border: grey 1px solid;") }}
-                    </div>
-                {% endfor %}
-                <button class="btn btn-primary m-t-15" type="submit">Update</button>
-            </div>
-        </form>
-        </div>
-        {% if media_type == 'Books' %}
-            <div class="col-4">
-            <form class="m-l-10 m-t-30 m-b-50" action="" method="POST" enctype="multipart/form-data">
-                {{ genre_form.hidden_tag() }}
-
-                <div class="p-2" style="background: darkslategray;"><b>Actual genres:</b> &nbsp;{{ genres[0] }}</div>
-
-                <div class="p-2 m-t-15">
-                    Select up to 5 genres to describes the book:
-                    <br>(ctrl + click for multi-selection)
+                {{ form.hidden_tag() }}
+                <div class="row">
+                    {% for field in form %}
+                        <div class="col-xl-3 col-lg-3 col-md-12 p-2">{{ field.label() }}</div>
+                        <div class="col-xl-9 col-lg-9 col-md-12 p-2">
+                            {{ field(class="text-justify text-light", rows="8", cols="50",
+                            style="background: transparent; border: grey 1px solid;") }}
+                        </div>
+                    {% endfor %}
+                    <button class="btn btn-primary m-t-20" type="submit">Update Media</button>
                 </div>
-                <div class="p-2">
-                    <div><b>{{ genre_form.genres.label() }}:</b></div>
-                    <div>{{ genre_form.genres(size=10) }}</div>
-                </div>
-                <button class="btn btn-primary m-t-15" type="submit">Update Genres</button>
             </form>
         </div>
+
+        {% if media_type == 'Books' %}
+            <div class="col-4">
+                <form class="m-l-10 m-t-30 m-b-50" action="" method="POST" enctype="multipart/form-data">
+                    {{ genre_form.hidden_tag() }}
+                    <div class="p-2" style="background: darkslategray;"><b>Actual genres:</b> &nbsp;{{ genres[0] }}</div>
+                    <div class="p-2 m-t-15">
+                        Select up to 5 genres to describes the book:
+                        <br>(ctrl + click for multi-selection)
+                    </div>
+                    <div class="p-2">
+                        <div><b>{{ genre_form.genres.label() }}:</b></div>
+                        <div>{{ genre_form.genres(size=10) }}</div>
+                    </div>
+                </form>
+            </div>
         {% endif %}
     </div>
 {% endblock content %}

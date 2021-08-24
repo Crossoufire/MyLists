@@ -1,9 +1,11 @@
 import json
-from MyLists import app, db
-from flask_login import login_required, current_user
+
 from flask import Blueprint, request, render_template
+from flask_login import login_required, current_user
+
+from MyLists import app, db
+from MyLists.models import User, Ranks, Frames, Notifications, RoleType, get_models_type, MediaMixin
 from MyLists.users.functions import get_all_media_info
-from MyLists.models import User, Ranks, Frames, Notifications, RoleType, get_models_type
 
 bp = Blueprint('users', __name__)
 

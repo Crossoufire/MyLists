@@ -1,12 +1,14 @@
 from datetime import datetime
-from MyLists.models import User
-from MyLists import app, bcrypt, db
-from MyLists.auth.functions import check_if_auth
-from MyLists.auth.emails import send_register_email, send_reset_email
-from flask_login import login_user, current_user, logout_user, login_required
-from flask import Blueprint, flash, request, redirect, url_for, render_template
-from MyLists.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm
 
+from flask import Blueprint, flash, request, redirect, url_for, render_template, abort
+from flask_admin.helpers import is_safe_url
+from flask_login import login_user, current_user, logout_user, login_required
+
+from MyLists import app, bcrypt, db
+from MyLists.auth.emails import send_register_email, send_reset_email
+from MyLists.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm
+from MyLists.auth.functions import check_if_auth
+from MyLists.models import User
 
 bp = Blueprint('auth', __name__)
 
@@ -27,10 +29,10 @@ def home():
             app.logger.info('[INFO] - [{}] Logged in.'.format(user.id))
 
             next_page = request.args.get('next')
-            if next_page:
-                return redirect(next_page)
+            if not is_safe_url(next_page):
+                return abort(400)
 
-            return redirect(url_for('users.account', user_name=user.username))
+            return redirect(next_page or url_for('users.account', user_name=user.username))
         else:
             flash('Login failed. Please check username and password.', 'warning')
     elif register_form.validate_on_submit():

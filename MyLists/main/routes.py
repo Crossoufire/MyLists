@@ -313,16 +313,26 @@ def media_sheet_form(media_type, media_id):
     except ValueError:
         return abort(400)
 
+    # Class which converts the attributs of a model to a Form
     class Form(ModelForm):
         class Meta:
             csrf = False
             model = models[0]
-            exclude = ['api_id', 'lock_status']
+            only = models[0].form_only()
         image_cover = StringField('insert an img URL')
 
+    # Populate the form with the model data
     media = models[0].query.filter_by(id=media_id).first()
     form = Form(obj=media)
-    if form.validate_on_submit():
+
+    # If the media is a book also display the current genres and add its form
+    genres, genre_form = None, None
+    if media_type == 'Books':
+        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
+            .filter(BooksGenre.media_id == media_id).first()
+        genre_form = GenreForm()
+
+    if form.is_submitted():
         if form.image_cover.data != media.image_cover:
             picture_fn = secrets.token_hex(8) + '.jpg'
             picture_path = Path(app.root_path, f"static/covers/{media_type.lower()}_covers", picture_fn)
@@ -339,28 +349,21 @@ def media_sheet_form(media_type, media_id):
         form.populate_obj(media)
         db.session.add(media)
         db.session.commit()
-        flash('Main data successfully updated.', 'success')
-        return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
 
-    genres = ""
-    genre_form = ""
-    if media_type == 'Books':
-        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct()))\
-            .filter(BooksGenre.media_id == media_id).first()
-        genre_form = GenreForm()
-        if genre_form.validate_on_submit():
+        if media_type == 'Books':
             if genre_form.genres.data:
                 try:
                     BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
-                    for genre in genre_form.genres.data:
+                    for genre in genre_form.genres.data[:5]:
                         adding = BooksGenre(genre=genre, media_id=media_id)
                         db.session.add(adding)
                     db.session.commit()
-                    flash('Genres sucessfully updated.', 'success')
+                    flash('Data successfully updated.', 'success')
                 except:
                     db.session.rollback()
                     flash('Error while updating the genres.', 'warning')
-            return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
+
+        return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
 
     return render_template('media_sheet_form.html', title='Media Form', form=form, genres=genres,
                            genre_form=genre_form, media_type=media_type)

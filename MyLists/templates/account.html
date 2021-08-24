@@ -189,7 +189,7 @@
             <div class="vertical-line"></div>
             <div class="col-xl col-lg col-md">
                 <ul class="list-unstyled">
-                    <li class="m-b-30">
+                    <li class="m-b-40">
                         <h4><i class="fas fa-chart-pie"></i>&nbsp;&nbsp; Statistics</h4><hr>
                         <div class="row no-gutters">
                             <div class="col-xl-6 col-lg-12 col-sm-12 media-container">
@@ -291,311 +291,292 @@
                         </div>
                     </li>
                     <li>
-                        <section class="series-stats m-b-30">
+                        <section class="series-stats m-b-40">
                             {% if not user.add_feeling and media_data['series']['media_count_score']|sum != 0 %}
-                                <div class="histogram-wrapper m-b-2">
-                                    <ul id="series-score" class="added-styles"></ul>
+                                <div class="s-collapse collapse show">
+                                    <div class="histogram-wrapper m-b-2">
+                                        <ul id="series-score" class="added-styles"></ul>
+                                    </div>
                                 </div>
                             {% endif %}
-                            <h5 class="media-stats-title mb-2 p-1">
-                                <a class="text-light" href="{{ url_for('main.mymedialist', media_list='serieslist',
-                                user_name=user.username) }}">
-                                    <b>SERIES</b>
-                                </a>
-                            </h5>
-                            <div id="SERIES" class="stat-text m-b-8">
-                                {% if not user.add_feeling %}
-                                    <span><b>Days: {{ media_data['series']['time_spent_day'] }}</b></span>
-                                    <span class="float-r">
+                            <a class="text-light" data-toggle="collapse" href=".s-collapse" onclick="change_caret(this)">
+                                <h5 class="media-stats-title mb-2 p-1">
+                                    &nbsp;<i class="fas fa-caret-down"></i>
+                                    <b>&nbsp;SERIES</b>
+                                </h5>
+                            </a>
+                            <div class="s-collapse collapse show">
+                                <div id="SERIES" class="stat-text m-b-8">
+                                    {% if not user.add_feeling %}
+                                        <span><b>Days: {{ media_data['series']['time_spent_day'] }}</b></span>
+                                        <span class="float-r">
                                         <b>Score: {{ media_data['series']['media_score']['mean_score'] }}/10</b>
                                     </span><br>
-                                    <span><b>Hours: {{ media_data['series']['time_spent_hour'] }}</b></span>
-                                    <span class="float-r" data-toggle="tooltip" title="Media scored">
+                                        <span><b>Hours: {{ media_data['series']['time_spent_hour'] }}</b></span>
+                                        <span class="float-r" data-toggle="tooltip" title="Media scored">
                                         <b>Scored: {{ media_data['series']['media_score']
                                         ['scored_media'] }}/{{ media_data['series']['media_score']['total_media'] }}</b>
                                     </span>
-                                {% else %}
-                                    <span><b>Days: {{ media_data['series']['time_spent_day'] }}</b></span>
-                                    <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                {{ media_data['series']['media_count_score'][5] }}
-                                            </div>
-                                            <div class="col-4">
-                                                <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                {{ media_data['series']['media_count_score'][4] }}
-                                            </div>
-                                            <div class="col-4">
-                                                <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                {{ media_data['series']['media_count_score'][3] }}
-                                            </div>
-                                        </div>
+                                    {% else %}
+                                        <span><b>Days: {{ media_data['series']['time_spent_day'] }}</b></span>
+                                        <span class="float-r">
+                                        <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                        {{ media_data['series']['media_count_score'][5] }}&nbsp;&nbsp;
+                                        <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                        {{ media_data['series']['media_count_score'][4] }}&nbsp;&nbsp;
+                                        <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                        {{ media_data['series']['media_count_score'][3] }}
                                     </span><br>
-                                    <span><b>Hours: {{ media_data['series']['time_spent_hour'] }}</b></span>
-                                    <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4">
-                                                <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                {{ media_data['series']['media_count_score'][2] }}
-                                            </div>
-                                            <div class="col-4">
-                                                <i class="fas fa-frown" style="color: indianred;"></i>
-                                                {{ media_data['series']['media_count_score'][1] }}
-                                            </div>
-                                            <div class="col-4">
-                                                <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                {{ media_data['series']['media_count_score'][0] }}
-                                            </div>
-                                        </div>
+                                        <span><b>Hours: {{ media_data['series']['time_spent_hour'] }}</b></span>
+                                        <span class="float-r">
+                                        <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                        {{ media_data['series']['media_count_score'][2] }}&nbsp;&nbsp;
+                                        <i class="fas fa-frown" style="color: indianred;"></i>
+                                        {{ media_data['series']['media_count_score'][1] }}&nbsp;&nbsp;
+                                        <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                        {{ media_data['series']['media_count_score'][0] }}
                                     </span>
-                                {% endif %}
-                                <figure>
-                                    {% if media_data['series']['media_count']['nodata'] %}
-                                        <span class="block-no-data" data-toggle="tooltip" title="No data">
+                                    {% endif %}
+                                    <figure>
+                                        {% if media_data['series']['media_count']['nodata'] %}
+                                            <span class="block-no-data" data-toggle="tooltip" title="No data">
                                     <span id="100%" class="value"></span>
                                 </span>
-                                    {% else %}
-                                        <span class="block" data-toggle="tooltip" title="Watching">
+                                        {% else %}
+                                            <span class="block" data-toggle="tooltip" title="Watching">
                                     <span id="{{ media_data['series']['media_count']['Watching']['percent'] }}%"
                                           class="value"></span>
                                 </span>
-                                        <span class="block" data-toggle="tooltip" title="Completed">
+                                            <span class="block" data-toggle="tooltip" title="Completed">
                                     <span id="{{ media_data['series']['media_count']['Completed']
                                     ['percent'] }}%" class="value"></span>
                                 </span>
-                                        <span class="block" data-toggle="tooltip" title="On Hold">
+                                            <span class="block" data-toggle="tooltip" title="On Hold">
                                     <span id="{{ media_data['series']['media_count']['On Hold']['percent'] }}%"
                                           class="value"></span>
                                 </span>
-                                        <span class="block" data-toggle="tooltip" title="Random">
+                                            <span class="block" data-toggle="tooltip" title="Random">
                                     <span id="{{ media_data['series']['media_count']['Random']['percent'] }}%"
                                           class="value"></span>
                                 </span>
-                                        <span class="block" data-toggle="tooltip" title="Dropped">
+                                            <span class="block" data-toggle="tooltip" title="Dropped">
                                     <span id="{{ media_data['series']['media_count']['Dropped']['percent'] }}%"
                                           class="value"></span>
                                 </span>
-                                        <span class="block" data-toggle="tooltip" title="Plan to Watch">
+                                            <span class="block" data-toggle="tooltip" title="Plan to Watch">
                                     <span id="{{ media_data['series']['media_count']['Plan to Watch']
                                     ['percent'] }}%" class="value"></span>
                                 </span>
-                                    {% endif %}
-                                </figure>
-                                <div class="row stat-text p-t-5" style="clear: both;">
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        {% endif %}
+                                    </figure>
+                                    <div class="row stat-text p-t-5" style="clear: both;">
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='Watching') }}">Watching:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['Watching']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['Watching']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='Dropped') }}">Dropped:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['Dropped']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['Dropped']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='Completed') }}">Completed:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['Completed']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['Completed']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='Plan to Watch') }}">
-                                            P. to Watch:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['Plan to Watch']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                                P. to Watch:</a>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['Plan to Watch']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='On Hold') }}">On Hold:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['On Hold']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['On Hold']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='All') }}">Total Series:</a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['total'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['total'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',
                                 user_name=user.username, category='Random') }}">Random:</a>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_count']['Random']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <span>Episodes:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['series']['media_total_eps'] }}</span>
+                                        </div>
                                     </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_count']['Random']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <span>Episodes:</span>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['series']['media_total_eps'] }}</span>
+                                </div>
+                                <a href="{{ url_for('main.mymedialist', media_list='serieslist',
+                                user_name=user.username, category='Favorite') }}">
+                                    <b>Favorites ({{ media_data['series']['media_favorites']|length }})</b>
+                                </a>
+                                <div class="row">
+                                    <div class="col">
+                                        {% for favorite in media_data['series']['media_favorites'] %}
+                                            {% if loop.index < 12 %}
+                                                <a href="{{ url_for('main.media_sheet', media_type='Series', media_id=favorite.media_id) }}">
+                                                    <img class="favorite-img" title="{{ favorite.media.name }}" data-toggle="tooltip"
+                                                         src="/static/covers/series_covers/{{ favorite.media.image_cover }}"/>
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
-{#                            <a href="{{ url_for('main.mymedialist', media_list='serieslist',#}
-{#                            user_name=user.username, category='Favorite') }}">#}
-{#                                <b>Favorites ({{ media_data['series']['media_favorites']|length }})</b>#}
-{#                            </a>#}
-{#                            <div class="row">#}
-{#                                <div class="col">#}
-{#                                    {% for favorite in media_data['series']['media_favorites'] %}#}
-{#                                        {% if loop.index < 9 %}#}
-{#                                            <a href="{{ url_for('main.media_sheet', media_type='Series', media_id=favorite.media_id) }}">#}
-{#                                                <img class="favorite-img" title="{{ favorite.media.name }}" data-toggle="tooltip"#}
-{#                                                 src="/static/covers/series_covers/{{ favorite.media.image_cover }}"/>#}
-{#                                            </a>#}
-{#                                        {% endif %}#}
-{#                                    {% endfor %}#}
-{#                                </div>#}
-{#                            </div>#}
                         </section>
-                        <section class="movies-stats m-b-30">
+                        <section class="movies-stats m-b-40">
                             {% if not user.add_feeling and media_data['movies']['media_count_score']|sum != 0 %}
-                                <div class="histogram-wrapper m-b-2">
-                                    <ul id="movies-score" class="added-styles"></ul>
+                                <div class="m-collapse collapse show">
+                                    <div class="histogram-wrapper m-b-2">
+                                        <ul id="movies-score" class="added-styles"></ul>
+                                    </div>
                                 </div>
                             {% endif %}
-                            <h5 class="media-stats-title mb-2 p-1">
-                                <a class="text-light" href="{{ url_for('main.mymedialist', media_list='movieslist',
-                                 user_name=user.username) }}"><b>MOVIES</b></a>
-                            </h5>
-                            <div id="MOVIES" class="stat-text m-b-8">
-                                {% if not user.add_feeling %}
-                                    <span><b>Days: {{ media_data['movies']['time_spent_day'] }}</b></span>
-                                    <span class="float-r">
-                                        <b>Score: {{ media_data['movies']['media_score']['mean_score'] }}/10</b>
-                                    </span><br>
-                                    <span><b>Hours: {{ media_data['movies']['time_spent_hour'] }}</b></span>
-                                    <span class="float-r" data-toggle="tooltip" title="Media scored">
-                                        <b>Scored: {{ media_data['movies']['media_score']
-                                        ['scored_media'] }}/{{ media_data['movies']['media_score']['total_media'] }}</b>
-                                    </span>
-                                {% else %}
-                                    <span><b>Days: {{ media_data['movies']['time_spent_day'] }}</b></span>
-                                    <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                {{ media_data['movies']['media_count_score'][5] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                {{ media_data['movies']['media_count_score'][4] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                {{ media_data['movies']['media_count_score'][3] }}
-                                            </div>
-                                        </div>
-                                    </span><br>
-                                    <span><b>Hours: {{ media_data['movies']['time_spent_hour'] }}</b></span>
-                                    <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                {{ media_data['movies']['media_count_score'][2] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-frown" style="color: indianred;"></i>
-                                                {{ media_data['movies']['media_count_score'][1] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                {{ media_data['movies']['media_count_score'][0] }}
-                                            </div>
-                                        </div>
-                                    </span>
-                                {% endif %}
-                                <figure>
-                                    {% if media_data['movies']['media_count']['nodata'] %}
-                                        <span class="block-no-data" data-toggle="tooltip" title="No data">
-                                            <span id="100%" class="value"></span>
+                            <a class="text-light" data-toggle="collapse" href=".m-collapse" onclick="change_caret(this)">
+                                <h5 class="media-stats-title mb-2 p-1">
+                                    &nbsp;<i class="fas fa-caret-down"></i>
+                                    <b>MOVIES</b>
+                                </h5>
+                            </a>
+                            <div class="m-collapse collapse show">
+                                <div id="MOVIES" class="stat-text m-b-8">
+                                    {% if not user.add_feeling %}
+                                        <span><b>Days: {{ media_data['movies']['time_spent_day'] }}</b></span>
+                                        <span class="float-r">
+                                            <b>Score: {{ media_data['movies']['media_score']['mean_score'] }}/10</b>
+                                        </span><br>
+                                        <span><b>Hours: {{ media_data['movies']['time_spent_hour'] }}</b></span>
+                                        <span class="float-r" data-toggle="tooltip" title="Media scored">
+                                            <b>Scored: {{ media_data['movies']['media_score']
+                                            ['scored_media'] }}/{{ media_data['movies']['media_score']['total_media'] }}</b>
                                         </span>
                                     {% else %}
-                                        <span class="block-movie" data-toggle="tooltip" title="Completed">
-                                            <span id="{{ media_data['movies']['media_count']['Completed']
-                                            ['percent'] }}%" class="value"></span>
-                                        </span>
-                                        <span class="block-movie" data-toggle="tooltip" title="Plan to Watch">
-                                            <span id="{{ media_data['movies']['media_count']['Plan to Watch']
-                                            ['percent'] }}%" class="value"></span>
+                                        <span><b>Days: {{ media_data['movies']['time_spent_day'] }}</b></span>
+                                        <span class="float-r">
+                                            <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                            {{ media_data['movies']['media_count_score'][5] }}&nbsp;&nbsp;
+                                            <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                            {{ media_data['movies']['media_count_score'][4] }}&nbsp;&nbsp;
+                                            <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                            {{ media_data['movies']['media_count_score'][3] }}
+                                        </span><br>
+                                        <span><b>Hours: {{ media_data['movies']['time_spent_hour'] }}</b></span>
+                                        <span class="float-r">
+                                            <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                            {{ media_data['movies']['media_count_score'][2] }}&nbsp;&nbsp;
+                                            <i class="fas fa-frown" style="color: indianred;"></i>
+                                            {{ media_data['movies']['media_count_score'][1] }}&nbsp;&nbsp;
+                                            <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                            {{ media_data['movies']['media_count_score'][0] }}
                                         </span>
                                     {% endif %}
-                                </figure>
-                                <div class="row stat-text p-t-5" style="clear: both;">
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='movieslist',
-                                        user_name=user.username, category='Completed') }}">Completed:</a>
+                                    <figure>
+                                        {% if media_data['movies']['media_count']['nodata'] %}
+                                            <span class="block-no-data" data-toggle="tooltip" title="No data">
+                                                <span id="100%" class="value"></span>
+                                            </span>
+                                        {% else %}
+                                            <span class="block-movie" data-toggle="tooltip" title="Completed">
+                                                <span id="{{ media_data['movies']['media_count']['Completed']
+                                                ['percent'] }}%" class="value"></span>
+                                            </span>
+                                            <span class="block-movie" data-toggle="tooltip" title="Plan to Watch">
+                                                <span id="{{ media_data['movies']['media_count']['Plan to Watch']
+                                                ['percent'] }}%" class="value"></span>
+                                            </span>
+                                        {% endif %}
+                                    </figure>
+                                    <div class="row stat-text p-t-5" style="clear: both;">
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='movieslist',
+                                            user_name=user.username, category='Completed') }}">Completed:</a>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['movies']['media_count']['Completed']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='movieslist',
+                                            user_name=user.username, category='Plan to Watch') }}">
+                                                P. to Watch:
+                                            </a>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['movies']['media_count']['Plan to Watch']['count'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="{{ url_for('main.mymedialist', media_list='movieslist',
+                                            user_name=user.username, category='All') }}">
+                                                Total Movies
+                                            </a>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['movies']['media_count']['total'] }}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <span data-toggle="tooltip" title="Counting the rewatched">Total Seen:</span>
+                                        </div>
+                                        <div class="col-2">
+                                            <span>{{ media_data['movies']['media_total_eps'] }}</span>
+                                        </div>
                                     </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['movies']['media_count']['Completed']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='movieslist',
-                                        user_name=user.username, category='Plan to Watch') }}">
-                                            P. to Watch:
-                                        </a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['movies']['media_count']['Plan to Watch']['count'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <a href="{{ url_for('main.mymedialist', media_list='movieslist',
-                                        user_name=user.username, category='All') }}">
-                                            Total Movies
-                                        </a>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['movies']['media_count']['total'] }}</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <span data-toggle="tooltip" title="Counting the rewatched">Total Seen:</span>
-                                    </div>
-                                    <div class="col-2">
-                                        <span>{{ media_data['movies']['media_total_eps'] }}</span>
+                                </div>
+                                <a href="{{ url_for('main.mymedialist', media_list='movieslist',
+                                user_name=user.username, category='Favorite') }}">
+                                    <b>Favorites ({{ media_data['movies']['media_favorites']|length }}):</b>
+                                </a>
+                                <div class="row">
+                                    <div class="col">
+                                        {% for favorite in media_data['movies']['media_favorites'] %}
+                                            {% if loop.index < 12 %}
+                                                <a href="{{ url_for('main.media_sheet', media_type='Movies', media_id=favorite.media_id) }}">
+                                                    <img class="favorite-img" data-toggle="tooltip" title="{{ favorite.media.name }}"
+                                                    src="/static/covers/movies_covers/{{ favorite.media.image_cover }}"/>
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
-{#                            <a href="{{ url_for('main.mymedialist', media_list='movieslist',#}
-{#                            user_name=user.username, category='Favorite') }}">#}
-{#                                <b>Favorites ({{ media_data['movies']['media_favorites']|length }}):</b>#}
-{#                            </a>#}
-{#                            <div class="row">#}
-{#                                <div class="col">#}
-{#                                    {% for favorite in media_data['movies']['media_favorites'] %}#}
-{#                                        {% if loop.index < 9 %}#}
-{#                                            <a href="{{ url_for('main.media_sheet', media_type='Movies', media_id=favorite.media_id) }}">#}
-{#                                                <img class="favorite-img" data-toggle="tooltip" title="{{ favorite.media.name }}"#}
-{#                                                src="/static/covers/movies_covers/{{ favorite.media.image_cover }}"/>#}
-{#                                            </a>#}
-{#                                        {% endif %}#}
-{#                                    {% endfor %}#}
-{#                                </div>#}
-{#                            </div>#}
                         </section>
                         {% if user.add_books %}
-                            <section class="books-stats m-b-30">
+                            <section class="books-stats m-b-40">
                             {% if not user.add_feeling and media_data['books']['media_count_score']|sum != 0 %}
-                                <div class="histogram-wrapper m-b-2">
+                                <div class="b-collapse collapse show">
+                                    <div class="histogram-wrapper m-b-2">
                                     <ul id="books-score" class="added-styles"></ul>
                                 </div>
+                                </div>
                             {% endif %}
-                            <h5 class="media-stats-title mb-2 p-1">
-                                <a class="text-light" href="{{ url_for('main.mymedialist', media_list='bookslist',
-                                user_name=user.username) }}">
+                            <a class="text-light" data-toggle="collapse" href=".b-collapse" onclick="change_caret(this)">
+                                <h5 class="media-stats-title mb-2 p-1">
+                                    &nbsp;<i class="fas fa-caret-down"></i>
                                     <b>BOOKS</b>
-                                </a>
-                            </h5>
-                            <div id="BOOKS" class="stat-text m-b-8">
+                                </h5>
+                            </a>
+                            <div class="b-collapse collapse show">
+                                 <div id="BOOKS" class="stat-text m-b-8">
                                 {% if not user.add_feeling %}
                                     <span><b>Days: {{ media_data['books']['time_spent_day'] }}</b></span>
                                     <span class="float-r">
@@ -609,37 +590,21 @@
                                 {% else %}
                                     <span><b>Days: {{ media_data['books']['time_spent_day'] }}</b></span>
                                     <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                {{ media_data['books']['media_count_score'][5] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                {{ media_data['books']['media_count_score'][4] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                {{ media_data['books']['media_count_score'][3] }}
-                                            </div>
-                                        </div>
+                                        <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                        {{ media_data['books']['media_count_score'][5] }}&nbsp;&nbsp;
+                                        <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                        {{ media_data['books']['media_count_score'][4] }}&nbsp;&nbsp;
+                                        <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                        {{ media_data['books']['media_count_score'][3] }}
                                     </span><br>
                                     <span><b>Hours: {{ media_data['books']['time_spent_hour'] }}</b></span>
                                     <span class="float-r">
-                                        <div class="row">
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                {{ media_data['books']['media_count_score'][2] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-frown" style="color: indianred;"></i>
-                                                {{ media_data['books']['media_count_score'][1] }}
-                                            </div>
-                                            <div class="col-4 text-left">
-                                                <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                {{ media_data['books']['media_count_score'][0] }}
-                                            </div>
-                                        </div>
+                                        <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                        {{ media_data['books']['media_count_score'][2] }}&nbsp;&nbsp;
+                                        <i class="fas fa-frown" style="color: indianred;"></i>
+                                        {{ media_data['books']['media_count_score'][1] }}&nbsp;&nbsp;
+                                        <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                        {{ media_data['books']['media_count_score'][0] }}
                                     </span>
                                 {% endif %}
                                 <figure>
@@ -721,141 +686,148 @@
                                     </div>
                                 </div>
                             </div>
+                                <a href="{{ url_for('main.mymedialist', media_list='bookslist',
+                                user_name=user.username, category='Favorite') }}">
+                                    <b>Favorites ({{ media_data['books']['media_favorites']|length }}):</b>
+                                </a>
+                                <div class="row">
+                                    <div class="col">
+                                        {% for favorite in media_data['books']['media_favorites'] %}
+                                            {% if loop.index < 12 %}
+                                                <a href="{{ url_for('main.media_sheet', media_type='Books', media_id=favorite.media_id) }}">
+                                                    <img class="favorite-img" data-toggle="tooltip" title="{{ favorite.media.name }}"
+                                                    src="/static/covers/books_covers/{{ favorite.media.image_cover }}"/>
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
                         </section>
                         {% endif %}
                         {% if user.add_games %}
-                            <section class="games-stats">
+                            <section class="games-stats m-b-40">
                                 {% if not user.add_feeling and media_data['games']['media_count_score']|sum != 0 %}
-                                    <div class="histogram-wrapper m-b-2">
+                                    <div class="g-collapse collapse show">
+                                        <div class="histogram-wrapper m-b-2">
                                         <ul id="games-score" class="added-styles"></ul>
                                     </div>
+                                    </div>
                                 {% endif %}
-                                <h5 class="media-stats-title mb-2 p-1">
-                                    <a class="text-light" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                     user_name=user.username) }}"><b>GAMES</b></a>
-                                </h5>
-                                <div id="GAMES" class="stat-text m-b-8">
-                                    {% if not user.add_feeling %}
-                                        <span><b>Days: {{ media_data['games']['time_spent_day'] }}</b></span>
-                                        <span class="float-r">
-                                            <b>Score: {{ media_data['games']['media_score']['mean_score'] }}/10</b>
-                                        </span><br>
-                                        <span><b>Hours: {{ media_data['games']['time_spent_hour'] }}</b></span>
-                                        <span class="float-r" data-toggle="tooltip" title="Media scored">
-                                            <b>Scored: {{ media_data['games']['media_score']
-                                            ['scored_media'] }}/{{ media_data['games']['media_score']['total_media'] }}</b>
-                                        </span>
-                                    {% else %}
-                                        <span><b>Days: {{ media_data['games']['time_spent_day'] }}</b></span>
-                                        <span class="float-r">
-                                            <div class="row">
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                    {{ media_data['games']['media_count_score'][5] }}
-                                                </div>
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                    {{ media_data['games']['media_count_score'][4] }}
-                                                </div>
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                    {{ media_data['games']['media_count_score'][3] }}
-                                                </div>
-                                            </div>
-                                        </span><br>
-                                        <span><b>Hours: {{ media_data['games']['time_spent_hour'] }}</b></span>
-                                        <span class="float-r">
-                                            <div class="row">
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                    {{ media_data['games']['media_count_score'][2] }}
-                                                </div>
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-frown" style="color: indianred;"></i>
-                                                    {{ media_data['games']['media_count_score'][1] }}
-                                                </div>
-                                                <div class="col-4 text-left">
-                                                    <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                    {{ media_data['games']['media_count_score'][0] }}
-                                                </div>
-                                            </div>
-                                        </span>
-                                    {% endif %}
-                                    <figure>
-                                        {% if media_data['games']['media_count']['nodata'] %}
-                                            <span class="block-no-data" data-toggle="tooltip" title="No data">
-                                                <span id="100%" class="value"></span>
+                                <a class="text-light" data-toggle="collapse" href=".g-collapse" onclick="change_caret(this)">
+                                    <h5 class="media-stats-title mb-2 p-1">
+                                        &nbsp;<i class="fas fa-caret-down"></i>
+                                        <b>GAMES</b>
+                                    </h5>
+                                </a>
+                                <div class="g-collapse collapse show">
+                                    <div id="GAMES" class="stat-text m-b-8">
+                                        {% if not user.add_feeling %}
+                                            <span><b>Days: {{ media_data['games']['time_spent_day'] }}</b></span>
+                                            <span class="float-r">
+                                                <b>Score: {{ media_data['games']['media_score']['mean_score'] }}/10</b>
+                                            </span><br>
+                                            <span><b>Hours: {{ media_data['games']['time_spent_hour'] }}</b></span>
+                                            <span class="float-r" data-toggle="tooltip" title="Media scored">
+                                                <b>Scored: {{ media_data['games']['media_score']
+                                                ['scored_media'] }}/{{ media_data['games']['media_score']['total_media'] }}</b>
                                             </span>
                                         {% else %}
-                                            <span class="block" data-toggle="tooltip" title="Completed">
-                                                <span id="{{ media_data['games']['media_count']['Completed']
-                                                ['percent'] }}%" class="value"></span>
-                                            </span>
-                                            <span class="block" data-toggle="tooltip" title="Endless">
-                                                <span id="{{ media_data['games']['media_count']['Endless']
-                                                ['percent'] }}%" class="value"></span>
-                                            </span>
-                                            <span class="block" data-toggle="tooltip" title="Multiplayer">
-                                                <span id="{{ media_data['games']['media_count']['Multiplayer']
-                                                ['percent'] }}%" class="value"></span>
+                                            <span><b>Days: {{ media_data['games']['time_spent_day'] }}</b></span>
+                                            <span class="float-r">
+                                                <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                                {{ media_data['games']['media_count_score'][5] }}&nbsp;&nbsp;
+                                                <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                                {{ media_data['games']['media_count_score'][4] }}&nbsp;&nbsp;
+                                                <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                                {{ media_data['games']['media_count_score'][3] }}
+                                            </span><br>
+                                            <span><b>Hours: {{ media_data['games']['time_spent_hour'] }}</b></span>
+                                            <span class="float-r">
+                                                <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                                {{ media_data['games']['media_count_score'][2] }}&nbsp;&nbsp;
+                                                <i class="fas fa-frown" style="color: indianred;"></i>
+                                                {{ media_data['games']['media_count_score'][1] }}&nbsp;&nbsp;
+                                                <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                                {{ media_data['games']['media_count_score'][0] }}
                                             </span>
                                         {% endif %}
-                                    </figure>
-                                    <div class="row stat-text p-t-5" style="clear: both;">
-                                        <div class="col-4">
-                                            <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                            user_name=user.username, category='Completed') }}">
-                                                Completed:
-                                            </a>
+                                        <figure>
+                                            {% if media_data['games']['media_count']['nodata'] %}
+                                                <span class="block-no-data" data-toggle="tooltip" title="No data">
+                                                    <span id="100%" class="value"></span>
+                                                </span>
+                                            {% else %}
+                                                <span class="block" data-toggle="tooltip" title="Completed">
+                                                    <span id="{{ media_data['games']['media_count']['Completed']
+                                                    ['percent'] }}%" class="value"></span>
+                                                </span>
+                                                <span class="block" data-toggle="tooltip" title="Endless">
+                                                    <span id="{{ media_data['games']['media_count']['Endless']
+                                                    ['percent'] }}%" class="value"></span>
+                                                </span>
+                                                <span class="block" data-toggle="tooltip" title="Multiplayer">
+                                                    <span id="{{ media_data['games']['media_count']['Multiplayer']
+                                                    ['percent'] }}%" class="value"></span>
+                                                </span>
+                                            {% endif %}
+                                        </figure>
+                                        <div class="row stat-text p-t-5" style="clear: both;">
+                                            <div class="col-4">
+                                                <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
+                                                user_name=user.username, category='Completed') }}">
+                                                    Completed:
+                                                </a>
+                                            </div>
+                                            <div class="col-2">
+                                                <span class="stat-text">{{ media_data['games']['media_count']['Completed']['count'] }}</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
+                                                user_name=user.username, category='Multiplayer') }}">
+                                                    Multiplayer:
+                                                </a>
+                                            </div>
+                                            <div class="col-2">
+                                                <span class="stat-text">{{ media_data['games']['media_count']['Multiplayer']['count'] }}</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
+                                                user_name=user.username, category='Endless') }}">
+                                                    Endless:
+                                                </a>
+                                            </div>
+                                            <div class="col-2">
+                                                <span class="stat-text">{{ media_data['games']['media_count']['Endless']['count'] }}</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
+                                                user_name=user.username, category='All') }}">
+                                                    Total Games:
+                                                </a>
+                                            </div>
+                                            <div class="col-2">
+                                                <span class="stat-text">{{ media_data['games']['media_count']['total'] }}</span>
+                                            </div>
                                         </div>
-                                        <div class="col-2">
-                                            <span class="stat-text">{{ media_data['games']['media_count']['Completed']['count'] }}</span>
-                                        </div>
-                                        <div class="col-4">
-                                            <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                            user_name=user.username, category='Multiplayer') }}">
-                                                Multiplayer:
-                                            </a>
-                                        </div>
-                                        <div class="col-2">
-                                            <span class="stat-text">{{ media_data['games']['media_count']['Multiplayer']['count'] }}</span>
-                                        </div>
-                                        <div class="col-4">
-                                            <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                            user_name=user.username, category='Endless') }}">
-                                                Endless:
-                                            </a>
-                                        </div>
-                                        <div class="col-2">
-                                            <span class="stat-text">{{ media_data['games']['media_count']['Endless']['count'] }}</span>
-                                        </div>
-                                        <div class="col-4">
-                                            <a class="stat-text" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                            user_name=user.username, category='All') }}">
-                                                Total Games:
-                                            </a>
-                                        </div>
-                                        <div class="col-2">
-                                            <span class="stat-text">{{ media_data['games']['media_count']['total'] }}</span>
+                                    </div>
+                                    <a href="{{ url_for('main.mymedialist', media_list='gameslist', user_name=user.username,
+                                    category='Favorite') }}">
+                                        <b>Favorites ({{ media_data['games']['media_favorites']|length }}):</b>
+                                    </a>
+                                    <div class="row">
+                                        <div class="col">
+                                            {% for favorite in media_data['games']['media_favorites'] %}
+                                                {% if loop.index < 12 %}
+                                                    <a href="{{ url_for('main.media_sheet', media_type='Games', media_id=favorite.media_id) }}">
+                                                        <img class="favorite-img" data-toggle="tooltip" title="{{ favorite.media.name }}"
+                                                             src="/static/covers/games_covers/{{ favorite.media.image_cover }}"/>
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
                                         </div>
                                     </div>
                                 </div>
-{#                                <a href="{{ url_for('main.mymedialist', media_list='gameslist', user_name=user.username,#}
-{#                                category='Favorite') }}">#}
-{#                                    <b>Favorites ({{ media_data['games']['media_favorites']|length }}):</b>#}
-{#                                </a>#}
-{#                                <div class="row">#}
-{#                                    <div class="col">#}
-{#                                        {% for favorite in media_data['games']['media_favorites'] %}#}
-{#                                            {% if loop.index < 9 %}#}
-{#                                                <a href="{{ url_for('main.media_sheet', media_type='Games', media_id=favorite.media_id) }}">#}
-{#                                                    <img class="favorite-img" data-toggle="tooltip" title="{{ favorite.media.name }}"#}
-{#                                                         src="/static/covers/games_covers/{{ favorite.media.image_cover }}"/>#}
-{#                                                </a>#}
-{#                                            {% endif %}#}
-{#                                        {% endfor %}#}
-{#                                    </div>#}
-{#                                </div>#}
                             </section>
                         {% endif %}
                     </li>
@@ -961,6 +933,18 @@
 
 {% block added_js %}
     <script>
+        function change_caret(caret_div) {
+            let $caret_div = $(caret_div).children().children().siblings().first()
+            if ($caret_div.hasClass('fas fa-caret-down')) {
+                $caret_div.removeClass('fas fa-caret-down');
+                $caret_div.addClass('fas fa-caret-right');
+            }
+            else {
+                $caret_div.removeClass('fas fa-caret-right');
+                $caret_div.addClass('fas fa-caret-down');
+            }
+        }
+
         // Recover the histograms values
         const histogramValues_series = {{ media_data['series']['media_count_score'] }};
         const histogramValues_movies = {{ media_data['movies']['media_count_score'] }};
