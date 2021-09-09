@@ -29,7 +29,6 @@ login_manager.login_view = 'auth.home'
 login_manager.login_message_category = 'info'
 app.url_map.strict_slashes = False
 
-
 # Add the redis server and the queue
 # app.r = redis.Redis()
 # app.q = Queue(connection=app.r)

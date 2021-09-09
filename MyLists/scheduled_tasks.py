@@ -427,12 +427,11 @@ def update_Mylists_stats():
         return {"series": series_list, "movies": movies_list, "books": books_list, "games": games_list}
 
     times_spent = stats.get_total_time_spent()
-    total_time = {"total": 0, "series": 0, "movies": 0, "books": 0, "games": 0}
-    print(times_spent)
+    total_time = {"total": 0, "series": 0, "anime": 0, "movies": 0, "books": 0, "games": 0}
     if times_spent[0]:
         total_time = {"total": sum(times_spent[0]), "series": int(times_spent[0][0]/60),
-                      "movies": int(times_spent[0][1]/60), "books": int(times_spent[0][2]/60),
-                      "games": int(times_spent[0][3]/60)}
+                      "anime": int(times_spent[0][1] / 60), "movies": int(times_spent[0][2]/60),
+                      "books": int(times_spent[0][3]/60), "games": int(times_spent[0][4]/60)}
 
     top_media = stats.get_top_media()
     most_present_media = create_dict(top_media)

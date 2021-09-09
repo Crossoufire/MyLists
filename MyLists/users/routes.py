@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, send_from_directory
 from flask_login import login_required, current_user
 
 from MyLists import app, db
@@ -42,14 +42,15 @@ def account(user_name):
     # Get follows' last updates
     follows_updates = user.get_follows_updates()
 
-    # Get the data for each media and statistics
-    media_dict = get_all_media_info(user)
+    # Get the data for each media and global statistics
+    media_data, media_global = get_all_media_info(user)
 
     # Commit the changes
     db.session.commit()
 
     return render_template('account.html', title=user.username+"'s account", user=user, frame=user_frame_info,
-                           user_updates=user_updates, follows_updates=follows_updates, media_data=media_dict)
+                           user_updates=user_updates, follows_updates=follows_updates, media_data=media_data,
+                           media_global=media_global)
 
 
 @bp.route("/hall_of_fame", methods=['GET', 'POST'])

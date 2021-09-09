@@ -81,7 +81,7 @@ def clean_text(raw_html):
     return cleantext
 
 
-class ApiData(object):
+class ApiData:
     _duration = 0
     local_covers_path = None
 
@@ -718,24 +718,26 @@ class ApiBooks(ApiData):
         self.API_id = API_id
         self.api_key = app.config['GOOGLE_BOOKS_API_KEY']
 
+    @sleep_and_retry
+    @limits(calls=1, period=1)
     def search(self, qry, page=0):
         response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q={qry}&startIndex={str(page)}',
                                 timeout=10)
         # &key={self.api_key}
 
-        self.query = Books.query.filter(Books.name.ilike('%' + qry + '%'))
+        # self.query = Books.query.filter(Books.name.ilike('%' + qry + '%'))
 
         status_code(response.status_code)
         self.API_data = json.loads(response.text)
 
-        # try:
-        #     self.API_id = self.API_data['items'][0]['id']
-        #     self.get_details_and_credits_data()
-        #     self.from_API_to_dict()
-        #     self.add_data_to_db()
-        #     return self.media.id
-        # except:
-        #     return None
+        try:
+            self.API_id = self.API_data['items'][0]['id']
+            self.get_details_and_credits_data()
+            self.from_API_to_dict()
+            self.add_data_to_db()
+            return self.media.id
+        except:
+            return None
 
     def get_autocomplete_list(self):
         db_results = []
@@ -794,6 +796,8 @@ class ApiBooks(ApiData):
 
         return media_results, total_results, total_pages
 
+    @sleep_and_retry
+    @limits(calls=1, period=1)
     def get_details_and_credits_data(self):
         response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{self.API_id}', timeout=10)
 

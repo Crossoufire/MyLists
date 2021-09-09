@@ -495,28 +495,6 @@ $(document).ready(function () {
         boxes[i].style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // --- Get the color of the status ----------------------------------------------------------
-    $('.follow-div').each(function () {
-        if ($(this).find('.follow-status').attr('value') === 'Watching') {
-            $(this).find('.fa-list').attr('style', 'color: #334D5C;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Completed') {
-            $(this).find('.fa-list').attr('style', 'color: #45B29D;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'On Hold') {
-            $(this).find('.fa-list').attr('style', 'color: #EFC94C;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Random') {
-            $(this).find('.fa-list').attr('style', 'color: #E27A3F;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Dropped') {
-            $(this).find('.fa-list').attr('style', 'color: #DF5A49;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Plan to Watch') {
-            $(this).find('.fa-list').attr('style', 'color: #962D3E;');
-        }
-    });
-
     // --- Fill the media icon score ------------------------------------------------------------
     let $media_ticket = $('.media-ticket');
     let gradient = $media_ticket.attr('value');

@@ -1,13 +1,12 @@
-from flask import Blueprint
 from datetime import datetime
+from flask import Blueprint
+from flask import render_template, flash, request, abort
+from flask_login import login_required, current_user
 from MyLists import db, bcrypt, app
 from MyLists.API_data import ApiSeries, ApiMovies
-from flask_login import login_required, current_user
 from MyLists.general.trending_data import TrendingData
-from flask import render_template, flash, request, abort
-from MyLists.scheduled_tasks import update_Mylists_stats
 from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent
-
+from MyLists.scheduled_tasks import update_Mylists_stats
 
 bp = Blueprint('general', __name__)
 
@@ -57,6 +56,7 @@ def create_first_data():
 def admin():
     if current_user.role != RoleType.ADMIN:
         abort(403)
+
     return render_template('admin/index.html')
 
 

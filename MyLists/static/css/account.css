@@ -171,11 +171,15 @@ a {
 
 
 /* --- Levels ------------------------------------------------------------------------------ */
-#series-level {
+#series-level, #books-level {
     margin-left: 20px;
 }
 
-#movies-level {
+#anime-level {
+    margin-left: 18px;
+}
+
+#movies-level, #games-level {
     margin-left: 13px;
 }
 
@@ -340,7 +344,7 @@ a {
     flex-direction: column;
 }
 
-#series-score, #movies-score, #books-score, #games-score {
+#series-score, #anime-score, #movies-score, #books-score, #games-score {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
@@ -360,6 +364,11 @@ a {
     background: #216e7d;
 }
 
+.histogram-item-anime {
+    width: 100%;
+    background: #945141;
+}
+
 .histogram-item-movies {
     width: 100%;
     background: #8c7821;
@@ -367,7 +376,7 @@ a {
 
 .histogram-item-books {
     width: 100%;
-    background: #945141;
+    background: #5d4683;
 }
 
 .histogram-item-games {

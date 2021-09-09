@@ -1,133 +1,30 @@
-from PIL import Image
-from pathlib import Path
-import json, secrets, pytz
-from sqlalchemy import func
-from MyLists import db, app
+import json
+import secrets
 from datetime import datetime
+from pathlib import Path
 from urllib.request import urlretrieve
-from wtforms_alchemy import ModelFieldList
-from flask_login import login_required, current_user
-from MyLists.main.media_object import change_air_format
-from wtforms import StringField, FormField, SubmitField
-from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
-from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm
+import pytz
+from PIL import Image
 from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
+from flask_login import login_required, current_user
+from sqlalchemy import func
+from wtforms import StringField, SelectMultipleField
+from MyLists import db, app
+from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
+from MyLists.main.forms import MediaComment, SearchForm, ModelForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, AnimeList, AnimeGenre, SeriesList, SeriesGenre, AnimeActors, \
-    SeriesActors, AnimeEpisodesPerSeason, Series, Anime, SeriesEpisodesPerSeason, AnimeNetwork, SeriesNetwork, \
-    Notifications, BooksList, BooksGenre
+    get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format
 
 bp = Blueprint('main', __name__)
 
 
-def anime_to_series():
-    query = Anime.query.all()
-    corresponding_ids = []
-    for anime in query:
-        anime_id = anime.id
-        h = anime.__dict__
-        instance = h['_sa_instance_state']
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('id', None)
-        tata = Series(**h)
-        db.session.add(tata)
-        db.session.flush()
-        tata_id = tata.id
-        h['_sa_instance_state'] = instance
-        corresponding_ids.append((anime_id, tata_id))
-    db.session.commit()
-
-    def get_new_id(corresponding_ids, old_id):
-        for data in corresponding_ids:
-            if data[0] == old_id:
-                new_id = data[1]
-                break
-        return new_id
-
-    query = AnimeList.query.all()
-    for anime in query:
-        h = anime.__dict__
-        h['media_id'] = get_new_id(corresponding_ids, h['media_id'])
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('media', None)
-        h.pop('id', None)
-        tata = SeriesList(**h)
-        db.session.add(tata)
-    db.session.commit()
-
-    query = UserLastUpdate.query.filter(UserLastUpdate.media_type == ListType.ANIME).all()
-    for anime in query:
-        anime.media_id = get_new_id(corresponding_ids, anime.media_id)
-        anime.media_type = ListType.SERIES
-    db.session.commit()
-
-    query = Notifications.query.filter(Notifications.media_type == 'animelist').all()
-    for anime in query:
-        anime.media_id = get_new_id(corresponding_ids, anime.media_id)
-        anime.media_type = 'serieslist'
-    db.session.commit()
-
-    query = AnimeGenre.query.all()
-    for genre in query:
-        h = genre.__dict__
-        h['media_id'] = get_new_id(corresponding_ids, h['media_id'])
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('media', None)
-        h.pop('id', None)
-        animation = {'genre': 'Animation', 'genre_id': -10, 'media_id': h['media_id']}
-        toto = SeriesGenre(**animation)
-        db.session.add(toto)
-        tata = SeriesGenre(**h)
-        db.session.add(tata)
-    db.session.commit()
-
-    query = AnimeActors.query.all()
-    for anime in query:
-        h = anime.__dict__
-        h['media_id'] = get_new_id(corresponding_ids, h['media_id'])
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('media', None)
-        h.pop('id', None)
-        tata = SeriesActors(**h)
-        db.session.add(tata)
-    db.session.commit()
-
-    query = AnimeEpisodesPerSeason.query.all()
-    for anime in query:
-        h = anime.__dict__
-        h['media_id'] = get_new_id(corresponding_ids, h['media_id'])
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('media', None)
-        h.pop('id', None)
-        tata = SeriesEpisodesPerSeason(**h)
-        db.session.add(tata)
-    db.session.commit()
-
-    query = AnimeNetwork.query.all()
-    for anime in query:
-        h = anime.__dict__
-        h['media_id'] = get_new_id(corresponding_ids, h['media_id'])
-        h.pop('_sa_instance_state', None)
-        h.pop('eps_per_season', None)
-        h.pop('media', None)
-        h.pop('id', None)
-        tata = SeriesNetwork(**h)
-        db.session.add(tata)
-    db.session.commit()
-
-
-def books_maman():
+def books():
     import pandas as pd
 
     df = pd.read_csv('D:/Bureau/table_1_try.csv')
     for index, row in df.iterrows():
         Api_data = ApiBooks()
-        a = row['Titre']
+        a = row['Titre'] + ' + ' + row['Auteur']
         media_id = Api_data.search(a.strip())
         if media_id:
             media = Books.query.filter_by(id=media_id).first()
@@ -148,15 +45,14 @@ def books_maman():
 @bp.route("/<media_list>/<user_name>/<category>/genre/<genre>/by/<sorting>/page/<page_val>", methods=['GET', 'POST'])
 @login_required
 def mymedialist(media_list, user_name, category=None, genre='All', sorting=None, page_val=1):
-    # anime_to_series()
-    # books_maman()
-
     # Check if <media_list> is valid
     try:
         list_type = ListType(media_list)
         models = get_models_group(list_type)
     except ValueError:
         return abort(400)
+
+    # books()
 
     # Check if <user> can see <media_list>
     user = current_user.check_autorization(user_name)
@@ -171,11 +67,11 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     q = request.args.get('q')
 
     # Get the sorting
-    if not sorting:
+    if sorting is None:
         sorting = models[1].default_sorting()
 
     # Get the category
-    if not category:
+    if category is None:
         category = models[1].default_category()
 
     # Get the template
@@ -183,6 +79,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
 
     # Get the corresponding data depending on the selected category
     if category != 'Stats':
+        # media_data = MediaListQuery(models, user.id, category, genre, sorting, page_val, q)
         category, media_data = get_media_query(user.id, list_type, category, genre, sorting, page_val, q)
     else:
         media_data = models[1].get_more_stats(user)
@@ -216,12 +113,12 @@ def write_comment(media_type, media_id):
     try:
         models = get_models_group(MediaType(media_type))
     except ValueError:
-        abort(400)
+        return abort(400)
 
     # Check if the <media> is in the current user's list
     media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
-        abort(400)
+        return abort(400)
 
     form = MediaComment()
     if request.method == 'GET':
@@ -256,6 +153,8 @@ def media_sheet(media_type, media_id):
 
     if media_type == MediaType.SERIES:
         list_type = ListType.SERIES
+    if media_type == MediaType.ANIME:
+        list_type = ListType.ANIME
     elif media_type == MediaType.MOVIES:
         list_type = ListType.MOVIES
     elif media_type == MediaType.BOOKS:
@@ -313,7 +212,13 @@ def media_sheet_form(media_type, media_id):
     except ValueError:
         return abort(400)
 
-    # Class which converts the attributs of a model to a Form
+    # Get the media and check if it exists
+    media = models[0].query.filter_by(id=media_id).first()
+    if not media:
+        flash("The media does not exist.", 'warning')
+        return redirect(request.referrer or '/')
+
+    # Class which converts the attributs of a <SQLAlchemy_model> to a <FlaskForm>
     class Form(ModelForm):
         class Meta:
             csrf = False
@@ -321,19 +226,35 @@ def media_sheet_form(media_type, media_id):
             only = models[0].form_only()
         image_cover = StringField('insert an img URL')
 
-    # Populate the form with the model data
-    media = models[0].query.filter_by(id=media_id).first()
-    form = Form(obj=media)
+        # If the media is a book also display a genre attr
+        if media_type == 'Books':
+            genre_attr = SelectMultipleField('Genres',
+                                             choices=[('Action & Adventure', 'Action & Adventure'),
+                                         ('Biography', 'Biography'), ('Chick lit', 'Chick lit'),
+                                         ('Children', 'Children'), ('Classic', 'Classic'), ('Crime', 'Crime'),
+                                         ('Drama', 'Drama'), ('Dystopian', 'Dystopian'), ('Fantastic', 'Fantastic'),
+                                         ('Fantasy', 'Fantasy'), ('History', 'History'), ('Humor', 'Humor'),
+                                         ('Horror', 'Horror'), ('Mystery', 'Mystery'), ('Paranormal', 'Paranormal'),
+                                         ('Philosophy', 'Philosophy'), ('Poetry', 'Poetry'), ('Romance', 'Romance'),
+                                         ('Science', 'Science'), ('Science-Fiction', 'Science-Fiction'),
+                                         ('Short story', 'Short story'), ('Suspense', 'Suspense'),
+                                         ('Thriller', 'Thriller'), ('Western', 'Western'),
+                                         ('Young adult', 'Young adult')])
 
-    # If the media is a book also display the current genres and add its form
-    genres, genre_form = None, None
+    # Populate the form with the model data except for the <image_cover>
+    form = Form(obj=media)
+    if request.method == 'GET':
+        form.image_cover.data = None
+
+    genres = None
     if media_type == 'Books':
         genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
             .filter(BooksGenre.media_id == media_id).first()
-        genre_form = GenreForm()
 
     if form.is_submitted():
-        if form.image_cover.data != media.image_cover:
+        if form.image_cover.data == "":
+            picture_fn = media.image_cover
+        else:
             picture_fn = secrets.token_hex(8) + '.jpg'
             picture_path = Path(app.root_path, f"static/covers/{media_type.lower()}_covers", picture_fn)
             try:
@@ -345,16 +266,17 @@ def media_sheet_form(media_type, media_id):
                 app.logger.error(f"[SYSTEM] - Error occured updating media cover: {e}")
                 flash(str(e), 'warning')
                 picture_fn = media.image_cover
-            form.image_cover.data = picture_fn
+        form.image_cover.data = picture_fn
         form.populate_obj(media)
         db.session.add(media)
         db.session.commit()
 
+        # If media_type is Books check the genre form.
         if media_type == 'Books':
-            if genre_form.genres.data:
+            if form.genre_attr.data:
                 try:
                     BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
-                    for genre in genre_form.genres.data[:5]:
+                    for genre in form.genre_attr.data[:5]:
                         adding = BooksGenre(genre=genre, media_id=media_id)
                         db.session.add(adding)
                     db.session.commit()
@@ -365,26 +287,31 @@ def media_sheet_form(media_type, media_id):
 
         return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
 
-    return render_template('media_sheet_form.html', title='Media Form', form=form, genres=genres,
-                           genre_form=genre_form, media_type=media_type)
+    return render_template('media_sheet_form.html', title='Media Form', form=form, genres=genres, media_type=media_type)
 
 
 @bp.route("/your_next_airing", methods=['GET', 'POST'])
 @login_required
 def your_next_airing():
     next_series_airing = get_next_airing(ListType.SERIES)
+    next_anime_airing = get_next_airing(ListType.ANIME)
     next_movies_airing = get_next_airing(ListType.MOVIES)
 
     series_dates = []
     for series in next_series_airing:
         series_dates.append(change_air_format(series[0].next_episode_to_air))
 
+    anime_dates = []
+    for anime in next_anime_airing:
+        anime_dates.append(change_air_format(anime[0].next_episode_to_air))
+
     movies_dates = []
     for movies in next_movies_airing:
         movies_dates.append(change_air_format(movies[0].release_date))
 
     return render_template('your_next_airing.html', title='Your next airing', airing_series=next_series_airing,
-                           series_dates=series_dates, airing_movies=next_movies_airing, movies_dates=movies_dates)
+                           series_dates=series_dates, airing_anime=next_anime_airing, anime_dates=anime_dates,
+                           airing_movies=next_movies_airing, movies_dates=movies_dates)
 
 
 @bp.route('/search_media', methods=['GET', 'POST'])
@@ -468,6 +395,24 @@ def test_graph_date():
     series_labels = ", ".join([k for k in all_dates.keys()])
     series_data = ", ".join([str(k) for k in all_dates.values()])
 
+    anime_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.ANIME) \
+        .group_by(UserLastUpdate.date).all()
+
+    all_dates = {}
+    for d in anime_data:
+        try:
+            date = d.date.strftime('%b-%Y')
+            if d.new_status == Status.COMPLETED:
+                if all_dates.get('{}'.format(date)) is not None:
+                    all_dates['{}'.format(date)] += 1
+                else:
+                    all_dates['{}'.format(date)] = 1
+        except:
+            pass
+
+    anime_labels = ", ".join([k for k in all_dates.keys()])
+    anime_data = ", ".join([str(k) for k in all_dates.values()])
+
     movies_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.MOVIES)\
         .group_by(UserLastUpdate.date).all()
 
@@ -505,8 +450,8 @@ def test_graph_date():
     games_data = ", ".join([str(k) for k in all_dates.values()])
 
     return render_template('graph_test.html', title='Graph_test', series_labels=series_labels, series_data=series_data,
-                           games_labels=games_labels, games_data=games_data, movies_labels=movies_labels,
-                           movies_data=movies_data)
+                           anime_labels=anime_labels, anime_data=anime_data, games_labels=games_labels,
+                           games_data=games_data, movies_labels=movies_labels, movies_data=movies_data)
 
 
 # --- AJAX Methods -----------------------------------------------------------------------------------------------
