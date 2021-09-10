@@ -43,9 +43,9 @@
                 <div class="card bg-transparent">
                     <div class="view overlay">
                         <img class="card-img-top" src="{{ item.get_media_cover() }}" alt="" height="300"
-                        width="200" style="height: auto;"/>
+                         width="200" style="height: auto;"/>
                         <a class="mask flex-center rgba-black-strong" href="{{ url_for('main.media_sheet',
-                        media_type=item.__class__.__name__, media_id=item.id) }}">
+                         media_type=item.__class__.__name__, media_id=item.id) }}">
                             <span class="font-mask text-center text-light">{{ item.name }}</span>
                         </a>
                     </div>

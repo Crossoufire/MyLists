@@ -196,7 +196,7 @@
                     </li>
                     <li>
                         {% for media in media_data %}
-                            <section class="{{ media['media']|lower }}-stats m-b-40">
+                            <section class="m-b-40">
                                 {% if not user.add_feeling and media['media_per_score']|sum != 0 %}
                                     <div class="{{ media['media']|lower }}-collapse collapse show ac">
                                         <div class="histogram-wrapper m-b-2">
@@ -274,7 +274,7 @@
                                                 <span>{{ media['total'] }}</span>
                                             </div>
                                             <div class="col-4">
-                                                <span>Episodes</span>
+                                                <span>#Media</span>
                                             </div>
                                             <div class="col-2">
                                                 <span>{{ media['media_total_eps'] }}</span>
@@ -292,7 +292,8 @@
                                                     <a href="{{ url_for('main.media_sheet', media_type=media['media'],
                                                     media_id=favorite.media_id) }}">
                                                         <img class="favorite-img" title="{{ favorite.media.name }}"
-                                                         data-toggle="tooltip" src="/static/covers/{{ media['media']|lower }}_covers/{{ favorite.media.image_cover }}"/>
+                                                         src="/static/covers/{{ media['media']|lower }}_covers/{{ favorite.media.image_cover }}"
+                                                         data-toggle="tooltip"/>
                                                     </a>
                                                 {% endif %}
                                             {% endfor %}
@@ -429,7 +430,7 @@
                         const height = number/maxVal*100;
                         i += 0.5;
 
-                        return acc + `<li class="histogram-item-`+media_type+`" data-toggle="tooltip" title="`+i+`/10: `+number+` `+media_type+`" style="height: calc(${height}% + 1px)" />`
+                        return acc + `<li class="histogram-item bg-`+media_type+`" data-toggle="tooltip" title="`+i+`/10: `+number+` `+media_type+`" style="height: calc(${height}% + 1px)" />`
                     }, ``);
 
                     // Inject into dom

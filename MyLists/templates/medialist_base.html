@@ -6,10 +6,12 @@
     <style rel="stylesheet">
         {% if media_list == 'serieslist' %}
             hr {border-top: 1px solid #216e7d;}
+        {% if media_list == 'animelist' %}
+            hr {border-top: 1px solid #945141;}
         {% elif media_list == 'movieslist' %}
             hr {border-top: 1px solid #8c7821;}
         {% elif media_list == 'bookslist' %}
-            hr {border-top: 1px solid #945141;}
+            hr {border-top: 1px solid #5d4683;}
         {% elif media_list == 'gameslist' %}
             hr {border-top: 1px solid #196219;}
         {% endif %}
@@ -27,6 +29,9 @@
                     <a class="fas fa-lg fa-tv m-r-10 return-icon-tv text-series {% if media_list == 'serieslist' %}
                      disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Serieslist"
                      href="{{ url_for('main.mymedialist', media_list='serieslist', user_name=user.username) }}"></a>
+                    <a class="fas fa-lg fa-torii-gate m-r-10 return-icon-tv text-anime {% if media_list == 'animelist' %}
+                     disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="AnimeList"
+                     href="{{ url_for('main.mymedialist', media_list='animelist', user_name=user.username) }}"></a>
                     <a class="fas fa-lg fa-film m-r-10 return-icon text-movies {% if media_list == 'movieslist' %}
                      disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Movieslist"
                      href="{{ url_for('main.mymedialist', media_list='movieslist', user_name=user.username) }}"></a>

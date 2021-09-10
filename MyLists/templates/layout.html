@@ -17,8 +17,8 @@
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="keywords" content="Mylists, lists, series, tv shows, movies, levels, hall of fame">
-    <meta name="description" content="Create your TV shows/movies list, see how much time you spent and gain
-    levels and badges."/>
+    <meta name="description" content="Create your series/anime/movies/books/games list, see how much time you spent
+     and gain levels."/>
 
     <!--- CDN CSS -------------------------------------------------------------------------------------->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -59,6 +59,15 @@
                                         <i class="fas fa-tv text-series"></i>
                                     </div>
                                     <div class="col-9">SeriesList</div>
+                                </div>
+                            </a>
+                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
+                             media_list='animelist', user_name=current_user.username) }}">
+                                <div class="row">
+                                    <div class="col-3" style="margin-right: -5px;">
+                                        <i class="fas fa-torii-gate text-anime"></i>
+                                    </div>
+                                    <div class="col-9">AnimeList</div>
                                 </div>
                             </a>
                             <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
@@ -287,13 +296,13 @@
 </script>
 <footer class="text-center text-lg-left" style="background-color: #100e0e;">
     {% if current_user.is_authenticated %}
-        <div class="container p-3" style="padding-bottom: 0px !important;">
+        <div class="container p-3" style="padding-bottom: 0 !important;">
         <div class="row">
             <div class="col-lg-6 col-sm-12 col-xs-12 mb-4">
                 <img class="m-b-5" src="{{ url_for('static', filename='img/favicon.ico') }}">&nbsp;
                 <h5 class="dis-inline text-uppercase" style="color: #3fd3da;"><b>MyLists.info</b></h5>
                 <p class="text-justify m-b-5">
-                    Create your series and movies list, see how much time you spent, follow your friends.
+                    Create your media lists, see how much time you spent, follow your friends.
                     Add your favorites, comments, rewatch and gain levels to get to the top of the Hall of Fame.
                 </p>
                 <a href="mailto:contact@mylists.info" class="text-light">

@@ -11,7 +11,7 @@
     <div class="m-l-30 m-r-30 mobile-margin">
         <section class="statistics m-t-20 p-2">
             <div class="row no-gutters">
-                <div class="col-lg col-sm-12 col-md-6 m-r-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-r-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-tv text-center bg-series rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -20,7 +20,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg col-sm-12 col-md-6 m-l-8 m-r-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-r-8 m-b-10">
+                    <div class="d-flex box align-items-center mb-0 p-3">
+                        <i class="fas fa-lg fa-torii-gate text-center bg-anime rounded-circle"></i>
+                        <div class="d-flex align-items-center">
+                            <div class="mb-0">&nbsp; {{ all_stats['nb_media']["anime"] }}</div>
+                            <div>&nbsp; Anime</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-r-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-film text-center bg-movies rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -29,7 +38,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg col-sm-12 col-md-6 m-l-8 m-r-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-r-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-book text-center bg-books rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -38,7 +47,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg col-sm-12 col-md-6 m-l-8 m-r-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-r-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-gamepad text-center bg-games rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -47,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg col-sm-12 col-md-6 m-l-8 m-r-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-r-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-user fs-2 text-center bg-danger rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -56,7 +65,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg col-sm-12 col-md-6 m-l-8 m-b-10">
+                <div class="col-lg col-md-6 col-sm-12 m-l-8 m-b-10">
                     <div class="d-flex box align-items-center mb-0 p-3">
                         <i class="fas fa-lg fa-clock fs-2 text-center bg-primary rounded-circle"></i>
                         <div class="d-flex align-items-center">
@@ -72,15 +81,25 @@
                 <div class="col-lg-5 col-sm-12 m-b-10">
                     <div class="media-container" style="background: #2a2b30;">
                         <canvas id="media-time"></canvas>
-                        <span id="time-spent-pie"
-                        values="{{ all_stats['total_time']['series'] }}, {{ all_stats['total_time']['movies'] }}, {{ all_stats['total_time']['books'] }}, {{ all_stats['total_time']['games'] }}"></span>
+                        <span id="time-spent-pie" values="{{ all_stats['total_time']['series'] }}, {{ all_stats['total_time']['anime'] }}, {{ all_stats['total_time']['movies'] }}, {{ all_stats['total_time']['books'] }}, {{ all_stats['total_time']['games'] }}"></span>
                     </div>
                 </div>
-                <div class="col-lg-7 col-sm-12">
-                    <div class="seasons-eps-container" style="background: #2a2b30;">
-                        <canvas id="total-seasons"></canvas>
-                        <span id="seasons-graph-data" values="{{ all_stats['total_seasons']['series'] }}"></span>
-                        <span id="episodes-graph-data" values="{{ all_stats['total_episodes']['series'] }}"></span>
+                <div class="col-lg-7 col-sm-12 m-b-10">
+                    <div class="row">
+                        <div class="col">
+                            <div class="fs-16"><b>Series</b></div>
+                            <div>Seasons: {{  }}</div>
+                            <div>Episodes: {{  }}</div>
+                        </div>
+                         <div class="col">
+                            <div class="fs-16"><b>Anime</b></div>
+                            <div>Seasons: {{  }}</div>
+                            <div>Episodes: {{  }}</div>
+                        </div>
+                         <div class="col">
+                             <div class="fs-16"><b>Books</b></div>
+                            <div>Pages: {{  }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -142,6 +161,74 @@
                         <table class="table table-sm text-light">
                             <tbody>
                             {% for media in all_stats['top_dropped']["series"] %}
+                                <tr>
+                                    <td class="text-center" style="border: none;">{{ media['quantity'] }}</td>
+                                    <td class="giveMeEllipsis" style="border: none;">{{ media['info'] }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="anime p-2">
+            <div class="row">
+                <div class="col-lg col-md-6 col-sm-12 m-b-10">
+                    <div class="p-2" style="background: #2a2b30;">
+                        <h5><b>TOP GENRES</b></h5>
+                        <hr class="mb-0 mt-0 top-anime">
+                        <table class="table table-sm text-light">
+                            <tbody>
+                            {% for media in all_stats['top_genres']["anime"] %}
+                                <tr>
+                                    <td class="text-center" style="border: none;">{{ media['quantity'] }}</td>
+                                    <td class="giveMeEllipsis" style="border: none;">{{ media['info'] }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg col-md-6 col-sm-12 m-b-10">
+                    <div class="p-2" style="background: #2a2b30;">
+                        <h5><b>TOP ACTORS</b></h5>
+                        <hr class="mb-0 mt-0 top-anime">
+                        <table class="table table-sm text-light">
+                            <tbody>
+                            {% for media in all_stats['top_actors']["anime"] %}
+                                <tr>
+                                    <td class="text-center" style="border: none;">{{ media['quantity'] }}</td>
+                                    <td class="giveMeEllipsis" style="border: none;">{{ media['info'] }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg col-md-6 col-sm-12 m-b-10">
+                    <div class="p-2" style="background: #2a2b30;">
+                        <h5><b>TOP SERIES</b></h5>
+                        <hr class="mb-0 mt-0 top-anime">
+                        <table class="table table-sm text-light">
+                            <tbody>
+                            {% for media in all_stats['top_media']["anime"] %}
+                                <tr>
+                                    <td class="text-center" style="border: none;">{{ media['quantity'] }}</td>
+                                    <td class="giveMeEllipsis" style="border: none;">{{ media['info'] }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-lg col-md-6 col-sm-12 m-b-10">
+                    <div class="p-2" style="background: #2a2b30;">
+                        <h5><b>TOP DROPPED</b></h5>
+                        <hr class="mb-0 mt-0 top-anime">
+                        <table class="table table-sm text-light">
+                            <tbody>
+                            {% for media in all_stats['top_dropped']["anime"] %}
                                 <tr>
                                     <td class="text-center" style="border: none;">{{ media['quantity'] }}</td>
                                     <td class="giveMeEllipsis" style="border: none;">{{ media['info'] }}</td>
