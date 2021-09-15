@@ -5,11 +5,12 @@ from pathlib import Path
 from MyLists import app, db
 from sqlalchemy import and_, desc
 from datetime import datetime, timedelta
-from MyLists.API_data import ApiData, ApiMovies, ApiSeries
+from MyLists.API_data import ApiData, ApiMovies, ApiSeries, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
     UserLastUpdate, Notifications, ListType, Status, Movies, MoviesList, MoviesActors, MoviesGenre, GlobalStats, \
-    MyListsStats, User, RoleType, Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, \
-    BooksGenre, BooksAuthors, compute_media_time_spent
+    MyListsStats, Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, \
+    BooksAuthors, compute_media_time_spent, Anime, AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, \
+    AnimeEpisodesPerSeason
 
 
 def remove_non_list_media():
@@ -33,6 +34,24 @@ def remove_non_list_media():
         count += 1
         app.logger.info('Removed series with ID: [{}]'.format(del_id))
     app.logger.info('Total series removed: {}'.format(count))
+
+    # Anime remover
+    anime = db.session.query(Anime, AnimeList).outerjoin(AnimeList, AnimeList.media_id == Anime.id).all()
+    to_delete, count = [], 0
+    for media in anime:
+        if not media[1]:
+            to_delete.append(media[0].id)
+    for del_id in to_delete:
+        Anime.query.filter_by(id=del_id).delete()
+        AnimeActors.query.filter_by(media_id=del_id).delete()
+        AnimeGenre.query.filter_by(media_id=del_id).delete()
+        AnimeNetwork.query.filter_by(media_id=del_id).delete()
+        AnimeEpisodesPerSeason.query.filter_by(media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=ListType.ANIME, media_id=del_id).delete()
+        Notifications.query.filter_by(media_type='animelist', media_id=del_id).delete()
+        count += 1
+        app.logger.info('Removed anime with ID: [{}]'.format(del_id))
+    app.logger.info('Total anime removed: {}'.format(count))
 
     # Movies remover
     movies = db.session.query(Movies, MoviesList).outerjoin(MoviesList, MoviesList.media_id == Movies.id).all()
@@ -112,6 +131,27 @@ def remove_old_covers():
             count += 1
     app.logger.info('Total old series covers deleted: {}'.format(count))
 
+    # --- Anime old cover remover ----------------
+    anime = Anime.query.all()
+    path_anime_covers = Path(app.root_path, 'static/covers/anime_covers/')
+
+    images_in_db = []
+    for media in anime:
+        images_in_db.append(media.image_cover)
+
+    images_saved = []
+    for file in os.listdir(path_anime_covers):
+        images_saved.append(file)
+
+    count = 0
+    for image in images_saved:
+        print(image)
+        if image not in images_in_db and image != 'default.jpg':
+            os.remove(f'{path_anime_covers}/{image}')
+            app.logger.info('Removed old anime cover with name: {}'.format(image))
+            count += 1
+    app.logger.info('Total old anime covers deleted: {}'.format(count))
+
     # --- Movies old cover remover ----------------
     movies = Movies.query.all()
     path_movies_covers = Path(app.root_path, 'static/covers/movies_covers/')
@@ -183,6 +223,8 @@ def refresh_element_data(api_id, list_type):
     # Update the main details for each media
     if list_type == ListType.SERIES:
         Series.query.filter_by(api_id=api_id).update(data['media_data'])
+    if list_type == ListType.ANIME:
+        Anime.query.filter_by(api_id=api_id).update(data['media_data'])
     elif list_type == ListType.MOVIES:
         Movies.query.filter_by(api_id=api_id).update(data['media_data'])
 
@@ -195,6 +237,10 @@ def refresh_element_data(api_id, list_type):
             element = Series.query.filter_by(api_id=api_id).first()
             old_seas_eps = \
                 [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
+        elif list_type == ListType.ANIME:
+            element = Anime.query.filter_by(api_id=api_id).first()
+            old_seas_eps = \
+                [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
 
         new_seas_eps = [d['episodes'] for d in data['seasons_data']]
 
@@ -229,9 +275,42 @@ def refresh_element_data(api_id, list_type):
                 db.session.commit()
 
                 for seas in data['seasons_data']:
-                    season = SeriesEpisodesPerSeason(media_id=element.id,
-                                                     season=seas['season'],
+                    season = SeriesEpisodesPerSeason(media_id=element.id, season=seas['season'],
                                                      episodes=seas['episodes'])
+                    db.session.add(season)
+                db.session.commit()
+            elif list_type == ListType.ANIME:
+                users_list = AnimeList.query.filter_by(media_id=element.id).all()
+
+                for user in users_list:
+                    episodes_watched = user.total
+
+                    count = 0
+                    for i in range(0, len(data['seasons_data'])):
+                        count += data['seasons_data'][i]['episodes']
+                        if count == episodes_watched:
+                            user.last_episode_watched = data['seasons_data'][i]['episodes']
+                            user.current_season = data['seasons_data'][i]['season']
+                            break
+                        elif count > episodes_watched:
+                            user.last_episode_watched = data['seasons_data'][i]['episodes'] - (
+                                    count - episodes_watched)
+                            user.current_season = data['seasons_data'][i]['season']
+                            break
+                        elif count < episodes_watched:
+                            try:
+                                data['seasons_data'][i + 1]['season']
+                            except IndexError:
+                                user.last_episode_watched = data['seasons_data'][i]['episodes']
+                                user.current_season = data['seasons_data'][i]['season']
+                                break
+
+                AnimeEpisodesPerSeason.query.filter_by(media_id=element.id).delete()
+                db.session.commit()
+
+                for seas in data['seasons_data']:
+                    season = AnimeEpisodesPerSeason(media_id=element.id, season=seas['season'],
+                                                    episodes=seas['episodes'])
                     db.session.add(season)
                 db.session.commit()
 
@@ -244,13 +323,14 @@ def automatic_media_refresh():
 
     # Recover all the data
     all_series_tmdb_id = [m.api_id for m in Series.query.filter(Series.lock_status != True)]
+    all_anime_tmdb_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != True)]
     all_movies_tmdb_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != True)]
 
     # Recover from API all the changed <TV_show> ID
     try:
-        all_id_tv_changes = ApiSeries().get_changed_data()
+        all_id_tv_changes = ApiTV().get_changed_data()
     except Exception as e:
-        app.logger.error('[ERROR] - Requesting the changed data from (series) TMDB API: {}'.format(e))
+        app.logger.error('[ERROR] - Requesting the changed data from TMDB API: {}'.format(e))
         return
 
     # Recover from API all the changed <Movies> ID
@@ -268,6 +348,15 @@ def automatic_media_refresh():
                 app.logger.info(f'[INFO] - Refreshed Series with TMDB ID: [{element["id"]}]')
             except Exception as e:
                 app.logger.error(f'[ERROR] - While refreshing: {e}')
+
+    # Refresh Anime
+    for element in all_id_tv_changes["results"]:
+        if element["id"] in all_anime_tmdb_id:
+            try:
+                refresh_element_data(element["id"], ListType.ANIME)
+                app.logger.info('[INFO] - Refreshed Anime with TMDB ID: [{}]'.format(element['id']))
+            except Exception as e:
+                app.logger.error('[ERROR] - While refreshing: {}'.format(e))
 
     # Refresh movies
     for element in all_id_movies_changes["results"]:
@@ -332,6 +421,58 @@ def new_releasing_series():
 
     db.session.commit()
     app.logger.info('[SYSTEM] - Finish adding the new releasing series')
+    app.logger.info('###################################################################')
+
+
+def new_releasing_anime():
+    app.logger.info('###################################################################')
+    app.logger.info('[SYSTEM] - Start adding the new releasing anime')
+
+    all_anime = Anime.query.filter(Anime.next_episode_to_air != None).all()
+    media_id = []
+    for anime in all_anime:
+        try:
+            diff = (datetime.utcnow() - datetime.strptime(anime.next_episode_to_air, '%Y-%m-%d')).total_seconds()
+            # Check if the next episode of the series is releasing in one week or less (7 days)
+            if diff < 0 and abs(diff / (3600 * 24)) <= 7:
+                media_id.append(anime.id)
+        except:
+            pass
+
+    anime_in_ptw = db.session.query(Anime, AnimeList).join(AnimeList, AnimeList.media_id == Anime.id) \
+        .filter(AnimeList.media_id.in_(media_id), and_(AnimeList.status != Status.RANDOM,
+                                                       AnimeList.status != Status.DROPPED)).all()
+
+    for info in anime_in_ptw:
+        anime = Notifications.query.filter_by(user_id=info[1].user_id, media_type='animelist', media_id=info[0].id) \
+            .order_by(desc(Notifications.timestamp)).first()
+
+        if anime:
+            payload_anime = json.loads(anime.payload_json)
+            if int(payload_anime['season']) < int(info[0].season_to_air):
+                pass
+            elif int(payload_anime['season']) == int(info[0].season_to_air):
+                if int(payload_anime['episode']) < int(info[0].episode_to_air):
+                    pass
+                else:
+                    continue
+            else:
+                continue
+
+        release_date = datetime.strptime(info[0].next_episode_to_air, '%Y-%m-%d').strftime("%b %d %Y")
+        payload = {'name': info[0].name,
+                   'release_date': release_date,
+                   'season': '{:02d}'.format(info[0].season_to_air),
+                   'episode': '{:02d}'.format(info[0].episode_to_air)}
+
+        data = Notifications(user_id=info[1].user_id,
+                             media_type='animelist',
+                             media_id=info[0].id,
+                             payload_json=json.dumps(payload))
+        db.session.add(data)
+
+    db.session.commit()
+    app.logger.info('[SYSTEM] - Finish adding the new releasing anime')
     app.logger.info('###################################################################')
 
 
@@ -405,33 +546,36 @@ def update_Mylists_stats():
     stats = GlobalStats()
 
     def create_dict(data):
-        series_list, movies_list, books_list, games_list = [], [], [], []
+        series_list, anime_list, movies_list, books_list, games_list = [], [], [], [], []
         for i in range(5):
             try:
                 series_list.append({"info": data[0][i][0], "quantity": data[0][i][2]})
             except:
                 series_list.append({"info": "-", "quantity": "-"})
             try:
-                movies_list.append({"info": data[1][i][0], "quantity": data[1][i][2]})
+                anime_list.append({"info": data[1][i][0], "quantity": data[1][i][2]})
+            except:
+                anime_list.append({"info": "-", "quantity": "-"})
+            try:
+                movies_list.append({"info": data[2][i][0], "quantity": data[2][i][2]})
             except:
                 movies_list.append({"info": "-", "quantity": "-"})
             try:
-                books_list.append({"info": data[2][i][0], "quantity": data[2][i][2]})
+                books_list.append({"info": data[3][i][0], "quantity": data[3][i][2]})
             except:
                 books_list.append({"info": "-", "quantity": "-"})
             try:
-                games_list.append({"info": data[3][i][0], "quantity": data[3][i][2]})
+                games_list.append({"info": data[4][i][0], "quantity": data[4][i][2]})
             except:
                 games_list.append({"info": "-", "quantity": "-"})
 
-        return {"series": series_list, "movies": movies_list, "books": books_list, "games": games_list}
+        return {"series": series_list, "anime": anime_list, "movies": movies_list, "books": books_list,
+                "games": games_list}
 
     times_spent = stats.get_total_time_spent()
-    total_time = {"total": 0, "series": 0, "anime": 0, "movies": 0, "books": 0, "games": 0}
-    if times_spent[0]:
-        total_time = {"total": sum(times_spent[0]), "series": int(times_spent[0][0]/60),
-                      "anime": int(times_spent[0][1] / 60), "movies": int(times_spent[0][2]/60),
-                      "books": int(times_spent[0][3]/60), "games": int(times_spent[0][4]/60)}
+    total_time = {"total": sum(times_spent), "series": int(times_spent[0]/60),
+                  "anime": int(times_spent[1]/60), "movies": int(times_spent[2]/60),
+                  "books": int(times_spent[3]/60), "games": int(times_spent[4]/60)}
 
     top_media = stats.get_top_media()
     most_present_media = create_dict(top_media)
@@ -455,8 +599,10 @@ def update_Mylists_stats():
     top_dropped_media = create_dict(media_dropped)
 
     total_media_eps_seas = stats.get_total_eps_seasons()
-    total_episodes_media = {"series": total_media_eps_seas[0][0]}
-    total_seasons_media = {"series": total_media_eps_seas[0][1]}
+    total_seasons_media = {"series": total_media_eps_seas[0][0][1], "anime": total_media_eps_seas[1][0][1]}
+    total_episodes_media = {"series": total_media_eps_seas[0][0][0], "anime": total_media_eps_seas[1][0][0]}
+
+    total_pages = stats.get_total_book_pages()
 
     total_movies = stats.get_total_movies()
     total_movies_dict = {"movies": total_movies}
@@ -469,7 +615,7 @@ def update_Mylists_stats():
                          top_directors=json.dumps(most_directors_media), top_dropped=json.dumps(top_dropped_media),
                          total_episodes=json.dumps(total_episodes_media), total_seasons=json.dumps(total_seasons_media),
                          total_movies=json.dumps(total_movies_dict), top_authors=json.dumps(most_authors_media),
-                         top_developers=json.dumps(most_developers_media))
+                         top_developers=json.dumps(most_developers_media), total_pages=total_pages)
     db.session.add(stats)
     db.session.commit()
 
@@ -521,8 +667,14 @@ def register(app):
         automatic_media_refresh()
         new_releasing_movies()
         new_releasing_series()
+        new_releasing_anime()
         automatic_movies_locking()
+
+        app.logger.info('[SYSTEM] - Starting to compute the total time spent for each user')
         compute_media_time_spent()
+        app.logger.info('###################################################################')
+        app.logger.info('[SYSTEM] - Finished computing the total time spent for each user')
+
         update_Mylists_stats()
 
     @app.cli.command()

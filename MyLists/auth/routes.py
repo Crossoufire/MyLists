@@ -27,10 +27,7 @@ def home():
         elif user and bcrypt.check_password_hash(user.password, login_form.login_password.data):
             login_user(user, remember=login_form.login_remember.data)
             app.logger.info('[INFO] - [{}] Logged in.'.format(user.id))
-
             next_page = request.args.get('next')
-            if not is_safe_url(next_page):
-                return abort(400)
 
             return redirect(next_page or url_for('users.account', user_name=user.username))
         else:

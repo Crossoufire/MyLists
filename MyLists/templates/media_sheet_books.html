@@ -2,7 +2,7 @@
 
 
 {% block hr_color %}
-    hr {margin-top: 5px; border-top: 1px solid #945141;}
+    hr {margin-top: 5px; border-top: 1px solid #584c6e;}
 {% endblock hr_color %}
 
 
@@ -91,7 +91,43 @@
         <ul class="list-unstyled">
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-theater-masks"></i><b>&nbsp; Genres</b></h5>
-                <div>{{ media.get_genres() }}</div>
+                {% set genres = media.get_genres() %}
+                {% if genres == 'Unknown' and media_list == 'bookslist' %}
+                    <a class="btn btn-danger btn-smaller" data-toggle="modal" data-target="#GenreModal">Add Genre</a>
+                    <div class="modal fade" id="GenreModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content text-light bg-dark">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Genres</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span style="color: lightgray;">&times;</span>
+                                    </button>
+                                </div>
+                                <form action="/update_book_genres/{{ media.id }}" method="POST">
+                                    <div class="modal-body">
+                                        {{ form.hidden_tag() }}
+                                        <div class="p-2">
+                                            <b>Actual genres:</b> &nbsp;{{ genres[0] }}
+                                        </div>
+                                        <div class="p-2 m-t-15">
+                                            Select up to 5 genres to describes the book:
+                                            <br>(ctrl + click for multi-selection)
+                                        </div>
+                                        <div class="p-2">
+                                            <div><b>{{ form.genres.label() }}:</b></div>
+                                            <div>{{ form.genres(size=15, style='width: 50%;') }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-primary">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div>{{ genres }}</div>
+                {% endif %}
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-i-cursor"></i><b>&nbsp; Publishers</b></h5>

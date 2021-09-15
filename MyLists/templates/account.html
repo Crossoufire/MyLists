@@ -119,79 +119,94 @@
                     <li class="m-b-40">
                         <h4><i class="fas fa-chart-pie"></i>&nbsp;&nbsp; Statistics</h4><hr>
                         <div class="row no-gutters">
-                            <div class="col-xl-6 col-lg-12 col-sm-12 media-container">
+                            <div class="col-xl-5 col-lg-12 col-sm-12 media-container">
                                 <canvas id="media-time"></canvas>
-                                <span id="time-spent-pie" values="{{ media_global['total_time_by_media_type'] }}">
-                                </span>
+                                <span id="times-pie" values="{{ media_global['total_time_by_media_type'] }}"></span>
+                                <span id="colors-pie" values="{{ media_global['all_colors_by_media_type'] }}"></span>
                             </div>
-                            <div class="col-xl-6 col-lg-12 col-sm-12 m-t-10">
-                                <div class="row m-t-15 fs-18">
-                                    <div class="col-6 m-b-10">
-                                        <div class="p-2" title="{{ ((media_global['total_hours'])/24)|int }} days"
-                                         data-toggle="tooltip">
-                                            <i class="fas fa-clock"></i><b> Time</b><br>
-                                            {{ media_global['total_hours'] }} h
+                            {% if user.add_feeling %}
+                                <div class="col-xl-7 col-lg-12 col-sm-12 m-t-10">
+                                    <div class="row text-center no-gutters m-t-15 fs-18">
+                                        <div class="col-4 m-b-10">
+                                            <div class="p-2" title="{{ ((media_global['total_hours'])/24)|int }} days"
+                                                 data-toggle="tooltip">
+                                                <i class="fas fa-clock"></i><b> Time</b><br>
+                                                {{ media_global['total_hours'] }} h
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-6 m-b-10" style="margin-left: -10px;">
-                                        <div class="p-2" data-toggle="tooltip" title="Total media, with eps">
-                                            <i class="fas fa-play"></i><b class="m-l-3"> Media</b><br>
-                                            {{ media_global['total_media_and_eps'] }}
+                                        <div class="col-4 m-b-10">
+                                            <div class="p-2" data-toggle="tooltip" title="Total media, with eps">
+                                                <i class="fas fa-play"></i><b class="m-l-3"> Media</b><br>
+                                                {{ media_global['total_media_and_eps'] }}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-6 m-b-10">
-                                        {% if user.add_feeling %}
-                                            <div class="p-2" data-toggle="tooltip" title="Total media with feelings">
-                                                <i class="fas fa-align-justify"></i><b class="m-l-4"> Feelings</b><br>
+                                        <div class="col-4 m-b-10">
+                                            <div class="p-2" data-toggle="tooltip" title="Total media noted">
+                                                <i class="fas fa-align-justify"></i><b class="m-l-4"> Scored</b><br>
                                                 {{ media_global['total_score'] }}/{{ media_global['total_media'] }}
                                             </div>
-                                        {% else %}
+                                        </div>
+                                        <div class="col-12 m-b-10">
+                                            <div class="d-flex" style="justify-content: space-evenly;">
+                                                <div data-toggle="tooltip" title="Series: 5 <br/> Anime: 8 <br/> Movies: 4">
+                                                    <i class="fas fa-grin-stars" style="color: #019101;"></i>
+                                                    <br>{{ media_global['distrib_feels'][5] }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-grin-alt" style="color: #59a643;"></i>
+                                                    <br>{{ media_global['distrib_feels'][4] }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-smile" style="color: darkseagreen;"></i>
+                                                    <br>{{ media_global['distrib_feels'][3] }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-frown" style="color: #d0a141;"></i>
+                                                    <br>{{ media_global['distrib_feels'][2] }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                                    <br>{{ media_global['distrib_feels'][1] }}
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-poop" style="color: saddlebrown;"></i>
+                                                    <br>{{ media_global['distrib_feels'][0] }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="col-xl-7 col-lg-12 col-sm-12 m-t-10">
+                                    <div class="row text-center m-t-15 fs-18">
+                                        <div class="col-6 m-b-10">
+                                            <div class="p-2" title="{{ ((media_global['total_hours'])/24)|int }} days"
+                                                 data-toggle="tooltip">
+                                                <i class="fas fa-clock"></i><b> Time</b><br>
+                                                {{ media_global['total_hours'] }} h
+                                            </div>
+                                        </div>
+                                        <div class="col-6 m-b-10" style="margin-left: -10px;">
+                                            <div class="p-2" data-toggle="tooltip" title="Total media, with eps">
+                                                <i class="fas fa-play"></i><b class="m-l-3"> Media</b><br>
+                                                {{ media_global['total_media_and_eps'] }}
+                                            </div>
+                                        </div>
+                                        <div class="col-6 m-b-10">
                                             <div class="p-2" data-toggle="tooltip" title="Total media scored">
                                                 <i class="fas fa-align-justify"></i><b class="m-l-4"> Scored</b><br>
                                                 {{ media_global['total_score'] }}/{{ media_global['total_media'] }}
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-6 m-b-10" style="margin-left: -10px;">
-                                        {% if user.add_feeling %}
-                                            <div class="p-2" data-toggle="tooltip" title="Total distrib. of feels">
-                                                <i class="fas fa-star"></i><b> Distrib.</b><br>
-                                                <div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                        {{ media_global['distrib_feels'][5] }}
-                                                    </div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                        {{ media_global['distrib_feels'][4] }}
-                                                    </div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                        {{ media_global['distrib_feels'][3] }}
-                                                    </div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                        {{ media_global['distrib_feels'][2] }}
-                                                    </div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-frown" style="color: indianred;"></i>
-                                                        {{ media_global['distrib_feels'][1] }}
-                                                    </div>
-                                                    <div class="m-l-3 m-r-3" style="display: inline-block">
-                                                        <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                        {{ media_global['distrib_feels'][0] }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% else %}
+                                        </div>
+                                        <div class="col-6 m-b-10" style="margin-left: -10px;">
                                             <div class="p-2" data-toggle="tooltip" title="Total mean score">
                                                 <i class="fas fa-star"></i><b> Score</b><br>
                                                 {{ media_global['total_mean_score'] }}/10
                                             </div>
-                                        {% endif %}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                     </li>
                     <li>
@@ -209,6 +224,9 @@
                                     <h5 class="media-stats-title mb-2 p-1">
                                         &nbsp;<i class="fas fa-caret-down"></i>
                                         <b>&nbsp;{{ media['media']|upper }}</b>
+                                        <span class="float-r" data-toggle="tooltip" title="{{ media['time_hours'] }} hours">
+                                            <b>{{ media['time_days']|int }} days</b>
+                                        </span>
                                     </h5>
                                 </a>
                                 <div class="{{ media['media']|lower }}-collapse collapse show ac">
@@ -222,25 +240,6 @@
                                             <span class="float-r" data-toggle="tooltip" title="Media scored">
                                                 <b>Scored: {{ media['media_score']['scored_media'] }}/{{ media['media_score']
                                                 ['total_media'] }}</b>
-                                            </span>
-                                        {% else %}
-                                            <span><b>Days: {{ media['time_days'] }}</b></span>
-                                            <span class="float-r">
-                                                <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                                {{ media['media_per_score'][5] }}&nbsp;&nbsp;
-                                                <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                                {{ media['media_per_score'][4] }}&nbsp;&nbsp;
-                                                <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                                {{ media['media_per_score'][3] }}
-                                            </span><br>
-                                            <span><b>Hours: {{ media['time_hours'] }}</b></span>
-                                            <span class="float-r">
-                                                <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                                {{ media['media_per_score'][2] }}&nbsp;&nbsp;
-                                                <i class="fas fa-frown" style="color: indianred;"></i>
-                                                {{ media['media_per_score'][1] }}&nbsp;&nbsp;
-                                                <i class="fas fa-angry" style="color: #ab0202;"></i>
-                                                {{ media['media_per_score'][0] }}
                                             </span>
                                         {% endif %}
                                         <figure>

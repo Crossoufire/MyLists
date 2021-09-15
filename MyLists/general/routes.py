@@ -6,7 +6,7 @@ from MyLists import db, bcrypt, app
 from MyLists.API_data import ApiSeries, ApiMovies
 from MyLists.general.trending_data import TrendingData
 from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent
-from MyLists.scheduled_tasks import update_Mylists_stats
+from MyLists.scheduled_tasks import update_Mylists_stats, update_IGDB_API
 
 bp = Blueprint('general', __name__)
 
@@ -37,6 +37,7 @@ def create_first_data():
                      registered_on=datetime.utcnow(),
                      activated_on=datetime.utcnow())
         update_Mylists_stats()
+        # update_IGDB_API()
         db.session.add(admin1)
         db.session.add(manager1)
         db.session.add(user1)
@@ -64,6 +65,20 @@ def admin():
 @login_required
 def mylists_stats():
     all_stats = MyListsStats.get_all_stats()
+
+    def display_time(minutes):
+        intervals = (('Years', 525600), ('Months', 43200), ('Days', 1440), ('Hours', 60))
+        result = []
+        for name, count in intervals:
+            value = minutes // count
+            if value:
+                minutes -= value * count
+                if value == 1:
+                    name = name.rstrip('S')
+                result.append("{} {}".format(value, name))
+        return ' '.join(result)
+
+    all_stats['total_time']['total'] = display_time(all_stats['total_time']['total'])
 
     return render_template("mylists_stats.html", title='MyLists stats', all_stats=all_stats)
 
@@ -97,12 +112,10 @@ def current_trends():
 
 
 @bp.route("/privacy_policy", methods=['GET'])
-@login_required
 def privacy_policy():
     return render_template('privacy_policy.html', title='Privacy policy')
 
 
 @bp.route("/about", methods=['GET'])
-@login_required
 def about():
     return render_template('about.html', title='About')

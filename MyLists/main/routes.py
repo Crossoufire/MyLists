@@ -11,7 +11,7 @@ from sqlalchemy import func
 from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
 from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
-from MyLists.main.forms import MediaComment, SearchForm, ModelForm
+from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
     get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format
 
@@ -197,7 +197,42 @@ def media_sheet(media_type, media_id):
     # Get the HTML template
     template = models[0].media_sheet_template()
 
-    return render_template(template, title=media.name, media=media, list_info=list_info, media_list=list_type.value)
+    # Get the Genre form for books
+    form = GenreForm()
+    genres = None
+    if list_type == ListType.BOOKS:
+        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
+            .filter(BooksGenre.media_id == media_id).first()
+
+    return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
+                           media_list=list_type.value)
+
+
+@bp.route('/update_book_genres/<media_id>', methods=['POST'])
+@login_required
+def update_book_genres(media_id):
+    form = GenreForm()
+
+    if form.is_submitted():
+        if form.genres.data:
+            # Check that the genre is 'Unknown' (which correpsond to not set) otherwise abort.
+            book = BooksGenre.query.filter(BooksGenre.media_id == media_id).first()
+            if book.genre != 'Unknown':
+                return abort(400)
+
+            try:
+                BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
+                for genre in form.genres.data[:5]:
+                    adding = BooksGenre(genre=genre, media_id=media_id)
+                    db.session.add(adding)
+                db.session.commit()
+                flash('Data successfully updated.', 'success')
+                app.logger.info(f'[SYSTEM] - Book ID [{media_id}]. Genres modified by [{current_user.id}]')
+            except:
+                db.session.rollback()
+                flash('Error while updating the genres.', 'warning')
+
+    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
 
 
 @bp.route("/media_sheet_form/<media_type>/<media_id>", methods=['GET', 'POST'])
@@ -230,16 +265,21 @@ def media_sheet_form(media_type, media_id):
         if media_type == 'Books':
             genre_attr = SelectMultipleField('Genres',
                                              choices=[('Action & Adventure', 'Action & Adventure'),
-                                         ('Biography', 'Biography'), ('Chick lit', 'Chick lit'),
-                                         ('Children', 'Children'), ('Classic', 'Classic'), ('Crime', 'Crime'),
-                                         ('Drama', 'Drama'), ('Dystopian', 'Dystopian'), ('Fantastic', 'Fantastic'),
-                                         ('Fantasy', 'Fantasy'), ('History', 'History'), ('Humor', 'Humor'),
-                                         ('Horror', 'Horror'), ('Mystery', 'Mystery'), ('Paranormal', 'Paranormal'),
-                                         ('Philosophy', 'Philosophy'), ('Poetry', 'Poetry'), ('Romance', 'Romance'),
-                                         ('Science', 'Science'), ('Science-Fiction', 'Science-Fiction'),
-                                         ('Short story', 'Short story'), ('Suspense', 'Suspense'),
-                                         ('Thriller', 'Thriller'), ('Western', 'Western'),
-                                         ('Young adult', 'Young adult')])
+                                                      ('Biography', 'Biography'), ('Chick lit', 'Chick lit'),
+                                                      ('Children', 'Children'), ('Classic', 'Classic'),
+                                                      ('Crime', 'Crime'),
+                                                      ('Drama', 'Drama'), ('Dystopian', 'Dystopian'),
+                                                      ('Fantastic', 'Fantastic'),
+                                                      ('Fantasy', 'Fantasy'), ('History', 'History'),
+                                                      ('Humor', 'Humor'),
+                                                      ('Horror', 'Horror'), ('Mystery', 'Mystery'),
+                                                      ('Paranormal', 'Paranormal'),
+                                                      ('Philosophy', 'Philosophy'), ('Poetry', 'Poetry'),
+                                                      ('Romance', 'Romance'),
+                                                      ('Science', 'Science'), ('Science-Fiction', 'Science-Fiction'),
+                                                      ('Short story', 'Short story'), ('Suspense', 'Suspense'),
+                                                      ('Thriller', 'Thriller'), ('Western', 'Western'),
+                                                      ('Young adult', 'Young adult')])
 
     # Populate the form with the model data except for the <image_cover>
     form = Form(obj=media)
@@ -727,7 +767,7 @@ def update_score():
         if 0 > float(new_score) or float(new_score) > 10:
             return '', 400
     except:
-        new_score = -1
+        new_score = None
 
     media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:

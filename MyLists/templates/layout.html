@@ -61,15 +61,17 @@
                                     <div class="col-9">SeriesList</div>
                                 </div>
                             </a>
-                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                             media_list='animelist', user_name=current_user.username) }}">
-                                <div class="row">
-                                    <div class="col-3" style="margin-right: -5px;">
-                                        <i class="fas fa-torii-gate text-anime"></i>
+                            {% if current_user.add_anime %}
+                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
+                                 media_list='animelist', user_name=current_user.username) }}">
+                                    <div class="row">
+                                        <div class="col-3" style="margin-right: -5px;">
+                                            <i class="fas fa-torii-gate text-anime"></i>
+                                        </div>
+                                        <div class="col-9">AnimeList</div>
                                     </div>
-                                    <div class="col-9">AnimeList</div>
-                                </div>
-                            </a>
+                                </a>
+                            {% endif %}
                             <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                              media_list='movieslist', user_name=current_user.username) }}">
                                 <div class="row">
@@ -294,10 +296,9 @@
 {#        {% endwith %}#}
 {#    {% endif %}#}
 </script>
-<footer class="text-center text-lg-left" style="background-color: #100e0e;">
-    {% if current_user.is_authenticated %}
-        <div class="container p-3" style="padding-bottom: 0 !important;">
-        <div class="row">
+<footer class="text-center text-lg-left m-t-10" style="background-color: #0a151c;">
+    <div class="container p-3 m-t-20" style="padding-bottom: 0 !important;">
+            <div class="row">
             <div class="col-lg-6 col-sm-12 col-xs-12 mb-4">
                 <img class="m-b-5" src="{{ url_for('static', filename='img/favicon.ico') }}">&nbsp;
                 <h5 class="dis-inline text-uppercase" style="color: #3fd3da;"><b>MyLists.info</b></h5>
@@ -305,9 +306,15 @@
                     Create your media lists, see how much time you spent, follow your friends.
                     Add your favorites, comments, rewatch and gain levels to get to the top of the Hall of Fame.
                 </p>
-                <a href="mailto:contact@mylists.info" class="text-light">
-                    <b><i class="fas fa-envelope"></i>&nbsp; Contact us</b>
-                </a>
+                <script>
+                    let part6 = "contact";
+                    let part7 = Math.pow(2, 6);
+                    let part8 = String.fromCharCode(part7);
+                    let part9 = "mylists.info";
+                    let part10 = part6 + String.fromCharCode(part7) + part9;
+                    document.write("<a class='text-light' href=" + "mai" + "lto" + ":" + part10 + ">" +
+                    '<b><i class="fas fa-envelope"></i>&nbsp; Contact us</b>' + "</a>");
+                </script>
             </div>
             <div class="col-lg-3 col-sm-6 col-xs-12 mb-4">
                 <h5 class="text-uppercase" style="color: #3fd3da;"><b>Powered by</b></h5>
@@ -326,10 +333,9 @@
                 </ul>
             </div>
         </div>
-    </div>
-    {% endif %}
+        </div>
     <hr style="margin: 0px;">
-    <div class="text-center p-2" style="background-color: rgb(16, 14, 14);">
+    <div class="text-center p-2" style="background-color: #0A151CFF;">
         © 2019-2021 Copyright: <a class="text-light" href="https://MyLists.info">Mylists.info</a>
     </div>
 </footer>

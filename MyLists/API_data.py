@@ -12,10 +12,10 @@ from datetime import datetime
 from flask import abort, url_for
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
-from urllib.request import urlretrieve, Request, urlopen
+from urllib.request import urlretrieve, Request
 from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActors, Movies, SeriesNetwork, \
     SeriesEpisodesPerSeason, MoviesGenre, MoviesActors, GamesCompanies, GamesPlatforms, Games, GamesGenre, Books, \
-    BooksGenre, BooksAuthors
+    BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason
 
 
 # --- GENERAL ---------------------------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ class TMDBMixin(ApiData):
                     media_details['image_cover'] = f"{self.poster_base_url}{result.get('poster_path')}"
 
                 if result.get('media_type') == 'tv':
-                    media_details['category'] = 'Series'
+                    media_details['category'] = 'Series/Anime'
 
                     return_latin = latin_alphabet(result.get('original_name'))
                     media_details['display_name'] = result.get('name')
@@ -159,6 +159,9 @@ class TMDBMixin(ApiData):
 
                     media_details['date'] = change_air_format(result.get('first_air_date'))
                     media_details['type'] = 'Series'
+                    if result.get('origin_country') == 'JP' or result.get('original_language') == 'ja' \
+                            and 16 in result.get('genre_ids'):
+                        media_details['type'] = 'Anime'
                 elif result.get('media_type') == 'movie':
                     media_details['category'] = 'Movies'
 
@@ -198,12 +201,22 @@ class TMDBMixin(ApiData):
             if result['media_type'] == 'tv':
                 media_data['url'] = f"https://www.themoviedb.org/tv/{result['id']}"
                 media_data['media'] = 'Series'
-                media_data['media_type'] = ListType.SERIES.value
-                media_results.append(media_data)
+                if result['origin_country'] == 'JP' or result['original_language'] == 'ja' \
+                        and 16 in result['genre_ids']:
+                    media_data['media_type'] = ListType.ANIME.value
+                    media_data['name'] = result['name']
+                    media_data['media'] = 'Anime'
+                    media_results.append(media_data)
+                else:
+                    media_data['media_type'] = ListType.SERIES.value
+                    media_results.append(media_data)
             elif result['media_type'] == 'movie':
                 media_data['media'] = 'Movies'
                 media_data['media_type'] = ListType.MOVIES.value
                 media_data['url'] = f"https://www.themoviedb.org/movie/{result['id']}"
+                media_results.append(media_data)
+                if result['original_language'] == 'ja' and 16 in result['genre_ids']:
+                    media_data['name'] = result['title']
                 media_results.append(media_data)
 
         total_results = self.API_data['total_results']
@@ -253,13 +266,8 @@ class TMDBMixin(ApiData):
         return media_cover_name
 
 
-# --- CALL CLASSES -----------------------------------------------------------------------------------------------
-
-
-class ApiSeries(TMDBMixin):
-    _duration = 40
-    group = [ListType.SERIES, MediaType.SERIES]
-    local_covers_path = Path(app.root_path, "static/covers/series_covers/")
+class ApiTV(TMDBMixin):
+    group = []
 
     def get_details_and_credits_data(self):
         response = requests.get("https://api.themoviedb.org/3/tv/{}?api_key={}&append_to_response=credits"
@@ -345,28 +353,16 @@ class ApiSeries(TMDBMixin):
                          'networks_data': networks_list}
 
     def get_anime_genres(self):
-        anime_genres_list = []
+        return []
 
-        try:
-            if self.API_data.get('origin_country')[0] != 'JP':
-                return anime_genres_list
-        except:
-            return anime_genres_list
 
-        try:
-            anime_search = self.api_anime_search(self.API_data.get("name"))
-            anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
-        except Exception as e:
-            app.logger.error('[ERROR] - Requesting the Jikan API: {}'.format(e), {'API': 'Jikan'})
-            anime_genres = None
+# --- CALL CLASSES -----------------------------------------------------------------------------------------------
 
-        if anime_genres:
-            anime_genres_list.append({'genre': 'Animation', 'genre_id': -10})
-            for i in range(0, len(anime_genres)):
-                anime_genres_list.append({'genre': anime_genres[i]['name'],
-                                          'genre_id': int(anime_genres[i]['mal_id'])})
 
-        return anime_genres_list
+class ApiSeries(ApiTV):
+    _duration = 40
+    group = [ListType.SERIES, MediaType.SERIES]
+    local_covers_path = Path(app.root_path, "static/covers/series_covers/")
 
     def get_trending(self):
         response = requests.get("https://api.themoviedb.org/3/trending/tv/week?api_key={}"
@@ -397,14 +393,21 @@ class ApiSeries(TMDBMixin):
         for season in [{**item, 'media_id': self.media.id} for item in self.all_data['seasons_data']]:
             db.session.add(SeriesEpisodesPerSeason(**season))
 
+
+class ApiAnime(ApiTV):
+    _duration = 24
+    group = [ListType.ANIME, MediaType.ANIME]
+    local_covers_path = Path(app.root_path, "static/covers/anime_covers/")
+
     @staticmethod
     @sleep_and_retry
     @limits(calls=1, period=4)
     def api_anime_search(anime_name):
         """ Recover the anime title from TMDb to the MyAnimeList API to gather more accurate genres with the
-        <get_api_anime_genres> function """
+        <get_anime_genres> function """
 
         response = requests.get("https://api.jikan.moe/v3/search/anime?q={0}".format(anime_name))
+
         status_code(response.status_code)
 
         return json.loads(response.text)
@@ -414,15 +417,58 @@ class ApiSeries(TMDBMixin):
     @limits(calls=1, period=4)
     def get_api_anime_genres(mal_id):
         """ Recover the genres of MyAnimeList with the shape: "genres":
-        [{"mal_id": 1, "type": "anime", "name": "Action"},
-        {"mal_id": 37, "type": "anime", "name": "Supernatural"},
-        {"mal_id": 16, "type": "anime", "name": "Magic"},
-        {"mal_id": 10, "type": "anime", "name": "Fantasy"}] """
+        [{"mal_id": 1, "type": "anime", "name": "Action", "url": ""},
+        {"mal_id": 37, "type": "anime", "name": "Supernatural","url": ""},
+        {"mal_id": 16, "type": "anime", "name": "Magic","url": ""},
+        {"mal_id": 10, "type": "anime", "name": "Fantasy","url": ""}] """
 
         response = requests.get("https://api.jikan.moe/v3/anime/{}".format(mal_id))
+
         status_code(response.status_code)
 
         return json.loads(response.text)
+
+    def get_trending(self):
+        response = requests.get("https://api.jikan.moe/v3/top/anime/1/airing", timeout=10)
+        status_code(response.status_code)
+
+        return json.loads(response.text)
+
+    def get_anime_genres(self):
+        anime_genres_list = []
+        try:
+            anime_search = self.api_anime_search(self.API_data.get("name"))
+            anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
+        except Exception as e:
+            app.logger.error('[ERROR] - Requesting the Jikan API: {}'.format(e), {'API': 'Jikan'})
+            anime_genres = None
+
+        if anime_genres:
+            for i in range(0, len(anime_genres)):
+                anime_genres_list.append({'genre': anime_genres[i]['name'], 'genre_id': int(anime_genres[i]['mal_id'])})
+
+        return anime_genres_list
+
+    def add_data_to_db(self):
+        self.media = Anime(**self.all_data['media_data'])
+        db.session.add(self.media)
+        db.session.commit()
+
+        if len(self.all_data['anime_genres_data']) > 0:
+            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['anime_genres_data']]:
+                db.session.add(AnimeGenre(**genre))
+        else:
+            for genre in [{**item, 'media_id': self.media.id} for item in self.all_data['genres_data']]:
+                db.session.add(AnimeGenre(**genre))
+
+        for actor in [{**item, 'media_id': self.media.id} for item in self.all_data['actors_data']]:
+            db.session.add(AnimeActors(**actor))
+
+        for network in [{**item, 'media_id': self.media.id} for item in self.all_data['networks_data']]:
+            db.session.add(AnimeNetwork(**network))
+
+        for season in [{**item, 'media_id': self.media.id} for item in self.all_data['seasons_data']]:
+            db.session.add(AnimeEpisodesPerSeason(**season))
 
 
 class ApiMovies(TMDBMixin):
@@ -524,7 +570,7 @@ class ApiGames(ApiData):
     def search(self, game_name, page=1):
         headers = {'Client-ID': f"{app.config['CLIENT_IGDB']}",
                    'Authorization': 'Bearer ' + self.api_key}
-        body = 'fields id, name, cover.image_id, first_release_date, storyline; search "{}";'.format(game_name)
+        body = 'fields id, name, cover.image_id, first_release_date, storyline; limit 50; search "{}";'.format(game_name)
         response = requests.post('https://api.igdb.com/v4/games', data=body, headers=headers, timeout=10)
 
         self.query = Games.query.filter(Games.name.ilike('%' + game_name + '%')).all()
@@ -582,7 +628,7 @@ class ApiGames(ApiData):
                 media_data['media_type'] = ListType.GAMES.value
                 media_results.append(media_data)
 
-        return media_results, 20, 20
+        return media_results, 50, 1
 
     def get_details_and_credits_data(self):
         headers = {'Client-ID': f"{self.client_igdb}",
@@ -719,7 +765,7 @@ class ApiBooks(ApiData):
         self.api_key = app.config['GOOGLE_BOOKS_API_KEY']
 
     @sleep_and_retry
-    @limits(calls=1, period=1)
+    @limits(calls=2, period=1)
     def search(self, qry, page=0):
         response = requests.get(f'https://www.googleapis.com/books/v1/volumes?q={qry}&startIndex={str(page)}',
                                 timeout=10)
@@ -730,14 +776,14 @@ class ApiBooks(ApiData):
         status_code(response.status_code)
         self.API_data = json.loads(response.text)
 
-        try:
-            self.API_id = self.API_data['items'][0]['id']
-            self.get_details_and_credits_data()
-            self.from_API_to_dict()
-            self.add_data_to_db()
-            return self.media.id
-        except:
-            return None
+        # try:
+        #     self.API_id = self.API_data['items'][0]['id']
+        #     self.get_details_and_credits_data()
+        #     self.from_API_to_dict()
+        #     self.add_data_to_db()
+        #     return self.media.id
+        # except:
+        #     return None
 
     def get_autocomplete_list(self):
         db_results = []
@@ -797,7 +843,7 @@ class ApiBooks(ApiData):
         return media_results, total_results, total_pages
 
     @sleep_and_retry
-    @limits(calls=1, period=1)
+    @limits(calls=2, period=1)
     def get_details_and_credits_data(self):
         response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{self.API_id}', timeout=10)
 
@@ -824,15 +870,7 @@ class ApiBooks(ApiData):
         else:
             authors_list.append({'name': 'Unknown'})
 
-        genres, genres_list = self.API_data.get('categories') or None, []
-        if genres:
-            genres = ' / '.join(genres)
-            genres = genres.split(' / ')
-            genres = list(set(genres))
-            for genre in genres[:5]:
-                genres_list.append({'genre': genre})
-        else:
-            genres_list.append({'genre': 'Unknown'})
+        genres_list = [{'genre': 'Unknown'}]
 
         self.all_data = {'media_data': self.media_details, 'genres_data': genres_list, 'authors_data': authors_list}
 

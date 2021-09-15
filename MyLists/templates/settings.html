@@ -33,19 +33,19 @@
 {#            </form>#}
 {#        </div>#}
 {#    {% endif %}#}
-    <div class="row text-center m-t-60 m-b-60">
+    <div class="row m-t-40 m-b-60">
         <div class="col">
             <h4><i class="fas fa-sliders-h"></i>&nbsp;&nbsp; General Settings</h4><hr>
             <form method="POST" action="" enctype="multipart/form-data">
                 {{ settings_form.hidden_tag() }}
-                <div class="m-t-30">
+                <div class="m-t-20">
                     {{ settings_form.username.label }}<br>
                     {{ settings_form.username(size=28) }}<br>
                     {% for error in settings_form.username.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-20">
                     {{ settings_form.email.label }}<br>
                     {{ settings_form.email(size=28) }}<br>
                     {% for error in settings_form.email.errors %}
@@ -53,44 +53,44 @@
                     {% endfor %}
                 </div>
                 <div class="m-t-30">
-                    {{ settings_form.isprivate.label }}: &nbsp;&nbsp;&nbsp; {{ settings_form.isprivate() }}<br>
-                    {% for error in settings_form.isprivate.errors %}
+                    {{ settings_form.add_anime.label }}: &nbsp;&nbsp;&nbsp; {{ settings_form.add_anime() }}<br>
+                    {% for error in settings_form.add_anime.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-0">
                     {{ settings_form.add_books.label }}: &nbsp;&nbsp;&nbsp; {{ settings_form.add_books() }}<br>
                     {% for error in settings_form.add_books.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-0">
                     {{ settings_form.add_games.label }}: &nbsp;&nbsp;&nbsp; {{ settings_form.add_games() }}<br>
                     {% for error in settings_form.add_games.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-0">
                     {{ settings_form.add_feeling.label }}: &nbsp;&nbsp;&nbsp; {{ settings_form.add_feeling() }}<br>
                     {% for error in settings_form.add_feeling.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div id="profile-pic" class="m-t-30">
+                <div id="profile-pic" class="m-t-20">
                     {{ settings_form.picture.label }}<br>
                     {{ settings_form.picture() }}<br>
                     {% for error in settings_form.picture.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div id="back-pic" class="m-t-30">
+                <div id="back-pic" class="m-t-20">
                     {{ settings_form.back_picture.label }}<br>
                     {{ settings_form.back_picture() }}<br>
                     {% for error in settings_form.back_picture.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-40">
                     {{ settings_form.submit_account(class="btn btn-outline-info p-2 m-b-40") }}
                 </div>
             </form>
@@ -101,28 +101,28 @@
             <hr>
             <form method="POST" action="" enctype="multipart/form-data">
                 {{ password_form.hidden_tag() }}
-                <div class="m-t-30">
+                <div class="m-t-20">
                     {{ password_form.current_password.label }}<br>
                     {{ password_form.current_password(size=28) }}<br>
                     {% for error in password_form.current_password.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-20">
                     {{ password_form.new_password.label }}<br>
                     {{ password_form.new_password(size=28) }}<br>
                     {% for error in password_form.new_password.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-20">
                     {{ password_form.confirm_new_password.label }}<br>
                     {{ password_form.confirm_new_password(size=28) }}<br>
                     {% for error in password_form.confirm_new_password.errors %}
                         <span style="color: red;">{{ error }}</span>
                     {% endfor %}
                 </div>
-                <div class="m-t-30">
+                <div class="m-t-40">
                     {{ password_form.submit_password(class="btn btn-outline-info p-2") }}
                 </div>
             </form>

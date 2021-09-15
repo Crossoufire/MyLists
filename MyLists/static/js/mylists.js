@@ -3,7 +3,7 @@
 $(function() {
     let media_select = document.getElementById('select-media');
     $('#autocomplete').catcomplete({
-        delay: 800,
+        delay: 300,
         minLength: 2,
         source: function (request, response) {
             if (request.term == null || request.term.trim() === '') {
@@ -181,6 +181,23 @@ function display_notifications(data) {
                     '<div class="notif-items">' + add_hr + '</div>'
                 );
             }
+            else if (resp[i]['media_type'] === 'animelist') {
+                $("#notif-dropdown").append(
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Anime/'+resp[i]['media_id']+'">' +
+                        '<div class="row no-gutters">' +
+                            '<div class="col-2">' +
+                                '<i class="fas fa-torii-gate text-anime"></i>' +
+                            '</div>' +
+                            '<div class="col-10 ellipsis-notif">' +
+                                '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
+                                '<div class="fs-14" style="color: darkgrey;">S' + resp[i]['payload']['season'] + '.E' +
+                                resp[i]['payload']['episode'] + ' will begin on ' + resp[i]['payload']['release_date'] + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</a>' +
+                    '<div class="notif-items">' + add_hr + '</div>'
+                );
+            }
             else if (resp[i]['media_type'] === 'movieslist') {
                 $("#notif-dropdown").append(
                     '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/'+resp[i]['media_id']+'">' +
@@ -259,7 +276,7 @@ function error_ajax_message(message) {
 
 // --- Tooltip initialization ------------------------------------------------------------------------
 $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').tooltip({html: true})
 });
 
 

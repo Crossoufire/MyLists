@@ -46,11 +46,11 @@ def settings():
             current_user.username = settings_form.username.data.strip()
             app.logger.info('[{}] Settings updated: Old username = {}. New username = {}'
                             .format(current_user.id, old_username, current_user.username))
-        if settings_form.isprivate.data != current_user.private:
-            old_value = current_user.private
-            current_user.private = settings_form.isprivate.data
-            app.logger.info('[{}] Settings updated: Old private mode = {}. New private mode = {}'
-                            .format(current_user.id, old_value, settings_form.isprivate.data))
+        if settings_form.add_anime.data != current_user.add_anime:
+            old_value = current_user.add_anime
+            current_user.add_anime = settings_form.add_anime.data
+            app.logger.info('[{}] Settings updated: Old anime value = {}. New anime mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_anime.data))
         if settings_form.add_books.data != current_user.add_books:
             old_value = current_user.add_books
             current_user.add_books = settings_form.add_books.data
@@ -91,7 +91,7 @@ def settings():
 
     settings_form.username.data = current_user.username
     settings_form.email.data = current_user.email
-    settings_form.isprivate.data = current_user.private
+    settings_form.add_anime.data = current_user.add_anime
     settings_form.add_books.data = current_user.add_books
     settings_form.add_games.data = current_user.add_games
     settings_form.add_feeling.data = current_user.add_feeling

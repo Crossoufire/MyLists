@@ -99,8 +99,8 @@ class ListType(Enum):
     SERIES = 'serieslist'
     ANIME = 'animelist'
     MOVIES = 'movieslist'
-    GAMES = 'gameslist'
     BOOKS = 'bookslist'
+    GAMES = 'gameslist'
 
 
 class MediaType(Enum):
@@ -183,6 +183,7 @@ class User(UserMixin, db.Model):
     movies_views = db.Column(db.Integer, nullable=False, default=0)
     games_views = db.Column(db.Integer, nullable=False, default=0)
     books_views = db.Column(db.Integer, nullable=False, default=0)
+    add_anime = db.Column(db.Boolean, nullable=False, default=False)
     add_books = db.Column(db.Boolean, nullable=False, default=False)
     add_games = db.Column(db.Boolean, nullable=False, default=False)
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
@@ -464,6 +465,9 @@ class MediaMixin:
         if media.__name__ == 'Books':
             genres_list = [r.genre for r in self.genres][:2]
 
+        if genres_list[0] == 'Unknown':
+            return None
+
         similar_genres = db.session.query(media, media_genre) \
             .join(media, media.id == media_genre.media_id) \
             .group_by(media_genre.media_id) \
@@ -500,6 +504,26 @@ class MediaMixin:
 
 
 class MediaListMixin:
+    def category_changes(self, new_status):
+        self.status = new_status
+        new_total = self.total
+
+        if new_status == Status.COMPLETED:
+            self.current_season = len(self.media.eps_per_season)
+            self.last_episode_watched = self.media.eps_per_season[-1].episodes
+            self.total = self.media.total_episodes
+            new_total = self.media.total_episodes
+        elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
+            self.current_season = 1
+            self.last_episode_watched = 0
+            self.total = 0
+            new_total = 0
+
+        #  Reset the rewatched
+        self.rewatched = 0
+
+        return new_total
+
     @classmethod
     def get_media_count_by_status(cls, user_id):
         media_count = db.session.query(cls.status, func.count(cls.status))\
@@ -645,26 +669,6 @@ class MediaListMixin:
 
         return favorites
 
-    def category_changes(self, new_status):
-        self.status = new_status
-        new_total = self.total
-
-        if new_status == Status.COMPLETED:
-            self.current_season = len(self.media.eps_per_season)
-            self.last_episode_watched = self.media.eps_per_season[-1].episodes
-            self.total = self.media.total_episodes
-            new_total = self.media.total_episodes
-        elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
-            self.current_season = 1
-            self.last_episode_watched = 0
-            self.total = 0
-            new_total = 0
-
-        #  Reset the rewatched
-        self.rewatched = 0
-
-        return new_total
-
 
 class TVBase(db.Model):
     __abstract__ = True
@@ -793,6 +797,14 @@ class SeriesList(MediaListMixin, db.Model):
 
     media = db.relationship("Series", back_populates='list_info', lazy=False)
 
+    class Status(Enum):
+        WATCHING = 'Watching'
+        COMPLETED = 'Completed'
+        ON_HOLD = 'On Hold'
+        RANDOM = 'Random'
+        DROPPED = 'Dropped'
+        PLAN_TO_WATCH = 'Plan to Watch'
+
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
@@ -865,13 +877,9 @@ class SeriesList(MediaListMixin, db.Model):
     def html_template():
         return 'medialist_series.html'
 
-    class Status(Enum):
-        WATCHING = 'Watching'
-        COMPLETED = 'Completed'
-        ON_HOLD = 'On Hold'
-        RANDOM = 'Random'
-        DROPPED = 'Dropped'
-        PLAN_TO_WATCH = 'Plan to Watch'
+    @staticmethod
+    def get_media_color():
+        return '#216e7d'
 
 
 class SeriesGenre(db.Model):
@@ -948,6 +956,14 @@ class AnimeList(MediaListMixin, db.Model):
 
     media = db.relationship("Anime", back_populates='list_info', lazy=False)
 
+    class Status(Enum):
+        WATCHING = 'Watching'
+        COMPLETED = 'Completed'
+        ON_HOLD = 'On Hold'
+        RANDOM = 'Random'
+        DROPPED = 'Dropped'
+        PLAN_TO_WATCH = 'Plan to Watch'
+
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
@@ -1020,13 +1036,9 @@ class AnimeList(MediaListMixin, db.Model):
     def html_template():
         return 'medialist_anime.html'
 
-    class Status(Enum):
-        WATCHING = 'Watching'
-        COMPLETED = 'Completed'
-        ON_HOLD = 'On Hold'
-        RANDOM = 'Random'
-        DROPPED = 'Dropped'
-        PLAN_TO_WATCH = 'Plan to Watch'
+    @staticmethod
+    def get_media_color():
+        return '#945141'
 
 
 class AnimeGenre(db.Model):
@@ -1160,6 +1172,10 @@ class MoviesList(MediaListMixin, db.Model):
 
     media = db.relationship("Movies", back_populates='list_info', lazy=False)
 
+    class Status(Enum):
+        COMPLETED = 'Completed'
+        PLAN_TO_WATCH = 'Plan to Watch'
+
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
         new_total = 1 + new_rewatch
@@ -1267,9 +1283,9 @@ class MoviesList(MediaListMixin, db.Model):
     def html_template():
         return 'medialist_movies.html'
 
-    class Status(Enum):
-        COMPLETED = 'Completed'
-        PLAN_TO_WATCH = 'Plan to Watch'
+    @staticmethod
+    def get_media_color():
+        return '#8c7821'
 
 
 class MoviesGenre(db.Model):
@@ -1382,6 +1398,13 @@ class BooksList(MediaListMixin, db.Model):
 
     media = db.relationship("Books", back_populates='list_info', lazy=False)
 
+    class Status(Enum):
+        READING = 'Reading'
+        COMPLETED = 'Completed'
+        ON_HOLD = 'On Hold'
+        DROPPED = 'Dropped'
+        PLAN_TO_READ = 'Plan to Read'
+
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
         new_total = self.media.pages + (new_rewatch * self.media.pages)
@@ -1434,12 +1457,9 @@ class BooksList(MediaListMixin, db.Model):
     def html_template():
         return 'medialist_books.html'
 
-    class Status(Enum):
-        READING = 'Reading'
-        COMPLETED = 'Completed'
-        ON_HOLD = 'On Hold'
-        DROPPED = 'Dropped'
-        PLAN_TO_READ = 'Plan to Read'
+    @staticmethod
+    def get_media_color():
+        return '#584c6e'
 
 
 class BooksGenre(db.Model):
@@ -1587,6 +1607,11 @@ class GamesList(MediaListMixin, db.Model):
 
     media = db.relationship("Games", back_populates='list_info', lazy=False)
 
+    class Status(Enum):
+        COMPLETED = 'Completed'
+        MULTIPLAYER = 'Multiplayer'
+        ENDLESS = 'Endless'
+
     def category_changes(self, new_status):
         return self.playtime
 
@@ -1689,10 +1714,9 @@ class GamesList(MediaListMixin, db.Model):
     def html_template():
         return 'medialist_games.html'
 
-    class Status(Enum):
-        COMPLETED = 'Completed'
-        MULTIPLAYER = 'Multiplayer'
-        ENDLESS = 'Endless'
+    @staticmethod
+    def get_media_color():
+        return '#196219'
 
 
 class GamesGenre(db.Model):
@@ -1876,6 +1900,7 @@ class MyListsStats(db.Model):
     total_episodes = db.Column(db.Text)
     total_seasons = db.Column(db.Text)
     total_movies = db.Column(db.Text)
+    total_pages = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     @classmethod
@@ -1886,7 +1911,7 @@ class MyListsStats(db.Model):
                 'total_time': json.loads(all_stats.total_time), 'top_media': json.loads(all_stats.top_media),
                 'top_genres': json.loads(all_stats.top_genres), 'top_actors': json.loads(all_stats.top_actors),
                 'top_authors': json.loads(all_stats.top_authors), 'top_directors': json.loads(all_stats.top_directors),
-                'top_dropped': json.loads(all_stats.top_dropped),
+                'top_dropped': json.loads(all_stats.top_dropped), 'total_pages': all_stats.total_pages,
                 'total_episodes': json.loads(all_stats.total_episodes),
                 'total_seasons': json.loads(all_stats.total_seasons),
                 'total_movies': json.loads(all_stats.total_movies),
@@ -1898,6 +1923,7 @@ class MyListsStats(db.Model):
 
 class GlobalStats:
     def __init__(self):
+        self.tv_list_type = [ListType.SERIES, ListType.ANIME]
         self.tmdb_list_type = [ListType.SERIES, ListType.ANIME, ListType.MOVIES]
         self.all_list_type = ListType
         self.media = None
@@ -1964,6 +1990,7 @@ class GlobalStats:
                                             func.count(self.media_genre.genre).label('count'))
                            .join(self.media_genre, self.media_genre.media_id == self.media_list.media_id)
                            .group_by(self.media_genre.genre).order_by(text('count desc')).limit(5).all())
+
         return queries
 
     def get_top_actors(self):
@@ -1978,43 +2005,47 @@ class GlobalStats:
 
         return queries
 
-    def get_top_developers(self):
-        self.get_query_data(ListType.GAMES)
-        query = db.session.query(self.media_comp.name, self.media_list,
-                                 func.count(self.media_comp.name).label('count'))\
-            .join(self.media_comp, self.media_comp.media_id == self.media_list.media_id)\
-            .group_by(self.media_comp.name)\
-            .filter(self.media_comp.name != 'Unknown', self.media_comp.developer == True)\
-            .order_by(text('count desc')).limit(5).all()
+    def get_top_dropped(self):
+        queries = []
+        for list_type in self.tv_list_type:
+            self.get_query_data(list_type)
+            queries.append(db.session.query(self.media.name, self.media_list,
+                                            func.count(self.media_list.media_id == self.media.id).label('count'))
+                           .join(self.media_list, self.media_list.media_id == self.media.id)
+                           .filter(self.media_list.status == Status.DROPPED).group_by(self.media_list.media_id)
+                           .order_by(text('count desc')).limit(5).all())
 
-        return [[], [], [], query]
+        return queries
+
+    def get_total_eps_seasons(self):
+        queries = []
+        for list_type in self.tv_list_type:
+            self.get_query_data(list_type)
+            queries.append(db.session.query(func.sum(self.media_list.total),
+                                            func.sum(self.media_list.current_season)).all())
+
+        return queries
 
     def get_top_directors(self):
         self.get_query_data(ListType.MOVIES)
         query = db.session.query(self.media.director_name, self.media_list,
-                                 func.count(self.media.director_name).label('count'))\
-            .filter(self.media.director_name != 'Unknown')\
+                                 func.count(self.media.director_name).label('count')) \
+            .join(self.media, self.media.id == self.media_list.media_id) \
+            .group_by(self.media.director_name).filter(self.media.director_name != 'Unknown')\
             .order_by(text('count desc')).limit(5).all()
 
-        return [[], query, [], []]
+        return [[], [], query, [], []]
 
-    def get_top_dropped(self):
-        self.get_query_data(ListType.SERIES)
-        query = db.session.query(self.media.name, self.media_list,
-                                 func.count(self.media_list.media_id == self.media.id).label('count'))\
-            .join(self.media_list, self.media_list.media_id == self.media.id)\
-            .filter(self.media_list.status == Status.DROPPED).group_by(self.media_list.media_id)\
+    def get_top_developers(self):
+        self.get_query_data(ListType.GAMES)
+        query = db.session.query(self.media_comp.name, self.media_list,
+                                 func.count(self.media_comp.name).label('count'))\
+            .join(self.media_comp, self.media_comp.media_id == self.media_list.media_id) \
+            .group_by(self.media_comp.name) \
+            .filter(self.media_comp.name != 'Unknown', self.media_comp.developer == True) \
             .order_by(text('count desc')).limit(5).all()
 
-        return [query, [], [], []]
-
-    def get_total_eps_seasons(self):
-        self.get_query_data(ListType.SERIES)
-        query = db.session.query(func.sum(self.media_list.total),
-                                 func.sum(self.media_list.current_season + (self.media_list.current_season *
-                                          self.media_list.rewatched))).all()
-
-        return query
+        return [[], [], [], [], query]
 
     def get_total_movies(self):
         self.get_query_data(ListType.MOVIES)
@@ -2033,7 +2064,18 @@ class GlobalStats:
             .group_by(self.media_authors.name).filter(self.media_authors.name != 'Unknown')\
             .order_by(text('count desc')).limit(5).all()
 
-        return [[], [], query, []]
+        return [[], [], [], query, []]
+
+    def get_total_book_pages(self):
+        self.get_query_data(ListType.BOOKS)
+        query = db.session.query(func.sum(self.media_list.actual_page)).all()
+
+        try:
+            data = query[0][0]
+        except:
+            data = 0
+
+        return data
 
 
 class MediaListQuery:
@@ -2138,14 +2180,14 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
     media_list = eval(list_type.value.capitalize().replace('l', 'L'))
     media_genre = eval(list_type.value.capitalize().replace('list', 'Genre'))
 
-    if list_type == ListType.SERIES or list_type == ListType.MOVIES:
+    if list_type == ListType.SERIES or list_type == ListType.ANIME or list_type == ListType.MOVIES:
         media_more = eval(list_type.value.capitalize().replace('list', 'Actors'))
     elif list_type == ListType.GAMES:
         media_more = eval(list_type.value.capitalize().replace('list', 'Companies'))
     elif list_type == ListType.BOOKS:
         media_more = eval(list_type.value.capitalize().replace('list', 'Authors'))
 
-    if list_type == ListType.SERIES:
+    if list_type == ListType.SERIES or list_type == ListType.ANIME:
         add_sort = {'Release date +': media.first_air_date.desc(),
                     'Release date -': media.first_air_date.asc(),
                     'Rewatch': media_list.rewatched.desc(),

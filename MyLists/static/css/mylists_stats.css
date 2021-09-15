@@ -19,7 +19,7 @@ table.table-sm td {
 }
 
 .statistics .box {
-	background-color: #2a2b30;
+	background-color: #172027;
 }
 
 .statistics .box i {
@@ -30,11 +30,6 @@ table.table-sm td {
 
 
 /* --- General CSS --------------------------------------------------------------- */
-.seasons-eps-container {
-    position: relative;
-    height: 400px;
-}
-
 .media-container {
     position: relative;
     height: 400px;

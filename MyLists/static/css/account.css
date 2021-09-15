@@ -317,7 +317,6 @@ a {
 
 .media-stats-title {
     background: #403d3a;
-    /*margin: 0 20px 0 20px;*/
 }
 
 .evenly-spaced {
@@ -333,7 +332,7 @@ a {
 }
 
 .favorite-img {
-    height: 82px;
+    height: 81px;
     width: auto;
 }
 
