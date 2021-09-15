@@ -29,7 +29,7 @@
                         <td style="min-width: 180px; max-width: 180px;">
                             <div style="position: relative;">
                                 <img class="profile-picture" src="{{ url_for('static',
-                                 filename='profile_pics'+user['profile']) }}" alt="">
+                                 filename='profile_pics/'+user['profile']) }}" alt="">
                                 <img class="frame-picture" src="{{ user['knowledge_frame']['frame_id'] }}.png" alt="">
                                 <div class="frame-level">{{ user['knowledge_frame']['level'] }}</div>
                             </div>
