@@ -15,7 +15,36 @@
                     <h3><b>{{ media.name }}</b></h3><hr>
                 </div>
                 <div class="text-center">
-                    <img class="media-cover" src={{ media.get_media_cover() }} alt=""/>
+                    {% if media.image_cover == 'default.jpg' and media_list == 'bookslist' %}
+                        <img class="media-cover" src="{{ media.get_media_cover() }}" alt=""/>
+                        <a class="btn btn-danger btn-smaller" data-toggle="modal" data-target="#CoverModal">Add Cover</a>
+                        <div class="modal fade" id="CoverModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content text-light bg-dark">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><b>Add book cover</b></h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            <span style="color: lightgray;">&times;</span>
+                                        </button>
+                                    </div>
+                                    <form action="/update_book_cover/{{ media.id }}" method="POST">
+                                        <div class="modal-body">
+                                            {{ form.hidden_tag() }}
+                                            <div class="p-2">
+                                                <div><b>{{ form_cover.image_cover.label() }}:</b></div>
+                                                <div>{{ form_cover.image_cover(size=15, style='width: 50%;') }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <img class="media-cover" src="{{ media.get_media_cover() }}" alt=""/>
+                    {% endif %}
                 </div>
                 <div class="m-b-15 m-t-15">
                     <div id="your-medialist-data" class="p-2" {% if not list_info.in_list %}style="display: none;"{% endif %}>
@@ -45,40 +74,33 @@
                             <div id="score-row" class="row m-l-15 m-r-15 m-b-5">
                                     <div class="col-4"><b>Feeling:</b></div>
                                     <div id="feelings" class="col-8 d-flex" style="justify-content: space-evenly;">
-                                        <a class="feel" data-toggle="tooltip" title="No feeling"
-                                         onclick="updateFeeling('{{ media.id }}', null, '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', null, '{{ media_list }}', this)"
                                          {% if list_info.feeling == None %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                          <i>---</i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Excellent"
-                                           onclick="updateFeeling('{{ media.id }}', '5', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '5', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '5' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-stars" style="color: #019101;"></i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Good"
-                                           onclick="updateFeeling('{{ media.id }}', '4', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '4', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '4' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-alt" style="color: #59a643;"></i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Ok"
-                                           onclick="updateFeeling('{{ media.id }}', '3', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '3', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '3' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-smile" style="color: darkseagreen;"></i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Meh"
-                                           onclick="updateFeeling('{{ media.id }}', '2', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '2', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '2' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
-                                            <i class="fas fa-meh" style="color: #d0a141;"></i>
+                                            <i class="fas fa-frown" style="color: #d0a141;"></i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Bad"
-                                           onclick="updateFeeling('{{ media.id }}', '1', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '1', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '1' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
-                                            <i class="fas fa-frown" style="color: indianred;"></i>
+                                            <i class="fas fa-angry" style="color: indianred;"></i>
                                         </a>
-                                        <a class="feel" data-toggle="tooltip" title="Awful"
-                                           onclick="updateFeeling('{{ media.id }}', '0', '{{ media_list }}', this)"
+                                        <a class="feel" onclick="updateFeeling('{{ media.id }}', '0', '{{ media_list }}', this)"
                                                 {% if list_info.feeling == '0' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
-                                            <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                            <i class="fas fa-poop" style="color: saddlebrown;"></i>
                                         </a>
                                         <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
                                         &nbsp;<i id="score-check" class="fas fa-check" style="display: none;"></i>
@@ -90,7 +112,7 @@
                                 <div class="col-4"><b>Score:</b></div>
                                 <div class="col-8">
                                     <label for="score-dropdown"></label>
-                                    <select id="score-dropdown" class="text-light text-center cat-drop" onchange="updateScore(
+                                    <select id="score-dropdown" class="text-light cat-drop" onchange="updateScore(
                                      '{{ media.id }}', this, '{{ media_list }}')">
                                         <option {% if list_info.score == None or list_info.score == -1 %} selected="selected"
                                         {% endif %}value="---">&nbsp;---&nbsp;</option>
@@ -113,8 +135,7 @@
                         <h4 id="comment-title" class="m-l-15 m-r-15 m-t-15">
                             <i class="fas fa-pen-alt m-t-10"></i>&nbsp; <b>Comment</b>
                             <a class="far fa-edit m-t-10" data-toggle="tooltip" title="Add/Edit Comment"
-                             href="{{ url_for('main.write_comment', media_type=media._group[1].value,
-                             media_id=media.id) }}"></a>
+                             href="{{ url_for('main.write_comment', media_type=media._group[1].value, media_id=media.id) }}"></a>
                         </h4>
                         <hr class="m-l-15 m-r-15 m-b-8">
                         <p class="comment-style m-l-20 m-r-20">

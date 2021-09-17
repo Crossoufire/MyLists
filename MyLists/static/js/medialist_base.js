@@ -194,33 +194,33 @@ function feelButtons(card, feel_a) {
     $card.find('.view.overlay').prepend(
         '<a class="card-btn-top-right fas fa-times" onclick="removeCat()"></a>' +
         '<ul class="card-cat-buttons">' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="No feel" style="display: '+no_feel+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+no_feel+';" ' +
             'onclick="changeFeel(\'None\', \''+card.id+'\')">' +
                 '<i>---</i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Excellent" style="display: '+grin_plus+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+grin_plus+';" ' +
             'onclick="changeFeel(\'5\', \''+card.id+'\')">' +
                 '<i class="fas fa-2x fa-grin-stars" style="color: #019101;"></i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Good" style="display: '+grin+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+grin+';" ' +
             'onclick="changeFeel(\'4\', \''+card.id+'\')">' +
                 '<i class="fas fa-2x fa-grin-alt" style="color: #59a643;"></i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Ok" style="display: '+smile+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+smile+';" ' +
             'onclick="changeFeel(\'3\', \''+card.id+'\')">' +
                 '<i class="fas fa-2x fa-smile" style="color: darkseagreen;"></i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Meh" style="display: '+meh+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+meh+';" ' +
             'onclick="changeFeel(\'2\', \''+card.id+'\')">' +
-                '<i class="fas fa-2x fa-meh" style="color: #d0a141;"></i>' +
+                '<i class="fas fa-2x fa-frown" style="color: #d0a141;"></i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Bad" style="display: '+frown+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+frown+';" ' +
             'onclick="changeFeel(\'1\', \''+card.id+'\')">' +
-                '<i class="fas fa-2x fa-frown" style="color: indianred;"></i>' +
+                '<i class="fas fa-2x fa-angry" style="color: indianred;"></i>' +
             '</li>' +
-            '<li class="btn p-1 m-1 card-btn-mobile" data-toggle="tooltip" title="Awful" style="display: '+angry+';" ' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+angry+';" ' +
             'onclick="changeFeel(\'0\', \''+card.id+'\')">' +
-                '<i class="fas fa-2x fa-angry" style="color: #ab0202;"></i>' +
+                '<i class="fas fa-2x fa-poop" style="color: saddlebrown;"></i>' +
             '</li>' +
         "</ul>");
 
@@ -265,13 +265,13 @@ function changeFeel(new_feel, card_id) {
                 a = '<i class="fas fa-smile" style="color: darkseagreen;" value="3"></i>'
             }
             else if (new_feel === '2') {
-                a = '<i class="fas fa-meh" style="color: #d0a141;" value="2"></i>'
+                a = '<i class="fas fa-frown" style="color: #d0a141;" value="2"></i>'
             }
             else if (new_feel === '1') {
-                a = '<i class="fas fa-frown" style="color: indianred;" value="1"></i>'
+                a = '<i class="fas fa-angry" style="color: indianred;" value="1"></i>'
             }
             else if (new_feel === '0') {
-                a = '<i class="fas fa-angry" style="color: #ab0202;" value="0"></i>'
+                a = '<i class="fas fa-poop" style="color: saddlebrown;" value="0"></i>'
             }
             $('#feel_'+element_id).append(a);
 

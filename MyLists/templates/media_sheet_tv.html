@@ -10,7 +10,7 @@
 
 
 {% block cat_select %}
-    <select id="category-dropdown" class="text-light text-center cat-drop" onchange="changeCategoryTV(
+    <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryTV(
     '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_list }}')">
         <option {% if list_info.status == 'Watching' %} selected="selected" {% endif %}>Watching</option>
         <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
@@ -28,7 +28,7 @@
         <div class="col-4"><b>Season:</b></div>
         <div class="col-8">
             <label for="season-dropdown"></label>
-            <select id="season-dropdown" class="text-light text-center cat-drop" onchange="updateSeason(
+            <select id="season-dropdown" class="text-light cat-drop" onchange="updateSeason(
              '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_list }}')">
                 {% for eps in range(0, eps_per_season|length) %}
                     <option {% if eps + 1 == list_info.current_season %}selected="selected"{% endif %}
@@ -44,7 +44,7 @@
         <div class="col-4"><b>Episode:</b></div>
         <div class="col-8">
             <label for="episode-dropdown"></label>
-            <select id="episode-dropdown" class="text-light text-center cat-drop" onchange="updateEpisode(
+            <select id="episode-dropdown" class="text-light cat-drop" onchange="updateEpisode(
              '{{ media.id }}', this, '{{ media_list }}')">
                 {% if list_info.status == 'Plan to Watch' or list_info.status == 'Random' %}
                     {% for i in range(0, eps_per_season[list_info.current_season - 1]) %}

@@ -570,7 +570,7 @@ class ApiGames(ApiData):
     def search(self, game_name, page=1):
         headers = {'Client-ID': f"{app.config['CLIENT_IGDB']}",
                    'Authorization': 'Bearer ' + self.api_key}
-        body = 'fields id, name, cover.image_id, first_release_date, storyline; limit 50; search "{}";'.format(game_name)
+        body = f'fields id, name, cover.image_id, first_release_date, storyline; limit 50; search "{game_name}";'
         response = requests.post('https://api.igdb.com/v4/games', data=body, headers=headers, timeout=10)
 
         self.query = Games.query.filter(Games.name.ilike('%' + game_name + '%')).all()
@@ -645,7 +645,7 @@ class ApiGames(ApiData):
         self.API_data = json.loads(response.text)
         self.API_data = self.API_data[0]
 
-    def from_API_to_dict(self):
+    def from_API_to_dict(self, updating=False):
         self.media_details = {'name': self.API_data.get('name', 'Unknown') or 'Unknown',
                               'release_date': self.API_data.get('first_release_date', 'Unknown') or 'Unknown',
                               'IGDB_url': self.API_data.get('url', 'Unknown') or 'Unknown',
@@ -657,7 +657,7 @@ class ApiGames(ApiData):
                               'game_engine': self.API_data.get('game_engines', [{'name': 'Unknown'}])[0]['name'] or 'Unknown',
                               'player_perspective': self.API_data.get('player_perspectives', [{'name': 'Unknown'}])[0]['name'] or 'Unknown',
                               'game_modes': ','.join([x['name'] for x in self.API_data.get('game_modes', [{'name': 'Unknown'}])]),
-                              'igdb_id': self.API_data.get('id'),
+                              'api_id': self.API_data.get('id'),
                               'image_cover': self.get_media_cover()}
 
         hltb_time = self.HLTB_time(self.media_details['name'])
@@ -666,37 +666,39 @@ class ApiGames(ApiData):
         self.media_details['hltb_main_and_extra_time'] = hltb_time['extra']
         self.media_details['hltb_total_complete_time'] = hltb_time['completionist']
 
-        platforms, platforms_list = self.API_data.get('platforms') or None, []
-        if platforms:
-            for platform in platforms:
-                platforms_list.append({'name': platform["name"]})
-        else:
-            platforms_list.append({'name': 'Unknown'})
+        companies_list, fusion_list, platforms_list = [], [], []
+        if not updating:
+            platforms, platforms_list = self.API_data.get('platforms') or None, []
+            if platforms:
+                for platform in platforms:
+                    platforms_list.append({'name': platform["name"]})
+            else:
+                platforms_list.append({'name': 'Unknown'})
 
-        companies, companies_list = self.API_data.get('involved_companies') or None, []
-        if companies:
-            for company in companies:
-                companies_list.append({'name': company["company"]["name"], 'publisher': company["publisher"],
-                                       'developer': company["developer"]})
-        else:
-            companies_list.append({'name': 'Unknown', 'publisher': False, 'developer': False})
+            companies, companies_list = self.API_data.get('involved_companies') or None, []
+            if companies:
+                for company in companies:
+                    companies_list.append({'name': company["company"]["name"], 'publisher': company["publisher"],
+                                           'developer': company["developer"]})
+            else:
+                companies_list.append({'name': 'Unknown', 'publisher': False, 'developer': False})
 
-        genres, genres_list = self.API_data.get('genres') or None, []
-        if genres:
-            for i in range(0, len(genres)):
-                genres_list.append({'genre': genres[i]['name']})
+            genres, genres_list = self.API_data.get('genres') or None, []
+            if genres:
+                for i in range(0, len(genres)):
+                    genres_list.append({'genre': genres[i]['name']})
 
-        themes, themes_list = self.API_data.get('themes') or None, []
-        if themes:
-            for i in range(0, len(themes)):
-                themes_list.append({'genre': themes[i]['name']})
+            themes, themes_list = self.API_data.get('themes') or None, []
+            if themes:
+                for i in range(0, len(themes)):
+                    themes_list.append({'genre': themes[i]['name']})
 
-        fusion_list = genres_list + themes_list
-        if len(fusion_list) == 0:
-            fusion_list.append({'genre': 'Unknown'})
+            fusion_list = genres_list + themes_list
+            if len(fusion_list) == 0:
+                fusion_list.append({'genre': 'Unknown'})
 
         self.all_data = {'media_data': self.media_details, 'companies_data': companies_list, 'genres_data': fusion_list,
-                         'platforms_data': platforms_list, 'hltb_time': hltb_time}
+                         'platforms_data': platforms_list}
 
     def add_data_to_db(self):
         self.media = Games(**self.all_data['media_data'])

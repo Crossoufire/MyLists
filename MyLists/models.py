@@ -124,6 +124,7 @@ class Status(Enum):
     DROPPED = 'Dropped'
     PLAN_TO_WATCH = 'Plan to Watch'
     PLAN_TO_READ = 'Plan to Read'
+    PLAN_TO_PLAY = 'Plan to Play'
     SEARCH = 'Search'
     FAVORITE = 'Favorite'
     STATS = 'Stats'
@@ -311,12 +312,16 @@ class User(UserMixin, db.Model):
         update = []
         for element in last_update:
             element_data = {}
+
             # Playtime update
-            if element.old_playtime and element.new_playtime:
-                element_data["update"] = [f"{int(element.old_playtime/60)} h", f"{int(element.new_playtime/60)} h"]
+            try:
+                if element.old_playtime >= 0 and element.new_playtime >= 0:
+                    element_data["update"] = [f"{int(element.old_playtime/60)} h", f"{int(element.new_playtime/60)} h"]
+            except:
+                pass
 
             # Season or episode update
-            elif not element.old_status and not element.new_status:
+            if not element.old_status and not element.new_status:
                 element_data["update"] = [f"S{element.old_season:02d}.E{element.old_episode:02d}",
                                           f"S{element.new_season:02d}.E{element.new_episode:02d}"]
 
@@ -1611,8 +1616,15 @@ class GamesList(MediaListMixin, db.Model):
         COMPLETED = 'Completed'
         MULTIPLAYER = 'Multiplayer'
         ENDLESS = 'Endless'
+        DROPPED = 'Dropped'
+        PLAN_TO_PLAY = 'Plan to Play'
 
     def category_changes(self, new_status):
+        self.status = new_status
+
+        if new_status == Status.PLAN_TO_PLAY:
+            self.playtime = 0
+
         return self.playtime
 
     def compute_new_time_spent(self, old_data=0, new_data=0, user_id=None):
@@ -1623,7 +1635,7 @@ class GamesList(MediaListMixin, db.Model):
             user = User.query.filter(User.id == user_id).first()
 
         old_time = user.time_spent_games
-        user.time_spent_games = old_time + (new_data - self.playtime)
+        user.time_spent_games = old_time + (new_data - old_data)
 
     @classmethod
     def get_media_total_eps(cls, user_id):

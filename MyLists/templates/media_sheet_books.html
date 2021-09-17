@@ -7,7 +7,7 @@
 
 
 {% block cat_select %}
-    <select id="category-dropdown" class="text-light text-center cat-drop" onchange="changeCategoryBooks(
+    <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryBooks(
     '{{ media.id }}', this, {{ media.pages }})">
         <option {% if list_info.status == 'Reading' %} selected="selected" {% endif %}>Reading</option>
         <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
@@ -37,7 +37,7 @@
         <div class="col-4"><b>Re-read:</b></div>
         <div class="col-8">
             <label for="rewatched-dropdown"></label>
-            <select id="rewatched-dropdown" class="text-light text-center cat-drop" onchange="updateRewatched(
+            <select id="rewatched-dropdown" class="text-light cat-drop" onchange="updateRewatched(
              '{{ media.id }}', this, '{{ media_list }}')">
                 {% for i in range(0, 11) %}
                     <option {% if i == list_info.rewatched %}selected="selected"{% endif %} value="{{ i }}">
@@ -92,7 +92,7 @@
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-theater-masks"></i><b>&nbsp; Genres</b></h5>
                 {% set genres = media.get_genres() %}
-                {% if genres == 'Unknown' and media_list == 'bookslist' %}
+                {% if genres == 'Unknown' %}
                     <a class="btn btn-danger btn-smaller" data-toggle="modal" data-target="#GenreModal">Add Genre</a>
                     <div class="modal fade" id="GenreModal" tabindex="-1" role="dialog">
                         <div class="modal-dialog modal-dialog-centered" role="document">

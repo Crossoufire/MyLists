@@ -45,9 +45,9 @@
 
 <body>
 <header class="site-header">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top p-0">
-        <div class="container">
-            {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top p-0">
+            <div class="container">
                 <ul class="navbar-nav mr-auto m-l-10">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fs-22" data-toggle="dropdown">MyLists</a>
@@ -190,23 +190,23 @@
                         </li>
                     </ul>
                 </div>
-            {% else %}
-                <a class="navbar-brand m-l-10" href="{{ url_for('auth.home') }}">MyLists</a>
+            </div>
+        </nav>
+    {% else %}
+        <nav class="navbar" style="box-shadow: none;">
+            <div class="container">
+                <h3><b>MyLists</b></h3>
                 {% if request.path == '/' %}
                     <a class="nav-link ml-auto">
-                        <button class="btn btn-sm btn-primary my-2 my-sm-0" data-toggle="modal"
-                        data-target="#modalLoginForm">Login
-                        </button>
+                        <a class="fs-18" data-toggle="modal" data-target="#modalLoginForm"><b>Login</b></a>
                     </a>
                     <a class="nav-link">
-                        <button class="btn btn-sm btn-danger my-2 my-sm-0" data-toggle="modal"
-                                data-target="#modalRegisterForm">Register
-                        </button>
+                        <a class="fs-18" data-toggle="modal" data-target="#modalRegisterForm"><b>Register</b></a>
                     </a>
                 {% endif %}
-            {% endif %}
-        </div>
-    </nav>
+            </div>
+        </nav>
+    {% endif %}
 </header>
 
 <div class="container">
@@ -302,7 +302,7 @@
             <div class="col-lg-6 col-sm-12 col-xs-12 mb-4">
                 <img class="m-b-5" src="{{ url_for('static', filename='img/favicon.ico') }}">&nbsp;
                 <h5 class="dis-inline text-uppercase" style="color: #3fd3da;"><b>MyLists.info</b></h5>
-                <p class="text-justify m-b-5">
+                <p class="text-justify m-b-10">
                     Create your media lists, see how much time you have spent, follow your friends and compare to them.
                     Add your favorites, comment, rewatch and gain levels to get to the top of the Hall of Fame.
                 </p>

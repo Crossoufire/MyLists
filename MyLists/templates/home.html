@@ -3,18 +3,30 @@
 
 {% block css %}
     <link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
+    <style>
+        body {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 100vh;
+            background: #070a0c;
+            margin: 0;
+            color: #e2e2e2;
+        }
+    </style>
 {% endblock %}
 
 
 {% block home_header %}
-    <div class="view">
-        <img class="img-fluid" src="{{ url_for('static', filename='img/home1.jpg') }}" alt=""/>
-        <div class="mask d-flex justify-content-center align-items-center">
-            <div class="text-center white-text mx-5 wow fadeIn">
-                <h1 class="title">
-                    <strong>Welcome to MyLists</strong>
-                </h1>
-            </div>
+    <div style="position: relative; z-index: -1; margin-top: -75px;">
+        <div style="background-image: url('/static/img/home1.jpg'); background-size: cover;
+         background-position: center; height: 600px;"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);">
+            <h1 class="title text-center">
+                <strong>Welcome to MyLists</strong>
+            </h1>
         </div>
     </div>
 {% endblock %}
@@ -165,39 +177,37 @@
         </div>
     </div>
 
+{#    <section>#}
+{#        <h3 class="title-section">#}
+{#            <b>List all your favorite Series / Anime/ Movies / Books / Games and never get lost</b>#}
+{#        </h3>#}
+{#        <h5 class="title-section my-5 text-center">#}
+{#            MyLists has a beautiful and clear interface which allows you to list all your series / anime / movies#}
+{#            / books/ games without remembering what was the last watched episode. It integrates all kind of statistics#}
+{#            so you can see how much time you spent. Moreover, you can see your follows' lists and compare it to yours.#}
+{#        </h5>#}
+{#        <div class="row wow fadeIn">#}
+{#            <div class="col-md-12 flex-center">#}
+{#                <img src="{{ url_for('static', filename='img/home2.jpg') }}" class="img-fluid" alt="">#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{#    <hr class="my-5 background_white">#}
+{#    <section>#}
+{#        <h1 class="title-section my-5 h3 text-center">COMPARE YOUR LIST WITH OTHER USERS</h1>#}
+{#        <h5 class="title-section my-5 text-center">#}
+{#            MyLists includes a Hall of Fame of all registered users. By default, everyone can see everyone's list, last#}
+{#            updates, time spent, favorites and much more.#}
+{#        </h5>#}
+{#        <div class="row wow fadeIn">#}
+{#            <div class="col-md-12 flex-center">#}
+{#                <img src="{{ url_for('static', filename='img/home3.jpg') }}" class="img-fluid" alt="">#}
+{#            </div>#}
+{#        </div>#}
+{#    </section>#}
+{#    <hr class="my-5 background_white">#}
     <section>
-        <h1 class="title-section my-5 h3 text-center">
-            LIST ALL YOUR FAVORITE SERIES / ANIME / MOVIES / BOOKS / GAMES AND NEVER GET LOST
-        </h1>
-        <h5 class="title-section my-5 text-center">
-            MyLists has a beautiful and clear interface which allows you to list all your series / anime / movies
-            / books/ games without remembering what was the last watched episode. It integrates all kind of statistics
-            so you can see how much time you spent. Moreover, you can see your follows' lists and compare it to yours.
-        </h5>
-        <div class="row wow fadeIn">
-            <div class="col-md-12 flex-center">
-                <img src="{{ url_for('static', filename='img/home2.jpg') }}" class="img-fluid" alt="">
-            </div>
-        </div>
-    </section>
-    <hr class="my-5 background_white">
-
-    <section>
-        <h1 class="title-section my-5 h3 text-center">COMPARE YOUR LIST WITH OTHER USERS</h1>
-        <h5 class="title-section my-5 text-center">
-            MyLists includes a Hall of Fame of all registered users. By default, everyone can see everyone's list, last
-            updates, time spent, favorites and much more.
-        </h5>
-        <div class="row wow fadeIn">
-            <div class="col-md-12 flex-center">
-                <img src="{{ url_for('static', filename='img/home3.jpg') }}" class="img-fluid" alt="">
-            </div>
-        </div>
-    </section>
-    <hr class="my-5 background_white">
-
-    <section>
-        <h2 class="my-5 h3 text-center">AND EVEN MORE</h2>
+{#        <h2 class="my-5 h3 text-center">AND EVEN MORE</h2>#}
         <div class="row features-small mt-5 wow fadeIn justify-content-md-center">
             <div class="col-xl-4">
                 <div class="row">

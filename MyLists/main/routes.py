@@ -11,7 +11,7 @@ from sqlalchemy import func
 from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
 from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
-from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm
+from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
     get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format
 
@@ -199,13 +199,14 @@ def media_sheet(media_type, media_id):
 
     # Get the Genre form for books
     form = GenreForm()
+    form_cover = CoverForm()
     genres = None
     if list_type == ListType.BOOKS:
         genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
             .filter(BooksGenre.media_id == media_id).first()
 
     return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
-                           media_list=list_type.value)
+                           media_list=list_type.value, form_cover=form_cover)
 
 
 @bp.route('/update_book_genres/<media_id>', methods=['POST'])
@@ -231,6 +232,31 @@ def update_book_genres(media_id):
             except:
                 db.session.rollback()
                 flash('Error while updating the genres.', 'warning')
+
+    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
+
+
+@bp.route('/update_book_cover/<media_id>', methods=['POST'])
+@login_required
+def update_book_cover(media_id):
+    form = CoverForm()
+    book = Books.query.filter(Books.id == media_id).first()
+
+    if form.validate_on_submit():
+        picture_fn = secrets.token_hex(8) + '.jpg'
+        picture_path = Path(app.root_path, f"static/covers/books_covers", picture_fn)
+        try:
+            urlretrieve(f"{form.image_cover.data}", f"{picture_path}")
+            img = Image.open(f"{picture_path}")
+            img = img.resize((300, 450), Image.ANTIALIAS)
+            img.save(f"{picture_path}", quality=90)
+        except Exception as e:
+            app.logger.error(f"[SYSTEM] - Error occured updating media cover: {e}")
+            flash(str(e), 'warning')
+            picture_fn = "default.jpg"
+        book.image_cover = picture_fn
+        db.session.add(book)
+        db.session.commit()
 
     return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
 
@@ -678,7 +704,7 @@ def update_playtime():
 
     # Set the last updates
     UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_playtime=media.playtime,
-                                   new_playtime=new_playtime)
+                                   new_playtime=new_playtime, old_status=media.status)
 
     # Compute the new time spent
     media.compute_new_time_spent(new_data=new_playtime)
@@ -732,7 +758,7 @@ def update_category():
 
     # Set the last updates
     UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_status=old_status,
-                                   new_status=new_status)
+                                   new_status=new_status, old_playtime=old_total, new_playtime=new_total)
 
     # Compute the new time spent
     media.compute_new_time_spent(old_data=old_total, new_data=new_total)

@@ -252,8 +252,14 @@ function changeCategoryGames(element_id, cat_selector) {
         data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'gameslist' }),
         dataType: "json",
         success: function() {
+            $('#playtime-row').show();
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
+
+            if (new_cat === 'Plan to Play') {
+                $('#time-dropdown').val("0");
+                $('#playtime-row').hide();
+            }
         },
         error: function() {
             error_ajax_message('Error changing your game status. Please try again later.');

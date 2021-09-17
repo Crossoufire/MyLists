@@ -7,10 +7,6 @@
     -webkit-text-shadow: 0 0 2px #000;
 }
 
-.background_white {
-    border-color: #e2e2e2;
-}
-
 @media (max-width: 768px) {
     .title {
         font-size: 2rem !important;
@@ -34,11 +30,6 @@
     border-color: white !important;
     border-width: 1px !important;
     border-style: solid !important;
-}
-
-.title-section {
-    margin-bottom: 2rem !important;
-    margin-top: 2rem !important;
 }
 
 .form-control-home {

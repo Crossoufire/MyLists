@@ -34,6 +34,10 @@ class GenreForm(FlaskForm):
                                           ('Young adult', 'Young adult')])
 
 
+class CoverForm(FlaskForm):
+    image_cover = StringField('Insert an img URL')
+
+
 class MediaComment(FlaskForm):
     comment = TextAreaField('Comment')
     submit = SubmitField('Submit')

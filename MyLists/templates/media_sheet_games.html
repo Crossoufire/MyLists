@@ -7,22 +7,24 @@
 
 
 {% block cat_select %}
-    <select id="category-dropdown" class="text-light text-center cat-drop" onchange="changeCategoryGames(
+    <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryGames(
     '{{ media.id }}', this)">
         <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
         <option {% if list_info.status == 'Endless' %} selected="selected" {% endif %}>Endless</option>
         <option {% if list_info.status == 'Multiplayer' %} selected="selected" {% endif %}>Multiplayer</option>
+        <option {% if list_info.status == 'Dropped' %} selected="selected" {% endif %}>Dropped</option>
+        <option {% if list_info.status == 'Plan to Play' %} selected="selected" {% endif %}>Plan to Play</option>
     </select>
 {% endblock cat_select %}
 
 
 {% block add_more %}
-    <div class="row m-l-15 m-r-15">
+    <div id="playtime-row" class="row m-l-15 m-r-15" {% if list_info.status == 'Plan to Play' %}
+     style="display: none;"{% endif %}>
         <div class="col-4"><b>Played:</b></div>
         <div class="col-8">
             <label for="time-dropdown"></label>
-            <select id="time-dropdown" class="text-light text-center cat-drop" onchange="updatePlaytime(
-            '{{ media.id }}', this)">
+            <select id="time-dropdown" class="text-light cat-drop" onchange="updatePlaytime('{{ media.id }}', this)">
                 {% set play_drop = [2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 175,
                 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000,
                 4000, 5000, 6000, 7000, 8000, 9000, 10000] %}
