@@ -324,60 +324,65 @@ def automatic_media_refresh():
     app.logger.info('[SYSTEM] - Starting automatic media refresh')
 
     # Recover all the data
-    # all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != True)]
-    # all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != True)]
-    # all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != True)]
-    all_games_api_id = [m.api_id for m in Games.query.filter(or_(Games.release_date > datetime.now(),
-                                                                 Games.release_date == 'Unknown'))]
+    all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != True)]
+    all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != True)]
+    all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != True)]
 
-    print(all_games_api_id)
+    all_games = Games.query.all()
+    all_games_api_id = []
+    for game in all_games:
+        try:
+            if datetime.utcfromtimestamp(int(game.release_date)) > datetime.now():
+                all_games_api_id.append(game.api_id)
+        except:
+            all_games_api_id.append(game.api_id)
 
-    # # Recover from API all the changed <TV_show> ID
-    # try:
-    #     all_id_tv_changes = ApiTV().get_changed_data()
-    # except Exception as e:
-    #     app.logger.error('[ERROR] - Requesting the changed data from TMDB API: {}'.format(e))
-    #     return
-    #
-    # # Recover from API all the changed <Movies> ID
-    # try:
-    #     all_id_movies_changes = ApiMovies().get_changed_data()
-    # except Exception as e:
-    #     app.logger.error('[ERROR] - Requesting the changed data from (movies) TMDB API: {}'.format(e))
-    #     return
-    #
-    # # Refresh Series
-    # for element in all_id_tv_changes['results']:
-    #     if element['id'] in all_series_api_id:
-    #         try:
-    #             refresh_element_data(element['id'], ListType.SERIES)
-    #             app.logger.info(f'[INFO] - Refreshed Series with TMDB ID: [{element["id"]}]')
-    #         except Exception as e:
-    #             app.logger.error(f'[ERROR] - While refreshing series: {e}')
-    #
-    # # Refresh Anime
-    # for element in all_id_tv_changes["results"]:
-    #     if element["id"] in all_anime_api_id:
-    #         try:
-    #             refresh_element_data(element["id"], ListType.ANIME)
-    #             app.logger.info('[INFO] - Refreshed Anime with TMDB ID: [{}]'.format(element['id']))
-    #         except Exception as e:
-    #             app.logger.error('[ERROR] - While refreshing anime: {}'.format(e))
-    #
-    # # Refresh movies
-    # for element in all_id_movies_changes["results"]:
-    #     if element["id"] in all_movies_api_id:
-    #         try:
-    #             refresh_element_data(element["id"], ListType.MOVIES)
-    #             app.logger.info(f'[INFO] - Refreshed Movie with TMDB ID: [{element["id"]}]')
-    #         except Exception as e:
-    #             app.logger.error(f'[ERROR] - While refreshing movies: {e}')
+    # Recover from API all the changed <TV_show> ID
+    try:
+        all_id_tv_changes = ApiTV().get_changed_data()
+    except Exception as e:
+        app.logger.error('[ERROR] - Requesting the changed data from TMDB API: {}'.format(e))
+        return
+
+    # Recover from API all the changed <Movies> ID
+    try:
+        all_id_movies_changes = ApiMovies().get_changed_data()
+    except Exception as e:
+        app.logger.error('[ERROR] - Requesting the changed data from (movies) TMDB API: {}'.format(e))
+        return
+
+    # Refresh Series
+    for element in all_id_tv_changes['results']:
+        if element['id'] in all_series_api_id:
+            try:
+                refresh_element_data(element['id'], ListType.SERIES)
+                app.logger.info(f'[INFO] - Refreshed Series with TMDB ID: [{element["id"]}]')
+            except Exception as e:
+                app.logger.error(f'[ERROR] - While refreshing series: {e}')
+
+    # Refresh Anime
+    for element in all_id_tv_changes["results"]:
+        if element["id"] in all_anime_api_id:
+            try:
+                refresh_element_data(element["id"], ListType.ANIME)
+                app.logger.info('[INFO] - Refreshed Anime with TMDB ID: [{}]'.format(element['id']))
+            except Exception as e:
+                app.logger.error('[ERROR] - While refreshing anime: {}'.format(e))
+
+    # Refresh movies
+    for element in all_id_movies_changes["results"]:
+        if element["id"] in all_movies_api_id:
+            try:
+                refresh_element_data(element["id"], ListType.MOVIES)
+                app.logger.info(f'[INFO] - Refreshed Movie with TMDB ID: [{element["id"]}]')
+            except Exception as e:
+                app.logger.error(f'[ERROR] - While refreshing movies: {e}')
 
     # Refresh games
     for api_id in all_games_api_id:
         try:
             refresh_element_data(api_id, ListType.GAMES)
-            app.logger.info(f'[INFO] - Refreshed Game with TMDB ID: [{api_id}]')
+            app.logger.info(f'[INFO] - Refreshed Game with IGDB ID: [{api_id}]')
         except Exception as e:
             app.logger.error(f'[ERROR] - While refreshing games: {e}')
 
