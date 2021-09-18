@@ -32,29 +32,32 @@ pip3 install -r requirements.txt
 Before starting the program, you *MUST* create a `.env` file respecting the following syntax:
 
 ```
-FLASK_SECRET_KEY="the-super-secret-key"
-FLASK_SESSION_COOKIE_SECURE=True
-FLASK_SQLALCHEMY_DATABASE_URI="db info"
-FLASK_ENV="Production"
+SECRET_KEY=the-super-secret-key
+ENV=Production
+SESSION_COOKIE_SECURE=True
+SQLALCHEMY_DATABASE_URI=sqlite:///site.db
+TESTING=False
 FLASK_DEBUG=False
-FLASK_TESTING=False
-FLASK_MAIL_SERVER="Your mail server"
-FLASK_MAIL_PORT=465
-FLASK_MAIL_USE_SSL=True
-FLASK_MAIL_USERNAME="mail.mail@mail.com"
-FLASK_MAIL_PASSWORD="password"
-FLASK_THEMOVIEDB_API_KEY="TMDb API key"
+MAIL_SERVER=your-mail-server
+MAIL_PORT=<port>
+MAIL_USE_SSL=True
+MAIL_USERNAME=mail@mail.com
+MAIL_PASSWORD=password
+THEMOVIEDB_API_KEY=themoviedb-api-key
+GOOGLE_BOOKS_API_KEY=google-books-api-key
+CLIENT_IGDB=igdb-client-id
+IGDB_API_KEY=igdb-api-key
 ```
 
-For example if you want to use Gmail, set `FLASK_MAIL_SERVER = smtp.gmail.com` and `FLASK_MAIL_PORT = 465`. 
+For example if you want to use Gmail, set `MAIL_SERVER = smtp.gmail.com` and `MAIL_PORT = 465`. 
 If you need more settings, feel free to adapt it as you want.
 
-If you want to first test the project locally, you should put in your `.env` file these values:
+If you want to first test the project locally, you should modify in your `.env` file these values:
 ```
-FLASK_SESSION_COOKIE_SECURE=True,  
-FLASK_DEBUG=True,
-FLASK_TESTING=True,
-FLASK_ENV="Development",
+ENV=Development
+SESSION_COOKIE_SECURE=False
+TESTING=True
+FLASK_DEBUG=True
 ```
 
 Then run the command `python3 Run.py` and open the link [http://localhost:5000](http://localhost:5000).

@@ -7,25 +7,25 @@ load_dotenv(dotenv_path=os.path.join(basedir, '.env'))
 
 
 class Config(object):
-    SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'lets-go-guys'
-    ENV = os.environ.get('FLASK_ENV')
-    SESSION_COOKIE_SECURE = True  # bool(os.environ.get('FLASK_SESSION_COOKIE_SECURE'))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('FLASK_SQLALCHEMY_DATABASE_URI')
+    SECRET_KEY              = os.environ.get('SECRET_KEY') or 'lets-go-guys'
+    ENV                     = os.environ.get('ENV')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    MAIL_SERVER             = os.environ.get('MAIL_SERVER')
+    MAIL_USERNAME           = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD           = os.environ.get('MAIL_PASSWORD')
+    THEMOVIEDB_API_KEY      = os.environ.get('THEMOVIEDB_API_KEY')
+    GOOGLE_BOOKS_API_KEY    = os.environ.get('GOOGLE_BOOKS_API_KEY')
+    CLIENT_IGDB             = os.environ.get('CLIENT_IGDB')
+    SECRET_IGDB             = os.environ.get('SECRET_IGDB')
+    CLIENT_MAL              = os.environ.get('CLIENT_MAL') # Not used yet
+    SECRET_MAL              = os.environ.get('SECRET_MAL') # Not used yet
+    IGDB_API_KEY            = os.environ.get('IGDB_API_KEY')
+    SESSION_COOKIE_SECURE   = bool(os.environ.get('SESSION_COOKIE_SECURE'))
+    MAIL_USE_SSL            = bool(os.environ.get('MAIL_USE_SSL'))
+    TESTING                 = bool(os.environ.get('TESTING'))
+    MAIL_PORT               = int(os.environ.get('MAIL_PORT') or 25)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    TESTING = bool(os.environ.get('FLASK_TESTING'))
     MAX_CONTENT_LENGTH = 8*1024*1024
     FLASK_ADMIN_SWATCH = 'cyborg'
-    MAIL_SERVER = os.environ.get('FLASK_MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('FLASK_MAIL_PORT') or 25)
     MAIL_USE_TLS = False
-    MAIL_USE_SSL = bool(os.environ.get('FLASK_MAIL_USE_SSL'))
-    MAIL_USERNAME = os.environ.get('FLASK_MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('FLASK_MAIL_PASSWORD')
-    THEMOVIEDB_API_KEY = os.environ.get('FLASK_THEMOVIEDB_API_KEY')
-    GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY')
-    CLIENT_IGDB = os.environ.get('CLIENT_IGDB')
-    SECRET_IGDB = os.environ.get('SECRET_IGDB')
-    CLIENT_MAL = os.environ.get('CLIENT_MAL')
-    SECRET_MAL = os.environ.get('SECRET_MAL')
-    IGDB_API_KEY = os.environ.get('IGDB_API_KEY')
 
