@@ -2,7 +2,6 @@ import re
 import json
 import os.path
 import secrets
-import pykakasi
 import requests
 from PIL import Image
 from pathlib import Path
@@ -15,7 +14,8 @@ from ratelimit import sleep_and_retry, limits
 from urllib.request import urlretrieve, Request
 from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActors, Movies, SeriesNetwork, \
     SeriesEpisodesPerSeason, MoviesGenre, MoviesActors, GamesCompanies, GamesPlatforms, Games, GamesGenre, Books, \
-    BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason
+    BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason, latin_alphabet, \
+    change_air_format
 
 
 # --- GENERAL ---------------------------------------------------------------------------------------------------
@@ -24,51 +24,6 @@ from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActor
 def status_code(status_code):
     if status_code != 200:
         abort(status_code)
-
-
-def latin_alphabet(original_name):
-    try:
-        original_name.encode('iso-8859-1')
-        return True
-    except UnicodeEncodeError:
-        try:
-            kks = pykakasi.kakasi()
-            kks.setMode("H", "a")
-            kks.setMode("K", "a")
-            kks.setMode("J", "a")
-            kks.setMode("s", True)
-            try:
-                conv = kks.getConverter().do(original_name).split('.')
-            except:
-                conv = kks.getConverter().do(original_name).split()
-            cap_parts = [p.capitalize() for p in conv]
-            cap_message = " ".join(cap_parts)
-            return cap_message
-        except:
-            return False
-
-
-def change_air_format(date, media_sheet=False, games=False, books=False):
-    if media_sheet and not games and not books:
-        try:
-            return datetime.strptime(date, '%Y-%m-%d').strftime("%b %Y")
-        except:
-            return 'Unknown'
-    elif not media_sheet and not games and not books:
-        try:
-            return datetime.strptime(date, '%Y-%m-%d').strftime("%d %b %Y")
-        except:
-            return 'Unknown'
-    elif games:
-        try:
-            return datetime.utcfromtimestamp(int(date)).strftime('%d %b %Y')
-        except:
-            return 'Unknown'
-    elif books:
-        try:
-            return re.findall(re.compile('\d{4}'), date)[0]
-        except:
-            return 'Unknown'
 
 
 def clean_text(raw_html):
@@ -180,6 +135,7 @@ class TMDBMixin(ApiData):
     def get_search_list(self):
         media_results = []
         for result in self.API_data["results"]:
+
             if result.get('known_for_department'):
                 continue
 
@@ -206,15 +162,14 @@ class TMDBMixin(ApiData):
                     media_data['media_type'] = ListType.ANIME.value
                     media_data['name'] = result['name']
                     media_data['media'] = 'Anime'
-                    media_results.append(media_data)
                 else:
                     media_data['media_type'] = ListType.SERIES.value
-                    media_results.append(media_data)
+                media_results.append(media_data)
             elif result['media_type'] == 'movie':
                 media_data['media'] = 'Movies'
                 media_data['media_type'] = ListType.MOVIES.value
                 media_data['url'] = f"https://www.themoviedb.org/movie/{result['id']}"
-                media_results.append(media_data)
+
                 if result['original_language'] == 'ja' and 16 in result['genre_ids']:
                     media_data['name'] = result['title']
                 media_results.append(media_data)
@@ -805,7 +760,7 @@ class ApiBooks(ApiData):
                 media_details = {'api_id': result.get('id'),
                                  'display_name': info.get('title', 'Unknown') or 'Unknown',
                                  'author': info.get('authors', ['Unknown'])[0] or 'Unknown',
-                                 'date': change_air_format(info.get('publishedDate', 'Unknown'), books=True),
+                                 'date': change_air_format(info.get('publishedDate'), books=True),
                                  'image_cover':
                                      info.get('imageLinks', {'thumbnail': '/static/covers/series_covers/default.jpg'})
                                      ['thumbnail'] or 'Unknown',
@@ -828,7 +783,7 @@ class ApiBooks(ApiData):
                                  'name': info.get('title', 'Unknown') or 'Unknown',
                                  'author': info.get('authors', ['Unknown'])[0] or 'Unknown',
                                  'overview': clean_text(info.get('description', 'Unknown')),
-                                 'first_air_date': change_air_format(info.get('publishedDate', 'Unknown'), books=True),
+                                 'first_air_date': change_air_format(info.get('publishedDate'), books=True),
                                  'poster_path':
                                      info.get('imageLinks', {'thumbnail': '/static/covers/series_covers/default.jpg'})
                                      ['thumbnail'] or 'Unknown',
@@ -855,8 +810,7 @@ class ApiBooks(ApiData):
 
     def from_API_to_dict(self):
         self.media_details = {'name': self.API_data.get('title', 'Unknown') or 'Unknown',
-                              'release_date': change_air_format(self.API_data.get('publishedDate', 'Unknown'),
-                                                                books=True),
+                              'release_date': change_air_format(self.API_data.get('publishedDate'), books=True),
                               'pages': self.API_data.get('pageCount', 0) or 0,
                               'publishers': self.API_data.get('publisher', 'Unknown') or 'Unknown',
                               'synopsis': clean_text(self.API_data.get('description', 'Unknown')),

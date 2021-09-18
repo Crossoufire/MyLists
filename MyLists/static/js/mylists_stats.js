@@ -12,10 +12,10 @@ $(document).ready(function () {
     let config_pie = {
         type: 'bar',
         data: {
-            labels: ['Series', 'Anime', 'Movies', 'Books', 'Games'],
+            labels: ['Series', 'Anime', 'Movies', 'Games', 'Books'],
             datasets: [{
                 data: time_data,
-                backgroundColor: ['#216e7d', '#945141', '#8c7821', '#5d4683', '#196219'],
+                backgroundColor: ['#216e7d', '#945141', '#8c7821', '#196219', '#5d4683'],
                 borderColor: '#000000',
                 borderWidth: 1,
             }],
@@ -42,7 +42,7 @@ $(document).ready(function () {
             },
             title: {
                 display: true,
-                text: 'Time sent per media type',
+                text: 'Time (hours) spent per media type',
                 position: 'top',
                 fontColor: '#e2e2e2',
                 fontSize: 18,

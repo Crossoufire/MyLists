@@ -20,6 +20,7 @@ app.config.from_object(Config)
 
 
 # Initialization of the different Flask modules
+Config()
 mail = Mail(app)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

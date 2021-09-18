@@ -113,7 +113,7 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Air dates</b></h5>
-                <div>{{ media.get_formated_dates() }}</div>
+                <div>{{ media.get_formated_dates()|safe }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-play-circle"></i><b>&nbsp; Seasons</b></h5>

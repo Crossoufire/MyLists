@@ -13,7 +13,7 @@ from MyLists import db, app
 from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
 from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format
+    get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format, Games
 
 bp = Blueprint('main', __name__)
 
@@ -40,6 +40,15 @@ def books():
             print('failed')
 
 
+def change_utctimestamp_to_datetime():
+    query = Games.query.all()
+
+    for game in query:
+        game.release_date = change_air_format(game.release_date, games=True)
+
+    db.session.commit()
+
+
 @bp.route("/<media_list>/<user_name>/", methods=['GET', 'POST'])
 @bp.route("/<media_list>/<user_name>/<category>/", methods=['GET', 'POST'])
 @bp.route("/<media_list>/<user_name>/<category>/genre/<genre>/by/<sorting>/page/<page_val>", methods=['GET', 'POST'])
@@ -53,6 +62,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
         return abort(400)
 
     # books()
+    # change_utctimestamp_to_datetime()
 
     # Check if <user> can see <media_list>
     user = current_user.check_autorization(user_name)
@@ -362,6 +372,7 @@ def your_next_airing():
     next_series_airing = get_next_airing(ListType.SERIES)
     next_anime_airing = get_next_airing(ListType.ANIME)
     next_movies_airing = get_next_airing(ListType.MOVIES)
+    next_games_airing = get_next_airing(ListType.GAMES)
 
     series_dates = []
     for series in next_series_airing:
@@ -372,12 +383,17 @@ def your_next_airing():
         anime_dates.append(change_air_format(anime[0].next_episode_to_air))
 
     movies_dates = []
-    for movies in next_movies_airing:
-        movies_dates.append(change_air_format(movies[0].release_date))
+    for movie in next_movies_airing:
+        movies_dates.append(change_air_format(movie[0].release_date))
+
+    games_dates = []
+    for game in next_games_airing:
+        games_dates.append(change_air_format(game.release_date, games=True))
 
     return render_template('your_next_airing.html', title='Your next airing', airing_series=next_series_airing,
                            series_dates=series_dates, airing_anime=next_anime_airing, anime_dates=anime_dates,
-                           airing_movies=next_movies_airing, movies_dates=movies_dates)
+                           airing_movies=next_movies_airing, movies_dates=movies_dates, airing_games=next_games_airing,
+                           games_dates=games_dates)
 
 
 @bp.route('/search_media', methods=['GET', 'POST'])

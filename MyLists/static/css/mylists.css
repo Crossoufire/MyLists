@@ -842,11 +842,11 @@ hr {
 .right-books {border-right: solid 5px #584c6e;}
 .right-games {border-right: solid 5px #196219;}
 
-.left-series {border-left: solid 3px #216e7d;}
-.left-books {border-left: solid 3px #945141;}
-.left-movies {border-left: solid 3px #8c7821;}
-.left-books {border-left: solid 3px #584c6e;}
-.left-games {border-left: solid 3px #196219;}
+.left-series {border-left: solid 5px #216e7d;}
+.left-anime {border-left: solid 5px #945141;}
+.left-movies {border-left: solid 5px #8c7821;}
+.left-books {border-left: solid 5px #584c6e;}
+.left-games {border-left: solid 5px #196219;}
 
 .bg-medialist {background: #675353;}
 .bg-dark {background-color: #142938 !important;}

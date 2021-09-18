@@ -107,30 +107,30 @@
 
 
 {% block more_info %}
-    <h4 data-toggle="tooltip" title="HowLongToBeat Time in hours">
-        <i class="fas fa-hourglass"></i>&nbsp;&nbsp; <b>HLTB Time [h]</b>
+    <h4 data-toggle="tooltip" title="HowLongToBeat">
+        <i class="fas fa-hourglass"></i>&nbsp;&nbsp; <b>HLTB Time (hours)</b>
     </h4><hr>
     <div class="d-flex flex-wrap m-b-30" style="justify-content: space-evenly;">
         <div class="game-box text-center" style="background-color: slategrey;">
             <div class="p-t-5"><b>MAIN</b></div>
-            {% if not media.hltb_main_time or media.hltb_main_time == -1 %}
-                <div class="fs-17"><b>-</b></div>
+            {% if not media.hltb_main_time or media.hltb_main_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
                 <div class="fs-17"><b>{{ media.hltb_main_time }}</b></div>
             {% endif %}
         </div>
         <div class="game-box text-center" style="background-color: dimgrey;">
             <div class="p-t-5"><b>EXTRA</b></div>
-           {% if not media.hltb_main_and_extra_time or media.hltb_main_and_extra_time == -1 %}
-                <div class="fs-17"><b>-</b></div>
+           {% if not media.hltb_main_and_extra_time or media.hltb_main_and_extra_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
                 <div class="fs-17"><b>{{ media.hltb_main_and_extra_time }}</b></div>
             {% endif %}
         </div>
         <div class="game-box text-center" style="background-color: darkslategrey;">
             <div class="p-t-5"><b>TOTAL</b></div>
-            {% if not media.hltb_total_complete_time or media.hltb_total_complete_time == -1 %}
-                <div class="fs-17"><b>-</b></div>
+            {% if not media.hltb_total_complete_time or media.hltb_total_complete_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
                 <div class="fs-17"><b>{{ media.hltb_total_complete_time }}</b></div>
             {% endif %}

@@ -19,11 +19,23 @@
 
 
 {% block seas_eps_drop %}
-    <div class="seas-eps-drop-container" {% if category == 'Plan to Read' %} style="display: none;"{% endif %}>
-        <span><input id="input_{{ item.media.id }}" class="book-input" value="{{ item.actual_page }}"
-        onchange="updatePages({{ item.media.id }}, this)"></span>/
-        <span>{{ item.media.pages }}</span>
-    </div>
+    {% if item.status.value == 'Plan to Read' %}
+        <div class="seas-eps-drop-container">
+            <select class="seas-eps-drop disabled" style="appearance: none;">
+                <option class="seas-eps-drop-options">---</option>
+            </select>
+            <span style="border-right: 2px solid gray;"></span>
+            <select class="seas-eps-drop disabled" style="appearance: none;">
+                <option class="seas-eps-drop-options">---</option>
+            </select>
+        </div>
+    {% else %}
+        <div class="seas-eps-drop-container" {% if category == 'Plan to Read' %} style="display: none;"{% endif %}>
+            <span><input id="input_{{ item.media.id }}" class="book-input" value="{{ item.actual_page }}"
+            onchange="updatePages({{ item.media.id }}, this)"></span>/
+            <span>{{ item.media.pages }}</span>
+        </div>
+    {% endif %}
 {% endblock seas_eps_drop %}
 
 

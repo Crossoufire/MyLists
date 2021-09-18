@@ -1,10 +1,10 @@
 import json
+import random
+import re
 from collections import OrderedDict
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-import random
-
 import flask_login
 import iso639
 import pykakasi
@@ -15,7 +15,6 @@ from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import func, desc, text, and_, or_, extract
 from sqlalchemy.orm import aliased
-
 from MyLists import app, db, login_manager
 
 
@@ -70,22 +69,26 @@ def latin_alphabet(original_name):
             return original_name
 
 
-def change_air_format(date, media_sheet=False, games=False):
-    if media_sheet and not games:
+def change_air_format(date_, tv=False, games=False, books=False):
+    if tv:
         try:
-            return datetime.strptime(date, '%Y-%m-%d').strftime("%b %Y")
+            return datetime.strptime(date_, '%Y-%m-%d').strftime("%b %Y")
         except:
             return 'Unknown'
-    elif not media_sheet and not games:
+    if games:
         try:
-            return datetime.strptime(date, '%Y-%m-%d').strftime("%d %b %Y")
+            return datetime.utcfromtimestamp(int(date_)).strftime("%d %b %Y")
         except:
             return 'Unknown'
-    elif games:
+    if books:
         try:
-            return datetime.utcfromtimestamp(int(date)).strftime('%d %b %Y')
+            return re.findall(re.compile('\d{4}'), date_)[0]
         except:
             return 'Unknown'
+    try:
+        return datetime.strptime(date_, '%Y-%m-%d').strftime("%d %b %Y")
+    except:
+        return 'Unknown'
 
 
 class dotdict(dict):
@@ -720,8 +723,8 @@ class TVBase(db.Model):
         return data
 
     def get_formated_dates(self):
-        first_air_date = change_air_format(self.first_air_date, media_sheet=True, games=False)
-        last_air_date = change_air_format(self.last_air_date, media_sheet=True, games=False)
+        first_air_date = change_air_format(self.first_air_date, tv=True)
+        last_air_date = change_air_format(self.last_air_date, tv=True)
         formated_date = f"{first_air_date} - {last_air_date}"
 
         return formated_date
@@ -804,11 +807,11 @@ class SeriesList(MediaListMixin, db.Model):
 
     class Status(Enum):
         WATCHING = 'Watching'
+        DROPPED = 'Dropped'
         COMPLETED = 'Completed'
+        PLAN_TO_WATCH = 'Plan to Watch'
         ON_HOLD = 'On Hold'
         RANDOM = 'Random'
-        DROPPED = 'Dropped'
-        PLAN_TO_WATCH = 'Plan to Watch'
 
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
@@ -963,11 +966,11 @@ class AnimeList(MediaListMixin, db.Model):
 
     class Status(Enum):
         WATCHING = 'Watching'
+        DROPPED = 'Dropped'
         COMPLETED = 'Completed'
+        PLAN_TO_WATCH = 'Plan to Watch'
         ON_HOLD = 'On Hold'
         RANDOM = 'Random'
-        DROPPED = 'Dropped'
-        PLAN_TO_WATCH = 'Plan to Watch'
 
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
@@ -1135,7 +1138,7 @@ class Movies(MediaMixin, db.Model):
         return data
 
     def get_formated_dates(self):
-        release_date = change_air_format(self.release_date, media_sheet=True, games=False)
+        release_date = change_air_format(self.release_date)
         formated_date = f"{release_date}"
 
         return formated_date
@@ -1188,6 +1191,8 @@ class MoviesList(MediaListMixin, db.Model):
         return new_total
 
     def category_changes(self, new_status):
+        self.status = new_status
+
         if new_status == Status.COMPLETED:
             self.total = 1
             new_total = 1
@@ -1405,10 +1410,10 @@ class BooksList(MediaListMixin, db.Model):
 
     class Status(Enum):
         READING = 'Reading'
-        COMPLETED = 'Completed'
-        ON_HOLD = 'On Hold'
         DROPPED = 'Dropped'
+        COMPLETED = 'Completed'
         PLAN_TO_READ = 'Plan to Read'
+        ON_HOLD = 'On Hold'
 
     def update_total_watched(self, new_rewatch):
         self.rewatched = new_rewatch
@@ -1521,10 +1526,7 @@ class Games(MediaMixin, db.Model):
         return 0
 
     def get_formated_dates(self):
-        release_date = change_air_format(self.release_date, media_sheet=True, games=True)
-        formated_date = f"{release_date}"
-
-        return formated_date
+        return change_air_format(self.release_date, games=True)
 
     def get_user_list_info(self):
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
@@ -2356,16 +2358,31 @@ def get_next_airing(list_type):
     media = eval(list_type.value.capitalize().replace('list', ''))
     media_list = eval(list_type.value.capitalize().replace('l', 'L'))
 
-    if list_type != ListType.MOVIES:
+    if list_type == ListType.SERIES or list_type == ListType.ANIME:
         media_data = media.next_episode_to_air
     else:
-        media_data = Movies.release_date
+        media_data = media.release_date
 
-    query = db.session.query(media, media_list) \
-        .join(media, media.id == media_list.media_id) \
-        .filter(media_data > datetime.utcnow(), media_list.user_id == current_user.id,
-                and_(media_list.status != Status.RANDOM, media_list.status != Status.DROPPED)) \
-        .order_by(media_data.asc()).all()
+    if list_type == ListType.GAMES:
+        tmp = db.session.query(media, media_list) \
+            .join(media, media.id == media_list.media_id) \
+            .filter(media_list.user_id == current_user.id, media_list.status != Status.DROPPED) \
+            .order_by(media_data.asc()).all()
+
+        query = []
+        for game in tmp:
+            try:
+                if datetime.utcfromtimestamp(game[0].release_date) > datetime.now():
+                    query.append(game[0])
+            except:
+                query.append(game[0])
+
+    else:
+        query = db.session.query(media, media_list) \
+            .join(media, media.id == media_list.media_id) \
+            .filter(media_data > datetime.utcnow(), media_list.user_id == current_user.id,
+                    and_(media_list.status != Status.RANDOM, media_list.status != Status.DROPPED)) \
+            .order_by(media_data.asc()).all()
 
     return query
 

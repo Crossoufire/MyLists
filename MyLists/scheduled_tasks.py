@@ -3,9 +3,9 @@ import json
 import logging
 from pathlib import Path
 from MyLists import app, db
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import and_, desc
 from datetime import datetime, timedelta
-from MyLists.API_data import ApiData, ApiMovies, ApiSeries, ApiTV
+from MyLists.API_data import ApiData, ApiMovies, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
     UserLastUpdate, Notifications, ListType, Status, Movies, MoviesList, MoviesActors, MoviesGenre, GlobalStats, \
     MyListsStats, Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, \
@@ -452,7 +452,7 @@ def new_releasing_anime():
     for anime in all_anime:
         try:
             diff = (datetime.utcnow() - datetime.strptime(anime.next_episode_to_air, '%Y-%m-%d')).total_seconds()
-            # Check if the next episode of the series is releasing in one week or less (7 days)
+            # Check if the next episode of the anime is releasing in one week or less (7 days)
             if diff < 0 and abs(diff / (3600 * 24)) <= 7:
                 media_id.append(anime.id)
         except:
@@ -484,9 +484,7 @@ def new_releasing_anime():
                    'season': '{:02d}'.format(info[0].season_to_air),
                    'episode': '{:02d}'.format(info[0].episode_to_air)}
 
-        data = Notifications(user_id=info[1].user_id,
-                             media_type='animelist',
-                             media_id=info[0].id,
+        data = Notifications(user_id=info[1].user_id, media_type='animelist', media_id=info[0].id,
                              payload_json=json.dumps(payload))
         db.session.add(data)
 
@@ -504,7 +502,7 @@ def new_releasing_movies():
     for movie in all_movies:
         try:
             diff = (datetime.utcnow() - datetime.strptime(movie.release_date, '%Y-%m-%d')).total_seconds()
-            # Check if he movie released in one week or less (7 days)
+            # Check if the movie released in one week or less (7 days)
             if diff < 0 and abs(diff / (3600 * 24)) <= 7:
                 media_id.append(movie.id)
         except:
@@ -515,10 +513,9 @@ def new_releasing_movies():
         .filter(MoviesList.media_id.in_(media_id), MoviesList.status == Status.PLAN_TO_WATCH).all()
 
     for info in movies_in_ptw:
-        if not bool(Notifications.query.filter_by(user_id=info[1].user_id,
-                                                  media_type='movieslist',
+        if not bool(Notifications.query.filter_by(user_id=info[1].user_id, media_type='movieslist',
                                                   media_id=info[0].id).first()):
-            release_date = datetime.strptime(info[0].release_date, '%Y-%m-%d').strftime("%b %d")
+            release_date = datetime.strptime(info[0].release_date, '%Y-%m-%d').strftime("%b %d %Y")
             payload = {'name': info[0].name,
                        'release_date': release_date}
 
@@ -530,6 +527,42 @@ def new_releasing_movies():
 
     db.session.commit()
     app.logger.info('[SYSTEM] - Finish adding the new releasing movies')
+    app.logger.info('###################################################################')
+
+
+def new_releasing_games():
+    app.logger.info('###################################################################')
+    app.logger.info('[SYSTEM] - Start adding the new releasing games')
+
+    all_games = Games.query.all()
+    media_id = []
+    for game in all_games:
+        try:
+            diff = (datetime.utcnow() - datetime.utcfromtimestamp(int(game.release_date))).total_seconds()
+            print(diff)
+            # Check if the game release in one week or less (7 days)
+            if diff < 0 and abs(diff/(3600*24)) <= 500000000000:
+                media_id.append(game.id)
+        except:
+            pass
+
+    games_in_ptp = db.session.query(Games, GamesList) \
+        .join(GamesList, GamesList.media_id == Games.id) \
+        .filter(GamesList.media_id.in_(media_id), GamesList.status == Status.PLAN_TO_PLAY).all()
+
+    for info in games_in_ptp:
+        if not bool(Notifications.query.filter_by(user_id=info[1].user_id, media_type='gameslist',
+                                                  media_id=info[0].id).first()):
+            release_date = datetime.utcfromtimestamp(int(info[0].release_date)).strftime("%b %d %Y")
+            payload = {'name': info[0].name,
+                       'release_date': release_date}
+
+            data = Notifications(user_id=info[1].user_id, media_type='gameslist', media_id=info[0].id,
+                                 payload_json=json.dumps(payload))
+            db.session.add(data)
+
+    db.session.commit()
+    app.logger.info('[SYSTEM] - Finish adding the new releasing games')
     app.logger.info('###################################################################')
 
 
@@ -683,10 +716,11 @@ def register(app):
         app.logger.setLevel(logging.INFO)
         # remove_non_list_media()
         # remove_old_covers()
-        automatic_media_refresh()
+        # automatic_media_refresh()
         # new_releasing_movies()
         # new_releasing_series()
         # new_releasing_anime()
+        new_releasing_games()
         # automatic_movies_locking()
 
         app.logger.info('[SYSTEM] - Starting to compute the total time spent for each user')
@@ -694,7 +728,7 @@ def register(app):
         app.logger.info('###################################################################')
         app.logger.info('[SYSTEM] - Finished computing the total time spent for each user')
 
-        update_Mylists_stats()
+        # update_Mylists_stats()
 
     @app.cli.command()
     def update_igdb_key():

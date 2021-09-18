@@ -148,7 +148,7 @@
                                         </div>
                                         <div class="col-12 m-b-10">
                                             <div class="d-flex" style="justify-content: space-evenly;">
-                                                <div data-toggle="tooltip" title="Series: 5 <br/> Anime: 8 <br/> Movies: 4">
+                                                <div>
                                                     <i class="fas fa-grin-stars" style="color: #019101;"></i>
                                                     <br>{{ media_global['distrib_feels'][5] }}
                                                 </div>
@@ -219,17 +219,17 @@
                                         </div>
                                     </div>
                                 {% endif %}
-                                <a class="text-light" data-toggle="collapse" href=".{{ media['media']|lower }}-collapse"
-                                 onclick="change_caret(this)">
-                                    <h5 class="media-stats-title mb-2 p-1">
-                                        &nbsp;<i class="fas fa-caret-down"></i>
-                                        <b>&nbsp;{{ media['media']|upper }}</b>
-                                        <span class="float-r" data-toggle="tooltip" title="{{ media['time_hours'] }} hours">
-                                            <b>{{ media['time_days']|int }} days</b>
-                                        </span>
-                                    </h5>
-                                </a>
-                                <div class="{{ media['media']|lower }}-collapse collapse show ac">
+                                    <a class="text-light" data-toggle="collapse" href=".{{ media['media']|lower }}-collapse"
+                                     onclick="change_caret(this)">
+                                        <h5 class="media-stats-title mb-2 p-1">
+                                            &nbsp;<i class="fas fa-caret-down"></i>
+                                            <b>&nbsp;{{ media['media']|upper }}</b>
+                                            <span class="float-r" data-toggle="tooltip" title="{{ media['time_hours'] }} hours">
+                                                <b>{{ media['time_days']|int }} days</b>
+                                            </span>
+                                        </h5>
+                                    </a>
+                                    <div class="{{ media['media']|lower }}-collapse collapse show ac">
                                     <div id="{{ media['media']|upper }}" class="stat-text m-b-8">
                                         {% if not user.add_feeling %}
                                             <span><b>Days: {{ media['time_days'] }}</b></span>
@@ -241,6 +241,8 @@
                                                 <b>Scored: {{ media['media_score']['scored_media'] }}/{{ media['media_score']
                                                 ['total_media'] }}</b>
                                             </span>
+                                        {% else %}
+                                            <span><b>Hours: {{ media['time_hours'] }}</b></span>
                                         {% endif %}
                                         <figure>
                                             {% if media['nodata'] %}
@@ -272,12 +274,25 @@
                                             <div class="col-2">
                                                 <span>{{ media['total'] }}</span>
                                             </div>
-                                            <div class="col-4">
-                                                <span>#Media</span>
-                                            </div>
-                                            <div class="col-2">
-                                                <span>{{ media['media_total_eps'] }}</span>
-                                            </div>
+
+                                            {% if media['media_type'] == 'serieslist' or media['media_type'] == 'animelist' %}
+                                                <div class="col-4">
+                                                    <span>Episodes</span>
+                                                </div>
+                                            {% elif media['media_type'] == 'movieslist' %}
+                                                <div class="col-4" data-toggle="tooltip" title="Rewatch added">
+                                                    <span>Total watched</span>
+                                                </div>
+                                            {% elif media['media_type'] == 'bookslist' %}
+                                                <div class="col-4">
+                                                    <span>Pages read</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if media['media_type'] != 'gameslist' %}
+                                                <div class="col-2">
+                                                    <span>{{ media['media_total_eps'] }}</span>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <a href="{{ url_for('main.mymedialist', media_list=media['media_type'],
@@ -405,7 +420,7 @@
 {% block added_js %}
     <script>
         function change_caret(caret_div) {
-            let $caret_div = $(caret_div).children().children().siblings().first()
+            let $caret_div = $(caret_div).children().children().siblings().first();
             if ($caret_div.hasClass('fas fa-caret-down')) {
                 $caret_div.removeClass('fas fa-caret-down');
                 $caret_div.addClass('fas fa-caret-right');

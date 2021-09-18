@@ -56,7 +56,8 @@ def get_all_media_info(user):
         total_media += media_dict['total']
 
         # Recover total number of media eps
-        total_media_and_eps += media_dict['media_total_eps']
+        if model != BooksList:
+            total_media_and_eps += media_dict['media_total_eps']
 
         # Recover the total score of all media
         total_score += media_dict['media_score']['scored_media']

@@ -1,5 +1,5 @@
 from flask import url_for
-from datetime import datetime
+from MyLists.models import change_air_format
 
 
 class TrendingData:
@@ -19,10 +19,6 @@ class TrendingData:
         except UnicodeEncodeError:
             return False
 
-    @staticmethod
-    def change_air_format(date):
-        return datetime.strptime(date, '%Y-%m-%d').strftime("%d %b %Y")
-
     def _get_media_cover(self):
         media_cover = url_for('static', filename="covers/series_covers/default.jpg")
         poster_path = self.result.get('poster_path') or None
@@ -37,18 +33,19 @@ class TrendingData:
             self.media_data = {'overview': self.result.get('overview', 'Unknown') or 'Unknown',
                                'release_date': self.result.get('first_air_date', 'Unknown') or 'Unknown',
                                'display_name': self.result.get('name', 'Unknown') or 'Unknown',
-                               'tmdb_id': self.result.get('id')}
+                               'api_id': self.result.get('id')}
 
             if self.latin_alphabet(self.result.get('original_name')):
                 self.media_data["display_name"] = self.result.get('original_name')
 
             # Change the <first_air_date> format
             if self.media_data['release_date'] != 'Unknown':
-                self.media_data['release_date'] = self.change_air_format(self.result.get('first_air_date'))
+                self.media_data['release_date'] = change_air_format(self.result.get('first_air_date'))
 
             self.media_data['poster_path'] = self._get_media_cover()
             self.media_data['tmdb_link'] = "{}/{}".format(self.tv_tmdb_link, self.result.get('id'))
             self.media_data['media_type'] = 'serieslist'
+            self.media_data['media'] = 'Series'
 
             series_results.append(self.media_data)
 
@@ -62,18 +59,19 @@ class TrendingData:
             self.media_data = {'overview': self.result.get('overview', 'Unknown') or 'Unknown',
                                'display_name': self.result.get('title', 'Unknown') or 'Unknown',
                                'release_date': self.result.get('release_date', 'Unknown') or 'Unknown',
-                               'tmdb_id': self.result.get('id')}
+                               'api_id': self.result.get('id')}
 
             if self.latin_alphabet(self.result.get('original_title')):
                 self.media_data["display_name"] = self.result.get('original_title')
 
             # Change the <release_date> format
             if self.media_data["release_date"] != 'Unknown':
-                self.media_data['release_date'] = self.change_air_format(self.result.get('release_date'))
+                self.media_data['release_date'] = change_air_format(self.result.get('release_date'))
 
             self.media_data['poster_path'] = self._get_media_cover()
             self.media_data['tmdb_link'] = "{}/{}".format(self.movie_tmdb_link, self.result.get('id'))
             self.media_data['media_type'] = 'movieslist'
+            self.media_data['media'] = 'Movies'
 
             movies_results.append(self.media_data)
 

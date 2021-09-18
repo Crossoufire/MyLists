@@ -215,6 +215,23 @@ function display_notifications(data) {
                     '<div class="notif-items">' + add_hr + '</div>'
                 );
             }
+            else if (resp[i]['media_type'] === 'gameslist') {
+                $("#notif-dropdown").append(
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Games/'+resp[i]['media_id']+'">' +
+                        '<div class="row no-gutters">' +
+                            '<div class="col-2">' +
+                                '<i class="fas fa-gamepad text-games"></i>' +
+                            '</div>' +
+                            '<div class="col-10 ellipsis-notif">' +
+                                '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
+                                '<div class="fs-14" style="color: darkgrey;">Will be available on ' +
+                                resp[i]['payload']['release_date'] + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</a>' +
+                    '<div class="notif-items">' + add_hr + '</div>'
+                );
+            }
             else {
                 $("#notif-dropdown").append(
                     '<a class="dropdown-item notif-items text-light" href="/account/'+resp[i]['payload']['username']+'">' +
