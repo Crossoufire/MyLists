@@ -521,6 +521,7 @@ class MediaListMixin:
             self.last_episode_watched = self.media.eps_per_season[-1].episodes
             self.total = self.media.total_episodes
             new_total = self.media.total_episodes
+            self.completion_date = datetime.now()
         elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
             self.current_season = 1
             self.last_episode_watched = 0
@@ -712,12 +713,13 @@ class TVBase(db.Model):
     def get_user_list_info(self):
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'last_episode_watched': 1, 'current_season': 1, 'score': '---', 'feeling': None,
-                'favorite': False, 'status': Status.WATCHING.value, 'rewatched': 0, 'comment': None}
+                'favorite': False, 'status': Status.WATCHING.value, 'rewatched': 0, 'comment': None,
+                'completion_date': None}
         if tmp:
             data = {'in_list': True, 'last_episode_watched': tmp.last_episode_watched,
                     'current_season': tmp.current_season, 'score': tmp.score, 'favorite': tmp.favorite,
                     'status': tmp.status.value, 'rewatched': tmp.rewatched, 'comment': tmp.comment,
-                    'feeling': tmp.feeling}
+                    'feeling': tmp.feeling, 'completion_date': tmp.completion_date}
         data = dotdict(data)
 
         return data
@@ -733,17 +735,20 @@ class TVBase(db.Model):
         new_watched = 1
         new_season = 1
         new_episode = 1
+        completion_date = None
         if new_status == Status.COMPLETED:
             new_season = len(self.eps_per_season)
             new_episode = self.eps_per_season[-1].episodes
             new_watched = self.total_episodes
+            completion_date = datetime.now()
         elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
             new_episode = 0
             new_watched = 0
 
         tv_list = eval(self.__class__.__name__+'List')
         user_list = tv_list(user_id=current_user.id, media_id=self.id, current_season=new_season,
-                            last_episode_watched=new_episode, status=new_status, total=new_watched)
+                            last_episode_watched=new_episode, status=new_status, total=new_watched,
+                            completion_date=completion_date)
 
         db.session.add(user_list)
         return new_watched
@@ -802,6 +807,7 @@ class SeriesList(MediaListMixin, db.Model):
     score = db.Column(db.Float)
     total = db.Column(db.Integer)
     comment = db.Column(db.Text)
+    completion_date = db.Column(db.DateTime)
 
     media = db.relationship("Series", back_populates='list_info', lazy=False)
 
@@ -961,6 +967,7 @@ class AnimeList(MediaListMixin, db.Model):
     score = db.Column(db.Float)
     total = db.Column(db.Integer)
     comment = db.Column(db.Text)
+    completion_date = db.Column(db.DateTime)
 
     media = db.relationship("Anime", back_populates='list_info', lazy=False)
 
@@ -1130,10 +1137,11 @@ class Movies(MediaMixin, db.Model):
     def get_user_list_info(self):
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
-                'rewatched': 0, 'comment': None, 'feeling': None}
+                'rewatched': 0, 'comment': None, 'feeling': None, 'completion_date': None}
         if tmp:
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
-                    'rewatched': tmp.rewatched, 'comment': tmp.comment, 'feeling': tmp.feeling}
+                    'rewatched': tmp.rewatched, 'comment': tmp.comment, 'feeling': tmp.feeling,
+                    'completion_date': tmp.completion_date}
         data = dotdict(data)
         return data
 
@@ -1177,6 +1185,7 @@ class MoviesList(MediaListMixin, db.Model):
     feeling = db.Column(db.String(50))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
+    completion_date = db.Column(db.DateTime)
 
     media = db.relationship("Movies", back_populates='list_info', lazy=False)
 
@@ -1194,6 +1203,7 @@ class MoviesList(MediaListMixin, db.Model):
         self.status = new_status
 
         if new_status == Status.COMPLETED:
+            self.completion_date = datetime.now()
             self.total = 1
             new_total = 1
         else:
@@ -1362,11 +1372,11 @@ class Books(MediaMixin, db.Model):
     def get_user_list_info(self):
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.READING.value,
-                'rewatched': 0, 'comment': None, 'actual_page': 0, 'feeling': None}
+                'rewatched': 0, 'comment': None, 'actual_page': 0, 'feeling': None, 'completion_date': None}
         if tmp:
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
                     'rewatched': tmp.rewatched, 'comment': tmp.comment, 'actual_page': tmp.actual_page,
-                    'feeling': tmp.feeling}
+                    'feeling': tmp.feeling, 'completion_date': tmp.completion_date}
         data = dotdict(data)
         return data
 
@@ -1405,6 +1415,7 @@ class BooksList(MediaListMixin, db.Model):
     feeling = db.Column(db.String(30))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
+    completion_date = db.Column(db.DateTime)
 
     media = db.relationship("Books", back_populates='list_info', lazy=False)
 
@@ -1431,6 +1442,7 @@ class BooksList(MediaListMixin, db.Model):
             self.actual_page = self.media.pages
             self.total = self.media.pages
             new_total = self.media.pages
+            self.completion_date = datetime.now()
         elif new_status == Status.PLAN_TO_READ:
             self.actual_page = 0
             self.total = 0
@@ -1531,10 +1543,11 @@ class Games(MediaMixin, db.Model):
     def get_user_list_info(self):
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
-                'playtime': 0, 'comment': None, 'feeling': None}
+                'playtime': 0, 'comment': None, 'feeling': None, 'completion_date': None}
         if tmp:
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
-                    'playtime': tmp.playtime, 'comment': tmp.comment, 'feeling': tmp.feeling}
+                    'playtime': tmp.playtime, 'comment': tmp.comment, 'feeling': tmp.feeling,
+                    'completion_date': tmp.completion_date}
         data = dotdict(data)
         return data
 
@@ -1611,6 +1624,7 @@ class GamesList(MediaListMixin, db.Model):
     feeling = db.Column(db.String(30))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
+    completion_date = db.Column(db.DateTime)
 
     media = db.relationship("Games", back_populates='list_info', lazy=False)
 
@@ -1624,7 +1638,9 @@ class GamesList(MediaListMixin, db.Model):
     def category_changes(self, new_status):
         self.status = new_status
 
-        if new_status == Status.PLAN_TO_PLAY:
+        if new_status == Status.COMPLETED:
+            self.completion_date = datetime.now()
+        elif new_status == Status.PLAN_TO_PLAY:
             self.playtime = 0
 
         return self.playtime

@@ -69,6 +69,14 @@
                         {% block add_more scoped %}
                         {% endblock add_more %}
 
+                        <div id="comp-date-row" class="row m-l-15 m-r-15" data-toggle="tooltip" title="Completion date"
+                         {% if list_info.status != 'Completed' %} style="display: none;"{% endif %}>
+                            <div class="col-4"><b>Comp. date:</b></div>
+                            <div class="col-8">
+                                <input type="date" value="{{ media.completion_date }}">
+                            </div>
+                        </div>
+
                         {% if current_user.add_feeling %}
                             <div class="m-l-25 m-r-35 m-t-8 m-b-8" style="border: 1px solid grey;"></div>
                             <div id="score-row" class="row m-l-15 m-r-15 m-b-5">

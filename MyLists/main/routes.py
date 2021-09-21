@@ -18,35 +18,26 @@ from MyLists.models import ListType, Status, RoleType, MediaType, User, get_medi
 bp = Blueprint('main', __name__)
 
 
-def books():
-    import pandas as pd
-
-    df = pd.read_csv('D:/Bureau/table_1_try.csv')
-    for index, row in df.iterrows():
-        Api_data = ApiBooks()
-        a = row['Titre'] + ' + ' + row['Auteur']
-        media_id = Api_data.search(a.strip())
-        if media_id:
-            media = Books.query.filter_by(id=media_id).first()
-            new_watched = media.add_media_to_user(Status.COMPLETED)
-            db.session.commit()
-            UserLastUpdate.set_last_update(media=media, media_type=ListType.BOOKS, new_status=Status.COMPLETED)
-            in_list = BooksList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-            in_list.compute_new_time_spent(new_data=new_watched)
-            db.session.commit()
-            print(a, media.name)
-            print('done')
-        else:
-            print('failed')
-
-
-def change_utctimestamp_to_datetime():
-    query = Games.query.all()
-
-    for game in query:
-        game.release_date = change_air_format(game.release_date, games=True)
-
-    db.session.commit()
+# def books():
+#     import pandas as pd
+#
+#     df = pd.read_csv('D:/Bureau/table_1_try.csv')
+#     for index, row in df.iterrows():
+#         Api_data = ApiBooks()
+#         a = row['Titre'] + ' + ' + row['Auteur']
+#         media_id = Api_data.search(a.strip())
+#         if media_id:
+#             media = Books.query.filter_by(id=media_id).first()
+#             new_watched = media.add_media_to_user(Status.COMPLETED)
+#             db.session.commit()
+#             UserLastUpdate.set_last_update(media=media, media_type=ListType.BOOKS, new_status=Status.COMPLETED)
+#             in_list = BooksList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
+#             in_list.compute_new_time_spent(new_data=new_watched)
+#             db.session.commit()
+#             print(a, media.name)
+#             print('done')
+#         else:
+#             print('failed')
 
 
 @bp.route("/<media_list>/<user_name>/", methods=['GET', 'POST'])
@@ -60,9 +51,6 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
         models = get_models_group(list_type)
     except ValueError:
         return abort(400)
-
-    # books()
-    # change_utctimestamp_to_datetime()
 
     # Check if <user> can see <media_list>
     user = current_user.check_autorization(user_name)
@@ -158,19 +146,9 @@ def media_sheet(media_type, media_id):
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
+        list_type = ListType(media_type.replace('list', 'List').capitalize())
     except ValueError:
         abort(400)
-
-    if media_type == MediaType.SERIES:
-        list_type = ListType.SERIES
-    if media_type == MediaType.ANIME:
-        list_type = ListType.ANIME
-    elif media_type == MediaType.MOVIES:
-        list_type = ListType.MOVIES
-    elif media_type == MediaType.BOOKS:
-        list_type = ListType.BOOKS
-    elif media_type == MediaType.GAMES:
-        list_type = ListType.GAMES
 
     # Check if <media_id> came from an API
     from_api = request.args.get('search')
@@ -860,6 +838,40 @@ def update_feeling():
 
     # Commit the changes
     db.session.commit()
+
+    return '', 204
+
+
+@bp.route('/update_completion_date', methods=['POST'])
+@login_required
+def update_completion_date():
+    try:
+        json_data = request.get_json()
+        media_id = int(json_data['element_id'])
+        media_list = json_data['element_type']
+        media_date = json_data['element_date']
+    except:
+        return '', 400
+
+    # Check if <media_list> exist and is valid
+    try:
+        list_type = ListType(media_list)
+        models = get_models_group(list_type)
+    except:
+        return '', 400
+
+    # Get the media info
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
+        return '', 400
+
+    # Change the completion date only if the status' media is COMPLETED
+    if media.status == Status.COMPLETED:
+        media.completion_date = media_date
+
+    # Commit the session
+    db.session.commit()
+    app.logger.info(f"[User {current_user.id}] {list_type}'s completion date [ID {media_id}] changed.")
 
     return '', 204
 

@@ -407,7 +407,7 @@ function updateScore(element_id, score, media_list) {
 }
 
 
-// --- Update Feeling data --------------------------------------------------------------------------------
+// --- Update Feeling data ------------------------------------------------------------------------------
 function updateFeeling(element_id, feeling, media_list, element) {
     $('#score-loading').show();
     let $element = $(element);
@@ -432,6 +432,12 @@ function updateFeeling(element_id, feeling, media_list, element) {
             $element.addClass('disabled');
         }
     });
+}
+
+
+// --- Update Completion date ---------------------------------------------------------------------------
+function updateCompletionDate(media_id, media_date, media_list) {
+
 }
 
 
