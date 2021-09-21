@@ -110,10 +110,12 @@ function changeCategoryBooks(element_id, cat_selector, pages) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
+        $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
+        $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
@@ -129,6 +131,9 @@ function changeCategoryBooks(element_id, cat_selector, pages) {
 
             if (new_cat === 'Completed') {
                 $('#page-input').val(pages);
+                $('#comp-date-row').show();
+                let field = document.querySelector('.comp-date');
+                field.value = new Date().toISOString().substring(0, 10);
             }
             else if (new_cat === 'Plan to Read') {
                 $('#page-input').val(0);
@@ -153,10 +158,12 @@ function changeCategoryMovies(element_id, cat_selector) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
+        $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
+        $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
@@ -168,6 +175,12 @@ function changeCategoryMovies(element_id, cat_selector) {
         success: function() {
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
+
+            if (new_cat === 'Completed') {
+                $('#comp-date-row').show();
+                let field = document.querySelector('.comp-date');
+                field.value = new Date().toISOString().substring(0, 10);
+            }
         },
         error: function() {
             error_ajax_message('Error changing your media status. Please try again later.');
@@ -187,25 +200,31 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
+        $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
+        $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_list}),
         dataType: "json",
         success: function() {
-            $('#season-row').show();
-            $('#episode-row').show();
+            $('#season-row').show('slow');
+            $('#episode-row').show('slow');
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
 
             if (new_cat === 'Completed') {
+                $('#comp-date-row').show();
+                let field = document.querySelector('.comp-date');
+                field.value = new Date().toISOString().substring(0, 10);
+
                 let season_data = JSON.parse("["+seas_data+"]");
                 let episode_drop = $('#episode-dropdown');
                 let seasons_length = $('#season-dropdown').children('option').length;
@@ -225,8 +244,8 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
             else if (new_cat === 'Random' || new_cat === 'Plan to Watch') {
                 $('#season-dropdown').val("0");
                 $('#episode-dropdown').val("0");
-                $('#season-row').hide();
-                $('#episode-row').hide();
+                $('#season-row').hide('slow');
+                $('#episode-row').hide('slow');
             }
         },
         error: function() {
@@ -245,6 +264,12 @@ function changeCategoryGames(element_id, cat_selector) {
     $('#cat-loading').show();
     $('#your-medialist-data').addClass('disabled');
 
+    if (new_cat === 'Completed') {
+        $('#comp-date-row').show('slow');
+    } else {
+        $('#comp-date-row').hide('slow');
+    }
+
     $.ajax ({
         type: "POST",
         url: "/update_category",
@@ -256,13 +281,18 @@ function changeCategoryGames(element_id, cat_selector) {
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
 
-            if (new_cat === 'Plan to Play') {
+            if (new_cat === 'Completed') {
+                $('#comp-date-row').show();
+                let field = document.querySelector('.comp-date');
+                field.value = new Date().toISOString().substring(0, 10);
+            }
+            else if (new_cat === 'Plan to Play') {
                 $('#time-dropdown').val("0");
                 $('#playtime-row').hide();
             }
         },
         error: function() {
-            error_ajax_message('Error changing your game status. Please try again later.');
+            error_ajax_message('Error changing your game category. Please try again later.');
         },
         complete: function () {
             $('#cat-loading').hide();
@@ -436,9 +466,31 @@ function updateFeeling(element_id, feeling, media_list, element) {
 
 
 // --- Update Completion date ---------------------------------------------------------------------------
-function updateCompletionDate(media_id, media_date, media_list) {
-
-}
+// $(document).on('focusout','.comp-date',function(event) {
+//     $('#date-loading').show();
+//     let value = this.value;
+//     let media_id = $(this).attr('info').split(',')[0];
+//     let media_list = $(this).attr('info').split(',')[1];
+//
+//     if (event.type === 'focusout') {
+//         $.ajax ({
+//             type: "POST",
+//             url: "/update_completion_date",
+//             contentType: "application/json",
+//             data: JSON.stringify({element_date: value, element_id: media_id, element_type: media_list}),
+//             dataType: "json",
+//             success: function() {
+//                 $('#date-check').show().delay(1500).fadeOut();
+//             },
+//             error: function () {
+//                 error_ajax_message('Error trying to change the media score. Please try again later.')
+//             },
+//             complete: function () {
+//             $('#date-loading').hide();
+//         }
+//         });
+//     }
+// });
 
 
 // --- Lock the media -----------------------------------------------------------------------------------

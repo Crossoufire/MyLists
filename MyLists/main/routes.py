@@ -13,7 +13,7 @@ from MyLists import db, app
 from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
 from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksList, BooksGenre, change_air_format, Games
+    get_models_group, get_next_airing, Books, BooksGenre, change_air_format
 
 bp = Blueprint('main', __name__)
 
@@ -146,7 +146,7 @@ def media_sheet(media_type, media_id):
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
-        list_type = ListType(media_type.replace('list', 'List').capitalize())
+        list_type = ListType(media_type.value.lower() + 'list')
     except ValueError:
         abort(400)
 
@@ -185,6 +185,24 @@ def media_sheet(media_type, media_id):
     # Get the HTML template
     template = models[0].media_sheet_template()
 
+    # History of the media
+    media_updates = UserLastUpdate.query.filter(UserLastUpdate.user_id == current_user.id,
+                                                UserLastUpdate.media_type == list_type,
+                                                UserLastUpdate.media_id == media_id)\
+        .order_by(UserLastUpdate.date.desc()).all()
+
+    def shape_to_dict(updates):
+        update = []
+        for element in updates:
+            element_data = {}
+            if not element.old_status and not element.new_status:
+                element_data["update"] = f"S{element.new_season:02d}.E{element.new_episode:02d}"
+                element_data["date"] = element.date.replace(tzinfo=pytz.UTC).isoformat()
+                update.append(element_data)
+        return update
+
+    test = shape_to_dict(media_updates)
+
     # Get the Genre form for books
     form = GenreForm()
     form_cover = CoverForm()
@@ -194,7 +212,7 @@ def media_sheet(media_type, media_id):
             .filter(BooksGenre.media_id == media_id).first()
 
     return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
-                           media_list=list_type.value, form_cover=form_cover)
+                           media_list=list_type.value, form_cover=form_cover, media_updates=test)
 
 
 @bp.route('/update_book_genres/<media_id>', methods=['POST'])
@@ -842,6 +860,7 @@ def update_feeling():
     return '', 204
 
 
+# Not used for now
 @bp.route('/update_completion_date', methods=['POST'])
 @login_required
 def update_completion_date():

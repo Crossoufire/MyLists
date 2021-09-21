@@ -1,4 +1,21 @@
 
+/*.comp-date {*/
+/*    width: 140px;*/
+/*    border: none;*/
+/*    color: lightgray;*/
+/*    background: transparent;*/
+/*    cursor: pointer;*/
+/*}*/
+
+/*.comp-date:focus {*/
+/*    outline: none;*/
+/*}*/
+
+.more-link {
+    color: grey !important;
+    font-size: 15px;
+}
+
 /* --- Main CSS ------------------------------------------------------------------------- */
 body > li {
     font-weight: 400;

@@ -5,7 +5,6 @@ from flask_wtf.file import DataRequired
 from wtforms_alchemy import model_form_factory
 from wtforms import StringField, SubmitField, TextAreaField, SelectMultipleField
 
-
 BaseModelForm = model_form_factory(FlaskForm)
 
 

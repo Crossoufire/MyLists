@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import datetime as dt
 from collections import OrderedDict
 from datetime import datetime
 from enum import Enum
@@ -521,7 +522,7 @@ class MediaListMixin:
             self.last_episode_watched = self.media.eps_per_season[-1].episodes
             self.total = self.media.total_episodes
             new_total = self.media.total_episodes
-            self.completion_date = datetime.now()
+            self.completion_date = dt.date.today()
         elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
             self.current_season = 1
             self.last_episode_watched = 0
@@ -716,10 +717,15 @@ class TVBase(db.Model):
                 'favorite': False, 'status': Status.WATCHING.value, 'rewatched': 0, 'comment': None,
                 'completion_date': None}
         if tmp:
+            try:
+                comp_date = tmp.completion_date.strftime("%Y-%m-%d")
+            except:
+                comp_date = None
+
             data = {'in_list': True, 'last_episode_watched': tmp.last_episode_watched,
                     'current_season': tmp.current_season, 'score': tmp.score, 'favorite': tmp.favorite,
                     'status': tmp.status.value, 'rewatched': tmp.rewatched, 'comment': tmp.comment,
-                    'feeling': tmp.feeling, 'completion_date': tmp.completion_date}
+                    'feeling': tmp.feeling, 'completion_date': comp_date}
         data = dotdict(data)
 
         return data
@@ -740,7 +746,7 @@ class TVBase(db.Model):
             new_season = len(self.eps_per_season)
             new_episode = self.eps_per_season[-1].episodes
             new_watched = self.total_episodes
-            completion_date = datetime.now()
+            completion_date = dt.date.today()
         elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
             new_episode = 0
             new_watched = 0
@@ -1139,9 +1145,14 @@ class Movies(MediaMixin, db.Model):
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
                 'rewatched': 0, 'comment': None, 'feeling': None, 'completion_date': None}
         if tmp:
+            try:
+                comp_date = tmp.completion_date.strftime("%Y-%m-%d")
+            except:
+                comp_date = None
+
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
                     'rewatched': tmp.rewatched, 'comment': tmp.comment, 'feeling': tmp.feeling,
-                    'completion_date': tmp.completion_date}
+                    'completion_date': comp_date}
         data = dotdict(data)
         return data
 
@@ -1203,7 +1214,7 @@ class MoviesList(MediaListMixin, db.Model):
         self.status = new_status
 
         if new_status == Status.COMPLETED:
-            self.completion_date = datetime.now()
+            self.completion_date = dt.date.today()
             self.total = 1
             new_total = 1
         else:
@@ -1374,9 +1385,14 @@ class Books(MediaMixin, db.Model):
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.READING.value,
                 'rewatched': 0, 'comment': None, 'actual_page': 0, 'feeling': None, 'completion_date': None}
         if tmp:
+            try:
+                comp_date = tmp.completion_date.strftime("%Y-%m-%d")
+            except:
+                comp_date = None
+
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
                     'rewatched': tmp.rewatched, 'comment': tmp.comment, 'actual_page': tmp.actual_page,
-                    'feeling': tmp.feeling, 'completion_date': tmp.completion_date}
+                    'feeling': tmp.feeling, 'completion_date': comp_date}
         data = dotdict(data)
         return data
 
@@ -1442,7 +1458,7 @@ class BooksList(MediaListMixin, db.Model):
             self.actual_page = self.media.pages
             self.total = self.media.pages
             new_total = self.media.pages
-            self.completion_date = datetime.now()
+            self.completion_date = dt.date.today()
         elif new_status == Status.PLAN_TO_READ:
             self.actual_page = 0
             self.total = 0
@@ -1545,9 +1561,14 @@ class Games(MediaMixin, db.Model):
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
                 'playtime': 0, 'comment': None, 'feeling': None, 'completion_date': None}
         if tmp:
+            try:
+                comp_date = tmp.completion_date.strftime("%Y-%m-%d")
+            except:
+                comp_date = None
+
             data = {'in_list': True, 'score': tmp.score, 'favorite': tmp.favorite, 'status': tmp.status.value,
                     'playtime': tmp.playtime, 'comment': tmp.comment, 'feeling': tmp.feeling,
-                    'completion_date': tmp.completion_date}
+                    'completion_date': comp_date}
         data = dotdict(data)
         return data
 
@@ -1639,7 +1660,7 @@ class GamesList(MediaListMixin, db.Model):
         self.status = new_status
 
         if new_status == Status.COMPLETED:
-            self.completion_date = datetime.now()
+            self.completion_date = dt.date.today()
         elif new_status == Status.PLAN_TO_PLAY:
             self.playtime = 0
 
