@@ -50,6 +50,10 @@
                     <div id="your-medialist-data" class="p-2" {% if not list_info.in_list %}style="display: none;"{% endif %}>
                         <h4 id="fav-title" class="m-l-15 m-r-15">
                             <i class="fas fa-list"></i>&nbsp;&nbsp; <b>List info</b>
+                            {% if media_updates %}
+                                <span> | </span>
+                                <a class="more-link" data-toggle="modal" data-target="#HistoryModal"><i>History</i></a>
+                            {% endif %}
                             <i id="favorite" class="fa-heart m-t-3{% if list_info.favorite %} fas favorited {% else %}
                              far no-fav{% endif %}" onclick="addFavorite('{{ media.id }}','{{ media_list }}')"
                              data-toggle="tooltip" title="Favorite"></i>
@@ -143,8 +147,6 @@
 {#                                &nbsp;<i id="date-check" class="fas fa-check" style="display: none;"></i>#}
 {#                            </div>#}
 {#                        </div>#}
-
-                        <a class="more-link m-l-15" data-toggle="modal" data-target="#HistoryModal"><i>History</i></a>
 
                         <h4 id="comment-title" class="m-l-15 m-r-15 m-t-15">
                             <i class="fas fa-pen-alt m-t-10"></i>&nbsp; <b>Comment</b>
@@ -302,24 +304,24 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                        {% for update in media_updates %}
-                            <div class="update-box">
+                    {% for update in media_updates %}
+                        <div class="update-box">
                             <div id="info-{{ loop.index0 }}" style="display: inline-block;">{{ update['update'] }} watched the </div>
-                            </div>
-                            <script type="text/javascript">
-                                var tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-                                var localdate = new Date("{{ update['date'] }}").toLocaleString("en-GB", {timeZone: tz});
-                                var d = new Date("{{ update['date'] }}");
-                                var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                                var date_year = d.getFullYear();
-                                var date_month = month[d.getMonth()];
-                                var date_day = localdate.slice(0, 2);
-                                var date = date_day + " " + date_month + " " + date_year;
-                                var tata = document.getElementById('info-{{ loop.index0 }}');
-                                tata.innerHTML += date;
-                            </script>
-                        {% endfor %}
-                    </div>
+                        </div>
+                        <script type="text/javascript">
+                            var tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+                            var localdate = new Date("{{ update['date'] }}").toLocaleString("en-GB", {timeZone: tz});
+                            var d = new Date("{{ update['date'] }}");
+                            var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            var date_year = d.getFullYear();
+                            var date_month = month[d.getMonth()];
+                            var date_day = localdate.slice(0, 2);
+                            var date = date_day + " " + date_month + " " + date_year;
+                            var tata = document.getElementById('info-{{ loop.index0 }}');
+                            tata.innerHTML += date;
+                        </script>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>

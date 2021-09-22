@@ -10,10 +10,11 @@ from flask_login import login_required, current_user
 from sqlalchemy import func
 from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
-from MyLists.API_data import ApiData, TMDBMixin, ApiGames, ApiBooks
+from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
 from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksGenre, change_air_format
+    get_models_group, get_next_airing, Books, BooksGenre, change_air_format, SeriesGenre, SeriesActors, MoviesGenre, \
+    MoviesActors, Series, Movies
 
 bp = Blueprint('main', __name__)
 
@@ -38,6 +39,54 @@ bp = Blueprint('main', __name__)
 #             print('done')
 #         else:
 #             print('failed')
+
+
+# # Correct the orphan media (no genres or actors)
+# def correct_orphan_media():
+#     def get_orphan_genres_and_actors(api_id, list_type, media_id):
+#         API_model = ApiData().get_API_model(list_type)
+#         media_data = API_model(API_id=api_id).get_details_and_credits_data()
+#         media_data.from_API_to_dict()
+#         media_data = media_data.media_details
+#
+#         if list_type == ListType.SERIES:
+#             for genre in media_data['genres_data']:
+#                 genre.update({'media_id': media_id})
+#                 db.session.add(SeriesGenre(**genre))
+#             for actor in media_data['actors_data']:
+#                 actor.update({'media_id': media_id})
+#                 db.session.add(SeriesActors(**actor))
+#
+#         elif list_type == ListType.MOVIES:
+#             for genre in media_data['genres_data']:
+#                 genre.update({'media_id': media_id})
+#                 db.session.add(MoviesGenre(**genre))
+#             for actor in media_data['actors_data']:
+#                 actor.update({'media_id': media_id})
+#                 db.session.add(MoviesActors(**actor))
+#
+#         # Commit the new changes
+#         db.session.commit()
+#
+#         return True
+#
+#     query = db.session.query(Series, SeriesGenre).outerjoin(SeriesGenre, SeriesGenre.media_id == Series.id).all()
+#     for q in query:
+#         if q[1] is None:
+#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.SERIES, media_id=q[0].id)
+#             if info is True:
+#                 app.logger.info(f'Orphan series corrected with ID [{q[0].id}]: {q[0].name}')
+#             else:
+#                 app.logger.info(f'Orphan series NOT corrected with ID [{q[0].id}]: {q[0].name}')
+#
+#     query = db.session.query(Movies, MoviesGenre).outerjoin(MoviesGenre, MoviesGenre.media_id == Movies.id).all()
+#     for q in query:
+#         if q[1] is None:
+#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.MOVIES, media_id=q[0].id)
+#             if info is True:
+#                 app.logger.info(f'Orphan movie corrected with ID [{q[0].id}]: {q[0].name}')
+#             else:
+#                 app.logger.info(f'Orphan movie NOT corrected with ID [{q[0].id}]: {q[0].name}')
 
 
 @bp.route("/<media_list>/<user_name>/", methods=['GET', 'POST'])
@@ -201,7 +250,7 @@ def media_sheet(media_type, media_id):
                 update.append(element_data)
         return update
 
-    test = shape_to_dict(media_updates)
+    history = shape_to_dict(media_updates)
 
     # Get the Genre form for books
     form = GenreForm()
@@ -212,7 +261,7 @@ def media_sheet(media_type, media_id):
             .filter(BooksGenre.media_id == media_id).first()
 
     return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
-                           media_list=list_type.value, form_cover=form_cover, media_updates=test)
+                           media_list=list_type.value, form_cover=form_cover, media_updates=history)
 
 
 @bp.route('/update_book_genres/<media_id>', methods=['POST'])
@@ -401,7 +450,7 @@ def search_media():
 
     if media_select == "TMDB":
         try:
-            Api_data = TMDBMixin()
+            Api_data = ApiTMDB()
             Api_data.search(search, page=page)
             media_results, total_results, total_pages = Api_data.get_search_list()
         except Exception as e:
@@ -1094,7 +1143,7 @@ def autocomplete():
 
     if media_select == 'TMDB':
         try:
-            Api_data = TMDBMixin()
+            Api_data = ApiTMDB()
             Api_data.search(search)
             media_results = Api_data.get_autocomplete_list()
         except Exception as e:

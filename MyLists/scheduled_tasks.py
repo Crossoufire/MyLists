@@ -539,9 +539,8 @@ def new_releasing_games():
     for game in all_games:
         try:
             diff = (datetime.utcnow() - datetime.utcfromtimestamp(int(game.release_date))).total_seconds()
-            print(diff)
             # Check if the game release in one week or less (7 days)
-            if diff < 0 and abs(diff/(3600*24)) <= 500000000000:
+            if diff < 0 and abs(diff/(3600*24)) <= 7:
                 media_id.append(game.id)
         except:
             pass

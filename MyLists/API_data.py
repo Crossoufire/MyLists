@@ -1,17 +1,17 @@
-import re
 import json
 import os.path
+import re
 import secrets
-import requests
-from PIL import Image
+from datetime import datetime
 from pathlib import Path
 from urllib import request
-from MyLists import app, db
-from datetime import datetime
+from urllib.request import urlretrieve, Request
+import requests
+from PIL import Image
 from flask import abort, url_for
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
-from urllib.request import urlretrieve, Request
+from MyLists import app, db
 from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActors, Movies, SeriesNetwork, \
     SeriesEpisodesPerSeason, MoviesGenre, MoviesActors, GamesCompanies, GamesPlatforms, Games, GamesGenre, Books, \
     BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason, latin_alphabet, \
@@ -73,7 +73,7 @@ class ApiData:
         return self.all_data
 
 
-class TMDBMixin(ApiData):
+class ApiTMDB(ApiData):
     group = []
 
     def __init__(self, API_id=None):
@@ -221,7 +221,7 @@ class TMDBMixin(ApiData):
         return media_cover_name
 
 
-class ApiTV(TMDBMixin):
+class ApiTV(ApiTMDB):
     group = []
 
     def get_details_and_credits_data(self):
@@ -426,7 +426,7 @@ class ApiAnime(ApiTV):
             db.session.add(AnimeEpisodesPerSeason(**season))
 
 
-class ApiMovies(TMDBMixin):
+class ApiMovies(ApiTMDB):
     group = [ListType.MOVIES, MediaType.MOVIES]
     local_covers_path = Path(app.root_path, "static/covers/movies_covers")
 

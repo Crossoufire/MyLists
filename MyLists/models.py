@@ -1,7 +1,7 @@
+import datetime as dt
 import json
 import random
 import re
-import datetime as dt
 from collections import OrderedDict
 from datetime import datetime
 from enum import Enum
@@ -24,9 +24,18 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
+def class_registry(cls):
+    """ Dynamically gets the class registry of sqlalchemy from specified model. """
+    try:
+        return cls._sa_registry._class_registry
+    except:
+        return cls._decl_class_registry
+
+
 def get_models_group(list_type):
     _ = []
-    for cls in db.Model._decl_class_registry.values():
+    registry = class_registry(db.Model)
+    for cls in registry.values():
         if isinstance(cls, type) and issubclass(cls, db.Model):
             try:
                 if list_type in cls._group:
@@ -38,7 +47,8 @@ def get_models_group(list_type):
 
 def get_models_type(model_type):
     _ = []
-    for cls in db.Model._decl_class_registry.values():
+    registry = class_registry(db.Model)
+    for cls in registry.values():
         if isinstance(cls, type) and issubclass(cls, db.Model):
             try:
                 if cls._type == model_type:
@@ -260,19 +270,21 @@ class User(UserMixin, db.Model):
         return s.dumps({'user_id': self.id}).decode('utf-8')
 
     def get_frame_info(self):
-        total = (self.time_spent_series + self.time_spent_anime + self.time_spent_movies)
+        total = (self.time_spent_series + self.time_spent_movies)
+        if self.add_anime:
+            total += self.time_spent_anime
         if self.add_books:
             total += self.time_spent_books
         if self.add_games:
             total += self.time_spent_games
 
         knowledge_level = int((((400+80*total)**(1/2))-20)/40)
-        frame_level = round(knowledge_level/8, 0)+1
+        frame_level = (knowledge_level // 8) + 1
         query_frame = Frames.query.filter_by(level=frame_level).first()
 
         frame_id = url_for('static', filename='img/icon_frames/new/border_40')
         if query_frame:
-            frame_id = url_for('static', filename='img/icon_frames/new/{}'.format(query_frame.image_id))
+            frame_id = url_for('static', filename=f'img/icon_frames/new/{query_frame.image_id}')
 
         return {"level": knowledge_level, "frame_id": frame_id, "frame_level": frame_level}
 
@@ -2412,7 +2424,8 @@ def get_next_airing(list_type):
                 if datetime.utcfromtimestamp(game[0].release_date) > datetime.now():
                     query.append(game[0])
             except:
-                query.append(game[0])
+                if game[0].release_date == 'Unknown':
+                    query.append(game[0])
 
     else:
         query = db.session.query(media, media_list) \
@@ -2422,56 +2435,3 @@ def get_next_airing(list_type):
             .order_by(media_data.asc()).all()
 
     return query
-
-
-# Correct the orphan media (no genres, actors or networks)
-# def correct_orphan_media():
-#     def get_orphan_genres_and_actors(api_id, list_type, media_id):
-#         media_data = ApiData().get_details_and_credits_data(api_id, list_type)
-#         if list_type == ListType.SERIES:
-#             data = MediaDetails(media_data, list_type).get_media_details()
-#             if not data['tv_data']:
-#                 return None
-#         elif list_type == ListType.MOVIES:
-#             data = MediaDetails(media_data, list_type).get_media_details()
-#             if not data['movies_data']:
-#                 return None
-#
-#         if list_type == ListType.SERIES:
-#             for genre in data['genres_data']:
-#                 genre.update({'media_id': media_id})
-#                 db.session.add(SeriesGenre(**genre))
-#             for actor in data['actors_data']:
-#                 actor.update({'media_id': media_id})
-#                 db.session.add(SeriesActors(**actor))
-#         elif list_type == ListType.MOVIES:
-#             for genre in data['genres_data']:
-#                 genre.update({'media_id': media_id})
-#                 db.session.add(MoviesGenre(**genre))
-#             for actor in data['actors_data']:
-#                 actor.update({'media_id': media_id})
-#                 db.session.add(MoviesActors(**actor))
-#
-#         # Commit the new changes
-#         db.session.commit()
-#
-#         return True
-#
-#     query = db.session.query(Series, SeriesGenre).outerjoin(SeriesGenre, SeriesGenre.media_id == Series.id).all()
-#     for q in query:
-#         if q[1] is None:
-#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.SERIES, media_id=q[0].id)
-#             if info is True:
-#                 app.logger.info(f'Orphan series corrected with ID [{q[0].id}]: {q[0].name}')
-#             else:
-#                 app.logger.info(f'Orphan series NOT corrected with ID [{q[0].id}]: {q[0].name}')
-#
-#     query = db.session.query(Movies, MoviesGenre).outerjoin(MoviesGenre, MoviesGenre.media_id == Movies.id).all()
-#     for q in query:
-#         if q[1] is None:
-#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.MOVIES, media_id=q[0].id)
-#             if info is True:
-#                 app.logger.info(f'Orphan movie corrected with ID [{q[0].id}]: {q[0].name}')
-#             else:
-#                 app.logger.info(f'Orphan movie NOT corrected with ID [{q[0].id}]: {q[0].name}')
-

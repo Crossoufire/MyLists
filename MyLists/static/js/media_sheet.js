@@ -110,12 +110,12 @@ function changeCategoryBooks(element_id, cat_selector, pages) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
-        $('#comp-date-row').show('slow');
+        // $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
-        $('#comp-date-row').hide('slow');
+        // $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
@@ -131,9 +131,9 @@ function changeCategoryBooks(element_id, cat_selector, pages) {
 
             if (new_cat === 'Completed') {
                 $('#page-input').val(pages);
-                $('#comp-date-row').show();
-                let field = document.querySelector('.comp-date');
-                field.value = new Date().toISOString().substring(0, 10);
+                // $('#comp-date-row').show();
+                // let field = document.querySelector('.comp-date');
+                // field.value = new Date().toISOString().substring(0, 10);
             }
             else if (new_cat === 'Plan to Read') {
                 $('#page-input').val(0);
@@ -158,12 +158,12 @@ function changeCategoryMovies(element_id, cat_selector) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
-        $('#comp-date-row').show('slow');
+        // $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
-        $('#comp-date-row').hide('slow');
+        // $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
@@ -176,11 +176,11 @@ function changeCategoryMovies(element_id, cat_selector) {
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
 
-            if (new_cat === 'Completed') {
-                $('#comp-date-row').show();
-                let field = document.querySelector('.comp-date');
-                field.value = new Date().toISOString().substring(0, 10);
-            }
+            // if (new_cat === 'Completed') {
+            //     $('#comp-date-row').show();
+            //     let field = document.querySelector('.comp-date');
+            //     field.value = new Date().toISOString().substring(0, 10);
+            // }
         },
         error: function() {
             error_ajax_message('Error changing your media status. Please try again later.');
@@ -200,12 +200,12 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
-        $('#comp-date-row').show('slow');
+        // $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
-        $('#comp-date-row').hide('slow');
+        // $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
@@ -221,9 +221,9 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
             $('#your-medialist-data').removeClass('disabled');
 
             if (new_cat === 'Completed') {
-                $('#comp-date-row').show();
-                let field = document.querySelector('.comp-date');
-                field.value = new Date().toISOString().substring(0, 10);
+                // $('#comp-date-row').show();
+                // let field = document.querySelector('.comp-date');
+                // field.value = new Date().toISOString().substring(0, 10);
 
                 let season_data = JSON.parse("["+seas_data+"]");
                 let episode_drop = $('#episode-dropdown');
@@ -264,11 +264,11 @@ function changeCategoryGames(element_id, cat_selector) {
     $('#cat-loading').show();
     $('#your-medialist-data').addClass('disabled');
 
-    if (new_cat === 'Completed') {
-        $('#comp-date-row').show('slow');
-    } else {
-        $('#comp-date-row').hide('slow');
-    }
+    // if (new_cat === 'Completed') {
+    //     $('#comp-date-row').show('slow');
+    // } else {
+    //     $('#comp-date-row').hide('slow');
+    // }
 
     $.ajax ({
         type: "POST",
@@ -281,12 +281,12 @@ function changeCategoryGames(element_id, cat_selector) {
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
 
-            if (new_cat === 'Completed') {
-                $('#comp-date-row').show();
-                let field = document.querySelector('.comp-date');
-                field.value = new Date().toISOString().substring(0, 10);
-            }
-            else if (new_cat === 'Plan to Play') {
+            // if (new_cat === 'Completed') {
+            //     $('#comp-date-row').show();
+            //     let field = document.querySelector('.comp-date');
+            //     field.value = new Date().toISOString().substring(0, 10);
+            // }
+            if (new_cat === 'Plan to Play') {
                 $('#time-dropdown').val("0");
                 $('#playtime-row').hide();
             }
