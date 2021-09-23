@@ -37,7 +37,7 @@ ENV=Production
 SESSION_COOKIE_SECURE=True
 SQLALCHEMY_DATABASE_URI=sqlite:///site.db
 TESTING=False
-FLASK_DEBUG=False
+DEBUG=False
 MAIL_SERVER=your-mail-server
 MAIL_PORT=<port>
 MAIL_USE_SSL=True
@@ -46,6 +46,7 @@ MAIL_PASSWORD=password
 THEMOVIEDB_API_KEY=themoviedb-api-key
 GOOGLE_BOOKS_API_KEY=google-books-api-key
 CLIENT_IGDB=igdb-client-id
+SECRET_IGDB=igdb-secret
 IGDB_API_KEY=igdb-api-key
 ```
 
@@ -57,7 +58,7 @@ If you want to first test the project locally, you should modify in your `.env` 
 ENV=Development
 SESSION_COOKIE_SECURE=False
 TESTING=True
-FLASK_DEBUG=True
+DEBUG=True
 ```
 
 Then run the command `python3 Run.py` and open the link [http://localhost:5000](http://localhost:5000).
