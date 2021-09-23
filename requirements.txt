@@ -2,7 +2,7 @@ flask
 howlongtobeatpy
 python-dotenv
 itsdangerous
-sqlalchemy
+sqlalchemy==1.3.23
 ratelimit
 pykakasi
 requests
@@ -22,3 +22,4 @@ flask_compress
 flask_wtf
 email_validator
 flask_admin
+WTForms-Alchemy
