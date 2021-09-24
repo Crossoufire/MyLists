@@ -1,7 +1,5 @@
-# import redis
 import logging
 import smtplib
-# from rq import Queue
 from flask import Flask
 import email.utils as em
 from config import Config

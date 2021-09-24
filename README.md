@@ -32,33 +32,37 @@ pip3 install -r requirements.txt
 Before starting the program, you *MUST* create a `.env` file respecting the following syntax:
 
 ```
-SECRET_KEY=the-super-secret-key
-ENV=Production
-SESSION_COOKIE_SECURE=True
-SQLALCHEMY_DATABASE_URI=sqlite:///site.db
-TESTING=False
-DEBUG=False
+SQLALCHEMY_DATABASE_URI=sqlite:///your-db-name.db
+
 MAIL_SERVER=your-mail-server
-MAIL_PORT=<port>
-MAIL_USE_SSL=True
+MAIL_PORT=port
+MAIL_USE_SSL=True|False
+MAIL_USE_TLS=True|False
 MAIL_USERNAME=mail@mail.com
 MAIL_PASSWORD=password
+
 THEMOVIEDB_API_KEY=themoviedb-api-key
 GOOGLE_BOOKS_API_KEY=google-books-api-key
 CLIENT_IGDB=igdb-client-id
 SECRET_IGDB=igdb-secret
-IGDB_API_KEY=igdb-api-key
+IGDB_API_KEY=igdb-api-key	
+
+SECRET_KEY=change-me
+ENV=production
+SESSION_COOKIE_SECURE=True
+SESSION_COOKIE_HTTPONLY=True
+TESTING=False
+FLASK_DEBUG=False
 ```
 
-For example if you want to use Gmail, set `MAIL_SERVER = smtp.gmail.com` and `MAIL_PORT = 465`. 
 If you need more settings, feel free to adapt it as you want.
 
 If you want to first test the project locally, you should modify in your `.env` file these values:
 ```
-ENV=Development
+ENV=development
 SESSION_COOKIE_SECURE=False
 TESTING=True
-DEBUG=True
+FLASK_DEBUG=True
 ```
 
 Then run the command `python3 Run.py` and open the link [http://localhost:5000](http://localhost:5000).
