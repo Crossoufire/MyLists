@@ -30,8 +30,8 @@ class Config:
     SESSION_COOKIE_SECURE   = ast.literal_eval(os.environ.get('SESSION_COOKIE_SECURE')) or False
     TESTING                 = ast.literal_eval(os.environ.get('TESTING')) or True
 
-    CLIENT_MAL              = ast.literal_eval(os.environ.get('CLIENT_MAL')) or None  # Not used yet
-    SECRET_MAL              = ast.literal_eval(os.environ.get('SECRET_MAL')) or None  # Not used yet
+    #CLIENT_MAL              = ast.literal_eval(os.environ.get('CLIENT_MAL')) or None  # Not used yet
+    #SECRET_MAL              = ast.literal_eval(os.environ.get('SECRET_MAL')) or None  # Not used yet
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 8*1024*1024
