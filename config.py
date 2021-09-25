@@ -10,28 +10,48 @@ load_dotenv(dotenv_path=os.path.join(basedir, '.env'))
 class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI') or 'sqlite:///site.db'
 
-    MAIL_SERVER             = os.environ.get('MAIL_SERVER') or None
-    MAIL_USERNAME           = os.environ.get('MAIL_USERNAME') or None
-    MAIL_PASSWORD           = os.environ.get('MAIL_PASSWORD') or None
-    MAIL_USE_SSL            = ast.literal_eval(os.environ.get('MAIL_USE_SSL')) or True
-    MAIL_USE_TLS            = ast.literal_eval(os.environ.get('MAIL_USE_TLS')) or False
-    MAIL_PORT               = int(os.environ.get('MAIL_PORT')) or 25
 
-    THEMOVIEDB_API_KEY      = os.environ.get('THEMOVIEDB_API_KEY') or None
-    GOOGLE_BOOKS_API_KEY    = os.environ.get('GOOGLE_BOOKS_API_KEY') or None
-    CLIENT_IGDB             = os.environ.get('CLIENT_IGDB') or None
-    SECRET_IGDB             = os.environ.get('SECRET_IGDB') or None
-    IGDB_API_KEY            = os.environ.get('IGDB_API_KEY') or None
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or None
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or None
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None
+    try:
+        MAIL_USE_SSL = ast.literal_eval(os.environ.get('MAIL_USE_SSL'))
+    except:
+        MAIL_USE_SSL = True
+    try:
+        MAIL_USE_TLS = ast.literal_eval(os.environ.get('MAIL_USE_TLS'))
+    except:
+        MAIL_USE_TLS = False
+    try:
+        MAIL_PORT = int(os.environ.get('MAIL_PORT'))
+    except:
+        MAIL_PORT = 25
 
-    SECRET_KEY              = os.environ.get('SECRET_KEY') or 'lets-go-guys'
-    ENV                     = os.environ.get('ENV') or 'development'
-    SESSION_COOKIE_NAME     = os.environ.get('SESSION_COOKIE_NAME') or 'MyLists'
-    SESSION_COOKIE_HTTPONLY = ast.literal_eval(os.environ.get('SESSION_COOKIE_HTTPONLY')) or True
-    SESSION_COOKIE_SECURE   = ast.literal_eval(os.environ.get('SESSION_COOKIE_SECURE')) or False
-    TESTING                 = ast.literal_eval(os.environ.get('TESTING')) or True
+    THEMOVIEDB_API_KEY = os.environ.get('THEMOVIEDB_API_KEY') or None
+    GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY') or None
+    CLIENT_IGDB = os.environ.get('CLIENT_IGDB') or None
+    SECRET_IGDB = os.environ.get('SECRET_IGDB') or None
+    IGDB_API_KEY = os.environ.get('IGDB_API_KEY') or None
 
-    # CLIENT_MAL            = ast.literal_eval(os.environ.get('CLIENT_MAL')) or None  # Not used yet
-    # SECRET_MAL            = ast.literal_eval(os.environ.get('SECRET_MAL')) or None  # Not used yet
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'lets-go-guys'
+    ENV = os.environ.get('ENV') or 'development'
+    SESSION_COOKIE_NAME = os.environ.get('SESSION_COOKIE_NAME') or 'MyLists'
+
+    try:
+        SESSION_COOKIE_HTTPONLY = ast.literal_eval(os.environ.get('SESSION_COOKIE_HTTPONLY'))
+    except:
+        SESSION_COOKIE_HTTPONLY = True
+    try:
+        SESSION_COOKIE_SECURE = ast.literal_eval(os.environ.get('SESSION_COOKIE_SECURE'))
+    except:
+        SESSION_COOKIE_SECURE = False
+    try:
+        TESTING = ast.literal_eval(os.environ.get('TESTING'))
+    except:
+        TESTING = True
+
+    # CLIENT_MAL = ast.literal_eval(os.environ.get('CLIENT_MAL')) or None  # Not used yet
+    # SECRET_MAL = ast.literal_eval(os.environ.get('SECRET_MAL')) or None  # Not used yet
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 8*1024*1024
