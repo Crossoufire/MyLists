@@ -70,19 +70,19 @@ def add_id_to_user(user_id, ids_to_add, list_type):
                                    current_season=len(media.eps_per_season),
                                    last_episode_watched=media.eps_per_season[-1].episodes,
                                    status=Status.COMPLETED,
-                                   eps_watched=media.total_episodes)
+                                   total=media.total_episodes)
         elif list_type == ListType.ANIME:
             user_list = AnimeList(user_id=user_id,
                                   media_id=media.id,
                                   current_season=len(media.eps_per_season),
                                   last_episode_watched=media.eps_per_season[-1].episodes,
                                   status=Status.COMPLETED,
-                                  eps_watched=media.total_episodes)
+                                  total=media.total_episodes)
         elif list_type == ListType.MOVIES:
             user_list = MoviesList(user_id=user_id,
                                    media_id=media.id,
                                    status=Status.COMPLETED,
-                                   eps_watched=1)
+                                   total=1)
 
         db.session.add(user_list)
         app.logger.info('[User {}] {} Added [ID {}] in the category: Completed'
@@ -120,10 +120,10 @@ def get_the_ids(ids_to_add, movies=False):
     else:
         DB = [Series, Anime]
     for media in DB:
-        query = media.query.filter(media.themoviedb_id.in_(ids_to_add)).all()
+        query = media.query.filter(media.api_id.in_(ids_to_add)).all()
         try:
             ids_in_db.append([q.id for q in query])
-            tmp = [q.themoviedb_id for q in query]
+            tmp = [q.api_id for q in query]
         except:
             ids_in_db.append([])
             tmp = []

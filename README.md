@@ -6,7 +6,7 @@ and compare it to yours. You can see a live version here: [https://mylists.info]
 
 ![MyLists](https://raw.githubusercontent.com/Crossoufire/MyLists/master/MyLists/static/img/home2.jpg)
 
-MyLists uses [Flask](http://flask.pocoo.org/) and [Material Design for Bootstrap 4](https://mdbootstrap.com/)
+MyLists uses [Flask](https://flask.palletsprojects.com/) and [Material Design for Bootstrap 4](https://mdbootstrap.com/)
 
 ### Features
 
@@ -32,29 +32,37 @@ pip3 install -r requirements.txt
 Before starting the program, you *MUST* create a `.env` file respecting the following syntax:
 
 ```
-FLASK_SECRET_KEY="the-super-secret-key"
-FLASK_SESSION_COOKIE_SECURE=True
-FLASK_SQLALCHEMY_DATABASE_URI="sqlite:///site.db"
-FLASK_ENV="Production"
+SQLALCHEMY_DATABASE_URI=sqlite:///your-db-name.db
+
+MAIL_SERVER=your-mail-server
+MAIL_PORT=port
+MAIL_USE_SSL=True|False
+MAIL_USE_TLS=True|False
+MAIL_USERNAME=mail@mail.com
+MAIL_PASSWORD=password
+
+THEMOVIEDB_API_KEY=themoviedb-api-key
+GOOGLE_BOOKS_API_KEY=google-books-api-key
+CLIENT_IGDB=igdb-client-id
+SECRET_IGDB=igdb-secret
+IGDB_API_KEY=igdb-api-key	
+
+SECRET_KEY=change-me
+ENV=production
+SESSION_COOKIE_SECURE=True
+SESSION_COOKIE_HTTPONLY=True
+TESTING=False
 FLASK_DEBUG=False
-FLASK_TESTING=False
-FLASK_MAIL_SERVER="Your mail server"
-FLASK_MAIL_PORT=465
-FLASK_MAIL_USE_SSL=True
-FLASK_MAIL_USERNAME="mail.mail@mail.com"
-FLASK_MAIL_PASSWORD="password"
-FLASK_THEMOVIEDB_API_KEY="TMDb API key"
 ```
 
-For example if you want to use Gmail, set `FLASK_MAIL_SERVER = smtp.gmail.com` and `FLASK_MAIL_PORT = 465`. 
 If you need more settings, feel free to adapt it as you want.
 
-If you want to first test the project locally, you should put in your `.env` file these values:
+If you want to first test the project locally, you should modify in your `.env` file these values:
 ```
-FLASK_SESSION_COOKIE_SECURE=False,  
-FLASK_DEBUG=True,
-FLASK_TESTING=True,
-FLASK_ENV="Development",
+ENV=development
+SESSION_COOKIE_SECURE=False
+TESTING=True
+FLASK_DEBUG=True
 ```
 
 Then run the command `python3 Run.py` and open the link [http://localhost:5000](http://localhost:5000).

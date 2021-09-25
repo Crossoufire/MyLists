@@ -16,9 +16,9 @@
     <meta name="author" content="Cross">
     <meta http-equiv="x-ua-compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="keywords" content="Mylists, lists, series, tv shows, anime, movies, levels, hall of fame">
-    <meta name="description" content="Create your TV shows/anime/movies list, see how much time you spent and gain
-    levels and badges."/>
+    <meta name="keywords" content="Mylists, lists, series, tv shows, movies, levels, hall of fame">
+    <meta name="description" content="Create your series/anime/movies/books/games list, see how much time you spent
+     and gain levels."/>
 
     <!--- CDN CSS -------------------------------------------------------------------------------------->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
@@ -45,9 +45,9 @@
 
 <body>
 <header class="site-header">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top p-0">
-        <div class="container">
-            {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top p-0">
+            <div class="container">
                 <ul class="navbar-nav mr-auto m-l-10">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fs-22" data-toggle="dropdown">MyLists</a>
@@ -61,15 +61,17 @@
                                     <div class="col-9">SeriesList</div>
                                 </div>
                             </a>
-                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                             media_list='animelist', user_name=current_user.username) }}">
-                                <div class="row">
-                                    <div class="col-3" style="margin-right: -5px;">
-                                        <i class="fas fa-torii-gate text-anime"></i>
+                            {% if current_user.add_anime %}
+                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
+                                 media_list='animelist', user_name=current_user.username) }}">
+                                    <div class="row">
+                                        <div class="col-3" style="margin-right: -5px;">
+                                            <i class="fas fa-torii-gate text-anime"></i>
+                                        </div>
+                                        <div class="col-9">AnimeList</div>
                                     </div>
-                                    <div class="col-9">AnimeList</div>
-                                </div>
-                            </a>
+                                </a>
+                            {% endif %}
                             <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                              media_list='movieslist', user_name=current_user.username) }}">
                                 <div class="row">
@@ -79,6 +81,17 @@
                                     <div class="col-9">MoviesList</div>
                                 </div>
                             </a>
+                            {% if current_user.add_books %}
+                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
+                                 media_list='bookslist', user_name=current_user.username) }}">
+                                    <div class="row">
+                                        <div class="col-3" style="margin-right: -5px;">
+                                            <i class="fas fa-book text-books"></i>
+                                        </div>
+                                        <div class="col-9">BooksList</div>
+                                    </div>
+                                </a>
+                            {% endif %}
                             {% if current_user.add_games %}
                                 <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                                  media_list='gameslist', user_name=current_user.username) }}">
@@ -98,10 +111,22 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="nav-collapse">
-                    <form class="form-inline nav-form" action="{{ url_for('main.search_media') }}">
+                    <form id="auto-form" class="form-inline nav-form" name="aform" method="GET"
+                     action="{{ url_for('main.search_media') }}">
                         <label for="autocomplete"></label>
                         <input id="autocomplete" class="form-control search-ipad-mobile" name="search"
-                               placeholder="Search media or users...">
+                         placeholder="Search media or users">
+                        <label for="select-media"></label>
+                        <select id="select-media" class="auto-select" name="media_select">
+                            <option class="auto-opt" value="TMDB">Media</option>
+                            {% if current_user.add_books %}
+                                <option class="auto-opt" value="BOOKS">Books</option>
+                            {% endif %}
+                            {% if current_user.add_games %}
+                                <option class="auto-opt" value="IGDB">Games</option>
+                            {% endif %}
+                            <option class="auto-opt" value="users">Users</option>
+                        </select>
                     </form>
                     <ul class="navbar-nav mr-auto nav-ul-1">
                         <li class="nav-item nav-li-1">
@@ -165,48 +190,68 @@
                         </li>
                     </ul>
                 </div>
-            {% else %}
-                <a class="navbar-brand m-l-10" href="{{ url_for('auth.home') }}">MyLists</a>
+            </div>
+        </nav>
+    {% else %}
+        <nav class="navbar" style="box-shadow: none; z-index: 999;">
+            <div class="container">
+                <h3><b>MyLists</b></h3>
                 {% if request.path == '/' %}
                     <a class="nav-link ml-auto">
-                        <button class="btn btn-sm btn-primary my-2 my-sm-0" data-toggle="modal"
-                        data-target="#modalLoginForm">Login
-                        </button>
+                        <a class="fs-18" data-toggle="modal" data-target="#modalLoginForm"><b>Login</b></a>
                     </a>
                     <a class="nav-link">
-                        <button class="btn btn-sm btn-danger my-2 my-sm-0" data-toggle="modal"
-                                data-target="#modalRegisterForm">Register
-                        </button>
+                        <a class="fs-18" data-toggle="modal" data-target="#modalRegisterForm"><b>Register</b></a>
                     </a>
                 {% endif %}
-            {% endif %}
-        </div>
-    </nav>
+            </div>
+        </nav>
+    {% endif %}
 </header>
 
-<div class="container">
-    <div class="content content-message">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible m-t-15" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+
+{% if request.path == '/' %}
+    <div class="container" style="z-index: 9999;">
+        <div class="content content-message" style="position: absolute; top: 10%; left: 50%;
+         transform: translate(-50%, -50%); -ms-transform: translate(-50%, -50%);">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible m-t-15" role="alert">
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
     </div>
-</div>
+{% else %}
+    <div class="container" style="z-index: 9999;">
+        <div class="content content-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible m-t-15" role="alert">
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+{% endif %}
 
 {% block home_header %}
 {% endblock %}
 
 <main role="main" class="container">
     <div class="content">
-
         {% if current_user.is_authenticated %}
             {% with task = current_user.get_task_in_progress('import_list') %}
                 {% if task %}
@@ -216,7 +261,6 @@
                 {% endif %}
             {% endwith %}
         {% endif %}
-
         {% block content %}
         {% endblock content %}
     </div>
@@ -235,52 +279,72 @@
 {% endblock %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/mylists.js') }}"></script>
 <script>
-    {% if current_user.is_authenticated %}
-        {% with task = current_user.get_task_in_progress('import_list') %}
-            {% if task %}
-                window.onload = function get_progress() {
-                    $.ajax ({
-                        type: "POST",
-                        url: "/progress_import",
-                        contentType: "application/json",
-                        data: JSON.stringify({task_id: '{{ task.id }}'}),
-                        dataType: "json",
-                        success: function(data) {
-                            if (data.progress.progress === 100) {
-                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} Completed!');
-                                $('#'+'{{ task.id }}'+'-progress').parent().delay(2000).fadeOut();
-                            } else {
-                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} '+data.progress.progress+'%');
-                                setTimeout(get_progress, 2500);
-                            }
-                        }
-                    });
-                }
-            {% endif %}
-        {% endwith %}
-    {% endif %}
+    $(document).ready(function() {
+        $('#select-media').change(function () {
+            $('#autocomplete').val('')
+        });
+
+        $('#autocomplete').keydown(function(event) {
+            if(event.keyCode == 13 && $('#autocomplete').val().trim() === '') {
+                event.preventDefault();
+                return false;
+            }
+        });
+    });
+
+{#    {% if current_user.is_authenticated %}#}
+{#        {% with task = current_user.get_task_in_progress('import_list') %}#}
+{#            {% if task %}#}
+{#                window.onload = function get_progress() {#}
+{#                    $.ajax ({#}
+{#                        type: "POST",#}
+{#                        url: "/progress_import",#}
+{#                        contentType: "application/json",#}
+{#                        data: JSON.stringify({task_id: '{{ task.id }}'}),#}
+{#                        dataType: "json",#}
+{#                        success: function(data) {#}
+{#                            if (data.progress.progress === 100) {#}
+{#                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} Completed!');#}
+{#                                $('#'+'{{ task.id }}'+'-progress').parent().delay(2000).fadeOut();#}
+{#                            } else {#}
+{#                                $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} '+data.progress.progress+'%');#}
+{#                                setTimeout(get_progress, 2500);#}
+{#                            }#}
+{#                        }#}
+{#                    });#}
+{#                }#}
+{#            {% endif %}#}
+{#        {% endwith %}#}
+{#    {% endif %}#}
 </script>
-<footer class="text-center text-lg-left" style="background-color: #100e0e;">
-    {% if current_user.is_authenticated %}
-        <div class="container p-3" style="padding-bottom: 0px !important;">
-        <div class="row">
+<footer class="text-center text-lg-left m-t-10" style="background-color: #0a151c;">
+    <div class="container p-3 m-t-20" style="padding-bottom: 0 !important;">
+            <div class="row">
             <div class="col-lg-6 col-sm-12 col-xs-12 mb-4">
                 <img class="m-b-5" src="{{ url_for('static', filename='img/favicon.ico') }}">&nbsp;
                 <h5 class="dis-inline text-uppercase" style="color: #3fd3da;"><b>MyLists.info</b></h5>
-                <p class="text-justify m-b-5">
-                    Create your series, anime and movies list, see how much time you spent, follow your friends.
-                    Add your favorites, comments, rewatch and gain levels to get to the top of the Hall of Fame.
+                <p class="text-justify m-b-10">
+                    Create your media lists, see how much time you have spent, follow your friends and compare to them.
+                    Add your favorites, comment, rewatch and gain levels to get to the top of the Hall of Fame.
                 </p>
-                <a href="mailto:contact@mylists.info" class="text-light">
-                    <b><i class="fas fa-envelope"></i>&nbsp; Contact us</b>
-                </a>
+                <script>
+                    let part6 = "contact";
+                    let part7 = Math.pow(2, 6);
+                    let part8 = String.fromCharCode(part7);
+                    let part9 = "mylists.info";
+                    let part10 = part6 + String.fromCharCode(part7) + part9;
+                    document.write("<a class='text-light' href=" + "mai" + "lto" + ":" + part10 + ">" +
+                    '<b><i class="fas fa-envelope"></i>&nbsp; Contact us</b>' + "</a>");
+                </script>
             </div>
             <div class="col-lg-3 col-sm-6 col-xs-12 mb-4">
                 <h5 class="text-uppercase" style="color: #3fd3da;"><b>Powered by</b></h5>
                 <ul class="list-unstyled mb-0">
-                    <li><a href="https://www.themoviedb.org/" class="text-light" target="_blank">TMDb</a></li>
+                    <li><a href="https://flask.palletsprojects.com/" class="text-light" target="_blank">Flask</a></li>
                     <li><a href="https://mdbootstrap.com/" class="text-light" target="_blank">MDB</a></li>
-                    <li><a href="https://github.com/pallets/flask" class="text-light" target="_blank">Flask</a></li>
+                    <li><a href="https://www.themoviedb.org/" class="text-light" target="_blank">TMDB</a></li>
+                    <li><a href="https://www.igdb.com/" class="text-light" target="_blank">IGDB</a></li>
+                    <li><a href="https://books.google.com/" class="text-light" target="_blank">Google Books</a></li>
                 </ul>
             </div>
             <div class="col-lg-3 col-sm-6 col-xs-12 mb-2">
@@ -292,10 +356,9 @@
                 </ul>
             </div>
         </div>
-    </div>
-    {% endif %}
+        </div>
     <hr style="margin: 0px;">
-    <div class="text-center p-2" style="background-color: rgb(16, 14, 14);">
+    <div class="text-center p-2" style="background-color: #0A151CFF;">
         © 2019-2021 Copyright: <a class="text-light" href="https://MyLists.info">Mylists.info</a>
     </div>
 </footer>

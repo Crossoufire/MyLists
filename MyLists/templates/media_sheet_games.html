@@ -1,34 +1,37 @@
 {% extends 'media_sheet_base.html' %}
 
 
-{% block medialist_info %}
-    <div class="row m-l-15 m-r-15">
-        <div class="col-4"><b>Status:</b></div>
-        <div class="col-8">
-            <label for="category-dropdown"></label>
-            <select id="category-dropdown" class="text-light text-center cat-drop"
-              onchange="changeCategoryGames('{{ data['id'] }}', this)">
-                <option {% if data['status'] == 'Completed' %} selected="selected" {% endif %}>Completed</option>
-                <option {% if data['status'] == 'Endless' %} selected="selected" {% endif %}>Endless</option>
-                <option {% if data['status'] == 'Multiplayer' %} selected="selected" {% endif %}>Multiplayer</option>
-            </select>
-            <i id="cat-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
-            &nbsp;<i id="cat-check" class="fas fa-check" style="display: none;"></i>
-        </div>
-    </div>
-    <div class="row m-l-15 m-r-15">
+{% block hr_color %}
+    hr {margin-top: 5px; border-top: 1px solid #196219;}
+{% endblock hr_color %}
+
+
+{% block cat_select %}
+    <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryGames(
+    '{{ media.id }}', this)">
+        <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
+        <option {% if list_info.status == 'Endless' %} selected="selected" {% endif %}>Endless</option>
+        <option {% if list_info.status == 'Multiplayer' %} selected="selected" {% endif %}>Multiplayer</option>
+        <option {% if list_info.status == 'Dropped' %} selected="selected" {% endif %}>Dropped</option>
+        <option {% if list_info.status == 'Plan to Play' %} selected="selected" {% endif %}>Plan to Play</option>
+    </select>
+{% endblock cat_select %}
+
+
+{% block add_more %}
+    <div id="playtime-row" class="row m-l-15 m-r-15" {% if list_info.status == 'Plan to Play' %}
+     style="display: none;"{% endif %}>
         <div class="col-4"><b>Played:</b></div>
         <div class="col-8">
             <label for="time-dropdown"></label>
-            <select id="time-dropdown" class="text-light text-center cat-drop"
-             onchange="updatePlaytime('{{ data['id'] }}', this)">
+            <select id="time-dropdown" class="text-light cat-drop" onchange="updatePlaytime('{{ media.id }}', this)">
                 {% set play_drop = [2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 175,
                 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000,
                 4000, 5000, 6000, 7000, 8000, 9000, 10000] %}
-                <option {% if data['playtime'] == None or data['playtime'] == 0 %}selected="selected" {% endif %}
+                <option {% if list_info.playtime == None or list_info.playtime == 0 %}selected="selected" {% endif %}
                  value="0">&nbsp;0&nbsp;h</option>
                 {% for val in play_drop %}
-                    <option {% if val == data['playtime']/60|int %} selected="selected" {% endif %}
+                    <option {% if val == list_info.playtime/60|int %} selected="selected" {% endif %}
                     value="{{ val }}">&nbsp;{{ val }}&nbsp;h</option>
                 {% endfor %}
             </select>
@@ -36,25 +39,11 @@
             &nbsp;<i id="time-check" class="fas fa-check" style="display: none;"></i>
         </div>
     </div>
-    <div class="m-l-25 m-r-35 m-t-8 m-b-8" style="border: 1px solid grey;"></div>
-    <div id="score-row" class="row m-l-15 m-r-15" data-toggle="tooltip" title="Score /10">
-        <div class="col-4"><b>Score:</b></div>
-        <div class="col-8">
-            <label for="score-dropdown"></label>
-            <select id="score-dropdown" class="text-light text-center cat-drop"
-             onchange="updateScore('{{ data['id'] }}', this, '{{ media_list }}')">
-                <option {% if data['score'] == None or data['score'] == -1 %} selected="selected"
-                {% endif %}value="---">&nbsp;---&nbsp;</option>
-                {% for i in range(0, 21) %}
-                    <option {% if (i-(i/2)) == data['score'] %} selected="selected" {% endif %}
-                    value="{{ (i-(i/2)) }}">&nbsp;{{ (i-(i/2)) }}&nbsp;</option>
-                {% endfor %}
-            </select>
-            <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
-            &nbsp;<i id="score-check" class="fas fa-check" style="display: none;"></i>
-        </div>
-    </div>
-{% endblock medialist_info %}
+{% endblock add_more %}
+
+
+{% block add_redo %}
+{% endblock add_redo %}
 
 
 {% block information %}
@@ -62,29 +51,31 @@
         <ul class="list-unstyled">
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-star"></i><b>&nbsp; IGDB Score</b></h5>
-                <i class="fas fa-scroll fa-3x media-ticket" value="{{ data['vote_average']/10|int }}"></i>
-                <div class="game-vote-average">{{ data['vote_average']|int }}</div>
-                <div class="movie-vote-count">({{ data['vote_count']|int }} votes)</div>
+                <i class="fas fa-scroll fa-3x media-ticket" value="{{ media.vote_average/10|int }}"></i>
+                <div class="game-vote-average">{{ media.vote_average|int }}</div>
+                <div class="movie-vote-count">({{ media.vote_count|int }} votes)</div>
             </li>
             <li class="m-b-15">
-                <h5 class="mb-1 text-media"><i class="fas fa-code"></i><b>&nbsp; Developer</b></h5>
-                <div>{{ ', '.join(data['developer']) }}</div>
+                <h5 class="mb-1 text-media"><i class="fas fa-code"></i><b>&nbsp; Developers</b></h5>
+                {% for dev in media.get_developers() %}
+                    <a class="text-light" href="/persons/Games/creator/{{ dev }}"><div>{{ dev }}</div></a>
+                {% endfor %}
             </li>
             <li class="m-b-15">
-                <h5 class="mb-1 text-media"><i class="fas fa-money-bill-wave-alt"></i><b>&nbsp; Publisher</b></h5>
-                <div>{{ ', '.join(data['publisher']) }}</div>
+                <h5 class="mb-1 text-media"><i class="fas fa-money-bill-wave-alt"></i><b>&nbsp; Publishers</b></h5>
+                <div>{{ media.get_publishers() }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Release date</b></h5>
-                <div>{{ data['release_date'] }}</div>
+                <div>{{ media.get_formated_dates() }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-layer-group"></i><b>&nbsp; Collection Name</b></h5>
-                <div>{{ data['collection_name'] }}</div>
+                <div>{{ media.collection_name }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-layer-group"></i><b>&nbsp; Platforms</b></h5>
-                <div>{{ data['platforms'] }}</div>
+                <div>{{ media.get_platforms() }}</div>
             </li>
         </ul>
     </div>
@@ -92,23 +83,23 @@
         <ul class="list-unstyled">
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fab fa-unity"></i><b>&nbsp; Game Engine</b></h5>
-                    <div>{{ data['game_engine'] }}</div>
+                    <div>{{ media.game_engine }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-theater-masks"></i><b>&nbsp; Genres</b></h5>
-                <div>{{ data['genres'] }}</div>
+                <div>{{ media.get_genres() }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-user"></i><b>&nbsp; Game Modes</b></h5>
-                <div>{{ data['game_modes']|replace(',', ', ') }}</div>
+                <div>{{ media.game_modes|replace(',', ', ') }}</div>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-cube"></i><b>&nbsp; Perspective</b></h5>
-                <div>{{ data['player_perspective'] }}</div>
+                <div>{{ media.player_perspective }}</div>
             </li>
             <li>
                 <h5 class="mb-1 text-media"><i class="fas fa-link"></i><b>&nbsp; IGDB link</b></h5>
-                <a style="word-break: break-all;" href="{{ data['IGDB_url'] }}">{{ data['IGDB_url'] }}</a>
+                <a style="word-break: break-all;" href="{{ media.IGDB_url }}">{{ media.IGDB_url }}</a>
             </li>
         </ul>
     </div>
@@ -116,33 +107,43 @@
 
 
 {% block more_info %}
-    <h4 data-toggle="tooltip" title="HowLongToBeat Time in hours">
-        <i class="fas fa-hourglass"></i>&nbsp;&nbsp; <b>HLTB Time [h]</b>
+    <h4 data-toggle="tooltip" title="HowLongToBeat">
+        <i class="fas fa-hourglass"></i>&nbsp;&nbsp; <b>HLTB Time (hours)</b>
     </h4><hr>
-    <div class="d-flex flex-wrap" style="justify-content: space-evenly;">
+    <div class="d-flex flex-wrap m-b-30" style="justify-content: space-evenly;">
         <div class="game-box text-center" style="background-color: slategrey;">
             <div class="p-t-5"><b>MAIN</b></div>
-            {% if not data['hltb_main'] or data['hltb_main'] == -1 %}
-                <div class="fs-17"><b>-</b></div>
+            {% if not media.hltb_main_time or media.hltb_main_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
-                <div class="fs-17"><b>{{ data['hltb_main'] }}</b></div>
+                <div class="fs-17"><b>{{ media.hltb_main_time }}</b></div>
             {% endif %}
         </div>
         <div class="game-box text-center" style="background-color: dimgrey;">
             <div class="p-t-5"><b>EXTRA</b></div>
-           {% if not data['hltb_main_extra'] or data['hltb_main_extra'] == -1 %}
-                <div class="fs-17"><b>-</b></div>
+           {% if not media.hltb_main_and_extra_time or media.hltb_main_and_extra_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
-                <div class="fs-17"><b>{{ data['hltb_main_extra'] }}</b></div>
+                <div class="fs-17"><b>{{ media.hltb_main_and_extra_time }}</b></div>
             {% endif %}
         </div>
         <div class="game-box text-center" style="background-color: darkslategrey;">
             <div class="p-t-5"><b>TOTAL</b></div>
-            {% if not data['hltb_complete'] or data['hltb_complete'] == -1 %}
-                <div class="fs-17"><b>-</b></div>
+            {% if not media.hltb_total_complete_time or media.hltb_total_complete_time|int == -1 %}
+                <div class="fs-17"><b>--</b></div>
             {% else %}
-                <div class="fs-17"><b>{{ data['hltb_complete'] }}</b></div>
+                <div class="fs-17"><b>{{ media.hltb_total_complete_time }}</b></div>
             {% endif %}
         </div>
     </div>
 {% endblock more_info %}
+
+
+{% block follow_more %}
+    <div class="follow-status" value="{{ follow[1].status.value }}">
+        <i class="fas fa-list"></i>
+        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
+    </div>
+    <i class="fas fas-sm fa-hourglass"></i>
+    <b>&nbsp;Playtime:&nbsp; {{ (follow[1].playtime/60)|int }} hours</b>
+{% endblock follow_more %}

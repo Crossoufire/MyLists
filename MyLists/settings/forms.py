@@ -10,10 +10,13 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 class UpdateAccountForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=15)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    picture = FileField('Profile picture', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
-    back_picture = FileField('Background picture', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
+    picture = FileField('Profile picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
+    back_picture = FileField('Background picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
     isprivate = BooleanField('Private mode')
-    add_games = BooleanField('Activate the GamesList')
+    add_anime = BooleanField('Activate AnimeList')
+    add_books = BooleanField('Activate BooksList')
+    add_games = BooleanField('Activate GamesList')
+    add_feeling = BooleanField('Change feeling/score mode)')
     submit_account = SubmitField('Update account')
 
     def validate_username(self, username):

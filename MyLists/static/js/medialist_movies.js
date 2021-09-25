@@ -45,7 +45,7 @@ function changeCategory(new_category, card_id) {
 
     $.ajax ({
         type: "POST",
-        url: "/change_element_category",
+        url: "/update_category",
         contentType: "application/json",
         data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_list}),
         dataType: "json",
@@ -66,7 +66,7 @@ function changeCategory(new_category, card_id) {
 // --- Charge the categories buttons from other lists ---------------------------------------------------
 function ChargeButtonsOther(card) {
     removeCat();
-    let $card = $('#'+card.id)
+    let $card = $('#'+card.id);
 
     $(card).find('.view.overlay').prepend(
         '<a class="card-btn-top-right fas fa-times" onclick="removeCat()"></a>' +

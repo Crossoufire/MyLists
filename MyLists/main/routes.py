@@ -1,17 +1,20 @@
 import json
-import pytz
-from MyLists import db, app
+import secrets
 from datetime import datetime
-from MyLists.API_data import ApiData
-from MyLists.main.add_db import AddtoDB
+from pathlib import Path
+from urllib.request import urlretrieve
+import pytz
+from PIL import Image
+from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
 from flask_login import login_required, current_user
-from MyLists.main.forms import EditMediaData, MediaComment, SearchForm
-from MyLists.main.media_object import MediaDict, change_air_format, Autocomplete, MediaDetails
-from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect
-from MyLists.main.functions import set_last_update, compute_time_spent, check_cat_type, save_new_cover
-from MyLists.models import Movies, MoviesActors, Series, SeriesList, SeriesNetwork, Anime, AnimeActors, AnimeNetwork, \
-    AnimeList, ListType, SeriesActors, MoviesList, Status, RoleType, MediaType, get_next_airing, check_media, User, \
-    get_media_query, Games, GamesList, get_more_stats
+from sqlalchemy import func
+from wtforms import StringField, SelectMultipleField
+from MyLists import db, app
+from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
+from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
+from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
+    get_models_group, get_next_airing, Books, BooksGenre, change_air_format, SeriesGenre, SeriesActors, MoviesGenre, \
+    MoviesActors, Series, Movies
 
 bp = Blueprint('main', __name__)
 
@@ -24,6 +27,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     # Check if <media_list> is valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return abort(400)
 
@@ -36,309 +40,305 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     # Initialize the search form
     search_form = SearchForm()
 
-    # Recover the query if it exists
+    # Get the query if it exists
     q = request.args.get('q')
 
-    # Recover the sorting
+    # Get the sorting
     if sorting is None:
-        sorting = 'Title A-Z'
-        if list_type == ListType.GAMES:
-            sorting = 'Playtime +'
+        sorting = models[1].default_sorting()
 
-    # Recover the category
+    # Get the category
     if category is None:
-        category = Status.WATCHING
-        if list_type == ListType.MOVIES or list_type == ListType.GAMES:
-            category = Status.COMPLETED
+        category = models[1].default_category()
 
-    # Recover the template
-    html_template = 'medialist_tv.html'
-    if list_type == ListType.MOVIES:
-        html_template = 'medialist_movies.html'
-    elif list_type == ListType.GAMES:
-        html_template = 'medialist_games.html'
+    # Get the template
+    html_template = models[1].html_template()
 
-    # Retrieve the corresponding data depending on the selected category
+    # Get the corresponding data depending on the selected category
     if category != 'Stats':
-        category, media_data = get_media_query(user.id, list_type, category, genre, sorting, page_val, q)
+        # media_data = MediaListQuery(models, user.id, category, genre, sorting, page_val, q)
+        category, media_data = get_media_query(user, list_type, category, genre, sorting, page_val, q)
     else:
-        media_data = get_more_stats(user, list_type)
+        media_data = models[1].get_more_stats(user)
 
-    return render_template(html_template, title="{}'s {}".format(user_name, media_list), user=user, username=user_name,
-                           user_id=str(user.id), media_list=media_list, search_form=search_form, search_q=q,
-                           category=category, genre=genre, sorting=sorting, page=page_val, data=media_data)
+    # Commit the changes
+    db.session.commit()
+
+    return render_template(html_template, title="{}'s {}".format(user_name, media_list), user=user, search_q=q,
+                           media_list=media_list, search_form=search_form, category=category, genre=genre,
+                           sorting=sorting, page=page_val, data=media_data)
 
 
-@bp.route("/comment/<string:media_type>/<int:media_id>", methods=['GET', 'POST'])
+@bp.route("/persons/<media_type>/<job>/<person>", methods=['GET', 'POST'])
+@login_required
+def persons(media_type, job, person):
+    # Check if <media_type> is valid
+    try:
+        models = get_models_group(MediaType(media_type))
+    except ValueError:
+        return abort(400)
+
+    data = models[0].get_persons(job, person)
+
+    return render_template('persons.html', title=person, person=person, data=data)
+
+
+@bp.route("/comment/<media_type>/<media_id>", methods=['GET', 'POST'])
 @login_required
 def write_comment(media_type, media_id):
     # Check if <media_type> is valid
     try:
-        media_type = MediaType(media_type)
+        models = get_models_group(MediaType(media_type))
     except ValueError:
-        abort(400)
+        return abort(400)
 
-    if media_type == MediaType.SERIES:
-        list_type = ListType.SERIES
-    elif media_type == MediaType.ANIME:
-        list_type = ListType.ANIME
-    elif media_type == MediaType.MOVIES:
-        list_type = ListType.MOVIES
-    elif media_type == MediaType.GAMES:
-        list_type = ListType.GAMES
-
-    media = check_media(media_id, list_type)
+    # Check if the <media> is in the current user's list
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
-        abort(404)
+        return abort(400)
 
     form = MediaComment()
     if request.method == 'GET':
-        form.comment.data = media[1].comment
+        form.comment.data = media.comment
+        session['back_url'] = request.referrer or '/'
     if form.validate_on_submit():
         comment = form.comment.data
-        media[1].comment = comment
+        media.comment = comment
 
         db.session.commit()
-        app.logger.info('[{}] added a comment on {} with ID [{}]'.format(current_user.id, media_type, media_id))
+        app.logger.info(f"[{current_user.id}] added a comment on {media_type} with ID [{media_id}]")
 
         if not comment or comment == '':
-            flash('Your comment has been removed (or is empty).', 'warning')
+            flash('Your comment has been removed/is empty.', 'warning')
         else:
-            flash('Comment successfully added/modified.', 'success')
+            flash('Your comment has been added/modified.', 'success')
 
-        if request.args.get('from') == 'media':
-            return redirect(url_for('main.media_sheet', media_type=media_type.value, media_id=media_id))
-        return redirect(url_for('main.mymedialist', media_list=list_type.value, user_name=current_user.username))
+        return redirect(session['back_url'])
 
-    return render_template('medialist_comment.html', title='Add comment', form=form, media_name=media[0].name)
+    return render_template('medialist_comment.html', title='Add comment', form=form, media_name=media.media.name)
 
 
-@bp.route('/media_sheet/<string:media_type>/<int:media_id>', methods=['GET', 'POST'])
+@bp.route('/media_sheet/<media_type>/<media_id>', methods=['GET', 'POST'])
 @login_required
 def media_sheet(media_type, media_id):
     # Check if <media_type> is valid
     try:
         media_type = MediaType(media_type)
+        models = get_models_group(media_type)
+        list_type = ListType(media_type.value.lower() + 'list')
     except ValueError:
         abort(400)
 
-    if media_type == MediaType.SERIES:
-        list_type = ListType.SERIES
-    elif media_type == MediaType.ANIME:
-        list_type = ListType.ANIME
-    elif media_type == MediaType.MOVIES:
-        list_type = ListType.MOVIES
-    elif media_type == MediaType.GAMES:
-        list_type = ListType.GAMES
+    # Check if <media_id> came from an API
+    from_api = request.args.get('search')
 
-    # Check if <media_id> came from an API and if in local Db
-    api_id = request.args.get('search')
-    if api_id and list_type == ListType.GAMES:
-        search = {'igdb_id': media_id}
-    elif api_id and list_type != ListType.GAMES:
-        search = {'themoviedb_id': media_id}
-    else:
-        search = {'id': media_id}
+    # Check <media> in local DB
+    search = {'id': media_id}
+    if from_api:
+        search = {'api_id': media_id}
+    media = models[0].query.filter_by(**search).first()
 
-    html_template = 'media_sheet_tv.html'
-    if list_type == ListType.SERIES:
-        media = Series.query.filter_by(**search).first()
-    elif list_type == ListType.ANIME:
-        media = Anime.query.filter_by(**search).first()
-    elif list_type == ListType.MOVIES:
-        media = Movies.query.filter_by(**search).first()
-        html_template = 'media_sheet_movies.html'
-    elif list_type == ListType.GAMES:
-        media = Games.query.filter_by(**search).first()
-        html_template = 'media_sheet_games.html'
-
-    # If <media> does not exist and <api_id> is provived: Add the <media> to Db, else abort.
+    # If not <media> and <api_id>: Add <media> to DB, else abort.
     if not media:
-        if api_id:
+        if from_api:
+            API_model = ApiData.get_API_model(media_type)
             try:
-                media_api_data = ApiData().get_details_and_credits_data(media_id, list_type)
-            except Exception as e:
-                app.logger.error('[ERROR] - Impossible to get the details and credits from API ({}) ID [{}]: {}'
-                                 .format(media_type.value, media_id, e))
-                flash('Sorry, a problem occured trying to load the media info. Please try again later.', 'warning')
-                return redirect(request.referrer)
-            try:
-                media_details = MediaDetails(media_api_data, list_type).get_media_details()
-            except Exception as e:
-                app.logger.error('[ERROR] - Occured trying to parse the API data to dict ({}) ID [{}]: {}'
-                                 .format(media_type.value, media_id, e))
-                flash('Sorry, a problem occured trying to load the media info. Please try again later.', 'warning')
-                return redirect(request.referrer)
-            try:
-                media = AddtoDB(media_details, list_type).add_media_to_db()
+                media = API_model(API_id=media_id).save_media_to_db()
                 db.session.commit()
             except Exception as e:
-                app.logger.error('[ERROR] - Occured trying to add media ({}) ID [{}] to DB: {}'
-                                 .format(media_type.value, media_id, e))
                 flash('Sorry, a problem occured trying to load the media info. Please try again later.', 'warning')
-                return redirect(request.referrer)
+                app.logger.error('[ERROR] - Occured trying to add media ({}) ID [{}] to DB: {}'
+                                 .format(list_type.value, media_id, e))
+                location = request.referrer or '/'
+                return redirect(location)
         else:
-            abort(404)
+            abort(400)
 
-    # If <media> and <api_id> provived: redirect to get a nice URL.
-    if media and api_id:
+    # If <media> and <api_id>: redirect for URL with media.id instead of media.api_id
+    if media and from_api:
         return redirect(url_for('main.media_sheet', media_type=media_type.value, media_id=media.id))
 
-    media_info = MediaDict(media, list_type).create_list_dict()
-    title = media_info['display_name']
+    # Get the list info of the user on this media
+    list_info = media.get_user_list_info()
 
-    return render_template(html_template, title=title, data=media_info, media_list=list_type.value)
+    # Get the HTML template
+    template = models[0].media_sheet_template()
+
+    # History of the media
+    media_updates = UserLastUpdate.query.filter(UserLastUpdate.user_id == current_user.id,
+                                                UserLastUpdate.media_type == list_type,
+                                                UserLastUpdate.media_id == media_id)\
+        .order_by(UserLastUpdate.date.desc()).all()
+
+    def shape_to_dict(updates):
+        update = []
+        for element in updates:
+            element_data = {}
+            if not element.old_status and not element.new_status:
+                element_data["update"] = f"S{element.new_season:02d}.E{element.new_episode:02d}"
+                element_data["date"] = element.date.replace(tzinfo=pytz.UTC).isoformat()
+                update.append(element_data)
+        return update
+
+    history = shape_to_dict(media_updates)
+
+    # Get the Genre form for books
+    form = GenreForm()
+    form_cover = CoverForm()
+    genres = None
+    if list_type == ListType.BOOKS:
+        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
+            .filter(BooksGenre.media_id == media_id).first()
+
+    return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
+                           media_list=list_type.value, form_cover=form_cover, media_updates=history)
 
 
-@bp.route("/media_sheet_form/<string:media_type>/<int:media_id>", methods=['GET', 'POST'])
+@bp.route('/update_book_genres/<media_id>', methods=['POST'])
+@login_required
+def update_book_genres(media_id):
+    form = GenreForm()
+
+    if form.is_submitted():
+        if form.genres.data:
+            # Check that the genre is 'Unknown' (which correpsond to not set) otherwise abort.
+            book = BooksGenre.query.filter(BooksGenre.media_id == media_id).first()
+            if book.genre != 'Unknown':
+                return abort(400)
+
+            try:
+                BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
+                for genre in form.genres.data[:5]:
+                    adding = BooksGenre(genre=genre, media_id=media_id)
+                    db.session.add(adding)
+                db.session.commit()
+                flash('Data successfully updated.', 'success')
+                app.logger.info(f'[SYSTEM] - Book ID [{media_id}]. Genres modified by [{current_user.id}]')
+            except:
+                db.session.rollback()
+                flash('Error while updating the genres.', 'warning')
+
+    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
+
+
+@bp.route('/update_book_cover/<media_id>', methods=['POST'])
+@login_required
+def update_book_cover(media_id):
+    form = CoverForm()
+    book = Books.query.filter(Books.id == media_id).first()
+
+    if form.validate_on_submit():
+        picture_fn = secrets.token_hex(8) + '.jpg'
+        picture_path = Path(app.root_path, f"static/covers/books_covers", picture_fn)
+        try:
+            urlretrieve(f"{form.image_cover.data}", f"{picture_path}")
+            img = Image.open(f"{picture_path}")
+            img = img.resize((300, 450), Image.ANTIALIAS)
+            img.save(f"{picture_path}", quality=90)
+        except Exception as e:
+            app.logger.error(f"[SYSTEM] - Error occured updating media cover: {e}")
+            flash(str(e), 'warning')
+            picture_fn = "default.jpg"
+        book.image_cover = picture_fn
+        db.session.add(book)
+        db.session.commit()
+
+    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
+
+
+@bp.route("/media_sheet_form/<media_type>/<media_id>", methods=['GET', 'POST'])
 @login_required
 def media_sheet_form(media_type, media_id):
     if current_user.role == RoleType.USER:
         abort(403)
 
-    form = EditMediaData()
-
     # Check if <media_type> is valid
     try:
-        media_type = MediaType(media_type)
+        models = get_models_group(MediaType(media_type))
     except ValueError:
-        abort(404)
+        return abort(400)
 
-    if media_type == MediaType.SERIES:
-        list_type = ListType.SERIES
-        media = Series.query.filter_by(id=media_id).first()
-    elif media_type == MediaType.ANIME:
-        list_type = ListType.ANIME
-        media = Anime.query.filter_by(id=media_id).first()
-    elif media_type == MediaType.MOVIES:
-        list_type = ListType.MOVIES
-        media = Movies.query.filter_by(id=media_id).first()
-
+    # Get the media and check if it exists
+    media = models[0].query.filter_by(id=media_id).first()
     if not media:
-        abort(404)
+        flash("The media does not exist.", 'warning')
+        return redirect(request.referrer or '/')
 
+    # Class which converts the attributs of a <SQLAlchemy_model> to a <FlaskForm>
+    class Form(ModelForm):
+        class Meta:
+            csrf = False
+            model = models[0]
+            only = models[0].form_only()
+        image_cover = StringField('insert an img URL')
+
+        # If the media is a book also display a genre attr
+        if media_type == 'Books':
+            genre_attr = SelectMultipleField('Genres',
+                                             choices=[('Action & Adventure', 'Action & Adventure'),
+                                                      ('Biography', 'Biography'), ('Chick lit', 'Chick lit'),
+                                                      ('Children', 'Children'), ('Classic', 'Classic'),
+                                                      ('Crime', 'Crime'),
+                                                      ('Drama', 'Drama'), ('Dystopian', 'Dystopian'),
+                                                      ('Fantastic', 'Fantastic'),
+                                                      ('Fantasy', 'Fantasy'), ('History', 'History'),
+                                                      ('Humor', 'Humor'),
+                                                      ('Horror', 'Horror'), ('Mystery', 'Mystery'),
+                                                      ('Paranormal', 'Paranormal'),
+                                                      ('Philosophy', 'Philosophy'), ('Poetry', 'Poetry'),
+                                                      ('Romance', 'Romance'),
+                                                      ('Science', 'Science'), ('Science-Fiction', 'Science-Fiction'),
+                                                      ('Short story', 'Short story'), ('Suspense', 'Suspense'),
+                                                      ('Thriller', 'Thriller'), ('Western', 'Western'),
+                                                      ('Young adult', 'Young adult')])
+
+    # Populate the form with the model data except for the <image_cover>
+    form = Form(obj=media)
     if request.method == 'GET':
-        form.original_name.data = media.original_name
-        form.name.data = media.name
-        form.homepage.data = media.homepage
-        form.synopsis.data = media.synopsis
-        # form.genres.data = ', '.join([r.genre for r in media.genres])
-        form.actors.data = ', '.join([r.name for r in media.actors])
-        if list_type != ListType.MOVIES:
-            form.created_by.data = media.created_by
-            form.first_air_date.data = media.first_air_date
-            form.last_air_date.data = media.last_air_date
-            form.production_status.data = media.status
-            form.duration.data = media.duration
-            form.origin_country.data = media.origin_country
-            form.networks.data = ', '.join([r.network for r in media.networks])
-        elif list_type == ListType.MOVIES:
-            form.directed_by.data = media.director_name
-            form.release_date.data = media.release_date
-            form.duration.data = media.duration
-            form.original_language.data = media.original_language
-            form.tagline.data = media.tagline
-            form.budget.data = media.budget
-            form.revenue.data = media.revenue
-    if form.validate_on_submit():
-        if form.cover.data:
-            media.image_cover = save_new_cover(form.cover.data, media_type)
-        media.original_name = form.original_name.data
-        media.name = form.name.data
-        media.homepage = form.homepage.data
-        media.synopsis = form.synopsis.data
-        if list_type != ListType.MOVIES:
-            media.created_by = form.created_by.data
-            media.first_air_date = form.first_air_date.data
-            media.last_air_date = form.last_air_date.data
-            media.status = form.production_status.data
-            media.duration = form.duration.data
-            media.origin_country = form.origin_country.data
-        elif list_type == ListType.MOVIES:
-            media.director_name = form.directed_by.data
-            media.release_date = form.release_date.data
-            media.duration = form.duration.data
-            media.original_language = form.original_language.data
-            media.tagline = form.tagline.data
-            media.budget = form.budget.data
-            media.revenue = form.revenue.data
+        form.image_cover.data = None
 
+    genres = None
+    if media_type == 'Books':
+        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
+            .filter(BooksGenre.media_id == media_id).first()
+
+    if form.is_submitted():
+        if form.image_cover.data == "":
+            picture_fn = media.image_cover
+        else:
+            picture_fn = secrets.token_hex(8) + '.jpg'
+            picture_path = Path(app.root_path, f"static/covers/{media_type.lower()}_covers", picture_fn)
+            try:
+                urlretrieve(f"{form.image_cover.data}", f"{picture_path}")
+                img = Image.open(f"{picture_path}")
+                img = img.resize((300, 450), Image.ANTIALIAS)
+                img.save(f"{picture_path}", quality=90)
+            except Exception as e:
+                app.logger.error(f"[SYSTEM] - Error occured updating media cover: {e}")
+                flash(str(e), 'warning')
+                picture_fn = media.image_cover
+        form.image_cover.data = picture_fn
+        form.populate_obj(media)
+        db.session.add(media)
         db.session.commit()
 
-        if list_type == ListType.SERIES or list_type == ListType.ANIME:
-            if [r.name for r in media.actors] == form.actors.data.split(', '):
-                pass
-            else:
-                for actor in [r.name for r in media.actors]:
-                    if list_type == ListType.SERIES:
-                        SeriesActors.query.filter_by(media_id=media_id, name=actor).delete()
-                    elif list_type == ListType.ANIME:
-                        AnimeActors.query.filter_by(media_id=media_id, name=actor).delete()
-                    elif list_type == ListType.MOVIES:
-                        MoviesActors.query.filter_by(media_id=media_id, name=actor).delete()
-                db.session.commit()
-                for actor in form.actors.data.split(', '):
-                    if list_type == ListType.SERIES:
-                        add_actor = SeriesActors(media_id=media_id,
-                                                 name=actor)
-                    elif list_type == ListType.ANIME:
-                        add_actor = AnimeActors(media_id=media_id,
-                                                name=actor)
-                    elif list_type == ListType.MOVIES:
-                        add_actor = MoviesActors(media_id=media_id,
-                                                 name=actor)
-                    db.session.add(add_actor)
-                db.session.commit()
+        # If media_type is Books check the genre form.
+        if media_type == 'Books':
+            if form.genre_attr.data:
+                try:
+                    BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
+                    for genre in form.genre_attr.data[:5]:
+                        adding = BooksGenre(genre=genre, media_id=media_id)
+                        db.session.add(adding)
+                    db.session.commit()
+                    flash('Data successfully updated.', 'success')
+                except:
+                    db.session.rollback()
+                    flash('Error while updating the genres.', 'warning')
 
-            # Genres
-            # if [r.genre for r in element.genres] == form.genres.data.split(', '):
-            #     pass
-            # else:
-            #     for genre in [r.genre for r in element.genres]:
-            #         if list_type == ListType.SERIES:
-            #             SeriesGenre.query.filter_by(media_id=media_id, genre=genre).delete()
-            #         elif list_type == ListType.ANIME:
-            #             AnimeGenre.query.filter_by(media_id=media_id, genre=genre).delete()
-            #         elif list_type == ListType.MOVIES:
-            #             MoviesGenre.query.filter_by(media_id=media_id, genre=genre).delete()
-            #     db.session.commit()
-            #     for genre in form.genres.data.split(', '):
-            #         if list_type == ListType.SERIES:
-            #             add_genre = SeriesGenre(media_id=media_id,
-            #                                     genre=genre)
-            #         elif list_type == ListType.ANIME:
-            #             add_genre = AnimeGenre(media_id=media_id,
-            #                                    genre=genre)
-            #         elif list_type == ListType.MOVIES:
-            #             add_genre = MoviesGenre(media_id=media_id,
-            #                                     genre=genre)
-            #         db.session.add(add_genre)
-            #     db.session.commit()
+        return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
 
-            # Networks
-        elif list_type != ListType.MOVIES:
-            if [r.network for r in media.networks] == form.networks.data.split(', '):
-                pass
-            else:
-                for network in [r.network for r in media.networks]:
-                    if list_type == ListType.SERIES:
-                        SeriesNetwork.query.filter_by(media_id=media_id, network=network).delete()
-                    elif list_type == ListType.ANIME:
-                        AnimeNetwork.query.filter_by(media_id=media_id, network=network).delete()
-                db.session.commit()
-                for network in form.networks.data.split(', '):
-                    if list_type == ListType.SERIES:
-                        add_network = SeriesNetwork(media_id=media_id,
-                                                    network=network)
-                    elif list_type == ListType.ANIME:
-                        add_network = AnimeNetwork(media_id=media_id,
-                                                   network=network)
-                    db.session.add(add_network)
-                db.session.commit()
-
-        return redirect(url_for('main.media_sheet', media_type=media_type.value, media_id=media_id))
-
-    return render_template('media_sheet_form.html', title='Media Form', form=form, media_type=media_type.value)
+    return render_template('media_sheet_form.html', title='Media Form', form=form, genres=genres, media_type=media_type)
 
 
 @bp.route("/your_next_airing", methods=['GET', 'POST'])
@@ -347,6 +347,7 @@ def your_next_airing():
     next_series_airing = get_next_airing(ListType.SERIES)
     next_anime_airing = get_next_airing(ListType.ANIME)
     next_movies_airing = get_next_airing(ListType.MOVIES)
+    next_games_airing = get_next_airing(ListType.GAMES)
 
     series_dates = []
     for series in next_series_airing:
@@ -357,119 +358,165 @@ def your_next_airing():
         anime_dates.append(change_air_format(anime[0].next_episode_to_air))
 
     movies_dates = []
-    for movies in next_movies_airing:
-        movies_dates.append(change_air_format(movies[0].release_date))
+    for movie in next_movies_airing:
+        movies_dates.append(change_air_format(movie[0].release_date))
 
-    return render_template('your_next_airing.html',title='Your next airing', airing_series=next_series_airing,
+    games_dates = []
+    for game in next_games_airing:
+        games_dates.append(change_air_format(game.release_date, games=True))
+
+    return render_template('your_next_airing.html', title='Your next airing', airing_series=next_series_airing,
                            series_dates=series_dates, airing_anime=next_anime_airing, anime_dates=anime_dates,
-                           airing_movies=next_movies_airing, movies_dates=movies_dates)
+                           airing_movies=next_movies_airing, movies_dates=movies_dates, airing_games=next_games_airing,
+                           games_dates=games_dates)
 
 
 @bp.route('/search_media', methods=['GET', 'POST'])
 @login_required
 def search_media():
     search = request.args.get('search')
+    media_select = request.args.get('media_select')
     page = request.args.get('page', 1)
 
-    if not search or len(search) == 0:
-        return redirect(request.referrer)
-
-    # Get the series, anime and movies results
-    try:
-        data_search = ApiData().TMDb_search(search, page=page)
-    except Exception as e:
-        data_search = {}
-        app.logger.error('[SYSTEM] - Error requesting the TMDb API: {}'.format(e))
-        flash('Sorry, an error occured, the TMDb API is unreachable for now.', 'warning')
-
-    if data_search.get("total_results", 0) == 0:
-        flash('Sorry, no results found for your query.', 'warning')
-        return redirect(request.referrer)
-
-    # Recover 1 page of results (20 max, series, anime, movies) without peoples
-    media_results = []
-    for result in data_search["results"]:
-        if result.get('known_for_department'):
-            continue
-
-        media_data = {'name': result.get('original_title') or result.get('original_name'),
-                      'overview': result.get('overview'),
-                      'first_air_date': result.get('first_air_date') or result.get('release_date'),
-                      'api_id': result['id']}
-
-        # Modify the first_air_date / release_date format
-        if media_data['first_air_date'] == '':
-            media_data['first_air_date'] = 'Unknown'
-
-        # Recover the poster_path or take a default image
-        if result["poster_path"]:
-            media_data["poster_path"] = "{}{}".format("http://image.tmdb.org/t/p/w300", result["poster_path"])
-        else:
-            media_data["poster_path"] = url_for('static', filename="covers/anime_covers/default.jpg")
-
-        # Put data in different lists in function of media type
-        if result['media_type'] == 'tv':
-            media_data['url'] = f"https://www.themoviedb.org/tv/{result['id']}"
-            media_data['media'] = 'Series'
-            if result['origin_country'] == 'JP' or result['original_language'] == 'ja' \
-                    and 16 in result['genre_ids']:
-                media_data['media_type'] = ListType.ANIME.value
-                media_data['name'] = result['name']
-                media_data['media'] = 'Anime'
-                media_results.append(media_data)
-            else:
-                media_data['media_type'] = ListType.SERIES.value
-                media_results.append(media_data)
-        elif result['media_type'] == 'movie':
-            media_data['media'] = 'Movies'
-            media_data['media_type'] = ListType.MOVIES.value
-            media_data['url'] = f"https://www.themoviedb.org/movie/{result['id']}"
-            if result['original_language'] == 'ja' and 16 in result['genre_ids']:
-                media_data['name'] = result['title']
-            media_results.append(media_data)
-
-    games_results = []
-    if current_user.add_games:
-        # Get the games results
+    if media_select == "TMDB":
         try:
-            games_data = ApiData().IGDB_search(search)
+            Api_data = ApiTMDB()
+            Api_data.search(search, page=page)
+            media_results, total_results, total_pages = Api_data.get_search_list()
         except Exception as e:
-            games_data = {}
-            app.logger.error('[ERROR] - Requesting the IGDB API: {}'.format(e))
+            app.logger.error(f"[SYSTEM] - Error requesting the TMDb API: {str(e)}")
+            flash('Sorry, an error occured, the TMDb API is unreachable for now.', 'warning')
+            return redirect(request.referrer or '/')
+    elif media_select == "IGDB":
+        try:
+            Api_data = ApiGames()
+            Api_data.search(search, page=page)
+            media_results, total_results, total_pages = Api_data.get_search_list()
+        except Exception as e:
+            app.logger.error(f"[SYSTEM] - Error requesting the IGDB API: {str(e)}")
             flash('Sorry, an error occured, the IGDB API is unreachable for now.', 'warning')
+            return redirect(request.referrer or '/')
+    elif media_select == "BOOKS":
+        page = request.args.get('page', 0)
+        try:
+            Api_data = ApiBooks()
+            Api_data.search(search, page=page)
+            media_results, total_results, total_pages = Api_data.get_search_list()
+        except Exception as e:
+            app.logger.error(f"[SYSTEM] - Error requesting the GoogleBooks API: {str(e)}")
+            flash('Sorry, an error occured, the GoogleBooks API is unreachable for now.', 'warning')
+            return redirect(request.referrer or '/')
+    elif media_select == "users":
+        users_search = User.query.filter(User.username.like('%' + search + '%'),
+                                         User.role != RoleType.ADMIN, User.active == True).paginate(page, 10,
+                                                                                                    error_out=True)
+        media_results = []
+        for user in users_search.items:
+            user_data = {'name': user.username,
+                         'poster_path': '/static/profile_pics/' + user.image_file,
+                         'register': datetime.strftime(user.registered_on, '%d %b %Y'),
+                         'media': 'User',
+                         'level': user.get_frame_info()}
+            media_results.append(user_data)
+            total_pages = users_search.pages
+            total_results = users_search.total
+    else:
+        return redirect(request.referrer or '/')
 
-        # Recover the games results
-        if len(games_data) > 0:
-            for result in games_data:
-                media_data = {'name': result.get('name'),
-                              'overview': result.get('storyline'),
-                              'first_air_date': change_air_format(result.get('first_release_date'), games=True),
-                              'api_id': result.get('id'),
-                              'poster_path': url_for('static', filename="covers/games_covers/default.jpg")}
+    if len(media_results) == 0:
+        flash('Sorry, no results found for your query.', 'warning')
+        return redirect(request.referrer or '/')
 
-                # Recover the poster_path or take a default image
-                if result.get('cover'):
-                    igdb_cover_link = "https://images.igdb.com/igdb/image/upload/t_1080p/"
-                    media_data['poster_path'] = "{}{}.jpg".format(igdb_cover_link, result['cover']['image_id'])
+    return render_template("media_search.html", title="Search", results=media_results, media_select=media_select,
+                           tot_res=total_results, search=search, page=page, tot_pages=total_pages)
 
-                # Put data in different lists in function of media type
-                media_data['media'] = 'Games'
-                media_data['media_type'] = ListType.GAMES.value
 
-                games_results.append(media_data)
+@bp.route('/graph_test', methods=['GET', 'POST'])
+@login_required
+def test_graph_date():
+    series_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.SERIES)\
+        .group_by(UserLastUpdate.date).all()
 
-    media_results += games_results
+    all_dates = {}
+    for d in series_data:
+        try:
+            date = d.date.strftime('%b-%Y')
+            if d.new_status == Status.COMPLETED:
+                if all_dates.get('{}'.format(date)) is not None:
+                    all_dates['{}'.format(date)] += 1
+                else:
+                    all_dates['{}'.format(date)] = 1
+        except:
+            pass
 
-    return render_template("media_search.html", title="Search", all_results=media_results, search=search,
-                           page=int(page), total_results=data_search['total_results'])
+    series_labels = ", ".join([k for k in all_dates.keys()])
+    series_data = ", ".join([str(k) for k in all_dates.values()])
+
+    anime_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.ANIME) \
+        .group_by(UserLastUpdate.date).all()
+
+    all_dates = {}
+    for d in anime_data:
+        try:
+            date = d.date.strftime('%b-%Y')
+            if d.new_status == Status.COMPLETED:
+                if all_dates.get('{}'.format(date)) is not None:
+                    all_dates['{}'.format(date)] += 1
+                else:
+                    all_dates['{}'.format(date)] = 1
+        except:
+            pass
+
+    anime_labels = ", ".join([k for k in all_dates.keys()])
+    anime_data = ", ".join([str(k) for k in all_dates.values()])
+
+    movies_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.MOVIES)\
+        .group_by(UserLastUpdate.date).all()
+
+    all_dates = {}
+    for d in movies_data:
+        try:
+            date = d.date.strftime('%b-%Y')
+            if d.new_status == Status.COMPLETED:
+                if all_dates.get('{}'.format(date)) is not None:
+                    all_dates['{}'.format(date)] += 1
+                else:
+                    all_dates['{}'.format(date)] = 1
+        except:
+            pass
+
+    movies_labels = ", ".join([k for k in all_dates.keys()])
+    movies_data = ", ".join([str(k) for k in all_dates.values()])
+
+    games_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.GAMES)\
+        .group_by(UserLastUpdate.date).all()
+
+    all_dates = {}
+    for d in games_data:
+        try:
+            date = d.date.strftime('%b-%Y')
+            if d.new_status == Status.COMPLETED:
+                if all_dates.get('{}'.format(date)) is not None:
+                    all_dates['{}'.format(date)] += 1
+                else:
+                    all_dates['{}'.format(date)] = 1
+        except:
+            pass
+
+    games_labels = ", ".join([k for k in all_dates.keys()])
+    games_data = ", ".join([str(k) for k in all_dates.values()])
+
+    return render_template('graph_test.html', title='Graph_test', series_labels=series_labels, series_data=series_data,
+                           anime_labels=anime_labels, anime_data=anime_data, games_labels=games_labels,
+                           games_data=games_data, movies_labels=movies_labels, movies_data=movies_data)
 
 
 # --- AJAX Methods -----------------------------------------------------------------------------------------------
 
 
-@bp.route('/update_element_season', methods=['POST'])
+@bp.route('/update_season', methods=['POST'])
 @login_required
-def update_element_season():
+def update_season():
     try:
         json_data = request.get_json()
         new_season = int(json_data['season']) + 1
@@ -478,46 +525,41 @@ def update_element_season():
     except:
         return '', 400
 
-    # Check if the <media_list> exist and is valid
+    # Check if <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
-    except ValueError:
+        models = get_models_group(list_type)
+    except:
         return '', 400
-    finally:
-        if list_type == ListType.MOVIES:
-            return '', 400
 
-    # Check if the media exists
-    media = check_media(media_id, list_type)
-    if not media or media[1].status == Status.RANDOM or media[1].status == Status.PLAN_TO_WATCH:
+    # Check if the <media> exists in <media_list>
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
         return '', 400
 
     # Check if the season number is between 1 and <last_season>
-    if 1 > new_season > media[0].eps_per_season[-1].season:
+    if 1 > new_season or new_season > media.media.eps_per_season[-1].season:
         return '', 400
 
     # Get the old data
-    old_season = media[1].current_season
-    old_episode = media[1].last_episode_watched
-    old_watched = media[1].eps_watched
+    old_season = media.current_season
+    old_episode = media.last_episode_watched
+    old_total = media.total
 
     # Set the new data
-    new_watched = sum([x.episodes for x in media[0].eps_per_season[:new_season-1]]) + 1
-    media[1].current_season = new_season
-    media[1].last_episode_watched = 1
-    media[1].eps_watched = new_watched + (media[1].rewatched * media[0].total_episodes)
-    app.logger.info('[User {}] - [Media {}] - [ID {}] season updated from {} to {}'
-                    .format(current_user.id, list_type.value.replace('list', ''), media_id, old_season, new_season))
-
-    # Commit the changes
-    db.session.commit()
+    new_watched = sum([x.episodes for x in media.media.eps_per_season[:new_season-1]]) + 1
+    media.current_season = new_season
+    media.last_episode_watched = 1
+    new_total = new_watched + (media.rewatched * media.media.total_episodes)
+    media.total = new_total
+    app.logger.info(f"[User {current_user.id}] - [{media_list}] - [ID {media_id}] season updated to {new_season}")
 
     # Set the last updates
-    set_last_update(media=media[0], media_type=list_type, old_season=old_season, new_season=new_season, new_episode=1,
-                    old_episode=old_episode)
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_season=old_season,
+                                   new_season=new_season, new_episode=1, old_episode=old_episode)
 
-    # Compute the new time spent
-    compute_time_spent(media=media[0], list_type=list_type, old_watched=old_watched, new_watched=new_watched)
+    # Compute new time spent
+    media.compute_new_time_spent(old_data=old_total, new_data=new_total)
 
     # Commit the changes
     db.session.commit()
@@ -525,9 +567,9 @@ def update_element_season():
     return '', 204
 
 
-@bp.route('/update_element_episode', methods=['POST'])
+@bp.route('/update_episode', methods=['POST'])
 @login_required
-def update_element_episode():
+def update_episode():
     try:
         json_data = request.get_json()
         new_episode = int(json_data['episode']) + 1
@@ -536,45 +578,40 @@ def update_element_episode():
     except:
         return '', 400
 
-    # Check if the media_list exist and is valid
+    # Check if <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return '', 400
-    finally:
-        if list_type == ListType.MOVIES:
-            return '', 400
 
     # Check if the media exists
-    media = check_media(media_id, list_type)
-    if not media or media[1].status == Status.RANDOM or media[1].status == Status.PLAN_TO_WATCH:
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
         return '', 400
 
     # Check if the episode number is between 1 and <last_episode>
-    if 1 > new_episode > media[0].eps_per_season[media[1].current_season - 1].episodes:
+    if 1 > new_episode or new_episode > media.media.eps_per_season[media.current_season - 1].episodes:
         return '', 400
 
     # Get the old data
-    old_season = media[1].current_season
-    old_episode = media[1].last_episode_watched
-    old_watched = media[1].eps_watched
+    old_season = media.current_season
+    old_episode = media.last_episode_watched
+    old_total = media.total
 
     # Set the new data
-    new_watched = sum([x.episodes for x in media[0].eps_per_season[:old_season-1]]) + new_episode
-    media[1].last_episode_watched = new_episode
-    media[1].eps_watched = new_watched + (media[1].rewatched * media[0].total_episodes)
-    app.logger.info('[User {}] {} [ID {}] episode updated from {} to {}'
-                    .format(current_user.id, list_type.value.replace('list', ''), media_id, old_episode, new_episode))
-
-    # Commit the changes
-    db.session.commit()
+    new_watched = sum([x.episodes for x in media.media.eps_per_season[:old_season-1]]) + new_episode
+    media.last_episode_watched = new_episode
+    new_total = new_watched + (media.rewatched * media.media.total_episodes)
+    media.total = new_total
+    app.logger.info(f"[User {current_user.id}] {list_type} [ID {media_id}] episode updated to {new_episode}")
 
     # Set the last updates
-    set_last_update(media=media[0], media_type=list_type, old_season=old_season, new_season=old_season,
-                    old_episode=old_episode, new_episode=new_episode)
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_season=old_season,
+                                   new_season=old_season, old_episode=old_episode, new_episode=new_episode)
 
-    # Compute the new time spent
-    compute_time_spent(media=media[0], old_watched=old_watched, new_watched=new_watched, list_type=list_type)
+    # Compute new time spent
+    media.compute_new_time_spent(old_data=old_total, new_data=new_total)
 
     # Commit the changes
     db.session.commit()
@@ -582,9 +619,101 @@ def update_element_episode():
     return '', 204
 
 
-@bp.route('/change_element_category', methods=['POST'])
+@bp.route('/update_page', methods=['POST'])
 @login_required
-def change_element_category():
+def update_page():
+    try:
+        json_data = request.get_json()
+        new_page = int(json_data['page'])
+        media_id = int(json_data['element_id'])
+        media_list = json_data['element_type']
+    except:
+        return '', 400
+
+    # Check if <media_list> exist and is valid
+    try:
+        list_type = ListType(media_list)
+        models = get_models_group(list_type)
+    except ValueError:
+        return '', 400
+
+    # Check if the media exists
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
+        return '', 400
+
+    # Check if the page number is between 0 and max(pages)
+    if new_page > int(media.media.pages) or new_page < 0:
+        return "'The number of pages cannot be below 0 or greater than the total pages.", 400
+
+    # Get the old data
+    old_page = media.actual_page
+    old_total = media.total
+
+    # Set the new data
+    media.actual_page = new_page
+    new_total = new_page + (media.rewatched * media.media.pages)
+    media.total = new_total
+    app.logger.info(f"[User {current_user.id}] {list_type} [ID {media_id}] page updated from {old_page} to {new_page}")
+
+    # Set the last updates
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_page=old_page, new_page=new_page,
+                                   old_status=media.status)
+
+    # Compute new time spent
+    media.compute_new_time_spent(old_data=old_total, new_data=new_total)
+
+    # Commit the changes
+    db.session.commit()
+
+    return '', 204
+
+
+@bp.route('/update_playtime', methods=['POST'])
+@login_required
+def update_playtime():
+    try:
+        json_data = request.get_json()
+        new_playtime = int(json_data['playtime'])*60    # To get minutes
+        media_id = int(json_data['media_id'])
+        media_list = json_data['media_type']
+    except:
+        return '', 400
+
+    if new_playtime < 0:
+        return '', 400
+
+    # Check if <media_list> exist and valid
+    try:
+        list_type = ListType(media_list)
+        models = get_models_group(list_type)
+    except ValueError:
+        return '', 400
+
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
+        return '', 400
+
+    # Set the last updates
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_playtime=media.playtime,
+                                   new_playtime=new_playtime, old_status=media.status)
+
+    # Compute the new time spent
+    media.compute_new_time_spent(new_data=new_playtime)
+
+    # Update new playtime
+    media.playtime = new_playtime
+
+    # Commit the changes
+    db.session.commit()
+    app.logger.info(f"[{current_user.id}] Games ID {media_id} playtime updated to {new_playtime}")
+
+    return '', 204
+
+
+@bp.route('/update_category', methods=['POST'])
+@login_required
+def update_category():
     try:
         json_data = request.get_json()
         media_new_cat = json_data['status']
@@ -593,70 +722,42 @@ def change_element_category():
     except:
         return '', 400
 
-    # Check the <media_list> parameter
+    # Check if <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
-    except ValueError:
+        models = get_models_group(list_type)
+    except:
         return '', 400
 
-    # Check if the <status> parameter
-    new_status = check_cat_type(list_type, media_new_cat)
-    if not new_status:
+    # Check the <status> parameter
+    try:
+        new_status = Status(media_new_cat)
+    except:
         return '', 400
 
-    # Recover the media
-    media = check_media(media_id, list_type)
-    if media is None:
+    # Get the media
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
         return '', 400
 
-    # Get the old status
-    old_status = media[1].status
-
-    # Set the new status
-    media[1].status = new_status
-
-    if list_type != ListType.GAMES:
-        # Get the old rewatched
-        old_rewatch = media[1].rewatched
-        # Reset the rewatched time multiplier
-        media[1].rewatched = 0
-
-    # Set and change accordingly <last_episode_watched>, <current_season> and <eps_watched> for anime and series
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        old_watched = media[1].eps_watched
-        if new_status == Status.COMPLETED:
-            media[1].current_season = len(media[0].eps_per_season)
-            media[1].last_episode_watched = media[0].eps_per_season[-1].episodes
-            media[1].eps_watched = media[0].total_episodes
-            new_watched = media[0].total_episodes
-        elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
-            media[1].current_season = 1
-            media[1].last_episode_watched = 0
-            media[1].eps_watched = 0
-            new_watched = 0
-        else:
-            new_watched = old_watched
-    elif list_type == ListType.MOVIES:
-        if new_status == Status.COMPLETED:
-            media[1].eps_watched = 1
-        else:
-            media[1].eps_watched = 0
+    # Change the <status> and get the data to compute <last_updates> and <new_time_spent>
+    try:
+        old_total = media.total
+    except:
+        old_total = media.playtime
+    old_status = media.status
+    new_total = media.category_changes(new_status)
 
     # Set the last updates
-    set_last_update(media=media[0], media_type=list_type, old_status=old_status, new_status=new_status)
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_status=old_status,
+                                   new_status=new_status, old_playtime=old_total, new_playtime=new_total)
 
     # Compute the new time spent
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        compute_time_spent(media=media[0], list_type=list_type, old_watched=old_watched, new_watched=new_watched,
-                           old_rewatch=old_rewatch)
-    elif list_type == ListType.MOVIES:
-        compute_time_spent(media=media[0], list_type=list_type, movie_status=media[1].status, old_rewatch=old_rewatch,
-                           movie_duration=media[0].duration)
+    media.compute_new_time_spent(old_data=old_total, new_data=new_total)
 
+    # Commit the session
     db.session.commit()
-    app.logger.info("[User {}] {}'s category [ID {}] changed from {} to {}."
-                    .format(current_user.id, media_id, list_type.value.replace('list', ''), old_status.value,
-                            new_status.value))
+    app.logger.info(f"[User {current_user.id}] {list_type}'s category [ID {media_id}] changed to {new_status}")
 
     return '', 204
 
@@ -675,27 +776,24 @@ def update_score():
     # Check if <media_list> exist and valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return '', 400
 
     # Check that <new_score> is '---' or between [0-10]
     try:
-        if 0 > float(new_score) > 10:
+        if 0 > float(new_score) or float(new_score) > 10:
             return '', 400
     except:
-        new_score = -1
+        new_score = None
 
-    media = check_media(media_id, list_type)
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return '', 400
 
-    # Get the old data
-    old_score = media[1].score
-
     # Set the new data
-    media[1].score = new_score
-    app.logger.info('[{}] Series ID {} score updated from {} to {}'
-                    .format(current_user.id, media_id, old_score, new_score))
+    media.score = new_score
+    app.logger.info(f"[{current_user.id}] Series ID {media_id} score updated to {new_score}")
 
     # Commit the changes
     db.session.commit()
@@ -703,39 +801,76 @@ def update_score():
     return '', 204
 
 
-@bp.route('/update_playtime', methods=['POST'])
+@bp.route('/update_feeling', methods=['POST'])
 @login_required
-def update_playtime():
+def update_feeling():
     try:
         json_data = request.get_json()
-        new_playtime = int(json_data['playtime'])*60        # To get minutes
-        media_id = int(json_data['media_id'])
-        media_list = json_data['media_type']
+        new_feeling = json_data['feeling']
+        media_id = int(json_data['element_id'])
+        media_list = json_data['element_type']
     except:
         return '', 400
 
     # Check if <media_list> exist and valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return '', 400
 
-    media = check_media(media_id, list_type)
+    # Check that <new_feeling> is null or between 1 and 4
+    try:
+        if 0 > int(new_feeling) or int(new_feeling) > 5:
+            return '', 400
+    except:
+        new_feeling = None
+
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return '', 400
 
-    # Get the old data
-    old_playtime = media[1].playtime
-
     # Set the new data
-    media[1].playtime = new_playtime
-    app.logger.info('[{}] Games ID {} playtime updated from {} to {}'
-                    .format(current_user.id, media_id, old_playtime, new_playtime))
-
-    compute_time_spent(media=media[0], list_type=list_type, old_gametime=old_playtime, new_gametime=new_playtime)
+    media.feeling = new_feeling
+    app.logger.info(f"[{current_user.id}] Media ID {media_id} feeling updated to {new_feeling}")
 
     # Commit the changes
     db.session.commit()
+
+    return '', 204
+
+
+# Not used for now
+@bp.route('/update_completion_date', methods=['POST'])
+@login_required
+def update_completion_date():
+    try:
+        json_data = request.get_json()
+        media_id = int(json_data['element_id'])
+        media_list = json_data['element_type']
+        media_date = json_data['element_date']
+    except:
+        return '', 400
+
+    # Check if <media_list> exist and is valid
+    try:
+        list_type = ListType(media_list)
+        models = get_models_group(list_type)
+    except:
+        return '', 400
+
+    # Get the media info
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
+        return '', 400
+
+    # Change the completion date only if the status' media is COMPLETED
+    if media.status == Status.COMPLETED:
+        media.completion_date = media_date
+
+    # Commit the session
+    db.session.commit()
+    app.logger.info(f"[User {current_user.id}] {list_type}'s completion date [ID {media_id}] changed.")
 
     return '', 204
 
@@ -754,6 +889,7 @@ def update_rewatch():
     # Check if the <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return '', 400
 
@@ -761,32 +897,20 @@ def update_rewatch():
     if 0 > new_rewatch > 10:
         return '', 400
 
-    media = check_media(media_id, list_type)
-    if not media or media[1].status != Status.COMPLETED:
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media or media.status != Status.COMPLETED:
         return '', 400
 
-    # Get the old data
-    old_rewatch = media[1].rewatched
+    # Update rewatch and total data watched
+    old_total = media.total
+    new_total = media.update_total_watched(new_rewatch)
 
-    # Set the new data
-    media[1].rewatched = new_rewatch
-    app.logger.info('[{}] Series ID {} re-watched {}x times'.format(current_user.id, media_id, new_rewatch))
-
-    # total eps/movies watched
-    if list_type != ListType.MOVIES:
-        media[1].eps_watched = media[0].total_episodes + (new_rewatch * media[0].total_episodes)
-    elif list_type == ListType.MOVIES:
-        media[1].eps_watched = 1 + new_rewatch
+    # Compute the new time spent
+    media.compute_new_time_spent(old_data=old_total, new_data=new_total)
 
     # Commit the changes
     db.session.commit()
-
-    # Compute the new time spent
-    if list_type != ListType.MOVIES:
-        compute_time_spent(media=media[0], list_type=list_type, old_rewatch=old_rewatch, new_rewatch=new_rewatch)
-    elif list_type == ListType.MOVIES:
-        compute_time_spent(media=media[0], list_type=list_type, movie_status=media[1].status, old_rewatch=old_rewatch,
-                           new_rewatch=new_rewatch)
+    app.logger.info('[{}] Media ID {} rewatched {}x times'.format(current_user.id, media_id, new_rewatch))
 
     return '', 204
 
@@ -805,23 +929,12 @@ def add_favorite():
     # Check if the <media_list> exist and is valid
     try:
         list_type = ListType(media_list)
+        models = get_models_group(list_type)
     except ValueError:
         return '', 400
 
-    # Check if <favorite> is a boolean
-    if type(favorite) is not bool:
-        return '', 400
-
     # Check if the <media_id> is in the current user's list
-    if list_type == ListType.SERIES:
-        media = SeriesList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    elif list_type == ListType.ANIME:
-        media = AnimeList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    elif list_type == ListType.MOVIES:
-        media = MoviesList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    elif list_type == ListType.GAMES:
-        media = GamesList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return '', 400
 
@@ -843,79 +956,42 @@ def add_element():
     except:
         return '', 400
 
-    # Check if the <media_list> exist and is valid
+    # Check <media_list>
     try:
         list_type = ListType(media_list)
-    except ValueError:
+        models = get_models_group(list_type)
+    except:
         return '', 400
 
-    # Check if <status> is valid compared to <list_type>
-    new_status = check_cat_type(list_type, media_cat)
-    if not new_status:
+    # Check <status> parameter
+    try:
+        new_status = Status(media_cat)
+    except:
         return '', 400
 
-    # Check if the <media> exists
-    media = check_media(media_id, list_type, add=True)
-    if media is None:
+    # Check that the <media> is not in the user's list
+    in_list = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if in_list:
         return '', 400
 
-    # Setup the <season>, <episode> and <category> of the <media>
-    new_watched = 1
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        new_season = 1
-        new_episode = 1
-        if new_status == Status.COMPLETED:
-            new_season = len(media.eps_per_season)
-            new_episode = media.eps_per_season[-1].episodes
-            new_watched = media.total_episodes
-        elif new_status == Status.RANDOM or new_status == Status.PLAN_TO_WATCH:
-            new_episode = 0
-            new_watched = 0
-    elif list_type == ListType.MOVIES:
-        if new_status != Status.COMPLETED:
-            new_watched = 0
+    # Check if <media> exists
+    media = models[0].query.filter_by(id=media_id).first()
+    if not media:
+        return '', 400
 
-    # Add <media> to the <user>
-    if list_type == ListType.SERIES:
-        user_list = SeriesList(user_id=current_user.id,
-                               media_id=media.id,
-                               current_season=new_season,
-                               last_episode_watched=new_episode,
-                               status=new_status,
-                               eps_watched=new_watched)
-    elif list_type == ListType.ANIME:
-        user_list = AnimeList(user_id=current_user.id,
-                              media_id=media.id,
-                              current_season=new_season,
-                              last_episode_watched=new_episode,
-                              status=new_status,
-                              eps_watched=new_watched)
-    elif list_type == ListType.MOVIES:
-        user_list = MoviesList(user_id=current_user.id,
-                               media_id=media.id,
-                               status=new_status,
-                               eps_watched=new_watched)
-    elif list_type == ListType.GAMES:
-        user_list = GamesList(user_id=current_user.id,
-                              media_id=media.id,
-                              status=new_status,
-                              completion=False,
-                              playtime=0)
+    # Add the media to the user
+    new_watched = media.add_media_to_user(new_status)
 
     # Commit the changes
-    db.session.add(user_list)
     db.session.commit()
-    app.logger.info('[User {}] {} Added [ID {}] in the category: {}'
-                    .format(current_user.id, list_type.value.replace('list', ''), media_id, new_status.value))
+    app.logger.info(f"[User {current_user.id}] {list_type} Added [ID {media_id}] in the category: {new_status}")
 
     # Set the last update
-    set_last_update(media=media, media_type=list_type, new_status=new_status)
+    UserLastUpdate.set_last_update(media=media, media_type=list_type, new_status=new_status)
 
-    # Compute the new time spent
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        compute_time_spent(media=media, new_watched=new_watched, list_type=list_type)
-    elif list_type == ListType.MOVIES:
-        compute_time_spent(media=media, list_type=list_type, movie_status=new_status, movie_add=True)
+    # Compute new time spent
+    in_list = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    in_list.compute_new_time_spent(new_data=new_watched)
 
     # Commit the last updates and the new time spent changes
     db.session.commit()
@@ -933,35 +1009,27 @@ def delete_element():
     except:
         return '', 400
 
-    # Check if the <media_list> exist and is valid
+    # Check if <list_type> exist and is valid
     try:
-        list_type = ListType(media_list)
-    except ValueError:
+        models = get_models_group(ListType(media_list))
+    except:
         return '', 400
 
-    media = check_media(media_id, list_type)
-    if media is None:
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media:
         return '', 400
 
-    # Get the old data
-    if list_type != ListType.GAMES:
-        old_rewatch = media[1].rewatched
+    try:
+        old_total = media.total
+    except:
+        old_total = media.playtime
 
-    # Compute the new time spent
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        old_watched = media[1].eps_watched
-        compute_time_spent(media=media[0], old_watched=old_watched, list_type=list_type, old_rewatch=old_rewatch)
-    elif list_type == ListType.MOVIES:
-        compute_time_spent(media=media[0], list_type=list_type, movie_status=media[1].status, movie_delete=True,
-                           old_rewatch=old_rewatch)
-    elif list_type == ListType.GAMES:
-        compute_time_spent(media=media[0], list_type=list_type, old_gametime=media[1].playtime)
+    media.compute_new_time_spent(old_data=old_total, new_data=0)
 
     # Delete the media from the user's list
-    db.session.delete(media[1])
+    db.session.delete(media)
     db.session.commit()
-    app.logger.info('[User {}] {} [ID {}] successfully removed.'
-                    .format(current_user.id, list_type.value.replace('list', ''), media_id))
+    app.logger.info(f"[User {current_user.id}] {media_list} [ID {media_id}] successfully removed.")
 
     return '', 204
 
@@ -973,7 +1041,7 @@ def lock_media():
         json_data = request.get_json()
         media_id = json_data['element_id']
         media_list = json_data['element_type']
-        lock_status = json_data['lock_status']
+        lock_status = bool(json_data['lock_status'])
     except:
         return '', 400
 
@@ -983,28 +1051,17 @@ def lock_media():
 
     # Check if <list_type> exist and is valid
     try:
-        list_type = ListType(media_list)
-    except ValueError:
+        models = get_models_group(ListType(media_list))
+    except:
         return '', 400
 
-    # Check if <lock_status> is boolean
-    if type(lock_status) is not bool:
-        return '', 400
-
-    if list_type == ListType.SERIES:
-        media = Series.query.filter_by(id=media_id).first()
-    elif list_type == ListType.ANIME:
-        media = Anime.query.filter_by(id=media_id).first()
-    elif list_type == ListType.MOVIES:
-        media = Movies.query.filter_by(id=media_id).first()
-    elif list_type == ListType.GAMES:
-        media = Games.query.filter_by(id=media_id).first()
-
+    media = models[0].query.filter_by(id=media_id).first()
     if not media:
         return '', 400
 
     media.lock_status = lock_status
     db.session.commit()
+    app.logger.info(f"{media_list} [ID {media_id}] successfully locked.")
 
     return '', 204
 
@@ -1013,53 +1070,57 @@ def lock_media():
 @login_required
 def autocomplete():
     search = request.args.get('q')
+    media_select = request.args.get('media_select')
 
-    # Get the users results
-    users = User.query.filter(User.username.like('%' + search + '%'), User.active == True).all()
-
-    users_results = []
-    for user in users:
-        users_results.append(Autocomplete(user).get_user_dict())
-
-    # Get the media results
-    try:
-        media_data = ApiData().TMDb_search(search)
-    except Exception as e:
-        media_data = {}
-        app.logger.error('[ERROR] - Requesting the TMDB API: {}'.format(e))
-
-    media_results = []
-    if media_data.get('total_results', 0) or 0 > 0:
-        for i, result in enumerate(media_data["results"]):
-            if i >= media_data["total_results"] or i > 19 or len(media_results) >= 7:
-                break
-            if result.get('known_for_department'):
-                continue
-            media_results.append(Autocomplete(result).get_autocomplete_dict())
-
-    games_results = []
-    if current_user.add_games:
-        # Get the games results
+    if media_select == 'TMDB':
         try:
-            games_data = ApiData().IGDB_search(search)
+            Api_data = ApiTMDB()
+            Api_data.search(search)
+            media_results = Api_data.get_autocomplete_list()
         except Exception as e:
-            games_data = {}
-            app.logger.error('[ERROR] - Requesting the IGDB API: {}'.format(e))
+            media_results = []
+            app.logger.error(f"[ERROR] - Requesting the TMDB API: {e}")
+    elif media_select == 'IGDB':
+        try:
+            Api_data = ApiGames()
+            Api_data.search(search)
+            media_results = Api_data.get_autocomplete_list()
+        except Exception as e:
+            media_results = []
+            app.logger.error(f"[ERROR] - Requesting the IGDB API: {e}")
+    elif media_select == 'BOOKS':
+        try:
+            Api_data = ApiBooks()
+            Api_data.search(search)
+            media_results = Api_data.get_autocomplete_list()
+        except Exception as e:
+            media_results = []
+            app.logger.error(f"[SYSTEM] - Error requesting the GoogleBooks API: {e}")
 
-        if len(games_data) > 0:
-            for result in games_data:
-                if len(games_results) >= 5:
-                    break
-                games_results.append(Autocomplete(result).get_games_autocomplete_dict())
+        # query = Books.query.filter(Books.name.like(f"%{search}%")).all()
+        # media_results = []
+        # for b in query:
+        #     try:
+        #         date = datetime.strftime(datetime.strptime(b.release_date, '%m/%d/%y'), '%d %b %Y')
+        #     except:
+        #         date = b.release_date
+        #     media_results.append({'api_id': b.id,
+        #                           'display_name': b.name,
+        #                           'image_cover': '/static/covers/books_covers/' + b.image_cover,
+        #                           'date': date,
+        #                           'category': 'Books',
+        #                           'type': 'Books'})
+    elif media_select == 'users':
+        media_results = User.get_autocomplete_list(search)
+    else:
+        return request.referrer or '/'
 
-    # Create the <total_results> list
-    total_results = media_results + users_results + games_results
-    if len(total_results) == 0:
+    if len(media_results) == 0:
         return jsonify(search_results=[{'nb_results': 0, 'category': None}]), 200
 
-    total_results = sorted(total_results, key=lambda i: i['category'])
+    media_results = sorted(media_results, key=lambda i: i['category'])
 
-    return jsonify(search_results=total_results), 200
+    return jsonify(search_results=media_results), 200
 
 
 @bp.route('/read_notifications', methods=['GET'])

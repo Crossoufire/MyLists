@@ -4,8 +4,8 @@
 function deleteElement(card, media_list) {
     let element_id = $(card)[0].id.split('_')[1];
     let $load_img = $(card).find('.view.overlay');
-
     $load_img.prepend(Loading());
+
     if (!confirm("Do you want to delete the media from your list?")) {
         $load_img.find('.load-medialist').remove();
         return false;
@@ -44,15 +44,15 @@ function removeCat() {
 }
 
 
-// --- Add media to favorite -------------------------------------------------------------------------------
-function addFavorite(fav_div, element_id, media_type) {
+// --- Set media to favorite ----------------------------------------------------------------------------
+function addFavorite(fav_div, element_id, list_type) {
     let favorite = !!$(fav_div).hasClass('far');
 
     $.ajax ({
         type: "POST",
         url: "/add_favorite",
         contentType: "application/json",
-        data: JSON.stringify({ element_id: element_id, element_type: media_type, favorite: favorite }),
+        data: JSON.stringify({ element_id: element_id, element_type: list_type, favorite: favorite }),
         dataType: "json",
         success: function() {
             if (favorite === true) {
@@ -62,7 +62,7 @@ function addFavorite(fav_div, element_id, media_type) {
             }
         },
         error: function() {
-            error_ajax_message('Error trying to add the media to your favorite. Please try again later.')
+            error_ajax_message('Error updating your favorite status. Please try again later.');
         }
     });
 }
@@ -74,6 +74,8 @@ function AddCatUser(category, card_id) {
     let media_list = $card.attr('values').split('-')[1];
     let element_id = $card.attr('values').split('-')[2];
     let $load_img = $card.find('.view.overlay');
+
+    console.log(media_list, element_id);
 
     $load_img.prepend(Loading());
     $.ajax ({
@@ -150,6 +152,138 @@ function Loading() {
     return ('<div class="load-medialist">' +
                 '<div class="central-loading fas fa-3x fa-spinner fast-spin"></div>' +
             '</div>')
+}
+
+
+// --- Create the feeling buttons list ---------------------------------------------------------------------
+function feelButtons(card, feel_a) {
+    removeCat();
+
+    let no_feel = "block;";
+    let grin_plus = "block;";
+    let grin = "block;";
+    let smile = "block;";
+    let meh = "block;";
+    let frown = "block;";
+    let angry = "block;";
+    let $card = $('#'+card.id);
+    let feeling = $(feel_a).children().attr('value');
+
+    if (feeling === 'None') {
+        no_feel = "none";
+    }
+     else if (feeling === '5') {
+        grin_plus = "none";
+    }
+    else if (feeling === '4') {
+        grin = "none";
+    }
+    else if (feeling === '3') {
+        smile = "none";
+    }
+    else if (feeling === '2') {
+        meh = "none";
+    }
+    else if (feeling === '1') {
+        frown = "none";
+    }
+    else if (feeling === '0') {
+        angry = "none";
+    }
+
+    $card.find('.view.overlay').prepend(
+        '<a class="card-btn-top-right fas fa-times" onclick="removeCat()"></a>' +
+        '<ul class="card-cat-buttons">' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+no_feel+';" ' +
+            'onclick="changeFeel(\'None\', \''+card.id+'\')">' +
+                '<i>---</i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+grin_plus+';" ' +
+            'onclick="changeFeel(\'5\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-grin-stars" style="color: #019101;"></i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+grin+';" ' +
+            'onclick="changeFeel(\'4\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-grin-alt" style="color: #59a643;"></i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+smile+';" ' +
+            'onclick="changeFeel(\'3\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-smile" style="color: darkseagreen;"></i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+meh+';" ' +
+            'onclick="changeFeel(\'2\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-frown" style="color: #d0a141;"></i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+frown+';" ' +
+            'onclick="changeFeel(\'1\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-angry" style="color: indianred;"></i>' +
+            '</li>' +
+            '<li class="btn p-1 m-1 card-btn-mobile" style="display: '+angry+';" ' +
+            'onclick="changeFeel(\'0\', \''+card.id+'\')">' +
+                '<i class="fas fa-2x fa-poop" style="color: saddlebrown;"></i>' +
+            '</li>' +
+        "</ul>");
+
+    $card.find('.card-btn-toop-right').hide();
+    $card.find('.card-btn-top-left').hide();
+    $card.find('.bottom-card-cat').hide();
+    $card.find('.bottom-card-info').hide();
+    $card.find('.card-img-top').attr('style', 'filter: brightness(20%); height: auto;');
+    $card.find('.mask').hide();
+}
+
+
+// --- Change the feeling value ----------------------------------------------------------------------------
+function changeFeel(new_feel, card_id) {
+    removeCat();
+
+    let $card = $('#'+card_id);
+    let media_list = $card.attr('values').split('-')[1];
+    let element_id = $card.attr('values').split('-')[2];
+    let load_img = $card.find('.view.overlay');
+    load_img.prepend(Loading());
+
+    $.ajax ({
+        type: "POST",
+        url: "/update_feeling",
+        contentType: "application/json",
+        data: JSON.stringify({feeling: new_feel, element_id: element_id, element_type: media_list }),
+        dataType: "json",
+        success: function() {
+            let a;
+            $('#feel_'+element_id).empty();
+            if (new_feel === 'None') {
+                a = '<i value="None">---</i>'
+            }
+            else if (new_feel === '5') {
+                a = '<i class="fas fa-grin-stars" style="color: #019101;" value="5"></i>'
+            }
+            else if (new_feel === '4') {
+                a = '<i class="fas fa-grin-alt" style="color: #59a643;" value="4"></i>'
+            }
+            else if (new_feel === '3') {
+                a = '<i class="fas fa-smile" style="color: darkseagreen;" value="3"></i>'
+            }
+            else if (new_feel === '2') {
+                a = '<i class="fas fa-frown" style="color: #d0a141;" value="2"></i>'
+            }
+            else if (new_feel === '1') {
+                a = '<i class="fas fa-angry" style="color: indianred;" value="1"></i>'
+            }
+            else if (new_feel === '0') {
+                a = '<i class="fas fa-poop" style="color: saddlebrown;" value="0"></i>'
+            }
+            $('#feel_'+element_id).append(a);
+
+        },
+        error: function () {
+            error_ajax_message('Error trying to change the feel of the media. Please try again later.')
+        },
+        complete: function () {
+            removeCat();
+            load_img.find('.load-medialist').remove();
+        }
+    });
 }
 
 

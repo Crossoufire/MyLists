@@ -1,34 +1,29 @@
 
 // --- Autocomplete ----------------------------------------------------------------------------------
 $(function() {
+    let media_select = document.getElementById('select-media');
     $('#autocomplete').catcomplete({
-        delay: 250,
+        delay: 300,
         minLength: 2,
-        source: function (request, response){
+        source: function (request, response) {
+            if (request.term == null || request.term.trim() === '') {
+                return
+            }
             $.getJSON("/autocomplete",
                 {
                     q: request.term,
+                    media_select: media_select.options[media_select.selectedIndex].value,
                 },
                 function (data) {
                     response(data.search_results);
                 });
         },
-        select: function (event, ui){
-            let form = document.createElement('form');
-            form.method = 'POST';
-            if (ui.item.type === 'Series') {
-                form.action = '/media_sheet/Series/' + ui.item.tmdb_id + '?search=True';
-            } else if (ui.item.type === 'Anime') {
-                form.action = '/media_sheet/Anime/' + ui.item.tmdb_id + '?search=True';
-            } else if (ui.item.type === 'Movie') {
-                form.action = '/media_sheet/Movies/' + ui.item.tmdb_id + '?search=True';
-            } else if (ui.item.type === 'Game') {
-                form.action = '/media_sheet/Games/' + ui.item.igdb_id + '?search=True';
-            } else if (ui.item.type === 'User') {
-                form.action = '/account/' + ui.item.display_name;
+        select: function (event, ui) {
+            if (ui.item.type === 'User') {
+                window.location.href = '/account/' + ui.item.display_name;
+            } else {
+                window.location.href = '/media_sheet/' + ui.item.type + '/' + ui.item.api_id + '?search=True';
             }
-            document.body.appendChild(form);
-            form.submit();
         }
     });
 });
@@ -38,7 +33,7 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
             this.widget().menu('option', 'items', '> :not(.ui-autocomplete-category)');
         },
         _renderMenu: function (ul, items) {
-            var search;
+            var search, med_select;
             var that = this;
             var categories = [];
 
@@ -52,8 +47,10 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
 
             if (items[0].nb_results !== 0) {
                 search = $('#autocomplete').val();
+                med_select = $('#select-media').val();
                 $('<li class="text-center p-t-5 p-b-5" style="background: #22748d;">' +
-                     '<a class="text-light" href="/search_media?search='+search+'&page=1">More results</a>' +
+                     '<a class="text-light" href="/search_media?search='+search+'&media_select='+med_select+'&page=1">'+
+                        'More results</a>' +
                   '</li>').appendTo(ul);
             }
         },
@@ -62,7 +59,7 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
         },
         _renderItem: function (ul, item) {
             ul.addClass('autocomplete-ul');
-            let $li, $img;
+            let $li, $img, more;
 
             if (item.nb_results === 0) {
                 $li = $('<li class="disabled bg-dark text-light p-l-5">No results found.</li>');
@@ -74,6 +71,11 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
                 $img = '<img src="'+ item.image_cover +'" style="width: 50px; height: 50px;" alt="">'
             }
 
+            more = item.type;
+            if (item.category === 'Books') {
+                more = item.author;
+            }
+
             $li = $('<li class="bg-dark p-t-2 p-b-2" style="border-bottom: solid black 1px;">');
             $li.append(
                 '<div class="row">' +
@@ -83,7 +85,9 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
                         '<div class="col">' +
                             '<a class="text-light">' + item.display_name +
                                 '<br>' +
-                                '<span style="font-size: 10pt;">' + item.type + ' | ' + item.date + '</span>' +
+                                '<span style="font-size: 10pt;">' + more + '</span>' +
+                                '<br>' +
+                                '<span style="font-size: 10pt;">' + item.date + '</span>' +
                             '</a>' +
                         '</div>' +
                 '</div>');
@@ -95,10 +99,9 @@ $.widget('custom.catcomplete', $.ui.autocomplete, {
 
 // --- Follow status ---------------------------------------------------------------------------------
 function follow_status(button, follow_id) {
-    let status;
     let $follow_button = $(button);
-
-    status = $follow_button.prop('value') !== '1';
+    let status = $follow_button.attr('value') !== '1';
+    console.log(status);
     $follow_button.addClass('disabled');
     $('#load_'+follow_id).show();
 
@@ -110,14 +113,16 @@ function follow_status(button, follow_id) {
         dataType: "json",
         success: function() {
             if (status === false) {
-                $follow_button.text('Follow');
-                $follow_button.prop('value', '0');
-                $follow_button.addClass('btn-primary').removeClass('btn-dark btn-smaller');
+                $follow_button.attr('data-original-title', 'Follow').tooltip('update').tooltip('show');
+                $follow_button.attr('value', '0');
+                $follow_button.attr('style', 'color: cadetblue;');
+                $follow_button.removeClass('fa-user-minus').addClass('fa-user-plus');
                 $follow_button.removeClass('disabled');
             } else {
-                $follow_button.text('Unfollow');
-                $follow_button.prop('value', '1');
-                $follow_button.removeClass('btn-primary').addClass('btn-dark btn-smaller');
+                $follow_button.attr('data-original-title', 'Unfollow').tooltip('update').tooltip('show');
+                $follow_button.attr('value', '1');
+                $follow_button.attr('style', 'color: indianred;');
+                $follow_button.removeClass('fa-user-plus').addClass('fa-user-minus');
                 $follow_button.removeClass('disabled');
             }
         },
@@ -154,14 +159,14 @@ function display_notifications(data) {
             // Add H-line between notifications except for the last one
             if (i + 1 === resp.length) {
                 add_hr = '';
-            } else {
+            }
+            else {
                 add_hr = '<hr class="p-0 m-t-0 m-b-0 m-l-15 m-r-15">';
             }
 
             if (resp[i]['media_type'] === 'serieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Series/' +
-                     resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Series/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-tv text-series"></i>' +
@@ -178,8 +183,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'animelist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Anime/' +
-                    resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Anime/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-torii-gate text-anime"></i>' +
@@ -196,8 +200,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'movieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/' +
-                    resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-film text-movies"></i>' +
@@ -212,10 +215,26 @@ function display_notifications(data) {
                     '<div class="notif-items">' + add_hr + '</div>'
                 );
             }
+            else if (resp[i]['media_type'] === 'gameslist') {
+                $("#notif-dropdown").append(
+                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Games/'+resp[i]['media_id']+'">' +
+                        '<div class="row no-gutters">' +
+                            '<div class="col-2">' +
+                                '<i class="fas fa-gamepad text-games"></i>' +
+                            '</div>' +
+                            '<div class="col-10 ellipsis-notif">' +
+                                '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
+                                '<div class="fs-14" style="color: darkgrey;">Will be available on ' +
+                                resp[i]['payload']['release_date'] + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</a>' +
+                    '<div class="notif-items">' + add_hr + '</div>'
+                );
+            }
             else {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/account/' +
-                    resp[i]['payload']['username']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/account/'+resp[i]['payload']['username']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-user" style="color: #45B29D;"></i>' +
@@ -274,7 +293,7 @@ function error_ajax_message(message) {
 
 // --- Tooltip initialization ------------------------------------------------------------------------
 $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').tooltip({html: true})
 });
 
 

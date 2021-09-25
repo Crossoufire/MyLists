@@ -1,11 +1,18 @@
 
-
 // --- Add the media to the user ------------------------------------------------------------------------
 function addToUser(element_id, media_type) {
     let category;
     let $medialist = $('#your-medialist-data');
 
-    category = media_type === 'serieslist' || media_type === 'animelist' ? 'Watching' : 'Completed';
+    if (media_type === 'bookslist') {
+        category = 'Reading'
+    }
+    else if (media_type === 'movieslist' || media_type === 'gameslist') {
+        category = 'Completed'
+    }
+    else if (media_type === 'serieslist') {
+        category = 'Watching'
+    }
 
     $medialist.addClass('disabled');
     $('#loading-add-list').hide();
@@ -68,16 +75,15 @@ function removeFromUser(element_id, media_type) {
 
 
 // --- Set media to favorite ----------------------------------------------------------------------------
-function addFavorite(element_id, media_type) {
-    let favorite;
-    favorite = !!$('#favorite').hasClass('far');
+function addFavorite(element_id, list_type) {
+    let favorite = !!$('#favorite').hasClass('far');
     $('#fav-title').addClass('disabled');
 
     $.ajax ({
         type: "POST",
         url: "/add_favorite",
         contentType: "application/json",
-        data: JSON.stringify({ element_id: element_id, element_type: media_type, favorite: favorite }),
+        data: JSON.stringify({ element_id: element_id, element_type: list_type, favorite: favorite }),
         dataType: "json",
         success: function() {
             $('#fav-title').removeClass('disabled');
@@ -97,6 +103,96 @@ function addFavorite(element_id, media_type) {
 
 
 // --- Change the TV category ---------------------------------------------------------------------------
+function changeCategoryBooks(element_id, cat_selector, pages) {
+    let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
+    $('#cat-loading').show();
+    $('#your-medialist-data').addClass('disabled');
+
+    if (new_cat === 'Completed') {
+        $('#rewatch-row').show('slow');
+        // $('#comp-date-row').show('slow');
+    }
+    else {
+        $('#rewatch-row').hide('slow');
+        $('#rewatched-dropdown').val("0");
+        // $('#comp-date-row').hide('slow');
+    }
+
+    $.ajax ({
+        type: "POST",
+        url: "/update_category",
+        contentType: "application/json",
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'bookslist' }),
+        dataType: "json",
+        success: function() {
+            $('#season-row').show();
+            $('#cat-check').show().delay(1500).fadeOut();
+            $('#your-medialist-data').removeClass('disabled');
+
+            if (new_cat === 'Completed') {
+                $('#page-input').val(pages);
+                // $('#comp-date-row').show();
+                // let field = document.querySelector('.comp-date');
+                // field.value = new Date().toISOString().substring(0, 10);
+            }
+            else if (new_cat === 'Plan to Read') {
+                $('#page-input').val(0);
+                $('#season-row').hide();
+            }
+        },
+        error: function() {
+            error_ajax_message('Error changing your media status. Please try again later.');
+        },
+        complete: function () {
+            $('#cat-loading').hide();
+        }
+    });
+}
+
+
+// --- Change the Movie category ------------------------------------------------------------------------
+function changeCategoryMovies(element_id, cat_selector) {
+    let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
+    $('#cat-loading').show();
+    $('#your-medialist-data').addClass('disabled');
+
+    if (new_cat === 'Completed') {
+        $('#rewatch-row').show('slow');
+        // $('#comp-date-row').show('slow');
+    }
+    else {
+        $('#rewatch-row').hide('slow');
+        $('#rewatched-dropdown').val("0");
+        // $('#comp-date-row').hide('slow');
+    }
+
+    $.ajax ({
+        type: "POST",
+        url: "/update_category",
+        contentType: "application/json",
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'movieslist' }),
+        dataType: "json",
+        success: function() {
+            $('#cat-check').show().delay(1500).fadeOut();
+            $('#your-medialist-data').removeClass('disabled');
+
+            // if (new_cat === 'Completed') {
+            //     $('#comp-date-row').show();
+            //     let field = document.querySelector('.comp-date');
+            //     field.value = new Date().toISOString().substring(0, 10);
+            // }
+        },
+        error: function() {
+            error_ajax_message('Error changing your media status. Please try again later.');
+        },
+        complete: function () {
+            $('#cat-loading').hide();
+        }
+    });
+}
+
+
+// --- Change the TV category ---------------------------------------------------------------------------
 function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
     let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
     $('#cat-loading').show();
@@ -104,25 +200,31 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
 
     if (new_cat === 'Completed') {
         $('#rewatch-row').show('slow');
+        // $('#comp-date-row').show('slow');
     }
     else {
         $('#rewatch-row').hide('slow');
         $('#rewatched-dropdown').val("0");
+        // $('#comp-date-row').hide('slow');
     }
 
     $.ajax ({
         type: "POST",
-        url: "/change_element_category",
+        url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_list}),
         dataType: "json",
-        success: function() { 
-            $('#season-row').show();
-            $('#episode-row').show();
+        success: function() {
+            $('#season-row').show('slow');
+            $('#episode-row').show('slow');
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
 
             if (new_cat === 'Completed') {
+                // $('#comp-date-row').show();
+                // let field = document.querySelector('.comp-date');
+                // field.value = new Date().toISOString().substring(0, 10);
+
                 let season_data = JSON.parse("["+seas_data+"]");
                 let episode_drop = $('#episode-dropdown');
                 let seasons_length = $('#season-dropdown').children('option').length;
@@ -142,43 +244,9 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
             else if (new_cat === 'Random' || new_cat === 'Plan to Watch') {
                 $('#season-dropdown').val("0");
                 $('#episode-dropdown').val("0");
-                $('#season-row').hide();
-                $('#episode-row').hide();
+                $('#season-row').hide('slow');
+                $('#episode-row').hide('slow');
             }
-        },
-        error: function() {
-            error_ajax_message('Error changing your media status. Please try again later.');
-        },
-        complete: function () {
-            $('#cat-loading').hide();
-        }
-    });
-}
-
-
-// --- Change the Movie category ------------------------------------------------------------------------
-function changeCategoryMovies(element_id, cat_selector) {
-    $('#cat-loading').show();
-    $('#your-medialist-data').addClass('disabled');
-    let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
-
-    if (new_cat === 'Completed') {
-        $('#rewatch-row').show('slow');
-    }
-    else {
-        $('#rewatch-row').hide('slow');
-        $('#rewatched-dropdown').val("0");
-    }
-
-    $.ajax ({
-        type: "POST",
-        url: "/change_element_category",
-        contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'movieslist' }),
-        dataType: "json",
-        success: function() {
-            $('#cat-check').show().delay(1500).fadeOut();
-            $('#your-medialist-data').removeClass('disabled');
         },
         error: function() {
             error_ajax_message('Error changing your media status. Please try again later.');
@@ -192,23 +260,39 @@ function changeCategoryMovies(element_id, cat_selector) {
 
 // --- Change the Game category -------------------------------------------------------------------------
 function changeCategoryGames(element_id, cat_selector) {
+    let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
     $('#cat-loading').show();
     $('#your-medialist-data').addClass('disabled');
 
-    let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
+    // if (new_cat === 'Completed') {
+    //     $('#comp-date-row').show('slow');
+    // } else {
+    //     $('#comp-date-row').hide('slow');
+    // }
 
     $.ajax ({
         type: "POST",
-        url: "/change_element_category",
+        url: "/update_category",
         contentType: "application/json",
         data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'gameslist' }),
         dataType: "json",
         success: function() {
+            $('#playtime-row').show();
             $('#cat-check').show().delay(1500).fadeOut();
             $('#your-medialist-data').removeClass('disabled');
+
+            // if (new_cat === 'Completed') {
+            //     $('#comp-date-row').show();
+            //     let field = document.querySelector('.comp-date');
+            //     field.value = new Date().toISOString().substring(0, 10);
+            // }
+            if (new_cat === 'Plan to Play') {
+                $('#time-dropdown').val("0");
+                $('#playtime-row').hide();
+            }
         },
         error: function() {
-            error_ajax_message('Error changing your game status. Please try again later.');
+            error_ajax_message('Error changing your game category. Please try again later.');
         },
         complete: function () {
             $('#cat-loading').hide();
@@ -226,7 +310,7 @@ function updateSeason(element_id, value, seas_data, media_list) {
 
     $.ajax ({
         type: "POST",
-        url: "/update_element_season",
+        url: "/update_season",
         contentType: "application/json",
         data: JSON.stringify({season: selected_season, element_id: element_id, element_type: media_list }),
         dataType: "json",
@@ -243,7 +327,7 @@ function updateSeason(element_id, value, seas_data, media_list) {
             for (let i = 2; i <= season_data[0][selected_season]; i++) {
                 let opt = document.createElement("option");
                 opt.className = "";
-                opt.innerHTML = '&nbsp;'+i+'&nbsp;';
+                opt.innerHTML = i;
                 document.getElementById('episode-dropdown').appendChild(opt);
             }
         },
@@ -264,7 +348,7 @@ function updateEpisode(element_id, episode, media_list) {
 
     $.ajax ({
         type: "POST",
-        url: "/update_element_episode",
+        url: "/update_episode",
         contentType: "application/json",
         data: JSON.stringify({episode: episode.selectedIndex, element_id: element_id, element_type: media_list }),
         dataType: "json",
@@ -353,6 +437,62 @@ function updateScore(element_id, score, media_list) {
 }
 
 
+// --- Update Feeling data ------------------------------------------------------------------------------
+function updateFeeling(element_id, feeling, media_list, element) {
+    $('#score-loading').show();
+    let $element = $(element);
+
+    $.ajax ({
+        type: "POST",
+        url: "/update_feeling",
+        contentType: "application/json",
+        data: JSON.stringify({feeling: feeling, element_id: element_id, element_type: media_list }),
+        dataType: "json",
+        success: function() {
+            $('#score-check').show().delay(1500).fadeOut();
+        },
+        error: function() {
+            error_ajax_message('Error updating your feeling for this media. Please try again later.');
+        },
+        complete: function () {
+            $('#score-loading').hide();
+            $('.feel').attr('style', 'border: none;');
+            $('.feel').removeClass('disabled');
+            $element.attr('style', 'box-shadow: 0 -2px 0 lightgray inset;');
+            $element.addClass('disabled');
+        }
+    });
+}
+
+
+// --- Update Completion date ---------------------------------------------------------------------------
+// $(document).on('focusout','.comp-date',function(event) {
+//     $('#date-loading').show();
+//     let value = this.value;
+//     let media_id = $(this).attr('info').split(',')[0];
+//     let media_list = $(this).attr('info').split(',')[1];
+//
+//     if (event.type === 'focusout') {
+//         $.ajax ({
+//             type: "POST",
+//             url: "/update_completion_date",
+//             contentType: "application/json",
+//             data: JSON.stringify({element_date: value, element_id: media_id, element_type: media_list}),
+//             dataType: "json",
+//             success: function() {
+//                 $('#date-check').show().delay(1500).fadeOut();
+//             },
+//             error: function () {
+//                 error_ajax_message('Error trying to change the media score. Please try again later.')
+//             },
+//             complete: function () {
+//             $('#date-loading').hide();
+//         }
+//         });
+//     }
+// });
+
+
 // --- Lock the media -----------------------------------------------------------------------------------
 function lock_media(element_id, element_type) {
     let lock_status;
@@ -381,6 +521,34 @@ function lock_media(element_id, element_type) {
 }
 
 
+// --- Update pages -------------------------------------------------------------------------------------
+function updatePages(element_id) {
+    $('#season-loading').show();
+    let page = $('#page-input').val();
+
+    $.ajax ({
+        type: "POST",
+        url: "/update_page",
+        contentType: "application/json",
+        data: JSON.stringify({page: page, element_id: element_id, element_type: 'bookslist'}),
+        dataType: "json",
+        success: function() {
+            $('#season-check').show().delay(1500).fadeOut();
+        },
+        error: function (d) {
+            if (d.responseText) {
+                error_ajax_message(d.responseText)
+            } else {
+                error_ajax_message("Error updating the media's page. Please try again later.")
+            }
+        },
+        complete: function () {
+            $('#season-loading').hide();
+        }
+    });
+}
+
+
 $(document).ready(function () {
     // --- Random box color ---------------------------------------------------------------------
     let colors, boxes, i;
@@ -391,28 +559,6 @@ $(document).ready(function () {
         boxes[i].style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // --- Get the color of the status ----------------------------------------------------------
-    $('.follow-div').each(function () {
-        if ($(this).find('.follow-status').attr('value') === 'Watching') {
-            $(this).find('.fa-list').attr('style', 'color: #334D5C;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Completed') {
-            $(this).find('.fa-list').attr('style', 'color: #45B29D;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'On Hold') {
-            $(this).find('.fa-list').attr('style', 'color: #EFC94C;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Random') {
-            $(this).find('.fa-list').attr('style', 'color: #E27A3F;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Dropped') {
-            $(this).find('.fa-list').attr('style', 'color: #DF5A49;');
-        }
-        else if ($(this).find('.follow-status').attr('value') === 'Plan to Watch') {
-            $(this).find('.fa-list').attr('style', 'color: #962D3E;');
-        }
-    });
-
     // --- Fill the media icon score ------------------------------------------------------------
     let $media_ticket = $('.media-ticket');
     let gradient = $media_ticket.attr('value');
@@ -420,10 +566,10 @@ $(document).ready(function () {
     function add_gradient(gradient) {
         let val = parseFloat(gradient);
         let value = 100-(val*10);
-        console.log(value);
         return ('background:' +
             '-webkit-linear-gradient(180deg, grey '+ value+'%, darkgoldenrod 0%);' +
             '-webkit-background-clip: text;' +
             '-webkit-text-fill-color: transparent;')
     }
 });
+

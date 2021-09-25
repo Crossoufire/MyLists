@@ -1,0 +1,54 @@
+{% extends 'medialist_base.html' %}
+
+
+{% set all_genres = ['All', 'Action & Adventure', 'Biography', 'Chick lit', 'Children', 'Classic', 'Crime', 'Drama',
+'Dystopian', 'Fantastic', 'Fantasy', 'History', 'Humor', 'Horror', 'Mystery', 'Paranormal', 'Philosophy', 'Poetry',
+'Romance', 'Science', 'Science-Fiction', 'Short story', 'Suspense', 'Thriller', 'Western', 'Young adult'] %}
+
+
+{% set categories = ['All', 'Reading', 'Completed', 'On Hold', 'Dropped', 'Plan to Read', 'Favorite'] %}
+
+
+{% set all_sort = ['Title A-Z', 'Title Z-A', 'Score +', 'Score -', 'Re-read', 'Comments', 'Published date +',
+'Published date -'] %}
+
+
+{% block data %}
+    {{ media_list }}-{{ media_list }}-{{ item.media.id }}
+{% endblock data %}
+
+
+{% block seas_eps_drop %}
+    {% if item.status.value == 'Plan to Read' %}
+        <div class="seas-eps-drop-container">
+            <select class="seas-eps-drop disabled" style="appearance: none;">
+                <option class="seas-eps-drop-options">---</option>
+            </select>
+            <span style="border-right: 2px solid gray;"></span>
+            <select class="seas-eps-drop disabled" style="appearance: none;">
+                <option class="seas-eps-drop-options">---</option>
+            </select>
+        </div>
+    {% else %}
+        <div class="seas-eps-drop-container" {% if category == 'Plan to Read' %} style="display: none;"{% endif %}>
+            <span><input id="input_{{ item.media.id }}" class="book-input" value="{{ item.actual_page }}"
+            onchange="updatePages({{ item.media.id }}, this)"></span>/
+            <span>{{ item.media.pages }}</span>
+        </div>
+    {% endif %}
+{% endblock seas_eps_drop %}
+
+
+{% block stats_block %}
+    <div class="fs-18 text-grey"><b><i>Not implemented. Work in progress.</i></b></div>
+{% endblock stats_block %}
+
+
+{% block stats_js %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/more_stats.js') }}"></script>
+{% endblock stats_js %}
+
+
+{% block javascript %}
+    <script src="{{ url_for('static', filename='js/medialist_books.js') }}"></script>
+{% endblock javascript %}

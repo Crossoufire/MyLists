@@ -1,8 +1,8 @@
-flask
+flask>=2.0.0
 howlongtobeatpy
 python-dotenv
 itsdangerous
-sqlalchemy
+sqlalchemy==1.3.23
 ratelimit
 pykakasi
 requests
@@ -14,3 +14,12 @@ iso639
 redis
 pytz
 rq
+flask_sqlalchemy
+flask_login
+flask_bcrypt
+flask_mail
+flask_compress
+flask_wtf
+email_validator
+flask_admin
+WTForms-Alchemy

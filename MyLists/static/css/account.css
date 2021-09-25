@@ -29,7 +29,7 @@ a {
 }
 
 
-/* --- Header ------------------------------------------------------------------------------- */
+/* --- HEADER ------------------------------------------------------------------------------- */
 .header-container {
     position: relative;
     height: 280px;
@@ -152,6 +152,7 @@ a {
         display: none;
     }
     .header-profile-data-mobile {
+        width: 100%;
         display: block;
         position: absolute;
         left: 50%;
@@ -169,21 +170,20 @@ a {
 }
 
 
-/* --- Levels ------------------------------------------------------------------------------ */
-#series-level {
+/* --- LEVELS ------------------------------------------------------------------------------ */
+#series-level, #books-level {
     margin-left: 20px;
-}
-
-#movies-level {
-    margin-left: 13px;
 }
 
 #anime-level {
     margin-left: 18px;
 }
 
+#movies-level, #games-level {
+    margin-left: 13px;
+}
+
 .account-bar {
-    height: 100%;
     margin: 0 auto;
 }
 
@@ -224,7 +224,7 @@ a {
 }
 
 
-/* --- Updates ------------------------------------------------------------------------------- */
+/* --- UPDATES ------------------------------------------------------------------------------- */
 .more-link {
     float: right;
     color: grey !important;
@@ -258,7 +258,7 @@ a {
 }
 
 
-/* --- Central statistics ------------------------------------------------------------------- */
+/* --- CENTRAL STATS ------------------------------------------------------------------- */
 .media-container {
     position: relative;
     height: 200px;
@@ -298,25 +298,31 @@ a {
 	background-color: #32345d;
 }
 
-.block-movie {
+.block-movies {
     height: 30px;
     color: white;
     float: left;
     background-color: #45B29D;
 }
-.block-movie:nth-of-type(2) {
+.block-movies:nth-of-type(2) {
 	background-color: #22748d;
 }
-.block-movie:nth-of-type(3) {
+.block-movies:nth-of-type(3) {
 	background-color: #962D3E;
 }
 
-.block:hover, .block-movie:hover{
+.block:hover, .block-movies:hover{
 	opacity: 0.75;
 }
 
 .media-stats-title {
     background: #403d3a;
+}
+
+.evenly-spaced {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 }
 
 .stat-text {
@@ -326,18 +332,11 @@ a {
 }
 
 .favorite-img {
-    height: 88px;
+    height: 81px;
     width: auto;
 }
 
-.histogram-wrapper {
-    display: flex;
-    align-items: left;
-    justify-content: center;
-    flex-direction: column;
-}
-
-#series-score, #anime-score, #movies-score, #games-score {
+#series-score, #anime-score, #movies-score, #books-score, #games-score {
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: 1fr;
@@ -352,30 +351,26 @@ a {
     padding-left: 0;
 }
 
-.histogram-item-series {
-    width: 100%;
-    background: #216e7d;
+.histogram-wrapper {
+    display: flex;
+    align-items: left;
+    justify-content: center;
+    flex-direction: column;
 }
 
-.histogram-item-anime {
+.histogram-item {
     width: 100%;
-    background: #945141;
-}
-
-.histogram-item-movies {
-    width: 100%;
-    background: #8c7821;
-}
-
-.histogram-item-games {
-    width: 100%;
-    background: #196219;
 }
 
 @media (max-width: 768px) {
     .media-container {
         position: relative;
         height: 200px;
+    }
+    .mobile-inline-block {
+        display: flex;
+        justify-content: space-around;
+        margin: 0;
     }
 }
 @media (max-width: 490px) {
@@ -385,7 +380,7 @@ a {
 }
 
 
-/* --- Follows ------------------------------------------------------------------------------ */
+/* --- FOLLOWS ------------------------------------------------------------------------------ */
 .follow-img {
     border-radius: 50%;
     height: 60px;

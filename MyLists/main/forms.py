@@ -1,33 +1,40 @@
+from MyLists import db
 from flask import request
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed, DataRequired
-from wtforms import StringField, SubmitField, TextAreaField, IntegerField
+from flask_wtf.file import DataRequired
+from wtforms_alchemy import model_form_factory
+from wtforms import StringField, SubmitField, TextAreaField, SelectMultipleField
 
-from MyLists.models import ListType
+BaseModelForm = model_form_factory(FlaskForm)
 
 
-class EditMediaData(FlaskForm):
-    cover = FileField('Media cover', validators=[FileAllowed(['jpg', 'png', 'jpeg'])])
-    original_name = StringField('Original name')
-    name = StringField('Name')
-    directed_by = StringField('Directed by')
-    created_by = StringField('Created by')
-    first_air_date = StringField('First air date')
-    last_air_date = StringField('Last air date')
-    release_date = StringField('Release date')
-    production_status = StringField('Production status')
-    genres = StringField('Genres')
-    actors = StringField('Actors')
-    duration = IntegerField('Duration (min)')
-    origin_country = StringField('Origin country')
-    original_language = StringField('Original language')
-    networks = StringField('Newtorks')
-    tagline = StringField('Tagline')
-    homepage = StringField('Homepage')
-    budget = StringField('Budget')
-    revenue = StringField('Revenue')
-    synopsis = TextAreaField('Synopsis')
-    submit = SubmitField('Submit')
+class ModelForm(BaseModelForm):
+    def get_session(self):
+        return db.session
+
+
+class GenreForm(FlaskForm):
+    genres = SelectMultipleField('Genres',
+                                 choices=[('Action & Adventure', 'Action & Adventure'),
+                                          ('Biography', 'Biography'), ('Chick lit', 'Chick lit'),
+                                          ('Children', 'Children'), ('Classic', 'Classic'),
+                                          ('Crime', 'Crime'),
+                                          ('Drama', 'Drama'), ('Dystopian', 'Dystopian'),
+                                          ('Fantastic', 'Fantastic'),
+                                          ('Fantasy', 'Fantasy'), ('History', 'History'),
+                                          ('Humor', 'Humor'),
+                                          ('Horror', 'Horror'), ('Mystery', 'Mystery'),
+                                          ('Paranormal', 'Paranormal'),
+                                          ('Philosophy', 'Philosophy'), ('Poetry', 'Poetry'),
+                                          ('Romance', 'Romance'),
+                                          ('Science', 'Science'), ('Science-Fiction', 'Science-Fiction'),
+                                          ('Short story', 'Short story'), ('Suspense', 'Suspense'),
+                                          ('Thriller', 'Thriller'), ('Western', 'Western'),
+                                          ('Young adult', 'Young adult')])
+
+
+class CoverForm(FlaskForm):
+    image_cover = StringField('Insert an img URL')
 
 
 class MediaComment(FlaskForm):
@@ -44,3 +51,4 @@ class SearchForm(FlaskForm):
         if 'csrf_enabled' not in kwargs:
             kwargs['csrf_enabled'] = False
         super(SearchForm, self).__init__(*args, **kwargs)
+

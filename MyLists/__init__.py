@@ -1,7 +1,5 @@
-import redis
 import logging
 import smtplib
-from rq import Queue
 from flask import Flask
 import email.utils as em
 from config import Config
@@ -20,6 +18,7 @@ app.config.from_object(Config)
 
 
 # Initialization of the different Flask modules
+Config()
 mail = Mail(app)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -29,10 +28,9 @@ login_manager.login_view = 'auth.home'
 login_manager.login_message_category = 'info'
 app.url_map.strict_slashes = False
 
-
 # Add the redis server and the queue
-app.r = redis.Redis()
-app.q = Queue(connection=app.r)
+# app.r = redis.Redis()
+# app.q = Queue(connection=app.r)
 
 
 # Recover and register all the blueprints of the app

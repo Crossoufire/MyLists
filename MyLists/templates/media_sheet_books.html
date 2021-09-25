@@ -1,0 +1,163 @@
+{% extends 'media_sheet_base.html' %}
+
+
+{% block hr_color %}
+    hr {margin-top: 5px; border-top: 1px solid #584c6e;}
+{% endblock hr_color %}
+
+
+{% block cat_select %}
+    <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryBooks(
+    '{{ media.id }}', this, {{ media.pages }})">
+        <option {% if list_info.status == 'Reading' %} selected="selected" {% endif %}>Reading</option>
+        <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
+        <option {% if list_info.status == 'On Hold' %} selected="selected" {% endif %}>On Hold</option>
+        <option {% if list_info.status == 'Dropped' %} selected="selected" {% endif %}>Dropped</option>
+        <option {% if list_info.status == 'Plan to Read' %} selected="selected"{% endif %}>Plan to Read</option>
+    </select>
+{% endblock cat_select %}
+
+
+{% block add_more %}
+    <div id="season-row" class="row m-l-15 m-r-15" {% if list_info.status == 'Plan to Read' %} style="display: none;" {% endif %}>
+        <div class="col-4"><b>Pages:</b></div>
+        <div class="col-8">
+            <span><input id="page-input" class="book-input" value="{{ list_info.actual_page }}"
+            onchange="updatePages({{ media.id }})"></span>/<span>{{ media.pages }}</span>
+            <i id="season-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
+            &nbsp;<i id="season-check" class="fas fa-check" style="display: none;"></i>
+        </div>
+    </div>
+{% endblock add_more %}
+
+
+{% block add_redo %}
+    <div id="rewatch-row" class="row m-l-15 m-r-15" data-toggle="tooltip" title="How many time you re-read this media.
+     Do not count the inital completion." {% if list_info.status == 'Completed'%}{% else %}style="display: none;"{% endif %}>
+        <div class="col-4"><b>Re-read:</b></div>
+        <div class="col-8">
+            <label for="rewatched-dropdown"></label>
+            <select id="rewatched-dropdown" class="text-light cat-drop" onchange="updateRewatched(
+             '{{ media.id }}', this, '{{ media_list }}')">
+                {% for i in range(0, 11) %}
+                    <option {% if i == list_info.rewatched %}selected="selected"{% endif %} value="{{ i }}">
+                        &nbsp;{{ i }}&nbsp;
+                    </option>
+                {% endfor %}
+            </select>
+            <i id="rewatched-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
+            &nbsp;<i id="rewatched-check" class="fas fa-check" style="display: none;"></i>
+        </div>
+    </div>
+{% endblock add_redo %}
+
+
+{% block information %}
+    <div class="col-6">
+        <ul class="list-unstyled">
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-book"></i><b>&nbsp; Authors</b></h5>
+                {% set authors = media.get_authors() %}
+                {% if authors[0] == 'Unknown' %}
+                    <div>Unknown</div>
+                {% else %}
+                    {% for author in authors %}
+                        <a class="text-light" href="/persons/Books/creator/{{ author }}"><div>{{ author }}</div></a>
+                    {% endfor %}
+                {% endif %}
+            </li>
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Published date</b></h5>
+                <div>{{ media.release_date }}</div>
+            </li>
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-bookmark"></i><b>&nbsp; Nb Pages</b></h5>
+                <div>{{ media.pages}} pages</div>
+            </li>
+            <li>
+                <h5 class="mb-1 text-media"><i class="fas fa-flag"></i><b>&nbsp; Language</b></h5>
+                {% if media.language == 'en' %}
+                    <span class="flag-icon flag-icon-us"></span>&nbsp;
+                {% elif media.language == 'ja' %}
+                    <span class="flag-icon flag-icon-jp"></span>&nbsp;
+                {% else %}
+                    <span class="flag-icon flag-icon-{{ media.language }}"></span>
+                {% endif %}
+                &nbsp;<span>{{ media.language|capitalize }}</span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-6">
+        <ul class="list-unstyled">
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-theater-masks"></i><b>&nbsp; Genres</b></h5>
+                {% set genres = media.get_genres() %}
+                {% if genres == 'Unknown' %}
+                    <a class="btn btn-danger btn-smaller" data-toggle="modal" data-target="#GenreModal">Add Genre</a>
+                    <div class="modal fade" id="GenreModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content text-light bg-dark">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit Genres</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span style="color: lightgray;">&times;</span>
+                                    </button>
+                                </div>
+                                <form action="/update_book_genres/{{ media.id }}" method="POST">
+                                    <div class="modal-body">
+                                        {{ form.hidden_tag() }}
+                                        <div class="p-2">
+                                            <b>Actual genres:</b> &nbsp;{{ genres }}
+                                        </div>
+                                        <div class="p-2 m-t-15">
+                                            Select up to 5 genres to describes the book:
+                                            <br>(ctrl + click for multi-selection)
+                                        </div>
+                                        <div class="p-2">
+                                            <div><b>{{ form.genres.label() }}:</b></div>
+                                            <div>{{ form.genres(size=15, style='width: 50%;') }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-primary">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div>{{ genres }}</div>
+                {% endif %}
+            </li>
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-i-cursor"></i><b>&nbsp; Publishers</b></h5>
+                <div>{{ media.publishers }}</div>
+            </li>
+            <li class="m-b-15">
+                <h5 class="mb-1 text-media"><i class="fas fa-clock"></i><b>&nbsp; Completion</b></h5>
+                <div>{{ '%1d'|format((media.pages)//60) }} h {{ '%02d'|format((media.pages)%60) }} min</div>
+            </li>
+        </ul>
+    </div>
+{% endblock information %}
+
+
+{% block more_info %}
+{% endblock more_info %}
+
+
+{% block follow_more %}
+    <div class="follow-status" value="{{ follow[1].status.value }}">
+        <i class="fas fa-list"></i>
+        <b>&nbsp;Status:&nbsp;{{ follow[1].status.value }}</b>
+    </div>
+    {% set check_status = ['Completed', 'Plan to Read'] %}
+    {% if follow[1].status.value not in check_status %}
+        <i class="fas fa-sm fa-play"></i>
+        <b>&nbsp;Page {{ follow[1].actual_page }}/{{ follow[1].media.pages }}</b>
+    {% endif %}
+    {% if follow[1].status.value == 'Completed' %}
+        <i class="fas fas-sm fa-redo"></i>
+        <b>&nbsp;Re-read:&nbsp; {{ follow[1].rewatched }}</b>
+    {% endif %}
+{% endblock follow_more %}

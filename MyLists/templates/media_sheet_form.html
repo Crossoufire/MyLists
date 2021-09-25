@@ -4,98 +4,57 @@
 {% block css %}
     <style>
         input {
-            background-color: #21263b;
+            background-color: transparent;
             color: white;
-            border: transparent;
-            padding: 8px;
+            border: grey 1px solid;
+            padding: 5px;
         }
-
-        .form {
-            margin-left: auto;
-            margin-right: auto;
-            width: 800px;
+        ul {
+            border: transparent !important;
         }
     </style>
 {% endblock css %}
 
 
 {% block content %}
-    <h4 class="m-t-30 text-center"><i class="fas fa-sliders-h"></i>&nbsp; Edit Media Data</h4>
-    <hr class="m-t-0 m-b-25" style="border-color: darkslateblue;">
-
-    {% if media_type == 'Series' or media_type == 'Anime' %}
-        <form method="POST" action="" enctype="multipart/form-data" class="form m-b-50">
+    <h4 class="m-t-40"><i class="fas fa-sliders-h"></i>&nbsp; Edit media info</h4>
+    <hr class="p-0 m-0">
+    <form class="m-l-10 m-t-30 m-b-50" action="" method="POST" enctype="multipart/form-data">
+        <div class="row">
             {{ form.hidden_tag() }}
-            <div class="row">
-                <div class="col-3 p-2 m-t-8">{{ form.cover.label }}:</div>
-                <div class="col-9 p-2">{{ form.cover(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.original_name.label }}:</div>
-                <div class="col-9 p-2">{{ form.original_name(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.name.label }}:</div>
-                <div class="col-9 p-2">{{ form.name(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.created_by.label }}:</div>
-                <div class="col-9 p-2">{{ form.created_by(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.first_air_date.label }}:</div>
-                <div class="col-9 p-2">{{ form.first_air_date(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.last_air_date.label }}:</div>
-                <div class="col-9 p-2">{{ form.last_air_date(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.production_status.label }}:</div>
-                <div class="col-9 p-2">{{ form.production_status(size=70) }}</div>
-                {#                <div class="col-3 p-2 m-t-8">{{ form.genres.label }}:</div>#}
-                {#                <div class="col-9 p-2">{{ form.genres(size=70) }}</div>#}
-                <div class="col-3 p-2 m-t-8">{{ form.actors.label }}:</div>
-                <div class="col-9 p-2">{{ form.actors(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.duration.label }}:</div>
-                <div class="col-9 p-2">{{ form.duration(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.origin_country.label }}:</div>
-                <div class="col-9 p-2">{{ form.origin_country(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.networks.label }}:</div>
-                <div class="col-9 p-2">{{ form.networks(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.homepage.label }}:</div>
-                <div class="col-9 p-2">{{ form.homepage(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.synopsis.label }}:</div>
-                <div class="col-9 p-2">{{ form.synopsis(class="text-justify text-light", rows="5", cols="72",
-                style="background: #21263b; border: transparent;") }}</div>
-                <div class="col-12 m-t-10 text-center">{{ form.submit(class="btn btn-outline-info") }}</div>
+            <div class="col-7">
+                <div class="row">
+                    {% for field in form %}
+                        {% if field.name != 'genre_attr' %}
+                            <div class="col-xl-3 col-lg-3 col-md-12 p-2">{{ field.label() }}</div>
+                            <div class="col-xl-9 col-lg-9 col-md-12 p-2">
+                                {{ field(class="text-justify text-light", rows="8", cols="50",
+                                style="background: transparent; border: grey 1px solid;") }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </div>
-        </form>
-    {% elif media_type == 'Movies' %}
-        <form method="POST" action="" enctype="multipart/form-data" class="form m-b-50">
-            {{ form.hidden_tag() }}
-            <div class="row">
-                <div class="col-3 p-2 m-t-8">{{ form.cover.label }}:</div>
-                <div class="col-9 p-2">{{ form.cover(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.original_name.label }}:</div>
-                <div class="col-9 p-2">{{ form.original_name(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.name.label }}:</div>
-                <div class="col-9 p-2">{{ form.name(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.directed_by.label }}:</div>
-                <div class="col-9 p-2">{{ form.directed_by(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.release_date.label }}:</div>
-                <div class="col-9 p-2">{{ form.release_date(size=70) }}</div>
-                {#                <div class="col-3 p-2 m-t-8">{{ form.genres.label }}:</div>#}
-                {#                <div class="col-9 p-2">{{ form.genres(size=70) }}</div>#}
-                <div class="col-3 p-2 m-t-8">{{ form.actors.label }}:</div>
-                <div class="col-9 p-2">{{ form.actors(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.duration.label }}:</div>
-                <div class="col-9 p-2">{{ form.duration(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.original_language.label }}:</div>
-                <div class="col-9 p-2">{{ form.original_language(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.tagline.label }}:</div>
-                <div class="col-9 p-2">{{ form.tagline(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.homepage.label }}:</div>
-                <div class="col-9 p-2">{{ form.homepage(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.budget.label }}:</div>
-                <div class="col-9 p-2">{{ form.budget(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.revenue.label }}:</div>
-                <div class="col-9 p-2">{{ form.revenue(size=70) }}</div>
-                <div class="col-3 p-2 m-t-8">{{ form.synopsis.label }}:</div>
-                <div class="col-9 p-2">{{ form.synopsis(class="text-justify text-light", rows="5", cols="72",
-                style="background: #21263b; border: transparent;") }}</div>
-                <div class="col-12 m-t-10 text-center">{{ form.submit(class="btn btn-outline-info") }}</div>
+            <div class="col-5">
+                {% if form.genre_attr %}
+                    <div class="p-2" style="background: darkslategray;">
+                        <b>Actual genres:</b> &nbsp;{{ genres[0] }}
+                    </div>
+                    <div class="p-2 m-t-15">
+                        Select up to 5 genres to describes the book:
+                        <br>(ctrl + click for multi-selection)
+                    </div>
+                    <div class="p-2">
+                        <div><b>{{ form.genre_attr.label() }}:</b></div>
+                        <div>{{ form.genre_attr(size=15) }}</div>
+                    </div>
+                {% endif %}
             </div>
-        </form>
-    {% endif %}
+        </div>
+        <div class="text-center">
+            <button class="btn btn-primary m-t-20" type="submit">Update Media</button>
+        </div>
+    </form>
 {% endblock content %}
 
 

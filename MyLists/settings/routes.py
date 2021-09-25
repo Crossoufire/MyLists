@@ -1,10 +1,11 @@
-import pandas as pd
-from MyLists.models import User
-from MyLists import db, app, bcrypt
-from flask_login import login_required, current_user
-from MyLists.settings.functions import send_email_update_email, save_account_picture
-from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm, ImportListForm
 from flask import Blueprint, flash, request, render_template, redirect, url_for, jsonify
+from flask_login import login_required, current_user
+
+from MyLists import db, app, bcrypt
+from MyLists.models import User
+from MyLists.settings.emails import send_email_update_email
+from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm, ImportListForm
+from MyLists.settings.functions import save_account_picture
 
 bp = Blueprint('settings', __name__)
 
@@ -45,16 +46,26 @@ def settings():
             current_user.username = settings_form.username.data.strip()
             app.logger.info('[{}] Settings updated: Old username = {}. New username = {}'
                             .format(current_user.id, old_username, current_user.username))
-        if settings_form.isprivate.data != current_user.private:
-            old_value = current_user.private
-            current_user.private = settings_form.isprivate.data
-            app.logger.info('[{}] Settings updated: Old private mode = {}. New private mode = {}'
-                            .format(current_user.id, old_value, settings_form.isprivate.data))
+        if settings_form.add_anime.data != current_user.add_anime:
+            old_value = current_user.add_anime
+            current_user.add_anime = settings_form.add_anime.data
+            app.logger.info('[{}] Settings updated: Old anime value = {}. New anime mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_anime.data))
+        if settings_form.add_books.data != current_user.add_books:
+            old_value = current_user.add_books
+            current_user.add_books = settings_form.add_books.data
+            app.logger.info('[{}] Settings updated: Old books value = {}. New books mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_books.data))
         if settings_form.add_games.data != current_user.add_games:
             old_value = current_user.add_games
             current_user.add_games = settings_form.add_games.data
             app.logger.info('[{}] Settings updated: Old games value = {}. New games mode = {}'
                             .format(current_user.id, old_value, settings_form.add_games.data))
+        if settings_form.add_feeling.data != current_user.add_feeling:
+            old_value = current_user.add_feeling
+            current_user.add_feeling = settings_form.add_feeling.data
+            app.logger.info('[{}] Settings updated: Old feeling value = {}. New feeling mode = {}'
+                            .format(current_user.id, old_value, settings_form.add_feeling.data))
         if settings_form.email.data != current_user.email:
             old_email = current_user.email
             current_user.transition_email = settings_form.email.data
@@ -80,11 +91,12 @@ def settings():
 
     settings_form.username.data = current_user.username
     settings_form.email.data = current_user.email
-    settings_form.isprivate.data = current_user.private
+    settings_form.add_anime.data = current_user.add_anime
+    settings_form.add_books.data = current_user.add_books
     settings_form.add_games.data = current_user.add_games
+    settings_form.add_feeling.data = current_user.add_feeling
 
-    back_pic = False
-    pic = False
+    back_pic, pic = False, False
     if request.args.get('from') == 'back_pic':
         back_pic = True
     elif request.args.get('from') == 'profile_pic':

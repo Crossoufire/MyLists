@@ -2,19 +2,19 @@
 
 // --- On document load --------------------------------------------------------------------------------
 $(document).ready(function() {
-    let time_data = $('#time-spent-pie').attr('values').split(', ');
+    let time_data = $('#times-pie').attr('values').split(', ');
+    let colors = $('#colors-pie').attr('values').split(', ');
 
     let config_pie = {
         type: 'pie',
         data: {
             datasets: [{
                 data: time_data,
-                backgroundColor: ['#216e7d', '#945141', '#8c7821', '#196219'],
+                backgroundColor: colors,
                 borderColor: '#212529',
                 borderWidth: 1,
                 label: 'by_media'
             }],
-            labels: ['Series', 'Anime', 'Movies', 'Games']
         },
         options: {
             events: false,

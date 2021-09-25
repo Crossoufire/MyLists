@@ -7,6 +7,8 @@ function chargeButtons(card) {
     let dis_completed = "block;";
     let dis_endless = "block;";
     let dis_multiplayer = "block;";
+    let dis_dropped = "block;";
+    let dis_plan_to_play = "block;";
     let $card = $('#'+card.id);
     let category = $card.attr('cat');
 
@@ -18,6 +20,12 @@ function chargeButtons(card) {
     }
     else if (category === 'Multiplayer') {
         dis_multiplayer = "none;";
+    }
+    else if (category === 'Dropped') {
+        dis_dropped = "none;";
+    }
+    else if (category === 'Plan to Play') {
+        dis_plan_to_play = "none;";
     }
 
     $card.find('.view.overlay').prepend(
@@ -34,6 +42,14 @@ function chargeButtons(card) {
             '<li class="btn btn-light p-1 m-1 card-btn-mobile" style="display: '+dis_multiplayer+'" ' +
             'onclick="changeCategory(\'Multiplayer\', \''+card.id+'\')">' +
                 'Multiplayer' +
+            '</li>' +
+            '<li class="btn btn-light p-1 m-1 card-btn-mobile" style="display: '+dis_dropped+'" ' +
+            'onclick="changeCategory(\'Dropped\', \''+card.id+'\')">' +
+                'Dropped' +
+            '</li>' +
+            '<li class="btn btn-light p-1 m-1 card-btn-mobile" style="display: '+dis_plan_to_play+'" ' +
+            'onclick="changeCategory(\'Plan to Play\', \''+card.id+'\')">' +
+                'Plan to Play' +
             '</li>' +
         "</ul>");
 
@@ -56,7 +72,7 @@ function changeCategory(new_category, card_id) {
 
     $.ajax ({
         type: "POST",
-        url: "/change_element_category",
+        url: "/update_category",
         contentType: "application/json",
         data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_list}),
         dataType: "json",
@@ -92,6 +108,14 @@ function ChargeButtonsOther(card) {
             '<li class="btn btn-light p-1 m-1 card-btn-mobile\" style="display: block;" ' +
             'onclick="AddCatUser(\'Multiplayer\', \''+card.id+'\')">' +
                 'Multiplayer' +
+            '</li>' +
+            '<li class="btn btn-light p-1 m-1 card-btn-mobile\" style="display: block;" ' +
+            'onclick="AddCatUser(\'Dropped\', \''+card.id+'\')">' +
+                'Dropped' +
+            '</li>' +
+            '<li class="btn btn-light p-1 m-1 card-btn-mobile\" style="display: block;" ' +
+            'onclick="AddCatUser(\'Plan to Play\', \''+card.id+'\')">' +
+                'Plan to Play' +
             '</li>' +
         "</ul>");
 
