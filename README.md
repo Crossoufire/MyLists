@@ -6,7 +6,7 @@ and compare it to yours. You can see a live version here: [https://mylists.info]
 
 ![MyLists](https://raw.githubusercontent.com/Crossoufire/MyLists/master/MyLists/static/img/home2.jpg)
 
-MyLists uses [Flask](http://flask.pocoo.org/) and [Material Design for Bootstrap 4](https://mdbootstrap.com/)
+MyLists uses [Flask](https://flask.palletsprojects.com/) and [Material Design for Bootstrap 4](https://mdbootstrap.com/)
 
 ### Features
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 
+# noinspection PyUnresolvedReferences
 from flask import Blueprint, flash, request, redirect, url_for, render_template, abort
-from flask_admin.helpers import is_safe_url
 from flask_login import login_user, current_user, logout_user, login_required
 
 from MyLists import app, bcrypt, db

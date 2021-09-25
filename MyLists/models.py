@@ -329,6 +329,13 @@ class User(UserMixin, db.Model):
         for element in last_update:
             element_data = {}
 
+            # Page update
+            try:
+                if element.old_page >= 0 and element.new_page >= 0:
+                    element_data["update"] = [f"p. {int(element.old_page)}", f"p. {int(element.new_page)}"]
+            except:
+                pass
+
             # Playtime update
             try:
                 if element.old_playtime >= 0 and element.new_playtime >= 0:
@@ -409,12 +416,14 @@ class UserLastUpdate(db.Model):
     new_episode = db.Column(db.Integer)
     old_playtime = db.Column(db.Integer)
     new_playtime = db.Column(db.Integer)
+    old_page = db.Column(db.Integer)
+    new_page = db.Column(db.Integer)
     date = db.Column(db.DateTime, index=True, nullable=False)
 
     @classmethod
     def set_last_update(cls, media, media_type, old_status=None, new_status=None, old_season=None,
                         new_season=None, old_episode=None, new_episode=None, old_playtime=None, new_playtime=None,
-                        user_id=None):
+                        old_page=None, new_page=None, user_id=None):
 
         # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
         if current_user:
@@ -430,7 +439,7 @@ class UserLastUpdate(db.Model):
         update = cls(user_id=user_id, media_name=media.name, media_id=media.id, media_type=media_type,
                      old_status=old_status, new_status=new_status, old_season=old_season, new_season=new_season,
                      old_episode=old_episode, new_episode=new_episode, old_playtime=old_playtime,
-                     new_playtime=new_playtime, date=datetime.utcnow())
+                     new_playtime=new_playtime, old_page=old_page, new_page=new_page, date=datetime.utcnow())
 
         if diff > 600:
             db.session.add(update)
@@ -604,7 +613,7 @@ class MediaListMixin:
         for media in media_count:
             data[media[0]] = media[1]
 
-        feelings = ['5', '4', '3', '2', '1', '0']
+        feelings = [5, 4, 3, 2, 1, 0]
         for feel in feelings:
             if feel not in data.keys():
                 data[feel] = 0
@@ -2238,7 +2247,7 @@ class MediaListQuery:
 
 
 # Query for <mymedialist> route
-def get_media_query(user_id, list_type, category, genre, sorting, page, q):
+def get_media_query(user, list_type, category, genre, sorting, page, q):
     media = eval(list_type.value.capitalize().replace('list', ''))
     media_list = eval(list_type.value.capitalize().replace('l', 'L'))
     media_genre = eval(list_type.value.capitalize().replace('list', 'Genre'))
@@ -2277,10 +2286,16 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
     # Create a sorting dict
     sorting_dict = {'Title A-Z': media.name.asc(),
                     'Title Z-A': media.name.desc(),
-                    'Score +': media_list.score.desc(),
-                    'Score -': media_list.score.asc(),
                     'Comments': media_list.comment.desc()}
     sorting_dict.update(add_sort)
+
+    add_more = {'Score +': media_list.score.desc(),
+                'Score -': media_list.score.asc()}
+    if user.add_feeling:
+        add_more = {'Score +': media_list.feeling.desc(),
+                    'Score -': media_list.feeling.asc()}
+
+    sorting_dict.update(add_more)
 
     # Check the sorting value
     try:
@@ -2306,7 +2321,7 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
     if filter_val:
         v1, v2 = aliased(media_list), aliased(media_list)
         get_common = db.session.query(v1, v2) \
-            .join(v2, and_(v2.user_id == user_id, v2.media_id == v1.media_id)) \
+            .join(v2, and_(v2.user_id == user.id, v2.media_id == v1.media_id)) \
             .filter(v1.user_id == current_user.id).all()
         com_ids = [r[0].media_id for r in get_common]
 
@@ -2314,7 +2329,7 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
         .outerjoin(media, media.id == media_list.media_id) \
         .outerjoin(media_genre, media_genre.media_id == media_list.media_id) \
         .outerjoin(media_more, media_more.media_id == media_list.media_id) \
-        .filter(media_list.user_id == user_id, media_list.media_id.notin_(com_ids), genre_filter)
+        .filter(media_list.user_id == user.id, media_list.media_id.notin_(com_ids), genre_filter)
 
     if category != Status.FAVORITE and category != Status.SEARCH and category != Status.ALL:
         query = query.filter(media_list.status == category)
@@ -2338,7 +2353,7 @@ def get_media_query(user_id, list_type, category, genre, sorting, page, q):
     results = [item[1] for item in paginate_result.items]
 
     # Get <common_media> and <common_elements> between the users
-    common_ids, common_elements = get_media_count(user_id, list_type)
+    common_ids, common_elements = get_media_count(user.id, list_type)
 
     data = {'actual_page': paginate_result.page,
             'total_pages': paginate_result.pages,

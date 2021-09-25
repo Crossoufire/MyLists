@@ -383,12 +383,6 @@ class ApiAnime(ApiTV):
 
         return json.loads(response.text)
 
-    def get_trending(self):
-        response = requests.get("https://api.jikan.moe/v3/top/anime/1/airing", timeout=10)
-        status_code(response.status_code)
-
-        return json.loads(response.text)
-
     def get_anime_genres(self):
         anime_genres_list = []
         try:
@@ -687,7 +681,7 @@ class ApiGames(ApiData):
                    'Accept-Encoding': 'none',
                    'Accept-Language': 'en-US,en;q=0.8',
                    'Connection': 'keep-alive'}
-        request_ = Request(url_address, None, headers)
+        request_ = Request(url=url_address, headers=headers)
         response = request.urlopen(request_)
         f = open(f"{self.local_covers_path}/{media_cover_name}", 'wb')
         f.write(response.read())

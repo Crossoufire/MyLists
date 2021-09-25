@@ -181,17 +181,17 @@
                                              onclick="feelButtons(card_{{ item.media.id }}, this)">
                                                 {% if item.feeling == None %}
                                                     <i value="None">---</i>
-                                                 {% elif item.feeling == '5' %}
+                                                 {% elif item.feeling == 5 %}
                                                     <i class="fas fa-grin-stars" style="color: #019101;" value="5"></i>
-                                                {% elif item.feeling == '4' %}
+                                                {% elif item.feeling == 4 %}
                                                     <i class="fas fa-grin-alt" style="color: #59a643;" value="4"></i>
-                                                {% elif item.feeling == '3' %}
+                                                {% elif item.feeling == 3 %}
                                                     <i class="fas fa-smile" style="color: darkseagreen;" value="3"></i>
-                                                {% elif item.feeling == '2' %}
+                                                {% elif item.feeling == 2 %}
                                                     <i class="fas fa-frown" style="color: #d0a141;" value="2"></i>
-                                                {% elif item.feeling == '1' %}
+                                                {% elif item.feeling == 1 %}
                                                     <i class="fas fa-angry" style="color: indianred;" value="1"></i>
-                                                 {% elif item.feeling == '0' %}
+                                                 {% elif item.feeling == 0 %}
                                                     <i class="fas fa-poop" style="color: saddlebrown;" value="0"></i>
                                                 {% endif %}
                                             </a>

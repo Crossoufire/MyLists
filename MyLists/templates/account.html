@@ -432,32 +432,33 @@
         }
 
         function add_histogram(values, media_type) {
-                    // Recover the histograms values
-                    const histogramVals = values;
+            // Recover the histograms values
+            const histogramVals = values;
 
-                    // Max value of each histogram array
-                    const maxVal = Math.max(...histogramVals);
+            // Max value of each histogram array
+            const maxVal = Math.max(...histogramVals);
 
-                    // Turn histogram numbers into histogram li items
-                    let i = -0.5;
-                    const histogram = histogramVals.reduce((acc, number) => {
-                        const height = number/maxVal*100;
-                        i += 0.5;
+            // Turn histogram numbers into histogram li items
+            let i = -0.5;
+            const histogram = histogramVals.reduce((acc, number) => {
+                const height = number/maxVal*100;
+                i += 0.5;
 
-                        return acc + `<li class="histogram-item bg-`+media_type+`" data-toggle="tooltip" title="`+i+`/10: `+number+` `+media_type+`" style="height: calc(${height}% + 1px)" />`
-                    }, ``);
+                return acc + `<li class="histogram-item bg-`+media_type+`" data-toggle="tooltip" title="`+i+`/10: `+number+` `+media_type+`" style="height: calc(${height}% + 1px)" />`
+            }, ``);
 
-                    // Inject into dom
-                    const chart = document.getElementById(media_type+'-score');
-                    chart.innerHTML = histogram;
-                };
+            // Inject into dom
+            const chart = document.getElementById(media_type+'-score');
+            chart.innerHTML = histogram;
+        };
 
-        let a;
-        let b;
+        let a, b;
         {% for media in media_data %}
             a = {{ media['media_per_score'] }};
             b = '{{ media['media']|lower }}';
-            add_histogram(a, b);
+            {% if media['media_per_score']|sum != 0 %}
+                add_histogram(a, b);
+            {% endif %}
         {% endfor %}
     </script>
 {% endblock added_js %}

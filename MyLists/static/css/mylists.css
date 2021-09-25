@@ -48,15 +48,6 @@ hr {
     color: #fff;
 }
 
-.search-icon-pos {
-    position: absolute;
-    left: 330px;
-    background-color: lightslategrey;
-    padding: 10px;
-    border-radius: 7px 0 0 7px;
-    border-left: darkgray;
-}
-
 .book-input {
     margin: 0;
     width: 40px;
@@ -72,17 +63,30 @@ hr {
         min-height: calc(100vh - 43px);
         margin: 43px 0 0;
     }
-    .search-ipad-mobile {
-        min-width: 90vw;
-        margin-left: auto;
-        margin-right: auto;
-    }
 }
 @media (max-width: 490px) {
     .container {
         padding-left: 7px;
         padding-right: 7px;
     }
+}
+
+
+/* --- Website Scrollbar -------------------------------- */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 
@@ -94,7 +98,8 @@ hr {
 }
 
 .nav-form {
-    margin-left: 15px;
+    margin-left: 10px;
+    position: relative;
 }
 
 .nav-ul-1 {
@@ -118,7 +123,7 @@ hr {
 .auto-select {
     border: none;
     position: absolute;
-    margin-left: 215px;
+    right: 15px;
 	cursor: pointer;
     background: transparent;
     color: lightgrey;
@@ -135,9 +140,17 @@ hr {
 }
 
 @media (max-width: 991px) {
+    .search-ipad-mobile {
+        min-width: 90vw;
+        margin-left: auto;
+        margin-right: auto;
+    }
     .nav-form {
         margin-left: auto;
         margin-right: auto;
+    }
+    .auto-select {
+        right: 8vw;
     }
     .nav-ul-1 {
         text-align: left;
@@ -156,32 +169,9 @@ hr {
     .notif-li {
         text-align: left;
     }
-    .auto-select {
-        margin-left: 645px;
-    }
 }
 @media (max-width: 490px) {
-    .auto-select {
-        margin-left: 250px;
-    }
-}
 
-
-/* --- Website Scrollbar -------------------------------- */
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #888;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
 }
 
 

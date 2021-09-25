@@ -713,21 +713,21 @@ def register(app):
     def scheduled_task():
         """ Run the scheduled jobs. """
         app.logger.setLevel(logging.INFO)
-        # remove_non_list_media()
-        # remove_old_covers()
-        # automatic_media_refresh()
-        # new_releasing_movies()
-        # new_releasing_series()
-        # new_releasing_anime()
+        remove_non_list_media()
+        remove_old_covers()
+        automatic_media_refresh()
+        new_releasing_movies()
+        new_releasing_series()
+        new_releasing_anime()
         new_releasing_games()
-        # automatic_movies_locking()
+        automatic_movies_locking()
 
         app.logger.info('[SYSTEM] - Starting to compute the total time spent for each user')
         compute_media_time_spent()
         app.logger.info('###################################################################')
         app.logger.info('[SYSTEM] - Finished computing the total time spent for each user')
 
-        # update_Mylists_stats()
+        update_Mylists_stats()
 
     @app.cli.command()
     def update_igdb_key():

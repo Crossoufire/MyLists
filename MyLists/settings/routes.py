@@ -1,11 +1,11 @@
-import pandas as pd
-from MyLists.models import User
-from MyLists import db, app, bcrypt
-from flask_login import login_required, current_user
-from MyLists.settings.emails import send_email_update_email
-from MyLists.settings.functions import save_account_picture
-from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm, ImportListForm
 from flask import Blueprint, flash, request, render_template, redirect, url_for, jsonify
+from flask_login import login_required, current_user
+
+from MyLists import db, app, bcrypt
+from MyLists.models import User
+from MyLists.settings.emails import send_email_update_email
+from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm, ImportListForm
+from MyLists.settings.functions import save_account_picture
 
 bp = Blueprint('settings', __name__)
 

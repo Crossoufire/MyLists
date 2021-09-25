@@ -19,76 +19,6 @@ from MyLists.models import ListType, Status, RoleType, MediaType, User, get_medi
 bp = Blueprint('main', __name__)
 
 
-# def books():
-#     import pandas as pd
-#
-#     df = pd.read_csv('D:/Bureau/table_1_try.csv')
-#     for index, row in df.iterrows():
-#         Api_data = ApiBooks()
-#         a = row['Titre'] + ' + ' + row['Auteur']
-#         media_id = Api_data.search(a.strip())
-#         if media_id:
-#             media = Books.query.filter_by(id=media_id).first()
-#             new_watched = media.add_media_to_user(Status.COMPLETED)
-#             db.session.commit()
-#             UserLastUpdate.set_last_update(media=media, media_type=ListType.BOOKS, new_status=Status.COMPLETED)
-#             in_list = BooksList.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-#             in_list.compute_new_time_spent(new_data=new_watched)
-#             db.session.commit()
-#             print(a, media.name)
-#             print('done')
-#         else:
-#             print('failed')
-
-
-# # Correct the orphan media (no genres or actors)
-# def correct_orphan_media():
-#     def get_orphan_genres_and_actors(api_id, list_type, media_id):
-#         API_model = ApiData().get_API_model(list_type)
-#         media_data = API_model(API_id=api_id).get_details_and_credits_data()
-#         media_data.from_API_to_dict()
-#         media_data = media_data.media_details
-#
-#         if list_type == ListType.SERIES:
-#             for genre in media_data['genres_data']:
-#                 genre.update({'media_id': media_id})
-#                 db.session.add(SeriesGenre(**genre))
-#             for actor in media_data['actors_data']:
-#                 actor.update({'media_id': media_id})
-#                 db.session.add(SeriesActors(**actor))
-#
-#         elif list_type == ListType.MOVIES:
-#             for genre in media_data['genres_data']:
-#                 genre.update({'media_id': media_id})
-#                 db.session.add(MoviesGenre(**genre))
-#             for actor in media_data['actors_data']:
-#                 actor.update({'media_id': media_id})
-#                 db.session.add(MoviesActors(**actor))
-#
-#         # Commit the new changes
-#         db.session.commit()
-#
-#         return True
-#
-#     query = db.session.query(Series, SeriesGenre).outerjoin(SeriesGenre, SeriesGenre.media_id == Series.id).all()
-#     for q in query:
-#         if q[1] is None:
-#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.SERIES, media_id=q[0].id)
-#             if info is True:
-#                 app.logger.info(f'Orphan series corrected with ID [{q[0].id}]: {q[0].name}')
-#             else:
-#                 app.logger.info(f'Orphan series NOT corrected with ID [{q[0].id}]: {q[0].name}')
-#
-#     query = db.session.query(Movies, MoviesGenre).outerjoin(MoviesGenre, MoviesGenre.media_id == Movies.id).all()
-#     for q in query:
-#         if q[1] is None:
-#             info = get_orphan_genres_and_actors(q[0].api_id, ListType.MOVIES, media_id=q[0].id)
-#             if info is True:
-#                 app.logger.info(f'Orphan movie corrected with ID [{q[0].id}]: {q[0].name}')
-#             else:
-#                 app.logger.info(f'Orphan movie NOT corrected with ID [{q[0].id}]: {q[0].name}')
-
-
 @bp.route("/<media_list>/<user_name>/", methods=['GET', 'POST'])
 @bp.route("/<media_list>/<user_name>/<category>/", methods=['GET', 'POST'])
 @bp.route("/<media_list>/<user_name>/<category>/genre/<genre>/by/<sorting>/page/<page_val>", methods=['GET', 'POST'])
@@ -127,7 +57,7 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
     # Get the corresponding data depending on the selected category
     if category != 'Stats':
         # media_data = MediaListQuery(models, user.id, category, genre, sorting, page_val, q)
-        category, media_data = get_media_query(user.id, list_type, category, genre, sorting, page_val, q)
+        category, media_data = get_media_query(user, list_type, category, genre, sorting, page_val, q)
     else:
         media_data = models[1].get_more_stats(user)
 
@@ -714,7 +644,7 @@ def update_page():
 
     # Check if the page number is between 0 and max(pages)
     if new_page > int(media.media.pages) or new_page < 0:
-        return "'The page value can't be below 0 or greater than the max pages.", 400
+        return "'The number of pages cannot be below 0 or greater than the total pages.", 400
 
     # Get the old data
     old_page = media.actual_page
@@ -724,10 +654,11 @@ def update_page():
     media.actual_page = new_page
     new_total = new_page + (media.rewatched * media.media.pages)
     media.total = new_total
-    app.logger.info(f"[User {current_user.id}] {list_type} [ID {media_id}] page updated to {new_page}")
+    app.logger.info(f"[User {current_user.id}] {list_type} [ID {media_id}] page updated from {old_page} to {new_page}")
 
     # Set the last updates
-    # UserLastUpdate.set_last_update(media=media.media, media_type=list_type)
+    UserLastUpdate.set_last_update(media=media.media, media_type=list_type, old_page=old_page, new_page=new_page,
+                                   old_status=media.status)
 
     # Compute new time spent
     media.compute_new_time_spent(old_data=old_total, new_data=new_total)

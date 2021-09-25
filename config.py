@@ -10,7 +10,6 @@ load_dotenv(dotenv_path=os.path.join(basedir, '.env'))
 class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI') or 'sqlite:///site.db'
 
-
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or None
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or None
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or None
