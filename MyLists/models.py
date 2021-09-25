@@ -2421,7 +2421,7 @@ def get_next_airing(list_type):
         query = []
         for game in tmp:
             try:
-                if datetime.utcfromtimestamp(game[0].release_date) > datetime.now():
+                if datetime.utcfromtimestamp(int(game[0].release_date)) > datetime.now():
                     query.append(game[0])
             except:
                 if game[0].release_date == 'Unknown':
