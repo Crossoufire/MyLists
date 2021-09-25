@@ -300,7 +300,7 @@ class User(UserMixin, db.Model):
 
     def get_follows_updates(self):
         follows_update = UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))\
-            .limit(11)
+            .order_by(UserLastUpdate.date.desc()).limit(11)
 
         follows_update_list = []
         for fol_update in follows_update:
@@ -620,6 +620,7 @@ class MediaListMixin:
 
         data.pop(None, None)
         data.pop(-1, None)
+
         data = OrderedDict(sorted(data.items()))
 
         data_list = []
