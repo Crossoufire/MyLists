@@ -361,7 +361,7 @@ class ApiAnime(ApiTV):
         """ Recover the anime title from TMDb to the MyAnimeList API to gather more accurate genres with the
         <get_anime_genres> function """
 
-        response = requests.get("https://api.jikan.moe/v3/search/anime?q={0}".format(anime_name))
+        response = requests.get(f"https://api.jikan.moe/v3/search/anime?q={anime_name}", timeout=10)
 
         status_code(response.status_code)
 
@@ -377,7 +377,7 @@ class ApiAnime(ApiTV):
         {"mal_id": 16, "type": "anime", "name": "Magic","url": ""},
         {"mal_id": 10, "type": "anime", "name": "Fantasy","url": ""}] """
 
-        response = requests.get("https://api.jikan.moe/v3/anime/{}".format(mal_id))
+        response = requests.get(f"https://api.jikan.moe/v3/anime/{mal_id}", timeout=10)
 
         status_code(response.status_code)
 
@@ -389,7 +389,7 @@ class ApiAnime(ApiTV):
             anime_search = self.api_anime_search(self.API_data.get("name"))
             anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
         except Exception as e:
-            app.logger.error('[ERROR] - Requesting the Jikan API: {}'.format(e), {'API': 'Jikan'})
+            app.logger.error(f'[ERROR] - Requesting the Jikan API: {e}', {'API': 'Jikan'})
             anime_genres = None
 
         if anime_genres:
