@@ -10,7 +10,7 @@ function addToUser(element_id, media_type) {
     else if (media_type === 'movieslist' || media_type === 'gameslist') {
         category = 'Completed'
     }
-    else if (media_type === 'serieslist') {
+    else if (media_type === 'serieslist' || media_type === 'animelist') {
         category = 'Watching'
     }
 
