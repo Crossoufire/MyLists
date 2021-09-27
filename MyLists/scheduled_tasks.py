@@ -223,7 +223,7 @@ def refresh_element_data(api_id, list_type):
     # Update the main details for each media
     if list_type == ListType.SERIES:
         Series.query.filter_by(api_id=api_id).update(data['media_data'])
-    if list_type == ListType.ANIME:
+    elif list_type == ListType.ANIME:
         Anime.query.filter_by(api_id=api_id).update(data['media_data'])
     elif list_type == ListType.MOVIES:
         Movies.query.filter_by(api_id=api_id).update(data['media_data'])
@@ -237,12 +237,10 @@ def refresh_element_data(api_id, list_type):
     if list_type == ListType.SERIES or list_type == ListType.ANIME:
         if list_type == ListType.SERIES:
             element = Series.query.filter_by(api_id=api_id).first()
-            old_seas_eps = \
-                [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
+            old_seas_eps = [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
         elif list_type == ListType.ANIME:
             element = Anime.query.filter_by(api_id=api_id).first()
-            old_seas_eps = \
-                [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
+            old_seas_eps = [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
 
         new_seas_eps = [d['episodes'] for d in data['seasons_data']]
 
@@ -266,7 +264,7 @@ def refresh_element_data(api_id, list_type):
                             break
                         elif count < episodes_watched:
                             try:
-                                data['seasons_data'][i + 1]['season']
+                                data['seasons_data'][i+1]['season']
                             except IndexError:
                                 user.last_episode_watched = data['seasons_data'][i]['episodes']
                                 user.current_season = data['seasons_data'][i]['season']
@@ -298,7 +296,7 @@ def refresh_element_data(api_id, list_type):
                             break
                         elif count < episodes_watched:
                             try:
-                                data['seasons_data'][i + 1]['season']
+                                data['seasons_data'][i+1]['season']
                             except IndexError:
                                 user.last_episode_watched = data['seasons_data'][i]['episodes']
                                 user.current_season = data['seasons_data'][i]['season']

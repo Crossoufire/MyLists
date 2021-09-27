@@ -2348,6 +2348,11 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
             query = query.filter(or_(media.name.ilike('%' + q + '%'),
                                      media_more.name.ilike('%' + q + '%')))
 
+    try:
+        page = int(page)
+    except:
+        page = 1
+
     # Run the query
     paginate_result = query.group_by(media.id).order_by(sorting, media.name.asc())\
         .paginate(int(page), 36, error_out=True)
