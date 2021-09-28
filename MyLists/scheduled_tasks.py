@@ -337,14 +337,14 @@ def automatic_media_refresh():
     try:
         all_id_tv_changes = ApiTV().get_changed_data()
     except Exception as e:
-        app.logger.error('[ERROR] - Requesting the changed data from TMDB API: {}'.format(e))
+        app.logger.error(f'[ERROR] - Requesting the changed data from TMDB API: {e}')
         return
 
     # Recover from API all the changed <Movies> ID
     try:
         all_id_movies_changes = ApiMovies().get_changed_data()
     except Exception as e:
-        app.logger.error('[ERROR] - Requesting the changed data from (movies) TMDB API: {}'.format(e))
+        app.logger.error(f'[ERROR] - Requesting the changed data from (movies) TMDB API: {e}')
         return
 
     # Refresh Series
@@ -354,16 +354,16 @@ def automatic_media_refresh():
                 refresh_element_data(element['id'], ListType.SERIES)
                 app.logger.info(f'[INFO] - Refreshed Series with TMDB ID: [{element["id"]}]')
             except Exception as e:
-                app.logger.error(f'[ERROR] - While refreshing series: {e}')
+                app.logger.info(f'[ERROR] - While refreshing series: {e} - ID = {element["id"]}')
 
     # Refresh Anime
     for element in all_id_tv_changes["results"]:
         if element["id"] in all_anime_api_id:
             try:
                 refresh_element_data(element["id"], ListType.ANIME)
-                app.logger.info('[INFO] - Refreshed Anime with TMDB ID: [{}]'.format(element['id']))
+                app.logger.info(f'[INFO] - Refreshed Anime with TMDB ID: [{element["id"]}]')
             except Exception as e:
-                app.logger.error('[ERROR] - While refreshing anime: {}'.format(e))
+                app.logger.info(f'[ERROR] - While refreshing anime: {e} - ID = {element["id"]}')
 
     # Refresh movies
     for element in all_id_movies_changes["results"]:
@@ -372,7 +372,7 @@ def automatic_media_refresh():
                 refresh_element_data(element["id"], ListType.MOVIES)
                 app.logger.info(f'[INFO] - Refreshed Movie with TMDB ID: [{element["id"]}]')
             except Exception as e:
-                app.logger.error(f'[ERROR] - While refreshing movies: {e}')
+                app.logger.info(f'[ERROR] - While refreshing movies: {e} - ID = {element["id"]}')
 
     # Refresh games
     for api_id in all_games_api_id:
@@ -380,7 +380,7 @@ def automatic_media_refresh():
             refresh_element_data(api_id, ListType.GAMES)
             app.logger.info(f'[INFO] - Refreshed Game with IGDB ID: [{api_id}]')
         except Exception as e:
-            app.logger.error(f'[ERROR] - While refreshing games: {e}')
+            app.logger.info(f'[ERROR] - While refreshing games: {e} - ID = {api_id}')
 
     app.logger.info('[SYSTEM] - Automatic refresh completed')
     app.logger.info('###################################################################')
