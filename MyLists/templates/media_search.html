@@ -18,10 +18,10 @@
             <div class="d-flex flex-wrap justify-content-center m-t-40 m-b-40 add-text">
                 {% if results[0]['media'] != 'User' %}
                     {% for media in results %}
-                        <a class="card mb-4 {% if media['media'] == 'Series' %}right-series
-                         {% elif media['media'] == 'Movies' %}right-movies {% elif media['media'] == 'Books' %}right-books
-                         {% else %}right-games{% endif %}" href="{{ url_for('main.media_sheet', media_type=media['media'],
-                         media_id=media['api_id']) }}?search=True" style="background: #1b2b38;">
+                        <a class="card mb-4 {% if media['media'] == 'Series' %}right-series {% elif media['media'] ==
+                         'Anime' %}right-anime {% elif media['media'] == 'Movies' %}right-movies {% elif media['media']
+                         == 'Books' %}right-books {% else %}right-games{% endif %}" href="{{ url_for('main.media_sheet',
+                         media_type=media['media'], media_id=media['api_id']) }}?search=True" style="background: #1b2b38;">
                             <div class="row no-gutters">
                                 <div class="col-lg-2 col-sm-12 mobile-img">
                                     <img class="img-min-height" src="{{ media['poster_path'] }}" alt=""/>

@@ -84,27 +84,27 @@
                                          <i>---</i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '5', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '5' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 5 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-stars" style="color: #019101;"></i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '4', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '4' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 4 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-grin-alt" style="color: #59a643;"></i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '3', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '3' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 3 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-smile" style="color: darkseagreen;"></i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '2', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '2' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 2 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-frown" style="color: #d0a141;"></i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '1', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '1' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 1 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-angry" style="color: indianred;"></i>
                                         </a>
                                         <a class="feel" onclick="updateFeeling('{{ media.id }}', '0', '{{ media_list }}', this)"
-                                                {% if list_info.feeling == '0' %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
+                                         {% if list_info.feeling == 0 %} style="box-shadow: 0 -2px 0 lightgray inset;"{% endif %}>
                                             <i class="fas fa-poop" style="color: saddlebrown;"></i>
                                         </a>
                                         <i id="score-loading" class="fas fa-spinner fast-spin" style="display: none;"></i>
@@ -239,18 +239,18 @@
                                     <span>
                                         {% if follow[1].feeling == None %}
                                             <i>---</i>
-                                        {% elif follow[1].feeling == '5' %}
+                                        {% elif follow[1].feeling == 5 %}
                                             <i class="fas fa-grin-stars" style="color: #019101;"></i>
-                                        {% elif follow[1].feeling == '4' %}
+                                        {% elif follow[1].feeling == 4 %}
                                             <i class="fas fa-grin-alt" style="color: #59a643;"></i>
-                                        {% elif follow[1].feeling == '3' %}
+                                        {% elif follow[1].feeling == 3 %}
                                             <i class="fas fa-smile" style="color: darkseagreen;"></i>
-                                        {% elif follow[1].feeling == '2' %}
-                                            <i class="fas fa-meh" style="color: #d0a141;"></i>
-                                        {% elif follow[1].feeling == '1' %}
-                                            <i class="fas fa-frown" style="color: indianred;"></i>
-                                        {% elif follow[1].feeling == '0' %}
-                                            <i class="fas fa-angry" style="color: #ab0202;"></i>
+                                        {% elif follow[1].feeling == 2 %}
+                                            <i class="fas fa-frown" style="color: #d0a141;"></i>
+                                        {% elif follow[1].feeling == 1 %}
+                                            <i class="fas fa-angry" style="color: indianred;"></i>
+                                        {% elif follow[1].feeling == 0 %}
+                                            <i class="fas fa-poop" style="color:saddlebrown;"></i>
                                         {% endif %}
                                     </span>
                                 {% else %}

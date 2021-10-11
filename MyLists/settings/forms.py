@@ -16,7 +16,7 @@ class UpdateAccountForm(FlaskForm):
     add_anime = BooleanField('Activate AnimeList')
     add_books = BooleanField('Activate BooksList')
     add_games = BooleanField('Activate GamesList')
-    add_feeling = BooleanField('Change feeling/score mode)')
+    add_feeling = BooleanField('Change feeling/score mode')
     submit_account = SubmitField('Update account')
 
     def validate_username(self, username):
