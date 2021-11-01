@@ -2,6 +2,7 @@
 // --- Autocomplete ----------------------------------------------------------------------------------
 $(function() {
     let media_select = document.getElementById('select-media');
+
     $('#autocomplete').catcomplete({
         delay: 300,
         minLength: 2,
@@ -156,7 +157,7 @@ function display_notifications(data) {
             let month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             let timestamp = localdate.slice(0, 2) + " " + month[d.getMonth()] + " at " + localdate.slice(11, 17);
 
-            // Add H-line between notifications except for the last one
+            // Add line between notifications except for the last one
             if (i + 1 === resp.length) {
                 add_hr = '';
             }

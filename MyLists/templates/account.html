@@ -243,6 +243,10 @@
                                             </span>
                                         {% else %}
                                             <span><b>Hours: {{ media['time_hours'] }}</b></span>
+                                            <span class="float-r" data-toggle="tooltip" title="Media scored">
+                                                <b>Scored: {{ media['media_score']['scored_media'] }}/{{ media['media_score']
+                                                ['total_media'] }}</b>
+                                            </span>
                                         {% endif %}
                                         <figure>
                                             {% if media['nodata'] %}

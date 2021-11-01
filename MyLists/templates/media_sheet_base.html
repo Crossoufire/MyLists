@@ -272,7 +272,7 @@
             </div>
         </div>
 
-        {% if current_user.role.value != 'user' %}
+        {% if current_user.role.value != 'user' and media_list != 'gameslist' and media_list != 'bookslist' %}
             <div class="m-b-30 text-right">
                 {% if media.lock_status %}
                     <div class="custom-control custom-switch">
@@ -292,34 +292,49 @@
                      media_type=media._group[1].value, media_id=media.id) }}" style="display: none;">Edit media</a>
                 {% endif %}
             </div>
+        {% elif current_user.role.value != 'user' and (media_list == 'gameslist' or media_list == 'bookslist') %}
+            <div class="m-b-30 text-right">
+                <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_sheet_form',
+                 media_type=media._group[1].value, media_id=media.id) }}">Edit media</a>
+            </div>
         {% endif %}
     </div>
+
     <div class="modal fade" id="HistoryModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content text-light bg-dark">
                 <div class="modal-header">
-                    <h5 class="modal-title">History</h5>
+                    <h5 class="modal-title">History of "{{ media.name }}"</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span style="color: lightgray;">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="overflow-y: scroll; max-height: 500px;">
                     {% for update in media_updates %}
-                        <div class="update-box">
-                            <div id="info-{{ loop.index0 }}" style="display: inline-block;">{{ update['update'] }} watched the </div>
+                        <div class="update-box" style="border-color: grey;">
+                            {% if update['update']|length == 2 %}
+                                {{ update['update'][0] }}
+                                <i class="fas fa-long-arrow-alt-right m-l-4 m-r-4"></i>
+                                {{ update['update'][1] }}
+                            {% else %}
+                                {{ update['update'][0] }}
+                            {% endif %}
+                            <div>
+                                <script type="text/javascript">
+                                    var tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+                                    var localdate = new Date("{{ update['date'] }}")
+                                        .toLocaleString("en-GB", {timeZone: tz});
+                                    var d = new Date("{{ update['date'] }}");
+                                    var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+                                        "Oct", "Nov", "Dec"];
+                                    var date_month = month[d.getMonth()];
+                                    var date_year = d.getFullYear();
+                                    var date_day = localdate.slice(0, 2);
+                                    var date_time = localdate.slice(11, 17);
+                                    document.write(date_day + " " + date_month + " " + date_year + " at " + date_time);
+                                </script>
+                            </div>
                         </div>
-                        <script type="text/javascript">
-                            var tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-                            var localdate = new Date("{{ update['date'] }}").toLocaleString("en-GB", {timeZone: tz});
-                            var d = new Date("{{ update['date'] }}");
-                            var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                            var date_year = d.getFullYear();
-                            var date_month = month[d.getMonth()];
-                            var date_day = localdate.slice(0, 2);
-                            var date = date_day + " " + date_month + " " + date_year;
-                            var tata = document.getElementById('info-{{ loop.index0 }}');
-                            tata.innerHTML += date;
-                        </script>
                     {% endfor %}
                 </div>
             </div>

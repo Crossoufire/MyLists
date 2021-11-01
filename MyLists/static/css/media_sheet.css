@@ -11,6 +11,12 @@
 /*    outline: none;*/
 /*}*/
 
+.update-box {
+    padding: 8px 0 8px 0;
+    margin-bottom: 5px;
+    border-bottom: solid 1px;
+}
+
 .more-link {
     color: grey !important;
     font-size: 15px;
