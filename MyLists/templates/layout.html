@@ -281,7 +281,11 @@
 <script>
     $(document).ready(function() {
         // Load the last selected option for the select box
-        $("#select-media").val(localStorage.recent);
+        if (localStorage.recent) {
+            $("#select-media").val(localStorage.recent);
+        } else {
+            $("#select-media").val('TMDB');
+        }
 
         // Add the <onchange> listener for the select box
         $("#select-media").on('change',function(evt) {
