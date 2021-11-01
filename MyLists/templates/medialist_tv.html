@@ -81,7 +81,7 @@
             </div>
         </div>
         <div class="row m-t-40 m-b-50">
-            <div class="col">
+            <div class="col-6">
                 <h4><i class="fas fa-theater-masks"></i>&nbsp;&nbsp; Top 10 Genres</h4>
                 <div class="movies-container">
                     <canvas id="genres-movies"></canvas>
@@ -91,7 +91,7 @@
                     </span>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6">
                 <h4><i class="fas fa-user-alt"></i>&nbsp;&nbsp; Top 10 Networks</h4>
                 <div class="movies-container">
                     <canvas id="actors-movies"></canvas>
@@ -101,6 +101,18 @@
                     </span>
                 </div>
             </div>
+            {% if media_list == 'serieslist' %}
+                <div class="m-t-40 col-6">
+                    <h4><i class="fas fa-user-alt"></i>&nbsp;&nbsp; Top 10 Countries</h4>
+                    <div class="movies-container">
+                        <canvas id="directors-movies"></canvas>
+                        <span id="directors-movies-bar"
+                          values-y="{% for d in data['countries'] %}{{ d[0] }}, {% endfor %}"
+                          values-x="{% for d in data['countries'] %}{{ d[2] }}, {% endfor %}">
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </section>
 {% endblock stats_block %}

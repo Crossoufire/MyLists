@@ -164,23 +164,12 @@ def media_sheet(media_type, media_id):
     # Get the HTML template
     template = models[0].media_sheet_template()
 
-    # History of the media
+    # Get the history of the media for the user
     media_updates = UserLastUpdate.query.filter(UserLastUpdate.user_id == current_user.id,
                                                 UserLastUpdate.media_type == list_type,
                                                 UserLastUpdate.media_id == media_id)\
         .order_by(UserLastUpdate.date.desc()).all()
-
-    def shape_to_dict(updates):
-        update = []
-        for element in updates:
-            element_data = {}
-            if not element.old_status and not element.new_status:
-                element_data["update"] = f"S{element.new_season:02d}.E{element.new_episode:02d}"
-                element_data["date"] = element.date.replace(tzinfo=pytz.UTC).isoformat()
-                update.append(element_data)
-        return update
-
-    history = shape_to_dict(media_updates)
+    history = current_user._shape_to_dict_updates(media_updates)
 
     # Get the Genre form for books
     form = GenreForm()
@@ -644,7 +633,7 @@ def update_page():
 
     # Check if the page number is between 0 and max(pages)
     if new_page > int(media.media.pages) or new_page < 0:
-        return "'The number of pages cannot be below 0 or greater than the total pages.", 400
+        return "The number of pages cannot be below 0 or greater than the total pages.", 400
 
     # Get the old data
     old_page = media.actual_page

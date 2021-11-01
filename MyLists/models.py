@@ -14,7 +14,7 @@ import rq
 from flask import abort, url_for
 from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy import func, desc, text, and_, or_, extract
+from sqlalchemy import func, desc, text, and_, or_, extract, asc
 from sqlalchemy.orm import aliased
 from MyLists import app, db, login_manager
 
@@ -216,7 +216,7 @@ class User(UserMixin, db.Model):
     last_updates = db.relationship('UserLastUpdate', backref='user', order_by="desc(UserLastUpdate.date)",
                                    lazy="dynamic")
     followed = db.relationship('User', secondary=followers, primaryjoin=(followers.c.follower_id == id),
-                               secondaryjoin=(followers.c.followed_id == id),
+                               secondaryjoin=(followers.c.followed_id == id), order_by="asc(User.username)",
                                backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     def check_autorization(self, user_name):
@@ -883,6 +883,11 @@ class SeriesList(MediaListMixin, db.Model):
             .filter(cls.user_id == user.id, SeriesGenre.genre != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
             .group_by(SeriesGenre.genre).order_by(text('count desc')).limit(10).all()
 
+        top_countries = db.session.query(Series.origin_country, cls, func.count(Series.origin_country).label('count')) \
+            .join(Series, Series.id == cls.media_id) \
+            .filter(cls.user_id == user.id, Series.origin_country != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
+            .group_by(Series.origin_country).order_by(text('count desc')).all()
+
         media_eps = OrderedDict({'1-25': 0, '26-49': 0, '50-99': 0, '100-149': 0, '150-199': 0, '200+': 0})
         for media in media_data:
             if media.status == Status.PLAN_TO_WATCH:
@@ -905,7 +910,8 @@ class SeriesList(MediaListMixin, db.Model):
             elif nb_watched >= 200:
                 media_eps['200+'] += 1
 
-        return {'eps_time': media_eps, 'periods': airing_dates, 'genres': top_genres, 'networks': top_networks}
+        return {'eps_time': media_eps, 'periods': airing_dates, 'genres': top_genres, 'networks': top_networks,
+                'countries': top_countries}
 
     @staticmethod
     def default_sorting():
