@@ -193,13 +193,12 @@ def update_book_genres(media_id):
             # Check that the genre is 'Unknown' (which correpsond to not set) otherwise abort.
             book = BooksGenre.query.filter(BooksGenre.media_id == media_id).first()
             if book.genre != 'Unknown':
-                return abort(400)
+                abort(400)
 
             try:
                 BooksGenre.query.filter(BooksGenre.media_id == media_id).delete()
                 for genre in form.genres.data[:5]:
-                    adding = BooksGenre(genre=genre, media_id=media_id)
-                    db.session.add(adding)
+                    db.session.add(BooksGenre(genre=genre, media_id=media_id))
                 db.session.commit()
                 flash('Data successfully updated.', 'success')
                 app.logger.info(f'[SYSTEM] - Book ID [{media_id}]. Genres modified by [{current_user.id}]')
