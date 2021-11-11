@@ -1509,7 +1509,63 @@ class BooksList(MediaListMixin, db.Model):
 
     @classmethod
     def get_more_stats(cls, user):
-        return ''
+        media_data = BooksList.query.filter_by(user_id=user.id).all()
+
+        release_dates = db.session.query(Books, cls, func.count(Books.release_date),
+                                         ((Books.release_date/10)*10).label('decade')) \
+            .join(Books, Books.id == cls.media_id) \
+            .filter(cls.user_id == user.id, Books.release_date != 'Unknown', cls.status != Status.PLAN_TO_READ) \
+            .group_by(text('decade')).order_by(Books.release_date.asc()).all()
+
+        top_genres = db.session.query(BooksGenre.genre, cls, func.count(BooksGenre.genre).label('count')) \
+            .join(BooksGenre, BooksGenre.media_id == cls.media_id) \
+            .filter(cls.user_id == user.id, BooksGenre.genre != 'Unknown', cls.status != Status.PLAN_TO_READ) \
+            .group_by(BooksGenre.genre).order_by(text('count desc')).limit(10).all()
+
+        top_authors = db.session.query(BooksAuthors.name, cls, func.count(BooksAuthors.name).label('count')) \
+            .join(BooksAuthors, BooksAuthors.id == cls.media_id)\
+            .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_READ)\
+            .group_by(BooksAuthors.name).order_by(text('count desc')).limit(10).all()
+
+        top_languages = db.session.query(Books.language, cls, func.count(Books.language).label('count')) \
+            .join(Books, Books.id == cls.media_id)\
+            .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_READ) \
+            .group_by(Books.language).order_by(text('count desc')).limit(5).all()
+
+        list_languages = []
+        for language in top_languages:
+            try:
+                name_iso = iso639.to_name(language[0])
+            except:
+                if language[0] == 'cn':
+                    name_iso = 'Chinese'
+                else:
+                    name_iso = language[0]
+            list_languages.append([name_iso, language[1], language[2]])
+
+        tot_pages = OrderedDict({'<100': 0, '100-200': 0, '200-300': 0, '300-400': 0, '400-500': 0, '600+': 0})
+        for media in media_data:
+            if media.status == Status.PLAN_TO_READ:
+                continue
+
+            total_pages = media.media.pages
+            if total_pages < 100:
+                tot_pages['<100'] += 1
+            elif 100 <= total_pages < 200:
+                tot_pages['100-200'] += 1
+            elif 200 <= total_pages < 300:
+                tot_pages['200-300'] += 1
+            elif 300 <= total_pages < 400:
+                tot_pages['300-400'] += 1
+            elif 400 <= total_pages < 500:
+                tot_pages['400-500'] += 1
+            elif total_pages >= 600:
+                tot_pages['600+'] += 1
+
+        data = {'pages': tot_pages, 'periods': release_dates, 'genres': top_genres, 'top_languages': list_languages,
+                'top_authors': top_authors}
+
+        return data
 
     @staticmethod
     def default_sorting():
@@ -2301,7 +2357,6 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
     if user.add_feeling:
         add_more = {'Score +': media_list.feeling.desc(),
                     'Score -': media_list.feeling.asc()}
-
     sorting_dict.update(add_more)
 
     # Check the sorting value
@@ -2310,14 +2365,14 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
     except KeyError:
         abort(400)
 
-    # Check the category
+    # Check the category value
     try:
         category = Status(category)
         cat_value = category.value
     except ValueError:
         return abort(400)
 
-    # Check the genre
+    # Check the genre value
     genre_filter = text('')
     if genre != 'All':
         genre_filter = media_genre.genre.like(genre)
@@ -2343,7 +2398,7 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
     elif category == Status.FAVORITE:
         query = query.filter(media_list.favorite)
     elif category == Status.SEARCH:
-        if list_type == ListType.SERIES:
+        if list_type == ListType.SERIES or ListType == ListType.ANIME:
             query = query.filter(or_(media.name.ilike('%' + q + '%'), media_more.name.ilike('%' + q + '%'),
                                      media.original_name.ilike('%' + q + '%')))
         elif list_type == ListType.MOVIES:
@@ -2351,8 +2406,9 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
                                      media.director_name.ilike('%' + q + '%'),
                                      media.original_name.ilike('%' + q + '%')))
         elif list_type == ListType.GAMES:
-            query = query.filter(or_(media.name.ilike('%' + q + '%'),
-                                     media_more.name.ilike('%' + q + '%')))
+            query = query.filter(or_(media.name.ilike('%' + q + '%'), media_more.name.ilike('%' + q + '%')))
+        elif list_type == ListType.BOOKS:
+            query = query.filter(or_(media.name.ilike('%' + q + '%'), media_more.name.ilike('%' + q + '%')))
 
     try:
         page = int(page)
