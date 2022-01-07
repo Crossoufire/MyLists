@@ -28,7 +28,7 @@ class GoogleImages(object):
 
     @staticmethod
     def _image_objects_from_pack(data):
-        image_objects = json.loads(data)[31][0][12][2]
+        image_objects = json.loads(data)[31][-1][12][2]
 
         return [x for x in image_objects if x[0] == 1]
 
@@ -77,7 +77,7 @@ class GoogleImages(object):
             formatted_object['image_link'] = main[0]
             formatted_object['image_format'] = main[0][-1 * (len(main[0]) - main[0].rfind(".") - 1):]
             formatted_object['image_description'] = info['2003'][3]
-            formatted_object['image_host'] = info['183836587'][0]
+            formatted_object['image_host'] = info['2003'][17]
             formatted_object['image_source'] = info['2003'][2]
             formatted_object['image_thumbnail_url'] = data[2][0]
         except Exception as e:
