@@ -1446,7 +1446,7 @@ class Books(MediaMixin, db.Model):
 class BooksList(MediaListMixin, db.Model):
     _group = (ListType.BOOKS, MediaType.BOOKS)
     _type = 'List'
-    _time_per_page = 1
+    _time_per_page = 1.7
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

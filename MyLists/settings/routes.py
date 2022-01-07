@@ -1,6 +1,5 @@
 from flask import Blueprint, flash, request, render_template, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-
 from MyLists import db, app, bcrypt
 from MyLists.models import User
 from MyLists.settings.emails import send_email_update_email
