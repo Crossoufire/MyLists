@@ -2476,7 +2476,8 @@ def compute_media_time_spent():
                 .join(User, User.id == media_list.user_id) \
                 .group_by(media_list.user_id).all()
         elif media_list == BooksList:
-            query = db.session.query(User, media_list.total, media_list.score, func.sum(1 * media_list.total)) \
+            query = db.session.query(User, media_list.total, media_list.score,
+                                     func.sum(BooksList._time_per_page * media_list.total)) \
                 .join(media, media.id == media_list.media_id) \
                 .join(User, User.id == media_list.user_id) \
                 .group_by(media_list.user_id).all()
