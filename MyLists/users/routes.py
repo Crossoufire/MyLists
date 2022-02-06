@@ -51,37 +51,6 @@ def account(user_name):
                            media_global=media_global)
 
 
-@bp.route("/hall_of_fame", methods=['GET', 'POST'])
-@login_required
-def hall_of_fame():
-    all_users = current_user.followed.all()
-    all_users.append(current_user)
-    models_type = get_models_type('List')
-
-    all_users_data = []
-    for user in all_users:
-        user_data = {}
-        frame = user.get_frame_info()
-
-        user_data["id"] = user.id
-        user_data["name"] = user.username
-        user_data["profile"] = user.image_file
-        user_data["knowledge_frame"] = frame
-        user_data["add_books"] = user.add_books
-        user_data["add_games"] = user.add_games
-
-        user_data["current_user"] = False
-        if user.id == current_user.id:
-            user_data["current_user"] = True
-
-        for model in models_type:
-            user_data[f"{model.__name__.replace('List', '').lower()}_data"], _ = model.get_media_levels_and_time(user)
-
-        all_users_data.append(user_data)
-
-    return render_template("hall_of_fame.html", title='Hall of Fame', all_data=all_users_data)
-
-
 @bp.route("/level_grade_data", methods=['GET'])
 @login_required
 def level_grade_data():

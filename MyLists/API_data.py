@@ -866,4 +866,3 @@ class ApiBooks(ApiData):
                     media_cover_name = 'default.jpg'
 
         return media_cover_name
-

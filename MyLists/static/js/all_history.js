@@ -9,6 +9,7 @@ $(document).ready(function () {
         "bInfo": true,
         "bAutoWidth": false,
         "searching": true,
+        "pageLength": 25,
         columnDefs: [
             {orderable: false, targets: 0},
             {orderable: true, targets: 1},

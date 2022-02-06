@@ -16,32 +16,32 @@
                 </h4>
             </a>
             <div class="row series-collapse collapse show ac">
-            {% if not airing_series %}
-                <div class="col-12 text-center m-b-40"><i><b>No next airing found in your SeriesList.</b></i></div>
-            {% else %}
-                {% for series in airing_series %}
-                    <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
-                        <div class="card bg-transparent">
-                            <div class="view overlay">
-                                <img class="card-img-top" src="/static/covers/series_covers/{{ series[0].image_cover }}"
-                                     style="height: auto;" alt=""/>
-                                <a class="mask flex-center rgba-black-strong" href="/media_sheet/Series/{{ series[0].id }}">
-                                    <span class="font-mask text-center text-light">{{ series[0].name }}</span>
-                                </a>
-                            </div>
-                            <div class="absolute-data text-center bg-series">
-                                S{{ '{:02d}'.format(series[0].season_to_air) }}
-                                &nbsp; - &nbsp;
-                                E{{ '{:02d}'.format(series[0].episode_to_air) }}
-                            </div>
-                            <div class="absolute-data-2 text-center bg-series">
-                               {{ series_dates[loop.index0] }}
+                {% if not airing_series %}
+                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your SeriesList.</b></i></div>
+                {% else %}
+                    {% for series in airing_series %}
+                        <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
+                            <div class="card bg-transparent">
+                                <div class="view overlay">
+                                    <img class="card-img-top" src="/static/covers/series_covers/{{ series[0].image_cover }}"
+                                         style="height: auto;" alt=""/>
+                                    <a class="mask flex-center rgba-black-strong" href="/media_sheet/Series/{{ series[0].id }}">
+                                        <span class="font-mask text-center text-light">{{ series[0].name }}</span>
+                                    </a>
+                                </div>
+                                <div class="absolute-data text-center bg-series">
+                                    S{{ '{:02d}'.format(series[0].season_to_air) }}
+                                    &nbsp; - &nbsp;
+                                    E{{ '{:02d}'.format(series[0].episode_to_air) }}
+                                </div>
+                                <div class="absolute-data-2 text-center bg-series">
+                                    {{ series_dates[loop.index0] }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
         <div class="m-b-40">
             <a class="text-light" data-toggle="collapse" href=".anime-collapse" onclick="change_caret(this)">
@@ -71,7 +71,7 @@
                                     E{{ '{:02d}'.format(anime[0].episode_to_air) }}
                                 </div>
                                 <div class="absolute-data-2 text-center bg-anime">
-                                   {{ anime_dates[loop.index0] }}
+                                    {{ anime_dates[loop.index0] }}
                                 </div>
                             </div>
                         </div>

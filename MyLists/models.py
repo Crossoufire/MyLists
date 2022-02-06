@@ -14,7 +14,7 @@ import rq
 from flask import abort, url_for
 from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy import func, desc, text, and_, or_, extract, asc
+from sqlalchemy import func, desc, text, and_, or_, extract
 from sqlalchemy.orm import aliased
 from MyLists import app, db, login_manager
 
@@ -269,7 +269,7 @@ class User(UserMixin, db.Model):
         s = Serializer(app.config['SECRET_KEY'])
         return s.dumps({'user_id': self.id}).decode('utf-8')
 
-    def get_frame_info(self):
+    def get_kn_frame_level(self):
         total = (self.time_spent_series + self.time_spent_movies)
         if self.add_anime:
             total += self.time_spent_anime
@@ -279,7 +279,12 @@ class User(UserMixin, db.Model):
             total += self.time_spent_games
 
         knowledge_level = int((((400+80*total)**(1/2))-20)/40)
-        frame_level = (knowledge_level // 8) + 1
+        frame_level = (knowledge_level//8)+1
+
+        return knowledge_level, frame_level
+
+    def get_frame_info(self):
+        knowledge_level, frame_level = self.get_kn_frame_level()
         query_frame = Frames.query.filter_by(level=frame_level).first()
 
         frame_id = url_for('static', filename='img/icon_frames/new/border_40')
@@ -630,13 +635,20 @@ class MediaListMixin:
         return data_list
 
     @classmethod
-    def get_media_levels_and_time(cls, user):
+    def get_only_levels_and_time(cls, user):
         # Get user.time_spent_<media> from the <User> table
         time_min = getattr(user, f"time_spent_{cls.__name__.replace('List', '').lower()}")
 
         media_level_tmp = f"{(((400+80*time_min)**(1/2))-20)/40:.2f}"
         media_level = int(media_level_tmp.split('.')[0])
         media_percentage = int(media_level_tmp.split('.')[1])
+
+        return media_level, media_percentage, time_min
+
+    @classmethod
+    def get_media_levels_and_time(cls, user):
+        # Get user.time_spent_<media> from the <User> table
+        media_level, media_percentage, time_min = cls.get_only_levels_and_time(user)
 
         query_rank = Ranks.query.filter_by(level=media_level, type='media_rank\n').first()
         grade_id = url_for('static', filename='img/levels_ranks/ReachRank49')

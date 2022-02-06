@@ -353,12 +353,12 @@
                                 <div class="m-b-10" style="color: grey;"><i>No follows to display.</i></div>
                             {% endif %}
                         </div>
-                        {% if current_user.get_id() == user.id %}
-                            <div class="m-t-15"></div>
-                            <a class="btn hof-button" href="{{ url_for('users.hall_of_fame') }}">Hall of Fame</a>
-                        {% endif %}
+{#                        {% if current_user.get_id() == user.id %}#}
+{#                            <div class="m-t-15"></div>#}
+{#                            <a class="btn hof-button" href="{{ url_for('users.hall_of_fame') }}">Hall of Fame</a>#}
+{#                        {% endif %}#}
                     </li>
-                    <li class="m-b-20">
+                    <li class="m-b-20 m-t-25">
                         <h4><i class="fas fa-bell text-light"></i>&nbsp;&nbsp; Follows' Updates</h4>
                         <hr class='m-b-8'>
                         {% if follows_updates %}
