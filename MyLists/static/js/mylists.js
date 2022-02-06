@@ -175,7 +175,7 @@ function display_notifications(data) {
                             '<div class="col-10 ellipsis-notif">' +
                                 '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
                                 '<div class="fs-14" style="color: darkgrey;">S' + resp[i]['payload']['season'] + '.E' +
-                                resp[i]['payload']['episode'] + ' will begin on ' + resp[i]['payload']['release_date'] + '</div>' +
+                                resp[i]['payload']['episode'] + ' begin: ' + resp[i]['payload']['release_date'] + '</div>' +
                             '</div>' +
                         '</div>' +
                     '</a>' +
@@ -192,7 +192,7 @@ function display_notifications(data) {
                             '<div class="col-10 ellipsis-notif">' +
                                 '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
                                 '<div class="fs-14" style="color: darkgrey;">S' + resp[i]['payload']['season'] + '.E' +
-                                resp[i]['payload']['episode'] + ' will begin on ' + resp[i]['payload']['release_date'] + '</div>' +
+                                resp[i]['payload']['episode'] + ' begin: ' + resp[i]['payload']['release_date'] + '</div>' +
                             '</div>' +
                         '</div>' +
                     '</a>' +
@@ -208,7 +208,7 @@ function display_notifications(data) {
                             '</div>' +
                             '<div class="col-10 ellipsis-notif">' +
                                 '<span><b>' + resp[i]['payload']['name'] + '</b></span>' +
-                                '<div class="fs-14" style="color: darkgrey;">Will be available on ' +
+                                '<div class="fs-14" style="color: darkgrey;">Release the: ' +
                                 resp[i]['payload']['release_date'] + '</div>' +
                             '</div>' +
                         '</div>' +

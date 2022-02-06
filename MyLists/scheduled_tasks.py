@@ -420,7 +420,7 @@ def new_releasing_series():
             else:
                 continue
 
-        release_date = datetime.strptime(info[0].next_episode_to_air, '%Y-%m-%d').strftime("%b %d")
+        release_date = datetime.strptime(info[0].next_episode_to_air, '%Y-%m-%d').strftime("%b %d %Y")
         payload = {'name': info[0].name,
                    'release_date': release_date,
                    'season': '{:02d}'.format(info[0].season_to_air),

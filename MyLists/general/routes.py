@@ -1,11 +1,13 @@
+import time
 from datetime import datetime
-from flask import Blueprint
+from flask import Blueprint, url_for
 from flask import render_template, flash, request, abort
 from flask_login import login_required, current_user
 from MyLists import db, bcrypt, app
 from MyLists.API_data import ApiSeries, ApiMovies
 from MyLists.general.trending_data import TrendingData
-from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent
+from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent, \
+    get_models_type
 from MyLists.scheduled_tasks import update_Mylists_stats, update_IGDB_API
 
 bp = Blueprint('general', __name__)
@@ -70,17 +72,54 @@ def mylists_stats():
         intervals = (('Years', 525600), ('Months', 43200), ('Days', 1440), ('Hours', 60))
         result = []
         for name, count in intervals:
-            value = minutes // count
+            value = minutes//count
             if value:
-                minutes -= value * count
+                minutes -= value*count
                 if value == 1:
                     name = name.rstrip('S')
-                result.append("{} {}".format(value, name))
+                result.append("{} {}".format(int(value), name))
         return ' '.join(result)
 
     all_stats['total_time']['total'] = display_time(all_stats['total_time']['total'])
 
     return render_template("mylists_stats.html", title='MyLists stats', all_stats=all_stats)
+
+
+@bp.route("/hall_of_fame", methods=['GET', 'POST'])
+@login_required
+def hall_of_fame():
+    all_users = User.query.filter(User.active == True, User.id != 1).all()
+    models_type = get_models_type('List')
+
+    all_levels = []
+    for user in all_users:
+        knowledge_level, frame_level = user.get_kn_frame_level()
+
+        user.knowledge_level = knowledge_level
+        user.frame_image = url_for('static', filename=f'img/icon_frames/new/border_{frame_level:02d}')
+        user.current_user = True if user.id == current_user.id else False
+
+        for model in models_type:
+            media_level, media_percentage, _ = model.get_only_levels_and_time(user)
+            user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data", media_level)
+            all_levels.append(media_level)
+
+    query_ranks = Ranks.query.filter(Ranks.level.in_(all_levels), Ranks.type == 'media_rank\n').all()
+    for user in all_users:
+        for model in models_type:
+            media_level = user.__getattribute__(f"{model.__name__.replace('List', '').lower()}_data")
+            for rank in query_ranks:
+                if rank.level == media_level:
+                    user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data", rank)
+                    break
+                elif media_level > 149:
+                    user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data",
+                                     Ranks.query.filter(Ranks.level == 149, Ranks.type == 'media_rank\n').first())
+                    break
+
+    all_users = sorted(all_users, key=lambda d: d.knowledge_level, reverse=True)
+
+    return render_template("hall_of_fame.html", title='Hall of Fame', all_data=all_users)
 
 
 @bp.route("/current_trends", methods=['GET'])

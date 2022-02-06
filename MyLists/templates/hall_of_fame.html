@@ -8,14 +8,15 @@
 
 
 {% block content %}
-    <h3 class="mb-0 m-t-50 text-center"><b>FOLLOWED HALL OF FAME</b></h3>
-    <hr class="mt-2 mb-0">
-    <div class="m-t-30 hof ml-auto mr-auto m-b-60">
+    <div class="text-light m-t-50">
+        <h4 class="mb-2 p-1" style="background: #514d49;"><b>&nbsp;HALL OF FAME</b></h4>
+    </div>
+    <div class="m-t-20 hof ml-auto mr-auto m-b-60">
         <table id="hall_of_fame" class="table table-responsive-sm text-light">
             <thead>
             <tr>
-                <th class="text-center">Global grade</th>
-                <th class="text-center">name</th>
+                <th class="text-center">Level</th>
+                <th class="text-center">Username</th>
                 <th class="text-center">Series</th>
                 <th class="text-center">Anime</th>
                 <th class="text-center">Movies</th>
@@ -25,47 +26,48 @@
             </thead>
             <tbody>
                 {% for user in all_data %}
-                    <tr class="{% if user['current_user'] %} current_user {% endif %}">
+                    <tr class="{% if user.current_user %} current_user {% endif %}">
                         <td style="min-width: 180px; max-width: 180px;">
                             <div style="position: relative;">
                                 <img class="profile-picture" src="{{ url_for('static',
-                                 filename='profile_pics/'+user['profile']) }}" alt="">
-                                <img class="frame-picture" src="{{ user['knowledge_frame']['frame_id'] }}.png" alt="">
-                                <div class="frame-level">{{ user['knowledge_frame']['level'] }}</div>
+                                 filename='profile_pics/'+user.image_file) }}" alt="">
+                                <img class="frame-picture" src="{{ user.frame_image }}.png" alt="">
+                                <div class="frame-level">{{ user.knowledge_level }}</div>
                             </div>
                         </td>
                         <td>
-                            <a href="{{ url_for('users.account', user_name=user['name']) }}">
-                                <b>{{ user['name'] }}</b>
+                            <a href="{{ url_for('users.account', user_name=user.username) }}">
+                                <b>{{ user.username }}</b>
                             </a>
+                            <div><b>#{{ loop.index }}</b></div>
                         </td>
                         <td>
                             <a class="text-light" href="{{ url_for('main.mymedialist', media_list='serieslist',
-                             user_name=user['name']) }}">
-                                <img class="grade_picture" src="{{ user['series_data']['grade_id'] }}.png" alt="">
-                                <br>{{ user['series_data']['level'] }}
+                             user_name=user.username) }}">
+                                <img class="grade_picture" src="static/img/levels_ranks/{{ user.series_data.image_id }}.png" alt="">
+                                <br>{{ user.series_data.level }}
                             </a>
                         </td>
                         <td>
                             <a class="text-light" href="{{ url_for('main.mymedialist', media_list='animelist',
-                             user_name=user['name']) }}">
-                                <img class="grade_picture" src="{{ user['anime_data']['grade_id'] }}.png" alt="">
-                                <br>{{ user['anime_data']['level'] }}
+                             user_name=user.username) }}">
+                                <img class="grade_picture" src="static/img/levels_ranks/{{ user.anime_data.image_id }}.png" alt="">
+                                <br>{{ user.anime_data.level }}
                             </a>
                         </td>
                         <td>
                             <a class="text-light" href="{{ url_for('main.mymedialist', media_list='movieslist',
-                             user_name=user['name']) }}">
-                                <img class="grade_picture" src="{{ user['movies_data']['grade_id'] }}.png" alt="">
-                                <br>{{ user['movies_data']['level'] }}
+                             user_name=user.username) }}">
+                                <img class="grade_picture" src="static/img/levels_ranks/{{ user.movies_data.image_id }}.png" alt="">
+                                <br>{{ user.movies_data.level }}
                             </a>
                         </td>
                         <td>
                             {% if user['add_books'] %}
                                 <a class="text-light" href="{{ url_for('main.mymedialist', media_list='bookslist',
-                                user_name=user['name']) }}">
-                                    <img class="grade_picture" src="{{ user['books_data']['grade_id'] }}.png" alt="">
-                                    <br>{{ user['books_data']['level'] }}
+                                user_name=user.username) }}">
+                                    <img class="grade_picture" src="static/img/levels_ranks/{{ user.books_data.image_id }}.png" alt="">
+                                    <br>{{ user.books_data.level }}
                                 </a>
                             {% else %}
                                 <span>Not<br>activated</span>
@@ -74,9 +76,9 @@
                         <td>
                             {% if user['add_games'] %}
                                 <a class="text-light" href="{{ url_for('main.mymedialist', media_list='gameslist',
-                                user_name=user['name']) }}">
-                                    <img class="grade_picture" src="{{ user['games_data']['grade_id'] }}.png" alt="">
-                                    <br>{{ user['games_data']['level'] }}
+                                user_name=user.username) }}">
+                                    <img class="grade_picture" src="static/img/levels_ranks/{{ user.games_data.image_id }}.png" alt="">
+                                    <br>{{ user.games_data.level }}
                                 </a>
                             {% else %}
                                 <span>Not<br>activated</span>
