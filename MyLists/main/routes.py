@@ -15,6 +15,7 @@ from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, C
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
     get_models_group, get_next_airing, Books, BooksGenre, change_air_format, SeriesGenre, SeriesActors, MoviesGenre, \
     MoviesActors, Series, Movies
+from MyLists.scheduled_tasks import refresh_element_data
 
 bp = Blueprint('main', __name__)
 
@@ -127,10 +128,20 @@ def media_sheet(media_type, media_id):
         models = get_models_group(media_type)
         list_type = ListType(media_type.value.lower() + 'list')
     except ValueError:
-        abort(400)
+        return abort(400)
 
     # Check if <media_id> came from an API
     from_api = request.args.get('search')
+
+    # Check if the refresh was pushed
+    refresh = request.args.get('refresh')
+    if refresh and current_user.role != RoleType.USER:
+        media = models[0].query.filter_by(id=media_id).first()
+        if media is None:
+            flash('Impossible to refresh the mediadata', 'warning')
+        response = refresh_element_data(media.api_id, list_type)
+        if response:
+            flash('Successfully updated the metadata of the media', 'success')
 
     # Check <media> in local DB
     search = {'id': media_id}
@@ -178,6 +189,10 @@ def media_sheet(media_type, media_id):
     if list_type == ListType.BOOKS:
         genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
             .filter(BooksGenre.media_id == media_id).first()
+
+    # If refresh, redirect to remove the GET argument
+    if refresh:
+        return redirect(request.path, code=302)
 
     return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
                            media_list=list_type.value, form_cover=form_cover, media_updates=history)

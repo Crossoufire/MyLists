@@ -236,11 +236,13 @@ def refresh_element_data(api_id, list_type):
     # Check the episodes/seasons
     if list_type == ListType.SERIES or list_type == ListType.ANIME:
         if list_type == ListType.SERIES:
-            element = Series.query.filter_by(api_id=api_id).first()
-            old_seas_eps = [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
+            media = Series.query.filter_by(api_id=api_id).first()
+            old_seas_eps = [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=media.id).all()]
         elif list_type == ListType.ANIME:
-            element = Anime.query.filter_by(api_id=api_id).first()
-            old_seas_eps = [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=element.id).all()]
+            media = Anime.query.filter_by(api_id=api_id).first()
+            old_seas_eps = [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=media.id).all()]
+        else:
+            return False
 
         new_seas_eps = [d['episodes'] for d in data['seasons_data']]
 
@@ -274,7 +276,7 @@ def refresh_element_data(api_id, list_type):
                 db.session.commit()
 
                 for seas in data['seasons_data']:
-                    season = SeriesEpisodesPerSeason(media_id=element.id, season=seas['season'], episodes=seas['episodes'])
+                    season = SeriesEpisodesPerSeason(media_id=media.id, season=seas['season'], episodes=seas['episodes'])
                     db.session.add(season)
                 db.session.commit()
             elif list_type == ListType.ANIME:
@@ -306,7 +308,7 @@ def refresh_element_data(api_id, list_type):
                 db.session.commit()
 
                 for seas in data['seasons_data']:
-                    season = AnimeEpisodesPerSeason(media_id=element.id, season=seas['season'], episodes=seas['episodes'])
+                    season = AnimeEpisodesPerSeason(media_id=media.id, season=seas['season'], episodes=seas['episodes'])
                     db.session.add(season)
                 db.session.commit()
 

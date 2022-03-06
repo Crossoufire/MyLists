@@ -180,7 +180,15 @@
             </div>
             <div class="col-lg-8 col-md-7 col-sm-12" style="margin-top: -10px;">
                 <div class="media-title-pc">
-                    <h3><b>{{ media.name }}</b></h3>
+                    <h3>
+                        <b>{{ media.name }}</b>
+                        {% if current_user.role.value != 'user' %}
+                            <a class="m-t-4 float-r text-light fs-24" data-toggle="tooltip" title="Refresh the media"
+                            href="/media_sheet/{{ media.__class__.__name__ }}/{{ media.id }}?refresh=True">
+                                <i class="fas fa-xs fa-redo-alt"></i>
+                            </a>
+                        {% endif %}
+                    </h3>
                     {% set original_name = media.get_original_name() %}
                     {% if original_name %}
                         <h5 style="color: darkgray;"><i>{{ original_name }}</i></h5>
