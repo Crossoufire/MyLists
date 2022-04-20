@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 from flask import Blueprint, url_for
 from flask import render_template, flash, request, abort
@@ -100,21 +99,25 @@ def hall_of_fame():
         user.current_user = True if user.id == current_user.id else False
 
         for model in models_type:
+            model_name = f"{model.__name__.replace('List', '').lower()}_data"
             media_level, media_percentage, _ = model.get_only_levels_and_time(user)
-            user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data", media_level)
+            setattr(user, model_name, media_level)
             all_levels.append(media_level)
 
     query_ranks = Ranks.query.filter(Ranks.level.in_(all_levels), Ranks.type == 'media_rank\n').all()
+    last_rank = Ranks.query.filter(Ranks.level == 149, Ranks.type == 'media_rank\n').first()
     for user in all_users:
         for model in models_type:
-            media_level = user.__getattribute__(f"{model.__name__.replace('List', '').lower()}_data")
+            model_name = f"{model.__name__.replace('List', '').lower()}_data"
+            media_level = getattr(user, model_name)
             for rank in query_ranks:
                 if rank.level == media_level:
-                    user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data", rank)
+                    setattr(user, model_name, rank)
+                    setattr(user, f'{model_name}_level', media_level)
                     break
                 elif media_level > 149:
-                    user.__setattr__(f"{model.__name__.replace('List', '').lower()}_data",
-                                     Ranks.query.filter(Ranks.level == 149, Ranks.type == 'media_rank\n').first())
+                    setattr(user, model_name, last_rank)
+                    setattr(user, f'{model_name}_level', media_level)
                     break
 
     all_users = sorted(all_users, key=lambda d: d.knowledge_level, reverse=True)

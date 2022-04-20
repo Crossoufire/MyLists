@@ -140,4 +140,7 @@ MyLists/static/covers/games_covers/*
 MyLists/static/covers/books_covers/*
 !MyLists/static/covers/books_covers/default.jpg
 
+MyLists/static/img/actors/*
+!MyLists/static/img/actors/default.jpg
+
 scheduled.log

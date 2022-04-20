@@ -279,7 +279,11 @@ class User(UserMixin, db.Model):
             total += self.time_spent_games
 
         knowledge_level = int((((400+80*total)**(1/2))-20)/40)
+
+        # If frame level > 40, take the highest border
         frame_level = (knowledge_level//8)+1
+        if frame_level > 40:
+            frame_level = 40
 
         return knowledge_level, frame_level
 

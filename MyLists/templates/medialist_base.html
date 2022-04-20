@@ -26,20 +26,27 @@
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mobile-margin mobile-center">
                     <a class="fas fa-lg fa-user m-r-10 return-icon text-grey" data-toggle="tooltip" title="{{ user.username }}"
                      href="{{ url_for('users.account', user_name=user.username) }}"></a>
+
                     <a class="fas fa-lg fa-tv m-r-10 return-icon-tv text-series {% if media_list == 'serieslist' %}
-                     disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Serieslist"
-                     href="{{ url_for('main.mymedialist', media_list='serieslist', user_name=user.username) }}"></a>
-                    <a class="fas fa-lg fa-torii-gate m-r-10 return-icon-tv text-anime {% if media_list == 'animelist' %}
-                     disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="AnimeList"
-                     href="{{ url_for('main.mymedialist', media_list='animelist', user_name=user.username) }}"></a>
+                    disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Serieslist"
+                    href="{{ url_for('main.mymedialist', media_list='serieslist', user_name=user.username) }}"></a>
+
+                    {% if user.add_anime %}
+                        <a class="fas fa-lg fa-torii-gate m-r-10 return-icon-tv text-anime {% if media_list == 'animelist' %}
+                        disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="AnimeList"
+                        href="{{ url_for('main.mymedialist', media_list='animelist', user_name=user.username) }}"></a>
+                    {% endif %}
+
                     <a class="fas fa-lg fa-film m-r-10 return-icon text-movies {% if media_list == 'movieslist' %}
                      disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Movieslist"
                      href="{{ url_for('main.mymedialist', media_list='movieslist', user_name=user.username) }}"></a>
+
                     {% if user.add_books %}
                         <a class="fas fa-lg fa-book m-r-10 return-icon text-books {% if media_list == 'bookslist' %}
                              disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Bookslist"
                              href="{{ url_for('main.mymedialist', media_list='bookslist', user_name=user.username) }}"></a>
                     {% endif %}
+
                     {% if user.add_games %}
                         <a class="fas fa-lg fa-gamepad m-r-10 return-icon-tv text-games {% if media_list == 'gameslist' %}
                          disabled" style="box-shadow: 0 -3px 0 gray inset; {% endif %}" data-toggle="tooltip" title="Gameslist"
@@ -47,10 +54,10 @@
                     {% endif %}
 
                     {% if current_user.get_id() != user.id and category != 'Stats' %}
-                        <div class="shared-pie" data-toggle="tooltip"
+                        <div class="shared-pie m-l-15" data-toggle="tooltip"
                          title="{{ data['common_elements'][0] }}/{{ data['common_elements'][1] }} shared
-                         ({{ data['common_elements'][2] }}%)" style="background: conic-gradient(#8a7a6c
-                         {{ data['common_elements'][2] }}%, #040404 0);">
+                         ({{ data['common_elements'][2] }}%)" style="background: conic-gradient(#d7d7d7
+                         {{ data['common_elements'][2] }}%, #5b5b5b 0);">
                         </div>
                     {% endif %}
                 </div>

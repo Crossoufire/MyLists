@@ -116,6 +116,10 @@ hr {
     display: block;
 }
 
+.nav-link:hover {
+    text-decoration: underline;
+}
+
 .notif-li {
     text-align: center;
 }

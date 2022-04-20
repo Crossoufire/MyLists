@@ -48,9 +48,9 @@
     {% if current_user.is_authenticated %}
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top p-0">
             <div class="container">
-                <ul class="navbar-nav mr-auto m-l-10">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle fs-22" data-toggle="dropdown">MyLists</a>
+                <ul class="navbar-nav nav-ul-1">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fs-18" data-toggle="dropdown"><b>MyLists</b></a>
                         <div class="dropdown-menu medialist-dropdown">
                             <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
                              media_list='serieslist', user_name=current_user.username) }}">
@@ -105,9 +105,8 @@
                             {% endif %}
                         </div>
                     </li>
-                </ul>
-                <button class="navbar-toggler third-button" data-toggle="collapse" data-target="#nav-collapse"
-                 type="button">
+                    </ul>
+                <button class="navbar-toggler third-button ml-auto" data-toggle="collapse" data-target="#nav-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="nav-collapse">
@@ -129,30 +128,26 @@
                         </select>
                     </form>
                     <ul class="navbar-nav mr-auto nav-ul-1">
-                        <li class="nav-item nav-li-1 m-l-10">
+                        <li class="nav-item nav-li-1">
                             <a class="nav-link" href="{{ url_for('general.hall_of_fame') }}">
-                                <i class="fas fa-lg fa-trophy" style="color: rgba(229,186,14,0.89);"></i>
-                                <div class="info-nav fs-14 nav-text">Hall of Fame</div>
+                                <div class="info-nav fs-18 nav-text"><b>HoF</b></div>
                             </a>
                         </li>
                         <li class="nav-item nav-li-1">
                             <a class="nav-link" href="{{ url_for('general.mylists_stats') }}">
-                                <i class="far fa-lg fa-chart-bar" style="color: darkorange;"></i>
-                                <div class="info-nav fs-14 nav-text">Stats</div>
+                                <div class="info-nav fs-18 nav-text"><b>Stats</b></div>
                             </a>
                         </li>
                         <li class="nav-item nav-li-1">
                             <a class="nav-link" href="{{ url_for('general.current_trends') }}">
-                                <i class="fas fa-lg fa-fire-alt" style="color: orangered;"></i>
-                                <div class="info-nav fs-14 nav-text">Trends</div>
+                                <div class="info-nav fs-18 nav-text"><b>Trends</b></div>
                             </a>
                         </li>
                     </ul>
                     <ul class="navbar-nav ml-auto nav-ul-1">
                         <li class="nav-item nav-li-1 nav-li-2">
                             <a class="nav-link" href="{{ url_for('main.your_next_airing') }}">
-                                <i class="far fa-lg fa-calendar-check" style="color: olivedrab;"></i>
-                                <div class="info-nav fs-14 nav-text">Next Airing</div>
+                                <div class="info-nav fs-18 nav-text"><b>Next airing</b></div>
                             </a>
                         </li>
                         <li class="nav-item nav-li-1 dropdown nav-li-2">
@@ -164,7 +159,6 @@
                                 badge-danger{% endif %}">
                                     {{ count }}
                                 </span>
-                                <div class="fs-14 nav-text">Notifications</div>
                             </a>
                             <div id="notif-dropdown" class="dropdown-menu notification-dropdown">
                                 <img id="loading-image" src="/static/img/loading.webp"/>

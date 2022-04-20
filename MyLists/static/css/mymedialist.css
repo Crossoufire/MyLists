@@ -1,14 +1,18 @@
 
 /* --- Return icons/Search/Shared Header CSS ---------------------------------------------------------------- */
 .return-icon {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 1);
     padding: 13px 13px 13px 13px;
+    margin-left: -2px;
+    margin-right: -2px;
     vertical-align: middle;
 }
 
 .return-icon-tv {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 1);
     padding: 13px 10px 13px 10px;
+    margin-left: -2px;
+    margin-right: -2px;
     vertical-align: middle;
 }
 
@@ -58,8 +62,8 @@
 .shared-pie {
     display: inline-block;
     vertical-align: middle;
-    width: 41px;
-    height: 41px;
+    width: 39px;
+    height: 39px;
     border-radius: 50%;
 }
 
