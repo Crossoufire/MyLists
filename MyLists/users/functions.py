@@ -84,7 +84,7 @@ def get_all_media_info(user):
                     'total_media_and_eps': total_media_and_eps, 'total_score': total_score,
                     'distrib_feels': distrib_feels}
     try:
-        media_global['total_mean_score'] = round(total_mean_score/qte_media_type, 2)
+        media_global['total_mean_score'] = f'{total_mean_score/qte_media_type:.2f}'
     except:
         media_global['total_mean_score'] = '-'
 
