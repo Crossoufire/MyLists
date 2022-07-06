@@ -1,7 +1,7 @@
 ### MyLists
 
-MyLists is a website with a nice and clear interface which allows you to list all your TV shows, Anime, Movies, Games and Books (Soon). 
-It integrates statistics like watched time, notes, favorites and more. You can follow people, see their lists  
+MyLists is a website with a nice and clear interface which allows you to list all your TV shows, Anime, Movies, Games and Books. 
+It integrates statistics like watched time, comments, favorites and more. You can follow people, see their lists  
 and compare it to yours. You can see a live version here: [https://mylists.info](https://mylists.info).
 
 ![MyLists](https://raw.githubusercontent.com/Crossoufire/MyLists/master/MyLists/static/img/home2.jpg)
@@ -10,10 +10,12 @@ MyLists uses [Flask](https://flask.palletsprojects.com/) and [Material Design fo
 
 ### Features
 
-* Create a list for all of your series, anime, movies and games.
+* Create a list for all of your series, anime, movies, games and books.
 * Get informed of your next series, anime and movies to airs.
+* Follows your friends and get updates.
 * Compare your lists with your follows.
 * Get statistics about your lists (Time spent, number of episodes watched, prefered genres, etc...)
+* Notifications for the next airing series, movies and games
 * More to come!
 
 ### Prerequisites
@@ -74,10 +76,10 @@ all the same password `password`:
 
 * `user` - Standard user
 * `manager` - Standard user with the right to manage media:
-    * Can lock any media, so it won't be updated anymore by cron (to be used for old media with no update needed).
-    * When a media is locked, you can edit some of its metadata.
+    * Can lock any media, so it won't be updated anymore by the scheduled-tasks (Used for old media with no update needed).
+    * When a media is locked, you can edit the metadata.
 * `admin` - Used for administration tasks (access to all `/admin` pages). Should not be used as a standard user account.
-Does not appear in the "Hall of fame" and its statistics are not taken into account.
+Does not appear in the "Hall of fame" and his statistics are not taken into account.
 
 ## Miscellaneous
 
