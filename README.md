@@ -1,8 +1,8 @@
 ### MyLists
 
 MyLists is a website with a nice and clear interface which allows you to list all your TV shows, Anime, Movies, Games and Books. 
-It integrates statistics like watched time, comments, favorites and more. You can follow people, see their lists  
-and compare it to yours. You can see a live version here: [https://mylists.info](https://mylists.info).
+It integrates statistics like watched time, comments, favorites and more. You can follow people, see their lists and compare it to yours. 
+You can see a live version here: [https://mylists.info](https://mylists.info).
 
 ![MyLists](https://raw.githubusercontent.com/Crossoufire/MyLists/master/MyLists/static/img/home2.jpg)
 
