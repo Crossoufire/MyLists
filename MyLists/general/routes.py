@@ -146,8 +146,8 @@ def current_trends():
     movies_results = TrendingData(movies_info).get_trending_movies()
 
     template = 'current_trends_pc.html'
-    platform = str(request.user_agent.platform)
-    if platform == "iphone" or platform == "android" or not platform or platform == 'None':
+    platform = request.headers.get('User-Agent')
+    if platform == "iphone" or platform == "android" or not platform or platform == "None":
         template = 'current_trends_mobile.html'
 
     return render_template(template, title="Current trends", series_trends=series_results, movies_trends=movies_results)

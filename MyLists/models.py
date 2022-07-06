@@ -2326,7 +2326,7 @@ class MediaListQuery:
 
 
 # Query for <mymedialist> route
-def get_media_query(user, list_type, category, genre, sorting, page, q):
+def get_media_query(user, list_type, category, genre, sorting, page, q, lang):
     media = eval(list_type.value.capitalize().replace('list', ''))
     media_list = eval(list_type.value.capitalize().replace('l', 'L'))
     media_genre = eval(list_type.value.capitalize().replace('list', 'Genre'))
@@ -2403,11 +2403,15 @@ def get_media_query(user, list_type, category, genre, sorting, page, q):
             .filter(v1.user_id == current_user.id).all()
         com_ids = [r[0].media_id for r in get_common]
 
+    lang_filter = text('')
+    if lang:
+        lang_filter = media.original_language.like(lang)
+
     query = db.session.query(media, media_list, media_genre, media_more) \
         .outerjoin(media, media.id == media_list.media_id) \
         .outerjoin(media_genre, media_genre.media_id == media_list.media_id) \
         .outerjoin(media_more, media_more.media_id == media_list.media_id) \
-        .filter(media_list.user_id == user.id, media_list.media_id.notin_(com_ids), genre_filter)
+        .filter(media_list.user_id == user.id, media_list.media_id.notin_(com_ids), genre_filter, lang_filter)
 
     if category != Status.FAVORITE and category != Status.SEARCH and category != Status.ALL:
         query = query.filter(media_list.status == category)

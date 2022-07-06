@@ -506,7 +506,7 @@ class ApiGames(ApiData):
 
     @staticmethod
     def HLTB_time(game_name):
-        games_list = HowLongToBeat().search(game_name)
+        games_list = HowLongToBeat().search(game_name.lower())
         if games_list and len(games_list) > 0:
             game = max(games_list, key=lambda x: x.similarity)
             return {'main': game.gameplay_main, 'extra': game.gameplay_main_extra,

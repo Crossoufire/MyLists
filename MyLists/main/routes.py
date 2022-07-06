@@ -13,8 +13,7 @@ from MyLists import db, app
 from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
 from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksGenre, change_air_format, SeriesGenre, SeriesActors, MoviesGenre, \
-    MoviesActors, Series, Movies
+    get_models_group, get_next_airing, Books, BooksGenre, change_air_format
 from MyLists.scheduled_tasks import refresh_element_data
 
 bp = Blueprint('main', __name__)
@@ -57,8 +56,8 @@ def mymedialist(media_list, user_name, category=None, genre='All', sorting=None,
 
     # Get the corresponding data depending on the selected category
     if category != 'Stats':
-        # media_data = MediaListQuery(models, user.id, category, genre, sorting, page_val, q)
-        category, media_data = get_media_query(user, list_type, category, genre, sorting, page_val, q)
+        lang = request.args.get('lang')
+        category, media_data = get_media_query(user, list_type, category, genre, sorting, page_val, q, lang)
     else:
         media_data = models[1].get_more_stats(user)
 

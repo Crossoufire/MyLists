@@ -135,13 +135,14 @@
                                             </div>
                                         </div>
                                         <div class="col-4 m-b-10">
-                                            <div class="p-2" data-toggle="tooltip" title="Total media, with eps">
+                                            <div class="p-2" data-toggle="tooltip" title="Total media">
                                                 <i class="fas fa-play"></i><b class="m-l-3"> Media</b><br>
-                                                {{ media_global['total_media_and_eps'] }}
+                                                {{ media_global['total_media'] }}
                                             </div>
                                         </div>
                                         <div class="col-4 m-b-10">
-                                            <div class="p-2" data-toggle="tooltip" title="Percentage of media noted">
+                                            <div class="p-2" data-toggle="tooltip" title="Percentage of media noted
+                                            ({{ media_global['total_score'] }}/{{ media_global['total_media'] }})">
                                                 <i class="fas fa-align-justify"></i><b class="m-l-4"> Scored</b><br>
                                                 {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
                                             </div>
@@ -193,13 +194,14 @@
                                             </div>
                                         </div>
                                         <div class="col-6 m-b-10">
-                                            <div class="p-2" data-toggle="tooltip" title="Total media scored">
+                                            <div class="p-2" data-toggle="tooltip" title="Percentage of media scored
+                                            ({{ media_global['total_score'] }}/{{ media_global['total_media'] }})">
                                                 <i class="fas fa-align-justify"></i><b class="m-l-4">  Scored</b><br>
                                                 {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
                                             </div>
                                         </div>
                                         <div class="col-6 m-b-10" style="margin-left: -10px;">
-                                            <div class="p-2" data-toggle="tooltip" title="Total mean score">
+                                            <div class="p-2" data-toggle="tooltip" title="Global mean score">
                                                 <i class="fas fa-star"></i><b> Score</b><br>
                                                 {{ media_global['total_mean_score'] }}/10
                                             </div>

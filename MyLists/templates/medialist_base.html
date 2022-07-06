@@ -95,15 +95,30 @@
             </h4>
             {% if category != 'Stats' %}
                 <div class="sort-container">
-        {#        {% if user_id != current_user.get_id() %}#}
-        {#            <a class="m-r-15" style="display: inline-block;"#}
-        {#               href="/{{ media_list }}/{{ username }}/{{ category }}/genre/{{ genre }}/by/#}
-        {#                {{ sorting }}/page/1?filter={{ filter_val }}">#}
-        {#                <b class="text-grey"> Shared#}
-        {#                    <i class="fas fa-{% if filter_val == True %}check{% else %}times{% endif %}"></i>#}
-        {#                </b>#}
-        {#            </a>#}
-        {#        {% endif %}#}
+
+                {% if media_list == 'movieslist' %}
+                    <li class="nav-item dropdown li-genre-sort text-grey">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown"><b>Filter {{ request.args.get('lang') }}</b></a>
+                    <div class="dropdown-menu genre-drop">
+                        <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist', media_list=media_list,
+                         user_name=user.username, category=category, genre=genre, sorting=sorting, page_val=1) }}
+                         {% if category == 'Search' %}?q={{ search_q }}{% endif %}">
+                            <div>All</div>
+                        </a>
+                        <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist', media_list=media_list,
+                         user_name=user.username, category=category, genre=genre, sorting=sorting, page_val=1) }}?lang=en
+                         {% if category == 'Search' %}&q={{ search_q }}{% endif %}">
+                            <div>English</div>
+                        </a>
+                        <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist', media_list=media_list,
+                         user_name=user.username, category=category, genre=genre, sorting=sorting, page_val=1) }}?lang=fr
+                         {% if category == 'Search' %}&q={{ search_q }}{% endif %}">
+                            <div>French</div>
+                        </a>
+                    </div>
+                </li>
+                {% endif %}
+
                 <li class="nav-item dropdown li-genre-sort text-grey">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown"><b>Genre {{ genre|upper }}</b></a>
                     <div class="dropdown-menu genre-drop">
