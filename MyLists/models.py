@@ -177,6 +177,9 @@ class UserMixin(flask_login.UserMixin):
 class User(UserMixin, db.Model):
     _group = ['User']
 
+    def __repr__(self):
+        return f"{self.username}"
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -202,11 +205,11 @@ class User(UserMixin, db.Model):
     add_books = db.Column(db.Boolean, nullable=False, default=False)
     add_games = db.Column(db.Boolean, nullable=False, default=False)
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
+    role = db.Column(db.Enum(RoleType), nullable=False, default=RoleType.USER)
     biography = db.Column(db.Text)
     transition_email = db.Column(db.String(120))
     activated_on = db.Column(db.DateTime)
     last_notif_read_time = db.Column(db.DateTime)
-    role = db.Column(db.Enum(RoleType), nullable=False, default=RoleType.USER)
 
     series_list = db.relationship('SeriesList', backref='user', lazy=True)
     anime_list = db.relationship('AnimeList', backref='user', lazy=True)
@@ -1147,6 +1150,9 @@ class Movies(MediaMixin, db.Model):
     _group = (ListType.MOVIES, MediaType.MOVIES)
     _type = 'Media'
 
+    def __repr__(self):
+        return self.name
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     original_name = db.Column(db.String(50), nullable=False)
@@ -1229,6 +1235,9 @@ class Movies(MediaMixin, db.Model):
 class MoviesList(MediaListMixin, db.Model):
     _group = (ListType.MOVIES, MediaType.MOVIES)
     _type = 'List'
+
+    def __repr__(self):
+        return f"{self.user}"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -1366,6 +1375,9 @@ class MoviesList(MediaListMixin, db.Model):
 class MoviesGenre(db.Model):
     _group = (ListType.MOVIES, MediaType.MOVIES)
 
+    def __repr__(self):
+        return self.genre
+
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     genre = db.Column(db.String(100), nullable=False)
@@ -1374,6 +1386,9 @@ class MoviesGenre(db.Model):
 
 class MoviesActors(db.Model):
     _group = (ListType.MOVIES, MediaType.MOVIES)
+
+    def __repr__(self):
+        return self.name
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)

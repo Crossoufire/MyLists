@@ -69,8 +69,15 @@ class SeriesActorsAdminView(ModelView):
 class MoviesAdminView(ModelView):
     def is_accessible(self):
         return current_user.role == RoleType.ADMIN
+
     column_display_pk = True
     column_exclude_list = ('synopsis',)
+
+    form_ajax_refs = {
+        'genres': {'fields': (MoviesGenre.genre,)},
+        'actors': {'fields': (MoviesActors.name,)},
+        'list_info': {'fields': (MoviesList.media_id,)},
+    }
 
 
 class MoviesGenreAdminView(ModelView):
@@ -138,7 +145,7 @@ class MyHomeAdminView(AdminIndexView):
 
 
 # Create the /admin index view:
-admin = Admin(app, name='Admin panel', index_view=MyHomeAdminView(), template_mode='bootstrap3')
+admin = Admin(app, name='Admin panel', template_mode='bootstrap4', index_view=MyHomeAdminView())
 
 admin.add_view(UserAdminView(User, db.session))
 admin.add_view(LastUpdateAdminView(UserLastUpdate, db.session))

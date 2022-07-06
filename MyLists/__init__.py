@@ -15,6 +15,7 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 # Recover the Flask app name (in .flaskenv) and check the config from the .env file
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['FLASK_ADMIN_SWATCH'] = 'darkly'
 
 
 # Initialization of the different Flask modules

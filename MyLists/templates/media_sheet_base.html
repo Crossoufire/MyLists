@@ -290,6 +290,8 @@
                     </div>
                     <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_sheet_form',
                      media_type=media._group[1].value, media_id=media.id) }}">Edit media</a>
+{#                    <a id="edit-button" class="btn btn-sm btn-warning text-dark"#}
+{#                       href="/admin/movies/edit/?id={{ media.id }}">Edit media</a>#}
                 {% else %}
                     <div class="custom-control custom-switch">
                         <input id="lock-button" class="custom-control-input" type="checkbox" onchange="lock_media(

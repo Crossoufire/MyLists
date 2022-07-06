@@ -144,7 +144,11 @@
                                             <div class="p-2" data-toggle="tooltip" title="Percentage of media noted
                                             ({{ media_global['total_score'] }}/{{ media_global['total_media'] }})">
                                                 <i class="fas fa-align-justify"></i><b class="m-l-4"> Scored</b><br>
-                                                {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
+                                                {% if media_global['total_media'] != 0 %}
+                                                    {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
+                                                {% else %}
+                                                    0.0 %
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <div class="col-12 m-b-10">
@@ -197,7 +201,11 @@
                                             <div class="p-2" data-toggle="tooltip" title="Percentage of media scored
                                             ({{ media_global['total_score'] }}/{{ media_global['total_media'] }})">
                                                 <i class="fas fa-align-justify"></i><b class="m-l-4">  Scored</b><br>
-                                                {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
+                                                {% if media_global['total_media'] != 0 %}
+                                                    {{ ((media_global['total_score']*100)/(media_global['total_media']))|round(1) }} %
+                                                {% else %}
+                                                    0.0 %
+                                                {% endif %}
                                             </div>
                                         </div>
                                         <div class="col-6 m-b-10" style="margin-left: -10px;">
