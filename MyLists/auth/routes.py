@@ -1,9 +1,6 @@
 from datetime import datetime
-
-# noinspection PyUnresolvedReferences
-from flask import Blueprint, flash, request, redirect, url_for, render_template, abort
+from flask import Blueprint, flash, request, redirect, url_for, render_template
 from flask_login import login_user, current_user, logout_user, login_required
-
 from MyLists import app, bcrypt, db
 from MyLists.auth.emails import send_register_email, send_reset_email
 from MyLists.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm
@@ -34,10 +31,10 @@ def home():
             flash('Login failed. Please check username and password.', 'warning')
     elif register_form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(register_form.register_password.data).decode('utf-8')
-        user = User(username=register_form.register_username.data.strip(),
-                    email=register_form.register_email.data,
-                    password=hashed_password,
-                    registered_on=datetime.utcnow())
+        user = User(username=register_form.register_username.data.strip(),  # type: ignore
+                    email=register_form.register_email.data,                # type: ignore
+                    password=hashed_password,                               # type: ignore
+                    registered_on=datetime.utcnow())                        # type: ignore
         db.session.add(user)
         db.session.commit()
         app.logger.info('[INFO] - [{}] New account registration: Username: {}, email: {}'
@@ -114,6 +111,7 @@ def register_account_token(token):
     user.active = True
     user.activated_on = datetime.utcnow()
     db.session.commit()
+
     app.logger.info('[INFO] - [{}] Account activated'.format(user.id))
     flash('Your account has been activated.', 'success')
 

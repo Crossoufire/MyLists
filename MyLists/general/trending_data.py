@@ -51,6 +51,7 @@ class TrendingData:
 
             if i == 11:
                 break
+
         return series_results
 
     def get_trending_movies(self):
@@ -77,4 +78,5 @@ class TrendingData:
 
             if i == 11:
                 break
+
         return movies_results

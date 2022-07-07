@@ -1,7 +1,6 @@
-from MyLists import app
-from flask_login import current_user
 from flask import render_template, url_for, Blueprint
-
+from flask_login import current_user
+from MyLists import app
 
 bp = Blueprint('errors', __name__)
 
