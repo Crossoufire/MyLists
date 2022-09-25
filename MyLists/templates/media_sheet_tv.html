@@ -92,7 +92,7 @@
                 <div style="font-size: 0.9rem;">
                     <i class="fas fa-tv fa-3x media-ticket" value="{{ media.vote_average }}"></i>
                 </div>
-                <div class="tv-vote-average">{{ media.vote_average }}</div>
+                <div class="tv-vote-average">{{ media.vote_average|round(1) }}</div>
                 <div class="tv-vote-count">({{ media.vote_count|int }} votes)</div>
             </li>
             <li class="m-b-15">

@@ -46,7 +46,7 @@
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-star"></i><b>&nbsp; TMDb Score</b></h5>
                 <i class="fas fa-ticket-alt fa-3x media-ticket" value="{{ media.vote_average }}"></i>
-                <div class="movie-vote-average">{{ media.vote_average }}</div>
+                <div class="movie-vote-average">{{ media.vote_average|round(1) }}</div>
                 <div class="movie-vote-count">({{ media.vote_count|int }} votes)</div>
             </li>
             <li class="m-b-15">
