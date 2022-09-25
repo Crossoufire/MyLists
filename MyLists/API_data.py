@@ -361,40 +361,52 @@ class ApiAnime(ApiTV):
         """ Recover the anime title from TMDb to the MyAnimeList API to gather more accurate genres with the
         <get_anime_genres> function """
 
-        response = requests.get(f"https://api.jikan.moe/v3/search/anime?q={anime_name}", timeout=10)
+        response = requests.get(f"https://api.jikan.moe/v4/anime?q={anime_name}", timeout=10)
 
         status_code(response.status_code)
 
         return json.loads(response.text)
 
-    @staticmethod
-    @sleep_and_retry
-    @limits(calls=1, period=4)
-    def get_api_anime_genres(mal_id):
-        """ Recover the genres of MyAnimeList with the shape: "genres":
-        [{"mal_id": 1, "type": "anime", "name": "Action", "url": ""},
-        {"mal_id": 37, "type": "anime", "name": "Supernatural","url": ""},
-        {"mal_id": 16, "type": "anime", "name": "Magic","url": ""},
-        {"mal_id": 10, "type": "anime", "name": "Fantasy","url": ""}] """
-
-        response = requests.get(f"https://api.jikan.moe/v3/anime/{mal_id}", timeout=10)
-
-        status_code(response.status_code)
-
-        return json.loads(response.text)
+    # @staticmethod
+    # @sleep_and_retry
+    # @limits(calls=1, period=4)
+    # def get_api_anime_genres(mal_id):
+    #     """ Recover the genres of MyAnimeList with the shape: "genres":
+    #     [{"mal_id": 1, "type": "anime", "name": "Action", "url": ""},
+    #     {"mal_id": 37, "type": "anime", "name": "Supernatural","url": ""},
+    #     {"mal_id": 16, "type": "anime", "name": "Magic","url": ""},
+    #     {"mal_id": 10, "type": "anime", "name": "Fantasy","url": ""}] """
+    #
+    #     response = requests.get(f"https://api.jikan.moe/v4/anime/{mal_id}", timeout=10)
+    #
+    #     status_code(response.status_code)
+    #
+    #     return json.loads(response.text)
 
     def get_anime_genres(self):
         anime_genres_list = []
         try:
             anime_search = self.api_anime_search(self.API_data.get("name"))
-            anime_genres = self.get_api_anime_genres(anime_search["results"][0]["mal_id"])['genres']
+            anime_genres = anime_search["data"][0]['genres']
+            anime_demographic = anime_search["data"][0]["demographics"]
+            anime_themes = anime_search["data"][0]["themes"]
         except Exception as e:
             app.logger.error(f'[ERROR] - Requesting the Jikan API: {e}', {'API': 'Jikan'})
             anime_genres = None
+            anime_demographic = None
+            anime_themes = None
 
         if anime_genres:
-            for i in range(0, len(anime_genres)):
-                anime_genres_list.append({'genre': anime_genres[i]['name'], 'genre_id': int(anime_genres[i]['mal_id'])})
+            for genre in anime_genres:
+                anime_genres_list.append({'genre': genre['name'], 'genre_id': int(genre['mal_id'])})
+
+        if anime_demographic:
+            for demo in anime_demographic:
+                anime_genres_list.append({'genre': demo['name'], 'genre_id': int(demo['mal_id'])})
+
+        if anime_themes:
+            for theme in anime_themes:
+                anime_genres_list.append({'genre': theme['name'], 'genre_id': int(theme['mal_id'])})
 
         return anime_genres_list
 
@@ -506,11 +518,13 @@ class ApiGames(ApiData):
 
     @staticmethod
     def HLTB_time(game_name):
-        games_list = HowLongToBeat().search(game_name.lower())
+        games_list = HowLongToBeat().search(game_name.lower(), similarity_case_sensitive=False)
+
         if games_list and len(games_list) > 0:
             game = max(games_list, key=lambda x: x.similarity)
-            return {'main': game.gameplay_main, 'extra': game.gameplay_main_extra,
-                    'completionist': game.gameplay_completionist}
+
+            return {'main': game.main_story, 'extra': game.main_extra,
+                    'completionist': game.completionist}
         else:
             return {'main': None, 'extra': None, 'completionist': None}
 
@@ -610,6 +624,8 @@ class ApiGames(ApiData):
                               'image_cover': self.get_media_cover()}
 
         hltb_time = self.HLTB_time(self.media_details['name'])
+
+        print(hltb_time)
 
         self.media_details['hltb_main_time'] = hltb_time['main']
         self.media_details['hltb_main_and_extra_time'] = hltb_time['extra']

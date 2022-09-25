@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from enum import Enum
+from operator import mul
 from pathlib import Path
 import flask_login
 import iso639
@@ -45,7 +46,7 @@ def get_models_group(list_type):
     return _
 
 
-def get_models_type(model_type):
+def get_models_type(model_type: str) -> list:
     _ = []
     registry = class_registry(db.Model)
     for cls in registry.values():
@@ -2027,8 +2028,7 @@ class Frames(db.Model):
                 list_all_frames.append(line.split(";"))
 
         for i in range(1, len(list_all_frames)):
-            frame = cls(level=int(list_all_frames[i][0]),
-                        image_id=list_all_frames[i][1])
+            frame = cls(level=int(list_all_frames[i][0]), image_id=list_all_frames[i][1])
             db.session.add(frame)
         db.session.commit()
 
@@ -2042,8 +2042,8 @@ class Frames(db.Model):
 
         frames = cls.query.order_by(cls.id).all()
         for i in range(1, len(list_all_frames)):
-            frames[i - 1].level = int(list_all_frames[i][0])
-            frames[i - 1].image_id = list_all_frames[i][1]
+            frames[i-1].level = int(list_all_frames[i][0])
+            frames[i-1].image_id = list_all_frames[i][1]
 
 
 # --- STATS -------------------------------------------------------------------------------------------------------
@@ -2493,15 +2493,14 @@ def get_media_count(user_id, list_type):
     return common_ids, common_elements
 
 
-# Recover the total time by medialist for all users
+# Compute the <total_time> for each <list_type> for each <user>
 def compute_media_time_spent():
-    for list_type in ListType:
-        media = eval(list_type.value.capitalize().replace('list', ''))
-        media_list = eval(list_type.value.capitalize().replace('l', 'L'))
-
-        if media_list == SeriesList or media_list == AnimeList or media_list == MoviesList:
+    all_media = get_models_type('Media')
+    all_media_list = get_models_type('List')
+    for media, media_list in zip(all_media, all_media_list):
+        if media_list in (SeriesList, AnimeList, MoviesList):
             query = db.session.query(User, media.duration, media_list.total,
-                                     func.sum(media.duration * media_list.total)) \
+                                     func.sum(media.duration * media_list.total))\
                 .join(media, media.id == media_list.media_id) \
                 .join(User, User.id == media_list.user_id) \
                 .group_by(media_list.user_id).all()
@@ -2516,9 +2515,11 @@ def compute_media_time_spent():
                 .join(media, media.id == media_list.media_id) \
                 .join(User, User.id == media_list.user_id) \
                 .group_by(media_list.user_id).all()
+        else:
+            return
 
         for q in query:
-            setattr(q[0], f"time_spent_{list_type.value.replace('list', '')}", q[3])
+            setattr(q[0], f"time_spent_{media.__class__.__name__.lower()}", q[3])
 
 
 # Recover the next airing media for the user

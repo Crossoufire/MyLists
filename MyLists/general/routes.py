@@ -7,7 +7,7 @@ from MyLists.API_data import ApiSeries, ApiMovies
 from MyLists.general.trending_data import TrendingData
 from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, compute_media_time_spent, \
     get_models_type
-from MyLists.scheduled_tasks import update_Mylists_stats, update_IGDB_API
+from MyLists.scheduled_tasks import update_Mylists_stats
 
 bp = Blueprint('general', __name__)
 
@@ -15,6 +15,7 @@ bp = Blueprint('general', __name__)
 @bp.before_app_first_request
 def create_first_data():
     db.create_all()
+
     if User.query.filter_by(id='1').first() is None:
         admin1 = User(username='admin',
                       email='admin@admin.com',
@@ -45,11 +46,12 @@ def create_first_data():
         Frames.add_frames_to_db()
         Badges.add_badges_to_db()
         Ranks.add_ranks_to_db()
+
     Frames.refresh_db_frames()
     Badges.refresh_db_badges()
     Ranks.refresh_db_ranks()
-
     compute_media_time_spent()
+
     db.session.commit()
 
 
@@ -142,17 +144,15 @@ def current_trends():
         app.logger.error('[ERROR] - Getting the movies trending info: {}.'.format(e))
         flash('The current movies trends from TMDb are not available right now.', 'warning')
 
-    series_results = TrendingData(series_info).get_trending_series()
-    movies_results = TrendingData(movies_info).get_trending_movies()
+    series_trends = TrendingData(series_info).get_trending_series()
+    movies_trends = TrendingData(movies_info).get_trending_movies()
 
     template = 'current_trends_pc.html'
     platform = request.headers.get('User-Agent')
-    if platform == "iphone" or platform == "android" or not platform or platform == "None":
-        template = 'current_trends_mobile.html'
-    if "iPhone" in platform or "Android" in platform:
+    if any(s in platform for s in ("iphone", "android", "None", "iPhone", 'Android')):
         template = 'current_trends_mobile.html'
 
-    return render_template(template, title="Current trends", series_trends=series_results, movies_trends=movies_results)
+    return render_template(template, title="Trends", series_trends=series_trends, movies_trends=movies_trends)
 
 
 @bp.route("/privacy_policy", methods=['GET'])
