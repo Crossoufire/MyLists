@@ -43,7 +43,7 @@
             </h2>
             <div class="add-shadow">
                 <b>Joined: {{ user.registered_on.strftime('%d %b %Y') }}</b><br>
-                <form id="all_followers" method="POST" action="{{ url_for('users.account', user_name=user.username) }}"
+                <form id="all_followers" method="POST" action="{{ url_for('users.account', username=user.username) }}"
                  style="display: inline;">
                     <input class="d-none" name="all_followers" value="True">
                     <a onclick="$('#all_followers').submit()"><b>Followers: {{ user.followers.count() }}</b></a>
@@ -68,7 +68,7 @@
             <div class="header-join-follow add-shadow">
                 <b>Joined: {{ user.registered_on.strftime('%d %b %Y') }}</b><br>
                 <form id='all_followers' style="display: inline;" method="POST" action={{ url_for('users.account',
-                 user_name=user.username) }}>
+                 username=user.username) }}>
                     <input class="d-none" name="all_followers" value="True">
                     <a onclick="$('#all_followers').submit()"><b>Followers: {{ user.followers.count() }}</b></a>
                 </form>

@@ -2,7 +2,7 @@
 
 
 {% block css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/mymedialist.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medialist.css') }}">
 {% endblock css %}
 
 
@@ -17,7 +17,7 @@
             </a>
             <div class="row series-collapse collapse show ac">
                 {% if not airing_series %}
-                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your SeriesList.</b></i></div>
+                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your series list.</b></i></div>
                 {% else %}
                     {% for series in airing_series %}
                         <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
@@ -25,7 +25,7 @@
                                 <div class="view overlay">
                                     <img class="card-img-top" src="/static/covers/series_covers/{{ series[0].image_cover }}"
                                          style="height: auto;" alt=""/>
-                                    <a class="mask flex-center rgba-black-strong" href="/media_sheet/Series/{{ series[0].id }}">
+                                    <a class="mask flex-center rgba-black-strong" href="/details/series/{{ series[0].id }}">
                                         <span class="font-mask text-center text-light">{{ series[0].name }}</span>
                                     </a>
                                 </div>
@@ -53,7 +53,7 @@
             </a>
             <div class="row anime-collapse collapse show ac">
                 {% if not airing_anime %}
-                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your AnimeList.</b></i></div>
+                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your anime list.</b></i></div>
                 {% else %}
                     {% for anime in airing_anime %}
                         <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
@@ -61,7 +61,7 @@
                                 <div class="view overlay">
                                     <img class="card-img-top" src="/static/covers/anime_covers/{{ anime[0].image_cover }}"
                                          style="height: auto;" alt=""/>
-                                    <a class="mask flex-center rgba-black-strong" href="/media_sheet/Anime/{{ anime[0].id }}">
+                                    <a class="mask flex-center rgba-black-strong" href="/details/anime/{{ anime[0].id }}">
                                         <span class="font-mask text-center text-light">{{ anime[0].name }}</span>
                                     </a>
                                 </div>
@@ -89,7 +89,7 @@
             </a>
             <div class="row movies-collapse collapse show ac">
                 {% if not airing_movies %}
-                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your MoviesList.</b></i></div>
+                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your movies list.</b></i></div>
                 {% else %}
                     {% for movies in airing_movies %}
                         <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
@@ -97,7 +97,7 @@
                                 <div class="view overlay">
                                     <img class="card-img-top" src="/static/covers/movies_covers/{{ movies[0].image_cover }}"
                                          height="300" width="200" style="height: auto;" alt=""/>
-                                    <a class="mask flex-center rgba-black-strong" href="/media_sheet/Movies/{{ movies[0].id }}">
+                                    <a class="mask flex-center rgba-black-strong" href="/details/movies/{{ movies[0].id }}">
                                         <span class="font-mask text-center text-light">{{ movies[0].name }}</span>
                                     </a>
                                 </div>
@@ -120,7 +120,7 @@
             </a>
             <div class="row games-collapse collapse show ac">
                 {% if not airing_games %}
-                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your GamesList.</b></i></div>
+                    <div class="col-12 text-center m-b-40"><i><b>No next airing found in your games list.</b></i></div>
                 {% else %}
                     {% for game in airing_games %}
                         <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
@@ -128,7 +128,7 @@
                                 <div class="view overlay">
                                     <img class="card-img-top" src="/static/covers/games_covers/{{ game.image_cover }}"
                                          height="300" width="200" style="height: auto;" alt=""/>
-                                    <a class="mask flex-center rgba-black-strong" href="/media_sheet/Games/{{ game.id }}">
+                                    <a class="mask flex-center rgba-black-strong" href="/details/games/{{ game.id }}">
                                         <span class="font-mask text-center text-light">{{ game.name }}</span>
                                     </a>
                                 </div>

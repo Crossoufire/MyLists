@@ -23,7 +23,7 @@ $(function() {
             if (ui.item.type === 'User') {
                 window.location.href = '/account/' + ui.item.display_name;
             } else {
-                window.location.href = '/media_sheet/' + ui.item.type + '/' + ui.item.api_id + '?search=True';
+                window.location.href = '/details/' + ui.item.type + '/' + ui.item.api_id + '?search=True';
             }
         }
     });
@@ -167,7 +167,7 @@ function display_notifications(data) {
 
             if (resp[i]['media_type'] === 'serieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Series/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/Series/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-tv text-series"></i>' +
@@ -184,7 +184,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'animelist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Anime/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/Anime/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-torii-gate text-anime"></i>' +
@@ -201,7 +201,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'movieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Movies/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/Movies/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-film text-movies"></i>' +
@@ -218,7 +218,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'gameslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/media_sheet/Games/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/Games/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-gamepad text-games"></i>' +

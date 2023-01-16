@@ -2,7 +2,7 @@
 
 
 {% block css %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/media_sheet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/media_details.css') }}">
     <style rel="stylesheet">{% block hr_color scoped %}{% endblock hr_color %}</style>
 {% endblock css %}
 
@@ -151,7 +151,7 @@
                         <h4 id="comment-title" class="m-l-15 m-r-15 m-t-15">
                             <i class="fas fa-pen-alt m-t-10"></i>&nbsp; <b>Comment</b>
                             <a class="far fa-edit m-t-10" data-toggle="tooltip" title="Add/Edit Comment"
-                             href="{{ url_for('main.write_comment', media_type=media._group[1].value, media_id=media.id) }}"></a>
+                             href="{{ url_for('main.write_comment', media_type=media.GROUP[1].value, media_id=media.id) }}"></a>
                         </h4>
                         <hr class="m-l-15 m-r-15 m-b-8">
                         <p class="comment-style m-l-20 m-r-20">
@@ -184,7 +184,7 @@
                         <b>{{ media.name }}</b>
                         {% if current_user.role.value != 'user' %}
                             <a class="m-t-4 float-r text-light fs-24" data-toggle="tooltip" title="Refresh the media"
-                            href="/media_sheet/{{ media.__class__.__name__ }}/{{ media.id }}?refresh=True">
+                            href="/details/{{ media.__class__.__name__ }}/{{ media.id }}?refresh=True">
                                 <i class="fas fa-xs fa-redo-alt"></i>
                             </a>
                         {% endif %}
@@ -210,7 +210,7 @@
                         {% set similar_genres = media.get_similar_genres() %}
                         {% if similar_genres %}
                             {% for sim_genre in similar_genres %}
-                                <a class="m-r-10" href="{{ url_for('main.media_sheet', media_type=media._group[1].value,
+                                <a class="m-r-10" href="{{ url_for('main.media_details', media_type=media.GROUP[1].value,
                                 media_id=sim_genre[0].id) }}">
                                     <img class="m-b-10" height="80" width="53" data-toggle="tooltip"
                                      title="{{ sim_genre[0].name }}" src="{{ sim_genre[0].get_media_cover() }}" alt=""/>
@@ -230,7 +230,7 @@
             <div class="row" style="margin-top: -5px;">
                  {% for follow in media.in_follows_lists() %}
                     <div class="col col-lg-4 col-md-4 col-sm-6 col-12 m-b-35">
-                        <a href="{{ url_for('users.account', user_name=follow[0].username) }}">
+                        <a href="{{ url_for('users.account', username=follow[0].username) }}">
                             <div class="follow-div text-light">
                                 <div class="text-light">
                                     <img class="follow-img" src="{{ url_for('static', filename='profile_pics/'
@@ -288,8 +288,8 @@
                          '{{ media.id }}', '{{ media_list }}')" checked>
                         <label id="lock-button-label" class="custom-control-label" for="lock-button">Media is Locked</label>
                     </div>
-                    <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_sheet_form',
-                     media_type=media._group[1].value, media_id=media.id) }}">Edit media</a>
+                    <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_details',
+                     media_type=media.GROUP[1].value, media_id=media.id) }}">Edit media</a>
 {#                    <a id="edit-button" class="btn btn-sm btn-warning text-dark"#}
 {#                       href="/admin/movies/edit/?id={{ media.id }}">Edit media</a>#}
                 {% else %}
@@ -298,14 +298,14 @@
                          '{{ media.id }}', '{{ media_list }}')">
                         <label id="lock-button-label" class="custom-control-label" for="lock-button">Media is Unlocked</label>
                     </div>
-                    <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_sheet_form',
-                     media_type=media._group[1].value, media_id=media.id) }}" style="display: none;">Edit media</a>
+                    <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_details',
+                     media_type=media.GROUP[1].value, media_id=media.id) }}" style="display: none;">Edit media</a>
                 {% endif %}
             </div>
         {% elif current_user.role.value != 'user' and (media_list == 'gameslist' or media_list == 'bookslist') %}
             <div class="m-b-30 text-right">
-                <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_sheet_form',
-                 media_type=media._group[1].value, media_id=media.id) }}">Edit media</a>
+                <a id="edit-button" class="btn btn-sm btn-warning text-dark" href="{{ url_for('main.media_details',
+                 media_type=media.GROUP[1].value, media_id=media.id) }}">Edit media</a>
             </div>
         {% endif %}
     </div>
@@ -354,6 +354,6 @@
 
 
 {% block script %}
-    <script type="text/javascript" src="{{ url_for('static', filename='js/media_sheet.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/media_details.js') }}"></script>
 {% endblock script %}
 

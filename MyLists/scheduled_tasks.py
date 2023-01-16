@@ -1,16 +1,20 @@
+""" Scheduled tasks functions and classes """
+
 import os
 import json
 import logging
+from enum import Enum
 from pathlib import Path
+from typing import List, Tuple, Dict, Iterable
 from MyLists import app, db
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, func, true, text
 from datetime import datetime, timedelta
 from MyLists.API_data import ApiData, ApiMovies, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
-    UserLastUpdate, Notifications, ListType, Status, Movies, MoviesList, MoviesActors, MoviesGenre, GlobalStats, \
-    MyListsStats, Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, \
-    BooksAuthors, compute_media_time_spent, Anime, AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, \
-    AnimeEpisodesPerSeason
+    UserLastUpdate, Notifications, ListType, Status, Movies, MoviesList, MoviesActors, MoviesGenre, MyListsStats, \
+    Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, \
+    BooksAuthors, Anime, AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, \
+    AnimeEpisodesPerSeason, User, RoleType, get_models_type
 
 
 def remove_non_list_media():
@@ -589,6 +593,40 @@ def automatic_movies_locking():
     app.logger.info('###################################################################')
 
 
+def update_IGDB_API():
+    import dotenv
+    import requests
+
+    app.logger.info('###################################################################')
+    app.logger.info('[SYSTEM] - Recovering new IGDB API key')
+
+    try:
+        r = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={app.config['CLIENT_IGDB']}&"
+                          f"client_secret={app.config['SECRET_IGDB']}&grant_type=client_credentials")
+        response = json.loads(r.text)
+
+        # Recover the new IGDB API KEY/TOKEN
+        new_IGDB_token = response['access_token']
+
+        # Get the .env file and load it
+        dotenv_file = dotenv.find_dotenv()
+        dotenv.load_dotenv(dotenv_file)
+
+        # Set the new IGDB API KEY to the actual environment
+        os.environ['IGDB_API_KEY'] = f'{new_IGDB_token}'
+
+        # Set the new IGDB API KEY to the actual app config
+        app.config['IGDB_API_KEY'] = f'{new_IGDB_token}'
+
+        # Write the new IGDB API KEY to the .env file
+        dotenv.set_key(dotenv_file, 'IGDB_API_KEY', f'{new_IGDB_token}')
+    except Exception as e:
+        app.logger.error(e)
+
+    app.logger.info('[SYSTEM] - Finished getting new IGDB API key')
+    app.logger.info('###################################################################')
+
+
 def update_Mylists_stats():
     stats = GlobalStats()
 
@@ -667,38 +705,270 @@ def update_Mylists_stats():
     db.session.commit()
 
 
-def update_IGDB_API():
-    import dotenv
-    import requests
+def compute_media_time_spent():
+    """ Compute the <total_time> for each <list_type> for each <user> """
 
-    app.logger.info('###################################################################')
-    app.logger.info('[SYSTEM] - Recovering new IGDB API key')
+    all_media = get_models_type('Media')
+    all_media_list = get_models_type('List')
+    for media, media_list in zip(all_media, all_media_list):
+        if media_list in (SeriesList, AnimeList, MoviesList):
+            query = db.session.query(User, media.duration, media_list.total,
+                                     func.sum(media.duration * media_list.total))\
+                .join(media, media.id == media_list.media_id) \
+                .join(User, User.id == media_list.user_id) \
+                .group_by(media_list.user_id).all()
+        elif media_list == GamesList:
+            query = db.session.query(User, media_list.playtime, media_list.score, func.sum(media_list.playtime)) \
+                .join(media, media.id == media_list.media_id) \
+                .join(User, User.id == media_list.user_id) \
+                .group_by(media_list.user_id).all()
+        elif media_list == BooksList:
+            query = db.session.query(User, media_list.total, media_list.score,
+                                     func.sum(BooksList._time_per_page * media_list.total)) \
+                .join(media, media.id == media_list.media_id) \
+                .join(User, User.id == media_list.user_id) \
+                .group_by(media_list.user_id).all()
+        else:
+            return
 
-    try:
-        r = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={app.config['CLIENT_IGDB']}&"
-                          f"client_secret={app.config['SECRET_IGDB']}&grant_type=client_credentials")
-        response = json.loads(r.text)
+        for q in query:
+            setattr(q[0], f"time_spent_{media.__class__.__name__.lower()}", q[3])
 
-        # Recover the new IGDB API KEY/TOKEN
-        new_IGDB_token = response['access_token']
 
-        # Get the .env file and load it
-        dotenv_file = dotenv.find_dotenv()
-        dotenv.load_dotenv(dotenv_file)
+class GlobalStats:
+    """ Get all the global stats for MyLists """
 
-        # Set the new IGDB API KEY to the actual environment
-        os.environ['IGDB_API_KEY'] = f'{new_IGDB_token}'
+    def __init__(self):
+        self.tv_list_type = [ListType.SERIES, ListType.ANIME]
+        self.tmdb_list_type = [ListType.SERIES, ListType.ANIME, ListType.MOVIES]
 
-        # Set the new IGDB API KEY to the actual app config
-        app.config['IGDB_API_KEY'] = f'{new_IGDB_token}'
+        self.all_list_type = ListType
 
-        # Write the new IGDB API KEY to the .env file
-        dotenv.set_key(dotenv_file, 'IGDB_API_KEY', f'{new_IGDB_token}')
-    except Exception as e:
-        app.logger.error(e)
+        self.media = None
+        self.media_genre = None
+        self.media_actors = None
+        self.media_eps = None
+        self.media_list = None
+        self.media_authors = None
+        self.media_comp = None
 
-    app.logger.info('[SYSTEM] - Finished getting new IGDB API key')
-    app.logger.info('###################################################################')
+    @classmethod
+    def get_total_time_spent(cls) -> List[int]:
+        """ Get total time spent (min) by all users for all media """
+
+        times_spent = db.session.query(func.sum(User.time_spent_series), func.sum(User.time_spent_anime),
+                                       func.sum(User.time_spent_movies), func.sum(User.time_spent_books),
+                                       func.sum(User.time_spent_games)) \
+            .filter(User.role != RoleType.ADMIN, User.active == true).all()
+
+        times_spent = [0 if not v else v for v in times_spent[0]]
+
+        return times_spent
+
+    @staticmethod
+    def get_nb_media_and_users() -> Tuple[Dict, int]:
+        """ Get total number of media and users in MyLists """
+
+        # Queries
+        nb_users = User.query.filter(User.role != RoleType.ADMIN, User.active == true).count()
+        nb_series = Series.query.count()
+        nb_anime = Anime.query.count()
+        nb_movies = Movies.query.count()
+        nb_books = Books.query.count()
+        nb_games = Games.query.count()
+
+        nb_media = {"series": nb_series,
+                    "anime": nb_anime,
+                    "movies": nb_movies,
+                    "books": nb_books,
+                    "games": nb_games}
+
+        return nb_media, nb_users
+
+    def get_query_data(self, list_type: Enum):
+        """ Form a first part of the query depending on the <list_type> """
+
+        # Get SQL models using <eval> and <list_type> enum
+        self.media = eval(list_type.value.capitalize().replace('list', ''))
+        self.media_list = eval(list_type.value.capitalize().replace('l', 'L'))
+        self.media_genre = eval(list_type.value.capitalize().replace('list', 'Genre'))
+
+        # Add other SQL models depending on <list_type>
+        if list_type in (ListType.SERIES, ListType.ANIME, ListType.MOVIES):
+            self.media_actors = eval(list_type.value.capitalize().replace('list', 'Actors'))
+        if list_type in (ListType.SERIES, ListType.ANIME):
+            self.media_eps = eval(list_type.value.capitalize().replace('list', 'EpisodesPerSeason'))
+        if list_type == ListType.BOOKS:
+            self.media_authors = eval(list_type.value.capitalize().replace('list', 'Authors'))
+        if list_type == ListType.GAMES:
+            self.media_comp = eval(list_type.value.capitalize().replace('list', 'Companies'))
+
+    def get_top_media(self) -> List[Iterable]:
+        """ Get the top media in all users list (for Series, Anime, Movies, Games and Books) """
+
+        queries = []
+        for list_type in self.all_list_type:
+            # Populate attributes with appropriate SQL models
+            self.get_query_data(list_type)
+
+            # Create query for each <list_type>
+            query = db.session.query(self.media.name, self.media_list,
+                                     func.count(self.media_list.media_id == self.media.id).label("count"))\
+                .join(self.media_list, self.media_list.media_id == self.media.id)\
+                .group_by(self.media_list.media_id).order_by(text("count desc")).limit(5).all()
+
+            # Append results
+            queries.append(query)
+
+        return queries
+
+    def get_top_genres(self) -> List[Iterable]:
+        """ Get the top genres in all users list (for Series, Anime, Movies, Games and Books) """
+
+        queries = []
+        for list_type in self.all_list_type:
+            # Populate attributes with appropriate SQL models
+            self.get_query_data(list_type)
+
+            # Create query for each <list_type>
+            query = db.session.query(self.media_genre.genre, self.media_list,
+                                     func.count(self.media_genre.genre).label('count'))\
+                .join(self.media_genre, self.media_genre.media_id == self.media_list.media_id)\
+                .group_by(self.media_genre.genre).order_by(text('count desc')).limit(5).all()
+
+            # Append results
+            queries.append(query)
+
+        return queries
+
+    def get_top_actors(self) -> List[Iterable]:
+        """ Get the top actors in all users list (for Series, Anime, Movies) """
+
+        queries = []
+        for list_type in self.tmdb_list_type:
+            # Populate attributes with appropriate SQL models
+            self.get_query_data(list_type)
+
+            # Create query
+            query = db.session.query(self.media_actors.name, self.media_list,
+                                     func.count(self.media_actors.name).label('count'))\
+                .join(self.media_actors, self.media_actors.media_id == self.media_list.media_id)\
+                .order_by(text('count desc')).limit(5).all()
+
+            # Append to list
+            queries.append(query)
+
+        return queries
+
+    def get_top_dropped(self) -> List[Iterable]:
+        """ Get the top dropped media in all users list (for Series and Anime) """
+
+        queries = []
+        for list_type in self.tv_list_type:
+            # Populate attributes with appropriate SQL models
+            self.get_query_data(list_type)
+
+            # Create query
+            query = db.session.query(self.media.name, self.media_list,
+                                     func.count(self.media_list.media_id == self.media.id).label('count'))\
+                .join(self.media_list, self.media_list.media_id == self.media.id)\
+                .filter(self.media_list.status == Status.DROPPED)\
+                .group_by(self.media_list.media_id)\
+                .order_by(text('count desc')).limit(5).all()
+
+            # Append to list
+            queries.append(query)
+
+        return queries
+
+    def get_total_eps_seasons(self) -> List[Iterable]:
+        """ Get the total episodes in all users list (for Series and Anime) """
+
+        queries = []
+        for list_type in self.tv_list_type:
+            # Populate attributes with appropriate SQL models
+            self.get_query_data(list_type)
+
+            # Create query
+            query = db.session.query(func.sum(self.media_list.total), func.sum(self.media_list.current_season)).all()
+
+            # Append to list
+            queries.append(query)
+
+        return queries
+
+    def get_top_directors(self) -> List:
+        """ Get the top directors in all users list for Movies """
+
+        # Populate attributes with appropriate SQL models
+        self.get_query_data(ListType.MOVIES)
+
+        # Create query
+        query = db.session.query(self.media.director_name, self.media_list,
+                                 func.count(self.media.director_name).label('count')) \
+            .join(self.media, self.media.id == self.media_list.media_id) \
+            .group_by(self.media.director_name).filter(self.media.director_name != 'Unknown')\
+            .order_by(text('count desc')).limit(5).all()
+
+        return [[], [], query, [], []]
+
+    def get_top_developers(self) -> List:
+        """ Get the top developers in all users list for Games """
+
+        # Populate attributes with appropriate SQL models
+        self.get_query_data(ListType.GAMES)
+
+        # Create query
+        query = db.session.query(self.media_comp.name, self.media_list,
+                                 func.count(self.media_comp.name).label('count'))\
+            .join(self.media_comp, self.media_comp.media_id == self.media_list.media_id) \
+            .group_by(self.media_comp.name) \
+            .filter(self.media_comp.name != 'Unknown', self.media_comp.developer == true) \
+            .order_by(text('count desc')).limit(5).all()
+
+        return [[], [], [], [], query]
+
+    def get_top_authors(self) -> List:
+        """ Get the top authors for Books in all users list """
+
+        # Populate attributes with appropriate SQL models
+        self.get_query_data(ListType.BOOKS)
+
+        # Create query
+        query = db.session.query(self.media_authors.name, self.media_list,
+                                 func.count(self.media_authors.name).label('count'))\
+            .join(self.media_authors, self.media_authors.media_id == self.media_list.media_id)\
+            .group_by(self.media_authors.name).filter(self.media_authors.name != 'Unknown')\
+            .order_by(text('count desc')).limit(5).all()
+
+        return [[], [], [], query, []]
+
+    def get_total_movies(self) -> int:
+        """ Get total movies in all users list """
+
+        # Populate attributes with appropriate SQL models
+        self.get_query_data(ListType.MOVIES)
+
+        # Create query
+        total_movies = db.session.query(self.media).count()
+
+        return total_movies
+
+    def get_total_book_pages(self) -> int:
+        """ Get total books pages in all users list """
+
+        # Populate attributes with appropriate SQL models
+        self.get_query_data(ListType.BOOKS)
+
+        # Create query
+        query = db.session.query(func.sum(self.media_list.actual_page)).all()
+
+        try:
+            data = query[0][0]
+        except:
+            data = 0
+
+        return data
 
 
 # ---------------------------------------------------------------------------------------------------------------

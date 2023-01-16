@@ -1,10 +1,18 @@
+"""
+Functions for the User routes
+"""
+
+from typing import Dict, Tuple, List
 from MyLists.models import get_models_type, BooksList, GamesList, AnimeList
 
 
-def get_all_media_info(user):
-    # Get the all media info in a dict for each media type
-    list_models = get_models_type('List')
+def get_all_media_info(user) -> Tuple[List[Dict], Dict]:
+    """ Get all the media info and the global statistics for a user """
 
+    # Get all media info in dict for each media type
+    list_models = get_models_type("List")
+
+    # All variables
     each_media_data = []
     total_time = 0
     total_media = 0
@@ -15,6 +23,7 @@ def get_all_media_info(user):
     total_time_by_media_type = []
     all_colors_by_media_type = []
 
+    # Remove media not used by <user>
     if not user.add_anime:
         list_models.remove(AnimeList)
     if not user.add_books:
@@ -36,20 +45,20 @@ def get_all_media_info(user):
             media_per_score = model.get_media_count_by_score(user.id)
             media_score = model.get_media_score(user.id)
 
-        # Each <media_dict> dict contains the data for one media type (series, anime, movies, etc...)
+        # Each <media_dict> dict contains data for one media type (series, anime, movies, etc...)
         media_dict = {'time_hours': round(media_time/60), 'time_days': round(media_time/1440, 2),
                       'media_level': media_level, 'media_score': media_score, 'media_per_score': media_per_score,
                       'media_favorites': media_favorites, 'media': model.__name__.replace('List', ''),
                       'media_type': model.__name__.lower(), 'media_count': media_count, 'media_color': media_color,
                       'media_total_eps': media_total_eps, 'nodata': nodata, 'total': total}
 
-        # Recover the total time for all media
-        total_time += media_dict['time_hours']
+        # Recover total time for all media
+        total_time += media_dict["time_hours"]
 
-        # Get total time as list for chart js graph in account
+        # Get total time as list for <ChartJS> graph in account
         total_time_by_media_type.append(str(media_dict['time_hours']))
 
-        # Get all colors as list for chart js graph in account
+        # Get all colors as list for <ChartJS> graph in account
         all_colors_by_media_type.append(media_dict['media_color'])
 
         # Recover total number of media
@@ -59,10 +68,10 @@ def get_all_media_info(user):
         if model != BooksList:
             total_media_and_eps += media_dict['media_total_eps']
 
-        # Recover the total score of all media
+        # Recover total score of all media
         total_score += media_dict['media_score']['scored_media']
 
-        # Recover the total mean score of all media
+        # Recover total mean score of all media
         if user.add_feeling:
             tmp.append(media_per_score)
         else:

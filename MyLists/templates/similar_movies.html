@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medialist.css') }}">
+{% endblock css %}
+
+
+{% block content %}
+    <div class="m-t-50 ml-auto mr-auto m-b-50">
+        <a class="text-light" data-toggle="collapse" href=".movies-collapse" onclick="change_caret(this)">
+            <h4 class="mb-2 p-1 left-movies right-movies" style="background: #514d49;">
+                &nbsp;
+                <i class="fas fa-caret-down"></i>
+                <b>&nbsp;Similar movies to: {{ s_movie.name|capitalize }}</b>
+            </h4>
+        </a>
+        <div class="row movies-collapse collapse show ac">
+            <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
+                <div class="text-center"></div>
+                <div class="text-center"></div>
+                <div class="card bg-transparent">
+                    <div class="view overlay">
+                        <img class="card-img-top" src="/static/covers/movies_covers/{{ s_movie.image_cover }}"
+                             height="300" width="200" style="height: auto;" alt=""/>
+                        <a class="mask flex-center rgba-black-strong" href="/details/Movies/{{ s_movie.id }}">
+                            <span class="font-mask text-center text-light">{{ s_movie.name }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% if not sim_movies %}
+                <div class="col-12 text-center m-b-40"><i><b>No recommended movies for the provided title.</b></i></div>
+            {% else %}
+                {% for movie in sim_movies %}
+                    <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
+                        <div class="text-center"></div>
+                        <div class="text-center"></div>
+                        <div class="card bg-transparent">
+                            <div class="view overlay">
+                                <img class="card-img-top" src="/static/covers/movies_covers/{{ movie.image_cover }}"
+                                     height="300" width="200" style="height: auto;" alt=""/>
+                                <a class="mask flex-center rgba-black-strong" href="/details/movies/{{ movie.id }}">
+                                    <span class="font-mask text-center text-light">{{ movie.name }}</span>
+                                </a>
+                            </div>
+                            <div class="absolute-data text-center bg-movies">Similarity: {{ movie.cos_sim|round(2) }}</div>
+                            <div class="absolute-data-2 text-center bg-movies">TMDB score: {{ movie.vote_average|round(2) }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+{% endblock script %}

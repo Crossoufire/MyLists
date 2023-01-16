@@ -52,8 +52,8 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle fs-18" data-toggle="dropdown"><b>MyLists</b></a>
                         <div class="dropdown-menu medialist-dropdown">
-                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                             media_list='serieslist', user_name=current_user.username) }}">
+                            <a class="dropdown-item text-light" href="{{ url_for('main.medialist',
+                             media_type='series', username=current_user.username) }}">
                                 <div class="row">
                                     <div class="col-3" style="margin-right: -5px;">
                                         <i class="fas fa-tv text-series"></i>
@@ -62,8 +62,8 @@
                                 </div>
                             </a>
                             {% if current_user.add_anime %}
-                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                                 media_list='animelist', user_name=current_user.username) }}">
+                                <a class="dropdown-item text-light" href="{{ url_for('main.medialist',
+                                 media_type='anime', username=current_user.username) }}">
                                     <div class="row">
                                         <div class="col-3" style="margin-right: -5px;">
                                             <i class="fas fa-torii-gate text-anime"></i>
@@ -72,8 +72,8 @@
                                     </div>
                                 </a>
                             {% endif %}
-                            <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                             media_list='movieslist', user_name=current_user.username) }}">
+                            <a class="dropdown-item text-light" href="{{ url_for('main.medialist',
+                             media_type='movies', username=current_user.username) }}">
                                 <div class="row">
                                     <div class="col-3" style="margin-right: -5px;">
                                         <i class="fas fa-film text-movies"></i>
@@ -82,8 +82,8 @@
                                 </div>
                             </a>
                             {% if current_user.add_books %}
-                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                                 media_list='bookslist', user_name=current_user.username) }}">
+                                <a class="dropdown-item text-light" href="{{ url_for('main.medialist',
+                                 media_type='books', username=current_user.username) }}">
                                     <div class="row">
                                         <div class="col-3" style="margin-right: -5px;">
                                             <i class="fas fa-book text-books"></i>
@@ -93,8 +93,8 @@
                                 </a>
                             {% endif %}
                             {% if current_user.add_games %}
-                                <a class="dropdown-item text-light" href="{{ url_for('main.mymedialist',
-                                 media_list='gameslist', user_name=current_user.username) }}">
+                                <a class="dropdown-item text-light" href="{{ url_for('main.medialist',
+                                 media_type='games', username=current_user.username) }}">
                                     <div class="row">
                                         <div class="col-3" style="margin-right: -5px;">
                                             <i class="fas fa-gamepad text-games"></i>
@@ -172,7 +172,7 @@
                             </a>
                             <div id="profile-dropdown" class="dropdown-menu medialist-dropdown">
                                 <a class="dropdown-item text-light" href="{{ url_for('users.account',
-                                user_name=current_user.username) }}">
+                                username=current_user.username) }}">
                                     <i class="fas fa-user"></i>&nbsp;&nbsp;&nbsp;&nbsp;Profile
                                 </a>
                                 {% if current_user.role.value == 'admin' %}
@@ -252,15 +252,6 @@
 
 <main role="main" class="container">
     <div class="content">
-{#        {% if current_user.is_authenticated %}#}
-{#            {% with task = current_user.get_task_in_progress('import_list') %}#}
-{#                {% if task %}#}
-{#                    <div class="m-t-16 alert alert-success" role="alert">#}
-{#                        <span id="{{ task.id }}-progress"></span>#}
-{#                    </div>#}
-{#                {% endif %}#}
-{#            {% endwith %}#}
-{#        {% endif %}#}
         {% block content %}
         {% endblock content %}
     </div>
@@ -304,31 +295,6 @@
                 return false;
             }
         });
-
-{#        {% if current_user.is_authenticated %}#}
-{#            {% with task = current_user.get_task_in_progress('import_list') %}#}
-{#                {% if task %}#}
-{#                    window.onload = function get_progress() {#}
-{#                        $.ajax ({#}
-{#                            type: "POST",#}
-{#                            url: "/progress_import",#}
-{#                            contentType: "application/json",#}
-{#                            data: JSON.stringify({task_id: '{{ task.id }}'}),#}
-{#                            dataType: "json",#}
-{#                            success: function(data) {#}
-{#                                if (data.progress.progress === 100) {#}
-{#                                    $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} Completed!');#}
-{#                                    $('#'+'{{ task.id }}'+'-progress').parent().delay(2000).fadeOut();#}
-{#                                } else {#}
-{#                                    $('#'+'{{ task.id }}'+'-progress').text('{{ task.description }} '+data.progress.progress+'%');#}
-{#                                    setTimeout(get_progress, 2500);#}
-{#                                }#}
-{#                            }#}
-{#                        });#}
-{#                    }#}
-{#                {% endif %}#}
-{#            {% endwith %}#}
-{#        {% endif %}#}
     });
 </script>
 <footer class="text-center text-lg-left m-t-10" style="background-color: #0a151c;">

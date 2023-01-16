@@ -1,3 +1,7 @@
+"""
+APIs related functions and classes
+"""
+
 import json
 import os.path
 import re
@@ -8,28 +12,25 @@ from urllib import request
 from urllib.request import urlretrieve, Request
 import requests
 from PIL import Image
-from flask import abort, url_for
+from flask import url_for
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
 from MyLists import app, db
 from MyLists.models import ListType, MediaType, Series, SeriesGenre, SeriesActors, Movies, SeriesNetwork, \
     SeriesEpisodesPerSeason, MoviesGenre, MoviesActors, GamesCompanies, GamesPlatforms, Games, GamesGenre, Books, \
-    BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason, latin_alphabet, \
-    change_air_format
+    BooksGenre, BooksAuthors, Anime, AnimeGenre, AnimeActors, AnimeNetwork, AnimeEpisodesPerSeason, change_air_format
 
 
 # --- GENERAL ---------------------------------------------------------------------------------------------------
+from MyLists.utils import latin_alphabet
 
 
-def status_code(status_code):
-    if status_code != 200:
-        abort(status_code)
+def clean_text(raw_html: str) -> str:
+    """ Clean HTML text """
 
-
-def clean_text(raw_html):
     try:
-        cleanr = re.compile('<.*?>')
-        cleantext = re.sub(cleanr, '', raw_html)
+        cleanr = re.compile("<.*?>")
+        cleantext = re.sub(cleanr, "", raw_html)
     except:
         cleantext = 'Unknown'
 
@@ -74,19 +75,24 @@ class ApiData:
 
 
 class ApiTMDB(ApiData):
+    """ TMDB API class (Series, Anime and Movies) """
+
     group = []
 
-    def __init__(self, API_id=None):
+    def __init__(self, API_id: int = None):
         super().__init__(API_id)
-        self.api_key = app.config['THEMOVIEDB_API_KEY']
-        self.poster_base_url = 'https://image.tmdb.org/t/p/w300'
+        self.api_key = app.config["THEMOVIEDB_API_KEY"]
+        self.poster_base_url = "https://image.tmdb.org/t/p/w300"
         self.API_id = API_id
 
     def search(self, media_name, page=1):
         response = requests.get("https://api.themoviedb.org/3/search/multi?api_key={0}&query={1}&page={2}"
                                 .format(self.api_key, media_name, page), timeout=10)
 
-        status_code(response.status_code)
+        # Raise for error
+        response.raise_for_status()
+
+        # Load text otherwise
         self.API_data = json.loads(response.text)
 
     def get_autocomplete_list(self):
@@ -222,20 +228,23 @@ class ApiTMDB(ApiData):
 
 
 class ApiTV(ApiTMDB):
+    """ TMDB API class (Series and Anime) """
+
     group = []
 
     def get_details_and_credits_data(self):
         response = requests.get("https://api.themoviedb.org/3/tv/{}?api_key={}&append_to_response=credits"
                                 .format(self.API_id, self.api_key), timeout=15)
 
-        status_code(response.status_code)
+        response.raise_for_status()
         self.API_data = json.loads(response.text)
 
     def get_changed_data(self):
         response = requests.get("https://api.themoviedb.org/3/tv/changes?api_key={0}"
                                 .format(self.api_key), timeout=15)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
 
         return json.loads(response.text)
 
@@ -315,15 +324,20 @@ class ApiTV(ApiTMDB):
 
 
 class ApiSeries(ApiTV):
+    """ TMDB API class for Series """
+
     _duration = 40
     group = [ListType.SERIES, MediaType.SERIES]
     local_covers_path = Path(app.root_path, "static/covers/series_covers/")
 
-    def get_trending(self):
-        response = requests.get("https://api.themoviedb.org/3/trending/tv/week?api_key={}"
-                                .format(self.api_key), timeout=10)
+    def get_trending(self) -> str:
+        """ Get week trending data from TMDB API """
 
-        status_code(response.status_code)
+        # get response
+        response = requests.get(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.api_key}", timeout=10)
+
+        # Raise error if not 200
+        response.raise_for_status()
 
         return json.loads(response.text)
 
@@ -363,7 +377,8 @@ class ApiAnime(ApiTV):
 
         response = requests.get(f"https://api.jikan.moe/v4/anime?q={anime_name}", timeout=10)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
 
         return json.loads(response.text)
 
@@ -440,14 +455,16 @@ class ApiMovies(ApiTMDB):
         response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=credits"
                                 .format(self.API_id, self.api_key), timeout=15)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
         self.API_data = json.loads(response.text)
 
     def get_changed_data(self):
         response = requests.get("https://api.themoviedb.org/3/movie/changes?api_key={0}"
                                 .format(self.api_key), timeout=15)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
 
         return json.loads(response.text)
 
@@ -455,7 +472,8 @@ class ApiMovies(ApiTMDB):
         response = requests.get("https://api.themoviedb.org/3/trending/movie/week?api_key={}"
                                 .format(self.api_key), timeout=10)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
 
         return json.loads(response.text)
 
@@ -538,7 +556,8 @@ class ApiGames(ApiData):
 
         self.query = Games.query.filter(Games.name.ilike('%' + game_name + '%')).all()
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
         self.API_data = json.loads(response.text)
 
     def get_autocomplete_list(self):
@@ -604,7 +623,8 @@ class ApiGames(ApiData):
             .format(self.API_id)
         response = requests.post('https://api.igdb.com/v4/games', data=body, headers=headers, timeout=15)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
         self.API_data = json.loads(response.text)
         self.API_data = self.API_data[0]
 
@@ -740,7 +760,8 @@ class ApiBooks(ApiData):
 
         # self.query = Books.query.filter(Books.name.ilike('%' + qry + '%'))
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
         self.API_data = json.loads(response.text)
 
         # try:
@@ -814,7 +835,8 @@ class ApiBooks(ApiData):
     def get_details_and_credits_data(self):
         response = requests.get(f'https://www.googleapis.com/books/v1/volumes/{self.API_id}', timeout=10)
 
-        status_code(response.status_code)
+        response.raise_for_status()
+
         self.API_data = json.loads(response.text)
         self.API_data = self.API_data['volumeInfo']
 

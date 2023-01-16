@@ -20,7 +20,7 @@
                     {% for media in results %}
                         <a class="card mb-4 {% if media['media'] == 'Series' %}right-series {% elif media['media'] ==
                          'Anime' %}right-anime {% elif media['media'] == 'Movies' %}right-movies {% elif media['media']
-                         == 'Books' %}right-books {% else %}right-games{% endif %}" href="{{ url_for('main.media_sheet',
+                         == 'Books' %}right-books {% else %}right-games{% endif %}" href="{{ url_for('main.media_details',
                          media_type=media['media'], media_id=media['api_id']) }}?search=True" style="background: #1b2b38;">
                             <div class="row no-gutters">
                                 <div class="col-lg-2 col-sm-12 mobile-img">
@@ -44,7 +44,7 @@
                     {% endfor %}
                 {% else %}
                     {% for user in results %}
-                        <a class="card mb-4" href="{{ url_for('users.account', user_name=user['name']) }}"
+                        <a class="card mb-4" href="{{ url_for('users.account', username=user['name']) }}"
                          style="background: #2a2b2d;">
                             <div class="row no-gutters">
                                 <div class="col-lg-2 col-sm-12 mobile-img">

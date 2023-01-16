@@ -13,8 +13,8 @@
                                 <img class="float-left m-r-10 m-t-4" height='40' width='40' data-toggle="tooltip"
                                  title="{{ media['media_level']['grade_title'] }}"
                                  src="{{ media['media_level']['grade_id'] }}.png" alt=""/>
-                                <a class="account-bar-name text-light" href="{{ url_for('main.mymedialist',
-                                 media_list=media['media_type'], user_name=user.username) }}">
+                                <a class="account-bar-name text-light" href="{{ url_for('main.medialist',
+                                 media_list=media['media_type'], username=user.username) }}">
                                     {{ media['media'] }}
                                 </a>
                                 <div id="{{ media['media']|lower }}-level" class='account-bar-level'>
@@ -34,7 +34,7 @@
                     <li class="m-b-20">
                         <h4><i class="fas fa-highlighter text-light"></i>&nbsp;&nbsp; Updates
                             <form id='all_history' method="POST" action="{{ url_for('users.account',
-                             user_name=user.username) }}">
+                             username=user.username) }}">
                                 <input class="d-none" name="all_history" value="True">
                                 <a onclick="$('#all_history').submit()" class="more-link">
                                     <u><i>History</i></u>
@@ -44,7 +44,7 @@
                         <hr class='m-b-8'>
                         {% for update in user_updates %}
                             <div class="update-box" style="border-color: {{ update['border'] }};">
-                                <a class="text-light truncate" href="{{ url_for('main.media_sheet',
+                                <a class="text-light truncate" href="{{ url_for('main.media_details',
                                  media_type=update['category'], media_id=update['media_id']) }}">
                                     <i class="{{ update['icon-color'] }} m-r-10" data-toggle="tooltip"
                                      title="{{ update['category'] }}"></i>
@@ -274,16 +274,16 @@
                                         <div class="row stat-text p-t-5" style="clear: both;">
                                             {% for m in media['media_count'] %}
                                                 <div class="col-4">
-                                                    <a href="{{ url_for('main.mymedialist', media_list=media['media_type'],
-                                                     user_name=user.username, category=m) }}">{{ m }}</a>
+                                                    <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                                     username=user.username, category=m) }}">{{ m }}</a>
                                                 </div>
                                                 <div class="col-2">
                                                     <span>{{ media['media_count'][m]['count'] }}</span>
                                                 </div>
                                             {% endfor %}
                                             <div class="col-4">
-                                                <a href="{{ url_for('main.mymedialist', media_list=media['media_type'],
-                                                 user_name=user.username, category='All') }}">Total</a>
+                                                <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                                 username=user.username, category='All') }}">Total</a>
                                             </div>
                                             <div class="col-2">
                                                 <span>{{ media['total'] }}</span>
@@ -309,15 +309,15 @@
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <a href="{{ url_for('main.mymedialist', media_list=media['media_type'],
-                                     user_name=user.username, category='Favorite') }}">
+                                    <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                     username=user.username, category='Favorite') }}">
                                         <b>Favorites ({{ media['media_favorites']|length }})</b>
                                     </a>
                                     <div class="row">
                                         <div class="col">
                                             {% for favorite in media['media_favorites'] %}
                                                 {% if loop.index < 12 %}
-                                                    <a href="{{ url_for('main.media_sheet', media_type=media['media'],
+                                                    <a href="{{ url_for('main.media_details', media_type=media['media'],
                                                     media_id=favorite.media_id) }}">
                                                         <img class="favorite-img" title="{{ favorite.media.name }}"
                                                          src="/static/covers/{{ media['media']|lower }}_covers/{{ favorite.media.image_cover }}"
@@ -340,7 +340,7 @@
                         <h4><i class="fas fa-user-check"></i>&nbsp;&nbsp; Follows
                             {% set follows = user.followed.all() %}
                             <form id='all_follows' style="display: inline;" method="POST"
-                                  action={{ url_for('users.account', user_name=user.username) }}>
+                                  action={{ url_for('users.account', username=user.username) }}>
                                 <input class="d-none" name="all_follows" value="True">
                                 <a onclick="$('#all_follows').submit()" class="more-link">
                                     <u><i>All ({{ follows|length }})</i></u>
@@ -374,7 +374,7 @@
                         {% if follows_updates %}
                             {% for update in follows_updates %}
                                 <div class="update-box" style="border-color: {{ update['border'] }};">
-                                    <a class="text-light truncate" href="{{ url_for('main.media_sheet',
+                                    <a class="text-light truncate" href="{{ url_for('main.media_details',
                                     media_type=update['category'], media_id=update['media_id']) }}">
                                         <i class="{{ update['icon-color'] }} m-r-10" data-toggle="tooltip"
                                            title="{{ update['category'] }}"></i>

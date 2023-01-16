@@ -27,7 +27,7 @@ def settings():
     #                 db.session.commit()
     #             except:
     #                 flash("Your file couldn't be processed. Please check your file or contact an admin.", 'warning')
-    #         return redirect(url_for('users.account', user_name=current_user.username))
+    #         return redirect(url_for('users.account', username=current_user.username))
     if settings_form.submit_account.data and settings_form.validate():
         if settings_form.picture.data:
             old_picture_file = current_user.image_file
@@ -126,23 +126,3 @@ def email_update_token(token):
     flash('Email successfully updated!', 'success')
 
     return redirect(url_for('auth.home'))
-
-
-# --- AJAX Methods -----------------------------------------------------------------------------------------------
-
-
-@bp.route('/progress_import', methods=['POST'])
-@login_required
-def progress_import():
-    try:
-        request.get_json()
-    except:
-        return '', 400
-
-    task = current_user.get_task_in_progress('import_list')
-    if task:
-        progress = {'progress': round(task.get_progress(), 2)}
-    else:
-        progress = {'progress': 100}
-
-    return jsonify(progress=progress), 200

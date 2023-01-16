@@ -1,2 +1,4 @@
 # Paginate history in account ==> Check DataTable server side processing
 # Paginate HoF ==> Check DataTable server side processing
+# Change some urls ==> series_list to series/list for example
+# account to profile

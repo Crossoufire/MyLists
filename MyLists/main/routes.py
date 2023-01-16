@@ -1,3 +1,7 @@
+"""
+Main routes
+"""
+
 import json
 import secrets
 from datetime import datetime
@@ -7,148 +11,162 @@ import pytz
 from PIL import Image
 from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, extract, desc, distinct
 from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
 from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
-from MyLists.main.forms import MediaComment, SearchForm, ModelForm, GenreForm, CoverForm
+from MyLists.main.forms import MediaComment, ModelForm, GenreForm, CoverForm, SearchForm
 from MyLists.models import ListType, Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksGenre, change_air_format
+    get_models_group, get_next_airing, Books, BooksGenre, change_air_format, Movies, MoviesList
 from MyLists.scheduled_tasks import refresh_element_data
+
 
 bp = Blueprint('main', __name__)
 
 
-@bp.route("/<media_list>/<user_name>/", methods=['GET', 'POST'])
-@bp.route("/<media_list>/<user_name>/<category>/", methods=['GET', 'POST'])
-@bp.route("/<media_list>/<user_name>/<category>/genre/<genre>/by/<sorting>/page/<page_val>", methods=['GET', 'POST'])
+@bp.route("/list/<media_type>/<username>/", methods=["GET", "POST"])
 @login_required
-def mymedialist(media_list, user_name, category=None, genre='All', sorting=None, page_val=1):
-    # Check if <media_list> is valid
+def medialist(media_type: str, username: str):
+    """ Media list route (Series, Anime, Movies, Games, and Books) """
+
+    # Check if <media_type> valid
     try:
-        list_type = ListType(media_list)
-        models = get_models_group(list_type)
+        media_type = MediaType(media_type)
+        models = get_models_group(media_type)
     except ValueError:
         return abort(400)
 
-    # Check if <user> can see <media_list>
-    user = current_user.check_autorization(user_name)
+    # Check if <user> can see media list
+    user = current_user.check_autorization(username)
 
-    # Add <views_count> to the profile
-    current_user.add_view_count(user, list_type)
+    # Add <views_count> to profile
+    current_user.add_view_count(user, media_type)
 
-    # Initialize the search form
+    # Initialize search form
     search_form = SearchForm()
 
-    # Get the query if it exists
-    q = request.args.get('q')
+    # Fetch <GET> arguments
+    search_q = request.args.get("q", None)
+    sorting = request.args.get("sorting", models[1].default_sorting())
+    category = request.args.get("category", models[1].default_category())
+    genre = request.args.get("genre", "All")
+    lang = request.args.get("lang", None)
+    page = request.args.get("page", 1, type=int)
 
-    # Get the sorting
-    if sorting is None:
-        sorting = models[1].default_sorting()
+    # Get template
+    template = models[1].html_template()
 
-    # Get the category
-    if category is None:
-        category = models[1].default_category()
-
-    # Get the template
-    html_template = models[1].html_template()
-
-    # Get the corresponding data depending on the selected category
-    if category != 'Stats':
-        lang = request.args.get('lang')
-        category, media_data = get_media_query(user, list_type, category, genre, sorting, page_val, q, lang)
-    else:
+    # Get data depending on selected category
+    if category == "Stats":
         media_data = models[1].get_more_stats(user)
+    else:
+        category, media_data = get_media_query(user, media_type, category, genre, sorting, page, search_q, lang)
 
-    # Commit the changes
+    # Commit changes
     db.session.commit()
 
-    return render_template(html_template, title="{}'s {}".format(user_name, media_list), user=user, search_q=q,
-                           media_list=media_list, search_form=search_form, category=category, genre=genre,
-                           sorting=sorting, page=page_val, data=media_data)
+    return render_template(f"medialist/{template}", title=f"{username}'s {media_type.value} list", user=user,
+                           search_q=search_q, media_type=media_type.value, search_form=search_form, lang=lang,
+                           category=category, genre=genre, sorting=sorting, page=page, data=media_data)
+
+
+@bp.route("/comment/<media_type>/<media_id>", methods=['GET', 'POST'])
+@login_required
+def write_comment(media_type: str, media_id: int):
+    """ Add commentary to media """
+
+    # Check if <media_type> valid
+    try:
+        media_type = MediaType(media_type)
+        models = get_models_group(media_type)
+    except ValueError:
+        return abort(400)
+
+    # Check if <media> is in <current_user> list
+    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if media is None:
+        return abort(400)
+
+    # Get media name
+    media_name = media.media.name
+
+    # Get comment form
+    form = MediaComment()
+
+    # Add commentary to page if already one
+    if request.method == 'GET':
+        form.comment.data = media.comment
+        session["back_url"] = request.referrer or "/"
+
+    # Validate form
+    if form.validate_on_submit():
+        comment = form.comment.data
+        media.comment = comment
+
+        # Commit changes
+        db.session.commit()
+        app.logger.info(f"[{current_user.id}] added a comment on {media_type} with ID [{media_id}]")
+
+        if not comment or comment == '':
+            flash("Your comment has been removed/is empty.", "warning")
+        else:
+            flash("Your comment has been added/modified.", "success")
+
+        return redirect(session["back_url"])
+
+    return render_template("medialist/medialist_comment.html", title="Add comment", form=form, media_name=media_name)
 
 
 @bp.route("/persons/<media_type>/<job>/<person>", methods=['GET', 'POST'])
 @login_required
-def persons(media_type, job, person):
-    # Check if <media_type> is valid
+def persons(media_type: str, job: str, person: str):
+    """ Get a person (director or actor) """
+
+    # Check if <media_type> valid
     try:
-        models = get_models_group(MediaType(media_type))
+        media_type = MediaType(media_type)
+        models = get_models_group(media_type)
     except ValueError:
         return abort(400)
 
+    # Get data associated to person
     data = models[0].get_persons(job, person)
 
     return render_template('persons.html', title=person, person=person, data=data)
 
 
-@bp.route("/comment/<media_type>/<media_id>", methods=['GET', 'POST'])
+@bp.route('/details/<media_type>/<media_id>', methods=['GET', 'POST'])
 @login_required
-def write_comment(media_type, media_id):
-    # Check if <media_type> is valid
-    try:
-        models = get_models_group(MediaType(media_type))
-    except ValueError:
-        return abort(400)
+def media_details(media_type: str, media_id: int):
+    """ Display media info and details """
 
-    # Check if the <media> is in the current user's list
-    media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(400)
-
-    form = MediaComment()
-    if request.method == 'GET':
-        form.comment.data = media.comment
-        session['back_url'] = request.referrer or '/'
-    if form.validate_on_submit():
-        comment = form.comment.data
-        media.comment = comment
-
-        db.session.commit()
-        app.logger.info(f"[{current_user.id}] added a comment on {media_type} with ID [{media_id}]")
-
-        if not comment or comment == '':
-            flash('Your comment has been removed/is empty.', 'warning')
-        else:
-            flash('Your comment has been added/modified.', 'success')
-
-        return redirect(session['back_url'])
-
-    return render_template('medialist_comment.html', title='Add comment', form=form, media_name=media.media.name)
-
-
-@bp.route('/media_sheet/<media_type>/<media_id>', methods=['GET', 'POST'])
-@login_required
-def media_sheet(media_type, media_id):
-    # Check if <media_type> is valid
+    # Check if <media_type> valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
-        list_type = ListType(media_type.value.lower() + 'list')
     except ValueError:
         return abort(400)
 
-    # Check if <media_id> came from an API
-    from_api = request.args.get('search')
+    # Check if <media_id> come from API
+    from_api = request.args.get("search")
 
-    # Check if the refresh was pushed
-    refresh = request.args.get('refresh')
+    # Check if refresh button pushed
+    refresh = request.args.get("refresh")
     if refresh and current_user.role != RoleType.USER:
         media = models[0].query.filter_by(id=media_id).first()
         if media is None:
-            flash('Impossible to refresh the mediadata', 'warning')
-        response = refresh_element_data(media.api_id, list_type)
+            flash("Impossible to refresh the media data", "warning")
+        response = refresh_element_data(media.api_id, media_type)
         if response:
-            flash('Successfully updated the metadata of the media', 'success')
+            flash("Successfully updated the metadata of the media", "success")
 
     # Check <media> in local DB
-    search = {'id': media_id}
+    search = {"id": media_id}
     if from_api:
-        search = {'api_id': media_id}
+        search = {"api_id": media_id}
     media = models[0].query.filter_by(**search).first()
 
-    # If not <media> and <api_id>: Add <media> to DB, else abort.
+    # If not <media> and <api_id>: Add <media> to DB, else abort
     if not media:
         if from_api:
             API_model = ApiData.get_API_model(media_type)
@@ -156,45 +174,47 @@ def media_sheet(media_type, media_id):
                 media = API_model(API_id=media_id).save_media_to_db()
                 db.session.commit()
             except Exception as e:
-                flash('Sorry, a problem occured trying to load the media info. Please try again later.', 'warning')
-                app.logger.error('[ERROR] - Occured trying to add media ({}) ID [{}] to DB: {}'
-                                 .format(list_type.value, media_id, e))
+                flash("Sorry, a problem occured trying to load the media info. Please try again later.", "warning")
+                app.logger.error(f"[ERROR] - Occured trying to add media "
+                                 f"({media_type.value}) ID [{media_id}] to DB: {e}")
                 location = request.referrer or '/'
                 return redirect(location)
         else:
             abort(400)
 
-    # If <media> and <api_id>: redirect for URL with media.id instead of media.api_id
+    # If <media> and <api_id>: redirect with media.id instead of media.api_id
     if media and from_api:
-        return redirect(url_for('main.media_sheet', media_type=media_type.value, media_id=media.id))
+        return redirect(url_for("main.media_details", media_type=media_type.value, media_id=media.id))
 
-    # Get the list info of the user on this media
+    # Get user list info
     list_info = media.get_user_list_info()
 
-    # Get the HTML template
-    template = models[0].media_sheet_template()
+    # Get HTML template
+    template = models[0].media_details_template()
 
-    # Get the history of the media for the user
+    # Get media history for user
     media_updates = UserLastUpdate.query.filter(UserLastUpdate.user_id == current_user.id,
-                                                UserLastUpdate.media_type == list_type,
+                                                UserLastUpdate.media_type == media_type,
                                                 UserLastUpdate.media_id == media_id)\
-        .order_by(UserLastUpdate.date.desc()).all()
+        .order_by(desc(UserLastUpdate.date)).all()
+
+    # noinspection PyProtectedMember
     history = current_user._shape_to_dict_updates(media_updates)
 
-    # Get the Genre form for books
+    # Get Genre form for books
     form = GenreForm()
     form_cover = CoverForm()
     genres = None
-    if list_type == ListType.BOOKS:
-        genres = db.session.query(func.group_concat(BooksGenre.genre.distinct())) \
+    if media_type == MediaType.BOOKS:
+        genres = db.session.query(func.group_concat(distinct(BooksGenre.genre))) \
             .filter(BooksGenre.media_id == media_id).first()
 
-    # If refresh, redirect to remove the GET argument
+    # If refresh, redirect to remove GET argument
     if refresh:
         return redirect(request.path, code=302)
 
     return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
-                           media_list=list_type.value, form_cover=form_cover, media_updates=history)
+                           media_type=media_type.value, form_cover=form_cover, media_updates=history)
 
 
 @bp.route('/update_book_genres/<media_id>', methods=['POST'])
@@ -220,7 +240,7 @@ def update_book_genres(media_id):
                 db.session.rollback()
                 flash('Error while updating the genres.', 'warning')
 
-    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
+    return redirect(url_for('main.media_details', media_type=MediaType.BOOKS.value, media_id=media_id))
 
 
 @bp.route('/update_book_cover/<media_id>', methods=['POST'])
@@ -245,12 +265,12 @@ def update_book_cover(media_id):
         db.session.add(book)
         db.session.commit()
 
-    return redirect(url_for('main.media_sheet', media_type=MediaType.BOOKS.value, media_id=media_id))
+    return redirect(url_for('main.media_details', media_type=MediaType.BOOKS.value, media_id=media_id))
 
 
-@bp.route("/media_sheet_form/<media_type>/<media_id>", methods=['GET', 'POST'])
+@bp.route("/details/form/<media_type>/<media_id>", methods=['GET', 'POST'])
 @login_required
-def media_sheet_form(media_type, media_id):
+def media_details_form(media_type, media_id):
     if current_user.role == RoleType.USER:
         abort(403)
 
@@ -338,9 +358,9 @@ def media_sheet_form(media_type, media_id):
                     db.session.rollback()
                     flash('Error while updating the genres.', 'warning')
 
-        return redirect(url_for('main.media_sheet', media_type=media_type, media_id=media_id))
+        return redirect(url_for('main.media_details', media_type=media_type, media_id=media_id))
 
-    return render_template('media_sheet_form.html', title='Media Form', form=form, genres=genres, media_type=media_type)
+    return render_template('media_details_form.html', title='Media Form', form=form, genres=genres, media_type=media_type)
 
 
 @bp.route("/your_next_airing", methods=['GET', 'POST'])
@@ -433,84 +453,32 @@ def search_media():
                            tot_res=total_results, search=search, page=page, tot_pages=total_pages)
 
 
-@bp.route('/graph_test', methods=['GET', 'POST'])
+@bp.route('/previously', methods=['GET', 'POST'])
 @login_required
-def test_graph_date():
-    series_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.SERIES)\
-        .group_by(UserLastUpdate.date).all()
-
-    all_dates = {}
-    for d in series_data:
+def previously():
+    if request.method == "POST":
         try:
-            date = d.date.strftime('%b-%Y')
-            if d.new_status == Status.COMPLETED:
-                if all_dates.get('{}'.format(date)) is not None:
-                    all_dates['{}'.format(date)] += 1
-                else:
-                    all_dates['{}'.format(date)] = 1
+            list_type = ListType(request.form.get("list_type"))
         except:
-            pass
+            return abort(400)
 
-    series_labels = ", ".join([k for k in all_dates.keys()])
-    series_data = ", ".join([str(k) for k in all_dates.values()])
+        user_series_q = UserLastUpdate.query.filter_by(user_id=current_user.id, media_type=list_type) \
+            .filter((extract('year', UserLastUpdate.date) == request.form.get('year'))) \
+            .filter((extract('month', UserLastUpdate.date) == request.form.get('month'))) \
+            .order_by(desc(UserLastUpdate.date)).all()
 
-    anime_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.ANIME) \
-        .group_by(UserLastUpdate.date).all()
+        list_of_ids = [s.media_id for s in user_series_q]
+        list_of_ids = sorted(set(list_of_ids), key=list_of_ids.index)
 
-    all_dates = {}
-    for d in anime_data:
-        try:
-            date = d.date.strftime('%b-%Y')
-            if d.new_status == Status.COMPLETED:
-                if all_dates.get('{}'.format(date)) is not None:
-                    all_dates['{}'.format(date)] += 1
-                else:
-                    all_dates['{}'.format(date)] = 1
-        except:
-            pass
+        series_q = db.session.query(Movies, MoviesList) \
+            .join(Movies, Movies.id == MoviesList.media_id) \
+            .filter(Movies.id.in_([s.media_id for s in user_series_q])).all()
 
-    anime_labels = ", ".join([k for k in all_dates.keys()])
-    anime_data = ", ".join([str(k) for k in all_dates.values()])
+        series = [next(s for s in series_q if s[0].id == id_) for id_ in list_of_ids]
+    else:
+        series = []
 
-    movies_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.MOVIES)\
-        .group_by(UserLastUpdate.date).all()
-
-    all_dates = {}
-    for d in movies_data:
-        try:
-            date = d.date.strftime('%b-%Y')
-            if d.new_status == Status.COMPLETED:
-                if all_dates.get('{}'.format(date)) is not None:
-                    all_dates['{}'.format(date)] += 1
-                else:
-                    all_dates['{}'.format(date)] = 1
-        except:
-            pass
-
-    movies_labels = ", ".join([k for k in all_dates.keys()])
-    movies_data = ", ".join([str(k) for k in all_dates.values()])
-
-    games_data = UserLastUpdate.query.filter_by(user_id=3, media_type=ListType.GAMES)\
-        .group_by(UserLastUpdate.date).all()
-
-    all_dates = {}
-    for d in games_data:
-        try:
-            date = d.date.strftime('%b-%Y')
-            if d.new_status == Status.COMPLETED:
-                if all_dates.get('{}'.format(date)) is not None:
-                    all_dates['{}'.format(date)] += 1
-                else:
-                    all_dates['{}'.format(date)] = 1
-        except:
-            pass
-
-    games_labels = ", ".join([k for k in all_dates.keys()])
-    games_data = ", ".join([str(k) for k in all_dates.values()])
-
-    return render_template('graph_test.html', title='Graph_test', series_labels=series_labels, series_data=series_data,
-                           anime_labels=anime_labels, anime_data=anime_data, games_labels=games_labels,
-                           games_data=games_data, movies_labels=movies_labels, movies_data=movies_data)
+    return render_template("previously.html", title="Previously watched", series=series)
 
 
 # --- AJAX Methods -----------------------------------------------------------------------------------------------

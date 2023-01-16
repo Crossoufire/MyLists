@@ -1,3 +1,7 @@
+"""
+__init__ file
+"""
+
 import logging
 import smtplib
 from flask import Flask
@@ -12,13 +16,13 @@ from flask_sqlalchemy import SQLAlchemy
 from logging.handlers import SMTPHandler, RotatingFileHandler
 
 
-# Recover the Flask app name (in .flaskenv) and check the config from the .env file
+# Recover Flask app name (.flaskenv) and check config from <.env> file
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config['FLASK_ADMIN_SWATCH'] = 'darkly'
 
 
-# Initialization of the different Flask modules
+# Initialize Flask modules
 Config()
 mail = Mail(app)
 db = SQLAlchemy(app)
@@ -29,12 +33,8 @@ login_manager.login_view = 'auth.home'
 login_manager.login_message_category = 'info'
 app.url_map.strict_slashes = False
 
-# Add the redis server and the queue
-# app.r = redis.Redis()
-# app.q = Queue(connection=app.r)
 
-
-# Recover and register all the blueprints of the app
+# Recover and register all blueprints
 from MyLists.auth.routes import bp as auth_bp
 app.register_blueprint(auth_bp)
 
@@ -54,11 +54,14 @@ from MyLists.settings.routes import bp as settings_bp
 app.register_blueprint(settings_bp)
 
 
-# Send an email to the admin if an error is logged and create the rotating file handler
+# Send email to admin if error is logged and create rotating file handler
 if not app.debug and not app.testing:
     class SSL_SMTPHandler(SMTPHandler):
+        """ Child class of SMTPHandler """
+
         def emit(self, record):
-            """ Emit a record. """
+            """ Emit a record """
+
             try:
                 port = self.mailport
                 if not port:
@@ -79,6 +82,7 @@ if not app.debug and not app.testing:
             except:
                 self.handleError(record)
 
+    # Create mail handler
     mail_handler = SSL_SMTPHandler(mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
                                    fromaddr=app.config['MAIL_USERNAME'],
                                    toaddrs=app.config['MAIL_USERNAME'],
@@ -93,13 +97,13 @@ if not app.debug and not app.testing:
     handler.setLevel(logging.INFO)
     app.logger.setLevel(logging.INFO)
     app.logger.addHandler(handler)
-    app.logger.info('MyLists startup')
+    app.logger.info("MyLists startup")
 
 
-# Import the admin view at the end to avoid loop import
+# Import admin view at end to avoid loop import
 from MyLists import admin_views
 
 
-# Import the command
+# Import command
 from MyLists.scheduled_tasks import register
 register(app)

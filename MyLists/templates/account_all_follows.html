@@ -14,7 +14,7 @@
         </a>
         <div class="d-flex flex-wrap m-t-10">
             {% for follow in follows %}
-                <a class="m-4 text-center text-light" href="{{ url_for('users.account', user_name=follow.username) }}">
+                <a class="m-4 text-center text-light" href="{{ url_for('users.account', username=follow.username) }}">
                     <img class="follows-img" src="{{ url_for('static', filename='profile_pics/'+follow.image_file) }}"
                      style="height: 80px; width: 80px; border-radius: 50%;">
                     <h5 class="m-t-5">{{ follow.username }}</h5>

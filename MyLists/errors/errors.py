@@ -1,46 +1,67 @@
+"""
+errors routes
+"""
+
 from flask import render_template, url_for, Blueprint
 from flask_login import current_user
 from MyLists import app
+
 
 bp = Blueprint('errors', __name__)
 
 
 def get_error_image():
+    """ Get the error default image """
+
     return url_for('static', filename='img/error.jpg')
 
 
 @bp.app_errorhandler(400)
 def error400(e):
+    """ Error 400 """
+
     image_error = get_error_image()
+
     return render_template('error.html', title='Error 400', error_code=400, image_error=image_error), 400
 
 
 @bp.app_errorhandler(403)
 def error403(e):
+    """ Error 403 """
+
     image_error = get_error_image()
-    app.logger.info('[INFO] - [{}] User ID tried the /admin URL'.format(current_user.id))
+    app.logger.info(f"[INFO] - [{current_user.id}] User ID tried the /admin URL")
+
     return render_template('error.html', title='Error 403', error_code=403, image_error=image_error), 403
 
 
 @bp.app_errorhandler(404)
 def error404(e):
+    """ Error 404 """
+
     image_error = get_error_image()
     return render_template('error.html', title='Error 404', error_code=404, image_error=image_error), 404
 
 
 @bp.app_errorhandler(410)
 def error410(e):
+    """ Error 410 """
+
     image_error = get_error_image()
     return render_template('error.html', title='Error 410', error_code=410, image_error=image_error), 410
 
 
 @bp.app_errorhandler(413)
 def error413(e):
+    """ Error 413 """
+
     image_error = get_error_image()
     return render_template('error.html', title='Error 413', error_code=413, image_error=image_error), 413
 
 
 @bp.app_errorhandler(500)
 def error500(e):
+    """ Error 500 """
+
     image_error = get_error_image()
     return render_template('error.html', title='Error 500', error_code=500, image_error=image_error), 500

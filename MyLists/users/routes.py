@@ -1,49 +1,59 @@
+"""
+User routes
+"""
+
 import json
 from flask import Blueprint, request, render_template
 from flask_login import login_required, current_user
 from MyLists import app, db
-from MyLists.models import User, Ranks, Frames, Notifications, RoleType, get_models_type
+from MyLists.models import User, Ranks, Frames, Notifications, RoleType
 from MyLists.users.functions import get_all_media_info
+
 
 bp = Blueprint('users', __name__)
 
 
-@bp.route('/account/<user_name>', methods=['GET', 'POST'])
+@bp.route('/account/<string:username>', methods=['GET', 'POST'])
 @login_required
-def account(user_name):
-    # Check if the user can see the <media_list>
-    user = current_user.check_autorization(user_name)
+def account(username: str):
+    """
+    Account page
+    :param username: username of the user
+    """
 
-    # Get the user frame info
+    # Check if user can see the <media_list>
+    user = current_user.check_autorization(username)
+
+    # Get user frame info
     user_frame_info = user.get_frame_info()
 
-    if request.form.get('all_follows'):
+    if request.form.get("all_follows"):
         follows = user.followed.all()
-        return render_template('account_all_follows.html', title='Follows', user=user, frame=user_frame_info,
+        return render_template("account_all_follows.html", title="Follows", user=user, frame=user_frame_info,
                                follows=follows)
-    elif request.form.get('all_followers'):
+    elif request.form.get("all_followers"):
         followers = user.followers.all()
-        return render_template('account_all_follows.html', title='Followers', user=user, frame=user_frame_info,
+        return render_template("account_all_follows.html", title="Followers", user=user, frame=user_frame_info,
                                followers=True, follows=followers)
-    elif request.form.get('all_history'):
-        media_updates = user.get_last_updates(all_=True)
-        return render_template('account_all_history.html', title='History', user=user, frame=user_frame_info,
+    elif request.form.get("all_history"):
+        media_updates = user.get_last_updates(limit_=-1)
+        return render_template("account_all_history.html", title="History", user=user, frame=user_frame_info,
                                media_updates=media_updates)
 
-    # Update the account view count
+    # Update account view count
     if current_user.role != RoleType.ADMIN and user.id != current_user.id:
         user.profile_views += 1
 
-    # Get the user's last updates
-    user_updates = user.get_last_updates(all_=False)
+    # Get user last updates
+    user_updates = user.get_last_updates(limit_=7)
 
-    # Get follows' last updates
-    follows_updates = user.get_follows_updates()
+    # Get follows last updates
+    follows_updates = user.get_follows_updates(limit_=11)
 
-    # Get the data for each media and global statistics
+    # Get each media data and global statistics
     media_data, media_global = get_all_media_info(user)
 
-    # Commit the changes
+    # Commit changes
     db.session.commit()
 
     return render_template('account.html', title=user.username+"'s account", user=user, frame=user_frame_info,

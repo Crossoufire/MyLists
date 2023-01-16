@@ -1,8 +1,8 @@
-flask>=2.0.0
+flask
 howlongtobeatpy
 python-dotenv
 itsdangerous
-sqlalchemy==1.3.23
+sqlalchemy
 ratelimit
 pykakasi
 requests
@@ -11,9 +11,7 @@ pathlib
 Pillow
 pandas
 iso639
-redis
 pytz
-rq
 flask_sqlalchemy
 flask_login
 flask_bcrypt
@@ -23,3 +21,5 @@ flask_wtf
 email_validator
 flask_admin
 WTForms-Alchemy
+scikit-learn
+numpy

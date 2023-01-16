@@ -1,7 +1,7 @@
-{% extends 'medialist_base.html' %}
+{% extends "medialist/medialist_base.html" %}
 
 
-{% set categories = ['All', 'Completed', 'Plan to Watch', 'Favorite'] %}
+{% set categories = ["All", "Completed", "Plan to Watch", "Favorite", "Stats"] %}
 
 
 {% set all_genres = ["All", "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama",
@@ -14,7 +14,7 @@
 
 
 {% block data %}
-    {{ media_list }}-{{ media_list }}-{{ item.media.id }}
+    {{ media_type }}-{{ media_type }}-{{ item.media.id }}
 {% endblock data %}
 
 

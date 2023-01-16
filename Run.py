@@ -1,3 +1,7 @@
+"""
+Main script to start MyLists
+"""
+
 import os
 from MyLists import app
 import ast

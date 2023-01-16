@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+
+{% block css %}
+    <style>
+         .btn-smaller {
+            padding: 3px 12px 3px 12px !important;
+        }
+    </style>
+{% endblock css %}
+
+
+{% block content %}
+    <div class="m-t-50 ml-auto mr-auto m-b-50">
+
+        <div class="m-b-20">
+            <form action="" method="POST">
+                <label for="list_type">Select: </label>
+                <select id="list_type" name="list_type">
+                    <option value="" disabled selected>Media</option>
+                    <option value="serieslist">Series</option>
+                    <option value="animelist">Anime</option>
+                    <option value="movieslist">Movies</option>
+                    <option value="bookslist">Books</option>
+                    <option value="gameslist">Games</option>
+                </select>
+
+                <label for="year"></label>
+                <select id="year" name="year">
+                    <option value="" disabled selected>Year</option>
+                    {% for y in [2022, 2021, 2020, 2019] %}
+                        <option value="{{ y }}">{{ y }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="month"></label>
+                <select id="month" name="month">
+                    <option value="" disabled selected>Month</option>
+                    {% for y in ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
+                        <option value="{{ loop.index }}">{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary btn-smaller">Submit</button>
+            </form>
+        </div>
+
+        {% if request.method == "POST" %}
+            <div class="series-section m-b-40">
+            <a class="text-light" data-toggle="collapse" href=".series-collapse" onclick="change_caret(this)">
+                <h4 class="mb-2 p-1 left-series right-series" style="background: #514d49;">
+                    &nbsp; <i class="fas fa-caret-down"></i>
+                    <b>
+                        &nbsp;{{ request.form.get("list_type")|replace("list", "")|upper }} WATCHED
+                        ({{ series|length }}) -- {{ request.form.get("month") }}/{{ request.form.get("year") }}
+                    </b>
+                </h4>
+            </a>
+            <div class="row series-collapse collapse show ac">
+                {% if not series %}
+                    <div class="col-12 m-t-10 m-b-40 m-l-20"><i><b>Nothing to display</b></i></div>
+                {% else %}
+                    {% for s in series %}
+                        <div class="card-container col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4 m-t-15">
+                            <div class="card bg-transparent">
+                                <div class="view overlay">
+                                    <img class="card-img-top" style="height: auto;" alt=""
+                                     src="/static/covers/series_covers/{{ s[0].image_cover }}"/>
+                                    <a class="mask flex-center rgba-black-strong" href="/details/Series/{{ s[0].id }}">
+                                        <span class="font-mask text-center text-light">{{ s[0].name }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $(document).ready(function() {
+            // --- Create Row gutters -----------------------------
+            let $row = $('.row');
+            function a() {
+                if ($(window).width() < 1025) {
+                    return $row.addClass('no-gutters');
+                }
+                $row.removeClass('no-gutters');
+            }
+            $(window).resize(a).trigger('resize');
+        });
+
+        function change_caret(caret_div) {
+            let $caret_div = $(caret_div).children().children().siblings().first();
+            console.log($(caret_div).children().siblings().first());
+            if ($caret_div.hasClass('fas fa-caret-down')) {
+                $caret_div.removeClass('fas fa-caret-down');
+                $caret_div.addClass('fas fa-caret-right');
+            }
+            else {
+                $caret_div.removeClass('fas fa-caret-right');
+                $caret_div.addClass('fas fa-caret-down');
+            }
+        }
+    </script>
+{% endblock %}
