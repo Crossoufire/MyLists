@@ -79,16 +79,6 @@ class dotdict(dict):
     __delattr__ = dict.__delitem__
 
 
-class ListType(Enum):
-    """ List Type enumeration """
-
-    SERIES = 'serieslist'
-    ANIME = 'animelist'
-    MOVIES = 'movieslist'
-    BOOKS = 'bookslist'
-    GAMES = 'gameslist'
-
-
 class MediaType(Enum):
     """ Media Type enumeration """
 
@@ -2402,18 +2392,18 @@ def get_media_count(user_id: int, media_type: Enum) -> Tuple[List, List]:
     return common_ids, common_elements
 
 
-def get_next_airing(list_type):
+def get_next_airing(media_type):
     """ Fetch the next airing media for the user """
 
-    media = eval(list_type.value.capitalize().replace('list', ''))
-    media_list = eval(list_type.value.capitalize().replace('l', 'L'))
+    media = eval(media_type.value.capitalize())
+    media_list = eval(media_type.value.capitalize()+"List")
 
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
+    if media_type == MediaType.SERIES or media_type == MediaType.ANIME:
         media_data = media.next_episode_to_air
     else:
         media_data = media.release_date
 
-    if list_type == ListType.GAMES:
+    if media_type == MediaType.GAMES:
         tmp = db.session.query(media, media_list) \
             .join(media, media.id == media_list.media_id) \
             .filter(media_list.user_id == current_user.id, media_list.status != Status.DROPPED) \
@@ -2425,7 +2415,7 @@ def get_next_airing(list_type):
                 if datetime.utcfromtimestamp(int(game[0].release_date)) > datetime.now():
                     query.append(game[0])
             except:
-                if game[0].release_date == 'Unknown':
+                if game[0].release_date == "Unknown":
                     query.append(game[0])
 
     else:
