@@ -1,3 +1,7 @@
+"""
+Settings forms
+"""
+
 from MyLists import bcrypt
 from flask_wtf import FlaskForm
 from MyLists.models import User
@@ -8,9 +12,11 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 
 
 class UpdateAccountForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=15)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    picture = FileField('Profile picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
+    """ Form to update information for the user """
+
+    username = StringField("Username", validators=[DataRequired(), Length(min=3, max=15)])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    picture = FileField("Profile picture", validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
     back_picture = FileField('Background picture', validators=[FileAllowed(['jpg', 'jpeg', 'png', 'gif', 'tiff'])])
     isprivate = BooleanField('Private mode')
     add_anime = BooleanField('Activate AnimeList')
@@ -19,13 +25,19 @@ class UpdateAccountForm(FlaskForm):
     add_feeling = BooleanField('Change feeling/score mode')
     submit_account = SubmitField('Update account')
 
+    # noinspection PyMethodMayBeStatic
     def validate_username(self, username):
+        """ Validate the username -> unique """
+
         if username.data != current_user.username:
             user = User.query.filter_by(username=username.data).first()
             if user:
                 raise ValidationError("This username is already taken. Please choose another one.")
 
+    # noinspection PyMethodMayBeStatic
     def validate_email(self, email):
+        """ Validate email of user -> unique """
+
         if email.data != current_user.email:
             user = User.query.filter_by(email=email.data).first()
             if user:
@@ -33,18 +45,16 @@ class UpdateAccountForm(FlaskForm):
 
 
 class ChangePasswordForm(FlaskForm):
+    """ Form  to change user password """
     current_password = PasswordField('Current password', validators=[DataRequired()])
     new_password = PasswordField('Choose new password', validators=[DataRequired(), Length(min=6)])
     confirm_new_password = PasswordField('Confirm new password', validators=[DataRequired(), EqualTo('new_password')])
     submit_password = SubmitField('Update Password')
 
+    # noinspection PyMethodMayBeStatic
     def validate_current_password(self, current_password):
+        """ Check the current password of user """
+
         user = User.query.filter_by(id=current_user.get_id()).first()
         if not bcrypt.check_password_hash(user.password, current_password.data):
             raise ValidationError("Incorrect current password")
-
-
-class ImportListForm(FlaskForm):
-    csv_list = FileField('file.csv', validators=[FileAllowed(['csv'])])
-    submit = SubmitField('Import')
-

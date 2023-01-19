@@ -1,5 +1,5 @@
 """
-errors routes
+Errors routes
 """
 
 from flask import render_template, url_for, Blueprint

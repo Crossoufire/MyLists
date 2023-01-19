@@ -81,7 +81,7 @@ def admin():
     if current_user.role != RoleType.ADMIN:
         return abort(403)
 
-    return render_template('admin/index.html')
+    return render_template('_admin/index.html')
 
 
 @bp.route("/mylists_stats", methods=["GET"])
@@ -95,7 +95,7 @@ def mylists_stats():
     # Change total time to formated string for display
     all_stats["total_time"]["total"] = display_time(all_stats["total_time"]["total"])
 
-    return render_template("mylists_stats.html", title='MyLists stats', all_stats=all_stats)
+    return render_template("general/mylists_stats.html", title='MyLists stats', all_stats=all_stats)
 
 
 @bp.route("/hall_of_fame", methods=["GET", "POST"])
@@ -147,7 +147,7 @@ def hall_of_fame():
     # Sort users per knowledge_level
     all_users = sorted(all_users, key=lambda d: d.knowledge_level, reverse=True)
 
-    return render_template("hall_of_fame.html", title='Hall of Fame', all_data=all_users)
+    return render_template("general/hall_of_fame.html", title='Hall of Fame', all_data=all_users)
 
 
 @bp.route("/current_trends", methods=["GET"])
@@ -173,12 +173,12 @@ def current_trends():
     movies_trends = TrendingData(movies_info).format_trending_movies()
 
     # Base template
-    template = "current_trends_pc.html"
+    template = "general/current_trends_pc.html"
 
     # Change template depending on platform
     platform = request.headers.get("User-Agent")
     if any(s in platform for s in ("iphone", "android", "None", "iPhone", 'Android')):
-        template = 'current_trends_mobile.html'
+        template = "general/current_trends_mobile.html"
 
     return render_template(template, title="Trends", series_trends=series_trends, movies_trends=movies_trends)
 
@@ -200,7 +200,7 @@ def similar_movies():
     if len(sim_movies) == 0 and movie is None:
         flash(f"No movies found with the title: {title}", "warning")
 
-    return render_template("similar_movies.html", title="Similar movies", sim_movies=sim_movies,
+    return render_template("general/similar_movies.html", title="Similar movies", sim_movies=sim_movies,
                            s_movie=movie, mov_title=title)
 
 
@@ -208,11 +208,11 @@ def similar_movies():
 def privacy_policy():
     """ Privacy policy of the website """
 
-    return render_template('privacy_policy.html', title='Privacy policy')
+    return render_template("general/privacy_policy.html", title="Privacy policy")
 
 
 @bp.route("/about", methods=['GET'])
 def about():
     """ About this website """
 
-    return render_template('about.html', title='About')
+    return render_template("general/about.html", title="About")

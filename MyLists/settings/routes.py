@@ -1,10 +1,14 @@
-from flask import Blueprint, flash, request, render_template, redirect, url_for, jsonify
+"""
+Routes for the settings
+"""
+
+from flask import Blueprint, flash, request, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from MyLists import db, app, bcrypt
 from MyLists.models import User
-from MyLists.settings.emails import send_email_update_email
-from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm, ImportListForm
-from MyLists.settings.functions import save_account_picture
+from MyLists.settings.forms import UpdateAccountForm, ChangePasswordForm
+from MyLists.settings.functions import save_account_picture, send_email_update_email
+
 
 bp = Blueprint('settings', __name__)
 
@@ -12,22 +16,12 @@ bp = Blueprint('settings', __name__)
 @bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
-    import_form = ImportListForm()
+    """ Settings main page/route """
+
+    # Get forms
     settings_form = UpdateAccountForm()
     password_form = ChangePasswordForm()
 
-    # if import_form.submit.data and import_form.validate():
-    #     if import_form.csv_list.data:
-    #         if current_user.get_task_in_progress('import_list'):
-    #             flash('An import task is already in progress', 'warning')
-    #         else:
-    #             try:
-    #                 csv_data = pd.read_csv(import_form.csv_list.data, index_col='Type')
-    #                 current_user.launch_task('import_list', 'Importing List...', csv_data)
-    #                 db.session.commit()
-    #             except:
-    #                 flash("Your file couldn't be processed. Please check your file or contact an admin.", 'warning')
-    #         return redirect(url_for('users.account', username=current_user.username))
     if settings_form.submit_account.data and settings_form.validate():
         if settings_form.picture.data:
             old_picture_file = current_user.image_file
@@ -95,34 +89,40 @@ def settings():
     settings_form.add_games.data = current_user.add_games
     settings_form.add_feeling.data = current_user.add_feeling
 
+    # Highlight backgound or profile picture, comming from /account
     back_pic, pic = False, False
-    if request.args.get('from') == 'back_pic':
+    if request.args.get("from") == "back_pic":
         back_pic = True
-    elif request.args.get('from') == 'profile_pic':
+    elif request.args.get("from") == "profile_pic":
         pic = True
 
-    return render_template('settings.html', title='Your settings', settings_form=settings_form,
-                           password_form=password_form, import_form=import_form, back_pic=back_pic, pic=pic)
+    return render_template("settings/settings.html", title="Your settings", settings_form=settings_form,
+                           password_form=password_form, back_pic=back_pic, pic=pic)
 
 
 @bp.route("/email_update/<token>", methods=['GET'])
 @login_required
 def email_update_token(token):
+    """ Update the token for email update """
+
+    # Verify token
     user = User.verify_token(token)
-
     if user is None:
-        flash('That is an invalid or expired token', 'warning')
-        return redirect(url_for('auth.home'))
+        flash("That is an invalid or expired token", "warning")
+        return redirect(url_for("auth.home"))
 
+    # Check if not current user
     if user.id != current_user.id:
-        return redirect(url_for('auth.home'))
+        return redirect(url_for("auth.home"))
 
+    # Update information
     old_email = user.email
     user.email = user.transition_email
     user.transition_email = None
 
+    # Commit changes and log
     db.session.commit()
-    app.logger.info('[{}] Email successfully changed from {} to {}'.format(user.id, old_email, user.email))
-    flash('Email successfully updated!', 'success')
+    app.logger.info(f"[{user.id}] Email successfully changed from {old_email} to {user.email}")
+    flash("Email successfully updated!", "success")
 
-    return redirect(url_for('auth.home'))
+    return redirect(url_for("auth.home"))

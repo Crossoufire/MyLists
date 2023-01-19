@@ -1,3 +1,9 @@
+"""
+Extension of the Google API for books.
+Allow the fetching of books cover from google images.
+Taken and then modified (simplified) from: https://github.com/Joeclinton1/google-images-download
+"""
+
 import http.client
 import json
 import os
@@ -9,11 +15,14 @@ from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 
+# Parameters
 http.client._MAXHEADERS = 1000
 ARGS_LIST = ["keywords", "output_directory", "limit", "size", "aspect_ratio", "format"]
 
 
-class GoogleImages(object):
+class GoogleImages:
+    """ Google image class to fetch cover for books """
+
     def __init__(self):
         pass
 

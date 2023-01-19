@@ -1,5 +1,5 @@
 """
-__init__ file
+MyLists init file with all flask modules used and blueprint registration
 """
 
 import logging
@@ -16,7 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 from logging.handlers import SMTPHandler, RotatingFileHandler
 
 
-# Recover Flask app name (.flaskenv) and check config from <.env> file
+# Fetch Flask app name (.flaskenv) and check config from <.env> file
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config['FLASK_ADMIN_SWATCH'] = 'darkly'
@@ -34,7 +34,7 @@ login_manager.login_message_category = 'info'
 app.url_map.strict_slashes = False
 
 
-# Recover and register all blueprints
+# Fetch and register all blueprints
 from MyLists.auth.routes import bp as auth_bp
 app.register_blueprint(auth_bp)
 
@@ -54,7 +54,7 @@ from MyLists.settings.routes import bp as settings_bp
 app.register_blueprint(settings_bp)
 
 
-# Send email to admin if error is logged and create rotating file handler
+# Send email to admin if error logged and create rotating file handler
 if not app.debug and not app.testing:
     class SSL_SMTPHandler(SMTPHandler):
         """ Child class of SMTPHandler """
@@ -67,12 +67,15 @@ if not app.debug and not app.testing:
                 if not port:
                     port = smtplib.SMTP_PORT
                 smtp = smtplib.SMTP_SSL(self.mailhost, port, timeout=self.timeout)
+
+                # Create message
                 msg = EmailMessage()
                 msg['From'] = self.fromaddr
                 msg['To'] = ','.join(self.toaddrs)
                 msg['Subject'] = self.getSubject(record)
                 msg['Date'] = em.localtime()
                 msg.set_content(self.format(record))
+
                 if self.username:
                     smtp.login(self.username, self.password)
                 smtp.send_message(msg, self.fromaddr, self.toaddrs)
@@ -83,12 +86,15 @@ if not app.debug and not app.testing:
                 self.handleError(record)
 
     # Create mail handler
-    mail_handler = SSL_SMTPHandler(mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
-                                   fromaddr=app.config['MAIL_USERNAME'],
-                                   toaddrs=app.config['MAIL_USERNAME'],
-                                   subject='MyLists - Exceptions occurred',
-                                   credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']))
+    mail_handler = SSL_SMTPHandler(
+        mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+        fromaddr=app.config['MAIL_USERNAME'],
+        toaddrs=app.config['MAIL_USERNAME'],
+        subject='MyLists - Exceptions occurred',
+        credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+    )
 
+    # Set logger level to ERROR only
     mail_handler.setLevel(logging.ERROR)
     app.logger.addHandler(mail_handler)
 
@@ -100,10 +106,10 @@ if not app.debug and not app.testing:
     app.logger.info("MyLists startup")
 
 
-# Import admin view at end to avoid loop import
+# Import admin view (end for loop import)
 from MyLists import admin_views
 
 
-# Import command
+# Import CLI command
 from MyLists.scheduled_tasks import register
 register(app)

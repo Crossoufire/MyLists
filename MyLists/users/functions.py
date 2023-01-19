@@ -7,7 +7,7 @@ from MyLists.models import get_models_type, BooksList, GamesList, AnimeList
 
 
 def get_all_media_info(user) -> Tuple[List[Dict], Dict]:
-    """ Get all the media info and the global statistics for a user """
+    """ Get all the media info and global statistics for a user """
 
     # Get all media info in dict for each media type
     list_models = get_models_type("List")

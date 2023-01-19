@@ -13,15 +13,12 @@ from MyLists.users.functions import get_all_media_info
 bp = Blueprint('users', __name__)
 
 
-@bp.route('/account/<string:username>', methods=['GET', 'POST'])
+@bp.route('/account/<username>', methods=['GET', 'POST'])
 @login_required
 def account(username: str):
-    """
-    Account page
-    :param username: username of the user
-    """
+    """ Main user page/route for the user """
 
-    # Check if user can see the <media_list>
+    # Check if user can see other user
     user = current_user.check_autorization(username)
 
     # Get user frame info
@@ -29,15 +26,15 @@ def account(username: str):
 
     if request.form.get("all_follows"):
         follows = user.followed.all()
-        return render_template("account_all_follows.html", title="Follows", user=user, frame=user_frame_info,
+        return render_template("users/account_all_follows.html", title="Follows", user=user, frame=user_frame_info,
                                follows=follows)
     elif request.form.get("all_followers"):
         followers = user.followers.all()
-        return render_template("account_all_follows.html", title="Followers", user=user, frame=user_frame_info,
+        return render_template("users/account_all_follows.html", title="Followers", user=user, frame=user_frame_info,
                                followers=True, follows=followers)
     elif request.form.get("all_history"):
         media_updates = user.get_last_updates(limit_=-1)
-        return render_template("account_all_history.html", title="History", user=user, frame=user_frame_info,
+        return render_template("users/account_all_history.html", title="History", user=user, frame=user_frame_info,
                                media_updates=media_updates)
 
     # Update account view count
@@ -56,7 +53,7 @@ def account(username: str):
     # Commit changes
     db.session.commit()
 
-    return render_template('account.html', title=user.username+"'s account", user=user, frame=user_frame_info,
+    return render_template('users/account.html', title=user.username + "'s account", user=user, frame=user_frame_info,
                            user_updates=user_updates, follows_updates=follows_updates, media_data=media_data,
                            media_global=media_global)
 
@@ -64,15 +61,19 @@ def account(username: str):
 @bp.route("/level_grade_data", methods=['GET'])
 @login_required
 def level_grade_data():
+    """ Show level grade data """
+
     ranks = Ranks.get_levels()
-    return render_template('level_grade_data.html', title='Level grade data', data=ranks)
+    return render_template('users/level_grade_data.html', title='Level grade data', data=ranks)
 
 
 @bp.route("/knowledge_frame_data", methods=['GET'])
 @login_required
 def knowledge_frame_data():
+    """ Show frames around user profile """
+
     ranks = Frames.query.all()
-    return render_template('knowledge_grade_data.html', title='Knowledge frame data', data=ranks)
+    return render_template('users/knowledge_grade_data.html', title='Knowledge frame data', data=ranks)
 
 
 # --- AJAX Methods ---------------------------------------------------------------------------------------------
@@ -81,37 +82,47 @@ def knowledge_frame_data():
 @bp.route("/follow_status", methods=['POST'])
 @login_required
 def follow_status():
+    """ Get the follow status for a user """
+
     try:
         json_data = request.get_json()
-        follow_id = int(json_data['follow_id'])
-        follow_condition = bool(json_data['follow_status'])
+        follow_id = int(json_data["follow_id"])
+        follow_condition = bool(json_data["follow_status"])
     except:
-        return '', 400
+        return "", 400
 
     # Check if <follow> exist in <User> table
     user = User.query.filter_by(id=follow_id).first()
     if not user:
-        return '', 400
+        return "", 400
 
-    # Check the follow's status
+    # Check follow status
     if follow_condition:
+        # Add follow to current_user
         current_user.add_follow(user)
 
-        # Notify the followed user
-        payload = {'username': current_user.username,
-                   'message': '{} is following you.'.format(current_user.username)}
-        app.logger.info('[{}] Follow the account with ID {}'.format(current_user.id, follow_id))
+        # Notify followed user
+        payload = {"username": current_user.username,
+                   "message": "{current_user.username} is following you."}
+
+        # Log info
+        app.logger.info("[{current_user.id}] Follow the account with ID {follow_id}")
     else:
-        # Remove the follow
+        # Remove follow
         current_user.remove_follow(user)
 
-        # Notify the followed user
-        payload = {'username': current_user.username,
-                   'message': '{} stopped following you.'.format(current_user.username)}
-        app.logger.info('[{}] Unfollowed the account with ID {} '.format(current_user.id, follow_id))
+        # Notify unfollowed user
+        payload = {"username": current_user.username,
+                   "message": f"{current_user.username} stopped following you."}
 
+        # Log info
+        app.logger.info(f"[{current_user.id}] Unfollowed the account with ID {follow_id}")
+
+    # Send notification
     notif = Notifications(user_id=user.id, payload_json=json.dumps(payload))
     db.session.add(notif)
+
+    # Commit changes
     db.session.commit()
 
-    return '', 204
+    return "", 204

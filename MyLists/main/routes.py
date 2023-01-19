@@ -16,9 +16,10 @@ from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
 from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
 from MyLists.main.forms import MediaComment, ModelForm, GenreForm, CoverForm, SearchForm
-from MyLists.models import Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, \
-    get_models_group, get_next_airing, Books, BooksGenre, change_air_format
+from MyLists.models import Status, RoleType, MediaType, User, get_media_query, UserLastUpdate, get_next_airing, \
+    Books, BooksGenre, change_air_format
 from MyLists.scheduled_tasks import refresh_element_data
+from MyLists.utils import shape_to_dict_updates, get_models_group
 
 
 bp = Blueprint('main', __name__)
@@ -36,7 +37,7 @@ def medialist(media_type: str, username: str):
     except ValueError:
         return abort(400)
 
-    # Check if <user> can see media list
+    # Check if <user> has access
     user = current_user.check_autorization(username)
 
     # Add <views_count> to profile
@@ -133,7 +134,7 @@ def persons(media_type: str, job: str, person: str):
     # Get data associated to person
     data = models[0].get_persons(job, person)
 
-    return render_template('persons.html', title=person, person=person, data=data)
+    return render_template('medialist/persons.html', title=person, person=person, data=data)
 
 
 @bp.route('/details/<media_type>/<media_id>', methods=['GET', 'POST'])
@@ -170,9 +171,9 @@ def media_details(media_type: str, media_id: int):
     # If not <media> and <api_id>: Add <media> to DB, else abort
     if not media:
         if from_api:
-            API_model = ApiData.get_API_model(media_type)
+            API_class = ApiData.get_API_class(media_type)
             try:
-                media = API_model(API_id=media_id).save_media_to_db()
+                media = API_class(API_id=media_id).save_media_to_db()
                 db.session.commit()
             except Exception as e:
                 flash("Sorry, a problem occured trying to load the media info. Please try again later.", "warning")
@@ -200,7 +201,7 @@ def media_details(media_type: str, media_id: int):
         .order_by(desc(UserLastUpdate.date)).all()
 
     # noinspection PyProtectedMember
-    history = current_user._shape_to_dict_updates(media_updates)
+    history = shape_to_dict_updates(media_updates)
 
     # Get Genre form for books
     form = GenreForm()
@@ -409,7 +410,7 @@ def your_next_airing():
     for game in next_games_airing:
         games_dates.append(change_air_format(game.release_date, games=True))
 
-    return render_template("your_next_airing.html", title="Next airing", airing_series=next_series_airing,
+    return render_template("medialist/your_next_airing.html", title="Next airing", airing_series=next_series_airing,
                            series_dates=series_dates, airing_anime=next_anime_airing, anime_dates=anime_dates,
                            airing_movies=next_movies_airing, movies_dates=movies_dates, airing_games=next_games_airing,
                            games_dates=games_dates)
@@ -474,8 +475,8 @@ def search_media():
         return redirect(request.referrer or "/")
 
     # noinspection PyUnboundLocalVariable
-    return render_template("media_search.html", title="Search", results=media_results, media_select=media_select,
-                           tot_res=total_results, search=search, page=page, tot_pages=total_pages)
+    return render_template("medialist/media_search.html", title="Search", results=media_results, page=page,
+                           media_select=media_select, tot_res=total_results, search=search, tot_pages=total_pages)
 
 
 # --- AJAX Methods -----------------------------------------------------------------------------------------------
@@ -1091,24 +1092,30 @@ def autocomplete():
     return jsonify(search_results=media_results), 200
 
 
-@bp.route('/read_notifications', methods=['GET'])
+@bp.route("/read_notifications", methods=['GET'])
 @login_required
 def read_notifications():
-    # Change the last time the <current_user> looked at the notifications and commit the changes
+    """ Read user notification """
+
+    # Change last time <current_user> looked at notifications
     current_user.last_notif_read_time = datetime.utcnow()
+
+    # Commit changes
     db.session.commit()
 
-    # Get the user's notfications
+    # Get user notfications
     notifications = current_user.get_notifications()
 
     results = []
     if notifications:
         for info in notifications:
             timestamp = info.timestamp.replace(tzinfo=pytz.UTC).isoformat()
-            results.append({'media_type': info.media_type,
-                            'media_id': info.media_id,
-                            'timestamp': timestamp,
-                            'payload': json.loads(info.payload_json)})
+            results.append(
+                {"media_type": info.media_type,
+                 "media_id": info.media_id,
+                 "timestamp": timestamp,
+                 "payload": json.loads(info.payload_json),
+                 })
 
     return jsonify(results=results), 200
 

@@ -1,3 +1,7 @@
+"""
+Main configuration file of MyLists
+"""
+
 import os
 from dotenv import load_dotenv
 import ast
@@ -8,6 +12,8 @@ load_dotenv(dotenv_path=os.path.join(basedir, '.env'))
 
 
 class Config:
+    """ Config class for main parameters """
+
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI') or 'sqlite:///site.db'
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or None
@@ -49,23 +55,20 @@ class Config:
     except:
         TESTING = True
 
-    # CLIENT_MAL = ast.literal_eval(os.environ.get('CLIENT_MAL')) or None  # Not used yet
-    # SECRET_MAL = ast.literal_eval(os.environ.get('SECRET_MAL')) or None  # Not used yet
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAX_CONTENT_LENGTH = 8*1024*1024
     FLASK_ADMIN_SWATCH = 'cyborg'
 
     def __init__(self):
-        if self.ENV == 'Production':
-            print('** You are using: Production mode')
+        if self.ENV == "Production":
+            print("** You are using: Production mode")
         if self.SQLALCHEMY_DATABASE_URI is None:
-            print('**!** Careful: No url given to a database')
+            print("**!** Careful: No url given to a database")
         if self.MAIL_SERVER is None or self.MAIL_PASSWORD is None or self.MAIL_USERNAME is None:
-            print('**!** Careful: Mail badly configured')
+            print("**!** Careful: Mail badly configured")
         if self.THEMOVIEDB_API_KEY is None:
-            print('**!** Careful: TMDB api key not set')
+            print("**!** Careful: TMDB api key not set")
         if self.GOOGLE_BOOKS_API_KEY is None:
-            print('**!** Careful: Google api key not set')
+            print("**!** Careful: Google api key not set")
         if self.CLIENT_IGDB is None or self.SECRET_IGDB is None or self.IGDB_API_KEY is None:
-            print('**!** Careful: IGDB api badly configured')
+            print("**!** Careful: IGDB api badly configured")

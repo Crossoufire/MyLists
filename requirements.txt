@@ -1,4 +1,11 @@
 flask
+flask_sqlalchemy
+flask_login
+flask_bcrypt
+flask_mail
+flask_compress
+flask_wtf
+flask_admin
 howlongtobeatpy
 python-dotenv
 itsdangerous
@@ -12,14 +19,7 @@ Pillow
 pandas
 iso639
 pytz
-flask_sqlalchemy
-flask_login
-flask_bcrypt
-flask_mail
-flask_compress
-flask_wtf
 email_validator
-flask_admin
 WTForms-Alchemy
 scikit-learn
 numpy

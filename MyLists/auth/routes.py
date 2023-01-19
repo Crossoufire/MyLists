@@ -63,7 +63,7 @@ def home():
             flash("An error occured while sending your register email. Admin were advised. Please try again later.")
         return redirect(url_for("auth.home"))
 
-    return render_template('home.html', login_form=login_form, register_form=register_form)
+    return render_template('auth/home.html', login_form=login_form, register_form=register_form)
 
 
 @bp.route("/logout", methods=['GET'])
@@ -101,7 +101,7 @@ def reset_password():
                   "Please try again later.")
         return redirect(url_for("auth.home"))
 
-    return render_template('reset_password.html', title='Reset password', form=form)
+    return render_template('auth/reset_password.html', title='Reset password', form=form)
 
 
 @bp.route("/reset_password/<token>", methods=['GET', 'POST'])
@@ -128,7 +128,7 @@ def reset_password_token(token: Any):
         flash("Your password has been updated! You are now able to log in.", "success")
         return redirect(url_for("auth.home"))
 
-    return render_template("reset_password_token.html", title="Reset password", form=form)
+    return render_template("auth/reset_password_token.html", title="Reset password", form=form)
 
 
 @bp.route("/register_account/<token>", methods=['GET'])

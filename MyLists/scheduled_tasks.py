@@ -1,20 +1,19 @@
 """ Scheduled tasks functions and classes """
 
-import os
 import json
 import logging
+import os
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import List, Tuple, Dict, Iterable
-from MyLists import app, db
 from sqlalchemy import and_, desc, func, true, text
-from datetime import datetime, timedelta
+from MyLists import app, db
 from MyLists.API_data import ApiData, ApiMovies, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
-    UserLastUpdate, Notifications, ListType, Status, Movies, MoviesList, MoviesActors, MoviesGenre, MyListsStats, \
-    Games, GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, \
-    BooksAuthors, Anime, AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, \
-    AnimeEpisodesPerSeason, User, RoleType, get_models_type
+    UserLastUpdate, Notifications, Status, Movies, MoviesList, MoviesActors, MoviesGenre, MyListsStats, Games, \
+    GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, BooksAuthors, Anime, \
+    AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, AnimeEpisodesPerSeason, User, RoleType
 
 
 def remove_non_list_media():
@@ -221,7 +220,7 @@ def remove_old_covers():
 
 
 def refresh_element_data(api_id, list_type):
-    ApiModel = ApiData.get_API_model(list_type)
+    ApiModel = ApiData.get_API_class(list_type)
     data = ApiModel(API_id=api_id).update_media_data()
 
     # Update the main details for each media

@@ -12,71 +12,19 @@ from pathlib import Path
 from typing import Dict, Tuple, List, Iterable, Any, Union
 import flask_login
 import iso639
-import pytz
-import rq
 from flask import abort, url_for
 from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import func, desc, text, and_, or_, extract, asc
 from sqlalchemy.orm import aliased
 from MyLists import app, db, login_manager
-from MyLists.utils import change_air_format
+from MyLists.utils import change_air_format, shape_to_dict_updates, latin_alphabet, dotdict
 
 
 @login_manager.user_loader
 def load_user(user_id: str):
     """ Load the user for login manager """
-
     return User.query.get(int(user_id))
-
-
-def class_registry(cls):
-    """ Dynamically gets class registry of sqlalchemy from specified model """
-
-    try:
-        return cls._sa_registry._class_registry
-    except:
-        return cls._decl_class_registry
-
-
-def get_models_group(media_type):
-    """ Get SQL model from group """
-
-    _ = []
-    registry = class_registry(db.Model)
-    for cls in registry.values():
-        if isinstance(cls, type) and issubclass(cls, db.Model):
-            try:
-                if media_type == cls.GROUP:
-                    _.append(cls)
-            except:
-                pass
-
-    return _
-
-
-def get_models_type(model_type: str) -> List:
-    """ Get the model type (List, Media, User) """
-
-    _ = []
-    registry = class_registry(db.Model)
-    for cls in registry.values():
-        if isinstance(cls, type) and issubclass(cls, db.Model):
-            try:
-                # noinspection PyUnresolvedReferences
-                if cls._type == model_type:
-                    _.append(cls)
-            except:
-                pass
-    return _
-
-
-class dotdict(dict):
-    """ dictionary attributes accessed with dot.notation """
-
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
 
 
 class MediaType(Enum):
@@ -149,7 +97,7 @@ class UserMixin(flask_login.UserMixin):
 class User(UserMixin, db.Model):
     """ User SQL model """
 
-    GROUP = ["User"]
+    GROUP = "User"
 
     def __repr__(self):
         return f"{self.username}"
@@ -301,7 +249,7 @@ class User(UserMixin, db.Model):
         last_updates = self.last_updates.filter_by(user_id=self.id).limit(limit_).all()
 
         # Transform updates to dict
-        user_updates = self._shape_to_dict_updates(last_updates)
+        user_updates = shape_to_dict_updates(last_updates)
 
         return user_updates
 
@@ -315,7 +263,7 @@ class User(UserMixin, db.Model):
         follows_update_list = []
         for fol_update in follows_update:
             tmp = {'username': fol_update.user.username}
-            tmp.update(self._shape_to_dict_updates([fol_update])[0])
+            tmp.update(shape_to_dict_updates([fol_update])[0])
             follows_update_list.append(tmp)
 
         return follows_update_list
@@ -338,71 +286,6 @@ class User(UserMixin, db.Model):
         return users_list
 
     @staticmethod
-    def _shape_to_dict_updates(last_update: Iterable) -> List[Dict]:
-        """ Tranform SQL object of last media updates to List[Dict] """
-
-        update = []
-        for element in last_update:
-            element_data = {}
-
-            # Page update
-            try:
-                if element.old_page >= 0 and element.new_page >= 0:
-                    element_data["update"] = [f"p. {int(element.old_page)}", f"p. {int(element.new_page)}"]
-            except:
-                pass
-
-            # Playtime update
-            try:
-                if element.old_playtime >= 0 and element.new_playtime >= 0:
-                    element_data["update"] = [f"{int(element.old_playtime/60)} h", f"{int(element.new_playtime/60)} h"]
-            except:
-                pass
-
-            # Season or episode update
-            if not element.old_status and not element.new_status:
-                element_data["update"] = [f"S{element.old_season:02d}.E{element.old_episode:02d}",
-                                          f"S{element.new_season:02d}.E{element.new_episode:02d}"]
-
-            # Category update
-            elif element.old_status and element.new_status:
-                element_data["update"] = [f"{element.old_status.value}", f"{element.new_status.value}"]
-
-            # Newly added media
-            elif not element.old_status and element.new_status:
-                element_data["update"] = ["{}".format(element.new_status.value)]
-
-            # Update date and add media name
-            element_data["date"] = element.date.replace(tzinfo=pytz.UTC).isoformat()
-            element_data["media_name"] = element.media_name
-            element_data["media_id"] = element.media_id
-
-            if element.media_type == ListType.SERIES:
-                element_data["category"] = "Series"
-                element_data["icon-color"] = "fas fa-tv text-series"
-                element_data["border"] = "#216e7d"
-            if element.media_type == ListType.ANIME:
-                element_data["category"] = "Anime"
-                element_data["icon-color"] = "fas fa-torii-gate text-anime"
-                element_data["border"] = "#945141"
-            elif element.media_type == ListType.MOVIES:
-                element_data["category"] = "Movies"
-                element_data["icon-color"] = "fas fa-film text-movies"
-                element_data["border"] = "#8c7821"
-            elif element.media_type == ListType.BOOKS:
-                element_data["category"] = "Books"
-                element_data["icon-color"] = "fas fa-book text-books"
-                element_data["border"] = "#5d4683"
-            elif element.media_type == ListType.GAMES:
-                element_data["category"] = "Games"
-                element_data["icon-color"] = "fas fa-gamepad text-games"
-                element_data["border"] = "#196219"
-
-            update.append(element_data)
-
-        return update
-
-    @staticmethod
     def verify_token(token: Any) -> Union[None, db.Model]:
         """ Verify the token when user validates account """
 
@@ -421,7 +304,7 @@ class User(UserMixin, db.Model):
 class UserLastUpdate(db.Model):
     """ UserLastUpdate SQL model """
 
-    GROUP = ["User"]
+    GROUP = "User"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
@@ -474,41 +357,10 @@ class UserLastUpdate(db.Model):
             db.session.add(update)
 
 
-class RedisTasks(db.Model):
-    """ Redis queue SQL model """
-
-    GROUP = ["User"]
-
-    id = db.Column(db.String(50), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    name = db.Column(db.String(150), index=True)
-    description = db.Column(db.String(150))
-    complete = db.Column(db.Boolean, default=False)
-
-    def get_rq_job(self):
-        """ Get a redis job """
-
-        try:
-            # noinspection PyUnresolvedReferences
-            rq_job = rq.job.Job.fetch(self.id, connection=app.r)
-        except Exception as e:
-            app.logger.info(f"[ERROR] - {e}")
-            return None
-
-        return rq_job
-
-    def get_progress(self):
-        """ Get job progress """
-
-        job = self.get_rq_job()
-
-        return job.meta.get('progress', 0) if job is not None else 100
-
-
 class Notifications(db.Model):
     """ Notification SQL model """
 
-    GROUP = ["User"]
+    GROUP = "User"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -521,9 +373,15 @@ class Notifications(db.Model):
 # --- CLASS MIXIN -------------------------------------------------------------------------------------------------
 
 
-# noinspection PyUnresolvedReferences
 class MediaMixin:
     """ Methods in class only used for <media_details> route """
+
+    id = None
+    networks = None
+    actors = None
+    original_name = None
+    name = None
+    genres = None
 
     def get_similar_genres(self) -> Union[None, List[db.Model]]:
         """ Get similar genre compared to the media in <media_details> """
@@ -590,9 +448,22 @@ class MediaMixin:
         return ", ".join([d.network for d in self.networks])
 
 
-# noinspection PyUnresolvedReferences,PyAttributeOutsideInit
 class MediaListMixin:
     """ Create MediaList Mixin for other SQL model """
+
+    query = None
+    total = None
+    media_id = None
+    user_id = None
+    feeling = None
+    score = None
+    Status = None
+    status = None
+    completion_date = None
+    media = None
+    rewatched = None
+    last_episode_watched = None
+    current_season = None
 
     def category_changes(self, new_status: str) -> int:
         """ Change the category """
@@ -909,8 +780,10 @@ class TVBase(db.Model):
 
 
 class Series(MediaMixin, TVBase):
+    """ Series SQL model """
+
     GROUP = MediaType.SERIES
-    _type = "Media"
+    TYPE = "Media"
 
     genres = db.relationship('SeriesGenre', backref='series', lazy=True)
     actors = db.relationship('SeriesActors', backref='series', lazy=True)
@@ -918,17 +791,21 @@ class Series(MediaMixin, TVBase):
     networks = db.relationship('SeriesNetwork', backref='series', lazy=True)
     list_info = db.relationship('SeriesList', back_populates='media', lazy="dynamic")
 
-    def get_media_cover(self):
-        return url_for('static', filename='covers/series_covers/'+self.image_cover)
+    def get_media_cover(self) -> str:
+        """ Get the media cover for series """
+        return url_for("static", filename=f"covers/series_covers/{self.image_cover}")
 
     @staticmethod
-    def media_details_template():
-        return 'media_details_series.html'
+    def media_details_template() -> str:
+        """ Get series template """
+        return "media_details_series.html"
 
 
 class SeriesList(MediaListMixin, db.Model):
+    """ SeriesList SQL Model """
+
     GROUP = MediaType.SERIES
-    _type = "List"
+    TYPE = "List"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -947,45 +824,51 @@ class SeriesList(MediaListMixin, db.Model):
     media = db.relationship("Series", back_populates='list_info', lazy=False)
 
     class Status(Enum):
-        WATCHING = 'Watching'
-        DROPPED = 'Dropped'
-        COMPLETED = 'Completed'
-        PLAN_TO_WATCH = 'Plan to Watch'
-        ON_HOLD = 'On Hold'
-        RANDOM = 'Random'
+        """ New status class for easiness """
 
-    def update_total_watched(self, new_rewatch):
+        WATCHING = "Watching"
+        DROPPED = "Dropped"
+        COMPLETED = "Completed"
+        PLAN_TO_WATCH = "Plan to Watch"
+        ON_HOLD = "On Hold"
+        RANDOM = "Random"
+
+    def update_total_watched(self, new_rewatch: int) -> int:
+        """ Update the total series watched for the user """
+
         self.rewatched = new_rewatch
+
+        # Calculate new total
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
         self.total = new_total
+
         return new_total
 
-    def compute_new_time_spent(self, old_data=0, new_data=0, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
+    def compute_new_time_spent(self, old_data: int = 0, new_data: int = 0):
+        """ Compute the new time spent for the user """
 
-        old_time = user.time_spent_series
-        user.time_spent_series = old_time + ((new_data - old_data) * self.media.duration)
+        old_time = current_user.time_spent_series
+        current_user.time_spent_series = old_time + ((new_data - old_data) * self.media.duration)
 
     @classmethod
-    def get_more_stats(cls, user):
+    def get_more_stats(cls, user: db.Model) -> Dict:
+        """ Get more stats for the series in the medialist stats category for the user """
+
+        # Get series data
         media_data = cls.query.filter_by(user_id=user.id).all()
 
         airing_dates = db.session.query(Series, cls, func.count(Series.first_air_date),
-                                        ((extract('year', Series.first_air_date)/5)*5).label('decade')) \
+                                        ((extract("year", Series.first_air_date)/5)*5).label("decade")) \
             .join(Series, Series.id == cls.media_id) \
-            .filter(cls.user_id == user.id, Series.first_air_date != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
-            .group_by(text('decade')).order_by(Series.first_air_date.asc()).all()
+            .filter(cls.user_id == user.id, Series.first_air_date != "Unknown", cls.status != Status.PLAN_TO_WATCH) \
+            .group_by(text("decade")).order_by(asc(Series.first_air_date)).all()
 
-        top_networks = db.session.query(SeriesNetwork.network, cls, func.count(SeriesNetwork.network).label('count')) \
+        top_networks = db.session.query(SeriesNetwork.network, cls, func.count(SeriesNetwork.network).label("count")) \
             .join(SeriesNetwork, SeriesNetwork.media_id == cls.media_id) \
-            .filter(cls.user_id == user.id, SeriesNetwork.network != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
-            .group_by(SeriesNetwork.network).order_by(text('count desc')).limit(10).all()
+            .filter(cls.user_id == user.id, SeriesNetwork.network != "Unknown", cls.status != Status.PLAN_TO_WATCH) \
+            .group_by(SeriesNetwork.network).order_by(text("count desc")).limit(10).all()
 
-        top_genres = db.session.query(SeriesGenre.genre, cls, func.count(SeriesGenre.genre).label('count')) \
+        top_genres = db.session.query(SeriesGenre.genre, cls, func.count(SeriesGenre.genre).label("count")) \
             .join(SeriesGenre, SeriesGenre.media_id == cls.media_id) \
             .filter(cls.user_id == user.id, SeriesGenre.genre != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
             .group_by(SeriesGenre.genre).order_by(text('count desc')).limit(10).all()
@@ -1021,32 +904,40 @@ class SeriesList(MediaListMixin, db.Model):
                 'countries': top_countries}
 
     @staticmethod
-    def default_sorting():
+    def default_sorting() -> str:
+        """ Return default sorting for the series """
         return 'Title A-Z'
 
     @staticmethod
-    def default_category():
+    def default_category() -> Enum:
+        """ Return default category for the series """
         return Status.WATCHING
 
     @staticmethod
-    def html_template():
-        return 'medialist_series.html'
+    def html_template() -> str:
+        """ Return default template for the series """
+        return "medialist_series.html"
 
     @staticmethod
-    def get_media_color():
-        return '#216e7d'
+    def get_media_color() -> str:
+        """ Return the media color """
+        return "#216e7d"
 
 
 class SeriesGenre(db.Model):
+    """ Series genres SQL Model """
+
     GROUP = MediaType.SERIES
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
     genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
 
 
 class SeriesEpisodesPerSeason(db.Model):
+    """ Series episodes per season SQL Model """
+
     GROUP = MediaType.SERIES
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1056,18 +947,22 @@ class SeriesEpisodesPerSeason(db.Model):
 
 
 class SeriesNetwork(db.Model):
+    """ Series networks SQL Model """
+
     GROUP = MediaType.SERIES
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
     network = db.Column(db.String(150), nullable=False)
 
 
 class SeriesActors(db.Model):
+    """ Series actors SQL Model """
+
     GROUP = MediaType.SERIES
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
     name = db.Column(db.String(150))
 
 
@@ -1075,8 +970,10 @@ class SeriesActors(db.Model):
 
 
 class Anime(MediaMixin, TVBase):
+    """ Anime SQL Model """
+
     GROUP = MediaType.ANIME
-    _type = 'Media'
+    TYPE = "Media"
 
     genres = db.relationship('AnimeGenre', backref='anime', lazy=True)
     actors = db.relationship('AnimeActors', backref='anime', lazy=True)
@@ -1085,16 +982,20 @@ class Anime(MediaMixin, TVBase):
     list_info = db.relationship('AnimeList', back_populates='media', lazy='dynamic')
 
     def get_media_cover(self):
-        return url_for('static', filename='covers/anime_covers/'+self.image_cover)
+        """ Get anime cover """
+        return url_for("static", filename=f"covers/anime_covers/{self.image_cover}")
 
     @staticmethod
     def media_details_template():
-        return 'media_details_anime.html'
+        """ Return template for anime """
+        return "media_details_anime.html"
 
 
 class AnimeList(MediaListMixin, db.Model):
+    """ Anime List SQL model """
+
     GROUP = MediaType.ANIME
-    _type = 'List'
+    TYPE = "List"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -1113,38 +1014,42 @@ class AnimeList(MediaListMixin, db.Model):
     media = db.relationship("Anime", back_populates='list_info', lazy=False)
 
     class Status(Enum):
-        WATCHING = 'Watching'
-        DROPPED = 'Dropped'
-        COMPLETED = 'Completed'
-        PLAN_TO_WATCH = 'Plan to Watch'
-        ON_HOLD = 'On Hold'
-        RANDOM = 'Random'
+        """ New status class for easiness """
 
-    def update_total_watched(self, new_rewatch):
+        WATCHING = "Watching"
+        DROPPED = "Dropped"
+        COMPLETED = "Completed"
+        PLAN_TO_WATCH = "Plan to Watch"
+        ON_HOLD = "On Hold"
+        RANDOM = "Random"
+
+    def update_total_watched(self, new_rewatch: int) -> int:
+        """ Update the total anime watched for a user """
+
         self.rewatched = new_rewatch
         new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
         self.total = new_total
+
         return new_total
 
-    def compute_new_time_spent(self, old_data=0, new_data=0, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
+    def compute_new_time_spent(self, old_data: int = 0, new_data: int = 0):
+        """ Compute new time spent for the user for the Anime """
 
-        old_time = user.time_spent_anime
-        user.time_spent_anime = old_time + ((new_data - old_data) * self.media.duration)
+        old_time = current_user.time_spent_anime
+        current_user.time_spent_anime = old_time + ((new_data - old_data) * self.media.duration)
 
     @classmethod
-    def get_more_stats(cls, user):
+    def get_more_stats(cls, user: db.Model) -> Dict:
+        """ Get more stats for the Anime """
+
+        # Get media data
         media_data = cls.query.filter_by(user_id=user.id).all()
 
         airing_dates = db.session.query(Anime, cls, func.count(Anime.first_air_date),
                                         ((extract('year', Anime.first_air_date)/5)*5).label('decade')) \
             .join(Anime, Anime.id == cls.media_id) \
             .filter(cls.user_id == user.id, Anime.first_air_date != 'Unknown', cls.status != Status.PLAN_TO_WATCH) \
-            .group_by(text('decade')).order_by(Anime.first_air_date.asc()).all()
+            .group_by(text('decade')).order_by(asc(Anime.first_air_date)).all()
 
         top_networks = db.session.query(AnimeNetwork.network, cls, func.count(AnimeNetwork.network).label('count')) \
             .join(AnimeNetwork, AnimeNetwork.media_id == cls.media_id) \
@@ -1182,31 +1087,39 @@ class AnimeList(MediaListMixin, db.Model):
 
     @staticmethod
     def default_sorting():
-        return 'Title A-Z'
+        """ Default sorting """
+        return "Title A-Z"
 
     @staticmethod
     def default_category():
+        """ Default category """
         return Status.WATCHING
 
     @staticmethod
     def html_template():
-        return 'medialist_anime.html'
+        """ Default template """
+        return "medialist_anime.html"
 
     @staticmethod
     def get_media_color():
-        return '#945141'
+        """ Anime color """
+        return "#945141"
 
 
 class AnimeGenre(db.Model):
+    """ Anime genre SQL model """
+
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('anime.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
     genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
 
 
 class AnimeEpisodesPerSeason(db.Model):
+    """ Anime episode per season SQL model """
+
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1216,6 +1129,8 @@ class AnimeEpisodesPerSeason(db.Model):
 
 
 class AnimeNetwork(db.Model):
+    """ Anime network SQL model """
+
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1224,10 +1139,12 @@ class AnimeNetwork(db.Model):
 
 
 class AnimeActors(db.Model):
+    """ Anime actors SQL model """
+
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('anime.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
     name = db.Column(db.String(150))
 
 
@@ -1235,8 +1152,10 @@ class AnimeActors(db.Model):
 
 
 class Movies(MediaMixin, db.Model):
+    """ Movies SQL model """
+
     GROUP = MediaType.MOVIES
-    _type = 'Media'
+    TYPE = "Media"
 
     def __repr__(self):
         return self.name
@@ -1265,20 +1184,31 @@ class Movies(MediaMixin, db.Model):
     actors = db.relationship('MoviesActors', backref='movies', lazy=True)
     list_info = db.relationship('MoviesList', back_populates='media', lazy='dynamic')
 
-    def add_media_to_user(self, new_status):
+    def add_media_to_user(self, new_status: Enum) -> int:
+        """ Add new Movies to the user """
+
         new_watched = 1
         if new_status == Status.PLAN_TO_WATCH:
             new_watched = 0
 
-        add_movie = MoviesList(user_id=current_user.id, media_id=self.id, status=new_status, total=new_watched)
+        # noinspection PyArgumentList
+        add_movie = MoviesList(
+            user_id=current_user.id,
+            media_id=self.id,
+            status=new_status,
+            total=new_watched
+        )
         db.session.add(add_movie)
 
         return new_watched
 
-    def get_media_cover(self):
-        return url_for('static', filename='covers/movies_covers/'+self.image_cover)
+    def get_media_cover(self) -> str:
+        """ Get movies cover """
+        return url_for("static", filename=f"covers/movies_covers/{self.image_cover}")
 
-    def get_user_list_info(self):
+    def get_user_list_info(self) -> Dict:
+        """ Get the user info for movies """
+
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
                 'rewatched': 0, 'comment': None, 'feeling': None, 'completion_date': None}
@@ -1294,35 +1224,39 @@ class Movies(MediaMixin, db.Model):
         data = dotdict(data)
         return data
 
-    def get_formated_dates(self):
-        release_date = change_air_format(self.release_date)
-        formated_date = f"{release_date}"
-
-        return formated_date
+    def get_formated_dates(self) -> str:
+        """ Get released date as formated date """
+        return change_air_format(self.release_date)
 
     @classmethod
-    def get_persons(cls, job, person):
-        if job == 'creator':
-            query = cls.query.filter(cls.director_name.ilike('%' + person + '%')).all()
-        elif job == 'actor':
+    def get_persons(cls, job: str, person: str) -> List[db.Model]:
+        """ Get person for movies """
+
+        if job == "creator":
+            query = cls.query.filter(cls.director_name.ilike("%" + person + "%")).all()
+        else:
             data = MoviesActors.query.filter(MoviesActors.name == person).all()
             query = cls.query.filter(cls.id.in_([p.media_id for p in data])).all()
 
         return query
 
     @staticmethod
-    def media_details_template():
-        return 'media_details_movies.html'
+    def media_details_template() -> str:
+        """ Get the template media details """
+        return "media_details_movies.html"
 
     @staticmethod
-    def form_only():
-        return ['name', 'original_name', 'director_name', 'release_date', 'homepage', 'original_language',
-                'duration', 'synopsis', 'budget', 'revenue', 'tagline']
+    def form_only() -> List:
+        """ Get only allowed forms attributes """
+        return ["name", "original_name", "director_name", "release_date", "homepage", "original_language",
+                "duration", "synopsis", "budget", "revenue", "tagline"]
 
 
 class MoviesList(MediaListMixin, db.Model):
+    """ Movies list SQL model """
+
     GROUP = MediaType.MOVIES
-    _type = 'List'
+    TYPE = "List"
 
     def __repr__(self):
         return f"{self.user}"
@@ -1342,6 +1276,8 @@ class MoviesList(MediaListMixin, db.Model):
     media = db.relationship("Movies", back_populates='list_info', lazy=False)
 
     class Status(Enum):
+        """ New status class for easiness """
+
         COMPLETED = 'Completed'
         PLAN_TO_WATCH = 'Plan to Watch'
 
@@ -1467,25 +1403,29 @@ class MoviesList(MediaListMixin, db.Model):
 
 
 class MoviesGenre(db.Model):
+    """ Movies genres SQL model """
+
     GROUP = MediaType.MOVIES
 
     def __repr__(self):
         return self.genre
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
     genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
 
 
 class MoviesActors(db.Model):
+    """ Movies actors SQL model """
+
     GROUP = MediaType.MOVIES
 
     def __repr__(self):
         return self.name
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
     name = db.Column(db.String(150))
 
 
@@ -1493,8 +1433,10 @@ class MoviesActors(db.Model):
 
 
 class Books(MediaMixin, db.Model):
+    """ Books SQL model """
+
     GROUP = MediaType.BOOKS
-    _type = 'Media'
+    TYPE = "Media"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -1511,29 +1453,42 @@ class Books(MediaMixin, db.Model):
     authors = db.relationship('BooksAuthors')
     list_info = db.relationship('BooksList', back_populates='media', lazy='dynamic')
 
-    def add_media_to_user(self, new_status):
+    def add_media_to_user(self, new_status: Enum) -> int:
+        """ Add book to the user """
+
         new_watched = 0
         if new_status == Status.COMPLETED:
             new_watched = self.pages
         elif new_status == Status.PLAN_TO_READ:
             new_watched = 0
 
-        user_list = BooksList(user_id=current_user.id, media_id=self.id, actual_page=new_watched, status=new_status,
-                              total=new_watched)
+        # noinspection PyArgumentList
+        user_list = BooksList(
+            user_id=current_user.id,
+            media_id=self.id,
+            actual_page=new_watched,
+            status=new_status,
+            total=new_watched
+        )
         db.session.add(user_list)
 
         return new_watched
 
-    def get_authors(self):
+    def get_authors(self) -> List[str]:
+        """ Helper function to get the authors of a book """
         return [d.name for d in self.authors]
 
     def get_original_name(self):
-        pass
+        """ Consistency """
+        raise NotImplementedError
 
-    def get_media_cover(self):
-        return url_for('static', filename='covers/books_covers/'+self.image_cover)
+    def get_media_cover(self) -> str:
+        """ Get the book cover """
+        return url_for("static", filename=f"covers/books_covers/{self.image_cover}")
 
-    def get_user_list_info(self):
+    def get_user_list_info(self) -> Dict:
+        """ Get user list info for this book """
+
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.READING.value,
                 'rewatched': 0, 'comment': None, 'actual_page': 0, 'feeling': None, 'completion_date': None}
@@ -1547,35 +1502,42 @@ class Books(MediaMixin, db.Model):
                     'rewatched': tmp.rewatched, 'comment': tmp.comment, 'actual_page': tmp.actual_page,
                     'feeling': tmp.feeling, 'completion_date': comp_date}
         data = dotdict(data)
+
         return data
 
     @classmethod
-    def get_persons(cls, job, person):
-        if job == 'creator':
+    def get_persons(cls, job: str, person: str) -> List[db.Model]:
+        """ Get all authors books """
+
+        if job == "creator":
             data = BooksAuthors.query.filter(BooksAuthors.name == person).all()
             query = cls.query.filter(cls.id.in_([p.media_id for p in data])).all()
-        elif job == 'actor':
-            abort(400)
+        else:
+            return abort(400)
 
         return query
 
     @staticmethod
     def media_details_template():
-        return 'media_details_books.html'
+        """ Get template of media details """
+        return "media_details_books.html"
 
     @staticmethod
     def form_only():
+        """ Get only allowed form """
         return ['name', 'release_date', 'pages', 'language', 'publishers', 'synopsis']
 
 
 class BooksList(MediaListMixin, db.Model):
+    """ Books list SQL model """
+
     GROUP = MediaType.BOOKS
-    _type = 'List'
-    _time_per_page = 1.7
+    TYPE = "List"
+    TIME_PER_PAGE = 1.7
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
     status = db.Column(db.Enum(Status), nullable=False)
     rewatched = db.Column(db.Integer, nullable=False, default=0)
     actual_page = db.Column(db.Integer)
@@ -1589,23 +1551,28 @@ class BooksList(MediaListMixin, db.Model):
     media = db.relationship("Books", back_populates='list_info', lazy=False)
 
     class Status(Enum):
+        """ New status class for easiness """
+
         READING = 'Reading'
         DROPPED = 'Dropped'
         COMPLETED = 'Completed'
         PLAN_TO_READ = 'Plan to Read'
         ON_HOLD = 'On Hold'
 
-    def update_total_watched(self, new_rewatch):
+    def update_total_watched(self, new_rewatch: int) -> int:
+        """ Update total watched/read """
+
         self.rewatched = new_rewatch
         new_total = self.media.pages + (new_rewatch * self.media.pages)
         self.total = new_total
 
         return new_total
 
-    def category_changes(self, new_status):
-        #  Set the new status and actual page
-        self.status = new_status
+    def category_changes(self, new_status: Enum) -> int:
+        """ Change the category of the book for the user """
 
+        #  Set new status and actual page
+        self.status = new_status
         new_total = self.total
         if new_status == Status.COMPLETED:
             self.actual_page = self.media.pages
@@ -1617,30 +1584,30 @@ class BooksList(MediaListMixin, db.Model):
             self.total = 0
             new_total = 0
 
-        #  Reset the rewatched
+        #  Reset rewatched
         self.rewatched = 0
 
         return new_total
 
-    def compute_new_time_spent(self, old_data=0, new_data=0, user_id=None):
-        # Use for the list import function (redis and rq backgound process), can't import the <current_user> context
-        if current_user:
-            user = current_user
-        else:
-            user = User.query.filter(User.id == user_id).first()
+    def compute_new_time_spent(self, old_data: int = 0, new_data: int = 0):
+        """ Compute the new time spent reading for the user """
 
-        old_time = user.time_spent_books
-        user.time_spent_books = old_time + ((new_data - old_data) * self._time_per_page)
+        old_time = current_user.time_spent_books
+        current_user.time_spent_books = old_time + ((new_data - old_data) * self._time_per_page)
 
     @classmethod
-    def get_more_stats(cls, user):
+    def get_more_stats(cls, user: db.Model) -> Dict:
+        """ Get user stats for the books list """
+
+        # Get books data
         media_data = BooksList.query.filter_by(user_id=user.id).all()
 
+        # noinspection PyTypeChecker,PyUnresolvedReferences
         release_dates = db.session.query(Books, cls, func.count(Books.release_date),
-                                         ((Books.release_date/10)*10).label('decade')) \
+                                         ((Books.release_date/10)*10).label("decade")) \
             .join(Books, Books.id == cls.media_id) \
             .filter(cls.user_id == user.id, Books.release_date != 'Unknown', cls.status != Status.PLAN_TO_READ) \
-            .group_by(text('decade')).order_by(Books.release_date.asc()).all()
+            .group_by(text('decade')).order_by(asc(Books.release_date)).all()
 
         top_genres = db.session.query(BooksGenre.genre, cls, func.count(BooksGenre.genre).label('count')) \
             .join(BooksGenre, BooksGenre.media_id == cls.media_id) \
@@ -1687,29 +1654,33 @@ class BooksList(MediaListMixin, db.Model):
             elif total_pages >= 600:
                 tot_pages['600+'] += 1
 
-        data = {'pages': tot_pages, 'periods': release_dates, 'genres': top_genres, 'top_languages': list_languages,
+        return {'pages': tot_pages, 'periods': release_dates, 'genres': top_genres, 'top_languages': list_languages,
                 'top_authors': top_authors}
 
-        return data
+    @staticmethod
+    def default_sorting() -> str:
+        """ Return default book sorting """
+        return "Title A-Z"
 
     @staticmethod
-    def default_sorting():
-        return 'Title A-Z'
-
-    @staticmethod
-    def default_category():
+    def default_category() -> Enum:
+        """ Return default book category """
         return Status.READING
 
     @staticmethod
-    def html_template():
-        return 'medialist_books.html'
+    def html_template() -> str:
+        """ Return page html """
+        return "medialist_books.html"
 
     @staticmethod
     def get_media_color():
-        return '#584c6e'
+        """ Return books color """
+        return "#584c6e"
 
 
 class BooksGenre(db.Model):
+    """ Books genres SQL model """
+
     GROUP = MediaType.BOOKS
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1718,6 +1689,8 @@ class BooksGenre(db.Model):
 
 
 class BooksAuthors(db.Model):
+    """ Books authors SQL model """
+
     GROUP = MediaType.BOOKS
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1729,8 +1702,10 @@ class BooksAuthors(db.Model):
 
 
 class Games(MediaMixin, db.Model):
+    """ Games SQL model """
+
     GROUP = MediaType.GAMES
-    _type = 'Media'
+    TYPE = "Media"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -1756,16 +1731,28 @@ class Games(MediaMixin, db.Model):
     companies = db.relationship('GamesCompanies', backref='games', lazy=True)
     list_info = db.relationship('GamesList', back_populates='media', lazy='dynamic')
 
-    def add_media_to_user(self, new_status):
-        user_list = GamesList(user_id=current_user.id, media_id=self.id, status=new_status,
-                              completion=False, playtime=0)
+    def add_media_to_user(self, new_status: Enum) -> int:
+        """ Add new Game to user, return int for consistency """
+
+        # noinspection PyArgumentList
+        user_list = GamesList(
+            user_id=current_user.id,
+            media_id=self.id,
+            status=new_status,
+            completion=False,
+            playtime=0
+        )
         db.session.add(user_list)
+
         return 0
 
     def get_formated_dates(self):
+        """ Format release date """
         return change_air_format(self.release_date, games=True)
 
-    def get_user_list_info(self):
+    def get_user_list_info(self) -> Dict:
+        """ Get user info about this game """
+
         tmp = self.list_info.filter_by(user_id=current_user.id).first()
         data = {'in_list': False, 'score': '---', 'favorite': False, 'status': Status.COMPLETED.value,
                 'playtime': 0, 'comment': None, 'feeling': None, 'completion_date': None}
@@ -1779,6 +1766,7 @@ class Games(MediaMixin, db.Model):
                     'playtime': tmp.playtime, 'comment': tmp.comment, 'feeling': tmp.feeling,
                     'completion_date': comp_date}
         data = dotdict(data)
+
         return data
 
     def get_media_cover(self):
@@ -1841,12 +1829,14 @@ class Games(MediaMixin, db.Model):
 
 
 class GamesList(MediaListMixin, db.Model):
+    """ Games list SQL model """
+
     GROUP = MediaType.GAMES
-    _type = 'List'
+    TYPE = "List"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)
     status = db.Column(db.Enum(Status), nullable=False)
     completion = db.Column(db.Boolean)
     playtime = db.Column(db.Integer)
@@ -1859,6 +1849,8 @@ class GamesList(MediaListMixin, db.Model):
     media = db.relationship("Games", back_populates='list_info', lazy=False)
 
     class Status(Enum):
+        """ New status class for easiness """
+
         COMPLETED = 'Completed'
         MULTIPLAYER = 'Multiplayer'
         ENDLESS = 'Endless'
@@ -1980,6 +1972,8 @@ class GamesList(MediaListMixin, db.Model):
 
 
 class GamesGenre(db.Model):
+    """ Games genres SQL model """
+
     GROUP = MediaType.GAMES
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1988,6 +1982,8 @@ class GamesGenre(db.Model):
 
 
 class GamesPlatforms(db.Model):
+    """ Games platforms SQL model """
+
     GROUP = MediaType.GAMES
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1996,10 +1992,12 @@ class GamesPlatforms(db.Model):
 
 
 class GamesCompanies(db.Model):
+    """ Games companies SQL model """
+
     GROUP = MediaType.GAMES
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)
     name = db.Column(db.String(100))
     publisher = db.Column(db.Boolean)
     developer = db.Column(db.Boolean)
@@ -2011,7 +2009,7 @@ class GamesCompanies(db.Model):
 class Badges(db.Model):
     """ Badges SQL model """
 
-    GROUP = ['Other']
+    GROUP = "Other"
 
     id = db.Column(db.Integer, primary_key=True)
     threshold = db.Column(db.Integer, nullable=False)
@@ -2073,7 +2071,7 @@ class Badges(db.Model):
 class Ranks(db.Model):
     """ Ranks SQL model """
 
-    GROUP = ['Other']
+    GROUP = "Other"
 
     id = db.Column(db.Integer, primary_key=True)
     level = db.Column(db.Integer, nullable=False)
@@ -2125,7 +2123,7 @@ class Ranks(db.Model):
 class Frames(db.Model):
     """ Frames SQL model """
 
-    GROUP = ['Other']
+    GROUP = "Other"
 
     id = db.Column(db.Integer, primary_key=True)
     level = db.Column(db.Integer, nullable=False)
@@ -2170,7 +2168,7 @@ class Frames(db.Model):
 class MyListsStats(db.Model):
     """ Model to get all global stats for MyLists """
 
-    GROUP = ['Stats']
+    GROUP = "Stats"
 
     id = db.Column(db.Integer, primary_key=True)
     nb_users = db.Column(db.Integer)
@@ -2221,8 +2219,16 @@ class MyListsStats(db.Model):
 """ --- OTHER ----------------------------------------------------------------------------------------------- """
 
 
-def get_media_query(user: db.Model, media_type: Enum, category: str, genre: str, sorting: str, page: int,
-                    search_q: str, lang: str) -> Tuple[str, Dict]:
+def get_media_query(
+        user: db.Model,
+        media_type: Enum,
+        category: str,
+        genre: str,
+        sorting: str,
+        page: int,
+        search_q: str,
+        lang: str
+) -> Tuple[str, Dict]:
     """ Create the query for the <medialist> route depending on the media """
 
     # Get SQL models
@@ -2392,7 +2398,7 @@ def get_media_count(user_id: int, media_type: Enum) -> Tuple[List, List]:
     return common_ids, common_elements
 
 
-def get_next_airing(media_type):
+def get_next_airing(media_type: Enum) -> List[db.Model]:
     """ Fetch the next airing media for the user """
 
     media = eval(media_type.value.capitalize())

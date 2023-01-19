@@ -1,3 +1,7 @@
+"""
+Admin pages using Flask_Admin
+"""
+
 from MyLists import db, app
 from flask_login import current_user
 from flask_admin.contrib.sqla import ModelView
@@ -13,8 +17,7 @@ class UserAdminView(ModelView):
     def is_accessible(self):
         return current_user.role == RoleType.ADMIN
     column_display_pk = True
-    form_excluded_columns = ('series_list', 'movies_list', 'games_list', 'redis_tasks',
-                             'UserLastUpdate')
+    form_excluded_columns = ('series_list', 'movies_list', 'games_list', 'redis_tasks', 'UserLastUpdate')
     column_exclude_list = ('password', )
 
 
@@ -167,4 +170,3 @@ admin.add_view(GamesListAdminView(GamesList, db.session))
 admin.add_view(GamesGenreAdminView(GamesGenre, db.session))
 admin.add_view(GamesCompaniesAdminView(GamesCompanies, db.session))
 admin.add_view(GamesPlatformsAdminView(GamesPlatforms, db.session))
-
