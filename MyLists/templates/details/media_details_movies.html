@@ -1,4 +1,4 @@
-{% extends 'media_details_base.html' %}
+{% extends 'details/media_details_base.html' %}
 
 
 {% block hr_color %}
@@ -26,7 +26,7 @@
         <div class="col-8">
             <label for="rewatched-dropdown"></label>
             <select id="rewatched-dropdown" class="text-light cat-drop" onchange="updateRewatched(
-             '{{ media.id }}', this, '{{ media_list }}')">
+             '{{ media.id }}', this, '{{ media_type }}')">
                 {% for i in range(0, 11) %}
                     <option {% if i == list_info.rewatched %}selected="selected"{% endif %} value="{{ i }}">
                         &nbsp;{{ i }}&nbsp;

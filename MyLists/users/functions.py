@@ -3,7 +3,8 @@ Functions for the User routes
 """
 
 from typing import Dict, Tuple, List
-from MyLists.models import get_models_type, BooksList, GamesList, AnimeList
+from MyLists.models import BooksList, GamesList, AnimeList
+from MyLists.utils import get_models_type
 
 
 def get_all_media_info(user) -> Tuple[List[Dict], Dict]:

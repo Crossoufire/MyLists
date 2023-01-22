@@ -1,4 +1,6 @@
-""" Scheduled tasks functions and classes """
+"""
+Scheduled tasks functions and classes
+"""
 
 import json
 import logging
@@ -7,18 +9,23 @@ from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import List, Tuple, Dict, Iterable
-from sqlalchemy import and_, desc, func, true, text
+import dotenv
+import requests
+from sqlalchemy import and_, desc, func, true, text, null
 from MyLists import app, db
 from MyLists.API_data import ApiData, ApiMovies, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
     UserLastUpdate, Notifications, Status, Movies, MoviesList, MoviesActors, MoviesGenre, MyListsStats, Games, \
     GamesList, GamesGenre, GamesPlatforms, GamesCompanies, Books, BooksList, BooksGenre, BooksAuthors, Anime, \
     AnimeList, AnimeActors, AnimeGenre, AnimeNetwork, AnimeEpisodesPerSeason, User, RoleType
+from MyLists.utils import get_models_type, MediaType
 
 
 def remove_non_list_media():
-    app.logger.info('###################################################################')
-    app.logger.info('[SYSTEM] - Starting automatic media remover')
+    """ Remove all medianot present in a User list from DB and HDD """
+
+    app.logger.info("###################################################################")
+    app.logger.info("[SYSTEM] - Starting automatic media remover")
 
     # Series remover
     series = db.session.query(Series, SeriesList).outerjoin(SeriesList, SeriesList.media_id == Series.id).all()
@@ -32,11 +39,11 @@ def remove_non_list_media():
         SeriesGenre.query.filter_by(media_id=del_id).delete()
         SeriesNetwork.query.filter_by(media_id=del_id).delete()
         SeriesEpisodesPerSeason.query.filter_by(media_id=del_id).delete()
-        UserLastUpdate.query.filter_by(media_type=ListType.SERIES, media_id=del_id).delete()
-        Notifications.query.filter_by(media_type='serieslist', media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=MediaType.SERIES, media_id=del_id).delete()
+        Notifications.query.filter_by(media_type="serieslist", media_id=del_id).delete()
         count += 1
-        app.logger.info('Removed series with ID: [{}]'.format(del_id))
-    app.logger.info('Total series removed: {}'.format(count))
+        app.logger.info(f"Removed series with ID: [{del_id}]")
+    app.logger.info(f"Total series removed: {count}")
 
     # Anime remover
     anime = db.session.query(Anime, AnimeList).outerjoin(AnimeList, AnimeList.media_id == Anime.id).all()
@@ -50,11 +57,11 @@ def remove_non_list_media():
         AnimeGenre.query.filter_by(media_id=del_id).delete()
         AnimeNetwork.query.filter_by(media_id=del_id).delete()
         AnimeEpisodesPerSeason.query.filter_by(media_id=del_id).delete()
-        UserLastUpdate.query.filter_by(media_type=ListType.ANIME, media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=MediaType.ANIME, media_id=del_id).delete()
         Notifications.query.filter_by(media_type='animelist', media_id=del_id).delete()
         count += 1
-        app.logger.info('Removed anime with ID: [{}]'.format(del_id))
-    app.logger.info('Total anime removed: {}'.format(count))
+        app.logger.info(f"Removed anime with ID: [{del_id}]")
+    app.logger.info(f"Total anime removed: {count}")
 
     # Movies remover
     movies = db.session.query(Movies, MoviesList).outerjoin(MoviesList, MoviesList.media_id == Movies.id).all()
@@ -66,11 +73,11 @@ def remove_non_list_media():
         Movies.query.filter_by(id=del_id).delete()
         MoviesActors.query.filter_by(media_id=del_id).delete()
         MoviesGenre.query.filter_by(media_id=del_id).delete()
-        UserLastUpdate.query.filter_by(media_type=ListType.MOVIES, media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=MediaType.MOVIES, media_id=del_id).delete()
         Notifications.query.filter_by(media_type='movieslist', media_id=del_id).delete()
         count += 1
-        app.logger.info('Removed movie with ID: [{}]'.format(del_id))
-    app.logger.info('Total movies removed: {}'.format(count))
+        app.logger.info(f"Removed movie with ID: [{del_id}]")
+    app.logger.info(f"Total movies removed: {count}")
 
     # Books remover
     books = db.session.query(Books, BooksList).outerjoin(BooksList, BooksList.media_id == Books.id).all()
@@ -82,11 +89,11 @@ def remove_non_list_media():
         Books.query.filter_by(id=del_id).delete()
         BooksAuthors.query.filter_by(media_id=del_id).delete()
         BooksGenre.query.filter_by(media_id=del_id).delete()
-        UserLastUpdate.query.filter_by(media_type=ListType.BOOKS, media_id=del_id).delete()
-        Notifications.query.filter_by(media_type='bookslist', media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=MediaType.BOOKS, media_id=del_id).delete()
+        Notifications.query.filter_by(media_type="bookslist", media_id=del_id).delete()
         count += 1
-        app.logger.info('Removed book with ID: [{}]'.format(del_id))
-    app.logger.info('Total books removed: {}'.format(count))
+        app.logger.info(f"Removed book with ID: [{del_id}]")
+    app.logger.info(f"Total books removed: {count}")
 
     # Games remover
     games = db.session.query(Games, GamesList).outerjoin(GamesList, GamesList.media_id == Games.id).all()
@@ -99,24 +106,26 @@ def remove_non_list_media():
         GamesPlatforms.query.filter_by(media_id=del_id).delete()
         GamesCompanies.query.filter_by(media_id=del_id).delete()
         GamesGenre.query.filter_by(media_id=del_id).delete()
-        UserLastUpdate.query.filter_by(media_type=ListType.GAMES, media_id=del_id).delete()
-        Notifications.query.filter_by(media_type='gameslist', media_id=del_id).delete()
+        UserLastUpdate.query.filter_by(media_type=MediaType.GAMES, media_id=del_id).delete()
+        Notifications.query.filter_by(media_type="gameslist", media_id=del_id).delete()
         count += 1
-        app.logger.info('Removed game with ID: [{}]'.format(del_id))
-    app.logger.info('Total games removed: {}'.format(count))
+        app.logger.info(f"Removed game with ID: [{del_id}]")
+    app.logger.info(f"Total games removed: {count}")
 
     db.session.commit()
-    app.logger.info('[SYSTEM] - Finished Automatic media remover')
-    app.logger.info('###################################################################')
+    app.logger.info("[SYSTEM] - Finished Automatic media remover")
+    app.logger.info("###################################################################")
 
 
 def remove_old_covers():
-    app.logger.info('###################################################################')
-    app.logger.info('[SYSTEM] - Starting automatic covers remover')
+    """ Remove old covers on HDD if not present in DB """
+
+    app.logger.info("###################################################################")
+    app.logger.info("[SYSTEM] - Starting automatic covers remover")
 
     # --- Series old cover remover ----------------
     series = Series.query.all()
-    path_series_covers = Path(app.root_path, 'static/covers/series_covers/')
+    path_series_covers = Path(app.root_path, "static/covers/series_covers/")
 
     images_in_db = []
     for media in series:
@@ -128,15 +137,15 @@ def remove_old_covers():
 
     count = 0
     for image in images_saved:
-        if image not in images_in_db and image != 'default.jpg':
-            os.remove(f'{path_series_covers}/{image}')
-            app.logger.info('Removed old series cover with name: {}'.format(image))
+        if image not in images_in_db and image != "default.jpg":
+            os.remove(f"{path_series_covers}/{image}")
+            app.logger.info(f"Removed old series cover with name: {image}")
             count += 1
-    app.logger.info('Total old series covers deleted: {}'.format(count))
+    app.logger.info(f"Total old series covers deleted: {count}")
 
     # --- Anime old cover remover ----------------
     anime = Anime.query.all()
-    path_anime_covers = Path(app.root_path, 'static/covers/anime_covers/')
+    path_anime_covers = Path(app.root_path, "static/covers/anime_covers/")
 
     images_in_db = []
     for media in anime:
@@ -153,7 +162,7 @@ def remove_old_covers():
             os.remove(f'{path_anime_covers}/{image}')
             app.logger.info('Removed old anime cover with name: {}'.format(image))
             count += 1
-    app.logger.info('Total old anime covers deleted: {}'.format(count))
+    app.logger.info(f'Total old anime covers deleted: {count}')
 
     # --- Movies old cover remover ----------------
     movies = Movies.query.all()
@@ -173,11 +182,11 @@ def remove_old_covers():
             os.remove(f'{path_movies_covers}/{image}')
             app.logger.info('Removed old movie cover with name: {}'.format(image))
             count += 1
-    app.logger.info('Total old movies covers deleted: {}'.format(count))
+    app.logger.info(f'Total old movies covers deleted: {count}')
 
     # --- Books old cover remover ----------------
     books = Books.query.all()
-    path_books_covers = Path(app.root_path, 'static/covers/books_covers/')
+    path_books_covers = Path(app.root_path, "static/covers/books_covers/")
 
     images_in_db = []
     for book in books:
@@ -189,11 +198,11 @@ def remove_old_covers():
 
     count = 0
     for image in images_saved:
-        if image not in images_in_db and image != 'default.jpg':
+        if image not in images_in_db and image != "default.jpg":
             os.remove(f'{path_books_covers}/{image}')
-            app.logger.info('Removed old book cover with name: {}'.format(image))
+            app.logger.info(f'Removed old book cover with name: {image}')
             count += 1
-    app.logger.info('Total old books covers deleted: {}'.format(count))
+    app.logger.info(f'Total old books covers deleted: {count}')
 
     # --- Games old cover remover ----------------
     games = Games.query.all()
@@ -211,37 +220,39 @@ def remove_old_covers():
     for image in images_saved:
         if image not in images_in_db and image != 'default.jpg':
             os.remove(f'{path_games_covers}/{image}')
-            app.logger.info('Removed old game cover with name: {}'.format(image))
+            app.logger.info(f'Removed old game cover with name: {image}')
             count += 1
-    app.logger.info('Total old game covers deleted: {}'.format(count))
+    app.logger.info(f'Total old game covers deleted: {count}')
 
     app.logger.info('[SYSTEM] - Finished automatic covers remover')
     app.logger.info('###################################################################')
 
 
-def refresh_element_data(api_id, list_type):
-    ApiModel = ApiData.get_API_class(list_type)
+def refresh_element_data(api_id: int, media_type: Enum):
+    """ Refresh a media using appropriate API """
+
+    ApiModel = ApiData.get_API_class(media_type)
     data = ApiModel(API_id=api_id).update_media_data()
 
-    # Update the main details for each media
-    if list_type == ListType.SERIES:
-        Series.query.filter_by(api_id=api_id).update(data['media_data'])
-    elif list_type == ListType.ANIME:
-        Anime.query.filter_by(api_id=api_id).update(data['media_data'])
-    elif list_type == ListType.MOVIES:
-        Movies.query.filter_by(api_id=api_id).update(data['media_data'])
-    elif list_type == ListType.GAMES:
-        Games.query.filter_by(api_id=api_id).update(data['media_data'])
+    # Update main details for each media
+    if media_type == MediaType.SERIES:
+        Series.query.filter_by(api_id=api_id).update(data["media_data"])
+    elif media_type == MediaType.ANIME:
+        Anime.query.filter_by(api_id=api_id).update(data["media_data"])
+    elif media_type == MediaType.MOVIES:
+        Movies.query.filter_by(api_id=api_id).update(data["media_data"])
+    elif media_type == MediaType.GAMES:
+        Games.query.filter_by(api_id=api_id).update(data["media_data"])
 
-    # Commit the new changes
+    # Commit changes
     db.session.commit()
 
-    # Check the episodes/seasons
-    if list_type == ListType.SERIES or list_type == ListType.ANIME:
-        if list_type == ListType.SERIES:
+    # Check episodes/seasons
+    if media_type in (MediaType.SERIES, MediaType.ANIME):
+        if media_type == MediaType.SERIES:
             media = Series.query.filter_by(api_id=api_id).first()
             old_seas_eps = [n.episodes for n in SeriesEpisodesPerSeason.query.filter_by(media_id=media.id).all()]
-        elif list_type == ListType.ANIME:
+        elif media_type == MediaType.ANIME:
             media = Anime.query.filter_by(api_id=api_id).first()
             old_seas_eps = [n.episodes for n in AnimeEpisodesPerSeason.query.filter_by(media_id=media.id).all()]
         else:
@@ -250,7 +261,7 @@ def refresh_element_data(api_id, list_type):
         new_seas_eps = [d['episodes'] for d in data['seasons_data']]
 
         if new_seas_eps != old_seas_eps:
-            if list_type == ListType.SERIES:
+            if media_type == MediaType.SERIES:
                 users_list = SeriesList.query.filter_by(media_id=media.id).all()
 
                 for user in users_list:
@@ -279,10 +290,11 @@ def refresh_element_data(api_id, list_type):
                 db.session.commit()
 
                 for seas in data['seasons_data']:
-                    season = SeriesEpisodesPerSeason(media_id=media.id, season=seas['season'], episodes=seas['episodes'])
+                    season = SeriesEpisodesPerSeason(media_id=media.id, season=seas['season'],
+                                                     episodes=seas['episodes'])
                     db.session.add(season)
                 db.session.commit()
-            elif list_type == ListType.ANIME:
+            elif media_type == MediaType.ANIME:
                 users_list = AnimeList.query.filter_by(media_id=media.id).all()
 
                 for user in users_list:
@@ -319,13 +331,15 @@ def refresh_element_data(api_id, list_type):
 
 
 def automatic_media_refresh():
-    app.logger.info('###################################################################')
-    app.logger.info('[SYSTEM] - Starting automatic media refresh')
+    """ Automtically refresh media using appropriate API """
 
-    # Recover all the data
-    all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != True)]
-    all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != True)]
-    all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != True)]
+    app.logger.info("###################################################################")
+    app.logger.info("[SYSTEM] - Starting automatic media refresh")
+
+    # Fetch all data
+    all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != true)]
+    all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != true)]
+    all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != true)]
 
     all_games = Games.query.all()
     all_games_api_id = []
@@ -336,25 +350,25 @@ def automatic_media_refresh():
         except:
             all_games_api_id.append(game.api_id)
 
-    # Recover from API all the changed <TV_show> ID
+    # Fetch from API all changed <TV_show> ID
     try:
         all_id_tv_changes = ApiTV().get_changed_data()
     except Exception as e:
-        app.logger.error(f'[ERROR] - Requesting the changed data from TMDB API: {e}')
+        app.logger.error(f"[ERROR] - Requesting the changed data from TMDB API: {e}")
         return
 
-    # Recover from API all the changed <Movies> ID
+    # Fetch from API all changed <Movies> ID
     try:
         all_id_movies_changes = ApiMovies().get_changed_data()
     except Exception as e:
-        app.logger.error(f'[ERROR] - Requesting the changed data from (movies) TMDB API: {e}')
+        app.logger.error(f"[ERROR] - Requesting the changed data from (movies) TMDB API: {e}")
         return
 
     # Refresh Series
     for element in all_id_tv_changes['results']:
         if element['id'] in all_series_api_id:
             try:
-                refresh_element_data(element['id'], ListType.SERIES)
+                refresh_element_data(element['id'], MediaType.SERIES)
                 app.logger.info(f'[INFO] - Refreshed Series with TMDB ID: [{element["id"]}]')
             except Exception as e:
                 app.logger.info(f'[ERROR] - While refreshing series: {e} - ID = {element["id"]}')
@@ -363,7 +377,7 @@ def automatic_media_refresh():
     for element in all_id_tv_changes["results"]:
         if element["id"] in all_anime_api_id:
             try:
-                refresh_element_data(element["id"], ListType.ANIME)
+                refresh_element_data(element["id"], MediaType.ANIME)
                 app.logger.info(f'[INFO] - Refreshed Anime with TMDB ID: [{element["id"]}]')
             except Exception as e:
                 app.logger.info(f'[ERROR] - While refreshing anime: {e} - ID = {element["id"]}')
@@ -372,33 +386,36 @@ def automatic_media_refresh():
     for element in all_id_movies_changes["results"]:
         if element["id"] in all_movies_api_id:
             try:
-                refresh_element_data(element["id"], ListType.MOVIES)
-                app.logger.info(f'[INFO] - Refreshed Movie with TMDB ID: [{element["id"]}]')
+                refresh_element_data(element["id"], MediaType.MOVIES)
+                app.logger.info(f"[INFO] - Refreshed Movie with TMDB ID: [{element['id']}]")
             except Exception as e:
-                app.logger.info(f'[ERROR] - While refreshing movies: {e} - ID = {element["id"]}')
+                app.logger.info(f"'[ERROR] - While refreshing movies: {e} - ID = {element['id']}'")
 
     # Refresh games
     for api_id in all_games_api_id:
         try:
-            refresh_element_data(api_id, ListType.GAMES)
-            app.logger.info(f'[INFO] - Refreshed Game with IGDB ID: [{api_id}]')
+            refresh_element_data(api_id, MediaType.GAMES)
+            app.logger.info(f"[INFO] - Refreshed Game with IGDB ID: [{api_id}]")
         except Exception as e:
-            app.logger.info(f'[ERROR] - While refreshing games: {e} - ID = {api_id}')
+            app.logger.info(f"[ERROR] - While refreshing games: {e} - ID = {api_id}")
 
     app.logger.info('[SYSTEM] - Automatic refresh completed')
     app.logger.info('###################################################################')
 
 
 def new_releasing_series():
-    app.logger.info('###################################################################')
-    app.logger.info('[SYSTEM] - Start adding the new releasing series')
+    """ Check for new releasing series (TMDB API) """
 
-    all_series = Series.query.filter(Series.next_episode_to_air != None).all()
+    app.logger.info("###################################################################")
+    app.logger.info("[SYSTEM] - Start adding the new releasing series")
+
+    all_series = Series.query.filter(Series.next_episode_to_air != null).all()
     media_id = []
     for series in all_series:
         try:
             diff = (datetime.utcnow() - datetime.strptime(series.next_episode_to_air, '%Y-%m-%d')).total_seconds()
-            # Check if the next episode of the series is releasing in one week or less (7 days)
+
+            # Check if series next episode is releasing in one week or less
             if diff < 0 and abs(diff / (3600 * 24)) <= 7:
                 media_id.append(series.id)
         except:
@@ -410,7 +427,7 @@ def new_releasing_series():
                                                         SeriesList.status != Status.DROPPED)).all()
 
     for info in series_in_ptw:
-        series = Notifications.query.filter_by(user_id=info[1].user_id, media_type='serieslist', media_id=info[0].id) \
+        series = Notifications.query.filter_by(user_id=info[1].user_id, media_type="serieslist", media_id=info[0].id) \
             .order_by(desc(Notifications.timestamp)).first()
 
         if series:
@@ -438,20 +455,23 @@ def new_releasing_series():
         db.session.add(data)
 
     db.session.commit()
-    app.logger.info('[SYSTEM] - Finish adding the new releasing series')
-    app.logger.info('###################################################################')
+    app.logger.info("[SYSTEM] - Finish adding the new releasing series")
+    app.logger.info("###################################################################")
 
 
 def new_releasing_anime():
+    """ Check for new anime release (TMDB API) """
+
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Start adding the new releasing anime')
 
-    all_anime = Anime.query.filter(Anime.next_episode_to_air != None).all()
+    all_anime = Anime.query.filter(Anime.next_episode_to_air != null).all()
     media_id = []
     for anime in all_anime:
         try:
             diff = (datetime.utcnow() - datetime.strptime(anime.next_episode_to_air, '%Y-%m-%d')).total_seconds()
-            # Check if the next episode of the anime is releasing in one week or less (7 days)
+
+            # Check if anime next episode is releasing in one week or less
             if diff < 0 and abs(diff / (3600 * 24)) <= 7:
                 media_id.append(anime.id)
         except:
@@ -493,6 +513,8 @@ def new_releasing_anime():
 
 
 def new_releasing_movies():
+    """ Check for new movies release (TMDB API) """
+
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Start adding the new releasing movies')
 
@@ -501,7 +523,8 @@ def new_releasing_movies():
     for movie in all_movies:
         try:
             diff = (datetime.utcnow() - datetime.strptime(movie.release_date, '%Y-%m-%d')).total_seconds()
-            # Check if the movie released in one week or less (7 days)
+
+            # Check if movie released in one week or less
             if diff < 0 and abs(diff / (3600 * 24)) <= 7:
                 media_id.append(movie.id)
         except:
@@ -530,6 +553,8 @@ def new_releasing_movies():
 
 
 def new_releasing_games():
+    """ Check for new games release (IGDB API) """
+
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Start adding the new releasing games')
 
@@ -538,7 +563,8 @@ def new_releasing_games():
     for game in all_games:
         try:
             diff = (datetime.utcnow() - datetime.utcfromtimestamp(int(game.release_date))).total_seconds()
-            # Check if the game release in one week or less (7 days)
+
+            # Check if game release in one week or less
             if diff < 0 and abs(diff/(3600*24)) <= 7:
                 media_id.append(game.id)
         except:
@@ -565,13 +591,18 @@ def new_releasing_games():
 
 
 def automatic_movies_locking():
+    """ Automatically lock movies that are old enough - about 5 months old """
+
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Starting automatic movies locking')
 
-    all_movies = Movies.query.filter(Movies.lock_status != True).all()
+    all_movies = Movies.query.filter(Movies.lock_status != true).all()
     count_locked = 0
     count_not_locked = 0
-    now_date = (datetime.utcnow() - timedelta(minutes=225000))  # About 5 months
+
+    # About 5 months
+    now_date = (datetime.utcnow() - timedelta(minutes=225000))
+
     for movie in all_movies:
         try:
             release_date = datetime.strptime(movie.release_date, '%Y-%m-%d')
@@ -593,8 +624,7 @@ def automatic_movies_locking():
 
 
 def update_IGDB_API():
-    import dotenv
-    import requests
+    """ Update the IGDB token """
 
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Recovering new IGDB API key')
@@ -604,32 +634,37 @@ def update_IGDB_API():
                           f"client_secret={app.config['SECRET_IGDB']}&grant_type=client_credentials")
         response = json.loads(r.text)
 
-        # Recover the new IGDB API KEY/TOKEN
+        # Fetch new IGDB API KEY/TOKEN
         new_IGDB_token = response['access_token']
 
-        # Get the .env file and load it
+        # Get <.env> file and load it
         dotenv_file = dotenv.find_dotenv()
         dotenv.load_dotenv(dotenv_file)
 
-        # Set the new IGDB API KEY to the actual environment
+        # Set new IGDB API KEY to environment
         os.environ['IGDB_API_KEY'] = f'{new_IGDB_token}'
 
-        # Set the new IGDB API KEY to the actual app config
+        # Set new IGDB API KEY to app config
         app.config['IGDB_API_KEY'] = f'{new_IGDB_token}'
 
-        # Write the new IGDB API KEY to the .env file
-        dotenv.set_key(dotenv_file, 'IGDB_API_KEY', f'{new_IGDB_token}')
+        # Write new IGDB API KEY to <.env> file
+        dotenv.set_key(dotenv_file, "IGDB_API_KEY", f"{new_IGDB_token}")
     except Exception as e:
-        app.logger.error(e)
+        app.logger.error(f"[ERROR] - While updating the IGDB API key: {e}")
 
     app.logger.info('[SYSTEM] - Finished getting new IGDB API key')
     app.logger.info('###################################################################')
 
 
 def update_Mylists_stats():
+    """ Update the MyLists global stats automatically """
+
+    # Get global stats
     stats = GlobalStats()
 
-    def create_dict(data):
+    def create_dict(data: List) -> Dict:
+        """ Create dictionary from list """
+
         series_list, anime_list, movies_list, books_list, games_list = [], [], [], [], []
         for i in range(5):
             try:
@@ -701,14 +736,17 @@ def update_Mylists_stats():
                          total_movies=json.dumps(total_movies_dict), top_authors=json.dumps(most_authors_media),
                          top_developers=json.dumps(most_developers_media), total_pages=total_pages)
     db.session.add(stats)
+
+    # Commit changes
     db.session.commit()
 
 
 def compute_media_time_spent():
-    """ Compute the <total_time> for each <list_type> for each <user> """
+    """ Compute the total time watched/played/read for each media for each user """
 
-    all_media = get_models_type('Media')
-    all_media_list = get_models_type('List')
+    all_media = get_models_type("Media")
+    all_media_list = get_models_type("List")
+
     for media, media_list in zip(all_media, all_media_list):
         if media_list in (SeriesList, AnimeList, MoviesList):
             query = db.session.query(User, media.duration, media_list.total,
@@ -723,7 +761,7 @@ def compute_media_time_spent():
                 .group_by(media_list.user_id).all()
         elif media_list == BooksList:
             query = db.session.query(User, media_list.total, media_list.score,
-                                     func.sum(BooksList._time_per_page * media_list.total)) \
+                                     func.sum(BooksList.TIME_PER_PAGE * media_list.total)) \
                 .join(media, media.id == media_list.media_id) \
                 .join(User, User.id == media_list.user_id) \
                 .group_by(media_list.user_id).all()
@@ -738,10 +776,10 @@ class GlobalStats:
     """ Get all the global stats for MyLists """
 
     def __init__(self):
-        self.tv_list_type = [ListType.SERIES, ListType.ANIME]
-        self.tmdb_list_type = [ListType.SERIES, ListType.ANIME, ListType.MOVIES]
+        self.tv_list_type = [MediaType.SERIES, MediaType.ANIME]
+        self.tmdb_list_type = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES]
 
-        self.all_list_type = ListType
+        self.all_list_type = MediaType
 
         self.media = None
         self.media_genre = None
@@ -784,23 +822,23 @@ class GlobalStats:
 
         return nb_media, nb_users
 
-    def get_query_data(self, list_type: Enum):
+    def get_query_data(self, media_type: Enum):
         """ Form a first part of the query depending on the <list_type> """
 
-        # Get SQL models using <eval> and <list_type> enum
-        self.media = eval(list_type.value.capitalize().replace('list', ''))
-        self.media_list = eval(list_type.value.capitalize().replace('l', 'L'))
-        self.media_genre = eval(list_type.value.capitalize().replace('list', 'Genre'))
+        # Get SQL models using <eval> and <media_type> enum
+        self.media = eval(media_type.value.capitalize())
+        self.media_list = eval(media_type.value.capitalize()+"List")
+        self.media_genre = eval(media_type.value.capitalize()+"Genre")
 
         # Add other SQL models depending on <list_type>
-        if list_type in (ListType.SERIES, ListType.ANIME, ListType.MOVIES):
-            self.media_actors = eval(list_type.value.capitalize().replace('list', 'Actors'))
-        if list_type in (ListType.SERIES, ListType.ANIME):
-            self.media_eps = eval(list_type.value.capitalize().replace('list', 'EpisodesPerSeason'))
-        if list_type == ListType.BOOKS:
-            self.media_authors = eval(list_type.value.capitalize().replace('list', 'Authors'))
-        if list_type == ListType.GAMES:
-            self.media_comp = eval(list_type.value.capitalize().replace('list', 'Companies'))
+        if media_type in (MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES):
+            self.media_actors = eval(media_type.value.capitalize()+"Actors")
+        if media_type in (MediaType.SERIES, MediaType.ANIME):
+            self.media_eps = eval(media_type.value.capitalize()+"EpisodesPerSeason")
+        if media_type == MediaType.BOOKS:
+            self.media_authors = eval(media_type.value.capitalize()+"Authors")
+        if media_type == MediaType.GAMES:
+            self.media_comp = eval(media_type.value.capitalize()+"Companies")
 
     def get_top_media(self) -> List[Iterable]:
         """ Get the top media in all users list (for Series, Anime, Movies, Games and Books) """
@@ -880,7 +918,7 @@ class GlobalStats:
 
         return queries
 
-    def get_total_eps_seasons(self) -> List[Iterable]:
+    def get_total_eps_seasons(self) -> List:
         """ Get the total episodes in all users list (for Series and Anime) """
 
         queries = []
@@ -900,7 +938,7 @@ class GlobalStats:
         """ Get the top directors in all users list for Movies """
 
         # Populate attributes with appropriate SQL models
-        self.get_query_data(ListType.MOVIES)
+        self.get_query_data(MediaType.MOVIES)
 
         # Create query
         query = db.session.query(self.media.director_name, self.media_list,
@@ -915,7 +953,7 @@ class GlobalStats:
         """ Get the top developers in all users list for Games """
 
         # Populate attributes with appropriate SQL models
-        self.get_query_data(ListType.GAMES)
+        self.get_query_data(MediaType.GAMES)
 
         # Create query
         query = db.session.query(self.media_comp.name, self.media_list,
@@ -931,7 +969,7 @@ class GlobalStats:
         """ Get the top authors for Books in all users list """
 
         # Populate attributes with appropriate SQL models
-        self.get_query_data(ListType.BOOKS)
+        self.get_query_data(MediaType.BOOKS)
 
         # Create query
         query = db.session.query(self.media_authors.name, self.media_list,
@@ -946,7 +984,7 @@ class GlobalStats:
         """ Get total movies in all users list """
 
         # Populate attributes with appropriate SQL models
-        self.get_query_data(ListType.MOVIES)
+        self.get_query_data(MediaType.MOVIES)
 
         # Create query
         total_movies = db.session.query(self.media).count()
@@ -957,7 +995,7 @@ class GlobalStats:
         """ Get total books pages in all users list """
 
         # Populate attributes with appropriate SQL models
-        self.get_query_data(ListType.BOOKS)
+        self.get_query_data(MediaType.BOOKS)
 
         # Create query
         query = db.session.query(func.sum(self.media_list.actual_page)).all()
@@ -974,28 +1012,39 @@ class GlobalStats:
 
 
 def register(app):
+    """ Register the command for the Flask CLI """
+
     @app.cli.command()
     def scheduled_task():
-        """ Run the scheduled jobs. """
+        """ Run all the necessary scheduled jobs """
+
+        # Set logger to INFO
         app.logger.setLevel(logging.INFO)
+
         remove_non_list_media()
         remove_old_covers()
+
         automatic_media_refresh()
+
         new_releasing_movies()
         new_releasing_series()
         new_releasing_anime()
         new_releasing_games()
+
         automatic_movies_locking()
 
-        app.logger.info('[SYSTEM] - Starting to compute the total time spent for each user')
+        app.logger.info("[SYSTEM] - Starting to compute the total time spent for each user")
         compute_media_time_spent()
-        app.logger.info('###################################################################')
-        app.logger.info('[SYSTEM] - Finished computing the total time spent for each user')
+        app.logger.info("###################################################################")
+        app.logger.info("[SYSTEM] - Finished computing the total time spent for each user")
 
         update_Mylists_stats()
 
     @app.cli.command()
     def update_igdb_key():
-        """ Update IGDB API key. """
+        """ Update the IGDB API key """
+
+        # Set logger to INFO
         app.logger.setLevel(logging.INFO)
+
         update_IGDB_API()

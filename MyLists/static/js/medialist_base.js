@@ -1,7 +1,7 @@
 
 
 // --- Delete element --------------------------------------------------------------------------------------
-function deleteElement(card, media_list) {
+function deleteElement(card, media_type) {
     let element_id = $(card)[0].id.split('_')[1];
     let $load_img = $(card).find('.view.overlay');
     $load_img.prepend(Loading());
@@ -15,7 +15,7 @@ function deleteElement(card, media_list) {
         type: "POST",
         url: "/delete_element",
         contentType: "application/json",
-        data: JSON.stringify({ delete: element_id, element_type: media_list }),
+        data: JSON.stringify({ delete: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $(card).remove();
@@ -71,18 +71,18 @@ function addFavorite(fav_div, element_id, list_type) {
 // --- Add the category to the user (from other list) ------------------------------------------------------
 function AddCatUser(category, card_id) {
     let $card = $('#'+card_id);
-    let media_list = $card.attr('values').split('-')[1];
+    let media_type = $card.attr('values').split('-')[1];
     let element_id = $card.attr('values').split('-')[2];
     let $load_img = $card.find('.view.overlay');
 
-    console.log(media_list, element_id);
+    console.log(media_type, element_id);
 
     $load_img.prepend(Loading());
     $.ajax ({
         type: "POST",
         url: "/add_element",
         contentType: "application/json",
-        data: JSON.stringify({element_cat: category, element_id: element_id, element_type: media_list}),
+        data: JSON.stringify({element_cat: category, element_id: element_id, element_type: media_type}),
         dataType: "json",
         success: function() {
             $card.find('.view.overlay').append('<div class="card-ribbon"></div>');
@@ -238,7 +238,7 @@ function changeFeel(new_feel, card_id) {
     removeCat();
 
     let $card = $('#'+card_id);
-    let media_list = $card.attr('values').split('-')[1];
+    let media_type = $card.attr('values').split('-')[1];
     let element_id = $card.attr('values').split('-')[2];
     let load_img = $card.find('.view.overlay');
     load_img.prepend(Loading());
@@ -247,7 +247,7 @@ function changeFeel(new_feel, card_id) {
         type: "POST",
         url: "/update_feeling",
         contentType: "application/json",
-        data: JSON.stringify({feeling: new_feel, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({feeling: new_feel, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             let a;
@@ -288,7 +288,7 @@ function changeFeel(new_feel, card_id) {
 
 
 // --- Create the score dropdown ---------------------------------------------------------------------------
-function scoreDrop(score, data_id, media_list) {
+function scoreDrop(score, data_id, media_type) {
     let score_value = $(score).text();
     let drop = document.createElement("select");
     let option = document.createElement("option");
@@ -297,7 +297,7 @@ function scoreDrop(score, data_id, media_list) {
     $(score).hide();
 
     drop.className = "score-drop";
-    drop.setAttribute('values', ''+data_id+','+media_list);
+    drop.setAttribute('values', ''+data_id+','+media_type);
     option.className = "seas-eps-drop-options";
     option.value = "---";
     option.text = "---";
@@ -327,7 +327,7 @@ function scoreDrop(score, data_id, media_list) {
 $(document).on('change focusout','.score-drop',function(event) {
     let value = parseFloat(this.value).toFixed(1);
     let media_id = $(this).attr('values').split(',')[0];
-    let media_list = $(this).attr('values').split(',')[1];
+    let media_type = $(this).attr('values').split(',')[1];
     let $score_id = $('#score_'+media_id);
 
     if (isNaN(value)) {
@@ -341,7 +341,7 @@ $(document).on('change focusout','.score-drop',function(event) {
             type: "POST",
             url: "/update_score",
             contentType: "application/json",
-            data: JSON.stringify({score: value, element_id: media_id, element_type: media_list}),
+            data: JSON.stringify({score: value, element_id: media_id, element_type: media_type}),
             dataType: "json",
             success: function() {
                 $score_id.text(value).show();
@@ -359,7 +359,7 @@ $(document).on('change focusout','.score-drop',function(event) {
 
 
 // --- Create the rewatch dropdown -------------------------------------------------------------------------
-function rewatchDrop(rewatch, data_id, media_list) {
+function rewatchDrop(rewatch, data_id, media_type) {
     let rewatch_value = $(rewatch).text();
     let drop = document.createElement("select");
     let option = document.createElement("option");
@@ -368,7 +368,7 @@ function rewatchDrop(rewatch, data_id, media_list) {
     $(rewatch).hide();
 
     drop.className = "rewatch-drop";
-    drop.setAttribute('values', ''+data_id+','+media_list);
+    drop.setAttribute('values', ''+data_id+','+media_type);
     option.className = "seas-eps-drop-options";
 
     for (i = 0; i < 11; i++) {
@@ -391,7 +391,7 @@ function rewatchDrop(rewatch, data_id, media_list) {
 $(document).on('change focusout', '.rewatch-drop', function(event) {
     let value = parseInt(this.value);
     let media_id = $(this).attr('values').split(',')[0];
-    let media_list = $(this).attr('values').split(',')[1];
+    let media_type = $(this).attr('values').split(',')[1];
     let $rew_div = $('#rew_'+media_id);
 
     if (event.type === 'change') {
@@ -399,7 +399,7 @@ $(document).on('change focusout', '.rewatch-drop', function(event) {
             type: "POST",
             url: "/update_rewatch",
             contentType: "application/json",
-            data: JSON.stringify({rewatch: value, element_id: media_id, element_type: media_list}),
+            data: JSON.stringify({rewatch: value, element_id: media_id, element_type: media_type}),
             dataType: "json",
             success: function() {
                 $rew_div.text(value).show();

@@ -191,9 +191,6 @@ def media_details(media_type: str, media_id: int):
     # Get user list info
     list_info = media.get_user_list_info()
 
-    # Get HTML template
-    template = models[0].media_details_template()
-
     # Get media history for user
     media_updates = UserLastUpdate.query.filter(UserLastUpdate.user_id == current_user.id,
                                                 UserLastUpdate.media_type == media_type,
@@ -215,8 +212,12 @@ def media_details(media_type: str, media_id: int):
     if refresh:
         return redirect(request.path, code=302)
 
-    return render_template(template, title=media.name, media=media, list_info=list_info, form=form, genres=genres,
-                           media_type=media_type.value, form_cover=form_cover, media_updates=history)
+    # Get HTML template
+    template = models[0].media_details_template()
+
+    # noinspection PyUnresolvedReferences
+    return render_template(f"details/{template}", title=media.name, media=media, list_info=list_info, form=form,
+                           genres=genres, media_type=media_type.value, form_cover=form_cover, media_updates=history)
 
 
 @bp.route('/update_book_genres/<media_id>', methods=['POST'])
@@ -380,7 +381,7 @@ def media_details_form(media_type: str, media_id: int):
 
         return redirect(url_for("main.media_details", media_type=media_type, media_id=media_id))
 
-    return render_template("media_details/media_details_form.html", title='Media Form', form=form, genres=genres,
+    return render_template("details/media_details_form.html", title='Media Form', form=form, genres=genres,
                            media_type=media_type)
 
 
@@ -495,14 +496,14 @@ def update_season():
     except:
         return "", 400
 
-    # Check if <media_list> exist and is valid
+    # Check if <media_type> exist and is valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
     except:
         return "", 400
 
-    # Check if <media> exists <media_list>
+    # Check if <media> exists
     media = models[1].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media:
         return "", 400
@@ -604,7 +605,7 @@ def update_page():
     except:
         return "", 400
 
-    # Check if <media_list> valid
+    # Check if <media_type> valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
@@ -659,7 +660,7 @@ def update_playtime():
     if new_playtime < 0:
         return "", 400
 
-    # Check if <media_list> valid
+    # Check if <media_type> valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
@@ -700,7 +701,7 @@ def update_category():
     except:
         return "", 400
 
-    # Check if <media_list> valid
+    # Check if <media_type> valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
@@ -794,7 +795,7 @@ def update_feeling():
     except:
         return "", 400
 
-    # Check if <media_list> valid
+    # Check if <media_type> valid
     try:
         media_type = MediaType(media_type)
         models = get_models_group(media_type)
@@ -1127,15 +1128,15 @@ def read_notifications():
 #     try:
 #         json_data = request.get_json()
 #         media_id = int(json_data['element_id'])
-#         media_list = json_data['element_type']
+#         media_type = json_data['element_type']
 #         media_date = json_data['element_date']
 #     except:
 #         return '', 400
 #
-#     # Check if <media_list> exist and is valid
+#     # Check if <media_type> exist and is valid
 #     try:
-#         list_type = ListType(media_list)
-#         models = get_models_group(list_type)
+#         media_type = MediaType(media_type)
+#         models = get_models_group(media_type)
 #     except:
 #         return '', 400
 #

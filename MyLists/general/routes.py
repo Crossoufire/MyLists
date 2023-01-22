@@ -10,10 +10,10 @@ from sqlalchemy import true
 from MyLists import db, bcrypt, app
 from MyLists.API_data import ApiSeries, ApiMovies
 from MyLists.general.functions import get_similar, create_cosine_similarity, TrendingData, display_time
-from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks, get_models_type
+from MyLists.models import User, RoleType, MyListsStats, Frames, Badges, Ranks
 from flask import url_for
 from MyLists.scheduled_tasks import compute_media_time_spent
-
+from MyLists.utils import get_models_type
 
 bp = Blueprint('general', __name__)
 

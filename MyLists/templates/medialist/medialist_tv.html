@@ -9,7 +9,7 @@
 
 
 {% block data %}
-    {{ item.media.eps_per_season }}-{{ media_list }}-{{ item.media.id }}
+    {{ item.media.eps_per_season }}-{{ media_type }}-{{ item.media.id }}
 {% endblock data %}
 
 
@@ -36,7 +36,7 @@
             </select>
             <span style="border-right: 2px solid gray;"></span>
             <select id="E_{{ item.media.id }}" class="text-light p-0 seas-eps-drop"
-             onchange="updateEpisode('{{ item.media.id }}', this, '{{ media_list }}')">
+             onchange="updateEpisode('{{ item.media.id }}', this, '{{ media_type }}')">
                 {% if category == 'Plan to Watch' or category == 'Random' %}
                     {% for i in range(0, item.media.eps_per_season[item.current_season - 1].episodes) %}
                         <option class="seas-eps-drop-options" {% if i + 1 == 1 %} selected="selected" {% endif %}>
@@ -101,7 +101,7 @@
                     </span>
                 </div>
             </div>
-            {% if media_list == 'serieslist' %}
+            {% if media_type == 'series' %}
                 <div class="m-t-40 col-6">
                     <h4><i class="fas fa-user-alt"></i>&nbsp;&nbsp; Top 10 Countries</h4>
                     <div class="movies-container">

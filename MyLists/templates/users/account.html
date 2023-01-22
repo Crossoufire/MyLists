@@ -14,7 +14,7 @@
                                  title="{{ media['media_level']['grade_title'] }}"
                                  src="{{ media['media_level']['grade_id'] }}.png" alt=""/>
                                 <a class="account-bar-name text-light" href="{{ url_for('main.medialist',
-                                 media_list=media['media_type'], username=user.username) }}">
+                                 media_type=media['media_type'], username=user.username) }}">
                                     {{ media['media'] }}
                                 </a>
                                 <div id="{{ media['media']|lower }}-level" class='account-bar-level'>
@@ -274,7 +274,7 @@
                                         <div class="row stat-text p-t-5" style="clear: both;">
                                             {% for m in media['media_count'] %}
                                                 <div class="col-4">
-                                                    <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                                    <a href="{{ url_for('main.medialist', media_type=media['media_type'],
                                                      username=user.username, category=m) }}">{{ m }}</a>
                                                 </div>
                                                 <div class="col-2">
@@ -282,7 +282,7 @@
                                                 </div>
                                             {% endfor %}
                                             <div class="col-4">
-                                                <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                                <a href="{{ url_for('main.medialist', media_type=media['media_type'],
                                                  username=user.username, category='All') }}">Total</a>
                                             </div>
                                             <div class="col-2">
@@ -309,7 +309,7 @@
                                             {% endif %}
                                         </div>
                                     </div>
-                                    <a href="{{ url_for('main.medialist', media_list=media['media_type'],
+                                    <a href="{{ url_for('main.medialist', media_type=media['media_type'],
                                      username=user.username, category='Favorite') }}">
                                         <b>Favorites ({{ media['media_favorites']|length }})</b>
                                     </a>

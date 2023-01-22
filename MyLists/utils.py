@@ -9,7 +9,16 @@ from typing import List, Dict
 import pykakasi
 import pytz
 from MyLists import db
-from MyLists.models import MediaType
+
+
+class MediaType(Enum):
+    """ Media Type enumeration """
+
+    SERIES = "series"
+    ANIME = 'anime'
+    MOVIES = 'movies'
+    GAMES = 'games'
+    BOOKS = 'books'
 
 
 def latin_alphabet(original_name: str) -> str:
@@ -84,7 +93,7 @@ def clean_text(raw_html: str) -> str:
     return cleantext
 
 
-def class_registry(cls: db.Model) -> Dict[db.Model]:
+def class_registry(cls: db.Model) -> Dict:
     """ Dynamically gets class registry of sqlalchemy from specified model """
 
     try:
@@ -99,12 +108,12 @@ def get_models_group(media_type: Enum) -> List[db.Model]:
     _ = []
     registry = class_registry(db.Model)
     for cls in registry.values():
-        if issubclass(cls, db.Model):
-            try:
+        try:
+            if issubclass(cls, db.Model):
                 if media_type == cls.GROUP:
                     _.append(cls)
-            except:
-                pass
+        except:
+            pass
 
     return _
 
@@ -115,12 +124,12 @@ def get_models_type(model_type: str) -> List[db.Model]:
     _ = []
     registry = class_registry(db.Model)
     for cls in registry.values():
-        if issubclass(cls, db.Model):
-            try:
+        try:
+            if issubclass(cls, db.Model):
                 if model_type == cls.TYPE:
                     _.append(cls)
-            except:
-                pass
+        except:
+            pass
 
     return _
 
@@ -165,23 +174,23 @@ def shape_to_dict_updates(last_update: List[db.Model]) -> List[Dict]:
         element_data["media_id"] = element.media_id
 
         if element.media_type == MediaType.SERIES:
-            element_data["category"] = "Series"
+            element_data["category"] = "series"
             element_data["icon-color"] = "fas fa-tv text-series"
             element_data["border"] = "#216e7d"
         if element.media_type == MediaType.ANIME:
-            element_data["category"] = "Anime"
+            element_data["category"] = "anime"
             element_data["icon-color"] = "fas fa-torii-gate text-anime"
             element_data["border"] = "#945141"
         elif element.media_type == MediaType.MOVIES:
-            element_data["category"] = "Movies"
+            element_data["category"] = "movies"
             element_data["icon-color"] = "fas fa-film text-movies"
             element_data["border"] = "#8c7821"
         elif element.media_type == MediaType.BOOKS:
-            element_data["category"] = "Books"
+            element_data["category"] = "books"
             element_data["icon-color"] = "fas fa-book text-books"
             element_data["border"] = "#5d4683"
         elif element.media_type == MediaType.GAMES:
-            element_data["category"] = "Games"
+            element_data["category"] = "games"
             element_data["icon-color"] = "fas fa-gamepad text-games"
             element_data["border"] = "#196219"
 

@@ -42,7 +42,7 @@
                             <div><b>#{{ loop.index }}</b></div>
                         </td>
                         <td>
-                            <a class="text-light" href="{{ url_for('main.medialist', media_list='serieslist',
+                            <a class="text-light" href="{{ url_for('main.medialist', media_type='series',
                              username=user.username) }}">
                                 <img class="grade_picture" src="static/img/levels_ranks/{{ user.series_data.image_id }}.png" alt="">
                                 <br>{{ user.series_data_level }}
@@ -50,7 +50,7 @@
                         </td>
                         <td>
                             {% if user['add_anime'] %}
-                                <a class="text-light" href="{{ url_for('main.medialist', media_list='animelist',
+                                <a class="text-light" href="{{ url_for('main.medialist', media_type='anime',
                                  username=user.username) }}">
                                     <img class="grade_picture" src="static/img/levels_ranks/{{ user.anime_data.image_id }}.png" alt="">
                                     <br>{{ user.anime_data_level }}
@@ -60,7 +60,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a class="text-light" href="{{ url_for('main.medialist', media_list='movieslist',
+                            <a class="text-light" href="{{ url_for('main.medialist', media_type='movies',
                              username=user.username) }}">
                                 <img class="grade_picture" src="static/img/levels_ranks/{{ user.movies_data.image_id }}.png" alt="">
                                 <br>{{ user.movies_data_level }}
@@ -68,7 +68,7 @@
                         </td>
                         <td>
                             {% if user['add_books'] %}
-                                <a class="text-light" href="{{ url_for('main.medialist', media_list='bookslist',
+                                <a class="text-light" href="{{ url_for('main.medialist', media_type='books',
                                 username=user.username) }}">
                                     <img class="grade_picture" src="static/img/levels_ranks/{{ user.books_data.image_id }}.png" alt="">
                                     <br>{{ user.books_data_level }}
@@ -79,7 +79,7 @@
                         </td>
                         <td>
                             {% if user['add_games'] %}
-                                <a class="text-light" href="{{ url_for('main.medialist', media_list='gameslist',
+                                <a class="text-light" href="{{ url_for('main.medialist', media_type='games',
                                 username=user.username) }}">
                                     <img class="grade_picture" src="static/img/levels_ranks/{{ user.games_data.image_id }}.png" alt="">
                                     <br>{{ user.games_data_level }}

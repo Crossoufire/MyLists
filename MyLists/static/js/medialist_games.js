@@ -65,7 +65,7 @@ function chargeButtons(card) {
 // --- Change the category -------------------------------------------------
 function changeCategory(new_category, card_id) {
     let $card = $('#'+card_id);
-    let media_list = $card.attr('values').split('-')[1];
+    let media_type = $card.attr('values').split('-')[1];
     let element_id = $card.attr('values').split('-')[2];
     let load_img = $card.find('.view.overlay');
     load_img.prepend(Loading());
@@ -74,7 +74,7 @@ function changeCategory(new_category, card_id) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_list}),
+        data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_type}),
         dataType: "json",
         success: function() {
             $card.remove();

@@ -193,7 +193,7 @@ function changeCategoryMovies(element_id, cat_selector) {
 
 
 // --- Change the TV category ---------------------------------------------------------------------------
-function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
+function changeCategoryTV(element_id, cat_selector, seas_data, media_type) {
     let new_cat = cat_selector.options[cat_selector.selectedIndex].value;
     $('#cat-loading').show();
     $('#your-medialist-data').addClass('disabled');
@@ -212,7 +212,7 @@ function changeCategoryTV(element_id, cat_selector, seas_data, media_list) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_list}),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: media_type}),
         dataType: "json",
         success: function() {
             $('#season-row').show('slow');
@@ -302,7 +302,7 @@ function changeCategoryGames(element_id, cat_selector) {
 
 
 // --- Update season ------------------------------------------------------------------------------------
-function updateSeason(element_id, value, seas_data, media_list) {
+function updateSeason(element_id, value, seas_data, media_type) {
     $('#season-loading').show();
     $('#your-medialist-data').addClass('disabled');
 
@@ -312,7 +312,7 @@ function updateSeason(element_id, value, seas_data, media_list) {
         type: "POST",
         url: "/update_season",
         contentType: "application/json",
-        data: JSON.stringify({season: selected_season, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({season: selected_season, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $('#season-check').show().delay(1500).fadeOut();
@@ -342,7 +342,7 @@ function updateSeason(element_id, value, seas_data, media_list) {
 
 
 // --- Update episode -----------------------------------------------------------------------------------
-function updateEpisode(element_id, episode, media_list) {
+function updateEpisode(element_id, episode, media_type) {
     $('#eps-loading').show();
     $('#your-medialist-data').addClass('disabled');
 
@@ -350,7 +350,7 @@ function updateEpisode(element_id, episode, media_list) {
         type: "POST",
         url: "/update_episode",
         contentType: "application/json",
-        data: JSON.stringify({episode: episode.selectedIndex, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({episode: episode.selectedIndex, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $('#eps-check').show().delay(1500).fadeOut();
@@ -367,14 +367,14 @@ function updateEpisode(element_id, episode, media_list) {
 
 
 // --- Update rewatched data ----------------------------------------------------------------------------
-function updateRewatched(element_id, rewatch, media_list) {
+function updateRewatched(element_id, rewatch, media_type) {
     $('#rewatched-loading').show();
 
     $.ajax ({
         type: "POST",
         url: "/update_rewatch",
         contentType: "application/json",
-        data: JSON.stringify({rewatch: rewatch.selectedIndex, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({rewatch: rewatch.selectedIndex, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $('#rewatched-check').show().delay(1500).fadeOut();
@@ -414,7 +414,7 @@ function updatePlaytime(media_id, playtime) {
 
 
 // --- Update score data --------------------------------------------------------------------------------
-function updateScore(element_id, score, media_list) {
+function updateScore(element_id, score, media_type) {
     $('#score-loading').show();
     let value = score.options[score.selectedIndex].value;
 
@@ -422,7 +422,7 @@ function updateScore(element_id, score, media_list) {
         type: "POST",
         url: "/update_score",
         contentType: "application/json",
-        data: JSON.stringify({score: value, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({score: value, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $('#score-check').show().delay(1500).fadeOut();
@@ -438,7 +438,7 @@ function updateScore(element_id, score, media_list) {
 
 
 // --- Update Feeling data ------------------------------------------------------------------------------
-function updateFeeling(element_id, feeling, media_list, element) {
+function updateFeeling(element_id, feeling, media_type, element) {
     $('#score-loading').show();
     let $element = $(element);
 
@@ -446,7 +446,7 @@ function updateFeeling(element_id, feeling, media_list, element) {
         type: "POST",
         url: "/update_feeling",
         contentType: "application/json",
-        data: JSON.stringify({feeling: feeling, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({feeling: feeling, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $('#score-check').show().delay(1500).fadeOut();
@@ -470,14 +470,14 @@ function updateFeeling(element_id, feeling, media_list, element) {
 //     $('#date-loading').show();
 //     let value = this.value;
 //     let media_id = $(this).attr('info').split(',')[0];
-//     let media_list = $(this).attr('info').split(',')[1];
+//     let media_type = $(this).attr('info').split(',')[1];
 //
 //     if (event.type === 'focusout') {
 //         $.ajax ({
 //             type: "POST",
 //             url: "/update_completion_date",
 //             contentType: "application/json",
-//             data: JSON.stringify({element_date: value, element_id: media_id, element_type: media_list}),
+//             data: JSON.stringify({element_date: value, element_id: media_id, element_type: media_type}),
 //             dataType: "json",
 //             success: function() {
 //                 $('#date-check').show().delay(1500).fadeOut();

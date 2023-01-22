@@ -1,4 +1,4 @@
-{% extends "media_details_base.html" %}
+{% extends "details/media_details_base.html" %}
 
 
 {% set eps_per_season = media.get_eps_per_season() %}
@@ -11,7 +11,7 @@
 
 {% block cat_select %}
     <select id="category-dropdown" class="text-light cat-drop" onchange="changeCategoryTV(
-    '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_list }}')">
+    '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_type }}')">
         <option {% if list_info.status == 'Watching' %} selected="selected" {% endif %}>Watching</option>
         <option {% if list_info.status == 'Completed' %} selected="selected" {% endif %}>Completed</option>
         <option {% if list_info.status == 'On Hold' %} selected="selected" {% endif %}>On Hold</option>
@@ -29,7 +29,7 @@
         <div class="col-8">
             <label for="season-dropdown"></label>
             <select id="season-dropdown" class="text-light cat-drop" onchange="updateSeason(
-             '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_list }}')">
+             '{{ media.id }}', this, '{{ eps_per_season }}', '{{ media_type }}')">
                 {% for eps in range(0, eps_per_season|length) %}
                     <option {% if eps + 1 == list_info.current_season %}selected="selected"{% endif %}
                      value="{{ eps }}">{{ eps + 1 }}</option>
@@ -45,7 +45,7 @@
         <div class="col-8">
             <label for="episode-dropdown"></label>
             <select id="episode-dropdown" class="text-light cat-drop" onchange="updateEpisode(
-             '{{ media.id }}', this, '{{ media_list }}')">
+             '{{ media.id }}', this, '{{ media_type }}')">
                 {% if list_info.status == 'Plan to Watch' or list_info.status == 'Random' %}
                     {% for i in range(0, eps_per_season[list_info.current_season - 1]) %}
                         <option {% if i + 1 == 1 %} selected="selected" {% endif %} value="{{ i }}">{{ i + 1 }}</option>
@@ -71,7 +71,7 @@
         <div class="col-8">
             <label for="rewatched-dropdown"></label>
             <select id="rewatched-dropdown" class="text-light cat-drop" onchange="updateRewatched(
-             '{{ media.id }}', this, '{{ media_list }}')">
+             '{{ media.id }}', this, '{{ media_type }}')">
                 {% for i in range(0, 11) %}
                     <option {% if i == list_info.rewatched %} selected="selected"{% endif %} value="{{ i }}">
                         &nbsp;{{ i }}&nbsp;</option>

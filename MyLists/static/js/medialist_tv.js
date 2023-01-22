@@ -74,7 +74,7 @@ function changeCategory(new_category, card_id) {
     removeCat();
 
     let $card = $('#'+card_id);
-    let media_list = $card.attr('values').split('-')[1];
+    let media_type = $card.attr('values').split('-')[1];
     let element_id = $card.attr('values').split('-')[2];
     let load_img = $card.find('.view.overlay');
     load_img.prepend(Loading());
@@ -83,7 +83,7 @@ function changeCategory(new_category, card_id) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({status: new_category, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             $card.remove();
@@ -100,7 +100,7 @@ function changeCategory(new_category, card_id) {
 
 
 // --- Update episode -----------------------------------------------------------------------------------
-function updateEpisode(element_id, episode, media_list) {
+function updateEpisode(element_id, episode, media_type) {
     let selected_episode = episode.selectedIndex;
     let check_img = $('<div style="position: absolute; z-index: 200; top: 65%; width: 100%;' +
         'background-color: black; opacity: 0.60;">' +
@@ -111,7 +111,7 @@ function updateEpisode(element_id, episode, media_list) {
         type: "POST",
         url: "/update_episode",
         contentType: "application/json",
-        data: JSON.stringify({episode: selected_episode, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({episode: selected_episode, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             check_img.prependTo($('#card_'+element_id).find('.view.overlay'));
@@ -129,7 +129,7 @@ function updateSeason(element_id, value) {
     let $card = $('#card_'+element_id);
     let selected_season = value.selectedIndex;
     let seas_data = $card.attr('values').split('-')[0];
-    let media_list = $card.attr('values').split('-')[1];
+    let media_type = $card.attr('values').split('-')[1];
     let check_img = $('<div style="position: absolute; z-index: 200; top: 65%; width: 100%;' +
     'background-color: black; opacity: 0.60;">' +
     '<div class="central-loading fas fa-2x fa-check" style="color: green;"></div>' +
@@ -139,7 +139,7 @@ function updateSeason(element_id, value) {
         type: "POST",
         url: "/update_season",
         contentType: "application/json",
-        data: JSON.stringify({season: selected_season, element_id: element_id, element_type: media_list }),
+        data: JSON.stringify({season: selected_season, element_id: element_id, element_type: media_type }),
         dataType: "json",
         success: function() {
             check_img.prependTo($('#card_'+element_id).find('.view.overlay'));
