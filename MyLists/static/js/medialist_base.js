@@ -463,7 +463,7 @@ $(document).on('change focusout', '.playtime-drop', function(event) {
             type: "POST",
             url: "/update_playtime",
             contentType: "application/json",
-            data: JSON.stringify({playtime: value, media_id: media_id, media_type: 'gameslist'}),
+            data: JSON.stringify({playtime: value, media_id: media_id, media_type: 'games'}),
             dataType: "json",
             success: function() {
                 $play_div.text(value + ' hours').show();

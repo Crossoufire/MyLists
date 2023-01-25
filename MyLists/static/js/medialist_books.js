@@ -140,7 +140,7 @@ function updatePages(element_id, input_page) {
         type: "POST",
         url: "/update_page",
         contentType: "application/json",
-        data: JSON.stringify({page: page, element_id: element_id, element_type: 'bookslist'}),
+        data: JSON.stringify({page: page, element_id: element_id, element_type: 'books'}),
         dataType: "json",
         success: function() {
             check_img.prependTo($('#card_'+element_id).find('.view.overlay'));

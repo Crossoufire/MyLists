@@ -15,7 +15,7 @@ import iso639
 from flask import abort, url_for
 from flask_login import current_user
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from sqlalchemy import func, desc, text, and_, or_, extract, asc, true
+from sqlalchemy import func, desc, text, and_, or_, extract, asc
 from sqlalchemy.orm import aliased
 from MyLists import app, db, login_manager
 from MyLists.utils import change_air_format, shape_to_dict_updates, latin_alphabet, dotdict, MediaType
@@ -48,6 +48,14 @@ class Status(Enum):
     STATS = 'Stats'
 
 
+class RoleType(Enum):
+    """ Role Type enumeration """
+
+    ADMIN = "admin"         # Can access to the admin dashboard (/admin)
+    MANAGER = "manager"     # Can lock and edit media (/lock_media & /media_details_form)
+    USER = "user"           # Standard user
+
+
 class HomePage(Enum):
     """ Homepage enumeration """
 
@@ -55,14 +63,6 @@ class HomePage(Enum):
     MYSERIESLIST = "serieslist"
     MYMOVIESLIST = "movieslist"
     MYGAMESLIST = "gameslist"
-
-
-class RoleType(Enum):
-    """ Role Type enumeration """
-
-    ADMIN = "admin"         # Can access to the admin dashboard (/admin)
-    MANAGER = "manager"     # Can lock and edit media (/lock_media & /media_details_form)
-    USER = "user"           # Standard user
 
 
 # --- USERS -------------------------------------------------------------------------------------------------------
@@ -155,11 +155,11 @@ class User(UserMixin, db.Model):
 
         return user
 
-    def add_view_count(self, user: db.Model, media_type: str):
+    def add_view_count(self, user: db.Model, media_type: Enum):
         """ Add view count to user SQL object """
 
         if self.role != RoleType.ADMIN and self.id != user.id:
-            setattr(user, f"{media_type}_views", getattr(user, f"{media_type}_views") + 1)
+            setattr(user, f"{media_type}_views", getattr(user, f"{media_type.value}_views") + 1)
 
     def add_follow(self, user: db.Model):
         """ Add follow to user """
@@ -1454,7 +1454,7 @@ class Books(MediaMixin, db.Model):
 
     def get_original_name(self):
         """ Consistency """
-        raise NotImplementedError
+        return
 
     def get_media_cover(self) -> str:
         """ Get the book cover """
@@ -1773,14 +1773,14 @@ class Games(MediaMixin, db.Model):
 
     def get_original_name(self):
         """ Consistency """
-        raise NotImplementedError
+        return
 
     @classmethod
     def get_persons(cls, job: str, person: str) -> List[db.Model]:
         """ Get persons attributed to this game """
 
         if job == "creator":
-            data = GamesCompanies.query.filter(GamesCompanies.name == person, GamesCompanies.developer == true).all()
+            data = GamesCompanies.query.filter(GamesCompanies.name == person, GamesCompanies.developer == True).all()
             query = cls.query.filter(cls.id.in_([p.media_id for p in data])).all()
         else:
             raise NotImplementedError
@@ -2217,16 +2217,8 @@ class MyListsStats(db.Model):
 """ --- OTHER ----------------------------------------------------------------------------------------------- """
 
 
-def get_media_query(
-        user: db.Model,
-        media_type: Enum,
-        category: str,
-        genre: str,
-        sorting: str,
-        page: int,
-        search_q: str,
-        lang: str
-) -> Tuple[str, Dict]:
+def get_media_query(user: db.Model, media_type: Enum, category: str, genre: str, sorting: str, page: int,
+                    search_q: str, lang: str) -> Tuple[str, Dict]:
     """ Create the query for the <medialist> route depending on the media """
 
     # Get SQL models

@@ -289,20 +289,20 @@
                                                 <span>{{ media['total'] }}</span>
                                             </div>
 
-                                            {% if media['media_type'] == 'serieslist' or media['media_type'] == 'animelist' %}
+                                            {% if media['media_type'] == 'series' or media['media_type'] == 'anime' %}
                                                 <div class="col-4">
                                                     <span>Episodes</span>
                                                 </div>
-                                            {% elif media['media_type'] == 'movieslist' %}
+                                            {% elif media['media_type'] == 'movies' %}
                                                 <div class="col-4" data-toggle="tooltip" title="Rewatch added">
                                                     <span>Total watched</span>
                                                 </div>
-                                            {% elif media['media_type'] == 'bookslist' %}
+                                            {% elif media['media_type'] == 'books' %}
                                                 <div class="col-4">
                                                     <span>Pages read</span>
                                                 </div>
                                             {% endif %}
-                                            {% if media['media_type'] != 'gameslist' %}
+                                            {% if media['media_type'] != 'games' %}
                                                 <div class="col-2">
                                                     <span>{{ media['media_total_eps'] }}</span>
                                                 </div>
@@ -317,7 +317,7 @@
                                         <div class="col">
                                             {% for favorite in media['media_favorites'] %}
                                                 {% if loop.index < 12 %}
-                                                    <a href="{{ url_for('main.media_details', media_type=media['media'],
+                                                    <a href="{{ url_for('main.media_details', media_type=media['media_type'],
                                                     media_id=favorite.media_id) }}">
                                                         <img class="favorite-img" title="{{ favorite.media.name }}"
                                                          src="/static/covers/{{ media['media']|lower }}_covers/{{ favorite.media.image_cover }}"

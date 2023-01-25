@@ -165,9 +165,9 @@ function display_notifications(data) {
                 add_hr = '<hr class="p-0 m-t-0 m-b-0 m-l-15 m-r-15">';
             }
 
-            if (resp[i]['media_type'] === 'serieslist') {
+            if (resp[i]['media_type'] === "serieslist") {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/details/Series/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/series/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-tv text-series"></i>' +
@@ -184,7 +184,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'animelist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/details/Anime/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/anime/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-torii-gate text-anime"></i>' +
@@ -201,7 +201,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'movieslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/details/Movies/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/movies/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-film text-movies"></i>' +
@@ -218,7 +218,7 @@ function display_notifications(data) {
             }
             else if (resp[i]['media_type'] === 'gameslist') {
                 $("#notif-dropdown").append(
-                    '<a class="dropdown-item notif-items text-light" href="/details/Games/'+resp[i]['media_id']+'">' +
+                    '<a class="dropdown-item notif-items text-light" href="/details/games/'+resp[i]['media_id']+'">' +
                         '<div class="row no-gutters">' +
                             '<div class="col-2">' +
                                 '<i class="fas fa-gamepad text-games"></i>' +

@@ -11,7 +11,7 @@ import pytz
 from PIL import Image
 from flask import Blueprint, url_for, request, abort, render_template, flash, jsonify, redirect, session
 from flask_login import login_required, current_user
-from sqlalchemy import func, desc, distinct, true
+from sqlalchemy import func, desc, distinct
 from wtforms import StringField, SelectMultipleField
 from MyLists import db, app
 from MyLists.API_data import ApiData, ApiTMDB, ApiGames, ApiBooks
@@ -456,7 +456,7 @@ def search_media():
             return redirect(request.referrer or '/')
     elif media_select == "users":
         users_search = User.query.filter(User.username.like('%' + search + '%'),
-                                         User.role != RoleType.ADMIN, User.active == true)\
+                                         User.role != RoleType.ADMIN, User.active == True)\
             .paginate(page, 10, error_out=True)
         media_results = []
         for user in users_search.items:
@@ -1066,20 +1066,6 @@ def autocomplete():
         except Exception as e:
             media_results = []
             app.logger.error(f"[SYSTEM] - Error requesting the GoogleBooks API: {e}")
-
-        # query = Books.query.filter(Books.name.like(f"%{search}%")).all()
-        # media_results = []
-        # for b in query:
-        #     try:
-        #         date = datetime.strftime(datetime.strptime(b.release_date, '%m/%d/%y'), '%d %b %Y')
-        #     except:
-        #         date = b.release_date
-        #     media_results.append({'api_id': b.id,
-        #                           'display_name': b.name,
-        #                           'image_cover': '/static/covers/books_covers/' + b.image_cover,
-        #                           'date': date,
-        #                           'category': 'Books',
-        #                           'type': 'Books'})
     elif media_select == 'users':
         media_results = User.get_autocomplete_list(search)
     else:

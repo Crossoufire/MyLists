@@ -6,7 +6,6 @@ from datetime import datetime
 from flask import Blueprint
 from flask import render_template, flash, request, abort
 from flask_login import login_required, current_user
-from sqlalchemy import true
 from MyLists import db, bcrypt, app
 from MyLists.API_data import ApiSeries, ApiMovies
 from MyLists.general.functions import get_similar, create_cosine_similarity, TrendingData, display_time
@@ -104,7 +103,7 @@ def hall_of_fame():
     """ Display the HoF routes for all users """
 
     # Get all users
-    all_users = User.query.filter(User.active == true, User.id != 1).all()
+    all_users = User.query.filter(User.active == True, User.id != 1).all()
 
     # Get SQL models
     models_type = get_models_type("List")

@@ -64,7 +64,7 @@
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 input-container mobile-margin">
                     <form method="GET" action="{{ url_for("main.medialist", media_type=media_type, username=user.username, category="Search") }}">
                         {{ search_form.q(class="modded-input", placeholder=search_form.q.label.text,
-                           onfocus="this.placeholder = '';", onblur="this.placeholder = "+"'"+search_form.q.label.text+"'"+";") }}
+                        onfocus="this.placeholder = '';", onblur="this.placeholder = "+"'"+search_form.q.label.text+"'"+";") }}
                     </form>
                 </div>
             </div>
@@ -96,12 +96,12 @@
                     <div class="dropdown-menu genre-drop">
                         <a class="dropdown-item text-light" href="{{ url_for('main.medialist', media_type=media_type,
                          username=user.username, category=category, genre=genre, sorting=sorting) }}
-                         {% if category == 'Search' %}?search_q={{ search_q }}{% endif %}">
+                         {% if category == "Search" %}?search_q={{ search_q }}{% endif %}">
                             <div>All</div>
                         </a>
                         <a class="dropdown-item text-light" href="{{ url_for('main.medialist', media_type=media_type,
                          username=user.username, category=category, genre=genre, sorting=sorting, lang="en") }}
-                         {% if category == 'Search' %}&search_q={{ search_q }}{% endif %}">
+                         {% if category == "Search" %}&search_q={{ search_q }}{% endif %}">
                             <div>English</div>
                         </a>
                         <a class="dropdown-item text-light" href="{{ url_for('main.medialist', media_type=media_type,
@@ -146,7 +146,7 @@
     </section>
 
     <section class="media-display">
-        {% if category == 'Stats' %}
+        {% if category == "Stats" %}
             {% block stats_block scoped %}
             {% endblock stats_block %}
         {% else %}
@@ -159,7 +159,7 @@
                                 <img class="card-img-top" src="{{ item.media.get_media_cover() }}" alt="" height="300"
                                 width="200" style="height: auto;"/>
                                 <a class="mask flex-center rgba-black-strong" href="{{ url_for('main.media_details',
-                                media_type=item.media.__class__.__name__, media_id=item.media.id) }}">
+                                media_type=item.media.__class__.__name__|lower, media_id=item.media.id) }}">
                                     <span class="font-mask text-center text-light">{{ item.media.name }}</span>
                                 </a>
                                 {% if category == 'Search' or category == 'All' %}
@@ -227,13 +227,13 @@
                                         {% if current_user.get_id() == user.id %}
                                             <a class="fa-comment-alt text-light{% if item.comment %} fas commented{% else %}
                                             far{% endif %}" data-toggle='tooltip' title="Comments" {% if item.comment %}
-                                            onclick="showComment(card_{{ item.media.id }}, '{{ item.media.__class__.__name__ }}',
+                                            onclick="showComment(card_{{ item.media.id }}, '{{ item.media.__class__.__name__|lower }}',
                                             '{{ item.media.id }}', true)"{% else %} href="{{ url_for('main.write_comment',
-                                            media_type=item.media.__class__.__name__, media_id=item.media.id) }}"{% endif %}></a>
+                                            media_type=item.media.__class__.__name__|lower, media_id=item.media.id) }}"{% endif %}></a>
                                         {% else %}
                                             <a class="fa-comment-alt text-light {% if item.comment %}fas commented {% else %}
                                             far disabled{% endif %}" data-toggle="tooltip" title="Comments"
-                                            {% if item.comment %} onclick="showComment(card_{{ item.media.id }}, '{{ item.media.__class__.__name__ }}',
+                                            {% if item.comment %} onclick="showComment(card_{{ item.media.id }}, '{{ item.media.__class__.__name__|lower }}',
                                             '{{ item.media.id }}', false)"{% endif %}></a>
                                         {% endif %}
                                     </div>

@@ -75,7 +75,7 @@ class TrendingData:
 
             self.media_data['poster_path'] = self._get_media_cover()
             self.media_data['tmdb_link'] = f"{self.tv_tmdb_link}/{self.result.get('id')}"
-            self.media_data['media_type'] = "serieslist"
+            self.media_data['media_type'] = "series"
             self.media_data['media'] = "Series"
 
             series_results.append(self.media_data)
@@ -104,7 +104,7 @@ class TrendingData:
 
             self.media_data['poster_path'] = self._get_media_cover()
             self.media_data['tmdb_link'] = f"{self.movie_tmdb_link}/{self.result.get('id')}"
-            self.media_data['media_type'] = 'movieslist'
+            self.media_data['media_type'] = 'movies'
             self.media_data['media'] = 'Movies'
 
             movies_results.append(self.media_data)

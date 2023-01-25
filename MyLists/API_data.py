@@ -120,7 +120,7 @@ class ApiTMDB(ApiData):
                     continue
 
                 media_details['api_id'] = result.get('id')
-                media_details["image_cover"]: url_for("static", filename="covers/series_covers/default.jpg")
+                media_details["image_cover"] = url_for("static", filename="covers/series_covers/default.jpg")
                 if result.get('poster_path'):
                     media_details['image_cover'] = f"{self.POSTER_BASE_URL}{result.get('poster_path')}"
 
@@ -133,10 +133,10 @@ class ApiTMDB(ApiData):
                         media_details['display_name'] = result.get('original_name')
 
                     media_details['date'] = change_air_format(result.get('first_air_date'))
-                    media_details['type'] = 'Series'
+                    media_details['type'] = 'series'
                     if result.get('origin_country') == 'JP' or result.get('original_language') == 'ja' \
                             and 16 in result.get('genre_ids'):
-                        media_details['type'] = 'Anime'
+                        media_details['type'] = 'anime'
                 elif result.get('media_type') == 'movie':
                     media_details['category'] = 'Movies'
 
@@ -146,7 +146,7 @@ class ApiTMDB(ApiData):
                         media_details['display_name'] = result.get('original_title')
 
                     media_details['date'] = change_air_format(result.get('release_date'))
-                    media_details['type'] = 'Movies'
+                    media_details['type'] = 'movies'
 
                 # Append dict to list
                 media_results.append(media_details)
@@ -184,15 +184,15 @@ class ApiTMDB(ApiData):
                 media_data['media'] = 'Series'
                 if result["origin_country"] == "JP" or result['original_language'] == "ja" \
                         and 16 in result["genre_ids"]:
-                    media_data["media_type"] = "Anime"
+                    media_data["media_type"] = "anime"
                     media_data["name"] = result["name"]
                     media_data["'media"] = "Anime"
                 else:
-                    media_data["media_type"] = "Series"
+                    media_data["media_type"] = "series"
                 media_results.append(media_data)
             elif result['media_type'] == 'movie':
                 media_data['media'] = "Movies"
-                media_data['media_type'] = "Movies"
+                media_data['media_type'] = "movies"
                 media_data["url"] = f"https://www.themoviedb.org/movie/{result['id']}"
 
                 if result["original_language"] == "ja" and 16 in result["genre_ids"]:
@@ -250,7 +250,7 @@ class ApiTMDB(ApiData):
         media_cover_name = "default.jpg"
         media_cover_path = self.API_data.get('poster_path') or None
         if media_cover_path:
-            media_cover_name = "{secrets.token_hex(8)}.jpg"
+            media_cover_name = f"{secrets.token_hex(8)}.jpg"
             try:
                 self.save_api_cover(media_cover_path, media_cover_name)
             except Exception as e:
@@ -678,7 +678,7 @@ class ApiGames(ApiData):
                 "api_id": game.api_id,
                 "display_name": game.name,
                 "category": "Games",
-                "type": "Games",
+                "type": "games",
                 "image_cover": game.get_media_cover(),
                 "date": change_air_format(game.release_date, games=True)
             }
@@ -695,7 +695,7 @@ class ApiGames(ApiData):
                 media_details["api_id"] = result.get("id")
                 media_details["display_name"] = result.get("name")
                 media_details["category"] = "Games"
-                media_details["type"] = "Games"
+                media_details["type"] = "games"
                 media_details["image_cover"] = url_for("static", filename="covers/series_covers/default.jpg")
 
                 if result.get("cover"):
@@ -723,16 +723,15 @@ class ApiGames(ApiData):
                     overview=result.get("storyline", "No storyline found.") or "No storyline found.",
                     first_air_date=change_air_format(result.get("first_release_date"), games=True),
                     api_id=result.get("id"),
-                    poster_path=url_for("static", filename="covers/games_covers/default.jpg")
+                    poster_path=url_for("static", filename="covers/games_covers/default.jpg"),
+                    media="Games",
+                    media_type="games",
                 )
 
                 # Recover <poster_path> or take <default> image
                 if result.get("cover"):
                     media_data["poster_path"] = f"{self.POSTER_BASE_URL}{result['cover']['image_id']}.jpg"
 
-                # Put data in different lists in function of <media_type>
-                media_data["media"] = "Games"
-                media_data["media_type"] = "Games"
                 media_results.append(media_data)
 
         # Return list, total elements, page
@@ -948,7 +947,7 @@ class ApiBooks(ApiData):
                     date=change_air_format(info.get("publishedDate"), books=True),
                     image_cover=info.get("imageLinks", {"thumbnail": self.default_path})["thumbnail"] or "Unknown",
                     category='Books',
-                    type='Books',
+                    type='books',
                 )
 
                 # Append data to list
@@ -971,7 +970,8 @@ class ApiBooks(ApiData):
                     overview=clean_text(info.get("description", "Unknown")),
                     first_air_date=change_air_format(info.get("publishedDate"), books=True),
                     poster_path=info.get("imageLinks", {"thumbnail": self.default_path})["thumbnail"] or "Unknown",
-                    media="Books"
+                    media="Books",
+                    media_type="books",
                 )
 
                 # Append dict to list

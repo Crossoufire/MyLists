@@ -101,7 +101,7 @@
                     {% if p == 'Unknown' %}
                         <div>{{ p }}</div>
                     {% else %}
-                        <a class="text-light" href="/persons/{{ media.__class__.__name__ }}/creator/{{ p }}">
+                        <a class="text-light" href="/persons/{{ media.__class__.__name__|lower }}/creator/{{ p }}">
                             <div>{{ p }}</div>
                         </a>
                     {% endif %}
@@ -142,7 +142,7 @@
                     <div><i>No actors found</i></div>
                 {% else %}
                     {% for actor in actors %}
-                        <a class="text-light" href="/persons/{{ media.__class__.__name__ }}/actor/{{ actor }}">
+                        <a class="text-light" href="/persons/{{ media.__class__.__name__|lower }}/actor/{{ actor }}">
                             <div>{{ actor }}</div>
                         </a>
                     {% endfor %}

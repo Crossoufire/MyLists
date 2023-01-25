@@ -4,13 +4,13 @@ function addToUser(element_id, media_type) {
     let category;
     let $medialist = $('#your-medialist-data');
 
-    if (media_type === 'bookslist') {
+    if (media_type === 'books') {
         category = 'Reading'
     }
-    else if (media_type === 'movieslist' || media_type === 'gameslist') {
+    else if (media_type === 'movies' || media_type === 'games') {
         category = 'Completed'
     }
-    else if (media_type === 'serieslist' || media_type === 'animelist') {
+    else if (media_type === 'series' || media_type === 'anime') {
         category = 'Watching'
     }
 
@@ -122,7 +122,7 @@ function changeCategoryBooks(element_id, cat_selector, pages) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'bookslist' }),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'books' }),
         dataType: "json",
         success: function() {
             $('#season-row').show();
@@ -170,7 +170,7 @@ function changeCategoryMovies(element_id, cat_selector) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'movieslist' }),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'movies' }),
         dataType: "json",
         success: function() {
             $('#cat-check').show().delay(1500).fadeOut();
@@ -274,7 +274,7 @@ function changeCategoryGames(element_id, cat_selector) {
         type: "POST",
         url: "/update_category",
         contentType: "application/json",
-        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'gameslist' }),
+        data: JSON.stringify({status: new_cat, element_id: element_id, element_type: 'games' }),
         dataType: "json",
         success: function() {
             $('#playtime-row').show();
@@ -398,7 +398,7 @@ function updatePlaytime(media_id, playtime) {
         type: "POST",
         url: "/update_playtime",
         contentType: "application/json",
-        data: JSON.stringify({playtime: value, media_id: media_id, media_type: 'gameslist' }),
+        data: JSON.stringify({playtime: value, media_id: media_id, media_type: 'games' }),
         dataType: "json",
         success: function() {
             $('#time-check').show().delay(1500).fadeOut();
@@ -530,7 +530,7 @@ function updatePages(element_id) {
         type: "POST",
         url: "/update_page",
         contentType: "application/json",
-        data: JSON.stringify({page: page, element_id: element_id, element_type: 'bookslist'}),
+        data: JSON.stringify({page: page, element_id: element_id, element_type: 'books'}),
         dataType: "json",
         success: function() {
             $('#season-check').show().delay(1500).fadeOut();

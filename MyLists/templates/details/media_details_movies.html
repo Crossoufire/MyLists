@@ -51,7 +51,7 @@
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-video"></i><b>&nbsp; Directed by</b></h5>
-                <a class="text-light" href="/persons/Movies/creator/{{ media.director_name }}">{{ media.director_name }}</a>
+                <a class="text-light" href="/persons/movies/creator/{{ media.director_name }}">{{ media.director_name }}</a>
             </li>
             <li class="m-b-15">
                 <h5 class="mb-1 text-media"><i class="fas fa-calendar-check"></i><b>&nbsp; Release date</b></h5>
@@ -87,7 +87,7 @@
                     <div><i>No actors found</i></div>
                 {% else %}
                     {% for actor in actors %}
-                        <a class="text-light" href="/persons/Movies/actor/{{ actor }}"><div>{{ actor }}</div></a>
+                        <a class="text-light" href="/persons/movies/actor/{{ actor }}"><div>{{ actor }}</div></a>
                     {% endfor %}
                 {% endif %}
             </li>

@@ -50,7 +50,7 @@ def get_all_media_info(user) -> Tuple[List[Dict], Dict]:
         media_dict = {'time_hours': round(media_time/60), 'time_days': round(media_time/1440, 2),
                       'media_level': media_level, 'media_score': media_score, 'media_per_score': media_per_score,
                       'media_favorites': media_favorites, 'media': model.__name__.replace('List', ''),
-                      'media_type': model.__name__.lower(), 'media_count': media_count, 'media_color': media_color,
+                      'media_type': model.GROUP.value, 'media_count': media_count, 'media_color': media_color,
                       'media_total_eps': media_total_eps, 'nodata': nodata, 'total': total}
 
         # Recover total time for all media

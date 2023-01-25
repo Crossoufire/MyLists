@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Iterable
 import dotenv
 import requests
-from sqlalchemy import and_, desc, func, true, text, null
+from sqlalchemy import and_, desc, func, text, null
 from MyLists import app, db
 from MyLists.API_data import ApiData, ApiMovies, ApiTV
 from MyLists.models import Series, SeriesList, SeriesActors, SeriesGenre, SeriesNetwork, SeriesEpisodesPerSeason, \
@@ -337,9 +337,9 @@ def automatic_media_refresh():
     app.logger.info("[SYSTEM] - Starting automatic media refresh")
 
     # Fetch all data
-    all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != true)]
-    all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != true)]
-    all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != true)]
+    all_series_api_id = [m.api_id for m in Series.query.filter(Series.lock_status != True)]
+    all_anime_api_id = [m.api_id for m in Anime.query.filter(Anime.lock_status != True)]
+    all_movies_api_id = [m.api_id for m in Movies.query.filter(Movies.lock_status != True)]
 
     all_games = Games.query.all()
     all_games_api_id = []
@@ -449,7 +449,7 @@ def new_releasing_series():
                    'episode': '{:02d}'.format(info[0].episode_to_air)}
 
         data = Notifications(user_id=info[1].user_id,
-                             media_type='serieslist',
+                             media_type="serieslist",
                              media_id=info[0].id,
                              payload_json=json.dumps(payload))
         db.session.add(data)
@@ -596,7 +596,7 @@ def automatic_movies_locking():
     app.logger.info('###################################################################')
     app.logger.info('[SYSTEM] - Starting automatic movies locking')
 
-    all_movies = Movies.query.filter(Movies.lock_status != true).all()
+    all_movies = Movies.query.filter(Movies.lock_status != True).all()
     count_locked = 0
     count_not_locked = 0
 
@@ -796,7 +796,7 @@ class GlobalStats:
         times_spent = db.session.query(func.sum(User.time_spent_series), func.sum(User.time_spent_anime),
                                        func.sum(User.time_spent_movies), func.sum(User.time_spent_books),
                                        func.sum(User.time_spent_games)) \
-            .filter(User.role != RoleType.ADMIN, User.active == true).all()
+            .filter(User.role != RoleType.ADMIN, User.active == True).all()
 
         times_spent = [0 if not v else v for v in times_spent[0]]
 
@@ -807,7 +807,7 @@ class GlobalStats:
         """ Get total number of media and users in MyLists """
 
         # Queries
-        nb_users = User.query.filter(User.role != RoleType.ADMIN, User.active == true).count()
+        nb_users = User.query.filter(User.role != RoleType.ADMIN, User.active == True).count()
         nb_series = Series.query.count()
         nb_anime = Anime.query.count()
         nb_movies = Movies.query.count()
@@ -960,7 +960,7 @@ class GlobalStats:
                                  func.count(self.media_comp.name).label('count'))\
             .join(self.media_comp, self.media_comp.media_id == self.media_list.media_id) \
             .group_by(self.media_comp.name) \
-            .filter(self.media_comp.name != 'Unknown', self.media_comp.developer == true) \
+            .filter(self.media_comp.name != 'Unknown', self.media_comp.developer == True) \
             .order_by(text('count desc')).limit(5).all()
 
         return [[], [], [], [], query]
