@@ -96,4 +96,4 @@ at the top right of the homepage, feel free to do it. Otherwise, you can run you
 
 # Contact
 
-<contact@mylists.info>
+<contact.us.at.mylists@gmail.com>
