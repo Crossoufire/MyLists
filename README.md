@@ -1,5 +1,10 @@
 ### MyLists
 
+** This is the old version of MyLists. The new versions are [MyLists-api](https://github.com/Crossoufire/MyLists-api) and [MyLists-frontend](https://github.com/Crossoufire/MyLists-frontend). 
+The website is now made with a react frontend and this repo adapted as an "API" backend for react. **
+
+------------------------------------------------------------------------------------------------------
+
 [MyLists](https://mylists.info) is a website with a nice and clear interface for you to list all the series, anime, 
 movies, games and books you've watched/read/played. It regroups the functionalities of different site in one.
 It integrates statistics like: watched time, comments, favorites and more. 
