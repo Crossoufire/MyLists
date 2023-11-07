@@ -1,4 +1,4 @@
-### MyLists
+# MyLists
 
 ** This is the old version of MyLists. The new versions are [MyLists-api](https://github.com/Crossoufire/MyLists-api) and [MyLists-frontend](https://github.com/Crossoufire/MyLists-frontend). 
 The website is now made with a react frontend and this repo adapted as an "API" backend for react. **
@@ -14,7 +14,7 @@ Live version here: [https://mylists.info](https://mylists.info).
 
 MyLists uses [Flask](https://flask.palletsprojects.com/) and [Material Design for Bootstrap 4](https://mdbootstrap.com/)
 
-### Features
+# Features
 
 * Create a list for all your series, anime, movies, games and books. 
 * Get statistics about your lists (Time spent, number of episodes watched, prefered genres, etc...)
@@ -24,13 +24,13 @@ MyLists uses [Flask](https://flask.palletsprojects.com/) and [Material Design fo
 * Notifications system
 * More to come!
 
-### Prerequisites
+# Prerequisites
 
 * Python 3.6, 3.7, 3.8, 3.9+ (Developed and tested with these versions)
 * pip3
 * WSL2 if using Windows for the local test of ``scheduled-tasks``
 
-### Installation
+# Installation
 
 ```
 git clone https://www.github.com/Crossoufire/MyLists.git
@@ -76,7 +76,7 @@ FLASK_DEBUG=True
 
 Then run the command `python3 Run.py` and open the link [http://localhost:5000](http://localhost:5000).
 
-### Administration
+# Administration
 
 When you run the program for the first time, it will create 3 users: one `user`, one `manager` and one `admin` with 
 all the same password `password`:
@@ -88,12 +88,12 @@ all the same password `password`:
 * `admin` - Used for administration tasks (access to all `/admin` pages). Should not be used as a standard user account.
 Does not appear in the "Hall of Fame" and his statistics are not taken into account.
 
-## Miscellaneous
+# Miscellaneous
 
 We started this project to fulfill our needs. The live version [https://mylists.info](https://mylists.info) runs on a 
 raspberry pi 4, thus not meant to be used by a lot of people at the same time, but if you can see the register button 
 at the top right of the homepage, feel free to do it. Otherwise, you can run your own version of MyLists ;).
 
-## Contact
+# Contact
 
 <contact@mylists.info>
