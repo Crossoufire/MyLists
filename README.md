@@ -88,12 +88,6 @@ all the same password `password`:
 * `admin` - Used for administration tasks (access to all `/admin` pages). Should not be used as a standard user account.
 Does not appear in the "Hall of Fame" and his statistics are not taken into account.
 
-# Miscellaneous
-
-We started this project to fulfill our needs. The live version [https://mylists.info](https://mylists.info) runs on a 
-raspberry pi 4, thus not meant to be used by a lot of people at the same time, but if you can see the register button 
-at the top right of the homepage, feel free to do it. Otherwise, you can run your own version of MyLists ;).
-
 # Contact
 
 <contact.us.at.mylists@gmail.com>
