@@ -39,71 +39,71 @@ export const Navbar = () => {
                                 <NavigationMenuItem>
                                     <p className="text-lg font-semibold mr-2">MyLists</p>
                                 </NavigationMenuItem>
-                                <NavigationMenuItem>
-                                    <SearchBar/>
-                                </NavigationMenuItem>
-                                <NavigationMenuItem>
-                                    <Link to="/hall_of_fame">
-                                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                            HoF
-                                        </NavigationMenuLink>
-                                    </Link>
-                                </NavigationMenuItem>
-                                <NavigationMenuItem>
-                                    <Link to="/global_stats">
-                                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                            Stats
-                                        </NavigationMenuLink>
-                                    </Link>
-                                </NavigationMenuItem>
+                                {/*<NavigationMenuItem>*/}
+                                {/*    <SearchBar/>*/}
+                                {/*</NavigationMenuItem>*/}
+                                {/*<NavigationMenuItem>*/}
+                                {/*    <Link to="/hall_of_fame">*/}
+                                {/*        <NavigationMenuLink className={navigationMenuTriggerStyle()}>*/}
+                                {/*            HoF*/}
+                                {/*        </NavigationMenuLink>*/}
+                                {/*    </Link>*/}
+                                {/*</NavigationMenuItem>*/}
+                                {/*<NavigationMenuItem>*/}
+                                {/*    <Link to="/global_stats">*/}
+                                {/*        <NavigationMenuLink className={navigationMenuTriggerStyle()}>*/}
+                                {/*            Stats*/}
+                                {/*        </NavigationMenuLink>*/}
+                                {/*    </Link>*/}
+                                {/*</NavigationMenuItem>*/}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
-                    <div className="hidden lg:block">
-                        <NavigationMenu>
-                            <NavigationMenuList>
-                                <NavigationMenuItem>
-                                    <Link to="/">
-                                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                            Login / Register
-                                        </NavigationMenuLink>
-                                    </Link>
-                                </NavigationMenuItem>
-                            </NavigationMenuList>
-                        </NavigationMenu>
-                    </div>
-                    <div className="lg:hidden ml-auto mr-2">
-                        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                            <SheetTrigger>
-                                <Button variant="ghost" size="icon">
-                                    <LuAlignJustify size={25}/>
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="max-sm:w-full overflow-y-auto">
-                                <NavigationMenu className="mt-4">
-                                    <NavigationMenuList className="flex flex-col items-start gap-3">
-                                        <NavigationMenuItem className="mt-4">
-                                            <SearchBar/>
-                                        </NavigationMenuItem>
-                                        <NavigationMenuItem>
-                                            <Link to="/hall_of_fame" onClick={() => setSheetOpen(false)}>
-                                                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                                    HoF
-                                                </NavigationMenuLink>
-                                            </Link>
-                                        </NavigationMenuItem>
-                                        <NavigationMenuItem>
-                                            <Link to="/global_stats" onClick={() => setSheetOpen(false)}>
-                                                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                                                    Stats
-                                                </NavigationMenuLink>
-                                            </Link>
-                                        </NavigationMenuItem>
-                                    </NavigationMenuList>
-                                </NavigationMenu>
-                            </SheetContent>
-                        </Sheet>
-                    </div>
+                    {/*<div className="hidden lg:block">*/}
+                    {/*    <NavigationMenu>*/}
+                    {/*        <NavigationMenuList>*/}
+                    {/*            <NavigationMenuItem>*/}
+                    {/*                <Link to="/">*/}
+                    {/*                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>*/}
+                    {/*                        Login / Register*/}
+                    {/*                    </NavigationMenuLink>*/}
+                    {/*                </Link>*/}
+                    {/*            </NavigationMenuItem>*/}
+                    {/*        </NavigationMenuList>*/}
+                    {/*    </NavigationMenu>*/}
+                    {/*</div>*/}
+                    {/*<div className="lg:hidden ml-auto mr-2">*/}
+                    {/*    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>*/}
+                    {/*        <SheetTrigger>*/}
+                    {/*            <Button variant="ghost" size="icon">*/}
+                    {/*                <LuAlignJustify size={25}/>*/}
+                    {/*            </Button>*/}
+                    {/*        </SheetTrigger>*/}
+                    {/*        <SheetContent side="left" className="max-sm:w-full overflow-y-auto">*/}
+                    {/*            <NavigationMenu className="mt-4">*/}
+                    {/*                <NavigationMenuList className="flex flex-col items-start gap-3">*/}
+                    {/*                    <NavigationMenuItem className="mt-4">*/}
+                    {/*                        <SearchBar/>*/}
+                    {/*                    </NavigationMenuItem>*/}
+                    {/*                    <NavigationMenuItem>*/}
+                    {/*                        <Link to="/hall_of_fame" onClick={() => setSheetOpen(false)}>*/}
+                    {/*                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>*/}
+                    {/*                                HoF*/}
+                    {/*                            </NavigationMenuLink>*/}
+                    {/*                        </Link>*/}
+                    {/*                    </NavigationMenuItem>*/}
+                    {/*                    <NavigationMenuItem>*/}
+                    {/*                        <Link to="/global_stats" onClick={() => setSheetOpen(false)}>*/}
+                    {/*                            <NavigationMenuLink className={navigationMenuTriggerStyle()}>*/}
+                    {/*                                Stats*/}
+                    {/*                            </NavigationMenuLink>*/}
+                    {/*                        </Link>*/}
+                    {/*                    </NavigationMenuItem>*/}
+                    {/*                </NavigationMenuList>*/}
+                    {/*            </NavigationMenu>*/}
+                    {/*        </SheetContent>*/}
+                    {/*    </Sheet>*/}
+                    {/*</div>*/}
                 </div>
             </nav>
         );

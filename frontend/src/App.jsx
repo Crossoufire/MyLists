@@ -28,11 +28,11 @@ import {ResetPasswordPage} from "@/pages/ResetPasswordPage";
 import {SheetProvider} from "@/providers/SheetProvider.jsx";
 import {ProfileLevelsPage} from "@/pages/ProfileLevelsPage";
 import {PrivateRoute, } from "@/components/app/PrivateRoute";
-import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {AdminDashboardPage} from "@/pages/AdminDashboardPage";
 import {ForgotPasswordPage} from "@/pages/ForgotPasswordPage";
+import {OAuth2CallbackPage} from "@/pages/OAuth2CallbackPage";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import "./index.css";
-import {OAuth2CallbackPage} from "@/pages/OAuth2CallbackPage.jsx";
 
 
 export const App = () => {
@@ -71,9 +71,6 @@ export const App = () => {
 const PrivateRoutes = () => {
 	return (
 		<Routes>
-			<Route path="/admin" element={<AdminPage/>}/>
-			<Route path="/admin/dashboard" element={<AdminDashboardPage/>}/>
-
 			<Route path="/profile/:username" element={<ProfilePage/>}/>
 			<Route path="/profile/:username/:extension?" element={<ProfilePage/>}/>
 			<Route path="/list/:mediaType/:username?" element={<MediaListPage/>}/>
@@ -87,6 +84,9 @@ const PrivateRoutes = () => {
 			<Route path="/details/:mediaType/:mediaId" element={<MediaDetailsPage/>}/>
 			<Route path="/details/form/:mediaType/:mediaId" element={<MediaEditPage/>}/>
 			<Route path="/details/:mediaType/:job/:info" element={<InfoPage/>}/>
+
+			<Route path="/admin" element={<AdminPage/>}/>
+			<Route path="/admin/dashboard" element={<AdminDashboardPage/>}/>
 
 			<Route path="*" element={<ErrorPage/>}/>
 		</Routes>

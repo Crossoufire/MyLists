@@ -1,4 +1,25 @@
 
+## CHANGELOG v1.2.0
+---
+### Under the Hood
+- Added Tailwind CSS
+- Replaced Bootstrap by Shadcn-UI
+- Moved from Create React App (CRA) to Vite with react plugin
+
+### Features
+- Implemented OAuth2 authentication: Github and Google
+- Added `React-Helmet` to manage metadata in the header
+- Removed the changelog in the website (not a fan)
+
+### UI Modifications
+- Redefined the table layout in `profile/history` for simplicity and reduced dependencies
+- Transformed horizontal navbar sheet in mobile view to vertical one covering the entire screen
+- Modified `/details` with new tabs for `history` and `follows`
+- Adjusted precision of the airing dates in TV and Anime in `/details`
+- Sorted labels alphabetically in `/list` and in `/profile`
+- Renamed "score" and "feeling" names to "rating" for clarity and simplicity
+
+
 ## CHANGELOG v1.1.0
 ---
 ### Under the Hood

@@ -13,6 +13,10 @@ export default defineConfig({
         },
     },
     server: {
+        watch: {
+            usePolling: true,
+            interval: 500,
+        },
         open: true,
         port: 3000,
         proxy: {

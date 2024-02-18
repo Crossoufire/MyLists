@@ -143,9 +143,6 @@ def init_app() -> Flask:
     app.config.from_object(config)
     app.url_map.strict_slashes = False
 
-    value = bcrypt.generate_password_hash("ze25zg746zgùgzùvz*ùz8v55LG%D£¨%£").decode("utf-8"),
-    print(value)
-
     # Initialize modules
     mail.init_app(app)
     db.init_app(app)
