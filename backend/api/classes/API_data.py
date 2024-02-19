@@ -643,6 +643,7 @@ class ApiGames(ApiData):
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/games_covers/")
     POSTER_BASE_URL = "https://images.igdb.com/igdb/image/upload/t_1080p/"
     CLIENT_IGDB = current_app.config["CLIENT_IGDB"]
+    SECRET_IGDB = current_app.config["SECRET_IGDB"]
     API_KEY = current_app.config["IGDB_API_KEY"]
 
     def __init__(self, API_id: int = None):
@@ -887,7 +888,7 @@ class ApiGames(ApiData):
 
         try:
             response = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
-                                     f"client_secret={self.API_KEY}&grant_type=client_credentials", timeout=10)
+                                     f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", timeout=10)
 
             response.raise_for_status()
             data = json.loads(response.text)

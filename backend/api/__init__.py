@@ -47,7 +47,7 @@ def _import_blueprints(app: Flask):
 def _create_app_logger(app: Flask):
     """ Create an app logger and an <SSL_SMTPHandler> class for sending errors to the admin """
 
-    log_file_path = "MyLists/static/log/mylists.log"
+    log_file_path = "MyLists/backend/api/static/log/mylists.log"
 
     # Check if log file exists, if not, create it
     if not os.path.exists(log_file_path):

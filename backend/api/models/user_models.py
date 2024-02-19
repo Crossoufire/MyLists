@@ -568,11 +568,11 @@ class UserLastUpdate(db.Model):
             update_dict["update"] = [f"Re-{value} {int(self.old_redo)}x", f"{int(self.new_redo)}x"]
 
         # Status update
-        elif self.old_status and self.new_status:
+        elif self.old_status is not None and self.new_status is not None:
             update_dict["update"] = [f"{self.old_status.value}", f"{self.new_status.value}"]
 
         # Newly added media
-        elif not self.old_status and self.new_status:
+        elif self.old_status is None and self.new_status is not None:
             update_dict["update"] = [f"{self.new_status.value}"]
 
         # Season and episode update

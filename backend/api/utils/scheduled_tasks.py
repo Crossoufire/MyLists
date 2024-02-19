@@ -60,7 +60,7 @@ def automatic_media_refresh():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting automatic media refresh -")
 
-    for model in [Series, Anime, Movies]:
+    for model in [Series, Anime, Movies, Games]:
         api_model = ApiData.get_API_class(model.GROUP)
 
         if model == Games:
