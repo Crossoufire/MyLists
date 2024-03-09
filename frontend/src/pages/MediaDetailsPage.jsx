@@ -13,7 +13,6 @@ import {UserListDetails} from "@/components/media/general/UserListDetails";
 import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Link, useNavigate, useParams, useSearchParams} from "react-router-dom";
-import {capitalize} from "@/lib/utils.jsx";
 
 
 export const MediaDetailsPage = () => {
@@ -25,7 +24,7 @@ export const MediaDetailsPage = () => {
 	const { apiData, loading, error, mutate } = useFetchData(`/details/${mediaType}/${mediaId}`,
 		{...Object.fromEntries(searchParams)});
 
-	if (error) return <ErrorPage error={error}/>
+	if (error) return <ErrorPage {...error}/>
 	if (loading) return <Loading/>;
 	if (apiData.redirect) return navigate(`/details/${mediaType}/${apiData.media.id}`, { replace: true });
 
@@ -41,6 +40,7 @@ export const MediaDetailsPage = () => {
 							<RefreshMedia
 								updateRefresh={refresh}
 								mutateData={mutate}
+								lastUpdate={apiData.media.last_update}
 							/>
 						}
 					</h3>

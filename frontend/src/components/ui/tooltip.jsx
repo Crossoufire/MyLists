@@ -1,6 +1,6 @@
-import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-import {cn} from "@/lib/utils.jsx"
+import * as React from "react";
+import {cn} from "@/lib/utils";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 
 const TooltipProvider = TooltipPrimitive.Provider;
@@ -26,7 +26,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 
-const Tooltip = React.forwardRef(({ children, text, side, className, offset = 10, ...props }, ref) => {
+const Tooltip = React.forwardRef(({ children, text, subText, side, className, offset = 10, ...props }, ref) => {
     return (
         <TooltipProvider delayDuration={props.delay || 50}>
             <TooltipPrim>
@@ -37,6 +37,7 @@ const Tooltip = React.forwardRef(({ children, text, side, className, offset = 10
                 "text-primary bg-primary-foreground", className)}>
                     <TooltipArrow className="fill-primary-foreground"/>
                     <p>{text}</p>
+                    <p>{subText}</p>
                 </TooltipContent>
             </TooltipPrim>
         </TooltipProvider>

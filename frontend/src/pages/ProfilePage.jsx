@@ -26,7 +26,7 @@ export const ProfilePage = () => {
     const { username, extension } = useParams();
     const { apiData, loading, error } = useFetchData(`/profile/${username}`)
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     const ProfileComponent = componentToLoad(extension);

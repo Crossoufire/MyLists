@@ -1,12 +1,12 @@
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 
-export const NavigationStatus = ({ allStatus, activeStatus, updateStatus }) => {
-    const handleStatus = (val) => {
-        if (activeStatus === val) {
+export const NavStatusList = ({ allStatus, activeStatus, updateStatus }) => {
+    const handleStatus = (newStatus) => {
+        if (activeStatus === newStatus) {
             return;
         }
-        updateStatus(val);
+        updateStatus(newStatus);
     }
 
     return (

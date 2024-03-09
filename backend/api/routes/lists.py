@@ -2,7 +2,7 @@ from typing import Any, Dict
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.routes.auth import token_auth, current_user
+from backend.api.routes.handlers import token_auth, current_user
 from backend.api.classes.Medialist_query import MediaListQuery
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
@@ -17,16 +17,10 @@ lists_bp = Blueprint("api_lists", __name__)
 def media_list(media_type: MediaType, username: str):
     """ Media list endpoint (Series, Anime, Movies, Games, and Books) """
 
-    if current_user:
-        user = current_user.check_autorization(username)
+    user = current_user.check_autorization(username)
 
-        # Add a view on media list to profile
-        current_user.set_view_count(user, media_type)
-    else:
-        from backend.api.models.user_models import User
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return abort(404)
+    # Add a view on media list to profile
+    current_user.set_view_count(user, media_type)
 
     # Resolve media query
     media_data, pagination = MediaListQuery(user, media_type).return_results()

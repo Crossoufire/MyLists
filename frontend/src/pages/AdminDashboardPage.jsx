@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {Fragment} from "react";
-import {formatDate} from "@/lib/utils";
+import {createLocalDate} from "@/lib/utils";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button";
@@ -21,7 +21,7 @@ export const AdminDashboardPage = () => {
         return navigate("/admin");
     }
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     return (
@@ -66,7 +66,7 @@ const PopulateUsers = ({ users }) => {
                 {users.map(user =>
                     <Fragment key={user.id}>
                         <div className="col-span-3">{user.username}</div>
-                        <div className="col-span-2">{formatDate(user.notif)}</div>
+                        <div className="col-span-2">{createLocalDate(user.notif, true)}</div>
                         <div className="col-span-2">{user.level}</div>
                         <div className="col-span-2">
                             <Select onValueChange={(value) => updateRole(value, user.id)} defaultValue={user.role}>

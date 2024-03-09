@@ -36,7 +36,7 @@ const RankCalculus = ({ rank, loop }) => {
 export const MediaLevelsPage = () => {
 	const { apiData, loading, error } = useFetchData("/levels/media_levels");
 
-	if (error) return <ErrorPage error={error}/>;
+	if (error) return <ErrorPage {...error}/>;
 	if (loading) return <Loading/>;
 
 	return (

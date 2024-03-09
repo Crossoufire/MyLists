@@ -120,11 +120,11 @@ def remove_all_old_covers():
     current_app.logger.info('###############################################################################')
 
 
-def add_new_releasing_media():
+def add_media_related_notifications():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting checking new releasing media -")
 
-    # Books not present because no check available for new releases
+    # Books return None because no available checks for new releases
     for model in get_models_type(ModelTypes.MEDIA):
         model.get_new_releasing_media()
 
@@ -235,28 +235,23 @@ def add_cli_commands():
     """ Register the command for the Flask CLI """
 
     @current_app.cli.command()
-    def notifs():
+    def add_notifs():
         """ Update the notifications """
-
-        current_app.logger.setLevel(logging.INFO)
-        add_new_releasing_media()
+        add_media_related_notifications()
 
     @current_app.cli.command()
     def delete_invalid():
         """ Delete the invalid media (= not in the user list) from last updates """
-
-        current_app.logger.setLevel(logging.INFO)
         delete_old_invalid_last_updates()
 
     @current_app.cli.command()
     def scheduled_tasks():
         """ Run all the necessary scheduled jobs """
 
-        current_app.logger.setLevel(logging.INFO)
         remove_non_list_media()
         remove_all_old_covers()
         automatic_media_refresh()
-        add_new_releasing_media()
+        add_media_related_notifications()
         automatic_movies_locking()
         compute_media_time_spent()
         update_Mylists_stats()
@@ -264,6 +259,4 @@ def add_cli_commands():
     @current_app.cli.command()
     def update_igdb_key():
         """ Update to a new IGDB API key - Server needs to restart to take effect. """
-
-        current_app.logger.setLevel(logging.INFO)
         update_IGDB_API()

@@ -6,18 +6,20 @@ import {CaretSortIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon,} from "@radix-
 
 
 const selectTriggerVariants = cva("flex w-full items-center justify-between whitespace-nowrap rounded-md " +
-    "focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 " +
-    "focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+    "focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-ring " +
+    "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
     {
         variants: {
             variant: {
                 default: "bg-transparent text-sm shadow-sm",
                 noIcon: "justify-center",
+                list: "hover:bg-secondary rounded-none text-sm",
             },
             size: {
                 default: "h-9 px-3 py-2",
                 details: "h-7 pl-2",
-                list: "h-7",
+                list: "",
+                editList: "h-9 pl-4",
             },
         },
         defaultVariants: {
@@ -38,7 +40,7 @@ const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = React.forwardRef(({ children, className, variant, size, ...props }, ref) => (
     <SelectPrimitive.Trigger ref={ref} className={cn(selectTriggerVariants({ variant, size, className }))} {...props}>
         {children}
-        {variant !== "noIcon" &&
+        {(variant !== "noIcon" && variant !== "list") &&
             <SelectPrimitive.Icon asChild>
                 <CaretSortIcon className="h-4 w-4 opacity-80"/>
             </SelectPrimitive.Icon>

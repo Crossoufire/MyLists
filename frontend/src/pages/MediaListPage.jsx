@@ -2,27 +2,31 @@ import {capitalize} from "@/lib/utils";
 import {useEffect, useState} from "react";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useUser} from "@/providers/UserProvider";
-import {useFetchData2} from "@/hooks/FetchDataHook";
+import {useFetchData, useFetchData2} from "@/hooks/FetchDataHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Loading} from "@/components/primitives/Loading";
 import {useParams, useSearchParams} from "react-router-dom";
-import {TitleStatus} from "@/components/medialist/TitleStatus";
-import {CommonMedia} from "@/components/medialist/CommonMedia";
-import {MediaLabels} from "@/components/medialist/MediaLabels";
 import {MediaListData} from "@/components/medialist/MediaListData";
-import {FilterAndSort} from "@/components/medialist/FilterAndSort";
+import {NavStatusList} from "@/components/medialist/NavStatusList";
 import {MediaListStats} from "@/components/medialist/MediaListStats";
-import {NavigationMedia} from "@/components/medialist/NavigationMedia";
+import {MediaListLabels} from "@/components/medialist/MediaListLabels.jsx";
+import {TitleStatusList} from "@/components/medialist/TitleStatusList";
 import {SearchMediaList} from "@/components/medialist/SearchMediaList";
-import {NavigationStatus} from "@/components/medialist/NavigationStatus";
+import {CommonMediaList} from "@/components/medialist/CommonMediaList";
+import {FilterAndSortList} from "@/components/medialist/FilterAndSortList";
+import {NavigationMediaList} from "@/components/medialist/NavigationMediaList";
+import {ProfileHeader} from "@/components/profile/ProfileHeader.jsx";
+import {AllUpdates} from "@/components/profile/AllUpdates.jsx";
+import {FollowsFollowers} from "@/components/profile/FollowsFollowers.jsx";
+import {ProfileData} from "@/components/profile/ProfileData.jsx";
 
 
 export const MediaListPage = () => {
 	const { currentUser } = useUser();
 	const { mediaType, username } = useParams();
-	const [showCommon, setShowCommon] = useState(true);
 	const [searchParams, setSearchParams] = useSearchParams();
+	const [showCommon, setShowCommon] = useState(true);
 	const { apiData, loading, error } = useFetchData2(`/list/${mediaType}/${username}`,
 		{...Object.fromEntries(searchParams)});
 
@@ -102,67 +106,53 @@ export const MediaListPage = () => {
 		setShowCommon(!showCommon);
 	};
 
-	if (error) return <ErrorPage error={error}/>
+	if (error) return <ErrorPage {...error}/>
 	if (apiData === undefined || mediaType !== apiData.media_type) return <Loading/>;
 
 
 	return (
 		<PageTitle title={`${username} ${capitalize(mediaType)}List`} onlyHelmet>
 			<div className="flex flex-wrap sm:justify-between justify-center items-center gap-6 mt-8">
-				<NavigationMedia
+				<NavigationMediaList
 					userData={apiData.user_data}
-					mediaType={mediaType}
 				/>
 				<SearchMediaList
-					search={apiData.pagination.search}
+					initSearch={apiData.pagination.search}
 					updateSearch={(value) => updateSearchParams(updateSearch, value)}
-					condition={currentUser?.username === username ? "your" : username}
 				/>
-				{(currentUser && currentUser?.id !== apiData.user_data.id) &&
-					<CommonMedia
-						apiData={apiData}
-						mediaType={mediaType}
-						showCommon={showCommon}
-						updateCommon={updateCommon}
-					/>
-				}
+				<CommonMediaList
+					mediaData={apiData.media_data}
+					showCommon={showCommon}
+					updateCommon={updateCommon}
+				/>
 			</div>
-			<NavigationStatus
+			<NavStatusList
 				allStatus={apiData.pagination.all_status}
 				activeStatus={apiData.pagination.status}
 				updateStatus={(value) => updateSearchParams(updateStatus, value)}
 			/>
 			<div className="flex flex-wrap sm:justify-between justify-center gap-y-1 mt-6">
-				<TitleStatus
+				<TitleStatusList
 					status={apiData.pagination.status}
 					total={apiData.pagination.total}
-					title={apiData.pagination.title}
 				/>
-				{!["Stats", "Labels"].includes(apiData.pagination.status) &&
-					<FilterAndSort
-						mediaType={mediaType}
-						paginateData={apiData.pagination}
-						updateLang={(value) => updateSearchParams(updateLang, value)}
-						updateGenre={(value) => updateSearchParams(updateGenre, value)}
-						updateSorting={(value) => updateSearchParams(updateSorting, value)}
-					/>
-				}
+				<FilterAndSortList
+					paginateData={apiData.pagination}
+					updateLang={(value) => updateSearchParams(updateLang, value)}
+					updateGenre={(value) => updateSearchParams(updateGenre, value)}
+					updateSorting={(value) => updateSearchParams(updateSorting, value)}
+				/>
 			</div>
 			<Separator variant="large" className="mb-3"/>
 			{apiData.pagination.status === "Stats" ?
-				<MediaListStats
-					mediaType={mediaType}
-					graphData={apiData.media_data.graph_data}
-				/>
+				<MediaListStats graphData={apiData.media_data.graph_data}/>
 				:
 				apiData.pagination.status === "Labels" ?
-					<MediaLabels
-						mediaType={mediaType}
-						labels={apiData.media_data.labels}
-						labelsMedia={apiData.media_data.labels_media}
+					<MediaListLabels
+						loading={loading}
+						mediaData={apiData.media_data}
 						isCurrent={currentUser?.username === username}
 						updateLabel={(value) => updateSearchParams(updateLabel, value)}
-						loading={loading}
 					/>
 					:
 					<MediaListData

@@ -1,17 +1,16 @@
 import {Link} from "react-router-dom";
+import {capitalize} from "@/lib/utils";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useFetchData} from "@/hooks/FetchDataHook";
-import {Separator} from "@/components/ui/separator";
+import {PageTitle} from "@/components/app/PageTitle";
 import {Return} from "@/components/primitives/Return";
 import {Loading} from "@/components/primitives/Loading";
-import {PageTitle} from "@/components/app/PageTitle.jsx";
-import {capitalize} from "@/lib/utils.jsx";
 
 
 export const FollowsFollowers = ({ username, extension }) => {
     const { apiData, loading, error } = useFetchData(`/profile/${username}/${extension}`)
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading addStyle={"text-center"}/>;
 
     return (

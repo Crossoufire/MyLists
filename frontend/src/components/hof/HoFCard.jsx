@@ -1,7 +1,8 @@
-import {cn} from "@/lib/utils";
+import {capitalize, cn} from "@/lib/utils";
 import {Link} from "react-router-dom";
 import {Badge} from "@/components/ui/badge";
 import {useUser} from "@/providers/UserProvider";
+import {Skeleton} from "@/components/ui/skeleton";
 import {Card, CardContent} from "@/components/ui/card";
 
 
@@ -41,57 +42,39 @@ export const HoFCard = ({ item }) => {
                     </div>
                     <div className="col-span-12 md:col-span-7">
                         <div className="grid grid-cols-5 text-center items-center font-medium h-full">
-                            <div className="flex flex-col justify-evenly items-center h-full">
-                                <div>Series</div>
-                                <Link to={`/list/series/${item.username}`}>
-                                    <div className="mb-1"><img src={item.series_image} alt="series-grade"/></div>
-                                    <div>{item.series_level}</div>
-                                </Link>
-                            </div>
-                            <div className="flex flex-col justify-evenly items-center h-full">
-                                <div>Anime</div>
-                                {item.add_anime ?
-                                    <Link to={`/list/anime/${item.username}`}>
-                                        <div className="mb-1"><img src={item.anime_image} alt="anime-grade"/></div>
-                                        <div>{item.anime_level}</div>
-                                    </Link>
-                                    :
-                                    <div className="flex content-center items-center h-[68px]">Disabled</div>
-                                }
-                            </div>
-                            <div className="flex flex-col justify-evenly items-center h-full">
-                                <div>Movies</div>
-                                <Link to={`/list/movies/${item.username}`}>
-                                    <div className="mb-1"><img src={item.movies_image} alt="movies-grade"/></div>
-                                    <div>{item.movies_level}</div>
-                                </Link>
-                            </div>
-                            <div className="flex flex-col justify-evenly items-center h-full">
-                                <div>Books</div>
-                                {item.add_books ?
-                                    <Link to={`/list/books/${item.username}`}>
-                                        <div className="mb-1"><img src={item.books_image} alt="books-grade"/></div>
-                                        <div>{item.books_level}</div>
-                                    </Link>
-                                    :
-                                    <div className="flex content-center items-center h-[68px]">Disabled</div>
-                                }
-                            </div>
-                            <div className="flex flex-col justify-evenly items-center h-full">
-                                <div>Games</div>
-                                {item.add_games ?
-                                    <Link to={`/list/games/${item.username}`}>
-                                        <div className="mb-1"><img src={item.games_image} alt="games-grade"/></div>
-                                        <div>{item.games_level}</div>
-                                    </Link>
-                                    :
-                                    <div className="flex content-center items-center h-[68px]">Disabled</div>
-                                }
-                            </div>
+                            <ListItem item={item} mediaType="series"/>
+                            <ListItem item={item} mediaType="anime"/>
+                            <ListItem item={item} mediaType="movies"/>
+                            <ListItem item={item} mediaType="books"/>
+                            <ListItem item={item} mediaType="games"/>
                         </div>
                     </div>
                 </div>
             </CardContent>
         </Card>
     )
+};
+
+
+const ListItem = ({ item, mediaType }) => {
+    const checkDisabled = item.hasOwnProperty(`add_${mediaType}`) ? item[`add_${mediaType}`] === true : true;
+
+    return (
+        <div className="flex flex-col justify-evenly items-center h-full">
+            <div>{capitalize(mediaType)}</div>
+            {checkDisabled ?
+                <Link to={`/list/${mediaType}/${item.username}`}>
+                    <div className="mb-1"><img src={item[`${mediaType}_image`]} alt={`${mediaType}-grade`} /></div>
+                    <div>{item[`${mediaType}_level`]}</div>
+                </Link>
+                :
+                <div className="flex content-center items-center h-[68px]">Disabled</div>
+            }
+        </div>
+    );
+};
+
+
+HoFCard.Skeleton = function SkeletonHoFCard() {
+    return <Skeleton className="p-2 mb-5 bg-card md:h-[178px] h-[282px]"/>;
 };

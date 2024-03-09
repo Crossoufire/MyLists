@@ -6,7 +6,6 @@ import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
 
 
-
 export const ProfileData = ({ username, apiData }) => {
     return (
         <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">

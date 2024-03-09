@@ -18,7 +18,7 @@ export const InfoPage = () => {
         window.scrollTo({ top: 0, behavior: "auto" });
     };
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     const mediaPerPage = 36;

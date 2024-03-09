@@ -5,7 +5,7 @@ from typing import List, Dict
 from flask import abort, current_app
 from sqlalchemy import func, text
 from backend.api import db
-from backend.api.routes.auth import current_user
+from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.functions import change_air_format
@@ -114,7 +114,7 @@ class Books(MediaMixin, db.Model):
 
     @classmethod
     def get_new_releasing_media(cls):
-        """ Not Implemented for books because does not allow that (Google books API) """
+        """ Not Implemented for books because it is not available (Google books API) """
         return
 
     @staticmethod
@@ -256,8 +256,8 @@ class BooksList(MediaListMixin, db.Model):
             "Published date +": Books.release_date.desc(),
             "Published date -": Books.release_date.asc(),
             "Comments": cls.comment.desc(),
-            "Score +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Score -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
+            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Re-read": cls.rewatched.desc(),
         }
 

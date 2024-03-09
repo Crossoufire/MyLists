@@ -28,28 +28,24 @@ export const UserUpdates = ({ updates, followers = false }) => {
                 </CardTitle>
                 <Separator/>
             </CardHeader>
-            <CardContent className="pb-0">
+            <CardContent className="pb-3">
                 {isOpen &&
-                   <>
-                       {updates.length === 0 ?
-                           <div className="text-muted-foreground italic pb-3">No updates to display yet</div>
-                           :
-                           updates.map((update, idx) =>
-                               <Fragment key={update.date}>
-                                   <UserUpdate
-                                       username={followers && update.username}
-                                       mediaType={update.media_type}
-                                       mediaId={update.media_id}
-                                       mediaName={update.media_name}
-                                       payload={update.update}
-                                       date_={update.date}
-                                   />
-                                   {idx + 1 < updates.length &&
-                                       <Separator className="mt-1"/>
-                                   }
-                               </Fragment>
-                           )}
-                   </>
+                    <>
+                        {updates.length === 0 ?
+                            <div className="text-muted-foreground italic pb-3">No updates to display yet</div>
+                            :
+                            updates.map(update =>
+                                <UserUpdate
+                                    key={update.date}
+                                    username={followers && update.username}
+                                    mediaType={update.media_type}
+                                    mediaId={update.media_id}
+                                    mediaName={update.media_name}
+                                    payload={update.update}
+                                    date_={update.date}
+                                />
+                            )}
+                    </>
                 }
             </CardContent>
         </Card>

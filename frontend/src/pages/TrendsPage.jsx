@@ -9,15 +9,15 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 export const TrendsPage = () => {
     const { apiData, loading, error } = useFetchData("/current_trends");
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     return (
         <PageTitle title="Week Trends" subtitle="The Series and Movies trending this week according to TMDB">
             <Tabs defaultValue="series" className="mt-4">
-                <TabsList className="mb-3 h-10">
-                    <TabsTrigger value="series" className="text-base">Trending TV</TabsTrigger>
-                    <TabsTrigger value="movies" className="text-base">Trending Movies</TabsTrigger>
+                <TabsList className="mb-3 max-sm:flex max-sm:justify-around">
+                    <TabsTrigger value="series" className="px-6 md:px-8">Trending TV</TabsTrigger>
+                    <TabsTrigger value="movies" className="px-6 md:px-8">Trending Movies</TabsTrigger>
                 </TabsList>
                 <TabsContent value="series">
                     <div className="grid grid-cols-12 gap-6">

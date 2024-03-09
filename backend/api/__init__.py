@@ -22,7 +22,7 @@ cors = CORS()
 
 
 def _import_blueprints(app: Flask):
-    """ Import and register blueprints to the app """
+    """ Import and register the blueprints for the app """
 
     # Import API blueprints
     from backend.api.routes.tokens import tokens as api_tokens_bp
@@ -45,14 +45,15 @@ def _import_blueprints(app: Flask):
 
 
 def _create_app_logger(app: Flask):
-    """ Create an app logger and an <SSL_SMTPHandler> class for sending errors to the admin """
+    """ Create an app logger registering the INFO, WARNING, and ERRORS, for the app """
 
     log_file_path = "MyLists/backend/api/static/log/mylists.log"
 
     # Check if log file exists, if not, create it
     if not os.path.exists(log_file_path):
         os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        open(log_file_path, "w").close()
+        with open(log_file_path, "a"):
+            pass
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
     handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
@@ -64,7 +65,7 @@ def _create_app_logger(app: Flask):
 
 
 def _create_mail_handler(app: Flask):
-    """ Create a mail handler (TSL only) associated with the app logger, which send an email when an error occurs """
+    """ Create a mail handler (TSL only) associated with the app logger: send an email when an error occurs """
 
     mail_handler = SMTPHandler(
         mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
@@ -75,13 +76,13 @@ def _create_mail_handler(app: Flask):
         secure=(),
     )
 
-    # Set logger level to <ERROR> only
+    # Set logger level to ERROR only
     mail_handler.setLevel(logging.ERROR)
     app.logger.addHandler(mail_handler)
 
 
 # def _create_first_db_data():
-#     """ Create all the db tables the first time and add the first data to the database """
+#     """ Create all the database tables the first time and add the first data to the database """
 #
 #     from MyLists.models.user_models import User
 #     from datetime import datetime
@@ -136,7 +137,7 @@ def _create_mail_handler(app: Flask):
 
 
 def init_app() -> Flask:
-    """ Initialize the core application """
+    """ Create and initialize the application """
 
     # Fetch Flask app name (.flaskenv) and check config from <.env> file
     app = Flask(__name__, static_url_path="/api/static")
@@ -146,9 +147,9 @@ def init_app() -> Flask:
     # Initialize modules
     mail.init_app(app)
     db.init_app(app)
-    migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     bcrypt.init_app(app)
     cache.init_app(app)
+    migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
     with app.app_context():

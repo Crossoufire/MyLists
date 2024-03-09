@@ -10,7 +10,7 @@ export const MediaDetails = ({ mediaData, userData }) => (
             <Tabs defaultValue="series" className="p-0">
                 <TabsList className="grid grid-flow-col auto-cols-fr">
                     {mediaData.map(mt =>
-                        <TabsTrigger key={mt.media_type} className="text-lg" value={mt.media_type}>
+                        <TabsTrigger key={mt.media_type} className="md:text-lg" value={mt.media_type}>
                             {capitalize(mt.media_type)}
                         </TabsTrigger>
                     )}

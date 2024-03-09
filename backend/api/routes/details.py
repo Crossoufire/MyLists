@@ -7,8 +7,8 @@ from PIL.Image import Resampling
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.routes.auth import token_auth, current_user
 from backend.api.classes.API_data import ApiData
+from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
 from backend.api.utils.functions import get_models_group
@@ -20,10 +20,10 @@ details_bp = Blueprint("api_details", __name__)
 @token_auth.login_required
 @validate_media_type
 def media_details(media_type: MediaType, media_id: int):
-    """ Return the details of a media as well as the user details concerning this media """
+    """ Media Details and the user details """
 
-    media_model, label_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LABELS])
     search_arg = request.args.get("search")
+    media_model, label_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LABELS])
 
     if search_arg:
         media = media_model.query.filter_by(api_id=media_id).first()
@@ -58,7 +58,7 @@ def media_details_form(media_type: MediaType, media_id: int):
     """ Post new media details after edition """
 
     status = 200
-    data = {"message": "Media data successfully updated"}
+    message = {"message": "Media data successfully updated"}
 
     # Only <admin> and <managers> can access
     if current_user.role == RoleType.USER:
@@ -117,7 +117,7 @@ def media_details_form(media_type: MediaType, media_id: int):
         except Exception as e:
             current_app.logger.error(f"[ERROR] - occurred when updating the media cover with ID [{media.id}]: {e}")
             picture_fn = media.image_cover
-            data = {"description": "Not allowed to copy this media cover"}
+            message = {"description": "Not allowed to copy this media cover"}
             status = 403
 
     updates["image_cover"] = picture_fn
@@ -129,7 +129,7 @@ def media_details_form(media_type: MediaType, media_id: int):
     # Commit changes
     db.session.commit()
 
-    return data, status
+    return message, status
 
 
 @details_bp.route("/details/<media_type>/<job>/<info>", methods=["GET"])
@@ -159,23 +159,23 @@ def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Di
     """ Refresh the details of a unique <media> if the user role is at least <manager> """
 
     if current_user.role == RoleType.USER:
-        return abort(401, "You are not authorized to refresh media.")
+        return abort(401, "Unauthorized to refresh this media")
 
     api_model = ApiData.get_API_class(media_type)
 
     media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
     if media is None:
-        return abort(400, "This media does not exist on the database.")
+        return abort(404)
 
     try:
         refreshed_data = api_model(API_id=media.api_id).update_media_data()
         media.refresh_element_data(media.api_id, refreshed_data)
         current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID = [{media.api_id}]")
-        return {}, 204
     except Exception as e:
         current_app.logger.error(f"[ERROR] - While refreshing {media_type.value} with API ID = [{media.api_id}]: {e}")
+        return abort(400, "An error occurred trying to refresh the media")
 
-    return abort(400, "An error occurred trying to refresh the media.")
+    return {}, 204
 
 
 @details_bp.route("/details/lock_media", methods=["POST"])

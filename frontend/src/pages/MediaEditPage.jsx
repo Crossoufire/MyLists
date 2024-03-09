@@ -23,7 +23,7 @@ export const MediaEditPage = () => {
     const {mediaId, mediaType} = useParams();
     const {apiData, loading, error} = useFetchData(`/details/form/${mediaType}/${mediaId}`);
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     const onSubmit = async (data) => {

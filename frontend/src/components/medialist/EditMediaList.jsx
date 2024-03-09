@@ -3,15 +3,15 @@ import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
-import {Popover, PopoverContent, PopoverTrigger, PopoverClose} from "@/components/ui/popover";
+import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedia, isCurrent, addFromOtherList }) => {
-    const popoverRef = useRef();
+    const popoverCloseRef = useRef();
 
     const handlePopoverStatus = (value) => {
-        popoverRef?.current?.click();
+        popoverCloseRef?.current?.click();
         handleStatus(value);
     }
 
@@ -19,17 +19,17 @@ export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedi
         const confirm = window.confirm("Are you sure you want to delete this media?")
         if (!confirm) return;
 
-        popoverRef?.current?.click();
+        popoverCloseRef?.current?.click();
         removeMedia();
     }
 
     const handlePopoverAdd = (value) => {
-        popoverRef?.current?.click();
+        popoverCloseRef?.current?.click();
         addFromOtherList(value);
     }
 
     return (
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-1 right-1">
             <Popover>
                 <PopoverTrigger>
                     <Tooltip text="Edit">
@@ -38,45 +38,37 @@ export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedi
                         </Button>
                     </Tooltip>
                 </PopoverTrigger>
-                <PopoverClose ref={popoverRef}/>
-                <PopoverContent align="end" className="w-[188px]">
+                <PopoverClose ref={popoverCloseRef}/>
+                <PopoverContent align="end" className="w-[196px] py-2 px-0">
+                    <div className="text-center mb-3 text-neutral-400 text-sm">Edit media</div>
                     {isCurrent &&
                         <>
-                            <div className="flex flex-col gap-1">
-                                <div>Change status</div>
-                                <Select value={mediaStatus} onValueChange={handlePopoverStatus}>
-                                    <SelectTrigger size="details" className="w-full">
-                                        <SelectValue/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {allStatus.map(status =>
-                                            <SelectItem value={status}>{status}</SelectItem>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Separator/>
-                            <div className="flex justify-center">
-                                <Button variant="destructive" size="sm" onClick={handlePopoverRemove}>
-                                    Delete media
-                                </Button>
-                            </div>
-                        </>
-                    }
-                    {!isCurrent &&
-                        <div className="flex flex-col gap-1">
-                            <div>Add to your list</div>
-                            <Select onValueChange={handlePopoverAdd}>
-                                <SelectTrigger size="details" className="w-full">
-                                    <SelectValue placeholder="Add to..."/>
+                            <Select onValueChange={handlePopoverStatus}>
+                                <SelectTrigger variant="list" size="editList">
+                                    <SelectValue placeholder="Change Status"/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {allStatus.map(status =>
-                                        <SelectItem value={status}>{status}</SelectItem>
+                                        <SelectItem value={status} disabled={status === mediaStatus}>{status}</SelectItem>
                                     )}
                                 </SelectContent>
                             </Select>
-                        </div>
+                            <Button variant="list" onClick={handlePopoverRemove}>
+                                Delete media
+                            </Button>
+                        </>
+                    }
+                    {!isCurrent &&
+                        <Select onValueChange={handlePopoverAdd}>
+                            <SelectTrigger variant="list" size="editList">
+                                <SelectValue placeholder="Add to your list"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {allStatus.map(status =>
+                                    <SelectItem value={status}>{status}</SelectItem>
+                                )}
+                            </SelectContent>
+                        </Select>
                     }
                 </PopoverContent>
             </Popover>

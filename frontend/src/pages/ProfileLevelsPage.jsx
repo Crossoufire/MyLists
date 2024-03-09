@@ -21,7 +21,7 @@ const BorderCalculus = ({ border }) => {
 export const ProfileLevelsPage = () => {
 	const { apiData, loading, error } = useFetchData("/levels/profile_borders");
 
-	if (error) return <ErrorPage error={error}/>;
+	if (error) return <ErrorPage {...error}/>;
 	if (loading) return <Loading/>;
 
 	return (

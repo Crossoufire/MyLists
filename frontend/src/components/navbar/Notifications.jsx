@@ -1,6 +1,4 @@
 import {toast} from "sonner";
-import {LuBell} from "react-icons/lu";
-import {getMediaIcon} from "@/lib/utils";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {useApi} from "@/providers/ApiProvider";
@@ -9,7 +7,8 @@ import {useSheet} from "@/providers/SheetProvider";
 import {Link, useLocation} from "react-router-dom";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/primitives/Loading";
-import {FaLongArrowAltRight, FaUser} from "react-icons/fa";
+import {FaLongArrowAltRight, FaBell} from "react-icons/fa";
+import {MediaIcon} from "@/components/primitives/MediaIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
@@ -56,55 +55,32 @@ export const Notifications = ({ isMobile }) => {
     }
 
     return (
-        <Popover>
+        <Popover modal={isMobile}>
             <PopoverTrigger asChild>
                 <div className="flex items-center">
-                    {isMobile ?
-                        <div className=" text-lg font-semibold px-3" onClick={async () => await fetchNotifications()}>
-                            <span className="mr-3">Notifications</span>
-                            <Badge variant="notif" className={numberUnreadNotif > 0 && "bg-destructive"}>
-                                {numberUnreadNotif}
-                            </Badge>
-                        </div>
-                        :
-                        <Button variant="ghost" size="sm" onClick={async () => await fetchNotifications()} className="mr-3">
-                            <LuBell className="w-5 h-5 mr-1"/>
-                            <Badge variant="notif" className={numberUnreadNotif > 0 && "bg-destructive"}>
-                                {numberUnreadNotif}
-                            </Badge>
-                        </Button>
-                    }
+                    <Button variant="ghost" size="sm" onClick={async () => await fetchNotifications()} className="mr-3">
+                        <FaBell className="w-5 h-5 mr-1"/>
+                        {isMobile && <div className="text-lg ml-2 mr-3">Notifications</div>}
+                        <Badge variant="notif" className={numberUnreadNotif > 0 && "bg-destructive"}>
+                            {numberUnreadNotif}
+                        </Badge>
+                    </Button>
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
-            <PopoverContent className="w-72 max-h-[360px] overflow-y-auto" align={isMobile ? "start" : "end"}>
+            <PopoverContent className="w-[300px] max-h-[400px] overflow-y-auto" align={isMobile ? "start" : "end"}>
                 {loading ?
                     <Loading forPage={false}/>
                     :
                     notifications.length === 0 ?
                         <i className="text-muted-foreground">No notifications to display</i>
                         :
-                        notifications.map((data, idx) =>
-                            <div key={data.timestamp}>
-                                {!data.media ?
-                                    <Link to={`/profile/${data.payload.username}`} onClick={handlePopoverClose}>
-                                        <div className="grid grid-cols-12">
-                                            <div className="col-span-2">
-                                                <FaUser className="text-grey mt-1 ml-3"/>
-                                            </div>
-                                            <div className="col-span-10">
-                                                <span className="line-clamp-1">{data.payload.message}</span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                    :
-                                    <MediaLink
-                                        data={data}
-                                        handlePopoverClose={handlePopoverClose}
-                                    />
-                                }
-                                {idx !== notifications.length -1 && <Separator/>}
-                            </div>
+                        notifications.map(data =>
+                            <MediaLink
+                                key={data.timestamp}
+                                data={data}
+                                handlePopoverClose={handlePopoverClose}
+                            />
                         )
                 }
             </PopoverContent>
@@ -114,23 +90,42 @@ export const Notifications = ({ isMobile }) => {
 
 
 const MediaLink = ({ data, handlePopoverClose }) => {
+    const dest = data.media ? `/details/${data.media}/${data.media_id}` : `/profile/${data.payload.username}`;
+
     return (
-        <Link to={`/details/${data.media}/${data.media_id}`} onClick={handlePopoverClose}>
-            <div className="grid grid-cols-12">
-                <div className="col-span-2">{getMediaIcon(data.media, 15, "ml-3 mt-5")}</div>
-                <div className="col-span-10">
-                    <span className="line-clamp-1">{data.payload.name}</span>
-                    <div className="flex items-center gap-2 text-neutral-300">
-                         {(data.media === "anime" || data.media === "series") ?
-                             <div>S{data.payload.season}.E{data.payload.episode}</div>
-                             :
-                             <div>Release</div>
-                         }
-                        <div><FaLongArrowAltRight/></div>
-                        <div>{data.payload.release_date}</div>
-                    </div>
-                </div>
+        <Link to={dest} onClick={handlePopoverClose}>
+            <div className="flex items-center gap-2">
+                {!data.media ?
+                    <>
+                        <MediaIcon mediaType={"user"} size={16}/>
+                        <div className="line-clamp-1">{data.payload.message}</div>
+                    </>
+                    :
+                    <>
+                        <MediaIcon mediaType={data.media} size={16}/>
+                        <div>
+                            {data.payload.name} &nbsp;
+                            {((data.media === "anime" || data.media === "series") && data.payload?.finale) &&
+                                <Badge variant="passiveSmall">Finale</Badge>
+                            }
+                        </div>
+                    </>
+                }
             </div>
+            {data.media &&
+                <div className="flex items-center gap-2 text-neutral-400">
+                    <div>
+                        {(data.media === "anime" || data.media === "series") ?
+                            <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
+                            :
+                            <div>Release</div>
+                        }
+                    </div>
+                    <div><FaLongArrowAltRight/></div>
+                    <div>{data.payload.release_date}</div>
+                </div>
+            }
+            <Separator/>
         </Link>
     );
 };

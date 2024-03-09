@@ -1,10 +1,10 @@
-import {Fragment} from "react";
 import {Link} from "react-router-dom";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {capitalize, getStatusColor} from "@/lib/utils";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
+import {BulletIcon} from "@/components/primitives/BulletIcon.jsx";
 
 
 export const MediaStats = ({ user, media }) => (
@@ -53,27 +53,20 @@ export const MediaStats = ({ user, media }) => (
                         <Tooltip key={`${status.status}-${media.media_type}`} text={status.status}>
                             <span
                                 className="flex-grow"
-                                style={{width: `${status.percent}%`,
-                                backgroundColor: getStatusColor(status.status)}}
+                                style={{width: `${status.percent}%`, backgroundColor: getStatusColor(status.status)}}
                             />
                         </Tooltip>
                     )
                 }
             </div>
-            <div className="grid grid-cols-2 font-medium gap-y-2 gap-x-8 px-2">
+            <div className="grid grid-cols-2 font-medium text-sm gap-y-2 gap-x-8 md:text-base md:px-2">
                 {media.status_count.map(s =>
-                    <Fragment key={`${s.status}-${media.media_type}`}>
-                        <div className="col-span-1 flex justify-between">
-                            <Link to={`/list/${media.media_type}/${user.username}?status=${s.status}`} className="text-neutral-500">
-                                <div
-                                    className="inline-block mr-[8px] w-[10px] h-[10px] rounded-full"
-                                    style={{backgroundColor: getStatusColor(s.status)}}
-                                />
-                                {s.status}
-                            </Link>
-                            <div>{s.count}</div>
-                        </div>
-                    </Fragment>
+                    <div key={`${s.status}-${media.media_type}`} className="flex justify-between">
+                        <Link to={`/list/${media.media_type}/${user.username}?status=${s.status}`} className="text-neutral-500">
+                            <BulletIcon color={getStatusColor(s.status)}/> {s.status}
+                        </Link>
+                        <div>{s.count}</div>
+                    </div>
                 )}
             </div>
         </div>

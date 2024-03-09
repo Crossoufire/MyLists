@@ -9,14 +9,7 @@ import {useNavigate, Link} from "react-router-dom";
 import {Separator} from "@/components/ui/separator";
 import {FormError} from "@/components/homepage/FormError";
 import {FormButton} from "@/components/primitives/FormButton";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {GrGoogle} from "react-icons/gr";
-import {BsGoogle} from "react-icons/bs";
-import {AiOutlineGoogle} from "react-icons/ai";
-import {CgGoogle} from "react-icons/cg";
-import {BiLogoGoogle, BiLogoGooglePlusCircle} from "react-icons/bi";
-import {FcGoogle} from "react-icons/fc";
 
 
 export const LoginForm = () => {

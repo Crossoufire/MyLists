@@ -1,6 +1,7 @@
 import {formatTime} from "@/lib/utils";
 import {Separator} from "@/components/ui/separator";
 import {Bar, BarChart, XAxis, ResponsiveContainer, PieChart, Pie, Cell, Legend} from "recharts";
+import {useParams} from "react-router-dom";
 
 
 const BarGraph = ({ data, formatter }) => {
@@ -122,8 +123,9 @@ const mediaStats = {
 }
 
 
-export const MediaListStats = ({ mediaType, graphData }) => {
-    const stats = mediaStats[mediaType]
+export const MediaListStats = ({ graphData }) => {
+    const { mediaType } = useParams();
+    const stats = mediaStats[mediaType];
 
     return (
         <div className="mt-5">

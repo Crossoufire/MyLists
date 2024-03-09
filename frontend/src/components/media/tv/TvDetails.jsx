@@ -1,5 +1,5 @@
 import {FaStar} from "react-icons/fa";
-import {formatTime} from "@/lib/utils";
+import {createLocalDate, formatTime} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
@@ -9,6 +9,8 @@ import {GenericDetails} from "@/components/media/general/GenericDetails";
 
 export const TvDetails = ({ mediaData, mediaType }) => {
     const creators = mediaData.created_by?.split(", ") || [];
+
+    console.log(mediaData);
 
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
@@ -66,6 +68,12 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             name="Origin"
                             value={mediaData.origin_country}
                         />
+                        {mediaData.next_episode_to_air &&
+                            <ReleaseDate
+                                name="Next Airing"
+                                start={createLocalDate(mediaData.next_episode_to_air, true, false)}
+                            />
+                        }
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <MapDetails

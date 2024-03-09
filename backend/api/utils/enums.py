@@ -10,7 +10,6 @@ class ExtendedEnum(Enum):
         """ Add this <to list> method on an enum. Extra add <all>, <favorite>, and <stats> """
 
         enum_values = [c.value for c in cls]
-        
         return ["All"] + enum_values + ["Favorite", "Stats", "Labels"] if extra else enum_values
 
 
@@ -20,6 +19,16 @@ class MediaType(ExtendedEnum):
     MOVIES = "movies"
     BOOKS = "books"
     GAMES = "games"
+
+    @classmethod
+    def optional_media_types(cls):
+        """ Return the optional media """
+        return [member for member in cls if member not in [cls.SERIES, cls.MOVIES]]
+
+    @classmethod
+    def default_media_types(cls):
+        """ Return the default media """
+        return [cls.SERIES, cls.MOVIES]
 
 
 class Status(str, ExtendedEnum):
@@ -58,5 +67,5 @@ class ModelTypes(str, ExtendedEnum):
     EPS = "episodesPerSeason"
     NETWORK = "network"
     PLATFORMS = "platforms"
-    COMPANIES = "Companies"
-    AUTHORS = "Authors"
+    COMPANIES = "companies"
+    AUTHORS = "authors"

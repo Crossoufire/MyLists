@@ -6,7 +6,7 @@ from typing import Dict, List
 from flask import abort, current_app
 from sqlalchemy import text, func
 from backend.api import db
-from backend.api.routes.auth import current_user
+from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
@@ -156,7 +156,7 @@ class Games(MediaMixin, db.Model):
             query = db.session.execute(raw_sql).all()
 
             for info in query:
-                notif = Notifications.seek(info[1], "gameslist", info[0])
+                notif = Notifications.search(info[1], "gameslist", info[0])
 
                 if notif is None:
                     release_date = datetime.utcfromtimestamp(int(info[2])).strftime("%b %d %Y")
@@ -321,8 +321,8 @@ class GamesList(MediaListMixin, db.Model):
             "Playtime +": cls.playtime.desc(),
             "Playtime -": cls.playtime.asc(),
             "Comments": cls.comment.desc(),
-            "Score +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Score -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
+            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
         }
 
         return sorting_dict

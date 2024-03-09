@@ -41,7 +41,7 @@ export const EpsAndSeasons = ({ isCurrent, initSeason, initEpisode, epsPerSeason
                 border-x-black border-b-black rounded-bl-md rounded-br border-t-transparent">
                     <Select value={isLoading ? undefined : currentSeas} onValueChange={handleSeason}
                             disabled={isLoading}>
-                        <SelectTrigger className="w-36 text-base" size="list" variant="noIcon">
+                        <SelectTrigger className="w-36" variant="noIcon" size="list">
                             <SelectValue placeholder={<LoadingIcon size={5}/>}/>
                         </SelectTrigger>
                         <SelectContent>

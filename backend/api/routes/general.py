@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, url_for, current_app
 from sqlalchemy import desc, select
 from backend.api import cache, db
 from backend.api.classes.API_data import ApiSeries, ApiMovies
-from backend.api.routes.auth import token_auth
+from backend.api.routes.handlers import token_auth
 from backend.api.models.user_models import User
 from backend.api.models.utils_models import Ranks, MyListsStats, Frames
 from backend.api.utils.functions import get_models_type, get_media_level_and_time, display_time
@@ -41,23 +41,28 @@ def current_trends():
 @token_auth.login_required
 def hall_of_fame():
     """ Hall of Fame information for all users """
+
     # TODO: One day, find a better way because: ca dégoute.
 
     # Fetch page in "GET"
     search = request.args.get("search", type=str)
     page = request.args.get("page", 1, type=int)
+    sorting = request.args.get("sorting", "profile", type=str)
+
+    # noinspection PyTypeChecker
+    order_sort = desc(User.profile_level) if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
+
+    print(order_sort)
 
     # Rank users according to <profile_level>
     # noinspection PyTypeChecker
-    users_ranked = (db.session.scalars(
-        select(User.username).where(User.active, User.role != RoleType.ADMIN)
-        .order_by(desc(User.profile_level))).all()
-    )
+    users_ranked = (db.session.scalars(select(User.username).where(User.active, User.role != RoleType.ADMIN)
+                                       .order_by(order_sort)).all())
 
     # Query users
     # noinspection PyTypeChecker
-    users = User.query.filter(User.active, User.role != RoleType.ADMIN, User.username.ilike(f"%{search}%"))\
-        .order_by(desc(User.profile_level)).paginate(page=page, per_page=10, error_out=True)
+    users = (User.query.filter(User.active, User.role != RoleType.ADMIN, User.username.ilike(f"%{search}%"))
+             .order_by(order_sort).paginate(page=page, per_page=10, error_out=True))
 
     # Get SQL models
     models_type = get_models_type(ModelTypes.LIST)

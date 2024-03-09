@@ -2,18 +2,22 @@ import {useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {useParams} from "react-router-dom";
 import {Input} from "@/components/ui/input";
+import {useUser} from "@/providers/UserProvider";
 
 
-export const SearchMediaList = ({ initSearch, condition, updateSearch }) => {
-    const { mediaType } = useParams();
+export const SearchMediaList = ({ initSearch, updateSearch }) => {
+    const { currentUser } = useUser();
+    const { mediaType, username } = useParams();
     const [search, setSearch] = useState(initSearch);
+    const condition = currentUser?.username === username ? "your" : username;
 
-    const handleOnKeyUp = async (ev) => {
-        if (ev.key !== "Enter" || ev.target.value.length < 1) {
+    const handleOnKeyUp = (ev) => {
+        const newValue = ev.target.value;
+
+        if (ev.key !== "Enter" || newValue.length < 1) {
             return;
         }
-
-        await updateSearch(ev.target.value);
+        updateSearch(newValue);
     }
 
     return (

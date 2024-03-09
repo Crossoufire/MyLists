@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, abort, current_app
-from backend.api.routes.auth import token_auth
+from backend.api.routes.handlers import token_auth
 from backend.api.classes.API_data import ApiTMDB, ApiGames, ApiBooks
 from backend.api.models.user_models import User
 

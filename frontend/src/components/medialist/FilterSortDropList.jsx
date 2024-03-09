@@ -1,9 +1,9 @@
 import {Select, SelectTrigger, SelectContent, SelectItem} from "@/components/ui/select";
 
 
-export const FilterSortDrop = ({ name, activeData, allData, updateFunction }) => {
-    const handleChange = (value) => {
-        updateFunction(value);
+export const FilterSortDropList = ({ name, activeData, allData, updateFunction }) => {
+    const handleChange = (newValue) => {
+        updateFunction(newValue);
     }
 
     return (

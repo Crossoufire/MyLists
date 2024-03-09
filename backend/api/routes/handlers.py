@@ -3,10 +3,8 @@ from http import HTTPStatus
 from typing import Tuple, Dict
 from flask import abort
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
-from sqlalchemy import select
 from werkzeug.exceptions import Forbidden, Unauthorized
 from werkzeug.local import LocalProxy
-from backend.api import db
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -19,13 +17,12 @@ current_user = LocalProxy(lambda: token_auth.current_user())
 def verify_password(username: str, password: str) -> User:
     """ Verify the user's username and password on login and return the <user> object if successful """
 
-    user = db.session.scalar(select(User).where(User.username == username))
+    user = User.query.filter_by(username=username).first()
 
-    if user.password == "" or user.password is None:
+    if not user or not user.verify_password(password):
         return abort(401)
 
-    if user and user.verify_password(password):
-        return user
+    return user
 
 
 @basic_auth.error_handler
@@ -50,7 +47,7 @@ def verify_token(access_token: str) -> str | None:
 
 
 @token_auth.error_handler
-def token_auth_error(status: int = 401) -> Tuple[Dict, int]:
+def token_auth_error(status: int = HTTPStatus.UNAUTHORIZED) -> Tuple[Dict, int]:
     """ Error handler when the <access token> of the user is expired """
 
     error = (Forbidden if status == HTTPStatus.FORBIDDEN else Unauthorized)()

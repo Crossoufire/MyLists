@@ -1,19 +1,19 @@
 import {ErrorPage} from "@/pages/ErrorPage";
-import {changeValueFormat} from "@/lib/utils";
 import {useFetchData} from "@/hooks/FetchDataHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Loading} from "@/components/primitives/Loading";
+import {capitalize, changeValueFormat} from "@/lib/utils";
+import {MediaIcon} from "@/components/primitives/MediaIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {GlobalTopMediaItem} from "@/components/myListsStats/GlobalTopMediaItem";
-import {FaBook, FaFilm, FaGamepad, FaToriiGate, FaTv, FaUser} from "react-icons/fa";
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis} from "recharts";
 
 
 export const GlobalStatsPage = () => {
     const { apiData, loading, error } = useFetchData("/mylists_stats");
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     const graphData = [
@@ -25,12 +25,12 @@ export const GlobalStatsPage = () => {
     ]
 
     const mediaData = [
-        {label: "Series", icon: <FaTv size={25} className="text-series"/>, count: apiData.nb_media.series},
-        {label: "Anime", icon: <FaToriiGate size={25} className="text-anime"/>, count: apiData.nb_media.anime},
-        {label: "Movies", icon: <FaFilm size={25} className="text-movies"/>, count: apiData.nb_media.movies},
-        {label: "Books", icon: <FaBook size={25} className="text-books"/>, count: apiData.nb_media.books},
-        {label: "Games", icon: <FaGamepad size={25} className="text-games"/>, count: apiData.nb_media.games},
-        {label: "Users", icon: <FaUser size={25} className="text-user"/>, count: apiData.nb_users}
+        {name: "series", count: apiData.nb_media.series},
+        {name: "anime", count: apiData.nb_media.anime},
+        {name: "movies", count: apiData.nb_media.movies},
+        {name: "books", count: apiData.nb_media.books},
+        {name: "games", count: apiData.nb_media.games},
+        {name: "user", count: apiData.nb_users}
     ];
 
     return (
@@ -43,8 +43,8 @@ export const GlobalStatsPage = () => {
                     {mediaData.map((media, idx) =>
                         <div key={idx} className="col-span-6 md:col-span-4 lg:col-span-2">
                             <div className="flex flex-col justify-center items-center rounded-md p-2 bg-card">
-                                <div>{media.icon}</div>
-                                <div className="text-lg font-medium mt-2">{media.count} {media.label}</div>
+                                <MediaIcon mediaType={media.name} size={25}/>
+                                <div className="text-lg font-medium mt-2">{media.count} {capitalize(media.name)}</div>
                             </div>
                         </div>
                     )}

@@ -1,15 +1,16 @@
 import {toast} from "sonner";
 import {useEffect, useState} from "react";
+import {createLocalDate} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useApi} from "@/providers/ApiProvider";
 import {useDebounce} from "@/hooks/DebouceHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
-import {formatDate, getMediaIcon} from "@/lib/utils";
 import {Return} from "@/components/primitives/Return";
 import {Payload} from "@/components/primitives/Payload";
 import {Loading} from "@/components/primitives/Loading";
+import {MediaIcon} from "@/components/primitives/MediaIcon";
 import {Pagination} from "@/components/primitives/Pagination";
 
 
@@ -22,7 +23,7 @@ export const AllUpdates = ({ username }) => {
     const [updates, setUpdates] = useState({
         data: [],
         totalPages: 0,
-        page: INIT_PARAMS.page
+        page: INIT_PARAMS.page,
     });
 
     const fetchData = async (params) => {
@@ -109,11 +110,12 @@ export const AllUpdates = ({ username }) => {
                                 {updates.data.map(item =>
                                     <>
                                         <div key={item.media_id} className="grid grid-cols-12 gap-3">
-                                            <div
-                                                className="col-span-2 mx-auto">{getMediaIcon(item.media_type, 20)}</div>
+                                            <div className="col-span-2 mx-auto">
+                                                <MediaIcon mediaType={item.media_type} size={20}/>
+                                            </div>
                                             <div className="col-span-4">{item.media_name}</div>
                                             <div className="col-span-3"><Payload payload={item.update}/></div>
-                                            <div className="col-span-3">{formatDate(item.date)}</div>
+                                            <div className="col-span-3">{createLocalDate(item.date, true)}</div>
                                         </div>
                                         <Separator/>
                                     </>

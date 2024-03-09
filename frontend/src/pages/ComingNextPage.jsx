@@ -10,15 +10,15 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 export const ComingNextPage = () => {
     const { apiData, loading, error } = useFetchData("/coming_next");
 
-    if (error) return <ErrorPage error={error}/>;
+    if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist and playlist.">
             <Tabs defaultValue="series" className="mt-5">
-                <TabsList className="mb-6">
+                <TabsList className="mb-6 max-sm:flex max-sm:justify-around">
                     {apiData.map(next =>
-                        <TabsTrigger value={next.media_type} className="px-6">
+                        <TabsTrigger value={next.media_type} className="md:px-8">
                             {capitalize(next.media_type)}
                         </TabsTrigger>
                     )}

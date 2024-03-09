@@ -71,19 +71,22 @@ export const App = () => {
 const PrivateRoutes = () => {
 	return (
 		<Routes>
-			<Route path="/profile/:username" element={<ProfilePage/>}/>
-			<Route path="/profile/:username/:extension?" element={<ProfilePage/>}/>
-			<Route path="/list/:mediaType/:username?" element={<MediaListPage/>}/>
 			<Route path="/hall_of_fame" element={<HallOfFamePage/>}/>
 			<Route path="/global_stats" element={<GlobalStatsPage/>}/>
-
 			<Route path="/trends" element={<TrendsPage/>}/>
-			<Route path="/coming_next" element={<ComingNextPage/>}/>
-			<Route path="/settings" element={<SettingsPage/>}/>
 
 			<Route path="/details/:mediaType/:mediaId" element={<MediaDetailsPage/>}/>
 			<Route path="/details/form/:mediaType/:mediaId" element={<MediaEditPage/>}/>
 			<Route path="/details/:mediaType/:job/:info" element={<InfoPage/>}/>
+
+			<Route path="/profile/:username" element={<ProfilePage/>}/>
+			<Route path="/profile/:username/:extension?" element={<ProfilePage/>}/>
+
+			<Route path="/list/:mediaType/:username" element={<MediaListPage/>}/>
+			<Route path="/list/:mediaType/:username/:extension?" element={<MediaListPage/>}/>
+
+			<Route path="/coming_next" element={<ComingNextPage/>}/>
+			<Route path="/settings" element={<SettingsPage/>}/>
 
 			<Route path="/admin" element={<AdminPage/>}/>
 			<Route path="/admin/dashboard" element={<AdminDashboardPage/>}/>

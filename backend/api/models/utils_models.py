@@ -5,7 +5,7 @@ from typing import Dict, List
 from flask import url_for, current_app
 from sqlalchemy import desc, asc, func
 from backend.api import db
-from backend.api.routes.auth import current_user
+from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import safe_div, get_models_group
 
@@ -124,8 +124,8 @@ class MediaListMixin:
     def get_media_count_per_status(cls, user_id: int) -> Dict:
         """ Get the media count for each allowed status and its total count """
 
-        media_count = db.session.query(cls.status, func.count(cls.status)) \
-            .filter_by(user_id=user_id).group_by(cls.status).all()
+        media_count = (db.session.query(cls.status, func.count(cls.status))
+                       .filter_by(user_id=user_id).group_by(cls.status).all())
 
         # Create dict to store status count with default values
         status_count = {status.value: {"count": 0, "percent": 0} for status in cls.Status}
@@ -138,10 +138,8 @@ class MediaListMixin:
 
         # Update <status_count> dict with actual values from <media_count> query
         if media_count:
-            media_dict = {
-                status.value: {"count": count, "percent": safe_div(count, total_media, True)}
-                for status, count in media_count
-            }
+            media_dict = {status.value: {"count": count, "percent": safe_div(count, total_media, True)}
+                          for status, count in media_count}
             status_count.update(media_dict)
 
         # Convert <status_count> dict to list of dict
@@ -151,16 +149,17 @@ class MediaListMixin:
         return {"total_media": total_media, "no_data": no_data, "status_count": status_list}
 
     @classmethod
-    def get_media_count_per_metric(cls, user: db.Model) -> List:
-        """ Get the media count per metric (score or feeling) """
+    def get_media_count_per_rating(cls, user: db.Model) -> List:
+        """ Get the media count per rating (score or feeling) """
 
-        # Determine metric (score or feeling) and corresponding range
-        metric = cls.feeling if user.add_feeling else cls.score
+        # Determine rating (score or feeling) and corresponding range
+        rating = cls.feeling if user.add_feeling else cls.score
         range_ = list(range(6)) if user.add_feeling else [i * 0.5 for i in range(21)]
 
-        # Query db to get media count per metric for given <user_id>
-        media_count = (db.session.query(metric, func.count(metric)).filter(cls.user_id == user.id, metric.isnot(None))
-                       .group_by(metric).order_by(asc(metric)).all())
+        # Query to get media count per rating for given <user_id>
+        media_count = (db.session.query(rating, func.count(rating))
+                       .filter(cls.user_id == user.id, rating.isnot(None))
+                       .group_by(rating).order_by(asc(rating)).all())
 
         # Create dict to store metric count with default values
         metric_counts = {str(val): 0 for val in range_}
@@ -172,38 +171,33 @@ class MediaListMixin:
         return list(metric_counts.values())
 
     @classmethod
-    def get_media_metric(cls, user: db.Model) -> Dict:
-        """ Get media mean score, percentage scored and qty of media scored """
+    def get_media_rating(cls, user: db.Model) -> Dict:
+        """ Get media average score, percentage scored and qty of media scored """
 
-        # Determine metric (feeling or score) based on user preferences
-        metric = cls.feeling if user.add_feeling else cls.score
+        # Determine rating (feeling or score) based on user preferences
+        rating = cls.feeling if user.add_feeling else cls.score
 
-        # Query to calculate media metrics for given user_id
-        media_metrics = db.session.query(func.count(metric), func.count(cls.media_id), func.sum(metric))\
+        # Query to calculate media rating for given user_id
+        media_ratings = db.session.query(func.count(rating), func.count(cls.media_id), func.sum(rating))\
             .filter(cls.user_id == user.id).all()
 
         # Calculate percentage scored and mean metric value
-        count_metric, count_media, sum_metric = media_metrics[0]
-        percent_metric = safe_div(count_metric, count_media, percentage=True)
-        mean_metric = safe_div(sum_metric, count_metric)
+        count_rating, count_media, sum_rating = media_ratings[0]
+        percent_rating = safe_div(count_rating, count_media, percentage=True)
+        mean_metric = safe_div(sum_rating, count_rating)
 
         # Prepare and return result as dict
-        return {"media_metric": count_metric, "percent_metric": percent_metric, "mean_metric": mean_metric}
+        return {"media_metric": count_rating, "percent_metric": percent_rating, "mean_metric": mean_metric}
 
     @classmethod
     def get_specific_total(cls, user_id: int) -> int:
         """ Retrieve a specific aggregate value: either the total count of episodes for TV shows, the total watched
         count along with the number of rewatched movies for movies, or the total number of pages read for books.
-        This behavior is overridden by the <GamesList> class, which doesn't possess a replay feature or a distinct total
-        attribute in its class table """
+        This behavior is overridden by the <GamesList> class, which doesn't possess an interesting specific aggregate
+        value in its SQL table """
 
-        # Query database to calculate specific total for given user_id
-        specific_total = db.session.query(func.sum(cls.total)).filter(cls.user_id == user_id).scalar()
-
-        if specific_total is None:
-            specific_total = 0
-
-        return specific_total
+        # Query to calculate specific total for given user_id
+        return db.session.query(func.sum(cls.total)).filter(cls.user_id == user_id).scalar() or 0
 
     @classmethod
     def get_favorites_media(cls, user_id: int, limit: int = 10) -> Dict:
@@ -238,8 +232,8 @@ class MediaListMixin:
             "Score TMDB +": media.vote_average.desc(),
             "Score TMDB -": media.vote_average.asc(),
             "Comments": cls.comment.desc(),
-            "Score +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Score -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
+            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Re-watched": cls.rewatched.desc(),
         }
 
@@ -264,7 +258,11 @@ class MediaLabelMixin:
 
     @classmethod
     def get_total_labels(cls, user_id: int) -> Dict:
-        all_labels = db.session.query(cls.label).filter_by(user_id=user_id).group_by(cls.label).order_by(cls.label).all()
+        """ Return a dict containing the total number of labels and the names of the first 10 labels """
+
+        all_labels = (db.session.query(cls.label).filter_by(user_id=user_id)
+                      .group_by(cls.label).order_by(cls.label).all())
+
         return {"count": len(all_labels), "names": [l[0] for l in all_labels[:10]]}
 
 

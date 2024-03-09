@@ -6,13 +6,15 @@ import {Button} from "@/components/ui/button";
 import {FaPen, FaTrash} from "react-icons/fa";
 import {useApi} from "@/providers/ApiProvider";
 import {Tooltip} from "@/components/ui/tooltip";
-import {MediaCard} from "@/components/reused/MediaCard.jsx";
 import {Return} from "@/components/primitives/Return";
 import {Loading} from "@/components/primitives/Loading";
+import {MediaCard} from "@/components/reused/MediaCard";
 import {Popover, PopoverAnchor, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
-const ShowMediaWithLabel = ({ mediaType, labelsMedia }) => {
+const ShowMediaWithLabel = ({ labelsMedia }) => {
+    const { mediaType } = useParams();
+
     return (
         <>
             {labelsMedia.map(media =>
@@ -20,7 +22,7 @@ const ShowMediaWithLabel = ({ mediaType, labelsMedia }) => {
                     <MediaCard
                         media={media}
                         mediaType={mediaType}
-                        botRounded
+                        botRounded={true}
                     />
                 </div>
             )}
@@ -121,24 +123,26 @@ const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) =>
 }
 
 
-export const MediaLabels = ({mediaType, labels, labelsMedia, isCurrent, updateLabel, loading}) => {
-    const { username } = useParams();
+export const MediaListLabels = ({ mediaData, isCurrent, updateLabel, loading }) => {
+    const { mediaType, username } = useParams();
 
     return (
-        <> {labelsMedia.length > 0 && <Return value="to labels" to={`/list/${mediaType}/${username}?status=Labels`}/>}
+        <>
+            {mediaData.labels_media.length > 0 &&
+                <Return value="to labels" to={`/list/${mediaType}/${username}?status=Labels`}/>
+            }
             <div className="mt-3 grid grid-cols-12 lg:gap-4 mb-5">
                 {loading ?
                     <Loading forPage={false}/>
                     :
-                    labelsMedia.length > 0 ?
+                    mediaData.labels_media.length > 0 ?
                         <ShowMediaWithLabel
-                            mediaType={mediaType}
-                            labelsMedia={labelsMedia}
+                            labelsMedia={mediaData.labels_media}
                         />
                         :
                         <ShowAllLabels
                             mediaType={mediaType}
-                            initLabelsList={labels}
+                            initLabelsList={mediaData.labels}
                             isCurrent={isCurrent}
                             updateLabel={updateLabel}
                         />

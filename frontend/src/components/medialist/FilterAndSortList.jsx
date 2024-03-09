@@ -1,25 +1,32 @@
-import {FilterSortDrop} from "@/components/medialist/FilterSortDrop";
+import {useParams} from "react-router-dom";
+import {FilterSortDropList} from "@/components/medialist/FilterSortDropList.jsx";
 
 
-export const FilterAndSort = ({ mediaType, paginateData, updateLang, updateGenre, updateSorting }) => {
+export const FilterAndSortList = ({ paginateData, updateLang, updateGenre, updateSorting }) => {
+    const { mediaType } = useParams();
+
+    if (["Stats", "Labels"].includes(paginateData.status)) {
+        return null;
+    }
+
     return (
         <div className="flex items-center -mb-1">
             {mediaType === "movies" &&
-                <FilterSortDrop
+                <FilterSortDropList
                     name="Lang"
                     activeData={paginateData.lang}
                     allData={["All", "en", "fr"]}
                     updateFunction={updateLang}
                 />
             }
-            <FilterSortDrop
-                name="Genres"
+            <FilterSortDropList
+                name="Genre"
                 activeData={paginateData.genre}
                 allData={paginateData.all_genres}
                 updateFunction={updateGenre}
             />
-            <FilterSortDrop
-                name="Sort"
+            <FilterSortDropList
+                name="Sorting"
                 activeData={paginateData.sorting}
                 allData={paginateData.all_sorting}
                 updateFunction={updateSorting}

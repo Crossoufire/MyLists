@@ -4,9 +4,8 @@ from typing import Dict
 import pytz
 from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
-
 from backend.api import db
-from backend.api.routes.auth import token_auth, current_user
+from backend.api.routes.handlers import token_auth, current_user
 from backend.api.routes.email import send_email
 from backend.api.models.user_models import (Notifications, UserLastUpdate, User, Token, followers)
 from backend.api.utils.enums import RoleType, ModelTypes
@@ -76,20 +75,11 @@ def get_current_user() -> Dict:
 def profile(username: str):
     """ Get all the user info necessary for its profile """
 
-    if current_user:
-        user = current_user.check_autorization(username)
+    user = current_user.check_autorization(username)
 
-        # Update <user> profile view count
-        if current_user.role != RoleType.ADMIN and user.id != current_user.id:
-            user.profile_views += 1
-
-        is_following = current_user.is_following(user)
-    else:
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            return abort(404)
+    # Update <user> profile view count
+    if current_user.role != RoleType.ADMIN and user.id != current_user.id:
         user.profile_views += 1
-        is_following = False
 
     # Get <user> last updates
     user_updates = user.get_last_updates(limit_=6)
@@ -104,9 +94,8 @@ def profile(username: str):
     media_global = user.get_global_media_stats()
 
     # Get media details
-    list_models = [ml for ml in get_models_type(ModelTypes.LIST) if getattr(user, f"add_{ml.GROUP.value.lower()}", None)
-                   is None or getattr(user, f"add_{ml.GROUP.value.lower()}")]
-    media_data = [user.get_one_media_details(ml.GROUP) for ml in list_models]
+    models_list = get_models_type(ModelTypes.LIST, user)
+    media_data = [user.get_one_media_details(model.GROUP) for model in models_list]
 
     # Commit changes
     db.session.commit()
@@ -115,9 +104,9 @@ def profile(username: str):
     data = dict(
         user_data=user.to_dict(),
         user_updates=user_updates,
-        follows=[follow.to_dict() for follow in user.followed.limit(8).all()],
+        follows=user.get_follows(limit_=8),
         follows_updates=follows_updates,
-        is_following=is_following,
+        is_following=current_user.is_following(user),
         list_levels=list_levels,
         media_global=media_global,
         media_data=media_data,

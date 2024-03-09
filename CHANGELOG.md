@@ -1,3 +1,29 @@
+## CHANGELOG v1.3.0
+---
+### Under the Hood
+- Small backend refactoring
+- Created reusable components for clarity
+
+### Features
+- Added a sorting per mediaType in `/HoF`
+- Added the next airing information in TV `/details`
+- Added a `Finale` badge in TV notifications for season conclusion
+- Added a refresh date in the refresh icon on `/details` (only for `managers`)
+
+### UI Modifications
+- Added new logo for MyLists
+- Refined the 3 dots UI in each media item within `/lists`
+- Changed editable text for comments in `lists`
+
+### Fixes
+- Fix ErrorPage was always 404
+- Fix the display of `All(x)` for the total numbers of follows in `/profile`
+- Fix too long username in updates in `/profile`
+- Fix small issues in mobile view:
+  - Tabs were too large in `/coming_next`
+  - Tabs were not centered in `/trends`
+  - `Plan to Watch` text was too long in `/profile` 
+  - Impossible to scroll the notifications in the Sheet navbar
 
 ## CHANGELOG v1.2.0
 ---

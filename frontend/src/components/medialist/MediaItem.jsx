@@ -1,12 +1,12 @@
 import {useState} from "react";
 import {cn} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
-import {MediaCard} from "@/components/reused/MediaCard.jsx";
+import {useUser} from "@/providers/UserProvider";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {MediaCard} from "@/components/reused/MediaCard";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {UserMediaInfo} from "@/components/medialist/UserMediaInfo";
-import {useUser} from "@/providers/UserProvider.jsx";
 
 
 export const MediaItem = ({ isCurrent, mediaType, userData, mediaData, isCommon, activeStatus }) => {
@@ -36,6 +36,10 @@ export const MediaItem = ({ isCurrent, mediaType, userData, mediaData, isCommon,
 		setStateIsCommon(!stateIsCommon);
 	};
 
+	const handleEditComment = () => {
+
+	}
+
 	if (hideMedia) return;
 
 	return (
@@ -48,6 +52,7 @@ export const MediaItem = ({ isCurrent, mediaType, userData, mediaData, isCommon,
 						mediaStatus={mediaData.status}
 						handleStatus={handleStatus}
 						removeMedia={handleRemoveMedia}
+						handleEditComment={handleEditComment}
 						addFromOtherList={handleAddFromOtherList}
 					/>
 				}

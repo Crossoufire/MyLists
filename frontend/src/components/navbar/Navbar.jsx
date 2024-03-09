@@ -176,7 +176,7 @@ export const Navbar = () => {
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverClose ref={popRef} className="absolute"/>
-                                            <PopoverContent align="end" className="w-50 p-2">
+                                            <PopoverContent align="end" className="w-36 p-2">
                                                 <ul>
                                                     <NavMediaItem
                                                         to={`/profile/${currentUser.username}`}
@@ -196,9 +196,9 @@ export const Navbar = () => {
                                                             space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                             transition-colors hover:bg-accent hover:text-accent-foreground
                                                             focus:bg-accent focus:text-accent-foreground">
-                                                                <div className="grid grid-cols-3">
+                                                                <div className="flex items-center gap-3">
                                                                     <div>{<FaSignOutAlt className="text-grey"/>}</div>
-                                                                    <div className="col-span-2">Logout</div>
+                                                                    <div>Logout</div>
                                                                 </div>
                                                             </Link>
                                                         </NavigationMenuLink>

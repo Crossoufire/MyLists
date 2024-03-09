@@ -2,7 +2,7 @@ from typing import Any, Dict
 from flask import current_app
 from flask import jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.routes.auth import token_auth, current_user
+from backend.api.routes.handlers import token_auth, current_user
 from backend.api.models.user_models import UserLastUpdate, get_coming_next
 from backend.api.utils.decorators import validate_json_data
 from backend.api.utils.enums import MediaType, Status, ModelTypes

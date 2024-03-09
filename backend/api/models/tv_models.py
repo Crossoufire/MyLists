@@ -7,11 +7,11 @@ from flask import current_app, abort
 from sqlalchemy import func, text, extract, and_, not_
 from sqlalchemy.sql.functions import count
 from backend.api import db
-from backend.api.routes.auth import current_user
+from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format
+from backend.api.utils.functions import change_air_format, get_models_group
 
 
 class TVModel(db.Model):
@@ -189,6 +189,70 @@ class TVModel(db.Model):
         # Finally commit
         db.session.commit()
 
+    @classmethod
+    def get_new_releasing_media(cls):
+        """ Check for the new releasing series/anime in a week or less from the TMDB API """
+
+        # Get SeriesList or AnimeList class model
+        media_list = get_models_group(cls.GROUP, ModelTypes.LIST)
+
+        # Get SeriesEpisodesPerSeason or AnimeEpisodesPerSeason class model
+        eps_per_season = get_models_group(cls.GROUP, ModelTypes.EPS)
+
+        # <serieslist> or <animelist> as string for <Notification> model
+        media_list_str = cls.GROUP.value + "list"
+
+        try:
+            highest_episode_sub = (
+                db.session.query(eps_per_season.media_id, eps_per_season.episodes.label("last_episode"),
+                                 func.max(eps_per_season.season))
+                .group_by(eps_per_season.media_id).subquery())
+
+            # noinspection PyComparisonWithNone
+            query = (db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
+                                      media_list.user_id, highest_episode_sub.c.last_episode)
+            .join(media_list, cls.id == media_list.media_id)
+            .join(highest_episode_sub, cls.id == highest_episode_sub.c.media_id)
+            .filter(and_(
+                cls.next_episode_to_air != None,
+                cls.next_episode_to_air > datetime.utcnow(),
+                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
+                not_(media_list.status.in_([Status.RANDOM, Status.DROPPED]))
+            ))).all()
+
+            for info in query:
+                notif = Notifications.search(info[5], media_list_str, info[0])
+                release_date = datetime.strptime(info[4], "%Y-%m-%d").strftime("%b %d %Y")
+
+                if notif:
+                    payload = json.loads(notif.payload_json)
+                    # Check if notification fresh
+                    if (release_date == payload["release_date"] and int(info[1]) == int(payload["episode"])
+                            and int(info[2]) == int(payload["season"])):
+                        continue
+
+                payload = {
+                    "name": info[3],
+                    "release_date": release_date,
+                    "season": f"{info[2]:02d}",
+                    "episode": f"{info[1]:02d}",
+                    "finale": info[6] == info[1],
+                }
+
+                # noinspection PyArgumentList
+                new_notification = Notifications(
+                    user_id=info[5],
+                    media_type=media_list_str,
+                    media_id=info[0],
+                    payload_json=json.dumps(payload)
+                )
+                db.session.add(new_notification)
+
+            db.session.commit()
+        except Exception as e:
+            current_app.logger.error(f"Error occurred while checking for new releasing {cls.GROUP.value}: {e}")
+            db.session.rollback()
+
     @staticmethod
     def form_only() -> List[str]:
         """ Return the allowed fields for a form """
@@ -213,7 +277,7 @@ class Series(MediaMixin, TVModel):
 
     @classmethod
     def remove_non_list_media(cls):
-        """ Remove all the series that are not present in a User list from the database and the disk """
+        """ Remove all the series that are not present in a User list from the database and locally """
 
         try:
             # noinspection PyComparisonWithNone
@@ -238,53 +302,6 @@ class Series(MediaMixin, TVModel):
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing series and related records: {str(e)}")
-
-    @classmethod
-    def get_new_releasing_media(cls):
-        """ Check for the new releasing series in a week or less from the TMDB API """
-
-        try:
-            # noinspection PyComparisonWithNone
-            query = (db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
-                                      SeriesList.user_id)
-            .join(SeriesList, cls.id == SeriesList.media_id)
-            .filter(and_(
-                cls.next_episode_to_air != None,
-                cls.next_episode_to_air > datetime.utcnow(),
-                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
-                not_(SeriesList.status.in_([Status.RANDOM, Status.DROPPED]))
-            ))).all()
-
-            for info in query:
-                notif = Notifications.seek(info[5], "serieslist", info[0])
-
-                if notif:
-                    payload = json.loads(notif.payload_json)
-                    if (int(payload["season"]) < int(info[2]) or
-                            (int(payload["season"]) == int(info[2]) and int(payload["episode"]) < int(info[1]))):
-                        pass
-                    else:
-                        continue
-
-                release_date = datetime.strptime(info[4], "%Y-%m-%d").strftime("%b %d %Y")
-                payload = {"name": info[3],
-                           "release_date": release_date,
-                           "season": f"{info[2]:02d}",
-                           "episode": f"{info[1]:02d}"}
-
-                # noinspection PyArgumentList
-                new_notification = Notifications(
-                    user_id=info[5],
-                    media_type="serieslist",
-                    media_id=info[0],
-                    payload_json=json.dumps(payload)
-                )
-                db.session.add(new_notification)
-
-            db.session.commit()
-        except Exception as e:
-            current_app.logger.error(f"Error occurred while checking for new releasing series: {e}")
-            db.session.rollback()
 
 
 class SeriesList(MediaListMixin, db.Model):
@@ -526,54 +543,6 @@ class Anime(MediaMixin, TVModel):
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing anime and related records: {str(e)}")
-
-    @classmethod
-    def get_new_releasing_media(cls):
-        """ Check for the new releasing anime in a week or less from the TMDB API """
-
-        try:
-            # noinspection PyComparisonWithNone
-            query = (db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name,
-                                      cls.next_episode_to_air, AnimeList.user_id)
-            .join(AnimeList, cls.id == AnimeList.media_id)
-            .filter(and_(
-                cls.next_episode_to_air != None,
-                cls.next_episode_to_air > datetime.utcnow(),
-                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
-                not_(AnimeList.status.in_(["RANDOM", "DROPPED"]))
-            ))).all()
-
-            for info in query:
-                notif = Notifications.seek(info[5], "animelist", info[0])
-
-                if notif:
-                    payload = json.loads(notif.payload_json)
-                    if (int(payload["season"]) < int(info[2]) or
-                            (int(payload["season"]) == int(info[2])
-                             and int(payload["episode"]) < int(info[1]))):
-                        pass
-                    else:
-                        continue
-
-                release_date = datetime.strptime(info[4], "%Y-%m-%d").strftime("%b %d %Y")
-                payload = {"name": info[3],
-                           "release_date": release_date,
-                           "season": f"{info[2]:02d}",
-                           "episode": f"{info[1]:02d}"}
-
-                # noinspection PyArgumentList
-                new_notification = Notifications(
-                    user_id=info[5],
-                    media_type="animelist",
-                    media_id=info[0],
-                    payload_json=json.dumps(payload)
-                )
-                db.session.add(new_notification)
-
-            db.session.commit()
-        except Exception as e:
-            current_app.logger.error(f"Error occurred while checking for new releasing anime: {e}")
-            db.session.rollback()
 
 
 class AnimeList(MediaListMixin, db.Model):

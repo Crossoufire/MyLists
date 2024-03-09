@@ -1,14 +1,17 @@
 from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Tuple
+
 from flask import current_app, abort
 from sqlalchemy import func, text, and_
+
 from backend.api import db
-from backend.api.routes.auth import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 from backend.api.utils.functions import change_air_format
 
@@ -135,7 +138,7 @@ class Movies(MediaMixin, db.Model):
                 ))).all()
 
             for info in query:
-                notif = Notifications.seek(info[1], "movieslist", info[0])
+                notif = Notifications.search(info[1], "movieslist", info[0])
 
                 if notif is None:
                     release_date = datetime.strptime(info[2], "%Y-%m-%d").strftime("%b %d %Y")
@@ -271,8 +274,8 @@ class MoviesList(MediaListMixin, db.Model):
     def get_media_stats(cls, user: User) -> List[Dict]:
         """ Get the movies stats for a user and return a list of dict """
 
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery())
+        subquery = MoviesList.query.filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery()
+        rating = subquery.c.feeling if user.add_feeling else subquery.c.score
 
         runtimes = (db.session.query(((Movies.duration // 30) * 30).label("bin"), func.count(Movies.id).label("count"))
                     .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.duration != "Unknown"))
@@ -287,13 +290,39 @@ class MoviesList(MediaListMixin, db.Model):
                          .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.director_name != "Unknown"))
                          .group_by(Movies.director_name).order_by(text("count desc")).limit(10).all())
 
+        # top_rated_directors = (db.session.query(Movies.director_name, func.count(Movies.director_name),
+        #                                         func.round(func.avg(rating), 2), func.group_concat(Movies.name),
+        #                                         func.ifnull(func.sum(subquery.c.favorite), 0))
+        #                        .join(subquery, (Movies.id == subquery.c.media_id) & (rating.isnot(None)))
+        #                        .group_by(Movies.director_name).having(func.count(Movies.director_name) >= 5)
+        #                        .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
+        #                        .limit(10).all())
+
         top_actors = (db.session.query(MoviesActors.name, func.count(MoviesActors.name).label("count"))
                       .join(subquery, (MoviesActors.media_id == subquery.c.media_id) & (MoviesActors.name != "Unknown"))
                       .group_by(MoviesActors.name).order_by(text("count desc")).limit(10).all())
 
+        # top_rated_actors = (db.session.query(MoviesActors.name, func.count(MoviesActors.name),
+        #                                      func.round(func.avg(rating), 2),
+        #                                      func.ifnull(func.sum(subquery.c.favorite), 0))
+        #                     .join(subquery, (MoviesActors.media_id == subquery.c.media_id) &
+        #                           (rating.isnot(None)) & (MoviesActors.name != "Unknown"))
+        #                     .group_by(MoviesActors.name).having(func.count(MoviesActors.name) >= 8)
+        #                     .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
+        #                     .limit(10).all())
+
         top_genres = (db.session.query(MoviesGenre.genre, func.count(MoviesGenre.genre).label("count"))
                       .join(subquery, (MoviesGenre.media_id == subquery.c.media_id) & (MoviesGenre.genre != "Unknown"))
                       .group_by(MoviesGenre.genre).order_by(text("count desc")).limit(10).all())
+
+        # top_rated_genres = (db.session.query(MoviesGenre.genre, func.count(MoviesGenre.genre),
+        #                                      func.round(func.avg(rating), 2),
+        #                                      func.ifnull(func.sum(subquery.c.favorite), 0))
+        #                     .join(subquery, (MoviesGenre.media_id == subquery.c.media_id) &
+        #                           (rating.isnot(None)) & (MoviesGenre.genre != "Unknown"))
+        #                     .group_by(MoviesGenre.genre).having(func.count(MoviesGenre.genre) >= 15)
+        #                     .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
+        #                     .limit(10).all())
 
         top_languages = (db.session.query(Movies.original_language, func.count(Movies.original_language).label("nb"))
                          .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.original_language != "Unknown"))

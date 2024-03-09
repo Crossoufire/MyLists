@@ -18,7 +18,7 @@ export const ProfileFollows = ({ username, follows }) => {
                     <div>
                         <Link to={`/profile/${username}/follows`} className="italic text-muted-foreground text-sm
                         hover:underline hover:underline-offset-2">
-                            All ({follows.length})
+                            All ({follows.total})
                         </Link>
                     </div>
                 </CardTitle>
@@ -27,10 +27,10 @@ export const ProfileFollows = ({ username, follows }) => {
             <CardContent>
                 {isOpen &&
                     <div className="flex justify-start flex-wrap gap-4">
-                        {follows.length === 0 ?
+                        {follows.total === 0 ?
                             <div className="text-muted-foreground italic">No follows to display yet</div>
                             :
-                            follows.map(follow =>
+                            follows.follows.map(follow =>
                                 <Link key={follow.username} to={`/profile/${follow.username}`}>
                                     <Tooltip text={follow.username}>
                                         <img

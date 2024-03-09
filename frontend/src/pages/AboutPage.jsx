@@ -58,6 +58,14 @@ export const AboutPage = () => {
 				Here is the link to the
 				<a className="text-blue-600" href="https://developers.google.com/books/"> Google Books API</a>.
 			</p>
+
+			<h5 className="mt-7 text-xl font-semibold mb-1">FreePik</h5>
+			<p>
+				The Logo was taken on FreePik and created by&nbsp;
+				<a className="text-blue-600" href="https://fr.freepik.com/vecteurs-libre/logo-degrade-colore-initial-vecteur-m_28762027.htm#query=blue%20M%20logo%20png&position=3&from_view=search&track=ais&uuid=911d0224-be46-42ed-8f5d-bce057504422">
+					logturnal
+				</a>
+			</p>
 		</PageTitle>
 	);
 };

@@ -1,6 +1,6 @@
 import {Loading} from "@/components/primitives/Loading";
 import {MediaItem} from "@/components/medialist/MediaItem";
-import {Pagination} from "@/components/primitives/Pagination.jsx";
+import {Pagination} from "@/components/primitives/Pagination";
 
 
 export const MediaListData = ({ loading, apiData, mediaType, isCurrent, updatePagination }) => {

@@ -16,9 +16,8 @@ export const MediaCard = ({ children, media, mediaType, botRounded, isLoading = 
                     <Tooltip text={mediaName} delay={800}>
                         <img
                             src={media.media_cover}
-                            style={{height: "auto"}}
-                            className={cn("h-[300px] w-full border border-black rounded-tl-sm rounded-tr-sm", botRounded &&
-                                "rounded-bl-sm rounded-br-sm")}
+                            className={cn("w-full border border-black rounded-tl-sm rounded-tr-sm",
+                            botRounded && "rounded-bl-sm rounded-br-sm max-h-[300px]")}
                             alt={mediaName}
                         />
                     </Tooltip>

@@ -1,8 +1,10 @@
 from flask import Blueprint, request, abort, jsonify, current_app
 from werkzeug.http import dump_cookie
 from backend.api import db
-from backend.api.routes.auth import token_auth, current_user
-from backend.api.utils.enums import ModelTypes
+from backend.api.models.user_models import Notifications, Token, User, UserLastUpdate, followers
+from backend.api.routes.handlers import token_auth, current_user
+from backend.api.utils.enums import ModelTypes, RoleType
+from backend.api.utils.functions import get_models_type
 
 admin_bp = Blueprint("api_admin", __name__)
 
@@ -10,20 +12,23 @@ admin_bp = Blueprint("api_admin", __name__)
 @admin_bp.route("/admin/auth", methods=["POST"])
 @token_auth.login_required
 def admin_auth():
-    """ Create a very short-lived admin <token> """
-
-    from backend.api.models.user_models import Token
-    from backend.api.models.user_models import User
+    """ Create a short-lived admin token """
 
     if current_user.role == "user":
         return abort(404)
 
-    json_data = request.get_json()
+    try:
+        json_data = request.get_json()
+        password = json_data["password"]
+    except:
+        return abort(404)
+
+    # Check admin account in database
     admin = User.query.filter_by(id=1).first()
-    if not admin.verify_password(json_data.get("password")):
+    if not admin or not admin.verify_password(password):
         return abort(403, "You do not have the permission to access this page.")
 
-    # Generate <admin token>
+    # Generate admin <token>
     token = admin.generate_admin_token()
 
     # Add admin token to db
@@ -52,13 +57,17 @@ def admin_auth():
 @admin_bp.route("/admin/dashboard", methods=["GET"])
 @token_auth.login_required
 def dashboard():
-    from backend.api.models.user_models import User
+    """ Admin dashboard """
 
     if current_user.role == "user":
         return abort(404)
 
-    admin_token = request.cookies.get("admin_token")
-    authorization = User.verify_elevated_token(admin_token)
+    try:
+        admin_token = request.cookies["admin_token"]
+    except:
+        return abort(400)
+
+    authorization = User.verify_admin_token(admin_token)
     if not authorization:
         return abort(403, "You do not have the permission to access this page.")
 
@@ -76,23 +85,22 @@ def dashboard():
 @admin_bp.route("/admin/update_role", methods=["POST"])
 @token_auth.login_required
 def update_role():
-    """ Endpoint allowing the admin to change the role of a user """
+    """ Change the role of a user """
 
-    from backend.api.models.user_models import User
-    from backend.api.utils.enums import RoleType
+    try:
+        admin_token = request.cookies["admin_token"]
+        json_data = request.get_json()
+        user_id = json_data["user_id"]
+        new_role = json_data["payload"]
+    except:
+        return abort(400)
 
-    admin_token = request.cookies.get("admin_token")
-    authorization = User.verify_elevated_token(admin_token)
+    authorization = User.verify_admin_token(admin_token)
     if not authorization:
         return abort(403, "You do not have the permission to access this page.")
 
-    json_data = request.get_json()
-    user_id = json_data["user_id"]
-    new_role = json_data["payload"]
-
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=user_id).get_or_404()
     user.role = RoleType(new_role)
-
     db.session.commit()
 
     return {"message": f"New role for user {user.username} is: {user.role}"}, 200
@@ -101,22 +109,18 @@ def update_role():
 @admin_bp.route("/admin/delete_account", methods=["POST"])
 @token_auth.login_required
 def delete_account():
-    """ Endpoint allowing the admin to delete an account """
+    """ Delete a user account """
 
-    from backend.api.models.user_models import User
-    from backend.api.models.user_models import Token
-    from backend.api.models.user_models import followers
-    from backend.api.models.user_models import UserLastUpdate
-    from backend.api.models.user_models import Notifications
-    from backend.api.utils.functions import get_models_type
+    try:
+        admin_token = request.cookies["admin_token"]
+        json_data = request.get_json()
+        user_id = json_data["user_id"]
+    except:
+        return abort(400)
 
-    admin_token = request.cookies.get("admin_token")
-    authorization = User.verify_elevated_token(admin_token)
+    authorization = User.verify_admin_token(admin_token)
     if not authorization:
         return abort(403, "You do not have the permission to access this page.")
-
-    json_data = request.get_json()
-    user_id = json_data["user_id"]
 
     try:
         # Delete all tokens associated with user
@@ -134,7 +138,7 @@ def delete_account():
         # Delete all user's notifications
         Notifications.query.filter_by(user_id=user_id).delete()
 
-        # Get all models types using <ModelTypes>
+        # Get all LIST models
         models_list = get_models_type(ModelTypes.LIST)
 
         # Delete all media entries associated with user
@@ -143,8 +147,9 @@ def delete_account():
 
         db.session.commit()
         current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted.")
-        return {"message": f"The account [ID = {user_id}] has been successfully deleted."}, 200
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error trying to delete the account [ID = {user_id}]: {e}")
-        return abort(500, "Sorry, an error occurred. Please try again later.")
+        return abort(500, "An error occurred. Please try again later.")
+
+    return {"message": f"The account [ID = {user_id}] has been successfully deleted."}, 200

@@ -17,9 +17,10 @@ export const RegisterTokenPage = () => {
             });
 
             if (!response.ok) {
-                toast.error(response.body.description);
+                return toast.error(response.body.description);
             }
 
+            toast.success("Your account has been successfully activated. Feel free to log in now.")
             navigate("/");
         })();
 

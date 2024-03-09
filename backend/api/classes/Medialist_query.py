@@ -2,7 +2,7 @@ from typing import Tuple, Dict, Any
 from flask import abort, request
 from sqlalchemy import asc, or_
 from backend.api import db
-from backend.api.routes.auth import current_user
+from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import get_all_models_group
@@ -22,8 +22,8 @@ class BaseMediaQuery:
         self.media = media_models[ModelTypes.MEDIA]
         self.media_list = media_models[ModelTypes.LIST]
         self.media_genre = media_models[ModelTypes.GENRE]
-        self.media_mores = media_models
         self.media_label = media_models[ModelTypes.LABELS]
+        self.media_mores = media_models
 
         # Fetch <args> from request
         self.search = request.args.get("search")

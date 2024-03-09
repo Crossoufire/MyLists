@@ -31,8 +31,9 @@ def get_class_registry(cls: db.Model) -> Dict:
     except:
         return cls._decl_class_registry
 
+
 def get_models_group(media_type: MediaType, types: ModelTypes | List[ModelTypes]) -> List[db.Model] | db.Model:
-    """ Get the corresponding SQLAlchemy models from the <GROUP> value """
+    """ Retrieve the SQLAlchemy models using the <GROUP> attribute """
 
     if not isinstance(types, list):
         types = [types]
@@ -57,7 +58,7 @@ def get_models_group(media_type: MediaType, types: ModelTypes | List[ModelTypes]
 
 
 def get_all_models_group(media_type: Enum) -> Dict[ModelTypes, db.Model]:
-    """ Get all the corresponding SQLAlchemy models from the <GROUP> value as a dict """
+    """ Retrieve *ALL* the corresponding SQLAlchemy models from the <GROUP> attribute as a dict """
 
     models = {}
     registry = get_class_registry(db.Model)
@@ -72,17 +73,25 @@ def get_all_models_group(media_type: Enum) -> Dict[ModelTypes, db.Model]:
     return models
 
 
-def get_models_type(model_type: ModelTypes) -> List[db.Model]:
-    """ Get the model type (List, Media, User, ...) """
+def get_models_type(model_type: ModelTypes, user: db.Model = None) -> List[db.Model]:
+    """ Retrieve the SQLAlchemy models of a specified ModelTypes (List, Media, Genres, ...). If a user is specified,
+     only the user's activated models are returned """
 
+    # Define a specific order
     ORDER = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.BOOKS, MediaType.GAMES]
+
+    # Return only activated media is user specified
+    activated_only = user.activated_media_type() if user else None
 
     models = []
     registry = get_class_registry(db.Model)
     for model in registry.values():
         try:
             if issubclass(model, db.Model) and hasattr(model, "TYPE") and model_type == model.TYPE:
-                models.append(model)
+                if activated_only and model.GROUP in activated_only:
+                    models.append(model)
+                elif not activated_only:
+                    models.append(model)
         except:
             pass
 

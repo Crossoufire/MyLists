@@ -39,9 +39,9 @@ def validate_json_data(type_: Any = None):
                 # Handle payload with optional type conversion
                 payload = type_(json_data["payload"]) if type_ else json_data.get("payload", None) or None
             except:
-                return abort(400, "Error, could not parse the json data.")
+                return abort(400, "Error trying to parse the json data")
 
-            # Check <media_type> valid
+            # Check <media_type> valid and retrieve models
             try:
                 media_type = MediaType(media_type)
                 models = get_all_models_group(media_type)
