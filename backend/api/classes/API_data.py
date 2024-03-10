@@ -266,6 +266,7 @@ class ApiTV(ApiTMDB):
             synopsis=self.API_data.get("overview", "Not defined.") or "Not defined.",
             popularity=self.API_data.get("popularity", 0) or 0,
             api_id=self.API_data.get("id"),
+            last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             next_episode_to_air=None,
             season_to_air=None,
@@ -357,6 +358,7 @@ class ApiTV(ApiTMDB):
 
 
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
+
 
 class ApiSeries(ApiTV):
     """ TMDB API class specifically for the Series """
