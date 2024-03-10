@@ -24,6 +24,7 @@ from backend.api.utils.functions import get_subclasses, change_air_format, is_la
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
+
 class ApiData:
     """ Main class to manipulate the different APIs """
 
@@ -265,7 +266,6 @@ class ApiTV(ApiTMDB):
             synopsis=self.API_data.get("overview", "Not defined.") or "Not defined.",
             popularity=self.API_data.get("popularity", 0) or 0,
             api_id=self.API_data.get("id"),
-            last_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             next_episode_to_air=None,
             season_to_air=None,
@@ -593,7 +593,8 @@ class ApiMovies(ApiTMDB):
             original_language=self.API_data.get("original_language", "Unknown") or "Unknown",
             api_id=self.API_data.get("id"),
             director_name="Unknown",
-            image_cover=self._get_media_cover()
+            image_cover=self._get_media_cover(),
+            last_api_update=datetime.utcnow(),
         )
 
         # Fetch <director_name> from crew
@@ -746,6 +747,7 @@ class ApiGames(ApiData):
             player_perspective=self.API_data.get("player_perspectives", [{"name": "Unknown"}])[0]["name"] or "Unknown",
             game_modes=",".join([x["name"] for x in self.API_data.get("game_modes", [{"name": "Unknown"}])]),
             api_id=self.API_data.get("id"),
+            last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             hltb_main_time=None,
             hltb_main_and_extra_time=None,

@@ -40,7 +40,7 @@ export const MediaDetailsPage = () => {
 							<RefreshMedia
 								updateRefresh={refresh}
 								mutateData={mutate}
-								lastUpdate={apiData.media.last_update}
+								lastApiUpdate={apiData.media.last_api_update}
 							/>
 						}
 					</h3>

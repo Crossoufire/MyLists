@@ -1,6 +1,5 @@
 from __future__ import annotations
 import json
-import logging
 import os
 from datetime import datetime
 from pathlib import Path
@@ -81,7 +80,7 @@ def automatic_media_refresh():
             try:
                 refreshed_data = api_model(API_id=api_id).update_media_data()
                 model.refresh_element_data(api_id, refreshed_data)
-                current_app.logger.info(f"[INFO] - Refreshed the {model.GROUP.value} with API ID = [{api_id}]")
+                current_app.logger.info(f"[INFO] - Refreshed {model.GROUP.value} with API ID = [{api_id}]")
             except Exception as e:
                 current_app.logger.error(f"[ERROR] - While refreshing {model.GROUP.value} with API ID = [{api_id}]: {e}")
 

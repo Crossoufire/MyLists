@@ -340,12 +340,12 @@ class User(db.Model):
                                         for model in models_list]).subquery()
 
             # Query results as list of tuple
-            results = (db.session.query(func.count(user_feelings.c.feeling))
-                       .join(all_feelings, user_feelings.c.feeling == all_feelings.c.feeling, full=True)
+            results = (db.session.query(all_feelings.c.feeling, func.count(user_feelings.c.feeling))
+                       .outerjoin(user_feelings, all_feelings.c.feeling == user_feelings.c.feeling)
                        .group_by(all_feelings.c.feeling).order_by(desc(all_feelings.c.feeling)).all())
 
             # Create List[int] always size 5 from highest to lowest
-            count_per_feeling = [r[0] for r in results]
+            count_per_feeling = [r[1] for r in results]
 
         # Combine queries for count total media, percentage rated, and average rating
         rating = "feeling" if self.add_feeling else "score"

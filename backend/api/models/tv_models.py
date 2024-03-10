@@ -41,7 +41,7 @@ class TVModel(db.Model):
     popularity = db.Column(db.Float)
     image_cover = db.Column(db.String(100), nullable=False)
     api_id = db.Column(db.Integer, nullable=False)
-    last_update = db.Column(db.DateTime, nullable=False)
+    last_api_update = db.Column(db.DateTime)
     lock_status = db.Column(db.Boolean, default=0)
 
     @property

@@ -74,8 +74,8 @@ export const SearchBar = () => {
                     <SelectContent>
                         <SelectGroup>
                             {currentUser && <SelectItem value="TMDB">Media</SelectItem>}
-                            {currentUser?.add_books && <SelectItem value="BOOKS">Books</SelectItem>}
-                            {currentUser?.add_books && <SelectItem value="IGDB">Games</SelectItem>}
+                            {currentUser.add_books && <SelectItem value="BOOKS">Books</SelectItem>}
+                            {currentUser.add_games && <SelectItem value="IGDB">Games</SelectItem>}
                             <SelectItem value="users">Users</SelectItem>
                         </SelectGroup>
                     </SelectContent>

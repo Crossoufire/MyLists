@@ -42,6 +42,7 @@ class Movies(MediaMixin, db.Model):
     image_cover = db.Column(db.String(100), nullable=False)
     api_id = db.Column(db.Integer, nullable=False)
     lock_status = db.Column(db.Boolean, default=0)
+    last_api_update = db.Column(db.DateTime)
 
     genres = db.relationship("MoviesGenre", backref="movies", lazy=True)
     actors = db.relationship("MoviesActors", backref="movies", lazy=True)

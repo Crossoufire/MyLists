@@ -10,8 +10,6 @@ import {GenericDetails} from "@/components/media/general/GenericDetails";
 export const TvDetails = ({ mediaData, mediaType }) => {
     const creators = mediaData.created_by?.split(", ") || [];
 
-    console.log(mediaData);
-
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
             <div className="bg-card rounded-md p-4">

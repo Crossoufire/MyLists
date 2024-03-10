@@ -1,3 +1,12 @@
+## CHANGELOG v1.3.1
+---
+### Fixes
+- Fix the refresh date inconsistency in `/details` by creating a proper `last_api_update` for Series, Anime, Movies, and Games models
+- Fix the issue with Right Full Outer Join for users using the feeling ratings in `/profile`
+- Fix the UI of media items in `/coming_next`
+- Fix the requirement to activate books list in `/settings` to enable the game search functionality
+
+
 ## CHANGELOG v1.3.0
 ---
 ### Under the Hood

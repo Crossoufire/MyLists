@@ -39,8 +39,7 @@ export const EpsAndSeasons = ({ isCurrent, initSeason, initEpisode, epsPerSeason
             {isCurrent ?
                 <div className="flex justify-center items-center h-[32px] w-full opacity-90 bg-gray-900 border
                 border-x-black border-b-black rounded-bl-md rounded-br border-t-transparent">
-                    <Select value={isLoading ? undefined : currentSeas} onValueChange={handleSeason}
-                            disabled={isLoading}>
+                    <Select value={isLoading ? undefined : currentSeas} onValueChange={handleSeason} disabled={isLoading}>
                         <SelectTrigger className="w-36" variant="noIcon" size="list">
                             <SelectValue placeholder={<LoadingIcon size={5}/>}/>
                         </SelectTrigger>
@@ -49,8 +48,7 @@ export const EpsAndSeasons = ({ isCurrent, initSeason, initEpisode, epsPerSeason
                         </SelectContent>
                     </Select>
                     <Separator orientation="vertical" variant="vertical"/>
-                    <Select value={isLoading ? undefined : currentEps} onValueChange={handleEpisode}
-                            disabled={isLoading}>
+                    <Select value={isLoading ? undefined : currentEps} onValueChange={handleEpisode} disabled={isLoading}>
                         <SelectTrigger className="w-36 text-base" size="list" variant="noIcon">
                             <SelectValue placeholder={<LoadingIcon size={5}/>}/>
                         </SelectTrigger>
