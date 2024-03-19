@@ -12,7 +12,7 @@ export const BooksUserDetails = ({ userData, totalPages, updatesAPI }) => {
     const [redo, setRedo] = useState(userData.rewatched);
     const [status, setStatus] = useState(userData.status);
     const [page, setPage] = useState(userData.actual_page);
-    const [rating, setRating] = useState(userData.add_feeling ? userData.feeling : userData.score);
+    const [rating, setRating] = useState(currentUser.add_feeling ? userData.feeling : userData.score);
 
     const callbackStatus = (value) => {
         setStatus(value);
