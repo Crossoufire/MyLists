@@ -4,20 +4,21 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict
 from flask import current_app, abort
-from sqlalchemy import func, text, extract, and_, not_
-from sqlalchemy.sql.functions import count
+from sqlalchemy import func, text, extract
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format, get_models_group
+from backend.api.utils.functions import change_air_format, get_models_group, get_all_models_group
 
 
 class TVModel(db.Model):
     """ Abstract SQL model for the <Series> and <Anime> models """
 
     __abstract__ = True
+
+    TYPE = ModelTypes.MEDIA
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -45,7 +46,7 @@ class TVModel(db.Model):
     lock_status = db.Column(db.Boolean, default=0)
 
     @property
-    def formated_date(self) -> List[str]:
+    def formatted_date(self) -> List[str]:
         """ Format the first and last airing date """
 
         first_air_date = change_air_format(self.first_air_date, tv=True)
@@ -76,7 +77,7 @@ class TVModel(db.Model):
             return media_dict
 
         media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = self.formated_date
+        media_dict["formatted_date"] = self.formatted_date
         media_dict["actors"] = self.actors_list
         media_dict["genres"] = self.genres_list
         media_dict["similar_media"] = self.get_similar_genres()
@@ -193,32 +194,22 @@ class TVModel(db.Model):
     def get_new_releasing_media(cls):
         """ Check for the new releasing series/anime in a week or less from the TMDB API """
 
-        # Get SeriesList or AnimeList class model
-        media_list = get_models_group(cls.GROUP, ModelTypes.LIST)
-
-        # Get SeriesEpisodesPerSeason or AnimeEpisodesPerSeason class model
-        eps_per_season = get_models_group(cls.GROUP, ModelTypes.EPS)
-
-        # <serieslist> or <animelist> as string for <Notification> model
-        media_list_str = cls.GROUP.value + "list"
+        media_list, eps_model = get_models_group(cls.GROUP, types=[ModelTypes.LIST, ModelTypes.EPS])
+        media_list_str = f"{cls.GROUP.value}list"
 
         try:
-            highest_episode_sub = (
-                db.session.query(eps_per_season.media_id, eps_per_season.episodes.label("last_episode"),
-                                 func.max(eps_per_season.season))
-                .group_by(eps_per_season.media_id).subquery())
+            top_eps_sub = (db.session.query(eps_model.media_id, eps_model.episodes.label("last_episode"),
+                                            func.max(eps_model.season))
+                           .group_by(eps_model.media_id).subquery())
 
             # noinspection PyComparisonWithNone
             query = (db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
-                                      media_list.user_id, highest_episode_sub.c.last_episode)
-            .join(media_list, cls.id == media_list.media_id)
-            .join(highest_episode_sub, cls.id == highest_episode_sub.c.media_id)
-            .filter(and_(
-                cls.next_episode_to_air != None,
-                cls.next_episode_to_air > datetime.utcnow(),
-                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
-                not_(media_list.status.in_([Status.RANDOM, Status.DROPPED]))
-            ))).all()
+                                      media_list.user_id, top_eps_sub.c.last_episode)
+                     .join(media_list, cls.id == media_list.media_id)
+                     .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
+                     .filter(cls.next_episode_to_air != None, cls.next_episode_to_air > datetime.utcnow(),
+                             cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
+                             media_list.status.notin_([Status.RANDOM, Status.DROPPED])).all())
 
             for info in query:
                 notif = Notifications.search(info[5], media_list_str, info[0])
@@ -253,6 +244,43 @@ class TVModel(db.Model):
             current_app.logger.error(f"Error occurred while checking for new releasing {cls.GROUP.value}: {e}")
             db.session.rollback()
 
+    @classmethod
+    def remove_non_list_media(cls):
+        """ Remove all the TV data not present in a List from the database and locally """
+
+        models = get_all_models_group(media_type=cls.GROUP)
+        media_model = models[ModelTypes.MEDIA]
+        media_list_model = models[ModelTypes.LIST]
+        actors_model = models[ModelTypes.ACTORS]
+        genres_model = models[ModelTypes.GENRE]
+        network_model = models[ModelTypes.NETWORK]
+        eps_model = models[ModelTypes.EPS]
+        label_model = models[ModelTypes.LABELS]
+        notifications_model = f"{cls.GROUP.value}list"
+
+        try:
+            media_to_delete = (cls.query.outerjoin(media_list_model, media_list_model.media_id == cls.id)
+                               .filter(media_list_model.media_id.is_(None)).all())
+
+            count_ = 0
+            for media in media_to_delete:
+                actors_model.query.filter_by(media_id=media.id).delete()
+                genres_model.query.filter_by(media_id=media.id).delete()
+                network_model.query.filter_by(media_id=media.id).delete()
+                eps_model.query.filter_by(media_id=media.id).delete()
+                UserLastUpdate.query.filter_by(media_type=cls.GROUP, media_id=media.id).delete()
+                Notifications.query.filter_by(media_type=notifications_model, media_id=media.id).delete()
+                label_model.query.filter_by(media_id=media.id).delete()
+                media_model.query.filter_by(id=media.id).delete()
+
+                count_ += 1
+                current_app.logger.info(f"Removed {cls.GROUP.value} with ID: [{media.id}]")
+
+            current_app.logger.info(f"Total {cls.GROUP.value} removed: {count_}")
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error occurred while removing {cls.GROUP.value} and related records: {str(e)}")
+
     @staticmethod
     def form_only() -> List[str]:
         """ Return the allowed fields for a form """
@@ -260,61 +288,18 @@ class TVModel(db.Model):
                 "origin_country", "status", "synopsis"]
 
 
-# --- SERIES ------------------------------------------------------------------------------------------------------
+class TVListModel(MediaListMixin, db.Model):
+    """ Abstract SQL model for the <SeriesList> and <AnimeList> models """
 
+    __abstract__ = True
 
-class Series(MediaMixin, TVModel):
-    """ Series SQL model """
-
-    TYPE = ModelTypes.MEDIA
-    GROUP = MediaType.SERIES
-
-    genres = db.relationship("SeriesGenre", backref="series", lazy=True)
-    actors = db.relationship("SeriesActors", backref="series", lazy=True)
-    eps_per_season = db.relationship("SeriesEpisodesPerSeason", backref="series", lazy=False)
-    networks = db.relationship("SeriesNetwork", backref="series", lazy=True)
-    list_info = db.relationship("SeriesList", back_populates="media", lazy="dynamic")
-
-    @classmethod
-    def remove_non_list_media(cls):
-        """ Remove all the series that are not present in a User list from the database and locally """
-
-        try:
-            # noinspection PyComparisonWithNone
-            series_to_delete = (cls.query.outerjoin(SeriesList, SeriesList.media_id == cls.id)
-                                .filter(SeriesList.media_id == None).all())
-
-            count_ = 0
-            for series in series_to_delete:
-                SeriesActors.query.filter_by(media_id=series.id).delete()
-                SeriesGenre.query.filter_by(media_id=series.id).delete()
-                SeriesNetwork.query.filter_by(media_id=series.id).delete()
-                SeriesEpisodesPerSeason.query.filter_by(media_id=series.id).delete()
-                UserLastUpdate.query.filter_by(media_type=MediaType.SERIES, media_id=series.id).delete()
-                Notifications.query.filter_by(media_type="serieslist", media_id=series.id).delete()
-                SeriesLabels.query.filter_by(media_id=series.id).delete()
-                Series.query.filter_by(id=series.id).delete()
-
-                count_ += 1
-                current_app.logger.info(f"Removed series with ID: [{series.id}]")
-
-            current_app.logger.info(f"Total series removed: {count_}")
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error occurred while removing series and related records: {str(e)}")
-
-
-class SeriesList(MediaListMixin, db.Model):
-    """ SeriesList SQL Model """
-
+    GROUP = None
     TYPE = ModelTypes.LIST
-    GROUP = MediaType.SERIES
     DEFAULT_SORTING = "Title A-Z"
     DEFAULT_STATUS = Status.WATCHING
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     current_season = db.Column(db.Integer, nullable=False)
     last_episode_watched = db.Column(db.Integer, nullable=False)
     status = db.Column(db.Enum(Status), nullable=False)
@@ -325,9 +310,6 @@ class SeriesList(MediaListMixin, db.Model):
     total = db.Column(db.Integer)
     comment = db.Column(db.Text)
     completion_date = db.Column(db.DateTime)
-
-    # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Series", back_populates="list_info", lazy="joined")
 
     class Status(ExtendedEnum):
         """ Status class specific for the series and easiness """
@@ -340,7 +322,7 @@ class SeriesList(MediaListMixin, db.Model):
         PLAN_TO_WATCH = "Plan to Watch"
 
     def to_dict(self) -> Dict:
-        """ Serialization of the serieslist class """
+        """ Serialization of the SeriesList model """
 
         media_dict = {}
         if hasattr(self, "__table__"):
@@ -368,41 +350,56 @@ class SeriesList(MediaListMixin, db.Model):
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
         """ Compute the new time spent for the user """
 
-        old_time = current_user.time_spent_series
-        current_user.time_spent_series = old_time + ((new_value - old_value) * self.media.duration)
+        old_time = getattr(current_user, f"time_spent_{self.GROUP.value}")
+        setattr(current_user, f"time_spent_{self.GROUP.value}", old_time
+                + ((new_value - old_value) * self.media.duration))
+
+    @classmethod
+    def total_user_time_def(cls):
+        media_model = get_models_group(cls.GROUP, ModelTypes.MEDIA)
+        return func.sum(media_model.duration * cls.total)
 
     @classmethod
     def get_media_stats(cls, user: User) -> List[Dict]:
         """ Compute and return the series stats for the selected user """
 
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery())
+        models = get_all_models_group(media_type=cls.GROUP)
+        media_model = models[ModelTypes.MEDIA]
+        actors_model = models[ModelTypes.ACTORS]
+        genres_model = models[ModelTypes.GENRE]
+        network_model = models[ModelTypes.NETWORK]
 
-        episodes = (db.session.query(((Series.total_episodes // 100) * 100).label("bin"),
-                                     func.count(Series.id).label("count"))
-                    .join(subquery, (Series.id == subquery.c.media_id) & (Series.total_episodes != 0))
+        sub_q = (db.session.query(cls.media_id)
+                 .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery())
+
+        episodes = (db.session.query(((media_model.total_episodes // 100) * 100).label("bin"),
+                                     func.count(media_model.id).label("count"))
+                    .join(sub_q, (media_model.id == sub_q.c.media_id) & (media_model.total_episodes != 0))
                     .group_by("bin").order_by("bin").all())
 
-        release_dates = (db.session.query((((extract("year", Series.first_air_date)) // 5) * 5).label("bin"),
-                                          func.count(Series.first_air_date))
-                         .join(subquery, (Series.id == subquery.c.media_id) & (Series.first_air_date != "Unknown"))
-                         .group_by(text("bin")).order_by(Series.first_air_date.asc()).all())
+        release_dates = (db.session.query((((extract("year", media_model.first_air_date)) // 5) * 5).label("bin"),
+                                          func.count(media_model.first_air_date))
+                         .join(sub_q, (media_model.id == sub_q.c.media_id) & (media_model.first_air_date != "Unknown"))
+                         .group_by(text("bin")).order_by(media_model.first_air_date.asc()).all())
 
-        top_actors = (db.session.query(SeriesActors.name, func.count(SeriesActors.name).label("count"))
-                      .join(subquery, (SeriesActors.media_id == subquery.c.media_id) & (SeriesActors.name != "Unknown"))
-                      .group_by(SeriesActors.name).order_by(text("count desc")).limit(10).all())
+        top_actors = (db.session.query(actors_model.name, func.count(actors_model.name).label("count"))
+                      .join(sub_q, (actors_model.media_id == sub_q.c.media_id) & (actors_model.name != "Unknown"))
+                      .group_by(actors_model.name).order_by(text("count desc")).limit(10).all())
 
-        top_genres = (db.session.query(SeriesGenre.genre, func.count(SeriesGenre.genre).label("count"))
-                      .join(subquery, (SeriesGenre.media_id == subquery.c.media_id) & (SeriesGenre.genre != "Unknown"))
-                      .group_by(SeriesGenre.genre).order_by(text("count desc")).limit(10).all())
+        top_genres = (db.session.query(genres_model.genre, func.count(genres_model.genre).label("count"))
+                      .join(sub_q, (genres_model.media_id == sub_q.c.media_id) & (genres_model.genre != "Unknown"))
+                      .group_by(genres_model.genre).order_by(text("count desc")).limit(10).all())
 
-        top_networks = (db.session.query(SeriesNetwork.network, func.count(SeriesNetwork.network).label("count"))
-                        .join(subquery, (SeriesNetwork.media_id == subquery.c.media_id) & (SeriesNetwork.network != "Unknown"))
-                        .group_by(SeriesNetwork.network).order_by(text("count desc")).limit(10).all())
+        top_networks = (db.session.query(network_model.network, func.count(network_model.network).label("count"))
+                        .join(sub_q,
+                              (network_model.media_id == sub_q.c.media_id) & (network_model.network != "Unknown"))
+                        .group_by(network_model.network).order_by(text("count desc")).limit(10).all())
 
-        top_countries = (db.session.query(Series.origin_country, func.count(Series.origin_country).label("count"))
-                         .join(subquery, (Series.id == subquery.c.media_id) & (Series.origin_country != "Unknown"))
-                         .group_by(Series.origin_country).order_by(text("count desc")).limit(10).all())
+        top_countries = (db.session.query(media_model.origin_country,
+                                          func.count(media_model.origin_country).label("count"))
+                         .join(sub_q, (media_model.id == sub_q.c.media_id) & (media_model.origin_country != "Unknown"))
+                         .group_by(media_model.origin_country)
+                         .order_by(text("count desc")).limit(10).all())
 
         stats = [
             {"name": "Episodes", "values": [(eps, count_) for eps, count_ in episodes]},
@@ -415,9 +412,56 @@ class SeriesList(MediaListMixin, db.Model):
 
         return stats
 
-    @classmethod
-    def total_user_time_def(cls):
-        return func.sum(Series.duration * cls.total)
+
+class TVLabelsModel(MediaLabelMixin, db.Model):
+    """ Abstract SQL model for the <SeriesLabels> and <AnimeLabels> models """
+
+    __abstract__ = True
+
+    TYPE = ModelTypes.LABELS
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    label = db.Column(db.String(64), nullable=False)
+
+    def to_dict(self) -> Dict:
+        """ Serialization of the <SeriesLabels> and <AnimeLabels> models """
+
+        media_dict = {}
+        if hasattr(self, "__table__"):
+            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+        # Add more info
+        media_dict["media_cover"] = self.media.media_cover
+        media_dict["media_name"] = self.media.name
+
+        return media_dict
+
+
+# --- SERIES ------------------------------------------------------------------------------------------------------
+
+
+class Series(MediaMixin, TVModel):
+    """ Series SQL model """
+
+    GROUP = MediaType.SERIES
+
+    genres = db.relationship("SeriesGenre", backref="series", lazy=True)
+    actors = db.relationship("SeriesActors", backref="series", lazy=True)
+    eps_per_season = db.relationship("SeriesEpisodesPerSeason", backref="series", lazy=False)
+    networks = db.relationship("SeriesNetwork", backref="series", lazy=True)
+    list_info = db.relationship("SeriesList", back_populates="media", lazy="dynamic")
+
+
+class SeriesList(TVListModel):
+    """ SeriesList SQL Model """
+
+    GROUP = MediaType.SERIES
+
+    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Series", back_populates="list_info", lazy="joined")
 
 
 class SeriesGenre(db.Model):
@@ -432,8 +476,8 @@ class SeriesGenre(db.Model):
     genre_id = db.Column(db.Integer, nullable=False)
 
     @staticmethod
-    def get_available_genres() -> List:
-        """ Return the available genres for the series """
+    def get_available_genres() -> List[str]:
+        """ Return all the series genres """
         return ["All", "Action & Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Kids",
                 "Mystery", "News", "Reality", "Sci-Fi & Fantasy", "Soap", "Talk", "War & Politics", "Western"]
 
@@ -472,33 +516,15 @@ class SeriesActors(db.Model):
     name = db.Column(db.String(150))
 
 
-class SeriesLabels(MediaLabelMixin, db.Model):
+class SeriesLabels(TVLabelsModel):
     """ SeriesLabels SQL model """
 
-    TYPE = ModelTypes.LABELS
     GROUP = MediaType.SERIES
-    ORDER = 0
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    label = db.Column(db.String(64), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Series", lazy=False)
-
-    def to_dict(self) -> Dict:
-        """ Serialization of the SeriesLabels class """
-
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        # Add more info
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-
-        return media_dict
+    media = db.relationship("Series", lazy="joined")
 
 
 # --- ANIME -------------------------------------------------------------------------------------------------------
@@ -507,152 +533,24 @@ class SeriesLabels(MediaLabelMixin, db.Model):
 class Anime(MediaMixin, TVModel):
     """ Anime SQL Model """
 
-    TYPE = ModelTypes.MEDIA
     GROUP = MediaType.ANIME
 
-    genres = db.relationship('AnimeGenre', backref='anime', lazy=True)
-    actors = db.relationship('AnimeActors', backref='anime', lazy=True)
-    eps_per_season = db.relationship('AnimeEpisodesPerSeason', backref='anime', lazy=False)
-    networks = db.relationship('AnimeNetwork', backref='anime', lazy=True)
-    list_info = db.relationship('AnimeList', back_populates='media', lazy='dynamic')
-
-    @classmethod
-    def remove_non_list_media(cls):
-        """ Remove all anime that are not present in a User list from the database and the disk """
-
-        try:
-            # Anime remover
-            anime_to_delete = (cls.query.outerjoin(AnimeList, AnimeList.media_id == cls.id)
-                               .filter(AnimeList.media_id.is_(None)).all())
-
-            count_ = 0
-            for anime in anime_to_delete:
-                AnimeActors.query.filter_by(media_id=anime.id).delete()
-                AnimeGenre.query.filter_by(media_id=anime.id).delete()
-                AnimeNetwork.query.filter_by(media_id=anime.id).delete()
-                AnimeEpisodesPerSeason.query.filter_by(media_id=anime.id).delete()
-                UserLastUpdate.query.filter_by(media_type=MediaType.ANIME, media_id=anime.id).delete()
-                Notifications.query.filter_by(media_type="animelist", media_id=anime.id).delete()
-                AnimeLabels.query.filter_by(media_id=anime.id).delete()
-                Anime.query.filter_by(id=anime.id).delete()
-
-                count_ += 1
-                current_app.logger.info(f"Removed anime with ID: [{anime.id}]")
-
-            current_app.logger.info(f"Total anime removed: {count_}")
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error occurred while removing anime and related records: {str(e)}")
+    genres = db.relationship("AnimeGenre", backref="anime", lazy=True)
+    actors = db.relationship("AnimeActors", backref="anime", lazy=True)
+    eps_per_season = db.relationship('AnimeEpisodesPerSeason', backref="anime", lazy=False)
+    networks = db.relationship("AnimeNetwork", backref="anime", lazy=True)
+    list_info = db.relationship("AnimeList", back_populates="media", lazy="dynamic")
 
 
-class AnimeList(MediaListMixin, db.Model):
-    """ Anime List SQL model """
+class AnimeList(TVListModel):
+    """ AnimeList SQL model """
 
-    TYPE = ModelTypes.LIST
     GROUP = MediaType.ANIME
-    DEFAULT_SORTING = "Title A-Z"
-    DEFAULT_STATUS = Status.WATCHING
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey('anime.id'), nullable=False)
-    current_season = db.Column(db.Integer, nullable=False)
-    last_episode_watched = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False)
-    rewatched = db.Column(db.Integer, nullable=False, default=0)
-    favorite = db.Column(db.Boolean)
-    feeling = db.Column(db.String(30))
-    score = db.Column(db.Float)
-    total = db.Column(db.Integer)
-    comment = db.Column(db.Text)
-    completion_date = db.Column(db.DateTime)
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
 
     # --- Relationships -------------------------------------------------------------
-    media = db.relationship("Anime", back_populates='list_info', lazy=False)
-
-    class Status(ExtendedEnum):
-        """ New status class for easiness """
-
-        WATCHING = "Watching"
-        COMPLETED = "Completed"
-        ON_HOLD = "On Hold"
-        RANDOM = "Random"
-        DROPPED = "Dropped"
-        PLAN_TO_WATCH = "Plan to Watch"
-
-    def to_dict(self) -> Dict:
-        """ Serialization of the animelist class """
-
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        # Add more info
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = self.Status.to_list()
-        media_dict["eps_per_season"] = self.media.eps_per_season_list
-
-        return media_dict
-
-    def update_total_watched(self, new_rewatch: int) -> int:
-        """ Update the total anime watched for a user and return the new total """
-
-        self.rewatched = new_rewatch
-
-        # Calculate new total
-        new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
-        self.total = new_total
-
-        return new_total
-
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        """ Compute new anime time spent for the current user """
-
-        old_time = current_user.time_spent_anime
-        current_user.time_spent_anime = old_time + ((new_value - old_value) * self.media.duration)
-
-    @classmethod
-    def get_media_stats(cls, user: User) -> List[Dict]:
-        """ Compute and return the anime stats for the selected user """
-
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery())
-
-        episodes = (db.session.query(((Anime.total_episodes // 50 ) * 50).label("bin"), func.count(Anime.id).label("count"))
-                    .join(subquery, (Anime.id == subquery.c.media_id) & (Anime.total_episodes != 0))
-                    .group_by("bin").order_by("bin").all())
-
-        release_dates = (db.session.query((((extract("year", Anime.first_air_date)) // 10) * 10).label("decade"),
-                                          count(Anime.first_air_date))
-                         .join(subquery, (Anime.id == subquery.c.media_id) & (Anime.first_air_date != "Unknown"))
-                         .group_by(text("decade")).order_by(Anime.first_air_date.asc()).all())
-
-        top_networks = (db.session.query(AnimeNetwork.network, func.count(AnimeNetwork.network).label("count"))
-                        .join(subquery, (AnimeNetwork.media_id == subquery.c.media_id) & (AnimeNetwork.network != "Unknown"))
-                        .group_by(AnimeNetwork.network).order_by(text("count desc")).limit(10).all())
-
-        top_genres = (db.session.query(AnimeGenre.genre, func.count(AnimeGenre.genre).label("count"))
-                      .join(subquery, (AnimeGenre.media_id == subquery.c.media_id) & (AnimeGenre.genre != "Unknown"))
-                      .group_by(AnimeGenre.genre).order_by(text("count desc")).limit(10).all())
-
-        top_actors = (db.session.query(AnimeActors.name, func.count(AnimeActors.name).label("count"))
-                      .join(subquery, (AnimeActors.media_id == subquery.c.media_id) & (AnimeActors.name != "Unknown"))
-                      .group_by(AnimeActors.name).order_by(text("count desc")).limit(10).all())
-
-        stats = [
-            {"name": "Episodes", "values": [(eps, count_) for eps, count_ in episodes]},
-            {"name": "Releases date", "values": [(release, count_) for release, count_ in release_dates]},
-            {"name": "Actors", "values": [(actor, count_) for actor, count_ in top_actors]},
-            {"name": "Genres", "values": [(genre, count_) for genre, count_ in top_genres]},
-            {"name": "Networks", "values": [(network, count_) for network, count_ in top_networks]},
-        ]
-
-        return stats
-
-    @classmethod
-    def total_user_time_def(cls):
-        return func.sum(Anime.duration * cls.total)
+    media = db.relationship("Anime", back_populates="list_info", lazy="joined")
 
 
 class AnimeGenre(db.Model):
@@ -667,8 +565,8 @@ class AnimeGenre(db.Model):
     genre_id = db.Column(db.Integer, nullable=False)
 
     @staticmethod
-    def get_available_genres() -> List:
-        """ Return the available genres for the anime """
+    def get_available_genres() -> List[str]:
+        """ Return all the anime genres """
         return ["All", "Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Mystery", "Drama",
                 "Ecchi", "Fantasy", "Game", "Hentai", "Historical", "Horror", "Magic", "Martial Arts", "Mecha",
                 "Music", "Samurai", "Romance", "School", "Sci-Fi", "Shoujo", "Shounen", "Space", "Sports",
@@ -683,7 +581,7 @@ class AnimeEpisodesPerSeason(db.Model):
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('anime.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
     season = db.Column(db.Integer, nullable=False)
     episodes = db.Column(db.Integer, nullable=False)
 
@@ -695,7 +593,7 @@ class AnimeNetwork(db.Model):
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('anime.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
     network = db.Column(db.String(150), nullable=False)
 
 
@@ -710,29 +608,12 @@ class AnimeActors(db.Model):
     name = db.Column(db.String(150))
 
 
-class AnimeLabels(MediaLabelMixin, db.Model):
+class AnimeLabels(TVLabelsModel):
     """ AnimeLabels SQL model """
 
-    TYPE = ModelTypes.LABELS
     GROUP = MediaType.ANIME
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    label = db.Column(db.String(64), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Anime", lazy=False)
-
-    def to_dict(self) -> Dict:
-        """ Serialization of the AnimeLabels class """
-
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        # Add more info
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-
-        return media_dict
+    media = db.relationship("Anime", lazy="joined")
