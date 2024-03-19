@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Dict, List
 from flask import url_for, current_app
@@ -15,6 +16,13 @@ class MediaMixin:
 
     GROUP = None
     SIMILAR_GENRES = 12
+
+    # Define fields for PyCharm
+    id: int
+    actors: List
+    genres: List
+    image_cover: str
+    list_info: db.relationship
 
     @property
     def actors_list(self) -> List:
@@ -54,7 +62,7 @@ class MediaMixin:
                       .order_by(desc("genre_c"))
                       .limit(self.SIMILAR_GENRES).all())
 
-        return [{"media_id" : m[0].id, "media_name": m[0].name, "media_cover": m[0].media_cover} for m in sim_genres]
+        return [{"media_id": m[0].id, "media_name": m[0].name, "media_cover": m[0].media_cover} for m in sim_genres]
 
     def in_follows_lists(self) -> List[Dict]:
         """ Verify whether the <media> is included in the list of users followed by the <current_user> """
@@ -95,6 +103,24 @@ class MediaMixin:
 
 class MediaListMixin:
     """ MediaListMixin SQLAlchemy model for: <SeriesList>, <AnimeList>, <MoviesList>, <GamesList>, and <BooksList> """
+
+    GROUP = None
+
+    # Define fields for PyCharm
+    user_id: int
+    media_id: int
+    status: str
+    total: int
+    rewatched: int
+    score: int | None | str
+    feeling: int | None | str
+    current_season: int
+    last_episode_watched: int
+    comment: str
+    media: db.Model
+    query: db.Model
+    completion_date: datetime
+    Status: Enum | Status
 
     def update_status(self, new_status: str) -> int:
         """ Change the status of the tv media (overwritten for other media) for the current user and return the
@@ -157,8 +183,9 @@ class MediaListMixin:
         range_ = list(range(6)) if user.add_feeling else [i * 0.5 for i in range(21)]
 
         # Query to get media count per rating for given <user_id>
+        # noinspection PyComparisonWithNone
         media_count = (db.session.query(rating, func.count(rating))
-                       .filter(cls.user_id == user.id, rating.isnot(None))
+                       .filter(cls.user_id == user.id, rating != None)
                        .group_by(rating).order_by(asc(rating)).all())
 
         # Create dict to store metric count with default values
@@ -215,7 +242,7 @@ class MediaListMixin:
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
-        """ Return the available sorting for movies, anime and series """
+        """ Return the available sorting for movies, anime, and series """
 
         release_date = "first_air_date"
         if cls.GROUP == MediaType.MOVIES:
@@ -241,18 +268,21 @@ class MediaListMixin:
 
 
 class MediaLabelMixin:
-    """ LabelMixin SQLAlchemy model for Personal List """
+    """ LabelMixin SQLAlchemy model for the Labels List """
+
+    # Define fields for PyCharm
+    label: str
 
     @classmethod
-    def get_labels_name(cls, user_id: int, media_id: int) -> Dict | List:
+    def get_labels_name(cls, user_id: int, media_id: int) -> Dict:
         """ Get all the labels names in which the media is in for a specific user """
 
         # Get all existing labels names for the user
         all_labels = db.session.query(cls.label).filter_by(user_id=user_id).group_by(cls.label).all()
-        all_labels = [l[0] for l in all_labels]
+        all_labels = [lab[0] for lab in all_labels]
 
         already_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).all()
-        already_in = [l[0] for l in already_in]
+        already_in = [lab[0] for lab in already_in]
 
         return {"already_in": already_in, "available": list(set(all_labels) - set(already_in))}
 
@@ -263,7 +293,7 @@ class MediaLabelMixin:
         all_labels = (db.session.query(cls.label).filter_by(user_id=user_id)
                       .group_by(cls.label).order_by(cls.label).all())
 
-        return {"count": len(all_labels), "names": [l[0] for l in all_labels[:10]]}
+        return {"count": len(all_labels), "names": [lab[0] for lab in all_labels[:10]]}
 
 
 class Badges(db.Model):

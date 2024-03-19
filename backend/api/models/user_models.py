@@ -131,7 +131,8 @@ class User(db.Model):
     games_list = db.relationship("GamesList", backref="user", lazy="select")
     books_list = db.relationship("BooksList", backref="user", lazy="select")
     notifications = db.relationship("Notifications", backref="user", lazy="select")
-    last_updates = db.relationship("UserLastUpdate", backref="user", order_by="desc(UserLastUpdate.date)", lazy="dynamic")
+    last_updates = db.relationship("UserLastUpdate", backref="user", order_by="desc(UserLastUpdate.date)",
+                                   lazy="dynamic")
     followed = db.relationship(
         "User",
         secondary=followers,
@@ -175,9 +176,12 @@ class User(db.Model):
         # Calculate <total_time>
         total_time = self.time_spent_series + self.time_spent_movies
 
-        if self.add_anime: total_time += self.time_spent_anime
-        if self.add_books: total_time += self.time_spent_books
-        if self.add_games: total_time += self.time_spent_games
+        if self.add_anime:
+            total_time += self.time_spent_anime
+        if self.add_books:
+            total_time += self.time_spent_books
+        if self.add_games:
+            total_time += self.time_spent_games
 
         return int(get_level(total_time))
 
@@ -433,7 +437,7 @@ class User(db.Model):
         follows_updates = (UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
                            .order_by(desc(UserLastUpdate.date)).limit(limit_))
 
-        return [{ "username": update.user.username, **update.to_dict()} for update in follows_updates]
+        return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 
     def generate_jwt_token(self, expires_in: int = 600) -> str:
         """ Generate a <register token> or a <forgot password token> """
@@ -578,7 +582,8 @@ class UserLastUpdate(db.Model):
             update_dict["update"] = [f"p. {int(self.old_page)}", f"p. {int(self.new_page)}"]
 
         # Playtime update
-        elif self.old_playtime is not None and self.new_playtime is not None and self.old_playtime >= 0 and self.new_playtime >= 0:
+        elif (self.old_playtime is not None and self.new_playtime is not None and self.old_playtime >= 0
+              and self.new_playtime >= 0):
             update_dict["update"] = [f"{int(self.old_playtime / 60)} h", f"{int(self.new_playtime / 60)} h"]
 
         # Redo update

@@ -82,7 +82,7 @@ def automatic_media_refresh():
                 model.refresh_element_data(api_id, refreshed_data)
                 current_app.logger.info(f"[INFO] - Refreshed {model.GROUP.value} with API ID = [{api_id}]")
             except Exception as e:
-                current_app.logger.error(f"[ERROR] - While refreshing {model.GROUP.value} with API ID = [{api_id}]: {e}")
+                current_app.logger.error(f"[ERROR] - Refreshing {model.GROUP.value} with API ID = [{api_id}]: {e}")
 
     current_app.logger.info("[SYSTEM] - Finished Automatic media refresh -")
     current_app.logger.info('###############################################################################')

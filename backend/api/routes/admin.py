@@ -130,7 +130,8 @@ def delete_account():
         User.query.filter_by(id=user_id).delete()
 
         # Remove all entries where user is a follower or followed
-        db.session.query(followers).filter((followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)).delete()
+        db.session.query(followers).filter((followers.c.follower_id == user_id) |
+                                           (followers.c.followed_id == user_id)).delete()
 
         # Delete user's last update information
         UserLastUpdate.query.filter_by(user_id=user_id).delete()

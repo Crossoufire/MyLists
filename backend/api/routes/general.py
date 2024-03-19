@@ -52,8 +52,6 @@ def hall_of_fame():
     # noinspection PyTypeChecker
     order_sort = desc(User.profile_level) if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
 
-    print(order_sort)
-
     # Rank users according to <profile_level>
     # noinspection PyTypeChecker
     users_ranked = (db.session.scalars(select(User.username).where(User.active, User.role != RoleType.ADMIN)

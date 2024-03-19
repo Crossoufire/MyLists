@@ -46,7 +46,7 @@ class Games(MediaMixin, db.Model):
 
     """ --- Properties ------------------------------------------------------------ """
     @property
-    def formated_date(self):
+    def formatted_date(self):
         """ return the formatted release date """
         return change_air_format(self.release_date, games=True)
 
@@ -78,7 +78,7 @@ class Games(MediaMixin, db.Model):
             return media_dict
 
         media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = self.formated_date
+        media_dict["formatted_date"] = self.formatted_date
         media_dict["developers"] = self.developers
         media_dict["platforms"] = self.platforms
         media_dict["publishers"] = self.publishers
@@ -259,8 +259,8 @@ class GamesList(MediaListMixin, db.Model):
     def get_media_stats(cls, user: User) -> List[Dict]:
         """ Get more stats associated with games """
 
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_PLAY).subquery())
+        sub_q = (db.session.query(cls.media_id)
+                 .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_PLAY).subquery())
 
         playtime = db.session.scalars(db.select(cls.playtime)
                                       .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_PLAY)).all()
@@ -268,26 +268,29 @@ class GamesList(MediaListMixin, db.Model):
         binning = [sum(1 for play in playtime if playtime_bins[i] <= play < playtime_bins[i + 1]) for i in
                    range(len(playtime_bins) - 1)]
 
-        release_dates = (db.session.query(((func.strftime('%Y', func.datetime(Games.release_date, 'unixepoch')) // 5) * 5).label("release"),
+        release_dates = (db.session.query(((func.strftime("%Y", func.datetime(Games.release_date, "unixepoch"))
+                                            // 5) * 5).label("release"),
                                           func.count().label("count"))
-                         .join(subquery, (Games.id == subquery.c.media_id) & (Games.release_date.isnot(None)))
+                         .join(sub_q, (Games.id == sub_q.c.media_id) & (Games.release_date.isnot(None)))
                          .group_by("release").order_by("release").all())
 
         top_genres = (db.session.query(GamesGenre.genre, func.count(GamesGenre.genre).label("count"))
-                      .join(subquery, (GamesGenre.media_id == subquery.c.media_id) & (GamesGenre.genre != "Unknown"))
+                      .join(sub_q, (GamesGenre.media_id == sub_q.c.media_id) & (GamesGenre.genre != "Unknown"))
                       .group_by(GamesGenre.genre).order_by(text("count desc")).limit(10).all())
 
         top_dev = (db.session.query(GamesCompanies.name, func.count(GamesCompanies.name).label("count"))
-                   .join(subquery, (GamesCompanies.media_id == subquery.c.media_id) & (GamesCompanies.name != "Unknown")
+                   .join(sub_q, (GamesCompanies.media_id == sub_q.c.media_id) & (GamesCompanies.name != "Unknown")
                          & (GamesCompanies.developer == True))
                    .group_by(GamesCompanies.name).order_by(text("count desc")).limit(10).all())
 
         top_platforms = (db.session.query(GamesPlatforms.name, func.count(GamesPlatforms.name).label("count"))
-                         .join(subquery, (GamesPlatforms.media_id == subquery.c.media_id) & (GamesPlatforms.name != "Unknown"))
+                         .join(sub_q, (GamesPlatforms.media_id == sub_q.c.media_id) &
+                               (GamesPlatforms.name != "Unknown"))
                          .group_by(GamesPlatforms.name).order_by(text("count desc")).limit(10).all())
 
-        top_perspectives = (db.session.query(Games.player_perspective, func.count(Games.player_perspective).label("count"))
-                            .join(subquery, (Games.id == subquery.c.media_id) & (Games.player_perspective != "Unknown"))
+        top_perspectives = (db.session.query(Games.player_perspective,
+                                             func.count(Games.player_perspective).label("count"))
+                            .join(sub_q, (Games.id == sub_q.c.media_id) & (Games.player_perspective != "Unknown"))
                             .group_by(Games.player_perspective).order_by(text("count desc")).limit(5).all())
 
         stats = [
@@ -347,7 +350,7 @@ class GamesGenre(db.Model):
     def get_available_genres() -> List:
         """ Return the available genres for the games """
         return ["All", "4X", "Action",  "Adventure", "Arcade", "Business", "Card Game", "Comedy", "Drama",
-                "Educational", "Erotic", "Fantasy", "Fighting","Hack and Slash", "Historical", "Horror", "Indie",
+                "Educational", "Erotic", "Fantasy", "Fighting", "Hack and Slash", "Historical", "Horror", "Indie",
                 "Kids", "MOBA", "Music", "Mystery", "Non-fiction", "Open world", "Party", "Pinball", "Platform",
                 "Point-and-click", "Puzzle", "Quiz", "Racing", "Real Time Strategy (RTS)", "Role-playing (RPG)",
                 "Romance", "Sandbox", "Science fiction", "Shooter", "Simulator", "Sport", "Stealth", "Strategy",

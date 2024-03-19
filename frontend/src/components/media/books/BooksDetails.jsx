@@ -19,7 +19,7 @@ export const BooksDetails = ({ mediaData, mediaType }) => {
                         />
                         <ReleaseDate
                             name="Release date"
-                            start={mediaData.formated_date}
+                            start={mediaData.formatted_date}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

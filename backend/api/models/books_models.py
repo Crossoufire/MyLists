@@ -51,7 +51,7 @@ class Books(MediaMixin, db.Model):
             return media_dict
 
         media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = change_air_format(self.release_date, books=True)
+        media_dict["formatted_date"] = change_air_format(self.release_date, books=True)
         media_dict["authors"] = self.authors_list
         media_dict["genres"] = self.genres_list
         media_dict["similar_media"] = self.get_similar_genres()
@@ -213,27 +213,28 @@ class BooksList(MediaListMixin, db.Model):
     def get_media_stats(cls, user: User) -> List[Dict]:
         """ Get the selected user books stats """
 
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_READ).subquery())
+        sub_q = (db.session.query(cls.media_id)
+                 .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_READ).subquery())
 
         per_pages = (db.session.query(((Books.pages // 100) * 100).label("bin"), func.count(Books.id).label("count"))
-                     .join(subquery, (Books.id == subquery.c.media_id) & (Books.pages != 0))
+                     .join(sub_q, (Books.id == sub_q.c.media_id) & (Books.pages != 0))
                      .group_by("bin").order_by("bin").all())
 
-        release_dates = (db.session.query(((Books.release_date // 10) * 10).label("decade"), func.count(Books.release_date))
-                         .join(subquery, (Books.id == subquery.c.media_id) & (Books.release_date != "Unknown"))
+        release_dates = (db.session.query(((Books.release_date // 10) * 10).label("decade"),
+                                          func.count(Books.release_date))
+                         .join(sub_q, (Books.id == sub_q.c.media_id) & (Books.release_date != "Unknown"))
                          .group_by("decade").order_by(Books.release_date.asc()).all())
 
         top_genres = (db.session.query(BooksGenre.genre, func.count(BooksGenre.genre).label("count"))
-                      .join(subquery, (BooksGenre.media_id == subquery.c.media_id) & (BooksGenre.genre != "Unknown"))
+                      .join(sub_q, (BooksGenre.media_id == sub_q.c.media_id) & (BooksGenre.genre != "Unknown"))
                       .group_by(BooksGenre.genre).order_by(text("count desc")).limit(10).all())
 
         top_authors = (db.session.query(BooksAuthors.name, func.count(BooksAuthors.name).label("count"))
-                       .join(subquery, (BooksAuthors.media_id == subquery.c.media_id) & (BooksAuthors.name != "Unknown"))
+                       .join(sub_q, (BooksAuthors.media_id == sub_q.c.media_id) & (BooksAuthors.name != "Unknown"))
                        .group_by(BooksAuthors.name).order_by(text("count desc")).limit(10).all())
 
         top_languages = (db.session.query(Books.language, func.count(Books.language).label("count"))
-                         .join(subquery, (Books.id == subquery.c.media_id) & (Books.language != "Unknown"))
+                         .join(sub_q, (Books.id == sub_q.c.media_id) & (Books.language != "Unknown"))
                          .group_by(Books.language).order_by(text("count desc")).limit(10).all())
 
         stats = [

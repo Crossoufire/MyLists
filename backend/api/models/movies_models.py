@@ -1,13 +1,10 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Tuple
-
 from flask import current_app, abort
 from sqlalchemy import func, text, and_
-
 from backend.api import db
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
@@ -61,7 +58,7 @@ class Movies(MediaMixin, db.Model):
             return media_dict
 
         media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = change_air_format(self.release_date)
+        media_dict["formatted_date"] = change_air_format(self.release_date)
         media_dict["actors"] = self.actors_list
         media_dict["genres"] = self.genres_list
         media_dict["similar_media"] = self.get_similar_genres()
@@ -130,13 +127,10 @@ class Movies(MediaMixin, db.Model):
         try:
             # noinspection PyComparisonWithNone
             query = (db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
-            .join(MoviesList, cls.id == MoviesList.media_id)
-            .filter(and_(
-                cls.release_date != None,
-                cls.release_date > datetime.utcnow(),
-                cls.release_date <= datetime.utcnow() + timedelta(days=7),
-                MoviesList.status != Status.PLAN_TO_WATCH,
-                ))).all()
+                     .join(MoviesList, cls.id == MoviesList.media_id)
+                     .filter(cls.release_date != None, cls.release_date > datetime.utcnow(),
+                             cls.release_date <= datetime.utcnow() + timedelta(days=7),
+                             MoviesList.status != Status.PLAN_TO_WATCH).all())
 
             for info in query:
                 notif = Notifications.search(info[1], "movieslist", info[0])
@@ -276,7 +270,7 @@ class MoviesList(MediaListMixin, db.Model):
         """ Get the movies stats for a user and return a list of dict """
 
         subquery = MoviesList.query.filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery()
-        rating = subquery.c.feeling if user.add_feeling else subquery.c.score
+        # rating = subquery.c.feeling if user.add_feeling else subquery.c.score
 
         runtimes = (db.session.query(((Movies.duration // 30) * 30).label("bin"), func.count(Movies.id).label("count"))
                     .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.duration != "Unknown"))
@@ -334,7 +328,7 @@ class MoviesList(MediaListMixin, db.Model):
             {"name": "Releases date", "values": [(rel, count_) for rel, count_ in release_dates]},
             {"name": "Directors", "values": [(director, count_) for director, count_ in top_directors]},
             {"name": "Actors", "values": [(actor, count_) for actor, count_ in top_actors]},
-            {"name": "Genres", "values": [(genre,count_) for genre, count_ in top_genres]},
+            {"name": "Genres", "values": [(genre, count_) for genre, count_ in top_genres]},
             {"name": "Languages", "values": [(lang, count_) for lang, count_ in top_languages]},
         ]
 

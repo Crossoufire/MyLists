@@ -4,7 +4,7 @@ import re
 import secrets
 import datetime
 from enum import Enum
-from typing import Dict, List, Type, Any, Union
+from typing import Dict, List, Union, Type, Any
 import pytz
 from flask import current_app
 from backend.api import db

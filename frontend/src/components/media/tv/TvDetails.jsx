@@ -29,8 +29,8 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         />
                         <ReleaseDate
                             name="Airing dates"
-                            start={mediaData.formated_date[0]}
-                            end={mediaData.formated_date[1]}
+                            start={mediaData.formatted_date[0]}
+                            end={mediaData.formatted_date[1]}
                         />
                         <GenericDetails
                             name="Prod. Status"

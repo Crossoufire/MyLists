@@ -4,9 +4,11 @@ import {LoadingIcon} from "@/components/primitives/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const RatingDrop = ({ isFeeling, rating, updateRating, callbackRating }) => {
+export const RatingDrop = ({ rating, isFeeling, updateRating, callbackRating }) => {
     const [isLoading, handleLoading] = useLoading();
     const ratingValues = getRatingValues(isFeeling, 16);
+
+    console.log(rating, isFeeling, updateRating, callbackRating);
 
     const handleSelectChange = async (value) => {
         const response = await handleLoading(updateRating, value);
@@ -37,8 +39,7 @@ export const RatingDrop = ({ isFeeling, rating, updateRating, callbackRating }) 
                 :
                 <div className="flex justify-between items-center">
                     <div>Rating</div>
-                    <Select value={isLoading ? undefined : rating} onValueChange={handleSelectChange}
-                            disabled={isLoading}>
+                    <Select value={isLoading ? undefined : rating} onValueChange={handleSelectChange} disabled={isLoading}>
                         <SelectTrigger className="w-[130px]" size="details">
                             <SelectValue placeholder={<LoadingIcon size={6}/>}/>
                         </SelectTrigger>
