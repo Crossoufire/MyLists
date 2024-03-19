@@ -1,17 +1,22 @@
+from __future__ import annotations
+
 import json
 import os.path
 import secrets
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Type, Union, Literal
 from urllib import request
 from urllib.request import urlretrieve, Request
+
 import requests
 from PIL import Image
 from PIL.Image import Resampling
 from flask import url_for, current_app, abort
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
+from requests import Response
+
 from backend.api import db
 from backend.api.models.books_models import Books, BooksGenre, BooksAuthors
 from backend.api.models.games_models import Games, GamesCompanies, GamesPlatforms, GamesGenre
@@ -19,8 +24,7 @@ from backend.api.models.movies_models import Movies, MoviesGenre, MoviesActors
 from backend.api.models.tv_models import (Series, SeriesGenre, SeriesActors, SeriesNetwork, SeriesEpisodesPerSeason,
                                           Anime, AnimeGenre, AnimeNetwork, AnimeEpisodesPerSeason, AnimeActors)
 from backend.api.utils.enums import MediaType
-from backend.api.utils.functions import get_subclasses, change_air_format, is_latin, clean_html_text
-
+from backend.api.utils.functions import change_air_format, is_latin, clean_html_text, get_subclasses
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
@@ -28,11 +32,11 @@ from backend.api.utils.functions import get_subclasses, change_air_format, is_la
 class ApiData:
     """ Main class to manipulate the different APIs """
 
+    GROUP: MediaType
+    POSTER_BASE_URL: str
+    LOCAL_COVER_PATH: str
+    API_KEY: str
     DURATION: int = 0
-    GROUP: MediaType = None
-    POSTER_BASE_URL: str = ""
-    LOCAL_COVER_PATH: str = ""
-    API_KEY: str = ""
     RESULTS_PER_PAGE = 7
 
     def __init__(self, API_id: int = None):
@@ -43,15 +47,6 @@ class ApiData:
         self.media: db.Model = None
         self.media_details = {}
         self.all_data = {}
-
-    @classmethod
-    def get_API_class(cls, media_type: MediaType):
-        """ Get the appropriate inherited class depending on the <media_type> """
-
-        subclasses = get_subclasses(cls)
-        for class_ in subclasses:
-            if media_type == class_.GROUP:
-                return class_
 
     def save_media_to_db(self) -> db.Model:
         """ Save the media data to the database and return all the media data """
@@ -69,6 +64,30 @@ class ApiData:
         self._from_API_to_dict(updating=True)
 
         return self.all_data
+
+    @classmethod
+    def get_API_class(cls, media_type: MediaType) -> Type[ApiData]:
+        """ Get the appropriate inherited class depending on the <media_type> """
+
+        subclasses = get_subclasses(cls)
+        for class_ in subclasses:
+            try:
+                if media_type == class_.GROUP:
+                    return class_
+            except:
+                continue
+
+    @staticmethod
+    def call_api(url: str, method: Union[Literal["get"], Literal["post"]] = "get", **kwargs) -> Response:
+        try:
+            response = getattr(requests, method)(url, **kwargs, timeout=10)
+        except requests.exceptions.RequestException as error:
+            if error.response is not None:
+                return abort(error.response.status_code, error.response.reason)
+            else:
+                return abort(500, "An unexpected error occurred trying to fetch the data. Please try again later.")
+
+        return response
 
     def _get_details_and_credits_data(self):
         """ Overwritten in inherited class """
@@ -99,9 +118,10 @@ class ApiTMDB(ApiData):
     def search(self, query: str, page: int = 1):
         """ Search in the TMDB API (series, anime, and movies) """
 
-        # Make API call
-        url = f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}&query={query}&page={page}"
-        self.API_data = requests.get(url, timeout=10).json()
+        response = self.call_api(f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}"
+                                 f"&query={query}&page={page}")
+
+        self.API_data = response.json()
 
     def create_search_results(self) -> Dict:
         """ Create the search results dict from the search """
@@ -142,6 +162,50 @@ class ApiTMDB(ApiData):
 
         return search_dict
 
+    def _get_genres(self) -> List[Dict]:
+        """ Fetch the genres for series, anime and movies (fallback for anime if the Jikan API bug) """
+
+        all_genres = self.API_data.get("genres", [])
+        genres_list = [{"genre": genre.get("name"), "genre_id": int(genre.get("id"))} for genre in all_genres]
+        if not genres_list:
+            genres_list = [{"genre": "Unknown", "genre_id": 0}]
+
+        return genres_list
+
+    def _get_actors(self) -> List[Dict]:
+        """ Get the <MAX_ACTORS> actors for series, anime and movies """
+
+        actors = self.API_data.get("credits", {}).get("cast", [])[:self.MAX_ACTORS]
+        actors_list = [{"name": actor["name"]} for actor in actors] or [{"name": "Unknown"}]
+
+        return actors_list
+
+    def _save_api_cover(self, cover_path: str, cover_name: str):
+        """ Save the media (Series, Anime or Movies) cover to the local backend disk """
+
+        # Get cover from url
+        urlretrieve(f"{self.POSTER_BASE_URL}{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
+
+        # Resize and save using PIL
+        with Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}") as img:
+            img = img.resize((300, 450), Resampling.LANCZOS)
+            img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
+
+    def _get_media_cover(self) -> str:
+        """ Create a name for the media image cover or fallback on the <default.jpg> """
+
+        cover_name = "default.jpg"
+        cover_path = self.API_data.get("poster_path") or None
+        if cover_path:
+            cover_name = f"{secrets.token_hex(8)}.jpg"
+            try:
+                self._save_api_cover(cover_path, cover_name)
+            except Exception as e:
+                current_app.logger.error(f"[ERROR] - Trying to recover the cover: {e}")
+                cover_name = "default.jpg"
+
+        return cover_name
+
     @staticmethod
     def _process_tv(result):
         """ Process TV data (Series and Anime from TMDB) """
@@ -173,50 +237,6 @@ class ApiTMDB(ApiData):
 
         return media_info
 
-    def _get_genres(self) -> List[Dict]:
-        """ Fetch the genres for series, anime and movies (fallback for anime if the Jikan API bug) """
-
-        all_genres = self.API_data.get("genres", [])
-        genres_list = [{"genre": genre.get("name"), "genre_id": int(genre.get("id"))} for genre in all_genres]
-        if not genres_list:
-            genres_list = [{"genre": "Unknown", "genre_id": 0}]
-
-        return genres_list
-
-    def _get_actors(self) -> List[Dict]:
-        """ Get the <MAX_ACTORS> actors for series, anime and movies """
-
-        actors = self.API_data.get("credits", {}).get("cast", [])[:self.MAX_ACTORS]
-        actors_list = [{"name": actor["name"]} for actor in actors] or [{"name": "Unknown"}]
-
-        return actors_list
-
-    def _save_api_cover(self, cover_path: str, cover_name: str):
-        """ Save the media (Series, Anime or Movies) cover to the local backend disk """
-
-        # Get cover from url
-        urlretrieve(f"{self.POSTER_BASE_URL}{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
-
-        # Resize and save using PIL
-        with Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}") as img:
-            img = img.resize((300, 450), Resampling.LANCZOS)
-            img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
-
-    def _get_media_cover(self) -> str:
-        """ Create a name for the media image cover or fallback on the default.jpg """
-
-        cover_name = "default.jpg"
-        cover_path = self.API_data.get("poster_path") or None
-        if cover_path:
-            cover_name = f"{secrets.token_hex(8)}.jpg"
-            try:
-                self._save_api_cover(cover_path, cover_name)
-            except Exception as e:
-                current_app.logger.error(f"[ERROR] - Trying to recover the cover: {e}")
-                cover_name = "default.jpg"
-
-        return cover_name
-
 
 class ApiTV(ApiTMDB):
     """ TMDB API class for the Series and the Anime specifically """
@@ -226,30 +246,21 @@ class ApiTV(ApiTMDB):
     def get_changed_api_ids(self) -> set[int]:
         """ Fetch the IDs that changed in the last 24h from the TMDB API for Series and Anime """
 
-        response = requests.get(f"https://api.themoviedb.org/3/tv/changes?api_key={self.API_KEY}", timeout=10)
-        response.raise_for_status()
-
+        response = self.call_api(f"https://api.themoviedb.org/3/tv/changes?api_key={self.API_KEY}")
         data = json.loads(response.text)
         all_api_ids = {d.get("id") for d in data.get("results", {})}
 
         return all_api_ids
 
     def _get_details_and_credits_data(self):
-        """ Get the details and credits for a Series or an Anime from the TMDB API """
+        """ Get the details and credits for a <Series> or an <Anime> from the <TMDB API> """
 
-        # API call
-        response = requests.get(f"https://api.themoviedb.org/3/tv/{self.API_id}?api_key={self.API_KEY}"
-                                f"&append_to_response=credits", timeout=15)
-
-        if not response.ok:
-            resp_json = response.json()
-            return abort(404, resp_json.get("status_message"))
-
-        # Add data to instance attribute
+        response = self.call_api(f"https://api.themoviedb.org/3/tv/{self.API_id}?api_key={self.API_KEY}"
+                                 f"&append_to_response=credits")
         self.API_data = json.loads(response.text)
 
     def _from_API_to_dict(self, updating: bool = False):
-        """ Fetch the wanted data from the TMDB API to the <all_data> dict """
+        """ Fetch the wanted data from the <TMDB API> to the <all_data> dict """
 
         self.media_details = dict(
             name=self.API_data.get("name", "Unknown") or "Unknown",
@@ -371,9 +382,8 @@ class ApiSeries(ApiTV):
     def get_and_format_trending(self) -> List[Dict]:
         """ Fetch and format <MAX_TRENDING> trending TV obtained from the TMDB API """
 
-        # Make API call
-        url = f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}"
-        API_data = requests.get(url, timeout=10).json()
+        response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
+        API_data = response.json()
         results = API_data.get("results", [])
 
         tv_results = []
@@ -438,19 +448,13 @@ class ApiAnime(ApiTV):
     GROUP = MediaType.ANIME
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/anime_covers/")
 
-    @staticmethod
     @sleep_and_retry
     @limits(calls=1, period=4)
-    def api_anime_search(anime_name: str):
+    def api_anime_search(self, anime_name: str):
         """ Fetch the anime name from the TMDB API to the Jikan API. Then use the Jikan API to get more accurate
         genres with the <get_anime_genres> method """
 
-        # Api call
-        response = requests.get(f"https://api.jikan.moe/v4/anime?q={anime_name}", timeout=10)
-
-        # Raise for status
-        response.raise_for_status()
-
+        response = self.call_api(f"https://api.jikan.moe/v4/anime?q={anime_name}")
         return json.loads(response.text)
 
     def _get_anime_genres(self) -> List[Dict]:
@@ -521,9 +525,7 @@ class ApiMovies(ApiTMDB):
     def get_changed_api_ids(self) -> set[int]:
         """ Fetch the IDs that changed in the last 24h from the TMDB API for Movies """
 
-        response = requests.get(f"https://api.themoviedb.org/3/movie/changes?api_key={self.API_KEY}", timeout=10)
-        response.raise_for_status()
-
+        response = self.call_api(f"https://api.themoviedb.org/3/movie/changes?api_key={self.API_KEY}")
         data = json.loads(response.text)
         all_api_ids = {d.get("id") for d in data.get("results", {})}
 
@@ -532,9 +534,8 @@ class ApiMovies(ApiTMDB):
     def get_and_format_trending(self) -> List[Dict]:
         """ Fetch and format <MAX_TRENDING> trending Series obtained from the TMDB API """
 
-        # Make API call
-        url = f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}"
-        API_data = requests.get(url, timeout=10).json()
+        response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
+        API_data = response.json()
         results = API_data.get("results", [])
 
         movies_results = []
@@ -564,15 +565,8 @@ class ApiMovies(ApiTMDB):
     def _get_details_and_credits_data(self):
         """ Get the details and credits data for a Movie from TMDB API """
 
-        # API call
-        response = requests.get(f"https://api.themoviedb.org/3/movie/{self.API_id}?api_key={self.API_KEY}"
-                                f"&append_to_response=credits", timeout=15)
-
-        if not response.ok:
-            resp_json = response.json()
-            return abort(404, resp_json.get("status_message"))
-
-        # Add data to instance attribute
+        response = self.call_api(f"https://api.themoviedb.org/3/movie/{self.API_id}?api_key={self.API_KEY}"
+                                 f"&append_to_response=credits")
         self.API_data = json.loads(response.text)
 
     def _from_API_to_dict(self, updating: bool = False):
@@ -667,15 +661,10 @@ class ApiGames(ApiData):
         """ Search game using the IGDB API. <page> attribute unused, here for consistency """
 
         # Request body
-        offset = (page - 1) * 10
-        data = (f'fields id, name, cover.image_id, first_release_date, storyline; limit 10; offset {offset}; '
+        data = (f'fields id, name, cover.image_id, first_release_date, storyline; limit 10; offset {(page - 1) * 10}; '
                 f'search "{query}";')
 
-        # API call
-        response = requests.post("https://api.igdb.com/v4/games", data=data, headers=self.headers, timeout=10)
-
-        # Raise for status
-        response.raise_for_status()
+        response = self.call_api("https://api.igdb.com/v4/games", method="post", data=data, headers=self.headers)
 
         # Populate attribute
         self.API_data = {
@@ -724,13 +713,7 @@ class ApiGames(ApiData):
                f"involved_companies.publisher, storyline, summary, themes.name, url, external_games.uid, " \
                f"external_games.category; where id={self.API_id};"
 
-        # API call
-        response = requests.post("https://api.igdb.com/v4/games", data=body, headers=self.headers, timeout=15)
-
-        # Raise for status
-        response.raise_for_status()
-
-        # Populate attribute
+        response = self.call_api("https://api.igdb.com/v4/games", method="post", data=body, headers=self.headers)
         self.API_data = json.loads(response.text)[0]
 
     def _from_API_to_dict(self, updating: bool = False):
@@ -845,14 +828,18 @@ class ApiGames(ApiData):
     def _save_api_cover(self, cover_path: str, cover_name: str):
         """ Save game cover using the IGDB API """
 
+        # TODO: Use requests and <self.call_api>
+
         # Create specific header
-        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) "
-                                 "Chrome/23.0.1271.64 Safari/537.11",
-                   "Accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                   "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-                   "Accept-Encoding": "none",
-                   "Accept-Language": "en-US,en;q=0.8",
-                   "Connection": "keep-alive"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) "
+                          "Chrome/23.0.1271.64 Safari/537.11",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+            "Accept-Encoding": "none",
+            "Accept-Language": "en-US,en;q=0.8",
+            "Connection": "keep-alive",
+        }
 
         # Create request
         request_ = Request(url=f"{self.POSTER_BASE_URL}{cover_path}.jpg", headers=headers)
@@ -886,15 +873,13 @@ class ApiGames(ApiData):
         return cover_name
 
     def update_API_key(self):
-        """ Method to update the IGDB API key every month. The backend needs to restart to update the env variable. """
+        """ Method to update the IGDB API key every month. Backend needs to restart to update the env variable """
 
         import dotenv
 
         try:
-            response = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
-                                     f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", timeout=10)
-
-            response.raise_for_status()
+            response = self.call_api(f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
+                                     f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", method="post")
             data = json.loads(response.text)
             new_IGDB_token = data.get("access_token") or None
 
@@ -905,11 +890,10 @@ class ApiGames(ApiData):
             # Write new IGDB API KEY to <.env> file
             dotenv_file = dotenv.find_dotenv()
             dotenv.set_key(dotenv_file, "IGDB_API_KEY", new_IGDB_token)
-
-        except requests.exceptions.RequestException as e:
-            current_app.logger.error(f"[ERROR] - Request to IGDB API failed to update the API Key: {e}")
-        except Exception as e:
-            current_app.logger.error(f"[ERROR] - {e}")
+        except requests.exceptions.RequestException as error:
+            current_app.logger.error(f"[ERROR] - Request to IGDB API failed to update the API Key: {error}")
+        except Exception as error:
+            current_app.logger.error(f"[ERROR] - {error}")
 
     @staticmethod
     def _get_HLTB_time(game_name: str) -> Dict:
@@ -956,17 +940,8 @@ class ApiBooks(ApiData):
     def search(self, query: str, page: int = 1):
         """ Search a book using the Google Books API. """
 
-        # Request body
         offset = (page - 1) * 10
-
-        # API call
-        response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query}&startIndex={offset}",
-                                timeout=10)
-
-        # Raise for status
-        response.raise_for_status()
-
-        # Populate attribute
+        response = self.call_api(f"https://www.googleapis.com/books/v1/volumes?q={query}&startIndex={offset}")
         self.API_data = json.loads(response.text)
 
     def create_search_results(self) -> Dict:
@@ -1009,13 +984,7 @@ class ApiBooks(ApiData):
     def _get_details_and_credits_data(self):
         """ Get details and credits for books """
 
-        # API call
-        response = requests.get(f"https://www.googleapis.com/books/v1/volumes/{self.API_id}", timeout=10)
-
-        # Raise for status
-        response.raise_for_status()
-
-        # Populate attribute
+        response = self.call_api(f"https://www.googleapis.com/books/v1/volumes/{self.API_id}")
         self.API_data = json.loads(response.text)["volumeInfo"]
 
     def _from_API_to_dict(self, updating: bool = False):

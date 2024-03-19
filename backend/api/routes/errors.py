@@ -8,11 +8,12 @@ errors = Blueprint("errors_api", __name__)
 
 @errors.app_errorhandler(HTTPException)
 def http_error(error, message: str = None):
-    """ Catch and handle all HTTP errors (400, 404, 403, etc...) """
+    """ Catch and handle HTTP Exception. Log as error the important HTTP Exception and email the admin """
 
-    # Log exception traceback
-    if current_app.debug and error.code == 404:
-        pass
+    # Check 404 and 401 error: log error but no email notification
+    if error.code == 404 or error.code == 401:
+        current_app.logger.info(f"[Error {error.code}] - {error.description}")
+        return {}, 204
     else:
         current_app.logger.error(traceback.format_exc())
 

@@ -29,12 +29,8 @@ def media_details(media_type: MediaType, media_id: int):
         media = media_model.query.filter_by(api_id=media_id).first()
         if not media:
             API_class = ApiData.get_API_class(media_type)
-            try:
-                media = API_class(API_id=media_id).save_media_to_db()
-                db.session.commit()
-            except Exception as e:
-                current_app.logger.error(f"Error trying to add ({media_type.value}) ID [{media_id}] to DB: {e}")
-                return abort(400, "Sorry, an error occurred loading the media info. Please try again later.")
+            media = API_class(API_id=media_id).save_media_to_db()
+            db.session.commit()
     else:
         # Check <media> in database
         media = media_model.query.filter_by(id=media_id).first()

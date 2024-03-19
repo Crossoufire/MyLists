@@ -48,8 +48,7 @@ const useFetchData = (url, query, options) => {
         const response = await api.get(url, query, options);
 
         if (!response.ok) {
-            const error = new Error("An error occurred while fetching the data.");
-
+            const error = {}
             error.status = response.status;
             error.message = response.body.message;
             error.description = response.body.description;
