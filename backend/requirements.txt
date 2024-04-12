@@ -68,7 +68,7 @@ gunicorn==21.2.0
     # via -r requirements.in
 howlongtobeatpy==1.0.5
     # via -r requirements.in
-idna==3.6
+idna==3.7
     # via
     #   requests
     #   yarl
