@@ -64,7 +64,7 @@ frozenlist==1.4.1
     #   aiosignal
 greenlet==3.0.3
     # via sqlalchemy
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via -r requirements.in
 howlongtobeatpy==1.0.5
     # via -r requirements.in
