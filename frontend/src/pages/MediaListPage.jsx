@@ -2,24 +2,19 @@ import {capitalize} from "@/lib/utils";
 import {useEffect, useState} from "react";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useUser} from "@/providers/UserProvider";
-import {useFetchData, useFetchData2} from "@/hooks/FetchDataHook";
+import {useFetchData2} from "@/hooks/FetchDataHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
-import {Loading} from "@/components/primitives/Loading";
+import {Loading} from "@/components/app/base/Loading";
 import {useParams, useSearchParams} from "react-router-dom";
 import {MediaListData} from "@/components/medialist/MediaListData";
 import {NavStatusList} from "@/components/medialist/NavStatusList";
-import {MediaListStats} from "@/components/medialist/MediaListStats";
-import {MediaListLabels} from "@/components/medialist/MediaListLabels.jsx";
+import {MediaListLabels} from "@/components/medialist/MediaListLabels";
 import {TitleStatusList} from "@/components/medialist/TitleStatusList";
 import {SearchMediaList} from "@/components/medialist/SearchMediaList";
 import {CommonMediaList} from "@/components/medialist/CommonMediaList";
 import {FilterAndSortList} from "@/components/medialist/FilterAndSortList";
 import {NavigationMediaList} from "@/components/medialist/NavigationMediaList";
-import {ProfileHeader} from "@/components/profile/ProfileHeader.jsx";
-import {AllUpdates} from "@/components/profile/AllUpdates.jsx";
-import {FollowsFollowers} from "@/components/profile/FollowsFollowers.jsx";
-import {ProfileData} from "@/components/profile/ProfileData.jsx";
 
 
 export const MediaListPage = () => {
@@ -129,12 +124,15 @@ export const MediaListPage = () => {
 			<NavStatusList
 				allStatus={apiData.pagination.all_status}
 				activeStatus={apiData.pagination.status}
+				mediaType={mediaType}
+				username={username}
 				updateStatus={(value) => updateSearchParams(updateStatus, value)}
 			/>
 			<div className="flex flex-wrap sm:justify-between justify-center gap-y-1 mt-6">
 				<TitleStatusList
 					status={apiData.pagination.status}
 					total={apiData.pagination.total}
+					title={apiData.pagination.title}
 				/>
 				<FilterAndSortList
 					paginateData={apiData.pagination}
@@ -144,24 +142,21 @@ export const MediaListPage = () => {
 				/>
 			</div>
 			<Separator variant="large" className="mb-3"/>
-			{apiData.pagination.status === "Stats" ?
-				<MediaListStats graphData={apiData.media_data.graph_data}/>
+			{apiData.pagination.status === "Labels" ?
+				<MediaListLabels
+					loading={loading}
+					mediaData={apiData.media_data}
+					isCurrent={currentUser?.username === username}
+					updateLabel={(value) => updateSearchParams(updateLabel, value)}
+				/>
 				:
-				apiData.pagination.status === "Labels" ?
-					<MediaListLabels
-						loading={loading}
-						mediaData={apiData.media_data}
-						isCurrent={currentUser?.username === username}
-						updateLabel={(value) => updateSearchParams(updateLabel, value)}
-					/>
-					:
-					<MediaListData
-						loading={loading}
-						apiData={apiData}
-						mediaType={mediaType}
-						isCurrent={apiData.user_data.id === currentUser?.id}
-						updatePagination={(value) => updateSearchParams(updatePagination, value)}
-					/>
+				<MediaListData
+					loading={loading}
+					apiData={apiData}
+					mediaType={mediaType}
+					isCurrent={apiData.user_data.id === currentUser?.id}
+					updatePagination={(value) => updateSearchParams(updatePagination, value)}
+				/>
 			}
 		</PageTitle>
 	);

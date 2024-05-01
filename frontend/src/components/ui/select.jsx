@@ -27,7 +27,7 @@ const selectTriggerVariants = cva("flex w-full items-center justify-between whit
             size: "default",
         },
     }
-)
+);
 
 
 const Select = SelectPrimitive.Root;
@@ -46,7 +46,7 @@ const SelectTrigger = React.forwardRef(({ children, className, variant, size, ..
             </SelectPrimitive.Icon>
         }
     </SelectPrimitive.Trigger>
-))
+));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 
@@ -54,7 +54,7 @@ const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => 
     <SelectPrimitive.ScrollUpButton ref={ref} className={cn("flex cursor-default items-center justify-center py-1", className)} {...props}>
         <ChevronUpIcon/>
     </SelectPrimitive.ScrollUpButton>
-))
+));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
 
 
@@ -62,7 +62,7 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
     <SelectPrimitive.ScrollDownButton ref={ref} className={cn("flex cursor-default items-center justify-center py-1", className)} {...props}>
         <ChevronDownIcon/>
     </SelectPrimitive.ScrollDownButton>
-))
+));
 SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
 
@@ -87,7 +87,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
             <SelectScrollDownButton/>
         </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
-))
+));
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 
@@ -97,7 +97,7 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => (
         className={cn("px-2 py-1.5 text-sm font-semibold", className)}
         {...props}
     />
-))
+));
 SelectLabel.displayName = SelectPrimitive.Label.displayName;
 
 
@@ -117,7 +117,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
             {children}
         </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
-))
+));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 
@@ -127,7 +127,7 @@ const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => (
         className={cn("-mx-1 my-1 h-px bg-muted", className)}
         {...props}
     />
-))
+));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 

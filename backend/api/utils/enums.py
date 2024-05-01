@@ -1,33 +1,34 @@
+from __future__ import annotations
 from enum import Enum
 from typing import List
 
 
 class ExtendedEnum(Enum):
-    """ Extend enum to add <to_list> method """
+    """ Extend enum method """
 
     @classmethod
     def to_list(cls, extra: bool = False) -> List:
-        """ Add this <to list> method on an enum. Extra add <all>, <favorite>, and <stats> """
+        """ Return the enum as a list + extra data """
 
         enum_values = [c.value for c in cls]
-        return ["All"] + enum_values + ["Favorite", "Stats", "Labels"] if extra else enum_values
+        return ["All"] + enum_values + ["Favorite", "Labels"] if extra else enum_values
 
 
 class MediaType(ExtendedEnum):
+    """ The enum order is used, do not modify !! """
+
     SERIES = "series"
     ANIME = "anime"
     MOVIES = "movies"
     BOOKS = "books"
     GAMES = "games"
 
-    @classmethod
-    def optional_media_types(cls):
-        """ Return the optional media """
-        return [member for member in cls if member not in [cls.SERIES, cls.MOVIES]]
+    def __lt__(self, other: MediaType):
+        order = {t: idx for (idx, t) in enumerate(MediaType)}
+        return order[self] < order[other]
 
     @classmethod
-    def default_media_types(cls):
-        """ Return the default media """
+    def default(cls) -> List[MediaType]:
         return [cls.SERIES, cls.MOVIES]
 
 
@@ -48,7 +49,6 @@ class Status(str, ExtendedEnum):
     ALL = "All"
     SEARCH = "Search"
     FAVORITE = "Favorite"
-    STATS = "Stats"
     LABELS = "Labels"
 
 

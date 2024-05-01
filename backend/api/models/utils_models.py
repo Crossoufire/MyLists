@@ -4,20 +4,21 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List
 from flask import url_for, current_app
-from sqlalchemy import desc, asc, func
+from sqlalchemy import desc, asc, func, case
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import safe_div, get_models_group
+from backend.api.utils.functions import safe_div, get_models_group, change_air_format
+
+""" --- MIXIN MODELS ---------------------------------------------------------------------------------------- """
 
 
 class MediaMixin:
-    """ Media Mixin class for the SQLAlchemy classes: <Series>, <Anime>, <Movies>, <Games>, and <Books> """
+    """ Media Mixin class for the SQLAlchemy classes: Series/Anime/Movies/Games/Books """
 
     GROUP = None
     SIMILAR_GENRES = 12
 
-    # Define fields for PyCharm
     id: int
     actors: List
     genres: List
@@ -32,71 +33,70 @@ class MediaMixin:
     @property
     def genres_list(self) -> List:
         """ Fetch the media genres """
-        return [d.genre for d in self.genres[:5]]
+        return [g.genre for g in self.genres[:5]]
 
     @property
     def networks(self) -> List:
         """ Fetch the media networks """
-        return [d.network for d in self.networks]
+        return [n.network for n in self.networks]
 
     @property
     def media_cover(self) -> str:
         """ Get the media cover """
-        covers = f"{self.GROUP.value}_covers"
-        return url_for("static", filename=f"covers/{covers}/{self.image_cover}")
+        return url_for("static", filename=f"covers/{self.GROUP.value}_covers/{self.image_cover}")
 
-    def get_similar_genres(self) -> List[Dict]:
-        """ Get similar genre compared to the media in <media_details> """
+    def get_similar_media(self) -> List[Dict]:
+        """ Get the similar genres compared to the media """
 
-        # Get media models
         media, media_genre = get_models_group(self.GROUP, types=[ModelTypes.MEDIA, ModelTypes.GENRE])
 
-        # Check genre empty or unknown
         if len(self.genres_list) == 0 or self.genres_list[0] == "Unknown":
             return []
 
-        sim_genres = (db.session.query(media, db.func.count(db.func.distinct(media_genre.genre)).label("genre_c"))
-                      .join(media_genre, media.id == media_genre.media_id)
-                      .filter(media_genre.genre.in_(self.genres_list), media_genre.media_id != self.id)
-                      .group_by(media.id).having(db.func.count(db.func.distinct(media_genre.genre)) >= 1)
-                      .order_by(desc("genre_c"))
-                      .limit(self.SIMILAR_GENRES).all())
+        sim_genres = (
+            db.session.query(media, func.count(func.distinct(media_genre.genre)).label("genre_c"))
+            .join(media_genre, media.id == media_genre.media_id)
+            .filter(media_genre.genre.in_(self.genres_list), media_genre.media_id != self.id)
+            .group_by(media.id).having(func.count(func.distinct(media_genre.genre)) >= 1)
+            .order_by(desc("genre_c")).limit(self.SIMILAR_GENRES).all()
+        )
 
         return [{"media_id": m[0].id, "media_name": m[0].name, "media_cover": m[0].media_cover} for m in sim_genres]
 
     def in_follows_lists(self) -> List[Dict]:
         """ Verify whether the <media> is included in the list of users followed by the <current_user> """
 
-        # Fetch and set models
         media_list = get_models_group(self.GROUP, types=ModelTypes.LIST)
 
-        # Create query
         in_follows_lists = (
-            db.session.query(User, media_list, followers).join(User, User.id == followers.c.followed_id)
+            db.session.query(User, media_list, followers)
+            .join(User, User.id == followers.c.followed_id)
             .join(media_list, media_list.user_id == followers.c.followed_id)
-            .filter(followers.c.follower_id == current_user.id, media_list.media_id == self.id).all()
+            .filter(followers.c.follower_id == current_user.id, media_list.media_id == self.id)
+            .all()
         )
 
-        to_return = [{
+        data = [{
             "username": follow[0].username,
             "profile_image": follow[0].profile_image,
             "add_feeling": follow[0].add_feeling,
             **follow[1].to_dict(),
         } for follow in in_follows_lists]
 
-        return to_return
+        return data
 
     def get_user_list_info(self, label_class: db.Model) -> Dict | bool:
-        """ Retrieve if the <current_user> has the <media> in its <media_list> and label_class """
+        """ Retrieve if the <current_user> has the <media> in its <media_list> and <label_class> """
 
-        query = self.list_info.filter_by(user_id=current_user.id).first()
-        user_data = query.to_dict() if query is not None else False
+        media_list_q = self.list_info.filter_by(user_id=current_user.id).first()
+        user_data = media_list_q.to_dict() if media_list_q is not None else False
 
-        # Add supplementary data to user
         if user_data is not False:
-            user_data["username"] = current_user.username
-            user_data["labels"] = label_class.get_labels_name(current_user.id, self.id)
-            user_data["history"] = UserLastUpdate.get_history(self.GROUP, self.id)
+            user_data.update({
+                "username": current_user.username,
+                "labels": label_class.get_labels_name(current_user.id, self.id),
+                "history": UserLastUpdate.get_history(self.GROUP, self.id)
+            })
 
         return user_data
 
@@ -120,10 +120,10 @@ class MediaListMixin:
     media: db.Model
     query: db.Model
     completion_date: datetime
-    Status: Enum | Status
+    Status: Status
 
     def update_status(self, new_status: str) -> int:
-        """ Change the status of the tv media (overwritten for other media) for the current user and return the
+        """ Change the status of the TV media (overwritten for other media) for the current user and return the
         new total """
 
         self.status = new_status
@@ -266,25 +266,53 @@ class MediaListMixin:
 
         return sorting_dict
 
+    @classmethod
+    def get_coming_next(cls) -> List[Dict]:
+        """ Fetch the next coming media for the current user. For Series/Anime/Movies. Overridden by Games.
+        Not possible for Books """
+
+        media = get_models_group(cls.GROUP, ModelTypes.MEDIA)
+
+        media_date = "release_date"
+        if cls.GROUP in (MediaType.SERIES, MediaType.ANIME):
+            media_date = "next_episode_to_air"
+
+        next_media = (
+            db.session.query(media).join(cls, media.id == cls.media_id)
+            .filter(getattr(media, media_date) > datetime.utcnow(), cls.user_id == current_user.id,
+                    cls.status.notin_([Status.DROPPED, Status.RANDOM]))
+            .order_by(getattr(media, media_date).asc()).all()
+        )
+
+        data = [{
+            "media_id": media.id,
+            "media_name": media.name,
+            "media_cover": media.media_cover,
+            "season_to_air": media.season_to_air if cls.GROUP != MediaType.MOVIES else None,
+            "episode_to_air": media.episode_to_air if cls.GROUP != MediaType.MOVIES else None,
+            "formatted_date": change_air_format(getattr(media, media_date)),
+        } for media in next_media]
+
+        return data
+
 
 class MediaLabelMixin:
     """ LabelMixin SQLAlchemy model for the Labels List """
 
-    # Define fields for PyCharm
     label: str
+    media_id: int
 
     @classmethod
     def get_labels_name(cls, user_id: int, media_id: int) -> Dict:
         """ Get all the labels names in which the media is in for a specific user """
 
-        # Get all existing labels names for the user
-        all_labels = db.session.query(cls.label).filter_by(user_id=user_id).group_by(cls.label).all()
-        all_labels = [lab[0] for lab in all_labels]
+        # noinspection PyTypeChecker
+        labels_query = (
+            db.session.query(cls.label, case((cls.media_id == media_id, "already_in"), else_="available"))
+            .filter_by(user_id=user_id).group_by(cls.label).all()
+        )
 
-        already_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).all()
-        already_in = [lab[0] for lab in already_in]
-
-        return {"already_in": already_in, "available": list(set(all_labels) - set(already_in))}
+        return {status: [la for (la, st) in labels_query if st == status] for status in ["already_in", "available"]}
 
     @classmethod
     def get_total_labels(cls, user_id: int) -> Dict:
@@ -293,87 +321,10 @@ class MediaLabelMixin:
         all_labels = (db.session.query(cls.label).filter_by(user_id=user_id)
                       .group_by(cls.label).order_by(cls.label).all())
 
-        return {"count": len(all_labels), "names": [lab[0] for lab in all_labels[:10]]}
+        return {"count": len(all_labels), "names": [label[0] for label in all_labels[:10]]}
 
 
-class Badges(db.Model):
-    """ Badges SQL model """
-
-    GROUP = "Other"
-
-    id = db.Column(db.Integer, primary_key=True)
-    threshold = db.Column(db.Integer, nullable=False)
-    image_id = db.Column(db.String(100), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(100))
-    genres_id = db.Column(db.String(100))
-
-    @staticmethod
-    def _read_badge_data_from_csv() -> List[List[str]]:
-        """ Read badge data from CSV file and return it as list of lists """
-
-        badges_file_path = Path(current_app.root_path, "static/csv_data/badges.csv")
-        badge_data = []
-
-        try:
-            with open(badges_file_path, "r") as fp:
-                lines = fp.readlines()
-                lines.pop(0)
-                badge_data = [line.strip().split(";") for line in lines]
-        except Exception as e:
-            current_app.logger.info(f"[ERROR] reading the badge data - {e}")
-
-        return badge_data
-
-    @classmethod
-    def add_badges_to_db(cls):
-        """ Add the badges to the db using the CSV in static/csv_data folder """
-
-        badges_to_add = []
-        for values in cls._read_badge_data_from_csv():
-            if len(values) >= 5:
-                threshold, image_id, title, badge_type, genres_id = values[:5]
-
-                badges_to_add.append(cls(
-                    threshold=int(threshold),
-                    image_id=image_id,
-                    title=title,
-                    type=badge_type,
-                    genres_id=genres_id if genres_id else None
-                ))
-
-        # Add all badges and commit changes
-        db.session.add_all(badges_to_add)
-        db.session.commit()
-
-    @classmethod
-    def refresh_db_badges(cls):
-        """ Refresh the badges if new data are added in the CSV """
-
-        # Read badge data from CSV file
-        badge_data = cls._read_badge_data_from_csv()
-
-        # Query existing badges from database
-        badges = cls.query.order_by(cls.id).all()
-
-        # Update existing badges with new data
-        for i, badge in enumerate(badges):
-            if i < len(badge_data):
-                try:
-                    genre_ids = badge_data[i][4] if badge_data[i][4] else None
-                    threshold = int(badge_data[i][0])
-                except ValueError:
-                    print(f"Invalid data format for badge: {badge_data[i]}")
-                    continue
-
-                badge.threshold = threshold
-                badge.image_id = badge_data[i][1]
-                badge.title = badge_data[i][2]
-                badge.type = badge_data[i][3]
-                badge.genres_id = genre_ids
-
-        # Commit changes to database
-        db.session.commit()
+""" --- OTHER MODELS ---------------------------------------------------------------------------------------- """
 
 
 class Ranks(db.Model):
@@ -392,8 +343,8 @@ class Ranks(db.Model):
         return url_for("static", filename=f"img/media_levels/{self.image_id}.png")
 
     @classmethod
-    def add_ranks_to_db(cls):
-        """ Add the ranks for the first time using CSV """
+    def update_db_ranks(cls):
+        """ Update/add ranks to the DB using a CSV file """
 
         list_all_ranks = []
         path = Path(current_app.root_path, "static/csv_data/media_levels.csv")
@@ -401,23 +352,34 @@ class Ranks(db.Model):
             for line in fp:
                 list_all_ranks.append(line.split(","))
 
-        db.session.add_all([cls(level=int(r[0]), image_id=r[1], name=r[2]) for r in list_all_ranks[1:]])
+        # Empty CSV file: nothing to update
+        if not list_all_ranks:
+            return
 
-    @classmethod
-    def refresh_db_ranks(cls):
-        """ Refresh the newly added ranks in the CSV to the db """
+        # If no ranks exist in DB: add all from CSV else update
+        if cls.query.count() == 0:
+            db.session.add_all([cls(level=int(rk[0]), image_id=rk[1], name=rk[2]) for rk in list_all_ranks[1:]])
+        else:
+            ranks = cls.query.order_by(cls.id).all()
 
-        list_all_ranks = []
-        path = Path(current_app.root_path, "static/csv_data/media_levels.csv")
-        with open(path) as fp:
-            for line in fp:
-                list_all_ranks.append(line.split(","))
+            # -1 is removing header
+            for i in range(min(len(ranks), len(list_all_ranks) - 1)):
+                ranks[i].level = int(list_all_ranks[i + 1][0])
+                ranks[i].image_id = list_all_ranks[i + 1][1]
+                ranks[i].name = list_all_ranks[i + 1][2]
 
-        ranks = cls.query.order_by(cls.id).all()
-        for i in range(1, len(list_all_ranks)):
-            ranks[i-1].level = int(list_all_ranks[i][0])
-            ranks[i-1].image_id = list_all_ranks[i][1]
-            ranks[i-1].name = list_all_ranks[i][2]
+            # If more ranks in CSV than DB: add remaining ones
+            if len(list_all_ranks) > len(ranks) + 1:
+                db.session.add_all([
+                    cls(
+                        level=int(rk[0]),
+                        image_id=rk[1],
+                        name=rk[2]
+                    ) for rk in list_all_ranks[len(ranks) + 1:]
+                ])
+
+        # Commit changes
+        db.session.commit()
 
 
 class Frames(db.Model):
@@ -430,8 +392,8 @@ class Frames(db.Model):
     image_id = db.Column(db.String(50), nullable=False)
 
     @classmethod
-    def add_frames_to_db(cls):
-        """ Add the frames to the db using the CSV in static/csv_data folder """
+    def update_db_frames(cls):
+        """ Update the DB profile frames using CSV file """
 
         list_all_frames = []
         path = Path(current_app.root_path, "static/csv_data/profile_borders.csv")
@@ -439,30 +401,31 @@ class Frames(db.Model):
             for line in fp:
                 list_all_frames.append(line.split(";"))
 
-        for i in range(1, len(list_all_frames)):
-            frame = cls(
-                level=int(list_all_frames[i][0]),
-                image_id=list_all_frames[i][1]
-            )
+        # Empty CSV file: nothing to update
+        if not list_all_frames:
+            return
 
-            db.session.add(frame)
+        # If no frames exist in DB: add all from CSV else update
+        if cls.query.count() == 0:
+            db.session.add_all([cls(level=int(frame[0]), image_id=frame[1]) for frame in list_all_frames[1:]])
+        else:
+            frames = cls.query.order_by(cls.id).all()
 
-    @classmethod
-    def refresh_db_frames(cls):
-        """ Refresh the newly added frames in the CSV to the db """
+            # -1 is for header
+            for i in range(min(len(frames), len(list_all_frames) - 1)):
+                frames[i].level = int(list_all_frames[i + 1][0])
+                frames[i].image_id = list_all_frames[i + 1][1]
 
-        list_all_frames = []
-        path = Path(current_app.root_path, "static/csv_data/profile_borders.csv")
-        with open(path) as fp:
-            for line in fp:
-                list_all_frames.append(line.split(";"))
+            # If more frames in CSV than DB: add remaining ones
+            if len(list_all_frames) > len(frames) + 1:
+                db.session.add_all([
+                    cls(
+                        level=int(frame[0]),
+                        image_id=frame[1]
+                    ) for frame in list_all_frames[len(frames) + 1:]
+                ])
 
-        # Query frames
-        frames = cls.query.order_by(cls.id).all()
-
-        for i in range(1, len(list_all_frames)):
-            frames[i-1].level = int(list_all_frames[i][0])
-            frames[i-1].image_id = list_all_frames[i][1]
+        db.session.commit()
 
 
 class MyListsStats(db.Model):
@@ -483,6 +446,9 @@ class MyListsStats(db.Model):
     top_directors = db.Column(db.Text)
     top_developers = db.Column(db.Text)
     top_dropped = db.Column(db.Text)
+    top_rated_actors = db.Column(db.Text)
+    top_rated_directors = db.Column(db.Text)
+    top_rated_developers = db.Column(db.Text)
 
     total_episodes = db.Column(db.Text)
     total_seasons = db.Column(db.Text)
@@ -495,13 +461,11 @@ class MyListsStats(db.Model):
     def get_all_stats(cls) -> Dict:
         """ Get all the stats from the SQL model """
 
-        # Query stats
         all_stats = cls.query.order_by(cls.timestamp.desc()).first()
 
-        # Dict with all data
         mylists_data = {}
         for key, value in all_stats.__dict__.items():
-            if key not in ["id", "timestamp", "_sa_instance_state"]:
+            if key not in ("id", "timestamp", "_sa_instance_state"):
                 if isinstance(value, str):
                     mylists_data[key] = json.loads(value)
                 else:

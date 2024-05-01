@@ -1,6 +1,6 @@
-from backend.api import init_app
+from backend.api import create_app
 
-app = init_app()
+app = create_app()
 
 if __name__ == "__main__":
     app.run()

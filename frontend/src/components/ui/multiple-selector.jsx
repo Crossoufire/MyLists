@@ -1,3 +1,5 @@
+// noinspection JSDeprecatedSymbols
+
 import * as React from "react";
 import {cn} from "@/lib/utils";
 import {useEffect} from "react";
@@ -21,6 +23,7 @@ export function useDebounce(value, delay) {
     return debouncedValue;
 }
 
+
 function transToGroupOption(options, groupBy) {
     if (options.length === 0) {
         return {};
@@ -42,6 +45,7 @@ function transToGroupOption(options, groupBy) {
     return groupOption;
 }
 
+
 function removePickedOption(groupOption, picked) {
     const cloneOption = JSON.parse(JSON.stringify(groupOption));
 
@@ -50,6 +54,7 @@ function removePickedOption(groupOption, picked) {
     }
     return cloneOption;
 }
+
 
 const MultipleSelector = React.forwardRef(
     (
@@ -245,10 +250,7 @@ const MultipleSelector = React.forwardRef(
                     commandProps?.onKeyDown?.(e);
                 }}
                 className={cn("overflow-visible bg-transparent", commandProps?.className)}
-                shouldFilter={
-                    commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
-                }
-                // When onSearch is provided, we don't want to filter the options. You can still override it.
+                shouldFilter={commandProps?.shouldFilter === undefined ? !onSearch : commandProps.shouldFilter}
                 filter={commandFilter()}
             >
                 <div
@@ -370,6 +372,7 @@ const MultipleSelector = React.forwardRef(
         );
     },
 );
-
 MultipleSelector.displayName = 'MultipleSelector';
+
+
 export default MultipleSelector;

@@ -1,12 +1,13 @@
 from typing import Any, Dict
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
-from backend.api import db
+from backend.api import db, cache
 from backend.api.routes.handlers import token_auth, current_user
-from backend.api.classes.Medialist_query import MediaListQuery
+from backend.api.data_managers.medialist_query_manager import MediaListQuery
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.utils.functions import get_models_group
+from backend.api.data_managers.stats_manager import BaseStats
 
 lists_bp = Blueprint("api_lists", __name__)
 
@@ -15,17 +16,11 @@ lists_bp = Blueprint("api_lists", __name__)
 @token_auth.login_required
 @validate_media_type
 def media_list(media_type: MediaType, username: str):
-    """ Media list endpoint (Series, Anime, Movies, Games, and Books) """
+    """ Media list endpoint """
 
     user = current_user.check_autorization(username)
-
-    # Add a view on media list to profile
     current_user.set_view_count(user, media_type)
-
-    # Resolve media query
     media_data, pagination = MediaListQuery(user, media_type).return_results()
-
-    # Commit changes
     db.session.commit()
 
     data = dict(
@@ -35,7 +30,20 @@ def media_list(media_type: MediaType, username: str):
         media_type=media_type.value,
     )
 
-    return jsonify(data=data)
+    return jsonify(data=data), 200
+
+
+@lists_bp.route("/stats/<media_type>/<username>", methods=["GET"])
+@cache.cached(timeout=3600)
+@token_auth.login_required
+@validate_media_type
+def stats_page(media_type: MediaType, username: str):
+
+    user = current_user.check_autorization(username)
+    stats_class = BaseStats.get_stats_class(media_type)
+    stats = stats_class(user).create_stats()
+
+    return jsonify(data=stats), 200
 
 
 @lists_bp.route("/media_in_label/<media_type>/<username>", methods=["GET"])
@@ -45,18 +53,13 @@ def media_in_label(media_type: MediaType, username: str):
     try:
         label = request.args.get("label")
     except:
-        return abort(400, "Sorry, the label was not found.")
+        return abort(404, "This label was not found")
 
-    # Check if <user> has access
     user = current_user.check_autorization(username)
-
-    # Get models using <media_type>
     labels_model = get_models_group(media_type, types=ModelTypes.LABELS)
-
-    # Fetch data from database
     media_data = labels_model.query.filter(labels_model.user_id == user.id, labels_model.label == label).all()
 
-    return jsonify(data=[media.to_dict() for media in media_data])
+    return jsonify(data=[media.to_dict() for media in media_data]), 200
 
 
 @lists_bp.route("/add_media_to_label", methods=["POST"])
@@ -67,16 +70,18 @@ def add_media_to_label(media_type: MediaType, media_id: int, payload: Any, model
 
     media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if media is None:
-        return abort(400)
+        return abort(404, "The media could not be found")
 
-    new_label = models[ModelTypes.LABELS](user_id=current_user.id, media_id=media_id, label=payload)
+    new_label = models[ModelTypes.LABELS](
+        user_id=current_user.id,
+        media_id=media_id,
+        label=payload,
+    )
 
-    # Commit changes
     db.session.add(new_label)
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] added a {media_type.value} [ID {media_id}] to "
-                            f"its label: {payload}.")
+    current_app.logger.info(f"User [{current_user.id}] added {media_type.value} [ID {media_id}] to label: {payload}.")
 
     return {}, 204
 
@@ -87,18 +92,21 @@ def add_media_to_label(media_type: MediaType, media_id: int, payload: Any, model
 def remove_label_from_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Remove a label associated with a media of the current user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    list_model, label_model = models[ModelTypes.LIST], models[ModelTypes.LABELS]
+
+    media = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if media is None:
-        return abort(400)
+        return abort(404, "The media could not be found")
 
-    models[ModelTypes.LABELS].query.filter(models[ModelTypes.LABELS].user_id == current_user.id,
-                                           models[ModelTypes.LABELS].media_id == media_id,
-                                           models[ModelTypes.LABELS].label == payload).delete()
+    label_model.query.filter(
+        label_model.user_id == current_user.id,
+        label_model.media_id == media_id,
+        label_model.label == payload
+    ).delete()
 
-    # Commit changes
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] removed a {media_type.value} ID [{media_id}] from its "
+    current_app.logger.info(f"User [{current_user.id}] removed {media_type.value} ID [{media_id}] from its "
                             f"label list: {payload}.")
 
     return {}, 204
@@ -107,9 +115,8 @@ def remove_label_from_media(media_type: MediaType, media_id: int, payload: Any, 
 @lists_bp.route("/delete_label", methods=["POST"])
 @token_auth.login_required
 def delete_label():
-    """ Remove the label """
+    """ Remove the label and remove the label on all the media having this label """
 
-    # Parse JSON data
     try:
         json_data = request.get_json()
         media_type = MediaType(json_data["media_type"])
@@ -120,12 +127,11 @@ def delete_label():
     labels_model = get_models_group(media_type, types=ModelTypes.LABELS)
     labels_model.query.filter(labels_model.user_id == current_user.id, labels_model.label == label).delete()
 
-    # Commit changes
     db.session.commit()
 
     current_app.logger.info(f"User [{current_user.id}] deleted this label: {label} ({media_type.value})")
 
-    return {"message": "Label successfully deleted."}, 200
+    return {}, 204
 
 
 @lists_bp.route("/rename_label", methods=["POST"])
@@ -133,7 +139,6 @@ def delete_label():
 def rename_label():
     """ Rename the label """
 
-    # Parse JSON data
     try:
         json_data = request.get_json()
         media_type = MediaType(json_data["media_type"])
@@ -147,10 +152,9 @@ def rename_label():
     for d in data:
         d.label = new_label
 
-    # Commit changes
     db.session.commit()
 
     current_app.logger.info(f"User [{current_user.id}] rename the label: {old_label} ({media_type.value}) "
                             f"to {new_label}")
 
-    return {"message": "Label name successfully updated."}, 200
+    return {}, 204

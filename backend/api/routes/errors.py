@@ -6,16 +6,26 @@ from werkzeug.exceptions import HTTPException, InternalServerError
 errors = Blueprint("errors_api", __name__)
 
 
+def log_http_exception(error: HTTPException):
+    """ Log the HTTP exception and send a mail to admin if in logger error """
+
+    # No errors logged in testing
+    if current_app.testing:
+        return
+
+    # In dev or prod: no 401/404 errors logged
+    if error.code == 404 or error == 401:
+        return
+
+    # Add error to logger and send mail to admin (prod only)
+    current_app.logger.error(traceback.format_exc())
+
+
 @errors.app_errorhandler(HTTPException)
-def http_error(error, message: str = None):
+def http_error(error: HTTPException, message: str = None):
     """ Catch and handle HTTP Exception. Log as error the important HTTP Exception and email the admin """
 
-    # Check 404 and 401 error: log error but no email notification
-    if error.code == 404 or error.code == 401:
-        current_app.logger.info(f"[Error {error.code}] - {error.description}")
-        return {}, 204
-    else:
-        current_app.logger.error(traceback.format_exc())
+    log_http_exception(error)
 
     data = dict(
         code=error.code,

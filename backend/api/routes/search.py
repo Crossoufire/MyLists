@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, abort, current_app
 from backend.api.routes.handlers import token_auth
-from backend.api.classes.API_data import ApiTMDB, ApiGames, ApiBooks
+from backend.api.data_managers.api_data_manager import ApiTMDB, ApiGames, ApiBooks
 from backend.api.models.user_models import User
 
 search_bp = Blueprint("api_search", __name__)
@@ -21,7 +21,7 @@ def autocomplete():
         except Exception as e:
             current_app.logger.error(f"[ERROR] - Requesting the database: {e}")
             return abort(400)
-        return jsonify(data=results)
+        return jsonify(data=results), 200
 
     if selector == "TMDB":
         Api_data = ApiTMDB()
@@ -30,7 +30,7 @@ def autocomplete():
     elif selector == "BOOKS":
         Api_data = ApiBooks()
     else:
-        return abort(400, "Selector not recognized.")
+        return abort(400, "Selector not recognized")
 
     try:
         Api_data.search(search, page)
@@ -39,4 +39,4 @@ def autocomplete():
         current_app.logger.error(f"[ERROR] - Requesting the API ({Api_data.__class__.__name__}): {e}")
         return abort(400)
 
-    return jsonify(data=results)
+    return jsonify(data=results), 200

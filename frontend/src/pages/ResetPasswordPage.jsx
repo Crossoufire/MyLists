@@ -10,10 +10,10 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const ResetPasswordPage = () => {
     const api = useApi();
-    const form = useForm();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
+    const form = useForm();
 
     const onSubmit = async (data) => {
         const response = await api.post("/tokens/reset_password", {
@@ -25,7 +25,7 @@ export const ResetPasswordPage = () => {
             return toast.error(response.body.description);
         }
 
-        toast.success(response.body.message);
+        toast.success("Your password was successfully modified");
         navigate("/");
     };
 

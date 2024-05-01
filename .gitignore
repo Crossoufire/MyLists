@@ -101,9 +101,11 @@ frontend/.env.production
 build/*
 
 # BACKEND STUFF
+backend/cache/*
+
 backend/api/static/profile_pics/*
 !backend/api/static/profile_pics/default.jpg
-!backend/api/static/profile_pics/anonymous.jpg
+!backend/tests/images/anonymous.jpg
 
 backend/api/static/background_pics/*
 !backend/api/static/background_pics/default.jpg
@@ -116,6 +118,5 @@ backend/api/static/covers/books_covers/*
 
 # FRONTEND STUFF
 /frontend/node_modules
-
 
 # -------------------------------------------------------------------------------------

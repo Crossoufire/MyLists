@@ -1,12 +1,11 @@
 import path from "path";
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
-import {visualizer} from "rollup-plugin-visualizer";
 
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-    plugins: [react(), visualizer()],
+    plugins: [react()],
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
@@ -16,6 +15,7 @@ export default defineConfig({
         watch: {
             usePolling: true,
             interval: 300,
+            binaryInterval: 300,
         },
         open: true,
         port: 3000,

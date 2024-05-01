@@ -3,7 +3,6 @@ import {createLocalDate, formatTime} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
-import {ReleaseDate} from "@/components/media/general/ReleaseDate";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
 
 
@@ -27,10 +26,9 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             mediaType={mediaType}
                             valueList={creators}
                         />
-                        <ReleaseDate
+                        <GenericDetails
                             name="Airing dates"
-                            start={mediaData.formatted_date[0]}
-                            end={mediaData.formatted_date[1]}
+                            value={<>{mediaData.formatted_date[0]}<br/>{mediaData.formatted_date[1]}</>}
                         />
                         <GenericDetails
                             name="Prod. Status"
@@ -67,9 +65,9 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             value={mediaData.origin_country}
                         />
                         {mediaData.next_episode_to_air &&
-                            <ReleaseDate
+                            <GenericDetails
                                 name="Next Airing"
-                                start={createLocalDate(mediaData.next_episode_to_air, true, false)}
+                                value={createLocalDate(mediaData.next_episode_to_air, true, false)}
                             />
                         }
                     </div>

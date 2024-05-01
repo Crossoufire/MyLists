@@ -17,7 +17,7 @@ const separatorVariants = cva("shrink-0 bg-border w-full",
             variant: "default",
         },
     }
-)
+);
 
 
 const Separator = forwardRef(({ className, variant, orientation = "horizontal", ...props }, ref) => (
@@ -28,7 +28,7 @@ const Separator = forwardRef(({ className, variant, orientation = "horizontal", 
         className={cn(separatorVariants({ variant, className }))}
         {...props}
     />
-))
+));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 

@@ -1,5 +1,5 @@
 import {useLoading} from "@/hooks/LoadingHook";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
+import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 

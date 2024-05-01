@@ -3,8 +3,8 @@ import {capitalize} from "@/lib/utils";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useFetchData} from "@/hooks/FetchDataHook";
 import {PageTitle} from "@/components/app/PageTitle";
-import {Return} from "@/components/primitives/Return";
-import {Loading} from "@/components/primitives/Loading";
+import {Return} from "@/components/app/base/Return";
+import {Loading} from "@/components/app/base/Loading";
 
 
 export const FollowsFollowers = ({ username, extension }) => {

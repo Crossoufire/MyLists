@@ -3,14 +3,14 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {useApi} from "@/providers/ApiProvider";
-import {FormError} from "@/components/homepage/FormError";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormError} from "@/components/app/base/FormError";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const RegisterForm = () => {
-	const api = useApi()
+	const api = useApi();
 	const [errors, setErrors] = useState({});
 	const [pending, setPending] = useState(false);
 	const form = useForm({
@@ -25,7 +25,7 @@ export const RegisterForm = () => {
 
 
 	const onSubmit = async (data) => {
-		setErrors({})
+		setErrors({});
 
 		setPending(true);
 		const response = await api.post("/register_user", {
@@ -44,7 +44,7 @@ export const RegisterForm = () => {
 			return toast.error(response.body.description);
 		}
 
-		toast.success(response.body.message);
+		toast.success("Your account has been created. Check your email to activate your account");
 	};
 
 	return (

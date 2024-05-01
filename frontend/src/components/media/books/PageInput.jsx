@@ -3,7 +3,7 @@ import {Input} from "@/components/ui/input";
 import {useLoading} from "@/hooks/LoadingHook";
 
 
-export const PageInput = ({initPage, totalPages, updatePage}) => {
+export const PageInput = ({ initPage, totalPages, updatePage }) => {
     const [page, setPage] = useState(initPage || 0);
     const [isLoading, handleLoading] = useLoading();
     const [backupPage, setBackupPage] = useState(initPage || 0);

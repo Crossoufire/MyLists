@@ -5,16 +5,16 @@ import {Input} from "@/components/ui/input";
 import {useNavigate} from "react-router-dom";
 import {useApi} from "@/providers/ApiProvider";
 import {PageTitle} from "@/components/app/PageTitle";
-import {FormError} from "@/components/homepage/FormError";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormError} from "@/components/app/base/FormError.jsx";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const ForgotPasswordPage = () => {
     const api = useApi();
-    const form = useForm();
     const navigate = useNavigate();
     const [errors, setErrors] = useState("");
+    const form = useForm();
     const [pending, setPending] = useState(false);
 
     const onSubmit = async (data) => {

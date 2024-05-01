@@ -68,7 +68,7 @@ gunicorn==21.2.0
     # via -r requirements.in
 howlongtobeatpy==1.0.5
     # via -r requirements.in
-idna==3.6
+idna==3.7
     # via
     #   requests
     #   yarl
@@ -89,7 +89,7 @@ multidict==6.0.4
     #   yarl
 packaging==23.2
     # via gunicorn
-pillow==10.2.0
+pillow==10.3.0
     # via -r requirements.in
 pyjwt==2.8.0
     # via -r requirements.in

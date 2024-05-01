@@ -30,7 +30,7 @@ export const BooksUserDetails = ({ userData, totalPages, updatesAPI }) => {
 
     const callbackRating = (value) => {
         setRating(value);
-    }
+    };
 
     return (
         <>

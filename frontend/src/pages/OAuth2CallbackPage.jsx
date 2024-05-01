@@ -1,14 +1,14 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
 import {useUser} from "@/providers/UserProvider";
-import {Loading} from "@/components/primitives/Loading";
+import {Loading} from "@/components/app/base/Loading";
 import {useNavigate, useParams, useSearchParams} from "react-router-dom";
 
 
 export const OAuth2CallbackPage = () => {
-    const navigate = useNavigate();
     const { provider } = useParams();
     const { login, currentUser } = useUser();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     useEffect(() => {
@@ -22,17 +22,17 @@ export const OAuth2CallbackPage = () => {
 
             if (!response.ok) {
                 toast.error(response.body.description);
-                return navigate("/");
+                return navigate("/", { replace: true });
             }
 
-            navigate(`/profile/${currentUser.username}`);
+            navigate(`/profile/${currentUser.username}`, { replace: true });
         })();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <div className="flex flex-col justify-center items-center h-[calc(100vh_-_62px_-292px)]">
+        <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
             <div className="text-xl mb-2 font-semibold">Authentication in progress</div>
             <Loading forPage={false}/>
         </div>

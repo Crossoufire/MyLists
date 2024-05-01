@@ -10,7 +10,7 @@ export const NavMediaItem = ({ to, icon, text, className, popRef }) => {
     const handleClosePopover = () => {
         popRef?.current?.click();
         setSheetOpen(false)
-    }
+    };
 
     return (
         <li>

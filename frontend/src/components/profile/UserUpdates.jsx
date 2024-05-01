@@ -2,7 +2,7 @@ import {Fragment} from "react";
 import {Link, useParams} from "react-router-dom";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {UserUpdate} from "@/components/reused/UserUpdate";
+import {UserUpdate} from "@/components/app/UserUpdate.jsx";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 

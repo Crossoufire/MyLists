@@ -1,7 +1,8 @@
-import {FaMinus, FaPlus} from "react-icons/fa";
+import {toast} from "sonner";
 import {useLoading} from "@/hooks/LoadingHook";
+import {FaMinus, FaPlus} from "react-icons/fa";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
 import {TvUserDetails} from "@/components/media/tv/TvUserDetails";
@@ -36,11 +37,12 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 		const response = await handleLoading(updatesAPI.addMedia);
 		if (response) {
 			await mutateData({ ...apiData, user_data: response }, false);
+			toast.success("Media added to your list");
 		}
 	};
 
 	const handleDeleteMedia = async () => {
-		const confirm = window.confirm("Do you want to remove this media from your list?")
+		const confirm = window.confirm("Do you want to remove this media from your list?");
 		if (!confirm) {
 			return;
 		}
@@ -48,6 +50,7 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 		const response = await handleLoading(updatesAPI.deleteMedia);
 		if (response) {
 			await mutateData({ ...apiData, user_data: false }, false);
+			toast.success("Media deleted from your list");
 		}
 	};
 
@@ -92,7 +95,7 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 					/>
 				</TabsContent>
 				<TabsContent value="history" className="w-[300px] p-5 pt-3 bg-card rounded-md overflow-y-hidden
-				hover:overflow-y-auto max-h-[355px]">
+					hover:overflow-y-auto max-h-[355px]">
 					<HistoryDetails
 						history={apiData.user_data.history}
 					/>

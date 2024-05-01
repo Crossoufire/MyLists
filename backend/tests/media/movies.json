@@ -1,0 +1,53 @@
+{
+    "media_data": {
+        "name": "Interstellar",
+        "original_name": "Interstellar",
+        "release_date": "2014-11-05",
+        "homepage": "http://www.interstellarmovie.net/",
+        "released": "Released",
+        "vote_average": 8.432,
+        "vote_count": 33980,
+        "synopsis": "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
+        "popularity": 195.554,
+        "budget": 165000000,
+        "revenue": 701729206,
+        "tagline": "Mankind was born on Earth. It was never meant to die here.",
+        "duration": 169,
+        "original_language": "en",
+        "api_id": 157336,
+        "director_name": "Christopher Nolan",
+        "image_cover": "7ad7a33dd1a1c5e8.jpg",
+        "last_api_update": "2024-04-01T18:29:16.275602"
+    },
+    "genres_data": [
+        {
+            "genre": "Adventure",
+            "genre_id": 12
+        },
+        {
+            "genre": "Drama",
+            "genre_id": 18
+        },
+        {
+            "genre": "Science Fiction",
+            "genre_id": 878
+        }
+    ],
+    "actors_data": [
+        {
+            "name": "Matthew McConaughey"
+        },
+        {
+            "name": "Anne Hathaway"
+        },
+        {
+            "name": "Jessica Chastain"
+        },
+        {
+            "name": "Michael Caine"
+        },
+        {
+            "name": "Bill Irwin"
+        }
+    ]
+}

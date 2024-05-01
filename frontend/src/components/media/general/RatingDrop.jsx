@@ -1,14 +1,12 @@
 import {getRatingValues} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
+import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const RatingDrop = ({ rating, isFeeling, updateRating, callbackRating }) => {
     const [isLoading, handleLoading] = useLoading();
     const ratingValues = getRatingValues(isFeeling, 16);
-
-    console.log(rating, isFeeling, updateRating, callbackRating);
 
     const handleSelectChange = async (value) => {
         const response = await handleLoading(updateRating, value);

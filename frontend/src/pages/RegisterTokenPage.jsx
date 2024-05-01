@@ -20,7 +20,7 @@ export const RegisterTokenPage = () => {
                 return toast.error(response.body.description);
             }
 
-            toast.success("Your account has been successfully activated. Feel free to log in now.")
+            toast.success("Your account has been successfully activated. Feel free to log-in now.")
             navigate("/");
         })();
 

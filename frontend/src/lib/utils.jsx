@@ -5,7 +5,7 @@ import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-i
 
 export const cn = (...inputs) => {
     return twMerge(clsx(inputs));
-}
+};
 
 export const zeroPad = (value) => {
     if (value) {
@@ -33,7 +33,7 @@ export const createLocalDate = (date_, addYear = false, addHours = true) => {
     const localDate = d.toLocaleString("en-GB", { timeZone: tz });
     const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const hours = addHours ? `at ${localDate.slice(11, 17)}` : "";
-    const year = addYear ? d.getFullYear() : (new Date().getFullYear() !== d.getFullYear() ? d.getFullYear() : "");
+    const year = addYear ? d.getFullYear() : (new Date().getFullYear() === d.getFullYear() ? "" : d.getFullYear());
 
     return `${localDate.slice(0, 2)} ${month[d.getMonth()]} ${year} ${hours}`;
 };
@@ -75,7 +75,7 @@ export const getPlaytimeValues = () => [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45,
 
 export const getRedoValues = () => {
     return [...Array(11).keys()];
-}
+};
 
 export const changeValueFormat = (value, label = "") => {
     if (value > 10000) {
@@ -99,7 +99,7 @@ export const getStatusColor = (status) => {
         "Plan to Watch": "#962d3e",
         "Plan to Read": "#962d3e",
         "Plan to Play": "#962d3e",
-    }
+    };
 
     return colors[status];
 };
@@ -111,7 +111,7 @@ export const getMediaColor = (media) => {
         "movies": "#8c7821",
         "books": "#584c6e",
         "games": "#196219",
-    }
+    };
 
     return colors[media];
 };

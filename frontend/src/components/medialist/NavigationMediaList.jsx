@@ -2,7 +2,7 @@ import {capitalize, cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Link, useParams} from "react-router-dom";
-import {MediaIcon} from "@/components/primitives/MediaIcon";
+import {MediaIcon} from "@/components/app/base/MediaIcon";
 
 
 export const NavigationMediaList = ({ userData }) => {
@@ -18,7 +18,7 @@ export const NavigationMediaList = ({ userData }) => {
     ];
 
     return (
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-1">
             {menuItems.filter(item => item.cond !== false).map(item =>
                 <Link key={item.url} to={`${item.url}/${username}`}>
                     <Tooltip text={capitalize(item.media)} side="bottom">

@@ -18,10 +18,11 @@ const useFetchData2 = (url, query, options) => {
         if (!response.ok) {
             setLoading(false);
 
-            const error = new Error("An error occurred while fetching the data.");
-            error.message = response.body.message;
-            error.status = response.status;
-            error.description = response.body.description;
+            const error = {
+                message: response.body.message,
+                status: response.status,
+                description: response.body.description
+            };
 
             // noinspection JSCheckFunctionSignatures
             setError(error);
@@ -45,19 +46,21 @@ const useFetchData = (url, query, options) => {
     const api = useApi();
 
     const fetcher = async () => {
+        const delay = options?.delay || 0;
+        await new Promise(resolve => setTimeout(resolve, delay * 1000));
+
         const response = await api.get(url, query, options);
 
         if (!response.ok) {
-            const error = {}
-            error.status = response.status;
-            error.message = response.body.message;
-            error.description = response.body.description;
-
-            throw error;
+            throw {
+                status: response.status,
+                message: response.body.message,
+                description: response.body.description,
+            };
         }
 
         return response.body.data;
-    }
+    };
 
     const { data, isLoading, error, mutate } = useSWR([url, query, options], fetcher);
 

@@ -1,5 +1,5 @@
 import {useParams} from "react-router-dom";
-import {FilterSortDropList} from "@/components/medialist/FilterSortDropList.jsx";
+import {FilterSortDropList} from "@/components/medialist/FilterSortDropList";
 
 
 export const FilterAndSortList = ({ paginateData, updateLang, updateGenre, updateSorting }) => {

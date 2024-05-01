@@ -1,7 +1,6 @@
 import {useRef} from "react";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
-import {Separator} from "@/components/ui/separator";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -13,29 +12,27 @@ export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedi
     const handlePopoverStatus = (value) => {
         popoverCloseRef?.current?.click();
         handleStatus(value);
-    }
+    };
 
     const handlePopoverRemove = () => {
-        const confirm = window.confirm("Are you sure you want to delete this media?")
+        const confirm = window.confirm("Are you sure you want to delete this media?");
         if (!confirm) return;
 
         popoverCloseRef?.current?.click();
         removeMedia();
-    }
+    };
 
     const handlePopoverAdd = (value) => {
         popoverCloseRef?.current?.click();
         addFromOtherList(value);
-    }
+    };
 
     return (
         <div className="absolute top-1 right-1">
             <Popover>
                 <PopoverTrigger>
                     <Tooltip text="Edit">
-                        <Button variant="ghost" size="icon" className="opacity-75">
-                            <DotsVerticalIcon className="h-5 w-5"/>
-                        </Button>
+                        <DotsVerticalIcon className="h-5 w-5 mt-2 mr-1 opacity-50 hover:opacity-100"/>
                     </Tooltip>
                 </PopoverTrigger>
                 <PopoverClose ref={popoverCloseRef}/>
@@ -49,7 +46,9 @@ export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedi
                                 </SelectTrigger>
                                 <SelectContent>
                                     {allStatus.map(status =>
-                                        <SelectItem value={status} disabled={status === mediaStatus}>{status}</SelectItem>
+                                        <SelectItem key={status} value={status} disabled={status === mediaStatus}>
+                                            {status}
+                                        </SelectItem>
                                     )}
                                 </SelectContent>
                             </Select>
@@ -65,7 +64,9 @@ export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedi
                             </SelectTrigger>
                             <SelectContent>
                                 {allStatus.map(status =>
-                                    <SelectItem value={status}>{status}</SelectItem>
+                                    <SelectItem key={status} value={status}>
+                                        {status}
+                                    </SelectItem>
                                 )}
                             </SelectContent>
                         </Select>

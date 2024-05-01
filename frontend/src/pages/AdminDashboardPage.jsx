@@ -8,7 +8,7 @@ import {useFetchData} from "@/hooks/FetchDataHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useAdminApi} from "@/hooks/AdminUpdaterHook";
-import {Loading} from "@/components/primitives/Loading";
+import {Loading} from "@/components/app/base/Loading";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 

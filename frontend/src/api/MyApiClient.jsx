@@ -1,5 +1,5 @@
 
-// Base API url from flask app
+// Base API url from flask backend
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 
@@ -7,17 +7,30 @@ export class MyApiClient {
 	constructor() {
 		this.base_url =  `${BASE_API_URL}/api`;
 	}
-	
+
 	isAuthenticated() {
 		return localStorage.getItem("accessToken") !== null;
 	}
-	
+
+	filterParams(queryData) {
+		const filteredParams = Object.entries(queryData || {})
+			.filter(([_, value]) => value !== undefined && value !== "null" && value !== null)
+			.reduce((obj, [key, value]) => { obj[key] = value; return obj; }, {});
+
+		let queryArgs = new URLSearchParams(filteredParams).toString();
+		if (queryArgs !== "") {
+			queryArgs = `?${queryArgs}`;
+		}
+
+		return queryArgs;
+	}
+
 	async request(data) {
 		let response = await this.requestInternal(data);
 
 		if (response.status === 401 && data.url !== "/tokens") {
 			const refreshResponse = await this.put("/tokens", {
-				access_token: localStorage.getItem("accessToken")
+				access_token: localStorage.getItem("accessToken"),
 			});
 
 			if (refreshResponse.ok) {
@@ -28,33 +41,23 @@ export class MyApiClient {
 
 		return response;
 	}
-	
+
 	async requestInternal(data) {
-		const filteredParams = Object.entries(data.query || {})
-			.filter(([_, value]) => value !== undefined && value !== "null" && value !== null)
-			.reduce((obj, [key, value]) => {
-				obj[key] = value;
-				return obj;
-			}, {});
-
-		let query = new URLSearchParams(filteredParams).toString();
-		if (query !== "") {
-			query = "?" + query;
-		}
-
+		const queryArgs = this.filterParams(data.query);
 		let response;
+
 		try {
 			let body = {
 				method: data.method,
 				headers: {
-					"Content-Type": "application/json",
 					"Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+					...(data.removeContentType ? {} : { "Content-Type": "application/json" }),
 					...data.headers,
 				},
 				credentials: "include",
-				body: data.body ? JSON.stringify(data.body) : null,
-			}
-			response = await fetch(this.base_url + data.url + query, body);
+				body: data.body ? data.body instanceof FormData ? data.body : JSON.stringify(data.body) : null,
+			};
+			response = await fetch(this.base_url + data.url + queryArgs, body);
 		}
 		catch (error) {
 			response = {
@@ -73,9 +76,9 @@ export class MyApiClient {
 		return {
 			ok: response.ok,
 			status: response.status,
-			body: response.status !== 204 ? await response.json() : null,
+			body: response.status === 204 ? null : await response.json(),
 		}
-	}
+	};
 
 	async adminLogin(password) {
 		return await this.post("/admin/auth", {password}, {
@@ -83,7 +86,7 @@ export class MyApiClient {
 				Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
 			}
 		});
-	}
+	};
 
 	async login(usernameOrProvider, passwordOrProviderData, oAuth2) {
 		let response;
@@ -104,26 +107,26 @@ export class MyApiClient {
 		}
 
 		return response;
-	}
+	};
 
 	async logout() {
 		await this.delete("/tokens");
 		localStorage.removeItem("accessToken");
-	}
-	
+	};
+
 	async get(url, query, obj) {
-		return this.request({method: "GET", url, query, ...obj});
-	}
-	
+		return this.request({ method: "GET", url, query, ...obj });
+	};
+
 	async post(url, body, obj) {
-		return this.request({method: "POST", url, body, ...obj});
-	}
-	
+		return this.request({ method: "POST", url, body, ...obj });
+	};
+
 	async put(url, body, obj) {
-		return this.request({method: "PUT", url, body, ...obj});
-	}
-	
+		return this.request({ method: "PUT", url, body, ...obj });
+	};
+
 	async delete(url, obj) {
-		return this.request({method: "DELETE", url, ...obj});
-	}
+		return this.request({ method: "DELETE", url, ...obj });
+	};
 }

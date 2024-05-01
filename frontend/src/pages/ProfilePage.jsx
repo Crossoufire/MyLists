@@ -2,7 +2,7 @@ import {useParams} from "react-router-dom";
 import {ErrorPage} from "@/pages/ErrorPage";
 import {useFetchData} from "@/hooks/FetchDataHook";
 import {PageTitle} from "@/components/app/PageTitle";
-import {Loading} from "@/components/primitives/Loading";
+import {Loading} from "@/components/app/base/Loading";
 import {AllUpdates} from "@/components/profile/AllUpdates";
 import {ProfileData} from "@/components/profile/ProfileData";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
@@ -24,7 +24,7 @@ const componentToLoad = (extension) => {
 
 export const ProfilePage = () => {
     const { username, extension } = useParams();
-    const { apiData, loading, error } = useFetchData(`/profile/${username}`)
+    const { apiData, loading, error } = useFetchData(`/profile/${username}`);
 
     if (error) return <ErrorPage {...error}/>;
     if (loading) return <Loading/>;

@@ -1,16 +1,15 @@
 import {useRef} from "react";
 import {capitalize} from "@/lib/utils";
-import {Button} from "@/components/ui/button";
 import {useUser} from "@/providers/UserProvider";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {MediaIcon} from "@/components/primitives/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
+import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const NavMediaDrop = () => {
-    const popRef = useRef();
     const { currentUser } = useUser();
+    const popRef = useRef();
 
     const menuItems = [
         {url: `/list/series`, media: "series"},
@@ -24,10 +23,10 @@ export const NavMediaDrop = () => {
         <>
             <Popover>
                 <PopoverTrigger>
-                    <Button variant="invisible" className="flex items-center gap-2 text-lg font-semibold px-1">
+                    <div className="flex items-center gap-2 text-lg font-semibold px-1">
                         MyLists
                         <CaretSortIcon/>
-                    </Button>
+                    </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>
                 <PopoverContent className="w-[160px] px-2 py-2" align="start">

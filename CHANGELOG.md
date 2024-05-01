@@ -39,7 +39,7 @@
 ### Under the Hood
 - Added Tailwind CSS
 - Replaced Bootstrap by Shadcn-UI
-- Moved from Create React App (CRA) to Vite with react plugin
+- Moved from Create React App_old (CRA) to Vite with react plugin
 
 ### Features
 - Implemented OAuth2 authentication: Github and Google

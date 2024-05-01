@@ -2,9 +2,9 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List
-from flask import abort, current_app
-from sqlalchemy import text, func
+from typing import Dict, List, Tuple
+from flask import abort, current_app, url_for
+from sqlalchemy import text, func, ColumnElement
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import User, UserLastUpdate, Notifications
@@ -45,45 +45,22 @@ class Games(MediaMixin, db.Model):
     list_info = db.relationship("GamesList", back_populates="media", lazy="dynamic")
 
     """ --- Properties ------------------------------------------------------------ """
-    @property
-    def formatted_date(self):
-        """ return the formatted release date """
-        return change_air_format(self.release_date, games=True)
 
-    @property
-    def developers(self) -> List:
-        """ Return the developers as a list of str """
-        return [comp.name for comp in self.companies if comp.developer]
-
-    @property
-    def publishers(self) -> List:
-        """ Return all the publishers of a game """
-        return [comp.name for comp in self.companies if comp.publisher]
-
-    @property
-    def platforms(self) -> List:
-        """ Return all the platforms """
-        return [r.name for r in self.platforms_rl]
-
-    def to_dict(self, coming_next: bool = False) -> Dict:
+    def to_dict(self) -> Dict:
         """ Serialization of the games class """
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        if coming_next:
-            media_dict["media_cover"] = self.media_cover
-            media_dict["date"] = change_air_format(self.release_date)
-            return media_dict
-
-        media_dict["media_cover"] = self.media_cover
-        media_dict["formatted_date"] = self.formatted_date
-        media_dict["developers"] = self.developers
-        media_dict["platforms"] = self.platforms
-        media_dict["publishers"] = self.publishers
-        media_dict["genres"] = self.genres_list
-        media_dict["similar_media"] = self.get_similar_genres()
+        media_dict.update({
+            "media_cover": self.media_cover,
+            "formatted_date": change_air_format(self.release_date, games=True),
+            "developers": [comp.name for comp in self.companies if comp.developer],
+            "publishers": [comp.name for comp in self.companies if comp.publisher],
+            "platforms": [r.name for r in self.platforms_rl],
+            "genres": self.genres_list,
+        })
 
         return media_dict
 
@@ -113,7 +90,14 @@ class Games(MediaMixin, db.Model):
         else:
             return abort(400)
 
-        return [q.to_dict(coming_next=True) for q in query]
+        media_in_user_list = (
+            db.session.query(GamesList)
+            .filter(GamesList.user_id == current_user.id, GamesList.media_id.in_([media.id for media in query]))
+            .all()
+        )
+        user_media_ids = [media.media_id for media in media_in_user_list]
+
+        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
 
     @classmethod
     def remove_non_list_media(cls):
@@ -251,58 +235,36 @@ class GamesList(MediaListMixin, db.Model):
         return self.playtime
 
     @classmethod
+    def get_coming_next(cls) -> List[Dict]:
+        raw_sql = text(f""" 
+            SELECT
+                games.id,
+                games.name,
+                games.image_cover,
+                games.release_date            
+            FROM games 
+            JOIN games_list ON games.id = games_list.media_id
+            WHERE 
+                (games.release_date == 'Unknown' OR datetime(games.release_date, 'unixepoch') > datetime('now'))
+                AND games_list.status != 'DROPPED' 
+                AND games_list.user_id == {current_user.id};
+        """)
+
+        next_games = db.session.execute(raw_sql).all()
+
+        data = [{
+            "media_id": game[0],
+            "media_name": game[1],
+            "media_cover": url_for("static", filename=f"covers/games_covers/{game[2]}"),
+            "formatted_date": change_air_format(game[3], games=True)
+        } for game in next_games]
+
+        return data
+
+    @classmethod
     def get_specific_total(cls, user_id: int):
         """ No specific total for the games """
         return
-
-    @classmethod
-    def get_media_stats(cls, user: User) -> List[Dict]:
-        """ Get more stats associated with games """
-
-        sub_q = (db.session.query(cls.media_id)
-                 .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_PLAY).subquery())
-
-        playtime = db.session.scalars(db.select(cls.playtime)
-                                      .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_PLAY)).all()
-        playtime_bins = [0, 300, 600, 1200, 2400, 4200, 6000, 30000, 60000, 600000]
-        binning = [sum(1 for play in playtime if playtime_bins[i] <= play < playtime_bins[i + 1]) for i in
-                   range(len(playtime_bins) - 1)]
-
-        release_dates = (db.session.query(((func.strftime("%Y", func.datetime(Games.release_date, "unixepoch"))
-                                            // 5) * 5).label("release"),
-                                          func.count().label("count"))
-                         .join(sub_q, (Games.id == sub_q.c.media_id) & (Games.release_date.isnot(None)))
-                         .group_by("release").order_by("release").all())
-
-        top_genres = (db.session.query(GamesGenre.genre, func.count(GamesGenre.genre).label("count"))
-                      .join(sub_q, (GamesGenre.media_id == sub_q.c.media_id) & (GamesGenre.genre != "Unknown"))
-                      .group_by(GamesGenre.genre).order_by(text("count desc")).limit(10).all())
-
-        top_dev = (db.session.query(GamesCompanies.name, func.count(GamesCompanies.name).label("count"))
-                   .join(sub_q, (GamesCompanies.media_id == sub_q.c.media_id) & (GamesCompanies.name != "Unknown")
-                         & (GamesCompanies.developer == True))
-                   .group_by(GamesCompanies.name).order_by(text("count desc")).limit(10).all())
-
-        top_platforms = (db.session.query(GamesPlatforms.name, func.count(GamesPlatforms.name).label("count"))
-                         .join(sub_q, (GamesPlatforms.media_id == sub_q.c.media_id) &
-                               (GamesPlatforms.name != "Unknown"))
-                         .group_by(GamesPlatforms.name).order_by(text("count desc")).limit(10).all())
-
-        top_perspectives = (db.session.query(Games.player_perspective,
-                                             func.count(Games.player_perspective).label("count"))
-                            .join(sub_q, (Games.id == sub_q.c.media_id) & (Games.player_perspective != "Unknown"))
-                            .group_by(Games.player_perspective).order_by(text("count desc")).limit(5).all())
-
-        stats = [
-            {"name": "Playtime", "values": list(zip(playtime_bins[:-1], binning))},
-            {"name": "Releases date", "values": [(release, count_) for release, count_ in release_dates]},
-            {"name": "Genres", "values": [(genre, count_) for genre, count_ in top_genres]},
-            {"name": "Developers", "values": [(dev, count_) for dev, count_ in top_dev]},
-            {"name": "Platforms", "values": [(plat, count_) for plat, count_ in top_platforms]},
-            {"name": "Perspectives", "values": [(pers, count_) for pers, count_ in top_perspectives]},
-        ]
-
-        return stats
 
     @staticmethod
     def update_time_spent(old_value: int = 0, new_value: int = 0):
@@ -312,7 +274,7 @@ class GamesList(MediaListMixin, db.Model):
         current_user.time_spent_games = old_time + (new_value - old_value)
 
     @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict:
+    def get_available_sorting(cls, is_feeling: bool) -> Dict[str, ColumnElement]:
         """ Return the available sorting for games """
 
         sorting_dict = {
@@ -322,11 +284,11 @@ class GamesList(MediaListMixin, db.Model):
             "Release date -": Games.release_date.asc(),
             "Score IGDB +": Games.vote_average.desc(),
             "Score IGDB -": Games.vote_average.asc(),
+            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
+            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Playtime +": cls.playtime.desc(),
             "Playtime -": cls.playtime.asc(),
             "Comments": cls.comment.desc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
         }
 
         return sorting_dict
@@ -334,6 +296,16 @@ class GamesList(MediaListMixin, db.Model):
     @classmethod
     def total_user_time_def(cls):
         return func.sum(cls.playtime)
+
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple]:
+        return [(GamesPlatforms, GamesPlatforms.media_id == Games.id),
+                (GamesCompanies, GamesCompanies.media_id == Games.id)]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Games.name.ilike(f"%{search}%"), GamesPlatforms.name.ilike(f"%{search}%"),
+                GamesCompanies.name.ilike(f"%{search}%")]
 
 
 class GamesGenre(db.Model):

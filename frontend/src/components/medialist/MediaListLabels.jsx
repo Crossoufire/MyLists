@@ -6,10 +6,40 @@ import {Button} from "@/components/ui/button";
 import {FaPen, FaTrash} from "react-icons/fa";
 import {useApi} from "@/providers/ApiProvider";
 import {Tooltip} from "@/components/ui/tooltip";
-import {Return} from "@/components/primitives/Return";
-import {Loading} from "@/components/primitives/Loading";
-import {MediaCard} from "@/components/reused/MediaCard";
+import {Return} from "@/components/app/base/Return";
+import {Loading} from "@/components/app/base/Loading";
+import {MediaCard} from "@/components/app/MediaCard.jsx";
 import {Popover, PopoverAnchor, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+
+
+export const MediaListLabels = ({ mediaData, isCurrent, updateLabel, loading }) => {
+    const { mediaType, username } = useParams();
+
+    return (
+        <>
+            {mediaData.labels_media.length > 0 &&
+                <Return value="to labels" to={`/list/${mediaType}/${username}?status=Labels`}/>
+            }
+            <div className="mt-3 grid grid-cols-12 lg:gap-4 mb-5">
+                {loading ?
+                    <Loading forPage={false}/>
+                    :
+                    mediaData.labels_media.length > 0 ?
+                        <ShowMediaWithLabel
+                            labelsMedia={mediaData.labels_media}
+                        />
+                        :
+                        <ShowAllLabels
+                            mediaType={mediaType}
+                            initLabelsList={mediaData.labels}
+                            isCurrent={isCurrent}
+                            updateLabel={updateLabel}
+                        />
+                }
+            </div>
+        </>
+    );
+};
 
 
 const ShowMediaWithLabel = ({ labelsMedia }) => {
@@ -30,26 +60,27 @@ const ShowMediaWithLabel = ({ labelsMedia }) => {
     );
 };
 
+
 const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) => {
     const api = useApi();
+    const [labelsList, setLabelsList] = useState(initLabelsList);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
-    const [labelsList, setLabelsList] = useState(initLabelsList);
 
     const deleteLabel = async (label) => {
         const confirm = window.confirm("Do you really want to delete this label?");
 
         if (confirm) {
             const response = await api.post("/delete_label", {
-                label: label,
                 media_type: mediaType,
+                label: label,
             });
 
             if (!response.ok) {
                 return toast.error(response.body.description);
             }
 
-            toast.success(response.body.message);
+            toast.success("The label was successfully deleted");
             setLabelsList(labelsList.filter(x => x !== label));
         }
     };
@@ -69,7 +100,7 @@ const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) =>
             return toast.error(response.body.description);
         }
 
-        toast.success(response.body.message);
+        toast.success("The label name successfully updated");
         setLabelsList(labelsList.map(x => (x === selectedLabel ? newLabelName : x)));
         setSelectedLabel("");
     }
@@ -121,33 +152,3 @@ const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) =>
         </>
     );
 }
-
-
-export const MediaListLabels = ({ mediaData, isCurrent, updateLabel, loading }) => {
-    const { mediaType, username } = useParams();
-
-    return (
-        <>
-            {mediaData.labels_media.length > 0 &&
-                <Return value="to labels" to={`/list/${mediaType}/${username}?status=Labels`}/>
-            }
-            <div className="mt-3 grid grid-cols-12 lg:gap-4 mb-5">
-                {loading ?
-                    <Loading forPage={false}/>
-                    :
-                    mediaData.labels_media.length > 0 ?
-                        <ShowMediaWithLabel
-                            labelsMedia={mediaData.labels_media}
-                        />
-                        :
-                        <ShowAllLabels
-                            mediaType={mediaType}
-                            initLabelsList={mediaData.labels}
-                            isCurrent={isCurrent}
-                            updateLabel={updateLabel}
-                        />
-                }
-            </div>
-        </>
-    );
-};

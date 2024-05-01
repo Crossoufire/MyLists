@@ -5,7 +5,7 @@ import {useFetchData} from "@/hooks/FetchDataHook";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
-import {Loading} from "@/components/primitives/Loading";
+import {Loading} from "@/components/app/base/Loading";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {RefreshMedia} from "@/components/media/general/RefreshMedia";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
@@ -16,15 +16,15 @@ import {Link, useNavigate, useParams, useSearchParams} from "react-router-dom";
 
 
 export const MediaDetailsPage = () => {
-	const navigate = useNavigate();
 	const { currentUser } = useUser();
-	const [searchParams] = useSearchParams();
+	const navigate = useNavigate();
 	const { mediaId, mediaType } = useParams();
+	const [searchParams] = useSearchParams();
 	const { refresh } = useApiUpdater(mediaId, mediaType);
 	const { apiData, loading, error, mutate } = useFetchData(`/details/${mediaType}/${mediaId}`,
 		{...Object.fromEntries(searchParams)});
 
-	if (error) return <ErrorPage {...error}/>
+	if (error) return <ErrorPage {...error}/>;
 	if (loading) return <Loading/>;
 	if (apiData.redirect) return navigate(`/details/${mediaType}/${apiData.media.id}`, { replace: true });
 
@@ -74,7 +74,7 @@ export const MediaDetailsPage = () => {
 								/>
 								<SimilarMedia
 									mediaType={mediaType}
-									similarMedia={apiData.media.similar_media}
+									similarMedia={apiData.similar_media}
 								/>
 							</TabsContent>
 							<TabsContent value="follows">
@@ -82,7 +82,7 @@ export const MediaDetailsPage = () => {
 									<div className="mb-10 mt-6">
 										<div className="grid grid-cols-12 gap-4">
 											{apiData.follows_data.map(follow =>
-												<div className="col-span-12 md:col-span-6 lg:col-span-6">
+												<div key={follow.id} className="col-span-12 md:col-span-6 lg:col-span-6">
 													<FollowCard
 														key={follow.username}
 														follow={follow}

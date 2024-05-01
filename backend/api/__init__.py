@@ -1,18 +1,19 @@
 import logging
 import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
+from typing import Type
 from flask import Flask
-from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
 from flask_cors import CORS
 from flask_mail import Mail
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from backend.api.utils.enums import RoleType
 from backend.config import Config
 
 
 # Globally accessible Flask modules
-config = Config()
 mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
@@ -45,9 +46,9 @@ def _import_blueprints(app: Flask):
 
 
 def _create_app_logger(app: Flask):
-    """ Create an app logger registering the INFO, WARNING, and ERRORS, for the app """
+    """ Create an app logger registering the INFO, WARNING, and ERRORS for the app """
 
-    log_file_path = "MyLists/backend/api/static/log/mylists.log"
+    log_file_path = f"{os.path.abspath(os.path.dirname(__file__))}/static/log/mylists.log"
 
     # Check if log file exists, if not, create it
     if not os.path.exists(log_file_path):
@@ -65,7 +66,7 @@ def _create_app_logger(app: Flask):
 
 
 def _create_mail_handler(app: Flask):
-    """ Create a mail handler (TSL only) associated with the app logger: send an email when an error occurs """
+    """ Create a mail handler (TLS only) associated with the app logger: send email when errors occurs """
 
     mail_handler = SMTPHandler(
         mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
@@ -81,67 +82,48 @@ def _create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
-# def _create_first_db_data():
-#     """ Create all the database tables the first time and add the first data to the database """
-#
-#     from MyLists.models.user_models import User
-#     from datetime import datetime
-#     from MyLists.utils.scheduled_tasks import compute_media_time_spent
-#     from MyLists.models.utils_models import Badges, Ranks
-#
-#     # Create all DB tables - does not update existing tables
-#     db.create_all()
-#
-#     # Create an <admin>, a <manager> and a <user> if <admin> does not exist
-#     if User.query.filter_by(id="1").first() is None:
-#         admin1 = User(
-#             username="admin",
-#             email="admin@admin.com",
-#             password=bcrypt.generate_password_hash("password").decode("utf-8"),
-#             active=True,
-#             private=True,
-#             registered_on=datetime.utcnow(),
-#             activated_on=datetime.utcnow(),
-#             role=RoleType.ADMIN,
-#         )
-#         manager1 = User(
-#             username="manager",
-#             email="manager@manager.com",
-#             password=bcrypt.generate_password_hash("password").decode("utf-8"),
-#             active=True,
-#             registered_on=datetime.utcnow(),
-#             activated_on=datetime.utcnow(),
-#             role=RoleType.MANAGER,
-#         )
-#         user1 = User(
-#             username="user",
-#             email="user@user.com",
-#             password=bcrypt.generate_password_hash("password").decode("utf-8"),
-#             active=True,
-#             registered_on=datetime.utcnow(),
-#             activated_on=datetime.utcnow(),
-#         )
-#
-#         db.session.add_all([admin1, manager1, user1])
-#
-#         Badges.add_badges_to_db()
-#         Ranks.add_ranks_to_db()
-#
-#     # Refresh badges, ranks and compute time spent for each user
-#     Badges.refresh_db_badges()
-#     Ranks.refresh_db_ranks()
-#     compute_media_time_spent()
-#
-#     # Commit changes
-#     db.session.commit()
+def _create_first_db_data():
+    """ Create all DB tables the first time and add the first data to the DB """
+
+    from backend.api.models.user_models import User
+    from backend.api.utils.scheduled_tasks import compute_media_time_spent
+    from backend.api.models.utils_models import Ranks, Frames
+
+    # Create all DB tables - does not update existing tables
+    db.create_all()
+
+    # Create an <admin> if no user in DB
+    if User.query.filter_by(id=1).first() is None:
+        admin = User(
+            username="admin",
+            email="admin@admin.com",
+            password=bcrypt.generate_password_hash("password").decode("utf-8"),
+            active=True,
+            registered_on=datetime.utcnow(),
+            activated_on=datetime.utcnow(),
+            role=RoleType.ADMIN,
+        )
+
+        db.session.add(admin)
+        db.session.commit()
+
+    # Update ranks and frames from CSV file
+    Ranks.update_db_ranks()
+    Frames.update_db_frames()
+
+    # Compute time spent for each user
+    compute_media_time_spent()
+
+    # Commit changes
+    db.session.commit()
 
 
-def init_app() -> Flask:
-    """ Create and initialize the application """
+def create_app(config_class: Type[Config] = Config) -> Flask:
+    """ Create and initialize the app """
 
     # Fetch Flask app name (.flaskenv) and check config from <.env> file
     app = Flask(__name__, static_url_path="/api/static")
-    app.config.from_object(config)
+    app.config.from_object(config_class)
     app.url_map.strict_slashes = False
 
     # Initialize modules
@@ -155,11 +137,22 @@ def init_app() -> Flask:
     with app.app_context():
         _import_blueprints(app)
 
-        if app.debug is False:
+        if not app.debug and not app.testing:
             _create_app_logger(app)
             _create_mail_handler(app)
 
         from backend.api.utils.scheduled_tasks import add_cli_commands
         add_cli_commands()
 
+        # _create_first_db_data()
+
         return app
+
+
+# Needed for import problems
+from backend.api.models.books_models import *
+from backend.api.models.games_models import *
+from backend.api.models.movies_models import *
+from backend.api.models.tv_models import *
+from backend.api.models.user_models import *
+from backend.api.models.utils_models import *

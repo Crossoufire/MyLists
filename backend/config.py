@@ -24,9 +24,12 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")
     ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
     REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS") or "7")
-    REFRESH_TOKEN_IN_COOKIE = as_bool(os.environ.get("REFRESH_TOKEN_IN_COOKIE") or "yes")
     RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
+    ADMIN_TOKEN_MINUTES = int(os.environ.get("ADMIN_TOKEN_MINUTES") or "5")
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
+
+    # Debug option
+    USER_ACTIVE_PER_DEFAULT = as_bool(os.environ.get("USER_ACTIVE_PER_DEFAULT") or False)
 
     # Email options
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
@@ -71,6 +74,7 @@ class Config:
     SECRET_IGDB = os.environ.get("SECRET_IGDB") or None
     IGDB_API_KEY = os.environ.get("IGDB_API_KEY") or None
 
-    # Caching type
-    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "simple"
-
+    # Caching
+    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
+    CACHE_DIR = os.environ.get("CACHE_DIR") or "backend/cache"
+    CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000

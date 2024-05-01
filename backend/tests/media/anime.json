@@ -1,0 +1,120 @@
+{
+    "media_data": {
+        "name": "Attack on Titan",
+        "original_name": "\u9032\u6483\u306e\u5de8\u4eba",
+        "first_air_date": "2013-04-07",
+        "last_air_date": "2022-04-04",
+        "homepage": "https://shingeki.tv/",
+        "in_production": false,
+        "total_seasons": 4,
+        "total_episodes": 87,
+        "status": "Ended",
+        "vote_average": 8.661,
+        "vote_count": 5980,
+        "synopsis": "Several hundred years ago, humans were nearly exterminated by Titans. Titans are typically several stories tall, seem to have no intelligence, devour human beings and, worst of all, seem to do it for the pleasure rather than as a food source. A small percentage of humanity survived by walling themselves in a city protected by extremely high walls, even taller than the biggest Titans. Flash forward to the present and the city has not seen a Titan in over 100 years. Teenage boy Eren and his foster sister Mikasa witness something horrific as the city walls are destroyed by a Colossal Titan that appears out of thin air. As the smaller Titans flood the city, the two kids watch in horror as their mother is eaten alive. Eren vows that he will murder every single Titan and take revenge for all of mankind.",
+        "popularity": 124.46,
+        "api_id": 1429,
+        "last_api_update": "2024-04-01T18:28:21.069084",
+        "image_cover": "d865c514cd321337.jpg",
+        "next_episode_to_air": null,
+        "season_to_air": null,
+        "episode_to_air": null,
+        "duration": 24,
+        "origin_country": "JP",
+        "created_by": "Hiroshi Seko, Hajime Isayama"
+    },
+    "seasons_data": [
+        {
+            "season": 1,
+            "episodes": 25
+        },
+        {
+            "season": 2,
+            "episodes": 12
+        },
+        {
+            "season": 3,
+            "episodes": 22
+        },
+        {
+            "season": 4,
+            "episodes": 28
+        }
+    ],
+    "genres_data": [
+        {
+            "genre": "Animation",
+            "genre_id": 16
+        },
+        {
+            "genre": "Sci-Fi & Fantasy",
+            "genre_id": 10765
+        },
+        {
+            "genre": "Action & Adventure",
+            "genre_id": 10759
+        }
+    ],
+    "anime_genres_data": [
+        {
+            "genre": "Action",
+            "genre_id": 1
+        },
+        {
+            "genre": "Award Winning",
+            "genre_id": 46
+        },
+        {
+            "genre": "Drama",
+            "genre_id": 8
+        },
+        {
+            "genre": "Suspense",
+            "genre_id": 41
+        },
+        {
+            "genre": "Shounen",
+            "genre_id": 27
+        },
+        {
+            "genre": "Gore",
+            "genre_id": 58
+        },
+        {
+            "genre": "Military",
+            "genre_id": 38
+        },
+        {
+            "genre": "Survival",
+            "genre_id": 76
+        }
+    ],
+    "actors_data": [
+        {
+            "name": "Yuki Kaji"
+        },
+        {
+            "name": "Yui Ishikawa"
+        },
+        {
+            "name": "Marina Inoue"
+        },
+        {
+            "name": "Kisho Taniyama"
+        },
+        {
+            "name": "Hiro Shimono"
+        }
+    ],
+    "networks_data": [
+        {
+            "network": "MBS"
+        },
+        {
+            "network": "NHK G"
+        },
+        {
+            "network": "Tokyo MX"
+        }
+    ]
+}

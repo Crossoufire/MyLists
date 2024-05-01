@@ -2,7 +2,7 @@ import {useState} from "react";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {FaHeart, FaRegHeart} from "react-icons/fa";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
+import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) => {
@@ -17,17 +17,13 @@ export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) =>
         }
     };
 
+    if (isLoading) return <LoadingIcon/>;
+
     return (
-        <>
-            {isLoading ?
-                <LoadingIcon size={6}/>
-                :
-                <Tooltip text="Favorite">
-                    <div role="button" onClick={isCurrent && handleFavorite} className={!isCurrent && "cursor-auto"}>
-                        <Icon className={favorite && "text-red-700"}/>
-                    </div>
-                </Tooltip>
-            }
-        </>
+        <Tooltip text="Favorite">
+            <div role="button" onClick={isCurrent && handleFavorite} className={!isCurrent && "cursor-auto"}>
+                <Icon className={favorite && "text-red-700"}/>
+            </div>
+        </Tooltip>
     );
 };

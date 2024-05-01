@@ -9,7 +9,7 @@ export const UserContext = createContext(undefined);
 export const UserProvider = ({ children }) => {
 	const api = useApi();
 	const navigate = useNavigate();
-	const [currentUser, setCurrentUser] = useState();
+	const [currentUser, setCurrentUser] = useState(undefined);
 
 	useEffect(() => {
 		(async () => {
@@ -37,7 +37,7 @@ export const UserProvider = ({ children }) => {
 	const logout = async () => {
 		await api.logout();
 		setCurrentUser(null);
-		navigate("/");
+		return navigate("/", { replace: true });
 	};
 
 	return (

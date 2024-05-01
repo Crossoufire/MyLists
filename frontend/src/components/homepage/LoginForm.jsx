@@ -7,8 +7,8 @@ import {useUser} from "@/providers/UserProvider";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useNavigate, Link} from "react-router-dom";
 import {Separator} from "@/components/ui/separator";
-import {FormError} from "@/components/homepage/FormError";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormError} from "@/components/app/base/FormError";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -17,8 +17,8 @@ export const LoginForm = () => {
 	const { login } = useUser();
 	const navigate = useNavigate();
 	const [errors, setErrors] = useState("");
-	const [pending, setIsPending] = useState(false);
 	const form = useForm({ shouldFocusError: false });
+	const [pending, setIsPending] = useState(false);
 
 	const onSubmit = async (data) => {
 		setErrors("");
@@ -47,7 +47,7 @@ export const LoginForm = () => {
 			return toast.error(response.body.description);
 		}
 
-		window.location.href= response.body.redirect_url;
+		window.location.href = response.body.redirect_url;
 	};
 
 	return (

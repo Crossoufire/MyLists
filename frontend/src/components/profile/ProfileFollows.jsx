@@ -3,6 +3,7 @@ import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {useTransition} from "react";
 
 
 export const ProfileFollows = ({ username, follows }) => {
@@ -47,4 +48,3 @@ export const ProfileFollows = ({ username, follows }) => {
         </Card>
     );
 };
-

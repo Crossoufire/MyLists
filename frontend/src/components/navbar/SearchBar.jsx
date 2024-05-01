@@ -1,21 +1,27 @@
 import {toast} from "sonner";
+import {Link} from "react-router-dom";
+import {capitalize} from "@/lib/utils";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
+import {useLoading} from "@/hooks/LoadingHook";
 import {useApi} from "@/providers/ApiProvider";
-import {useDebounce} from "@/hooks/DebouceHook";
+import {useDebounce} from "@/hooks/DebounceHook";
 import {useUser} from "@/providers/UserProvider";
-import {ShowSearch} from "@/components/navbar/ShowSearch";
+import {useSheet} from "@/providers/SheetProvider";
+import {Separator} from "@/components/ui/separator";
+import {Loading} from "@/components/app/base/Loading";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const SearchBar = () => {
     const api = useApi();
-    const searchRef = useRef();
-    const {currentUser} = useUser();
-    const [query, setQuery] = useState("");
+    const { currentUser } = useUser();
     const [results, setResults] = useState();
+    const searchRef = useRef();
+    const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);
     const [selectDrop, setSelectDrop] = useState(currentUser ? "TMDB" : "users");
 
@@ -92,3 +98,103 @@ export const SearchBar = () => {
     );
 };
 
+
+const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) => {
+    const [isLoading, handleLoading] = useLoading(0);
+
+    if (query.length > 1 && results === undefined) {
+        return (
+            <div className="z-20 absolute h-[52px] w-80 top-11 bg-background border rounded-md font-medium">
+                <div className="ml-2 mt-2">
+                    <Loading forPage={false}/>
+                </div>
+            </div>
+        );
+    }
+
+    if (results === undefined) {
+        return;
+    }
+
+    if (results.items.length === 0) {
+        return (
+            <div className="z-20 absolute h-[40px] w-80 top-11 bg-background border rounded-md font-medium">
+                <div className="ml-2 mt-2">
+                    Sorry, no matches found
+                </div>
+            </div>
+        );
+    }
+
+    const handleClickNext = async () => {
+        await handleLoading(searchMedia, activePage + 1);
+    };
+
+    const handleClickPrev = async () => {
+        await handleLoading(searchMedia, activePage - 1);
+    };
+
+    return (
+        <div className="z-20 absolute max-h-[600px] w-80 top-11 bg-background border rounded-md font-medium overflow-y-auto">
+            <div className="flex justify-between items-center mt-3 px-3">
+                <div>
+                    <Button variant="secondary" size="sm" className="mr-2" onClick={handleClickPrev} disabled={activePage === 1}>
+                        Previous
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={handleClickNext} disabled={results.pages === 1}>
+                        Next
+                    </Button>
+                </div>
+                <div>Page: {activePage} / {results.pages}</div>
+            </div>
+            <Separator className="mt-3"/>
+            {isLoading ?
+                <div className="ml-2 mt-2 mb-3">
+                    <Loading forPage={false}/>
+                </div>
+                :
+                results.items.map(media =>
+                    <MediaSearch
+                        key={media.api_id}
+                        apiId={media.api_id}
+                        name={media.name}
+                        mediaType={media.media_type}
+                        thumbnail={media.image_cover}
+                        date={media.date}
+                        resetSearch={resetSearch}
+                    />
+                )
+            }
+        </div>
+    );
+};
+
+
+const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) => {
+    const { setSheetOpen } = useSheet();
+    const imageHeight = mediaType === "User" ? 64 : 96;
+    const url = mediaType === "User" ? `/profile/${name}` : `/details/${mediaType}/${apiId}?search=True`;
+
+    const handleLinkClick = () => {
+        resetSearch();
+        setSheetOpen(false);
+    };
+
+    return (
+        <Link to={url} onClick={handleLinkClick}>
+            <div className="flex border-b gap-x-4 p-3 items-center w-full min-h-6 hover:bg-neutral-900">
+                <img
+                    src={thumbnail}
+                    height={imageHeight}
+                    className="w-16 rounded-sm"
+                    alt={name}
+                />
+                <div>
+                    <div className="font-semibold mb-2">{name}</div>
+                    <div className="text-neutral-300">{capitalize(mediaType)}</div>
+                    <div className="text-muted-foreground text-sm">{date}</div>
+                </div>
+            </div>
+        </Link>
+    );
+};

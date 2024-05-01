@@ -6,17 +6,17 @@ import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
-import {FormError} from "@/components/homepage/FormError";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormError} from "@/components/app/base/FormError.jsx";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Dialog, DialogContent, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
 
 export const LabelLists = ({ mediaType, updatesAPI, initIn, initAvailable }) => {
-    const [error, setError] = useState("");
-    const [newLabel, setNewLabel] = useState("");
     const { currentUser: { username } } = useUser();
+    const [error, setError] = useState("");
     const [isLoading, handleLoading] = useLoading();
     const [labelsInList, setLabelsInList] = useState(initIn);
+    const [newLabel, setNewLabel] = useState("");
     const [labelsToAdd, setLabelsToAdd] = useState(initAvailable);
 
     const handleCreateLabel = async () => {

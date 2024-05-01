@@ -1,30 +1,42 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {useLoading} from "@/hooks/LoadingHook";
 
 
-export const PagesInput = ({ isCurrent, initPage, totalPages, updatePage }) => {
-    const [page, setPage] = useState(initPage);
+export const PagesInput = ({ isCurrent, initPage, totalPages, status, updatePage }) => {
     const [isLoading, handleLoading] = useLoading();
+    const [page, setPage] = useState(initPage || 0);
+    const [backupPage, setBackupPage] = useState(initPage || 0);
 
-    const handlePage = (ev) => setPage(ev.target.value);
+    useEffect(() => {
+        setPage(initPage);
+    }, [initPage]);
 
-    const handleUpdatePage = async (ev) => {
-        const newValue = ev.target.value;
-        const response = await handleLoading(updatePage, newValue);
-        if (response) {
-            setPage(newValue);
+    const handlePageOnBlur = async () => {
+        if (parseInt(page) === backupPage) {
+            return;
         }
+
+        const response = await handleLoading(updatePage, page);
+        if (response) {
+            setBackupPage(parseInt(page));
+        } else {
+            setPage(backupPage);
+        }
+    }
+
+    const onPageChange = (ev) => {
+        setPage(ev.target.value);
     }
 
     return (
         <div className="flex justify-center items-center h-[32px] w-full opacity-90 bg-gray-900 border
         border-x-black border-b-black rounded-bl-md rounded-br border-t-transparent">
-            {isCurrent ?
+            {(isCurrent && status !== "Plan to Read") ?
                 <Input
-                    value={page}
-                    onBlur={handleUpdatePage}
-                    onChange={handlePage}
+                    value={isLoading ? "..." : page}
+                    onBlur={(ev) => handlePageOnBlur(ev)}
+                    onChange={onPageChange}
                     className="w-[50px] border-none cursor-pointer"
                     disabled={isLoading}
                 />
