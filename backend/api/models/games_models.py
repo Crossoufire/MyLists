@@ -7,7 +7,7 @@ from flask import abort, current_app, url_for
 from sqlalchemy import text, func, ColumnElement
 from backend.api import db
 from backend.api.routes.handlers import current_user
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 from backend.api.utils.functions import change_air_format

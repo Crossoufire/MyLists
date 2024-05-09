@@ -2,40 +2,40 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {useApi} from "@/providers/ApiProvider";
-import {useUser} from "@/providers/UserProvider";
+import {api, userClient} from "@/api/MyApiClient";
 import {FaGithub, FaGoogle} from "react-icons/fa";
-import {useNavigate, Link} from "react-router-dom";
 import {Separator} from "@/components/ui/separator";
+import {Link, useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const LoginForm = () => {
-	const api = useApi();
-	const { login } = useUser();
 	const navigate = useNavigate();
 	const [errors, setErrors] = useState("");
 	const form = useForm({ shouldFocusError: false });
 	const [pending, setIsPending] = useState(false);
 
+
 	const onSubmit = async (data) => {
 		setErrors("");
-
 		setIsPending(true);
-		const response = await login(data.username, data.password);
-		setIsPending(false);
+
+		const response = await userClient.login(data.username, data.password);
 
 		if (response.status === 401) {
+			setIsPending(false);
 			return setErrors("Username or password incorrect");
 		}
 
 		if (!response.ok) {
+			setIsPending(false);
 			return toast.error(response.body.description);
 		}
 
-		navigate(`/profile/${data.username}`);
+		await navigate({ to: `/profile/${data.username}` });
+		setIsPending(false);
 	};
 
 	const withProvider = async (provider) => {

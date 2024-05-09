@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
-from sqlalchemy import func, text, and_, ColumnElement
+from sqlalchemy import func, ColumnElement
 from backend.api import db
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
@@ -98,7 +98,6 @@ class Movies(MediaMixin, db.Model):
         user_media_ids = [media.media_id for media in media_in_user_list]
 
         return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
-
 
     @classmethod
     def remove_non_list_media(cls):

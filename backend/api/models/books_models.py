@@ -3,10 +3,10 @@ import datetime
 from enum import Enum
 from typing import List, Dict, Tuple
 from flask import abort, current_app
-from sqlalchemy import func, text, ColumnElement
+from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.routes.handlers import current_user
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.functions import change_air_format
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
@@ -201,7 +201,6 @@ class BooksList(MediaListMixin, db.Model):
 
         old_time = current_user.time_spent_books
         current_user.time_spent_books = old_time + ((new_value - old_value) * self.TIME_PER_PAGE)
-
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:

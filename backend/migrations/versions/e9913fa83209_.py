@@ -17,14 +17,15 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('personal_movies_list',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('media_id', sa.Integer(), nullable=False),
-    sa.Column('list_name', sa.String(length=64), nullable=False),
-    sa.ForeignKeyConstraint(['media_id'], ['movies.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.create_table(
+        'personal_movies_list',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('media_id', sa.Integer(), nullable=False),
+        sa.Column('list_name', sa.String(length=64), nullable=False),
+        sa.ForeignKeyConstraint(['media_id'], ['movies.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+        sa.PrimaryKeyConstraint('id')
     )
 
 

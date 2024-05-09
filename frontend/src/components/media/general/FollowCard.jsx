@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {getRatingValues, zeroPad} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";

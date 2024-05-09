@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {createLocalDate} from "@/lib/utils";
 import {Separator} from "@/components/ui/separator";
 import {Payload} from "@/components/app/base/Payload";

@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {cn} from "@/lib/utils";
+import {userClient} from "@/api/MyApiClient";
 import {useLoading} from "@/hooks/LoadingHook";
-import {useUser} from "@/providers/UserProvider";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
@@ -11,10 +11,10 @@ import {UserMediaInfo} from "@/components/medialist/UserMediaInfo";
 
 
 export const MediaItem = ({ isCurrent, mediaType, userData, mediaData, isCommon, activeStatus }) => {
-	const { currentUser } = useUser();
+	const currentUser = userClient.currentUser;
 	const [isLoading, handleLoading] = useLoading();
-	const [stateIsCommon, setStateIsCommon] = useState(isCommon);
 	const [hideMedia, setHideMedia] = useState(false);
+	const [stateIsCommon, setStateIsCommon] = useState(isCommon);
 	const updateUserAPI = useApiUpdater(mediaData.media_id, mediaType);
 	const position = mediaType === "movies" ? "bottom-[32px]" : "bottom-[64px]";
 	const isAllOrSearch = (activeStatus === "All" || activeStatus === "Search");

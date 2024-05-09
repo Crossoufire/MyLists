@@ -1,14 +1,14 @@
 import {useState} from "react";
 import {LuSearch} from "react-icons/lu";
-import {useParams} from "react-router-dom";
 import {Input} from "@/components/ui/input";
-import {useUser} from "@/providers/UserProvider";
+import {userClient} from "@/api/MyApiClient";
+import {useParams} from "@tanstack/react-router";
 
 
 export const SearchMediaList = ({ initSearch, updateSearch }) => {
-    const { currentUser } = useUser();
-    const { mediaType, username } = useParams();
+    const currentUser = userClient.currentUser;
     const [search, setSearch] = useState(initSearch);
+    const { mediaType, username } = useParams({ strict: false });
     const condition = currentUser?.username === username ? "your" : username;
 
     const handleOnKeyUp = (ev) => {

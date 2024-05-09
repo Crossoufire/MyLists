@@ -2,21 +2,20 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Switch} from "@/components/ui/switch";
-import {useApi} from "@/providers/ApiProvider";
 import {FaQuestionCircle} from "react-icons/fa";
-import {useUser} from "@/providers/UserProvider";
+import {api, userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
-import {FormError} from "@/components/app/base/FormError.jsx";
+import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
+import {useNavigate} from "@tanstack/react-router";
 
 
 export const MediaListForm = () => {
-    const api = useApi();
-    const { currentUser, setCurrentUser } = useUser();
-    const [errors, setErrors] = useState("");
     const form = useForm();
+    const navigate = useNavigate();
+    const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
     const onSubmit = async (data) => {
@@ -30,8 +29,9 @@ export const MediaListForm = () => {
             return setErrors(response.body.description);
         }
 
-        setCurrentUser(response.body.updated_user);
-        toast.success(response.body.message);
+        userClient.currentUser = response.body.updated_user;
+        toast.success("Settings successfully updated");
+        return navigate({ to: `/profile/${response.body.updated_user.username}` });
     };
 
     return (
@@ -52,7 +52,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={currentUser.add_anime}
+                                        defaultChecked={userClient.currentUser.add_anime}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -70,7 +70,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={currentUser.add_games}
+                                        defaultChecked={userClient.currentUser.add_games}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -88,7 +88,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={currentUser.add_books}
+                                        defaultChecked={userClient.currentUser.add_books}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -123,7 +123,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={currentUser.add_feeling}
+                                        defaultChecked={userClient.currentUser.add_feeling}
                                     />
                                 </FormControl>
                                 <div className="leading-none">

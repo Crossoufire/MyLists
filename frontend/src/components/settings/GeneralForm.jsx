@@ -2,20 +2,19 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {useApi} from "@/providers/ApiProvider";
-import {useUser} from "@/providers/UserProvider";
-import {FormError} from "@/components/app/base/FormError.jsx";
+import {api, userClient} from "@/api/MyApiClient";
+import {useNavigate} from "@tanstack/react-router";
+import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const GeneralForm = () => {
-    const api = useApi();
-    const { currentUser, setCurrentUser } = useUser();
-    const [errors, setErrors] = useState("");
     const form = useForm();
-    const [backImage, setBackImage] = useState("");
+    const navigate = useNavigate();
+    const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
+    const [backImage, setBackImage] = useState("");
     const [profileImage, setProfileImage] = useState("");
 
     const onSubmit = async (data) => {
@@ -40,8 +39,9 @@ export const GeneralForm = () => {
             return setErrors(response.body.description);
         }
 
-        setCurrentUser(response.body.updated_user);
-        toast.success(response.body.message);
+        userClient.currentUser = response.body.updated_user;
+        toast.success("Settings successfully updated");
+        return navigate({ to: `/profile/${response.body.updated_user.username}` });
     };
 
     return (
@@ -62,7 +62,7 @@ export const GeneralForm = () => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        defaultValue={currentUser.username}
+                                        defaultValue={userClient.currentUser.username}
                                     />
                                 </FormControl>
                                 <FormMessage/>

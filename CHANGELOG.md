@@ -42,7 +42,7 @@
 - Moved from Create React App_old (CRA) to Vite with react plugin
 
 ### Features
-- Implemented OAuth2 authentication: Github and Google
+- Implemented OAuth2 authentication: GitHub and Google
 - Added `React-Helmet` to manage metadata in the header
 - Removed the changelog in the website (not a fan)
 

@@ -24,11 +24,11 @@ def media_details(media_type: MediaType, media_id: int):
 
     media_model, label_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LABELS])
 
-    search_arg = request.args.get("search")
-    filter_id = {"api_id": media_id} if search_arg else {"id": media_id}
+    external_arg = request.args.get("external")
+    filter_id = {"api_id": media_id} if external_arg else {"id": media_id}
     media = media_model.query.filter_by(**filter_id).first()
 
-    if search_arg and not media:
+    if external_arg and not media:
         API_class = ApiData.get_API_class(media_type)
         media = API_class(API_id=media_id).save_media_to_db()
         db.session.commit()
@@ -40,7 +40,6 @@ def media_details(media_type: MediaType, media_id: int):
         similar_media=media.get_similar_media(),
         user_data=media.get_user_list_info(label_model),
         follows_data=media.in_follows_lists(),
-        redirect=bool(search_arg),
     )
 
     return jsonify(data=data)

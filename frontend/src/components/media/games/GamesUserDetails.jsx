@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useUser} from "@/providers/UserProvider";
+import {userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
@@ -7,7 +7,7 @@ import {PlaytimeDrop} from "@/components/media/games/PlaytimeDrop";
 
 
 export const GamesUserDetails = ({ userData, updatesAPI }) => {
-    const { currentUser } = useUser();
+    const currentUser = userClient.currentUser;
     const [status, setStatus] = useState(userData.status);
     const [playtime, setPlaytime] = useState(userData.playtime / 60);
     const [rating, setRating] = useState(currentUser.add_feeling ? userData.feeling : userData.score);

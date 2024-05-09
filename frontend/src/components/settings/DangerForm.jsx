@@ -1,19 +1,18 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useApi} from "@/providers/ApiProvider";
-import {useUser} from "@/providers/UserProvider";
-import {FormError} from "@/components/app/base/FormError.jsx";
+import {api, userClient} from "@/api/MyApiClient";
+import {useNavigate} from "@tanstack/react-router";
+import {FormError} from "@/components/app/base/FormError";
 
 
 export const DangerForm = () => {
-    const api = useApi();
-    const {logout} = useUser();
+    const navigate = useNavigate();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
     const deleteAccount = async () => {
-        setErrors("")
+        setErrors("");
         const confirm = window.confirm("Are you really sure?");
 
         if (confirm) {
@@ -25,8 +24,9 @@ export const DangerForm = () => {
                 return setErrors(response.body.description);
             }
 
-            toast.success("Your account has been successfully deleted :(.");
-            logout();
+            toast.success("Your account has been successfully deleted");
+            await userClient.logout();
+            return navigate({ to: "/" });
         }
     };
 

@@ -1,10 +1,8 @@
 import {toast} from "sonner";
-import {useApi} from "@/providers/ApiProvider";
+import {api} from "@/api/MyApiClient.js";
 
 
 export const useApiUpdater = (mediaId, mediaType) => {
-    const api = useApi();
-
     const makeUpdateFunction = (url) => async (payload = null) => {
         const response = await api.post(url, {
             media_id: mediaId,

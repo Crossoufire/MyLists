@@ -1,23 +1,23 @@
-import {Link} from "react-router-dom";
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
+import {Link} from "@tanstack/react-router";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
+import {userClient} from "@/api/MyApiClient";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
-import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
-import {FormError} from "@/components/app/base/FormError.jsx";
+import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Dialog, DialogContent, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
 
-export const LabelLists = ({ mediaType, updatesAPI, initIn, initAvailable }) => {
-    const { currentUser: { username } } = useUser();
-    const [error, setError] = useState("");
+export const LabelLists = ({ mediaType, updatesAPI, initAvailable, initAlready }) => {
     const [isLoading, handleLoading] = useLoading();
-    const [labelsInList, setLabelsInList] = useState(initIn);
+    const [error, setError] = useState("");
+    const username = userClient.currentUser.username;
     const [newLabel, setNewLabel] = useState("");
     const [labelsToAdd, setLabelsToAdd] = useState(initAvailable);
+    const [labelsInList, setLabelsInList] = useState(initAlready);
 
     const handleCreateLabel = async () => {
         setError("");

@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List
 from flask import url_for, current_app
@@ -9,6 +8,7 @@ from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import safe_div, get_models_group, change_air_format
+
 
 """ --- MIXIN MODELS ---------------------------------------------------------------------------------------- """
 
@@ -94,7 +94,7 @@ class MediaMixin:
         if user_data is not False:
             user_data.update({
                 "username": current_user.username,
-                "labels": label_class.get_labels_name(current_user.id, self.id),
+                "labels": label_class.get_labels_name(user_id=current_user.id, media_id=self.id),
                 "history": UserLastUpdate.get_history(self.GROUP, self.id)
             })
 
@@ -301,18 +301,20 @@ class MediaLabelMixin:
 
     label: str
     media_id: int
+    user_id: int
 
     @classmethod
     def get_labels_name(cls, user_id: int, media_id: int) -> Dict:
         """ Get all the labels names in which the media is in for a specific user """
 
-        # noinspection PyTypeChecker
-        labels_query = (
-            db.session.query(cls.label, case((cls.media_id == media_id, "already_in"), else_="available"))
-            .filter_by(user_id=user_id).group_by(cls.label).all()
-        )
+        q_all = db.session.query(cls.label).filter_by(user_id=user_id).all()
+        all_labels = {label[0] for label in q_all}
 
-        return {status: [la for (la, st) in labels_query if st == status] for status in ["already_in", "available"]}
+        q_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).all()
+        already_in = {label[0] for label in q_in}
+        available = all_labels - already_in
+
+        return dict(already_in=list(already_in), available=list(available))
 
     @classmethod
     def get_total_labels(cls, user_id: int) -> Dict:

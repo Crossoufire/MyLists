@@ -1,12 +1,11 @@
 import os
-from unittest import mock
 from backend.api import db
 from werkzeug.exceptions import BadRequest
 from backend.tests.base_test import BaseTest
 from werkzeug.datastructures import FileStorage
-from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import (save_picture, get_class_registry, get_models_group, get_level, display_time,
-                                         clean_html_text, is_latin, safe_div, change_air_format, get_media_level)
+from backend.api.utils.enums import MediaType
+from backend.api.utils.functions import (save_picture, get_class_registry, get_level, display_time, clean_html_text,
+                                         is_latin, safe_div, change_air_format, get_media_level)
 
 
 class UtilsFunctionTests(BaseTest):

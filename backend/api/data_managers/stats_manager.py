@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Type, List
 from sqlalchemy import func, text, ColumnElement
-from backend.api import db, cache
+from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.models.user_models import UserLastUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status

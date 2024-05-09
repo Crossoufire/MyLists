@@ -28,7 +28,7 @@ def _send_async_email(app: Flask, to: str, username: str, subject: str, template
 def send_email(to: str, username: str, subject: str, template: str, callback: str, token: str):
     """ Create thread to send asynchronously the email """
 
-    # noinspection PyProtectedMember
+    # noinspection PyProtectedMember,PyUnresolvedReferences
     app = current_app._get_current_object()
     thread = Thread(target=_send_async_email, args=(app, to, username, subject, template, callback, token))
     thread.start()

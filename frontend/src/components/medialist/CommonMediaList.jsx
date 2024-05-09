@@ -1,11 +1,11 @@
-import {useParams} from "react-router-dom";
+import {userClient} from "@/api/MyApiClient";
 import {Switch} from "@/components/ui/switch";
-import {useUser} from "@/providers/UserProvider";
+import {useParams} from "@tanstack/react-router";
 
 
 export const CommonMediaList = ({ mediaData, showCommon, updateCommon }) => {
-    const { currentUser } = useUser();
-    const { username, mediaType } = useParams();
+    const currentUser = userClient.currentUser;
+    const { username, mediaType } = useParams({ strict: false });
 
     if (currentUser.username === username) {
         return null;

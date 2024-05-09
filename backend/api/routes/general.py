@@ -47,6 +47,7 @@ def hall_of_fame():
     page = request.args.get("page", 1, type=int)
     sorting = request.args.get("sorting", "profile", type=str)
 
+    # noinspection PyTestUnpassedFixture
     ranking = User.profile_level.desc() if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
 
     ranked_users = db.session.query(User, func.rank().over(order_by=ranking).label("rank")).cte()

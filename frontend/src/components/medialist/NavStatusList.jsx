@@ -1,16 +1,17 @@
-import {capitalize} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
+import {Link, useParams} from "@tanstack/react-router";
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Link} from "react-router-dom";
 
 
-export const NavStatusList = ({ allStatus, activeStatus, mediaType, username, updateStatus }) => {
+export const NavStatusList = ({ allStatus, activeStatus, updateStatus }) => {
+    const { mediaType, username } = useParams({ strict: false });
+
     const handleStatus = (newStatus) => {
         if (activeStatus === newStatus) {
             return;
         }
         updateStatus(newStatus);
-    }
+    };
 
     return (
         <div className="flex items-center justify-between gap-4 mt-8">
@@ -25,7 +26,7 @@ export const NavStatusList = ({ allStatus, activeStatus, mediaType, username, up
             </Tabs>
             <Link to={`/stats/${mediaType}/${username}`}>
                 <Button variant="secondary" className="h-10">
-                    {capitalize(mediaType)} Stats
+                    Detailed Stats
                 </Button>
             </Link>
         </div>

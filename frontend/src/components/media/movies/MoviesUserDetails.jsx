@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useUser} from "@/providers/UserProvider";
+import {userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
@@ -7,7 +7,7 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
 export const MoviesUserDetails = ({ userData, updatesAPI }) => {
-    const { currentUser } = useUser();
+    const currentUser = userClient.currentUser;
     const [redo, setRedo] = useState(userData.rewatched);
     const [status, setStatus] = useState(userData.status);
     const [rating, setRating] = useState(currentUser.add_feeling ? userData.feeling : userData.score);

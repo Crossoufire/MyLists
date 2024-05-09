@@ -2,18 +2,17 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {useApi} from "@/providers/ApiProvider";
-import {useUser} from "@/providers/UserProvider";
-import {FormError} from "@/components/app/base/FormError.jsx";
+import {api, userClient} from "@/api/MyApiClient";
+import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {useNavigate} from "@tanstack/react-router";
 
 
 export const PasswordForm = () => {
-    const api = useApi();
-    const { setCurrentUser } = useUser();
-    const [errors, setErrors] = useState("");
     const form = useForm();
+    const navigate = useNavigate();
+    const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
     const onSubmit = async (data) => {
@@ -27,8 +26,9 @@ export const PasswordForm = () => {
             return setErrors(response.body.description);
         }
 
-        setCurrentUser(response.body.updated_user);
-        toast.success(response.body.message);
+        userClient.currentUser = response.body.updated_user;
+        toast.success("Password successfully updated");
+        return navigate({ to: `/profile/${response.body.updated_user.username}` });
     };
 
     return (
@@ -56,12 +56,7 @@ export const PasswordForm = () => {
                     <FormField
                         control={form.control}
                         name="new_password"
-                        rules={{
-                            minLength: {
-                                value: 8,
-                                message: "The new password must have at least 8 characters"
-                            }
-                        }}
+                        rules={{ minLength: { value: 8, message: "The new password must have at least 8 characters"} }}
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel>New Password</FormLabel>

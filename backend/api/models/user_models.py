@@ -402,7 +402,7 @@ class User(db.Model):
 
             # Get level and percent
             level, level_percent = map(float, divmod(get_level(time_in_min), 1))
-            level_percent = level_percent * 100
+            level_percent *= 100
 
             # Fetch associated rank from dict
             rank_info = all_ranks.get(min(level, 149))

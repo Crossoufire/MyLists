@@ -1,21 +1,20 @@
 import {toast} from "sonner";
+import {api} from "@/api/MyApiClient.js";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useApi} from "@/providers/ApiProvider";
 import {useEffect, useRef, useState} from "react";
-import {Link, useLocation} from "react-router-dom";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
+import {Link, useRouterState} from "@tanstack/react-router";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const Notifications = ({ isMobile }) => {
-    const api = useApi();
     const popRef = useRef();
-    const location = useLocation();
+    const router = useRouterState();
     const { setSheetOpen } = useSheet();
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
@@ -36,7 +35,7 @@ export const Notifications = ({ isMobile }) => {
                 await countNotifications();
             }
         })();
-    }, [location.pathname]);
+    }, [router.location.pathname]);
 
     const fetchNotifications = async () => {
         setLoading(true);

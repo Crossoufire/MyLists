@@ -8,6 +8,7 @@ import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) => {
     const [isLoading, handleLoading] = useLoading();
     const [favorite, setFavorite] = useState(initFav || false);
+
     const Icon = favorite ? FaHeart : FaRegHeart;
 
     const handleFavorite = async () => {
@@ -17,7 +18,9 @@ export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) =>
         }
     };
 
-    if (isLoading) return <LoadingIcon/>;
+    if (isLoading) {
+        return <LoadingIcon size={6}/>;
+    }
 
     return (
         <Tooltip text="Favorite">

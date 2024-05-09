@@ -1,15 +1,15 @@
 import {useRef} from "react";
 import {capitalize} from "@/lib/utils";
-import {useUser} from "@/providers/UserProvider";
+import {userClient} from "@/api/MyApiClient";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const NavMediaDrop = () => {
-    const { currentUser } = useUser();
     const popRef = useRef();
+    const currentUser = userClient.currentUser;
 
     const menuItems = [
         {url: `/list/series`, media: "series"},

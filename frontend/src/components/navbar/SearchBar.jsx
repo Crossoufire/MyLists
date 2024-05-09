@@ -1,14 +1,13 @@
 import {toast} from "sonner";
-import {Link} from "react-router-dom";
 import {capitalize} from "@/lib/utils";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
+import {Link} from "@tanstack/react-router";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
-import {useApi} from "@/providers/ApiProvider";
 import {useDebounce} from "@/hooks/DebounceHook";
-import {useUser} from "@/providers/UserProvider";
+import {api, userClient} from "@/api/MyApiClient";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
@@ -17,10 +16,9 @@ import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVal
 
 
 export const SearchBar = () => {
-    const api = useApi();
-    const { currentUser } = useUser();
-    const [results, setResults] = useState();
     const searchRef = useRef();
+    const [results, setResults] = useState();
+    const currentUser = userClient.currentUser;
     const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);
     const [selectDrop, setSelectDrop] = useState(currentUser ? "TMDB" : "users");
@@ -173,7 +171,7 @@ const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) =>
 const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) => {
     const { setSheetOpen } = useSheet();
     const imageHeight = mediaType === "User" ? 64 : 96;
-    const url = mediaType === "User" ? `/profile/${name}` : `/details/${mediaType}/${apiId}?search=True`;
+    const url = mediaType === "User" ? `/profile/${name}` : `/details/${mediaType}/${apiId}?external=True`;
 
     const handleLinkClick = () => {
         resetSearch();

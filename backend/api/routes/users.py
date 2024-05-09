@@ -236,10 +236,7 @@ def settings_general():
 
     db.session.commit()
 
-    data = dict(
-        updated_user=current_user.to_dict(),
-        message="Settings successfully updated",
-    )
+    data = dict(updated_user=current_user.to_dict())
 
     return jsonify(data), 200
 
@@ -258,12 +255,9 @@ def settings_medialist():
 
     db.session.commit()
 
-    data = dict(
-        updated_user=current_user.to_dict(),
-        message="Settings successfully updated",
-    )
+    data = dict(updated_user=current_user.to_dict())
 
-    return data, 200
+    return jsonify(data), 200
 
 
 @users.route("/settings/password", methods=["POST"])
@@ -286,12 +280,9 @@ def settings_password():
 
     db.session.commit()
 
-    data = dict(
-        updated_user=current_user.to_dict(),
-        message="Settings successfully updated",
-    )
+    data = dict(updated_user=current_user.to_dict())
 
-    return data, 200
+    return jsonify(data), 200
 
 
 @users.route("/settings/delete_account", methods=["POST"])
@@ -319,7 +310,7 @@ def settings_delete():
             model.query.filter_by(user_id=current_user.id).delete()
 
         db.session.commit()
-        current_app.logger.info(f"The account [ID = {current_user.id}] has been successfully deleted.")
+        current_app.logger.info(f"The account [ID = {current_user.id}] has been successfully deleted")
         return {}, 204
     except Exception as e:
         db.session.rollback()

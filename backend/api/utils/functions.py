@@ -3,7 +3,7 @@ import os
 import re
 import secrets
 from datetime import datetime, timezone
-from typing import Dict, List, Any, Iterable, Literal, Type, Callable
+from typing import Dict, List, Any, Iterable, Literal
 from flask import current_app, abort
 from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType

@@ -1,12 +1,12 @@
 import {capitalize, cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
-import {Link, useParams} from "react-router-dom";
+import {Link, useParams} from "@tanstack/react-router";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 
 
 export const NavigationMediaList = ({ userData }) => {
-    const { mediaType, username } = useParams();
+    const { mediaType, username } = useParams({ strict: false });
 
     const menuItems = [
         {url: "/profile", media: "user"},

@@ -18,7 +18,9 @@ export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
         }
     };
 
-    if (isLoading) return <LoadingIcon size={8} cssOverride={{marginTop: 12}}/>;
+    if (isLoading) {
+        return <LoadingIcon size={8} cssOverride={{marginTop: 12}}/>;
+    }
 
     return (
         <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">

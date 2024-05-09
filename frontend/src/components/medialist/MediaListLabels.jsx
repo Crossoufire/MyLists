@@ -1,19 +1,19 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {useParams} from "react-router-dom";
+import {api} from "@/api/MyApiClient";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {FaPen, FaTrash} from "react-icons/fa";
-import {useApi} from "@/providers/ApiProvider";
 import {Tooltip} from "@/components/ui/tooltip";
+import {useParams} from "@tanstack/react-router";
 import {Return} from "@/components/app/base/Return";
+import {MediaCard} from "@/components/app/MediaCard";
 import {Loading} from "@/components/app/base/Loading";
-import {MediaCard} from "@/components/app/MediaCard.jsx";
 import {Popover, PopoverAnchor, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const MediaListLabels = ({ mediaData, isCurrent, updateLabel, loading }) => {
-    const { mediaType, username } = useParams();
+    const { mediaType, username } = useParams({ strict: false });
 
     return (
         <>
@@ -43,7 +43,7 @@ export const MediaListLabels = ({ mediaData, isCurrent, updateLabel, loading }) 
 
 
 const ShowMediaWithLabel = ({ labelsMedia }) => {
-    const { mediaType } = useParams();
+    const { mediaType } = useParams({ strict: false });
 
     return (
         <>
@@ -62,7 +62,6 @@ const ShowMediaWithLabel = ({ labelsMedia }) => {
 
 
 const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) => {
-    const api = useApi();
     const [labelsList, setLabelsList] = useState(initLabelsList);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
@@ -103,7 +102,7 @@ const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) =>
         toast.success("The label name successfully updated");
         setLabelsList(labelsList.map(x => (x === selectedLabel ? newLabelName : x)));
         setSelectedLabel("");
-    }
+    };
 
 
     return (
@@ -151,4 +150,4 @@ const ShowAllLabels = ({ initLabelsList, mediaType, isCurrent, updateLabel }) =>
             )}
         </>
     );
-}
+};

@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {api} from "@/api/MyApiClient.js";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {useApi} from "@/providers/ApiProvider";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -10,7 +10,6 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 export const RegisterForm = () => {
-	const api = useApi();
 	const [errors, setErrors] = useState({});
 	const [pending, setPending] = useState(false);
 	const form = useForm({

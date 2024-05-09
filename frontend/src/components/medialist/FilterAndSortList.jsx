@@ -1,9 +1,9 @@
-import {useParams} from "react-router-dom";
+import {useParams} from "@tanstack/react-router";
 import {FilterSortDropList} from "@/components/medialist/FilterSortDropList";
 
 
 export const FilterAndSortList = ({ paginateData, updateLang, updateGenre, updateSorting }) => {
-    const { mediaType } = useParams();
+    const { mediaType } = useParams({ strict: false });
 
     if (["Stats", "Labels"].includes(paginateData.status)) {
         return null;

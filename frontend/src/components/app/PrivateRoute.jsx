@@ -1,10 +1,10 @@
 import {toast} from "sonner";
-import {useUser} from "@/providers/UserProvider";
-import {Navigate, Outlet} from "react-router-dom";
+import {userClient} from "@/api/MyApiClient";
+import {Navigate, Outlet} from "@tanstack/react-router";
 
 
 export const PrivateRoute = () => {
-    const { currentUser } = useUser();
+    const currentUser = userClient.currentUser;
 
     if (currentUser === undefined) {
         return null;

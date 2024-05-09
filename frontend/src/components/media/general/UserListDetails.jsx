@@ -1,6 +1,7 @@
 import {toast} from "sonner";
 import {useLoading} from "@/hooks/LoadingHook";
 import {FaMinus, FaPlus} from "react-icons/fa";
+import {useMutation} from "@tanstack/react-query";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
@@ -28,7 +29,7 @@ const mediaComponentMap = (value) => {
 };
 
 
-export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
+export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 	const [isLoading, handleLoading] = useLoading();
 	const MediaUserDetails = mediaComponentMap(mediaType);
 	const updatesAPI = useApiUpdater(apiData.media.id, mediaType);
@@ -36,7 +37,7 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 	const handleAddMediaUser = async () => {
 		const response = await handleLoading(updatesAPI.addMedia);
 		if (response) {
-			await mutateData({ ...apiData, user_data: response }, false);
+			setApiData({ ...apiData, user_data: response });
 			toast.success("Media added to your list");
 		}
 	};
@@ -49,8 +50,8 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 
 		const response = await handleLoading(updatesAPI.deleteMedia);
 		if (response) {
-			await mutateData({ ...apiData, user_data: false }, false);
-			toast.success("Media deleted from your list");
+			setApiData({ ...apiData, user_data: false });
+			toast.warning("Media deleted from your list");
 		}
 	};
 
@@ -63,6 +64,8 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 			</div>
 		);
 	}
+
+	console.log(apiData);
 
 	return (
 		<div className="space-y-2">
@@ -90,8 +93,9 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 					<LabelLists
 						mediaType={mediaType}
 						updatesAPI={updatesAPI}
-						initIn={apiData.user_data.labels.already_in}
+						apiData={apiData}
 						initAvailable={apiData.user_data.labels.available}
+						initAlready={apiData.user_data.labels.already_in}
 					/>
 				</TabsContent>
 				<TabsContent value="history" className="w-[300px] p-5 pt-3 bg-card rounded-md overflow-y-hidden

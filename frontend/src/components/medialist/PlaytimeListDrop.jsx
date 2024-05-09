@@ -15,7 +15,7 @@ export const PlaytimeListDrop = ({ isCurrent, initPlaytime, status, updatePlayti
         if (response) {
             setPlaytime(value);
         }
-    }
+    };
 
     return (
         <>

@@ -1,20 +1,18 @@
-import {useUser} from "@/providers/UserProvider";
-import {Outlet, useNavigate} from "react-router-dom";
+import {userClient} from "@/api/MyApiClient";
+import {Outlet, useNavigate} from "@tanstack/react-router";
 
 
 export const PublicRoute = () => {
     const navigate = useNavigate();
-    const { currentUser } = useUser();
+    const currentUser = userClient.currentUser;
 
     if (currentUser === undefined) {
         return null;
     }
     else if (currentUser) {
-        return navigate(`/profile/${currentUser.username}`);
+        return navigate({ to: `/profile/${currentUser.username}` });
     }
     else {
         return <Outlet/>;
     }
 };
-
-

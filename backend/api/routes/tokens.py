@@ -151,17 +151,16 @@ def register_token():
     try:
         token = request.get_json()["token"]
     except:
-        return abort(400)
+        return abort(400, "The provided token is invalid or expired")
 
     user = User.verify_jwt_token(token)
     if not user or user.active:
-        return abort(400, "This is an invalid or an expired token.")
+        return abort(400, "The provided token is invalid or expired")
 
     user.active = True
     user.activated_on = datetime.utcnow()
-    db.session.commit()
 
-    # Log info
+    db.session.commit()
     current_app.logger.info(f"[INFO] - [{user.id}] Account activated.")
 
     return {}, 204

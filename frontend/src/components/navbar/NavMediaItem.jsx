@@ -1,5 +1,5 @@
 import {cn} from "@/lib/utils";
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {useSheet} from "@/providers/SheetProvider";
 import {NavigationMenuLink} from "@/components/ui/navigation-menu";
 
@@ -16,8 +16,8 @@ export const NavMediaItem = ({ to, icon, text, className, popRef }) => {
         <li>
             <NavigationMenuLink asChild onClick={handleClosePopover}>
                 <Link to={to} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline " +
-                "outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent " +
-                "focus:text-accent-foreground", className)}>
+                    "outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent " +
+                    "focus:text-accent-foreground", className)}>
                     <div className="flex items-center gap-3">
                         <div>{icon}</div>
                         <div>{text}</div>

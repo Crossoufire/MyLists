@@ -1,8 +1,7 @@
 import {useRef} from "react";
-import {NavLink} from "react-router-dom";
+import {userClient} from "@/api/MyApiClient";
 import {LuAlignJustify} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
-import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
@@ -12,21 +11,23 @@ import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
+import {Link as NavLink, useNavigate} from "@tanstack/react-router";
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    navigationMenuTriggerStyle
+import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 
 
 export const Navbar = () => {
     const popRef = useRef();
-    const { currentUser, logout } = useUser();
+    const navigate = useNavigate();
+    const currentUser = userClient.currentUser;
     const { sheetOpen, setSheetOpen } = useSheet();
+
+    const logoutUser = async () => {
+        await userClient.logout();
+        return navigate({ to: "/" });
+    };
 
     // Login page and public pages
     if (currentUser === null) {
@@ -50,7 +51,7 @@ export const Navbar = () => {
     return (
         <nav className="z-50 fixed top-0 w-full h-16 border-b shadow-sm flex items-center bg-gray-900 border-b-neutral-500">
             <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
-                {currentUser === undefined ?
+                {!currentUser ?
                     <Loading forPage={false}/>
                     :
                     <>
@@ -90,7 +91,7 @@ export const Navbar = () => {
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <Notifications/>
+                                        {/*<Notifications/>*/}
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
                                         <Popover>
@@ -122,7 +123,7 @@ export const Navbar = () => {
                                                     />
                                                     <li>
                                                         <NavigationMenuLink asChild>
-                                                            <NavLink to="#" onClick={logout} className="block select-none
+                                                            <NavLink to="#" onClick={logoutUser} className="block select-none
                                                             space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                             transition-colors hover:bg-accent hover:text-accent-foreground
                                                             focus:bg-accent focus:text-accent-foreground">
@@ -194,7 +195,7 @@ export const Navbar = () => {
                                                 />
                                                 <li>
                                                     <NavigationMenuLink asChild>
-                                                        <NavLink to="#" onClick={logout} className="block select-none
+                                                        <NavLink to="#" onClick={userClient.logout} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">

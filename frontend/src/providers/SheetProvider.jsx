@@ -19,7 +19,7 @@ export const useSheet = () => {
     const context = useContext(SheetContext);
 
     if (!context) {
-        throw new Error("useExpansion must be used within the NavigationProvider");
+        throw new Error("useExpansion must be used within a NavigationProvider");
     }
 
     return context;

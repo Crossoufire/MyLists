@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useUser} from "@/providers/UserProvider";
+import {userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {PageInput} from "@/components/media/books/PageInput";
@@ -8,7 +8,7 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
 export const BooksUserDetails = ({ userData, totalPages, updatesAPI }) => {
-    const { currentUser } = useUser();
+    const currentUser = userClient.currentUser;
     const [redo, setRedo] = useState(userData.rewatched);
     const [status, setStatus] = useState(userData.status);
     const [page, setPage] = useState(userData.actual_page);

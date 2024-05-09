@@ -1,19 +1,17 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {FaPen} from "react-icons/fa";
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useApi} from "@/providers/ApiProvider";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
-import {useUser} from "@/providers/UserProvider";
+import {api, userClient} from "@/api/MyApiClient";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
-    const { currentUser } = useUser();
-    const isCurrent = currentUser?.id === user.id;
+    const isCurrent = userClient.currentUser?.id === user.id;
 
     return (
         <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_image})`}}>
@@ -56,7 +54,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
             <div className="absolute left-[242px] bottom-[25px] max-xs:bottom-3 max-xs:left-[50%] max-xs:-translate-x-1/2">
                 <div className="flex gap-3 items-center font-medium mb-2 mt-0">
                     <div className="text-3xl">{user.username}</div>
-                    {(!isCurrent && currentUser) &&
+                    {!isCurrent &&
                         <FollowButton
                             followId={followId}
                             initFollow={initFollow}
@@ -78,7 +76,6 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
 
 
 const FollowButton = ({ initFollow, followId }) => {
-    const api = useApi();
     const [isLoading, handleLoading] = useLoading();
     const [isFollowing, setFollowing] = useState(initFollow);
 
@@ -108,11 +105,7 @@ const FollowButton = ({ initFollow, followId }) => {
 
     return (
         <Button variant={buttonColor} size="xs" onClick={handleFollow}>
-            {isLoading ?
-                <LoadingIcon loading size={6}/>
-                :
-                <div className="font-semibold">{content}</div>
-            }
+            {isLoading ? <LoadingIcon loading size={6}/> : <div className="font-semibold">{content}</div>}
         </Button>
     )
 };

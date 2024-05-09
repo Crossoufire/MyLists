@@ -1,5 +1,4 @@
-import {useNavigate} from "react-router-dom";
-import {useApi} from "@/providers/ApiProvider";
+import {api} from "@/api/MyApiClient";
 import {createContext, useState, useEffect, useContext} from "react";
 
 
@@ -7,15 +6,16 @@ export const UserContext = createContext(undefined);
 
 
 export const UserProvider = ({ children }) => {
-	const api = useApi();
-	const navigate = useNavigate();
 	const [currentUser, setCurrentUser] = useState(undefined);
 
 	useEffect(() => {
 		(async () => {
+			console.log("entered useEffect");
 			if (api.isAuthenticated()) {
+				console.log("setup currentUser");
 				const response = await api.get("/current_user");
 				setCurrentUser(response.ok ? response.body : null);
+				console.log("setCurrentUser done", currentUser);
 			}
 			else {
 				setCurrentUser(null);
@@ -37,7 +37,6 @@ export const UserProvider = ({ children }) => {
 	const logout = async () => {
 		await api.logout();
 		setCurrentUser(null);
-		return navigate("/", { replace: true });
 	};
 
 	return (
@@ -48,4 +47,12 @@ export const UserProvider = ({ children }) => {
 };
 
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => {
+    const context = useContext(UserContext);
+
+    if (!context) {
+        throw new Error("useUser must be used within a UserProvider");
+    }
+
+    return context;
+};

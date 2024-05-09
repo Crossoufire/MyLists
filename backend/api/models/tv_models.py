@@ -140,7 +140,7 @@ class TVModel(db.Model):
         old_seas_eps = [n.episodes for n in media.eps_per_season]
         new_seas_eps = [d["episodes"] for d in new_data["seasons_data"]]
 
-        # Only if two lists are different
+        # Only if two list are different
         if new_seas_eps != old_seas_eps:
             # Get all users with media in list
             all_users_list = media.list_info.filter_by(media_id=media.id).all()

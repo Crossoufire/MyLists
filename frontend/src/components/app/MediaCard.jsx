@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils";
-import {Link} from "react-router-dom";
 import {Card} from "@/components/ui/card";
+import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
@@ -14,7 +14,7 @@ export const MediaCard = ({ children, media, mediaType, botRounded, isLoading = 
                         <img
                             src={media.media_cover}
                             className={cn("w-full border border-black rounded-tl-sm rounded-tr-sm",
-                            botRounded && "rounded-bl-sm rounded-br-sm")}
+                                botRounded && "rounded-bl-sm rounded-br-sm")}
                             alt={media.media_name}
                         />
                     </Tooltip>
