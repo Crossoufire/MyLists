@@ -4,14 +4,9 @@ from typing import List
 
 
 class ExtendedEnum(Enum):
-    """ Extend enum method """
-
     @classmethod
-    def to_list(cls, extra: bool = False) -> List:
-        """ Return the enum as a list + extra data """
-
-        enum_values = [c.value for c in cls]
-        return ["All"] + enum_values + ["Favorite", "Labels"] if extra else enum_values
+    def to_list(cls) -> List:
+        return [c.value for c in cls]
 
 
 class MediaType(ExtendedEnum):
@@ -33,6 +28,7 @@ class MediaType(ExtendedEnum):
 
 
 class Status(str, ExtendedEnum):
+    ALL = "All"
     WATCHING = "Watching"
     READING = "Reading"
     PLAYING = "Playing"
@@ -46,16 +42,11 @@ class Status(str, ExtendedEnum):
     PLAN_TO_READ = "Plan to Read"
     PLAN_TO_PLAY = "Plan to Play"
 
-    ALL = "All"
-    SEARCH = "Search"
-    FAVORITE = "Favorite"
-    LABELS = "Labels"
-
 
 class RoleType(str, ExtendedEnum):
-    ADMIN = "admin"         # Can access to the admin dashboard (/admin)
-    MANAGER = "manager"     # Can lock and edit media (/lock_media & /media_details_form)
-    USER = "user"           # Standard user
+    ADMIN = "admin"      # Can access admin dashboard
+    MANAGER = "manager"  # Can lock and edit media
+    USER = "user"        # Standard user
 
 
 class ModelTypes(str, ExtendedEnum):

@@ -11,15 +11,15 @@ const selectTriggerVariants = cva("flex w-full items-center justify-between whit
     {
         variants: {
             variant: {
+                noIcon: "",
                 default: "bg-transparent text-sm shadow-sm",
-                noIcon: "justify-center",
                 list: "hover:bg-secondary rounded-none text-sm",
             },
             size: {
-                default: "h-9 px-3 py-2",
-                details: "h-7 pl-2",
                 list: "",
+                details: "h-7 pl-2",
                 editList: "h-9 pl-4",
+                default: "h-9 px-3 py-2",
             },
         },
         defaultVariants: {

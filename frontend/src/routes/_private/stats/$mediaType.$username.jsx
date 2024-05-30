@@ -2,6 +2,7 @@ import {useState} from "react";
 import {FaTimes} from "react-icons/fa";
 import {FaList} from "react-icons/fa6";
 import {ResponsiveBar} from "@nivo/bar";
+import {barTheme} from "@/lib/constants";
 import {fetcher} from "@/hooks/FetchDataHook";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
@@ -20,37 +21,6 @@ export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
     loader: async ({ params }) => fetcher(`/stats/${params.mediaType}/${params.username}`),
 });
 
-
-const myTheme = {
-    text: {
-        fontSize: 14,
-        fill: "white",
-    },
-    tooltip: {
-        container: {
-            background: "black",
-        },
-        color: "white",
-    },
-    axis: {
-        domain: {
-            line: {
-                stroke: "white",
-                strokeWidth: 1,
-            },
-        },
-    },
-    grid: {
-        line: {
-            strokeWidth: 0,
-        },
-    },
-    labels: {
-        text: {
-            fill: "black",
-        } ,
-    },
-};
 
 const seriesData = (apiData) => {
     const mainData = [
@@ -473,7 +443,6 @@ const getCategoryData = (data, mediaType) => {
 
 function StatsPage() {
     const apiData = Route.useLoaderData();
-    console.log(apiData);
     const { mediaType, username } = Route.useParams();
     const [feelingInfo, setFeelingInfo] = useState(true);
     const [tabConfig, _] = useState(dataToLoad(mediaType, apiData));
@@ -516,27 +485,27 @@ function StatsPage() {
 }
 
 
-const DisplayStats = ({data}) => {
-    const cardsData = data.filter(info => info.type === undefined);
+const DisplayStats = ({ data }) => {
     const listData = data.filter(info => info.type === "list");
-    const colsCards = cardsData.length > 3 ? 4 : 3;
-    const colsLists = listData.length === 3 ? 3 : 2;
+    const cardsData = data.filter(info => info.type === undefined);
 
     return (
         <div>
-            <div className={`grid grid-cols-${colsCards} gap-4 max-lg:grid-cols-2 max-sm:grid-cols-2 max-sm:mt-4`}>
+            <div className={cn("grid gap-4 max-lg:grid-cols-2 max-sm:grid-cols-2 " +
+                "max-sm:mt-4", cardsData.length > 3 ? "grid-cols-4" : "grid-cols-3")}>
                 {cardsData.map((data, idx) =>
                     <StatsCard
                         key={idx}
                         title={data.title}
-                        subtitle={data.subtitle}
-                        topValue={data.topValue}
                         dataList={data.list}
                         asGraph={data.asGraph}
+                        subtitle={data.subtitle}
+                        topValue={data.topValue}
                     />
                 )}
             </div>
-            <div className={`grid grid-cols-${colsLists} max-lg:grid-cols-1 max-sm:gap-4 gap-x-6 mt-6`}>
+            <div className={cn("grid max-lg:grid-cols-1 max-sm:gap-4 gap-x-6 mt-6", listData.length === 3 ?
+                "grid-cols-3" : "grid-cols-2")}>
                 {listData.map((data, idx) =>
                     <div key={idx} className="mt-2">
                         <ListData
@@ -610,25 +579,23 @@ const ListData = ({ title, dataList, asGraph = true }) => {
 
 
 const StatsGraph = ({ title, dataList }) => {
-    // noinspection JSValidateTypes
     return (
         <div>
             <div className="text-2xl font-bold">{title} Distribution <Separator/></div>
             <div className="flex items-center h-[380px]">
                 <ResponsiveBar
-                    theme={myTheme}
-                    data={dataList}
-                    keys={["value"]}
-                    indexBy={"name"}
-                    colorBy={"indexValue"}
-                    margin={{ top: 20, right: 20, bottom: 60, left: 40 }}
-                    axisBottom={{ tickRotation: -30 }}
-                    padding={0.25}
-                    labelSkipWidth={17}
-                    labelSkipHeight={16}
-                    borderRadius={4}
-                    isInteractive={true}
                     animate={true}
+                    padding={0.25}
+                    data={dataList}
+                    theme={barTheme}
+                    indexBy={"name"}
+                    borderRadius={4}
+                    labelSkipWidth={20}
+                    labelSkipHeight={16}
+                    isInteractive={true}
+                    colorBy={"indexValue"}
+                    axisBottom={{ tickRotation: -30 }}
+                    margin={{ top: 20, right: 20, bottom: 60, left: 40 }}
                 />
             </div>
         </div>

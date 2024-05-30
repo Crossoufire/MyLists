@@ -9,24 +9,6 @@ from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType
 
 
-TypeMediaType = MediaType | List[MediaType] | Literal["all"]
-TypeModelType = ModelTypes | List[ModelTypes] | Literal["all"]
-ReturnModelGroup = (db.Model | List[db.Model] | Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model]
-                    | Dict[MediaType, Dict[ModelTypes, db.Model]])
-
-
-def get(state: Iterable, *path: Any, default: Any = None):
-    """ Take an iterable and check if the path exists """
-
-    try:
-        for step in path:
-            state = state[step]
-    except LookupError:
-        return default
-
-    return state or default
-
-
 def get_class_registry(cls: db.Model) -> Dict:
     """ Dynamically gets class registry of SQLAlchemy from specified model """
 
@@ -43,115 +25,112 @@ def get_class_registry(cls: db.Model) -> Dict:
                                  "Please check your SQLAlchemy version.")
 
 
-def get_models_group(media_type: TypeMediaType, types: TypeModelType) -> ReturnModelGroup:
-    """ Retrieve SQLAlchemy model(s) using the <GROUP> attribute and/or the <TYPE> attribute """
+class ModelsFetcher:
+    TypeMediaType = List[MediaType] | Literal["all"] | MediaType
+    TypeModelType = List[ModelTypes] | Literal["all"] | ModelTypes
+    ReturnModelGroup = (Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model] |
+                        Dict[MediaType, Dict[ModelTypes, db.Model]])
 
-    registry = get_class_registry(db.Model).values()
+    @staticmethod
+    def _get_registry():
+        return get_class_registry(db.Model).values()
 
-    # Check <media_type> is "all" and <types> is "all"
-    if media_type == "all" and types == "all":
-        models_dict = {}
-        for model in registry:
+    @classmethod
+    def get_unique_model(cls, media_type: MediaType, model_type: ModelTypes) -> db.Model:
+        for model in cls._get_registry():
             try:
-                if issubclass(model, db.Model):
-                    models_dict[model.GROUP][model.TYPE] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
-
-    # Check <media_type> is "all" and <types> is ModelTypes
-    if media_type == "all" and isinstance(types, ModelTypes):
-        models_dict = {}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and types == model.TYPE:
-                    models_dict[model.GROUP] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
-
-    # Check <media_type> is "all" and <types> is ModelTypes list
-    if media_type == "all" and isinstance(types, list):
-        models_dict = {}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and model.TYPES in types:
-                    models_dict[model.GROUP][model.TYPE] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
-
-    # Check <media_type> is MediaType and <types> is "all"
-    if isinstance(media_type, MediaType) and types == "all":
-        models_dict = {}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and media_type == model.GROUP:
-                    models_dict[model.TYPE] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
-
-    # Check <media_type> is MediaType and <types> is ModelTypes
-    if isinstance(media_type, MediaType) and isinstance(types, ModelTypes):
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and model.GROUP == media_type and model.TYPE == types:
+                if issubclass(model, db.Model) and model.GROUP == media_type and model.TYPE == model_type:
                     return model
             except (AttributeError, TypeError):
                 pass
 
-    # Check <media_type> is MediaType and <types> is ModelTypes list
-    if isinstance(media_type, MediaType) and isinstance(types, list):
+    @classmethod
+    def get_lists_models(cls, media_types: List | MediaType, model_types: List | ModelTypes) -> List[db.Model]:
+        if isinstance(media_types, MediaType) and isinstance(model_types, ModelTypes):
+            raise Exception("At least one argument needs to be a list")
+
+        if isinstance(media_types, list) and isinstance(model_types, list):
+            raise Exception("Both arguments can't be a list")
+
         models_list = []
-        order = {t: idx for (idx, t) in enumerate(types)}
-        for model in registry:
+        order = {}
+
+        if isinstance(media_types, MediaType):
+            order = {model_type: idx for idx, model_type in enumerate(model_types)}
+            for model in cls._get_registry():
+                try:
+                    if issubclass(model, db.Model) and model.GROUP == media_types and model.TYPE in model_types:
+                        models_list.append(model)
+                except (AttributeError, TypeError):
+                    pass
+            return sorted(models_list, key=lambda x: order.get(x.TYPE, float("inf")))
+
+        order = {media_type: idx for idx, media_type in enumerate(media_types)}
+        for model in cls._get_registry():
             try:
-                if issubclass(model, db.Model) and model.GROUP == media_type and model.TYPE in types:
+                if issubclass(model, db.Model) and model.GROUP in media_types and model.TYPE == model_types:
                     models_list.append(model)
             except (AttributeError, TypeError):
                 pass
-        return sorted(models_list, key=lambda x: order.get(x.TYPE, float("inf")))
 
-    # Check <media_type> is list and <types> is "all"
-    if isinstance(media_type, list) and types == "all":
-        models_dict = {}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and model.GROUP in media_type:
-                    models_dict[model.GROUP][model.TYPE] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
-
-    # Check <media_type> is MediaType list and <types> is ModelTypes
-    if isinstance(media_type, list) and isinstance(types, ModelTypes):
-        models_list = []
-        order = {t: idx for (idx, t) in enumerate(media_type)}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and model.GROUP in media_type and types == model.TYPE:
-                    models_list.append(model)
-            except (AttributeError, TypeError):
-                pass
         return sorted(models_list, key=lambda x: order.get(x.GROUP, float("inf")))
 
-    # Check <media_type> is MediaType list and <types> is ModelTypes list
-    if isinstance(media_type, list) and isinstance(types, list):
+    @classmethod
+    def get_dict_models(cls, media_type: TypeMediaType, types: TypeModelType) -> ReturnModelGroup:
         models_dict = {}
-        for model in registry:
-            try:
-                if issubclass(model, db.Model) and model.GROUP in media_type and model.TYPE in types:
-                    models_dict[model.GROUP][model.TYPE] = model
-            except (AttributeError, TypeError):
-                pass
-        return models_dict
 
-    raise Exception(f"Unknown type or model type {media_type}")
+        if media_type == "all" and isinstance(types, ModelTypes):
+            for model in cls._get_registry():
+                try:
+                    if issubclass(model, db.Model) and types == model.TYPE:
+                        models_dict[model.GROUP] = model
+                except (AttributeError, TypeError):
+                    pass
+            return models_dict
+        elif media_type == "all" and isinstance(types, list):
+            for model in cls._get_registry():
+                try:
+                    if issubclass(model, db.Model) and model.TYPE in types:
+                        if model.GROUP not in models_dict:
+                            models_dict[model.GROUP] = {}
+                        models_dict[model.GROUP][model.TYPE] = model
+                except (AttributeError, TypeError):
+                    pass
+            return models_dict
+        elif isinstance(media_type, MediaType) and types == "all":
+            for model in cls._get_registry():
+                try:
+                    if issubclass(model, db.Model) and media_type == model.GROUP:
+                        models_dict[model.TYPE] = model
+                except (AttributeError, TypeError):
+                    pass
+            return models_dict
+        elif isinstance(media_type, list) and isinstance(types, list):
+            for model in cls._get_registry():
+                try:
+                    if issubclass(model, db.Model) and model.GROUP in media_type and model.TYPE in types:
+                        if model.GROUP not in models_dict:
+                            models_dict[model.GROUP] = {}
+                        models_dict[model.GROUP][model.TYPE] = model
+                except (AttributeError, TypeError):
+                    pass
+            return models_dict
+
+        raise Exception(f"Unknown type or model type")
+
+
+def get(state: Iterable, *path: Any, default: Any = None):
+    """ Take an iterable and check if the path exists """
+    try:
+        for step in path:
+            state = state[step]
+    except LookupError:
+        return default
+    return state or default
 
 
 def get_level(total_time: float) -> float:
-    """ Function that returns the level based on time spent in [minutes] """
+    """ Returns the level based on time spent in [minutes] """
 
     if total_time < 0:
         current_app.logger.error("the total time given to the 'total_time' function is negative!")
@@ -161,8 +140,7 @@ def get_level(total_time: float) -> float:
 
 
 def get_media_level(user: db.Model, media_type: MediaType) -> int:
-    """ Fetch the time spent in [min] and return the level of media for a user """
-
+    """ Fetch the time spent in [minutes] and return the level of media for a user """
     time_min = getattr(user, f"time_spent_{media_type.value}")
     return int(f"{get_level(time_min):.2f}".split(".")[0])
 
@@ -199,8 +177,6 @@ def save_picture(form_picture, old_picture: str, profile: bool = True):
 
 
 def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str:
-    """ Change the date format and return a formatted string """
-
     try:
         if tv:
             return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
@@ -217,9 +193,7 @@ def change_air_format(date_: str, tv: bool = False, games: bool = False, books: 
         return "N/A"
 
 
-def safe_div(a, b, percentage=False):
-    """ Safe div when necessary + do the percentage """
-
+def safe_div(a: float, b: float, percentage: bool = False):
     try:
         if b == 0:
             return 0
@@ -232,7 +206,7 @@ def safe_div(a, b, percentage=False):
 
 
 def is_latin(original_name: str) -> bool:
-    """ Check if the <original_name> is Latin, if so return <True> else <False> """
+    """ Check if name is Latin using iso-8859-1, if so return <True> else <False> """
 
     try:
         original_name.encode("iso-8859-1")
@@ -246,10 +220,8 @@ def clean_html_text(raw_html: str) -> str:
 
     cleaner = re.compile("<.*?>")
     cleantext = re.sub(cleaner, "", raw_html)
-
     if not cleantext:
         cleantext = "Unknown"
-
     return cleantext
 
 
@@ -268,19 +240,15 @@ def int_to_money(value: int):
 
 
 def display_time(minutes: int) -> str:
-    """ Better display time in the MyLists <Stats> page """
+    """ Display time in the MyLists <Stats> page """
 
-    # Create datetime object for minutes
     dt = datetime.fromtimestamp(minutes * 60, timezone.utc)
-
-    # Extract years, months, days, and hours
     years = dt.year - 1970
     months = dt.month - 1
     days = dt.day - 1
     hours = dt.hour
 
     time_components = []
-
     if years > 0:
         time_components.append(f"{years} years")
     if months > 0:

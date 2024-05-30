@@ -7,15 +7,13 @@ from backend.api.routes.handlers import token_auth, current_user
 from backend.api.routes.email import send_email
 from backend.api.models.user_models import (Notifications, UserLastUpdate, User, Token, followers)
 from backend.api.utils.enums import RoleType, ModelTypes
-from backend.api.utils.functions import save_picture, get_models_group
+from backend.api.utils.functions import save_picture, ModelsFetcher
 
 users = Blueprint("api_users", __name__)
 
 
 @users.route("/register_user", methods=["POST"])
 def register_user():
-    """ Register a new user in the app """
-
     try:
         data = request.get_json()
         required_fields = ("username", "email", "password", "callback")
@@ -63,15 +61,12 @@ def register_user():
 @users.route("/current_user", methods=["GET"])
 @token_auth.login_required
 def get_current_user():
-    """ Return the logged current user """
     return current_user.to_dict(), 200
 
 
 @users.route("/profile/<username>", methods=["GET"])
 @token_auth.login_required
 def profile(username: str):
-    """ Get all the user info necessary for its profile """
-
     user = current_user.check_autorization(username)
 
     if current_user.role != RoleType.ADMIN and user.id != current_user.id:
@@ -81,7 +76,7 @@ def profile(username: str):
     follows_updates = user.get_follows_updates(limit_=10)
     list_levels = user.get_list_levels()
     media_global = user.get_global_media_stats()
-    models = get_models_group(user.activated_media_type(), ModelTypes.LIST)
+    models = ModelsFetcher.get_lists_models(user.activated_media_type(), ModelTypes.LIST)
     media_data = [user.get_one_media_details(model.GROUP) for model in models]
 
     db.session.commit()
@@ -301,11 +296,11 @@ def settings_delete():
         UserLastUpdate.query.filter_by(user_id=current_user.id).delete()
         Notifications.query.filter_by(user_id=current_user.id).delete()
 
-        models = get_models_group("all", ModelTypes.LIST)
+        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
         for model in models.values():
             model.query.filter_by(user_id=current_user.id).delete()
 
-        models_labels = get_models_group("all", ModelTypes.LABELS)
+        models_labels = ModelsFetcher.get_dict_models("all", ModelTypes.LABELS)
         for model in models_labels.values():
             model.query.filter_by(user_id=current_user.id).delete()
 

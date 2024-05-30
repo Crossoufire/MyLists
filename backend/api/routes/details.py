@@ -11,7 +11,7 @@ from backend.api.data_managers.api_data_manager import ApiData
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
-from backend.api.utils.functions import get_models_group, get
+from backend.api.utils.functions import get, ModelsFetcher
 
 details_bp = Blueprint("api_details", __name__)
 
@@ -22,7 +22,7 @@ details_bp = Blueprint("api_details", __name__)
 def media_details(media_type: MediaType, media_id: int):
     """ Media Details and the user details """
 
-    media_model, label_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
 
     external_arg = request.args.get("external")
     filter_id = {"api_id": media_id} if external_arg else {"id": media_id}
@@ -49,12 +49,10 @@ def media_details(media_type: MediaType, media_id: int):
 @token_auth.login_required
 @validate_media_type
 def get_details_form(media_type: MediaType, media_id: int):
-    """ Get media form details """
-
     if current_user.role == RoleType.USER:
         return abort(403, "You are not authorized")
 
-    media_model, genre_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.GENRE])
+    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
@@ -131,7 +129,7 @@ def job_details(media_type: MediaType, job: str, info: str):
         - `network`: tv network (series/anime)
     """
 
-    media_model = get_models_group(media_type, types=ModelTypes.MEDIA)
+    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
     media_data = media_model.get_information(job, info)
 
     for media in media_data:

@@ -9,12 +9,10 @@ import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
-import {useNavigate} from "@tanstack/react-router";
 
 
 export const MediaListForm = () => {
     const form = useForm();
-    const navigate = useNavigate();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
@@ -29,9 +27,8 @@ export const MediaListForm = () => {
             return setErrors(response.body.description);
         }
 
-        userClient.currentUser = response.body.updated_user;
+        userClient.setCurrentUser(response.body.updated_user);
         toast.success("Settings successfully updated");
-        return navigate({ to: `/profile/${response.body.updated_user.username}` });
     };
 
     return (

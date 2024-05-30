@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import {fetcher} from "@/hooks/FetchDataHook";
@@ -16,7 +16,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
-	component: MediaDetailsPage,
+	component: MediaDetailsWrapper,
 	loaderDeps: ({ search: { external } }) => ({ external }),
 	loader: async ({ params, deps }) => {
 		return await fetcher(`/details/${params.mediaType}/${params.mediaId}`, { external: deps.external });
@@ -30,10 +30,6 @@ function MediaDetailsPage() {
 	const currentUser = userClient.currentUser;
 	const [apiData, setApiData] = useState(data);
 	const { refresh } = useApiUpdater(apiData.media.id, mediaType);
-
-	useEffect(() => {
-		setApiData(data);
-	}, [data]);
 
 	const mutateData = async () => {
 		const data = await fetcher(`/details/${mediaType}/${apiData.media.id}`);
@@ -119,4 +115,10 @@ function MediaDetailsPage() {
 			</div>
 		</PageTitle>
 	);
+}
+
+
+function MediaDetailsWrapper() {
+	const { mediaType, mediaId } = Route.useParams();
+	return <MediaDetailsPage key={`${mediaType}-${mediaId}`}/>;
 }

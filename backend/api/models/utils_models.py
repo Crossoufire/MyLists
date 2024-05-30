@@ -3,12 +3,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 from flask import url_for, current_app
-from sqlalchemy import desc, asc, func, case
+from sqlalchemy import desc, asc, func
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import safe_div, get_models_group, change_air_format
-
+from backend.api.utils.functions import safe_div, change_air_format, ModelsFetcher
 
 """ --- MIXIN MODELS ---------------------------------------------------------------------------------------- """
 
@@ -48,7 +47,7 @@ class MediaMixin:
     def get_similar_media(self) -> List[Dict]:
         """ Get the similar genres compared to the media """
 
-        media, media_genre = get_models_group(self.GROUP, types=[ModelTypes.MEDIA, ModelTypes.GENRE])
+        media, media_genre = ModelsFetcher.get_lists_models(self.GROUP, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
         if len(self.genres_list) == 0 or self.genres_list[0] == "Unknown":
             return []
@@ -66,7 +65,7 @@ class MediaMixin:
     def in_follows_lists(self) -> List[Dict]:
         """ Verify whether the <media> is included in the list of users followed by the <current_user> """
 
-        media_list = get_models_group(self.GROUP, types=ModelTypes.LIST)
+        media_list = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.LIST)
 
         in_follows_lists = (
             db.session.query(User, media_list, followers)
@@ -94,7 +93,7 @@ class MediaMixin:
         if user_data is not False:
             user_data.update({
                 "username": current_user.username,
-                "labels": label_class.get_labels_name(user_id=current_user.id, media_id=self.id),
+                "labels": label_class.get_user_media_labels(user_id=current_user.id, media_id=self.id),
                 "history": UserLastUpdate.get_history(self.GROUP, self.id)
             })
 
@@ -242,14 +241,11 @@ class MediaListMixin:
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
-        """ Return the available sorting for movies, anime, and series """
-
         release_date = "first_air_date"
         if cls.GROUP == MediaType.MOVIES:
             release_date = "release_date"
 
-        # Get media
-        media = get_models_group(cls.GROUP, types=ModelTypes.MEDIA)
+        media = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {
             "Title A-Z": media.name.asc(),
@@ -271,7 +267,7 @@ class MediaListMixin:
         """ Fetch the next coming media for the current user. For Series/Anime/Movies. Overridden by Games.
         Not possible for Books """
 
-        media = get_models_group(cls.GROUP, ModelTypes.MEDIA)
+        media = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         media_date = "release_date"
         if cls.GROUP in (MediaType.SERIES, MediaType.ANIME):
@@ -297,33 +293,27 @@ class MediaListMixin:
 
 
 class MediaLabelMixin:
-    """ LabelMixin SQLAlchemy model for the Labels List """
-
     label: str
     media_id: int
     user_id: int
 
     @classmethod
-    def get_labels_name(cls, user_id: int, media_id: int) -> Dict:
-        """ Get all the labels names in which the media is in for a specific user """
+    def get_user_labels(cls, user_id: int) -> List[str]:
+        q_all = db.session.query(cls.label.distinct()).filter_by(user_id=user_id).all()
+        return [label[0] for label in q_all]
 
-        q_all = db.session.query(cls.label).filter_by(user_id=user_id).all()
-        all_labels = {label[0] for label in q_all}
-
+    @classmethod
+    def get_user_media_labels(cls, user_id: int, media_id: int) -> Dict:
+        all_labels = set(cls.get_user_labels(user_id))
         q_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).all()
         already_in = {label[0] for label in q_in}
         available = all_labels - already_in
-
         return dict(already_in=list(already_in), available=list(available))
 
     @classmethod
-    def get_total_labels(cls, user_id: int) -> Dict:
-        """ Return a dict containing the total number of labels and the names of the first 10 labels """
-
-        all_labels = (db.session.query(cls.label).filter_by(user_id=user_id)
-                      .group_by(cls.label).order_by(cls.label).all())
-
-        return {"count": len(all_labels), "names": [label[0] for label in all_labels[:10]]}
+    def get_total_and_labels_names(cls, user_id: int, limit_: int = 10) -> Dict:
+        all_labels = cls.get_user_labels(user_id)
+        return {"count": len(all_labels), "names": all_labels[:limit_]}
 
 
 """ --- OTHER MODELS ---------------------------------------------------------------------------------------- """

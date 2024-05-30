@@ -1,4 +1,4 @@
-import {getRatingValues} from "@/lib/utils";
+import {getFeelingValues} from "@/lib/utils";
 import {Tooltip} from "@/components/ui/tooltip";
 
 
@@ -16,7 +16,7 @@ export const RatingDistribution = ({ isFeeling, ratingCount, mediaType }) => {
                 :
                 isFeeling ?
                     <div className="flex font-semibold items-center justify-evenly mt-4">
-                        {getRatingValues("Feeling").slice(1).reverse().map((f, idx) =>
+                        {getFeelingValues().slice(1).reverse().map((f, idx) =>
                             <div key={idx} className="space-y-2 text-center">
                                 <div>{f.icon}</div>
                                 <div>{ratingCount[ratingCount.length - 1 - idx]}</div>

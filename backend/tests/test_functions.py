@@ -45,33 +45,6 @@ class UtilsFunctionTests(BaseTest):
 
         self.assertRaises(AttributeError, get_class_registry, DummyModel)
 
-    # def test_get_models_group(self):
-    #     from backend.api.models.movies_models import Movies, MoviesList
-    #
-    #     model = get_models_group(MediaType.MOVIES, types=ModelTypes.MEDIA)
-    #     assert model == Movies
-    #
-    #     models = get_models_group(MediaType.MOVIES, types=[ModelTypes.MEDIA, ModelTypes.LIST])
-    #     assert models == [Movies, MoviesList]
-    #
-    #     self.assertRaises(IndexError, get_models_group, "toto", types=ModelTypes.MEDIA)
-    #     self.assertRaises(IndexError, get_models_group, MediaType.MOVIES, types=[])
-    #
-    #     delattr(Movies, "TYPE")
-    #     self.assertRaises(IndexError, get_models_group, MediaType.MOVIES, types=ModelTypes.MEDIA)
-    #
-    #     setattr(Movies, "TYPE", ModelTypes.MEDIA)
-    #     delattr(Movies, "GROUP")
-    #     self.assertRaises(IndexError, get_models_group, MediaType.MOVIES, types=ModelTypes.MEDIA)
-    #     setattr(Movies, "GROUP", MediaType.MOVIES)
-    #
-    #     class DummyModel:
-    #         pass
-    #
-    #     with mock.patch("backend.api.utils.functions.get_class_registry") as mock_registry:
-    #         mock_registry.return_value = {"Dummy": DummyModel}
-    #         self.assertRaises(IndexError, get_models_group, MediaType.MOVIES, types=ModelTypes.MEDIA)
-
     def test_get_level(self):
         self.assertAlmostEqual(get_level(0), 0.00000, places=5)
         self.assertAlmostEqual(get_level(1), 0.04772, places=5)
@@ -132,6 +105,7 @@ class UtilsFunctionTests(BaseTest):
         assert is_latin("नमस्ते") is False
         assert is_latin("Привет") is False
 
+    # noinspection PyTypeChecker
     @staticmethod
     def test_safe_div():
         assert safe_div(10, 2) == 5

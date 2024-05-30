@@ -12,7 +12,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
-from backend.api.utils.functions import get_level, get_models_group, safe_div
+from backend.api.utils.functions import get_level, safe_div, ModelsFetcher
 
 
 followers = db.Table(
@@ -311,7 +311,7 @@ class User(db.Model):
     def get_global_media_stats(self) -> Dict:
         """ Get the user's global media stats based on the user's activated MediaType """
 
-        models = get_models_group(self.activated_media_type(), ModelTypes.LIST)
+        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
 
         # Calculate time per media [hours]
         query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models]
@@ -369,7 +369,7 @@ class User(db.Model):
     def get_one_media_details(self, media_type: MediaType) -> Dict:
         """ Get the selected media details for the user """
 
-        media_list, media_label = get_models_group(media_type, types=[ModelTypes.LIST, ModelTypes.LABELS])
+        media_list, media_label = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,
@@ -377,7 +377,7 @@ class User(db.Model):
             count_per_metric=media_list.get_media_count_per_rating(self),
             time_hours=int(getattr(self, f"time_spent_{media_type.value}") / 60),
             time_days=int(getattr(self, f"time_spent_{media_type.value}") / 1440),
-            labels=media_label.get_total_labels(self.id),
+            labels=media_label.get_total_and_labels_names(self.id, limit_=10),
         )
 
         media_dict.update(media_list.get_media_count_per_status(self.id))
@@ -391,20 +391,15 @@ class User(db.Model):
 
         from backend.api.models.utils_models import Ranks
 
-        models = get_models_group(self.activated_media_type(), ModelTypes.LIST)
-
-        # Fetch all ranks at once
+        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
         all_ranks = {rank.level: {"image": rank.image, "name": rank.name} for rank in Ranks.query.all()}
 
         level_per_ml = []
         for i, ml in enumerate(models):
             time_in_min = getattr(self, f"time_spent_{ml.GROUP.value}")
 
-            # Get level and percent
             level, level_percent = map(float, divmod(get_level(time_in_min), 1))
             level_percent *= 100
-
-            # Fetch associated rank from dict
             rank_info = all_ranks.get(min(level, 149))
 
             level_per_ml.append({

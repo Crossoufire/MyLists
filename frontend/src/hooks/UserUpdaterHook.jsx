@@ -1,9 +1,9 @@
 import {toast} from "sonner";
-import {api} from "@/api/MyApiClient.js";
+import {api} from "@/api/MyApiClient";
 
 
 export const useApiUpdater = (mediaId, mediaType) => {
-    const makeUpdateFunction = (url) => async (payload = null) => {
+    const makeUpdateFunction = (url) => async (payload = null, errorAsToast = true) => {
         const response = await api.post(url, {
             media_id: mediaId,
             media_type: mediaType,
@@ -11,7 +11,7 @@ export const useApiUpdater = (mediaId, mediaType) => {
         });
 
         if (!response.ok) {
-            toast.error(response.body.description);
+            errorAsToast && toast.error(response.body?.description || "Sorry, an unexpected error occurred");
             return false;
         }
 

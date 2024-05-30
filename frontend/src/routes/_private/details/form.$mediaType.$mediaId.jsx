@@ -1,14 +1,15 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {fetcher} from "@/hooks/FetchDataHook";
-import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
 import {PageTitle} from "@/components/app/PageTitle";
-import {capitalize, genreListsToListsOfDict} from "@/lib/utils";
+import {FormButton} from "@/components/app/base/FormButton";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/lib/utils";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -24,97 +25,109 @@ function MediaEditPage() {
     const navigate = useNavigate();
     const apiData = Route.useLoaderData();
     const { mediaId, mediaType } = Route.useParams();
+    const parts = sliceIntoParts(apiData.fields, 3);
+    const [isPending, setIsPending] = useState(false);
 
     const onSubmit = async (data) => {
-        const response = await api.post(`/details/form`, {
-            media_id: mediaId,
-            media_type: mediaType,
-            payload: data,
-        });
+        try {
+            setIsPending(true);
+            const response = await api.post(`/details/form`, {
+                media_id: mediaId,
+                media_type: mediaType,
+                payload: data,
+            });
 
-        if (!response.ok) {
-            return toast.error(response.body.description);
+            if (!response.ok) {
+                return toast.error(response.body.description);
+            }
+
+            window.scrollTo(0, 0);
+            toast.success("Media successfully updated!");
+            await navigate({ to: `/details/${mediaType}/${mediaId}` });
         }
+        finally {
+            setIsPending(false);
+        }
+    };
 
-        toast.success("Media successfully updated!");
-        window.scrollTo(0, 0);
-        return navigate({ to: `/details/${mediaType}/${mediaId}` });
+    const renderField = (form, arr) => {
+        return (
+            <FormField
+                key={arr[0]}
+                name={arr[0]}
+                control={form.control}
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>{capitalize(arr[0].replaceAll("_", " "))}</FormLabel>
+                        <FormControl>
+                            {arr[0] === "synopsis" ?
+                                <Textarea{...field} className="h-[130px]" defaultValue={arr[1]}/>
+                                :
+                                <Input{...field} defaultValue={arr[1]}/>
+                            }
+                        </FormControl>
+                        <FormMessage/>
+                    </FormItem>
+                )}
+            />
+        )
     };
 
     return (
-        <PageTitle title="Edit media info" subtitle="Edit the details of this media info.">
+        <PageTitle title={`Edit ${capitalize(mediaType)} Details`} subtitle={`Update the media information`}>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-5 w-[500px] max-sm:w-full">
-                    <FormField
-                        name="image_cover"
-                        control={form.control}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Image Cover URL</FormLabel>
-                                <FormControl>
-                                    <Input {...field}/>
-                                </FormControl>
-                                <FormMessage/>
-                            </FormItem>
-                        )}
-                    />
-                    {apiData.genres &&
-                        <>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-5 mx-auto w-full">
+                    <div className="grid grid-cols-3 gap-8 max-sm:grid-cols-1">
+                        <div className="space-y-4">
                             <FormField
-                                name="genres"
+                                name="image_cover"
                                 control={form.control}
-                                render={({ field }) => (
+                                render={({field}) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            <div>Genres (select up to 5)</div>
-                                        </FormLabel>
+                                        <FormLabel>Image Cover URL</FormLabel>
                                         <FormControl>
-                                            <MultipleSelector
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                defaultOptions={genreListsToListsOfDict(apiData.genres)}
-                                                placeholder="Select genres..."
-                                                maxSelected={5}
-                                            />
+                                            <Input {...field}/>
                                         </FormControl>
                                         <FormMessage/>
                                     </FormItem>
                                 )}
                             />
-                        </>
-                    }
-                    {apiData.fields.map(f =>
-                        <>
-                            <FormField
-                                key={f[0]}
-                                name={f[0]}
-                                control={form.control}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>{capitalize(f[0].replaceAll("_", " "))}</FormLabel>
-                                        <FormControl>
-                                            {f[0] === "synopsis" ?
-                                                <Textarea
-                                                    {...field}
-                                                    className="h-64"
-                                                    defaultValue={f[1]}
+                            {apiData.genres &&
+                                <FormField
+                                    name="genres"
+                                    control={form.control}
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Genres (Select up to 5)</FormLabel>
+                                            <FormControl>
+                                                <MultipleSelector
+                                                    maxSelected={5}
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    className="mb-0"
+                                                    placeholder={"Select Genres..."}
+                                                    defaultOptions={genreListsToListsOfDict(apiData.genres)}
                                                 />
-                                                :
-                                                <Input
-                                                    {...field}
-                                                    defaultValue={f[1]}
-                                                />
-                                            }
-                                        </FormControl>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                            />
-                        </>
-                    )}
-                    <Button type="submit" variant="default" className="mt-5">
-                        Update
-                    </Button>
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            }
+                            {parts[0].map(arr => renderField(form, arr))}
+                        </div>
+                        <div className="space-y-4">
+                            {parts[1].map(arr => renderField(form, arr))}
+                        </div>
+                        <div className="space-y-4">
+                            {parts[2].map(arr => renderField(form, arr))}
+                        </div>
+                    </div>
+                    <div className="flex justify-end">
+                        <FormButton className="mt-5" pending={isPending}>
+                            Save Changes
+                        </FormButton>
+                    </div>
                 </form>
             </Form>
         </PageTitle>

@@ -1,16 +1,16 @@
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
+import {LuMessageSquare} from "react-icons/lu";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
-import {FaCommentAlt, FaRegCommentAlt} from "react-icons/fa";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
-    const [isEdit, setIsEdit] = useState(false);
     const [isLoading, handleLoading] = useLoading();
+    const [isEdit, setIsEdit] = useState(false);
     const [contentsState, setContentsState] = useState(initContent || "");
     const [initContentState, setInitContentState] = useState(initContent || "");
 
@@ -18,7 +18,7 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
         if (isCurrent && contentsState === "") {
             setIsEdit(true);
         }
-    }
+    };
 
     const handleSave = async () => {
         if (initContentState === contentsState) {
@@ -33,13 +33,13 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
     const onEditCancel = () => {
         setContentsState(initContentState);
         setIsEdit(false);
-    }
+    };
 
     const onPopoverClickOutside = (ev) => {
         if (isEdit && contentsState !== "") {
             ev.preventDefault();
         }
-    }
+    };
 
     return (
         <Popover>
@@ -47,16 +47,16 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
                 <div className="flex items-center">
                     {isCurrent ?
                         <PopoverTrigger onClick={checkInitContent}>
-                            {contentsState ? <FaCommentAlt className="text-amber-500"/> : <FaRegCommentAlt/>}
+                            <LuMessageSquare className={contentsState && "text-amber-500"}/>
                         </PopoverTrigger>
                         :
                         <>
                             {contentsState ?
                                 <PopoverTrigger>
-                                    <FaCommentAlt className="text-amber-500"/>
+                                    <LuMessageSquare className="text-amber-500"/>
                                 </PopoverTrigger>
                                 :
-                                <FaRegCommentAlt/>
+                                <LuMessageSquare/>
                             }
                         </>
                     }
@@ -72,10 +72,12 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
                             className="w-full h-[100px]"
                             disabled={isLoading}
                         />
-                        <Button className="mt-3" size="sm" onClick={handleSave} disabled={initContentState === contentsState || isLoading}>
+                        <Button className="mt-3" size="sm" onClick={handleSave}
+                        disabled={initContentState === contentsState || isLoading}>
                             Save
                         </Button>
-                        <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={onEditCancel} disabled={isLoading}>
+                        <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={onEditCancel}
+                        disabled={initContentState === contentsState || isLoading}>
                             Cancel
                         </Button>
                     </>

@@ -17,7 +17,7 @@ function MainLayout() {
     return (
         <>
             <GlobalLoading/>
-            <Toaster position="top-center" richColors/>
+            <Toaster/>
             <SheetProvider><Navbar/></SheetProvider>
             <main className="md:max-w-screen-xl container">
                 <ScrollRestoration/>

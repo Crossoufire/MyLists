@@ -3,11 +3,11 @@ from functools import wraps
 from typing import Callable, Any
 from flask import abort, request
 from backend.api.utils.enums import MediaType
-from backend.api.utils.functions import get_models_group
+from backend.api.utils.functions import ModelsFetcher
 
 
 def validate_media_type(f: Callable):
-    """ Validate the <media_type> string kwarg to MediaType enum before giving access to the endpoint """
+    """ Validate <media_type> string kwarg to MediaType enum before giving access to endpoint """
 
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -22,8 +22,7 @@ def validate_media_type(f: Callable):
 
 
 def validate_json_data(type_: Any = None):
-    """ Decorator for checking JSON data before accessing the route. Add an endpoint type before creating the
-    decorator """
+    """ Decorator which checks JSON data before accessing route. Add endpoint type before creating decorator """
 
     def decorator(f: Callable):
         @wraps(f)
@@ -42,7 +41,7 @@ def validate_json_data(type_: Any = None):
 
             try:
                 media_type = MediaType(media_type)
-                models = get_models_group(media_type, "all")
+                models = ModelsFetcher.get_dict_models(media_type, "all")
             except ValueError:
                 return abort(400, "The <media_type> key is not valid.")
 

@@ -6,7 +6,10 @@ import {TanStackRouterVite} from "@tanstack/router-vite-plugin";
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-    plugins: [react(), TanStackRouterVite()],
+    plugins: [
+        react(),
+        TanStackRouterVite()
+    ],
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
@@ -15,8 +18,8 @@ export default defineConfig({
     server: {
         watch: {
             usePolling: true,
-            interval: 300,
-            binaryInterval: 300,
+            interval: 800,
+            binaryInterval: 800,
         },
         open: true,
         port: 3000,
@@ -32,7 +35,9 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     react: ["react", "react-dom"],
-                    recharts: ["recharts"]
+                    nivoCore: ["@nivo/core"],
+                    nivoBar: ["@nivo/bar"],
+                    nivoPie: ["@nivo/pie"],
                 },
             },
         },

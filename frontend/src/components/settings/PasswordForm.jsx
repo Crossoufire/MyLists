@@ -6,12 +6,10 @@ import {api, userClient} from "@/api/MyApiClient";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {useNavigate} from "@tanstack/react-router";
 
 
 export const PasswordForm = () => {
     const form = useForm();
-    const navigate = useNavigate();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
@@ -26,9 +24,8 @@ export const PasswordForm = () => {
             return setErrors(response.body.description);
         }
 
-        userClient.currentUser = response.body.updated_user;
+        userClient.setCurrentUser(response.body.updated_user);
         toast.success("Password successfully updated");
-        return navigate({ to: `/profile/${response.body.updated_user.username}` });
     };
 
     return (

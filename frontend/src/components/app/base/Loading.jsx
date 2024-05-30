@@ -1,9 +1,9 @@
 import {cn} from "@/lib/utils";
 
 
-export const Loading = ({ className, forPage = true }) => {
+export const Loading = ({ className }) => {
     return (
-        <div role="status" className={cn("flex justify-center items-center", forPage && "h-[calc(100vh_-_200px_-290px)]")}>
+        <div role="status" className="flex justify-center items-center">
             <svg className={cn("w-8 h-8 animate-spin dark:text-gray-400 fill-cyan-700", className)}
             viewBox="0 0 100 101" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <path

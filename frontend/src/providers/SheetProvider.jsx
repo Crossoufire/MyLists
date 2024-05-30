@@ -17,10 +17,8 @@ export const SheetProvider = ({ children }) => {
 
 export const useSheet = () => {
     const context = useContext(SheetContext);
-
     if (!context) {
-        throw new Error("useExpansion must be used within a NavigationProvider");
+        throw new Error("useSheet must be used within a SheetProvider");
     }
-
     return context;
 };

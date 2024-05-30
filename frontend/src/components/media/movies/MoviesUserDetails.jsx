@@ -1,5 +1,4 @@
 import {useState} from "react";
-import {userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
@@ -7,10 +6,9 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
 export const MoviesUserDetails = ({ userData, updatesAPI }) => {
-    const currentUser = userClient.currentUser;
     const [redo, setRedo] = useState(userData.rewatched);
     const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(currentUser.add_feeling ? userData.feeling : userData.score);
+    const [rating, setRating] = useState(userData.rating);
 
     const callbackStatus = (value) => {
         setStatus(value);
@@ -18,8 +16,8 @@ export const MoviesUserDetails = ({ userData, updatesAPI }) => {
     };
 
     const callbackRating = (value) => {
-        setRating(value);
-    }
+        setRating({ ...rating, value });
+    };
 
     return (
         <>
@@ -34,7 +32,6 @@ export const MoviesUserDetails = ({ userData, updatesAPI }) => {
                     <Separator/>
                     <RatingDrop
                         rating={rating}
-                        isFeeling={currentUser.add_feeling}
                         updateRating={updatesAPI.rating}
                         callbackRating={callbackRating}
                     />

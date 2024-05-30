@@ -1,3 +1,5 @@
+
+
 // Base API url from flask backend
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -32,6 +34,7 @@ class MyApiClient {
         let response = await this.requestInternal(data);
 
         if (response.status === 401 && data.url !== "/tokens") {
+            let beforeRenewAccessToken = localStorage.getItem("accessToken");
             const refreshResponse = await this.put("/tokens", {
                 access_token: localStorage.getItem("accessToken"),
             });
@@ -41,8 +44,10 @@ class MyApiClient {
                 response = await this.requestInternal(data);
             }
 
-            // TODO: Do not return the old bad response and just go back to login with toast saying that the user
-            //  needs to re-identify
+            // Check no another call was made just before that changed the access and refresh tokens
+            if (!refreshResponse.ok && (beforeRenewAccessToken !== localStorage.getItem("accessToken"))) {
+                response = await this.requestInternal(data);
+            }
         }
 
         return response;
@@ -141,6 +146,24 @@ class MyApiClient {
 class UserClient {
     constructor(currentUser = null) {
         this.currentUser = currentUser;
+        this.subscribers = [];
+    }
+
+    setCurrentUser(newData) {
+        this.currentUser = newData;
+        this.notifySubscribers();
+    }
+
+    notifySubscribers() {
+        this.subscribers.forEach(sub => sub(this.currentUser));
+    }
+
+    subscribe(callbackFunction) {
+        this.subscribers.push(callbackFunction);
+    }
+
+    unsubscribe(callbackFunction) {
+        this.subscribers = this.subscribers.filter(sub => sub !== callbackFunction);
     }
 
     static async initialize() {
@@ -159,7 +182,7 @@ class UserClient {
 
         if (logging.ok) {
             const response = await api.get("/current_user");
-            this.currentUser = response.ok ? response.body : null;
+            this.setCurrentUser(response.ok ? response.body : null);
         }
 
         return logging;
@@ -167,11 +190,22 @@ class UserClient {
 
     async logout() {
         await api.logout();
-        this.currentUser = null;
+        this.setCurrentUser(null);
     }
 }
 
 
-export const api = new MyApiClient();
+const api = new MyApiClient();
 
-export const userClient = await UserClient.initialize();
+
+let userClient = null;
+
+
+export async function initializeUserClient() {
+    if (!userClient) {
+        userClient = await UserClient.initialize();
+    }
+}
+
+
+export { api, userClient };

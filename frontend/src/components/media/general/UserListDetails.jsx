@@ -1,7 +1,6 @@
 import {toast} from "sonner";
 import {useLoading} from "@/hooks/LoadingHook";
 import {FaMinus, FaPlus} from "react-icons/fa";
-import {useMutation} from "@tanstack/react-query";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
@@ -22,10 +21,8 @@ const mediaComponentMap = (value) => {
 		anime: TvUserDetails,
 		games: GamesUserDetails,
 		books: BooksUserDetails,
-		default: undefined,
 	};
-
-	return components[value] || components.default;
+	return components[value];
 };
 
 
@@ -44,10 +41,7 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 
 	const handleDeleteMedia = async () => {
 		const confirm = window.confirm("Do you want to remove this media from your list?");
-		if (!confirm) {
-			return;
-		}
-
+		if (!confirm) return;
 		const response = await handleLoading(updatesAPI.deleteMedia);
 		if (response) {
 			setApiData({ ...apiData, user_data: false });
@@ -64,8 +58,6 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 			</div>
 		);
 	}
-
-	console.log(apiData);
 
 	return (
 		<div className="space-y-2">
@@ -91,11 +83,8 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 						initContent={apiData.user_data.comment}
 					/>
 					<LabelLists
-						mediaType={mediaType}
-						updatesAPI={updatesAPI}
-						apiData={apiData}
-						initAvailable={apiData.user_data.labels.available}
-						initAlready={apiData.user_data.labels.already_in}
+						mediaId={apiData.media.id}
+						alreadyIn={apiData.user_data.labels.already_in}
 					/>
 				</TabsContent>
 				<TabsContent value="history" className="w-[300px] p-5 pt-3 bg-card rounded-md overflow-y-hidden

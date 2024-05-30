@@ -2,6 +2,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import click
 from flask import current_app
 from sqlalchemy.orm import aliased
 from backend.api import db
@@ -11,7 +12,7 @@ from backend.api.models.movies_models import Movies
 from backend.api.models.user_models import User
 from backend.api.models.utils_models import MyListsStats
 from backend.api.utils.enums import ModelTypes, MediaType
-from backend.api.utils.functions import get_models_group
+from backend.api.utils.functions import ModelsFetcher
 
 
 def remove_non_list_media():
@@ -20,7 +21,7 @@ def remove_non_list_media():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting automatic media remover -")
 
-    models = get_models_group("all", ModelTypes.MEDIA)
+    models = ModelsFetcher.get_dict_models("all", ModelTypes.MEDIA)
     for model in models.values():
         model.remove_non_list_media()
         db.session.commit()
@@ -35,7 +36,7 @@ def remove_all_old_covers():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting automatic covers remover -")
 
-    models = get_models_group("all", ModelTypes.MEDIA)
+    models = ModelsFetcher.get_dict_models("all", ModelTypes.MEDIA)
     for model in models.values():
         path_covers = Path(current_app.root_path, f"static/covers/{model.GROUP.value}_covers/")
         images_in_db = [media.image_cover for media in model.query.all()]
@@ -66,7 +67,7 @@ def automatic_media_refresh():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting automatic media refresh -")
 
-    models = get_models_group([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
+    models = ModelsFetcher.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
     for model in models:
         api_model = ApiData.get_API_class(model.GROUP)
         api_ids_to_refresh = api_model().get_changed_api_ids()
@@ -89,7 +90,7 @@ def add_media_related_notifications():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting checking new releasing media -")
 
-    models = get_models_group([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
+    models = ModelsFetcher.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
     for model in models:
         model.get_new_releasing_media()
 
@@ -117,7 +118,7 @@ def compute_media_time_spent():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting to compute the total time spent for each user -")
 
-    models = get_models_group("all", [ModelTypes.MEDIA, ModelTypes.LIST])
+    models = ModelsFetcher.get_dict_models("all", [ModelTypes.MEDIA, ModelTypes.LIST])
     for model in models.values():
         media, media_list = model[ModelTypes.MEDIA], model[ModelTypes.LIST]
         media_alias = aliased(media)
@@ -194,11 +195,23 @@ def update_IGDB_API():
     current_app.logger.info("###############################################################################")
 
 
+def get_active_users(days: int = 180):
+    from datetime import datetime, timedelta
+    delta_time = datetime.now() - timedelta(days=days)
+    print(f"### Active users (< {days // 30} months) = {User.query.filter(User.last_seen >= delta_time).count()}")
+
+
 # ---------------------------------------------------------------------------------------------------------------
 
 
 def add_cli_commands():
     """ Register the command for the Flask CLI """
+
+    @current_app.cli.command()
+    @click.argument("days", type=int, default=180)
+    def active_users(days):
+        """ Count the number of active users """
+        get_active_users(days=days)
 
     @current_app.cli.command()
     def remove_media():

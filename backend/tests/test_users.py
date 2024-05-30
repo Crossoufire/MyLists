@@ -1,6 +1,7 @@
 import os
 from unittest import mock
-from backend.api.utils.functions import get_models_group
+
+from backend.api.utils.functions import ModelsFetcher
 from backend.tests.base_test import BaseTest
 
 
@@ -220,7 +221,7 @@ class UserTests(BaseTest):
         assert UserLastUpdate.query.filter_by(user_id=user_id).count() == 0
         assert Notifications.query.filter_by(user_id=user_id).count() == 0
 
-        models = get_models_group("all", [ModelTypes.LIST, ModelTypes.LABELS])
+        models = ModelsFetcher.get_dict_models("all", [ModelTypes.LIST, ModelTypes.LABELS])
 
         for model_type in models.values():
             for model in model_type.values():

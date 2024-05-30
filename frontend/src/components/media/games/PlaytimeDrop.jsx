@@ -1,7 +1,6 @@
 import {useState} from "react";
 import {getPlaytimeValues} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
-import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -22,9 +21,9 @@ export const PlaytimeDrop = ({ initPlaytime, updatePlaytime }) => {
     return (
         <div className="flex justify-between items-center">
             <div>Playtime</div>
-            <Select value={isLoading ? undefined : playtime} onValueChange={handleSelect} disabled={isLoading}>
+            <Select value={playtime} onValueChange={handleSelect} disabled={isLoading}>
                 <SelectTrigger className="w-[130px]" size="details">
-                    <SelectValue placeholder={<LoadingIcon size={6}/>}/>
+                    <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
                     {playValues.map(p => <SelectItem key={p} value={p}>{p} hours</SelectItem>)}

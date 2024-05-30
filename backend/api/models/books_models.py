@@ -150,17 +150,23 @@ class BooksList(MediaListMixin, db.Model):
         PLAN_TO_READ = "Plan to Read"
 
     def to_dict(self) -> Dict:
-        """ Serialization of the bookslist class """
+        is_feeling = self.user.add_feeling
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        # Add more info
+        del media_dict["feeling"]
+        del media_dict["score"]
+
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["total_pages"] = self.media.pages
         media_dict["all_status"] = self.Status.to_list()
+        media_dict["rating"] = {
+            "type": "feeling" if is_feeling else "score",
+            "value": self.feeling if is_feeling else self.score
+        }
 
         return media_dict
 
@@ -258,7 +264,7 @@ class BooksGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List:
         """ Return the available genres for the books """
-        return ["All", "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
+        return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
                 "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
                 "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
                 "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]

@@ -1,78 +1,58 @@
-import {useRef} from "react";
-import {Button} from "@/components/ui/button";
-import {Tooltip} from "@/components/ui/tooltip";
+import * as Menu from "@/components/ui/menubar";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
-import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const EditMediaList = ({ allStatus, mediaStatus, handleStatus, removeMedia, isCurrent, addFromOtherList }) => {
-    const popoverCloseRef = useRef();
+export const EditMediaList = (props) => {
+    const {isCurrent, status, allStatus, handleStatus, removeMedia, addOtherList} = props;
 
-    const handlePopoverStatus = (value) => {
-        popoverCloseRef?.current?.click();
-        handleStatus(value);
-    };
-
-    const handlePopoverRemove = () => {
+    const handleMenuRemove = () => {
         const confirm = window.confirm("Are you sure you want to delete this media?");
         if (!confirm) return;
-
-        popoverCloseRef?.current?.click();
         removeMedia();
     };
 
-    const handlePopoverAdd = (value) => {
-        popoverCloseRef?.current?.click();
-        addFromOtherList(value);
-    };
+    const handleMenuStatus = (ev) => handleStatus(ev.target.textContent);
+
+    const handleMenuAdd = (ev) => addOtherList(ev.target.textContent);
 
     return (
-        <div className="absolute top-1 right-1">
-            <Popover>
-                <PopoverTrigger>
-                    <Tooltip text="Edit">
-                        <DotsVerticalIcon className="h-5 w-5 mt-2 mr-1 opacity-50 hover:opacity-100"/>
-                    </Tooltip>
-                </PopoverTrigger>
-                <PopoverClose ref={popoverCloseRef}/>
-                <PopoverContent align="end" className="w-[196px] py-2 px-0">
-                    <div className="text-center mb-3 text-neutral-400 text-sm">Edit media</div>
+        <Menu.Menubar>
+            <Menu.MenubarMenu>
+                <Menu.MenubarTrigger>
+                    <DotsVerticalIcon className="h-5 w-5 hover:opacity-70"/>
+                </Menu.MenubarTrigger>
+                <Menu.MenubarContent align="end" >
+                    <div className="text-center mt-1 mb-2 text-neutral-400 text-sm">Edit media</div>
                     {isCurrent &&
                         <>
-                            <Select onValueChange={handlePopoverStatus}>
-                                <SelectTrigger variant="list" size="editList">
-                                    <SelectValue placeholder="Change Status"/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {allStatus.map(status =>
-                                        <SelectItem key={status} value={status} disabled={status === mediaStatus}>
-                                            {status}
-                                        </SelectItem>
+                            <Menu.MenubarSub>
+                                <Menu.MenubarSubTrigger>Change Status</Menu.MenubarSubTrigger>
+                                <Menu.MenubarSubContent>
+                                    {allStatus.map(st =>
+                                        <Menu.MenubarItem key={st} onSelect={handleMenuStatus} disabled={st === status}>
+                                            {st}
+                                        </Menu.MenubarItem>
                                     )}
-                                </SelectContent>
-                            </Select>
-                            <Button variant="list" onClick={handlePopoverRemove}>
-                                Delete media
-                            </Button>
+                                </Menu.MenubarSubContent>
+                            </Menu.MenubarSub>
+                            <Menu.MenubarSeparator/>
+                            <Menu.MenubarItem onSelect={handleMenuRemove}>Delete media</Menu.MenubarItem>
                         </>
                     }
                     {!isCurrent &&
-                        <Select onValueChange={handlePopoverAdd}>
-                            <SelectTrigger variant="list" size="editList">
-                                <SelectValue placeholder="Add to your list"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {allStatus.map(status =>
-                                    <SelectItem key={status} value={status}>
-                                        {status}
-                                    </SelectItem>
+                        <Menu.MenubarSub>
+                            <Menu.MenubarSubTrigger>Add to your list</Menu.MenubarSubTrigger>
+                            <Menu.MenubarSubContent>
+                                {allStatus.map(st =>
+                                    <Menu.MenubarItem key={st} onSelect={handleMenuAdd}>
+                                        {st}
+                                    </Menu.MenubarItem>
                                 )}
-                            </SelectContent>
-                        </Select>
+                            </Menu.MenubarSubContent>
+                        </Menu.MenubarSub>
                     }
-                </PopoverContent>
-            </Popover>
-        </div>
-    )
+                </Menu.MenubarContent>
+            </Menu.MenubarMenu>
+        </Menu.Menubar>
+    );
 };

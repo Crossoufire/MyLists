@@ -1,42 +1,44 @@
+import {useParams} from "@tanstack/react-router";
 import {PagesInput} from "@/components/medialist/PagesInput";
 import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";
 import {PlaytimeListDrop} from "@/components/medialist/PlaytimeListDrop";
 
 
-export const SuppMediaInfo = ({ isCurrent, mediaType, mediaData, mediaStatus, updateUserAPI }) => {
-    if (["series", "anime"].includes(mediaType)) {
+export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
+    const { mediaType } = useParams({ strict: false });
+
+    if (["series", "anime"].includes(mediaType) && !["Plan to Watch", "Random"].includes(status)) {
         return (
             <EpsAndSeasons
+                status={status}
                 isCurrent={isCurrent}
-                initSeason={mediaData.current_season}
-                initEpisode={mediaData.last_episode_watched}
-                epsPerSeason={mediaData.eps_per_season}
+                initSeas={media.current_season}
                 updateSeas={updateUserAPI.season}
                 updateEps={updateUserAPI.episode}
-                status={mediaStatus}
+                epsPerSeason={media.eps_per_season}
+                initEps={media.last_episode_watched}
             />
         );
     }
 
-    if (mediaType === "games") {
+    if (mediaType === "games" && status !== "Plan to Play") {
         return (
             <PlaytimeListDrop
                 isCurrent={isCurrent}
-                initPlaytime={mediaData.playtime}
+                initPlaytime={media.playtime}
                 updatePlaytime={updateUserAPI.playtime}
-                status={mediaStatus}
             />
         );
     }
 
-    if (mediaType === "books") {
+    if (mediaType === "books" && status !== "Plan to Read") {
         return (
             <PagesInput
+                status={status}
                 isCurrent={isCurrent}
-                initPage={mediaData.actual_page}
-                totalPages={mediaData.total_pages}
+                initPage={media.actual_page}
+                totalPages={media.total_pages}
                 updatePage={updateUserAPI.page}
-                status={mediaStatus}
             />
         );
     }

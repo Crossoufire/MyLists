@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Tuple
 from flask import current_app, abort
-from sqlalchemy import func, text, extract, ColumnElement
+from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.routes.handlers import current_user
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format, get_models_group
+from backend.api.utils.functions import change_air_format, ModelsFetcher
 
 
 class TVModel(db.Model):
@@ -188,7 +188,7 @@ class TVModel(db.Model):
     def get_new_releasing_media(cls):
         """ Check for the new releasing series/anime in a week or less from the TMDB API """
 
-        media_list, eps_model = get_models_group(cls.GROUP, types=[ModelTypes.LIST, ModelTypes.EPS])
+        media_list, eps_model = ModelsFetcher.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
         media_list_str = f"{cls.GROUP.value}list"
 
         try:
@@ -242,7 +242,7 @@ class TVModel(db.Model):
     def remove_non_list_media(cls):
         """ Remove all the TV data not present in a List from the database and locally """
 
-        models = get_models_group(cls.GROUP, "all")
+        models = ModelsFetcher.get_dict_models(cls.GROUP, "all")
         media_model = models[ModelTypes.MEDIA]
         media_list_model = models[ModelTypes.LIST]
         actors_model = models[ModelTypes.ACTORS]
@@ -316,15 +316,24 @@ class TVListModel(MediaListMixin, db.Model):
         PLAN_TO_WATCH = "Plan to Watch"
 
     def to_dict(self) -> Dict:
+        is_feeling = self.user.add_feeling
+
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+        del media_dict["feeling"]
+        del media_dict["score"]
 
         media_dict.update({
             "media_cover": self.media.media_cover,
             "media_name": self.media.name,
             "all_status": self.Status.to_list(),
             "eps_per_season": self.media.eps_per_season_list,
+            "rating": {
+                "type": "feeling" if is_feeling else "score",
+                "value": self.feeling if is_feeling else self.score
+            }
         })
 
         return media_dict
@@ -349,7 +358,7 @@ class TVListModel(MediaListMixin, db.Model):
 
     @classmethod
     def total_user_time_def(cls):
-        media_model = get_models_group(cls.GROUP, ModelTypes.MEDIA)
+        media_model = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
         return func.sum(media_model.duration * cls.total)
 
 
@@ -428,7 +437,7 @@ class SeriesGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List[str]:
         """ Return all the series genres """
-        return ["All", "Action & Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Kids",
+        return ["Action & Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Kids",
                 "Mystery", "News", "Reality", "Sci-Fi & Fantasy", "Soap", "Talk", "War & Politics", "Western"]
 
 
@@ -527,7 +536,7 @@ class AnimeGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List[str]:
         """ Return all the anime genres """
-        return ["All", "Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Mystery", "Drama",
+        return ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Mystery", "Drama",
                 "Ecchi", "Fantasy", "Game", "Hentai", "Historical", "Horror", "Magic", "Martial Arts", "Mecha",
                 "Music", "Samurai", "Romance", "School", "Sci-Fi", "Shoujo", "Shounen", "Space", "Sports",
                 "Super Power", "Vampire", "Harem", "Slice Of Life", "Supernatural", "Military", "Police",

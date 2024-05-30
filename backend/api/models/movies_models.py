@@ -229,13 +229,23 @@ class MoviesList(MediaListMixin, db.Model):
     def to_dict(self) -> Dict:
         """ Serialization of the MoviesList SQL model """
 
+        is_feeling = self.user.add_feeling
+
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+        del media_dict["feeling"]
+        del media_dict["score"]
+
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = self.Status.to_list()
+        media_dict["labels"] = [label.label for label in self.media.labels]
+        media_dict["rating"] = {
+            "type": "feeling" if is_feeling else "score",
+            "value": self.feeling if is_feeling else self.score
+        }
 
         return media_dict
 
@@ -303,7 +313,7 @@ class MoviesGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List:
         """ Return the available genres for the movies """
-        return ["All", "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
+        return ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
                 "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Science Fiction", "TV Movie",
                 "Thriller", "War", "Western"]
 

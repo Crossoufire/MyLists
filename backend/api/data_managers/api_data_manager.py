@@ -15,7 +15,7 @@ from ratelimit import sleep_and_retry, limits
 from requests import Response
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import change_air_format, get_models_group, clean_html_text, get, is_latin
+from backend.api.utils.functions import change_air_format, clean_html_text, get, is_latin, ModelsFetcher
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
@@ -69,9 +69,7 @@ class ApiData:
         raise NotImplementedError("Subclasses must implement this method.")
 
     def _add_data_to_db(self):
-        """ Add the new Series/Anime/Movies/Games/Books data to the database """
-
-        models = get_models_group(self.GROUP, "all")
+        models = ModelsFetcher.get_dict_models(self.GROUP, "all")
 
         # Add main media data
         self.media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
@@ -199,7 +197,7 @@ class ApiTMDB(ApiData):
         """ Fetch the IDs that changed in the last 24h from the TMDB API for Series and Anime """
 
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
-        model = get_models_group(self.GROUP, ModelTypes.MEDIA)
+        model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         response = self.call_api(f"https://api.themoviedb.org/3/{type_}/changes?api_key={self.API_KEY}")
         data = json.loads(response.text)
@@ -630,8 +628,6 @@ class ApiGames(ApiData):
     def _from_API_to_dict(self, updating: bool = False):
         """ Transform API data to dict to add to database """
 
-        print(self.API_data)
-
         self.media_details = dict(
             name=get(self.API_data, "name", default="Unknown"),
             release_date=get(self.API_data, "first_release_date", default="Unknown"),
@@ -761,9 +757,7 @@ class ApiGames(ApiData):
             current_app.logger.error(f"[ERROR] - An error occurred: {e}")
 
     def get_changed_api_ids(self) -> List:
-        """ Get the changed API IDs """
-
-        model = get_models_group(self.GROUP, ModelTypes.MEDIA)
+        model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         all_games = model.query.all()
         api_ids_to_refresh = []
@@ -778,7 +772,7 @@ class ApiGames(ApiData):
 
     @staticmethod
     def _get_HLTB_time(game_name: str) -> Dict:
-        """ Fetch the HLTB time using the HowLongToBeat scraping API """
+        """ Fetch HLTB time using HowLongToBeat scraping API """
 
         games_list = HowLongToBeat().search(game_name.lower(), similarity_case_sensitive=False)
 

@@ -4,6 +4,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {MediaCard} from "@/components/app/MediaCard";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute} from "@tanstack/react-router";
+import {TopRightCornerTriangle} from "@/routes/_private/list/$mediaType.$username";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -23,22 +24,19 @@ function InfoPage() {
         window.scrollTo({ top: 0 });
     };
 
-    const mediaPerPage = 36;
-    const totalPages = Math.ceil(apiData?.total / mediaPerPage);
+    const mediaPerPage = 25;
+    const totalPages = Math.ceil(apiData.total / mediaPerPage);
     const startIndex = (currentPage - 1) * mediaPerPage;
     const endIndex = startIndex + mediaPerPage;
-    const currentItems = apiData?.data.slice(startIndex, endIndex);
+    const currentItems = apiData.data.slice(startIndex, endIndex);
 
     return (
-        <PageTitle title={`${info}'s ${mediaType} (${apiData?.total || "..."})`}>
-            <div className="grid grid-cols-12 lg:gap-4">
+        <PageTitle title={`${info}'s ${mediaType} (${apiData.total})`}>
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
                 {currentItems.map(media =>
-                    <div className="col-span-4 md:col-span-3 lg:col-span-2">
-                        <MediaCard media={media} mediaType={mediaType} botRounded={true}>
-                            {media.in_list &&
-                                <div className="absolute top-[1px] right-[1px] border-solid border-t-0 border-r-[35px]
-                                border-b-[35px] border-l-0 rounded-tr-[3px] border-[transparent_#2d6f22]"/>
-                            }
+                    <div key={media.media_id} className="col-span-1">
+                        <MediaCard media={media} mediaType={mediaType}>
+                            {media.in_list && <TopRightCornerTriangle isCommon={media.in_list}/>}
                         </MediaCard>
                     </div>
                 )}

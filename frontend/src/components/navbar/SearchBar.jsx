@@ -21,7 +21,7 @@ export const SearchBar = () => {
     const currentUser = userClient.currentUser;
     const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);
-    const [selectDrop, setSelectDrop] = useState(currentUser ? "TMDB" : "users");
+    const [selectDrop, setSelectDrop] = useState("TMDB");
 
     const changeSelect = (value) => setSelectDrop(value);
 
@@ -77,7 +77,7 @@ export const SearchBar = () => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            {currentUser && <SelectItem value="TMDB">Media</SelectItem>}
+                            {<SelectItem value="TMDB">Media</SelectItem>}
                             {currentUser.add_books && <SelectItem value="BOOKS">Books</SelectItem>}
                             {currentUser.add_games && <SelectItem value="IGDB">Games</SelectItem>}
                             <SelectItem value="users">Users</SelectItem>
@@ -104,7 +104,7 @@ const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) =>
         return (
             <div className="z-20 absolute h-[52px] w-80 top-11 bg-background border rounded-md font-medium">
                 <div className="ml-2 mt-2">
-                    <Loading forPage={false}/>
+                    <Loading/>
                 </div>
             </div>
         );
@@ -148,7 +148,7 @@ const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) =>
             <Separator className="mt-3"/>
             {isLoading ?
                 <div className="ml-2 mt-2 mb-3">
-                    <Loading forPage={false}/>
+                    <Loading/>
                 </div>
                 :
                 results.items.map(media =>

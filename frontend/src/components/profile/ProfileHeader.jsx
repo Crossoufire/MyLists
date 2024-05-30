@@ -7,7 +7,6 @@ import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {api, userClient} from "@/api/MyApiClient";
-import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
@@ -104,8 +103,8 @@ const FollowButton = ({ initFollow, followId }) => {
     };
 
     return (
-        <Button variant={buttonColor} size="xs" onClick={handleFollow}>
-            {isLoading ? <LoadingIcon loading size={6}/> : <div className="font-semibold">{content}</div>}
+        <Button variant={buttonColor} size="xs" onClick={handleFollow} disabled={isLoading}>
+            <div className="font-semibold">{content}</div>
         </Button>
     )
 };

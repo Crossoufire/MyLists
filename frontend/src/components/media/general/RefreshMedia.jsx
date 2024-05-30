@@ -19,7 +19,7 @@ export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
     };
 
     if (isLoading) {
-        return <LoadingIcon size={8} cssOverride={{marginTop: 12}}/>;
+        return <LoadingIcon size={6} cssOverride={{marginTop: 12}}/>;
     }
 
     return (

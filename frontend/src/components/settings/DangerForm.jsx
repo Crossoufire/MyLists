@@ -8,26 +8,27 @@ import {FormError} from "@/components/app/base/FormError";
 
 export const DangerForm = () => {
     const navigate = useNavigate();
-    const [errors, setErrors] = useState("");
+    const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
     const deleteAccount = async () => {
-        setErrors("");
-        const confirm = window.confirm("Are you really sure?");
+        setError("");
+        if (!window.confirm("Are you really sure?")) return;
 
-        if (confirm) {
+        try {
             setPending(true);
             const response = await api.post("/settings/delete_account");
-            setPending(false);
-
             if (!response.ok) {
-                return setErrors(response.body.description);
+                return setError(response.body.description);
             }
-
-            toast.success("Your account has been successfully deleted");
-            await userClient.logout();
-            return navigate({ to: "/" });
         }
+        finally {
+            setPending(false);
+        }
+
+        toast.success("Your account has been successfully deleted");
+        await userClient.logout();
+        return navigate({ to: "/" });
     };
 
     return (
@@ -39,7 +40,7 @@ export const DangerForm = () => {
             <Button variant="destructive" onClick={deleteAccount} className="w-48" disabled={pending}>
                 DELETE MY ACCOUNT
             </Button>
-            {errors && <FormError message={errors}/>}
+            {error && <FormError message={error}/>}
         </div>
     );
 };

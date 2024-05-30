@@ -1,17 +1,17 @@
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
-import {getRatingValues, zeroPad} from "@/lib/utils";
+import {getFeelingValues, zeroPad} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import { FaAlignJustify, FaCommentAlt, FaHeart, FaPlay, FaRedoAlt, FaRegCommentAlt, FaRegHeart, FaStar } from "react-icons/fa";
+import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 
 
 export const FollowCard = ({ follow, mediaType }) => {
     const formatRating = () => {
-        if (follow.add_feeling) {
-            return getRatingValues(follow.add_feeling).find(data => data.value === follow.feeling).icon;
+        if (follow.rating.type === "feeling") {
+            return getFeelingValues(17).find(data => data.value === follow.rating.value).icon;
         }
-        return follow.score === null ? "---" : follow.score;
+        return follow.rating.value === null ? "--" : follow.rating.value.toFixed(1);
     };
 
     return (
@@ -33,32 +33,28 @@ export const FollowCard = ({ follow, mediaType }) => {
                         </Link>
                         <div className="flex justify-between items-center pr-3">
                             <div className="flex items-center gap-x-2">
-                                <FaStar size={15}/>
+                                <LuStar size={15}/>
                                 <div>{formatRating()}</div>
                             </div>
                             {(follow.status === "Completed" && mediaType !== "games") &&
                                 <div className="flex items-center gap-x-2">
-                                    <FaRedoAlt size={15}/> {follow.rewatched}
+                                    <LuRotateCw size={15}/> {follow.rewatched}
                                 </div>
                             }
                             <div className="flex items-center gap-x-2">
                                 {follow.comment ?
                                     <Popover>
                                         <PopoverTrigger>
-                                            <FaCommentAlt size={15} className="text-amber-500"/>
+                                            <LuMessageSquare size={15} className="text-amber-500"/>
                                         </PopoverTrigger>
                                         <PopoverContent>{follow.comment}</PopoverContent>
                                     </Popover>
                                     :
-                                    <FaRegCommentAlt size={15}/>
+                                    <LuMessageSquare size={15}/>
                                 }
                             </div>
                             <div className="flex gap-x-2">
-                                {follow.favorite ?
-                                    <FaHeart size={15} className="text-red-700"/>
-                                    :
-                                    <FaRegHeart size={15}/>
-                                }
+                                <LuHeart size={15} className={follow.favorite && "text-red-700"}/>
                             </div>
                         </div>
                     </div>
@@ -66,7 +62,7 @@ export const FollowCard = ({ follow, mediaType }) => {
                 <Separator/>
                 <div>
                     <div className="flex gap-x-3">
-                        <FaAlignJustify className="mt-1"/> {follow.status}
+                        <LuAlignJustify className="mt-1"/> {follow.status}
                     </div>
                     <MoreFollowDetails
                         mediaType={mediaType}
@@ -84,7 +80,7 @@ const MoreFollowDetails = ({ mediaType, follow }) => {
         if (!["Random", "Plan to Watch"].includes(follow.status)) {
             return (
                 <div className="flex gap-x-3 items-center">
-                    <FaPlay size={14} className="mt-1"/>
+                    <LuPlay size={16} className="mt-1"/>
                     Season {zeroPad(follow.current_season)} - Episode {zeroPad(follow.last_episode_watched)}
                 </div>
             );
@@ -93,14 +89,14 @@ const MoreFollowDetails = ({ mediaType, follow }) => {
     else if (mediaType === "books" && follow.status !== "Plan to Read") {
         return (
             <div className="flex gap-x-3 items-center">
-                <FaPlay size={14} className="mt-1"/> Page {follow.actual_page}/{follow.total_pages}
+                <LuPlay size={16} className="mt-1"/> Page {follow.actual_page}/{follow.total_pages}
             </div>
         );
     }
     else if (mediaType === "games" && follow.status !== "Plan to Play") {
         return (
             <div className="flex gap-x-3 items-center">
-                <FaPlay size={14} className="mt-1"/> Played {follow.playtime / 60} h
+                <LuPlay size={16} className="mt-1"/> Played {follow.playtime / 60} h
             </div>
         );
     }

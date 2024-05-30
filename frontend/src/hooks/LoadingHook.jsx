@@ -9,10 +9,14 @@ export const useLoading = (timeout = 200) => {
             setLoading(true);
         }, timeout);
 
-        const response = await asyncFunction(...args);
-
-        clearTimeout(loadingTimer);
-        setLoading(false);
+        let response = false;
+        try {
+            response = await asyncFunction(...args);
+        }
+        finally {
+            clearTimeout(loadingTimer);
+            setLoading(false);
+        }
 
         return response;
     };

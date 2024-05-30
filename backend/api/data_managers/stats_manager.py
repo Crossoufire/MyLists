@@ -5,14 +5,12 @@ from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.models.user_models import UserLastUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
-from backend.api.utils.functions import get_models_group, int_to_money
-
+from backend.api.utils.functions import int_to_money, ModelsFetcher
 
 """ --- GENERAL ----------------------------------------------------------------------------------------- """
 
 
 class BaseStats:
-
     GROUP: MediaType
     LIMIT: int = 10
 
@@ -20,7 +18,7 @@ class BaseStats:
         self.user = user
         self.data = {"values": {}, "lists": {}}
 
-        self.media_models = get_models_group(self.GROUP, "all")
+        self.media_models = ModelsFetcher.get_dict_models(self.GROUP, "all")
         self._initialize_media_models()
 
         self.data["is_feeling"] = self.user.add_feeling

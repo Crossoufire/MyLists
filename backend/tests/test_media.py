@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict
 from backend.api.utils.enums import MediaType, ModelTypes
+from backend.api.utils.functions import ModelsFetcher
 from backend.tests.base_test import BaseTest
 
 
@@ -87,9 +88,8 @@ class MediaTests(BaseTest):
         assert data["current_season"] == 1
         assert data["eps_per_season"] == [7, 13, 13, 13, 16]
         assert data["last_episode_watched"] == 1
-        assert data["score"] is None
+        assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
-        assert data["feeling"] is None
         assert data["comment"] is None
         assert data["labels"] == {"already_in": [], "available": []}
         assert data["history"][0]["media_id"] == 1
@@ -113,9 +113,8 @@ class MediaTests(BaseTest):
         assert data["current_season"] == 1
         assert data["eps_per_season"] == [25, 12, 22, 28]
         assert data["last_episode_watched"] == 1
-        assert data["score"] is None
+        assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
-        assert data["feeling"] is None
         assert data["comment"] is None
         assert data["labels"] == {"already_in": [], "available": []}
         assert data["history"][0]["media_id"] == 1
@@ -136,9 +135,8 @@ class MediaTests(BaseTest):
         assert data["media_cover"].startswith("/api/static/covers/movies_covers/")
         assert data["total"] == 1
         assert data["rewatched"] == 0
-        assert data["score"] is None
+        assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
-        assert data["feeling"] is None
         assert data["comment"] is None
         assert data["labels"] == {"already_in": [], "available": []}
         assert data["history"][0]["media_id"] == 1
@@ -162,9 +160,8 @@ class MediaTests(BaseTest):
         assert data["total"] == 322
         assert data["total_pages"] == 322
         assert data["rewatched"] == 0
-        assert data["score"] is None
+        assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
-        assert data["feeling"] is None
         assert data["comment"] is None
         assert data["labels"] == {"already_in": [], "available": []}
         assert data["history"][0]["media_id"] == 1
@@ -184,9 +181,8 @@ class MediaTests(BaseTest):
         assert data["status"] == "Playing"
         assert data["media_cover"].startswith("/api/static/covers/games_covers/")
         assert data["playtime"] == 0
-        assert data["score"] is None
+        assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
-        assert data["feeling"] is None
         assert data["comment"] is None
         assert data["labels"] == {"already_in": [], "available": []}
         assert data["history"][0]["media_id"] == 1
@@ -299,13 +295,11 @@ class MediaTests(BaseTest):
             assert rv.json[f"time_spent_{media_type.value}"] == time
 
     def test_update_rating_score(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = get_models_group(media_type, types=ModelTypes.LIST)
+            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             json_data = {
                 "media_id": 1,
@@ -352,8 +346,6 @@ class MediaTests(BaseTest):
             assert query.score is None
 
     def test_update_rating_feeling(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
 
         # Change from score to feeling for user
@@ -363,7 +355,7 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = get_models_group(media_type, types=ModelTypes.LIST)
+            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             self.client.post("/api/add_media", headers=headers, json={
                 "media_id": 1,
@@ -414,13 +406,12 @@ class MediaTests(BaseTest):
             assert query.feeling is None
 
     def test_update_redo(self):
-        from backend.api.utils.functions import get_models_group
 
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = get_models_group(media_type, types=ModelTypes.LIST)
+            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post("/api/update_redo", headers=headers, json={
                 "media_id": 1,
@@ -495,13 +486,11 @@ class MediaTests(BaseTest):
             assert rv.status_code == 400
 
     def test_update_comment(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = get_models_group(media_type, types=ModelTypes.LIST)
+            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post("/api/update_comment", headers=headers, json={
                 "media_id": 1,
@@ -558,12 +547,10 @@ class MediaTests(BaseTest):
             assert query.comment == "This is a comment"
 
     def test_update_playtime(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
         self.create_all_media()
 
-        model_list = get_models_group(MediaType.GAMES, types=ModelTypes.LIST)
+        model_list = ModelsFetcher.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
 
         rv = self.client.post("/api/update_playtime", headers=headers, json={
             "media_id": 1,
@@ -619,13 +606,11 @@ class MediaTests(BaseTest):
         assert query.playtime == 5000 * 60  # playtime converted in [min]
 
     def test_update_season(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
-            model_list = get_models_group(media_type, types=ModelTypes.LIST)
+            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             json_data = dict(media_id=1, media_type=media_type.value, payload=2)
 
@@ -658,13 +643,11 @@ class MediaTests(BaseTest):
                 assert query.total == 38
 
     def test_update_episode(self):
-        from backend.api.utils.functions import get_models_group
-
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
-            media_list = get_models_group(media_type, types=ModelTypes.LIST)
+            media_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
             json_data = dict(media_id=1, media_type=media_type.value, payload=2)
 

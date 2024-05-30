@@ -13,41 +13,43 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const LoginForm = () => {
 	const navigate = useNavigate();
-	const [errors, setErrors] = useState("");
+	const [error, setError] = useState("");
 	const form = useForm({ shouldFocusError: false });
 	const [pending, setIsPending] = useState(false);
 
-
 	const onSubmit = async (data) => {
-		setErrors("");
-		setIsPending(true);
-
-		const response = await userClient.login(data.username, data.password);
-
-		if (response.status === 401) {
-			setIsPending(false);
-			return setErrors("Username or password incorrect");
+		setError("");
+		try {
+			setIsPending(true);
+			const response = await userClient.login(data.username, data.password);
+			if (response.status === 401) {
+				return setError("Username or password incorrect");
+			}
+			if (!response.ok) {
+				return toast.error(response.body.description);
+			}
+			await navigate({ to: `/profile/${data.username}` });
 		}
-
-		if (!response.ok) {
+		finally {
 			setIsPending(false);
-			return toast.error(response.body.description);
 		}
-
-		await navigate({ to: `/profile/${data.username}` });
-		setIsPending(false);
 	};
 
 	const withProvider = async (provider) => {
-		const response = await api.get(`/tokens/oauth2/${provider}`, {
-			callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
-		});
-
-		if (!response.ok) {
-			return toast.error(response.body.description);
+		setError("");
+		try {
+			setIsPending(true);
+			const response = await api.get(`/tokens/oauth2/${provider}`, {
+				callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
+			});
+			if (!response.ok) {
+				return toast.error(response.body.description);
+			}
+			window.location.href = response.body.redirect_url;
 		}
-
-		window.location.href = response.body.redirect_url;
+		finally {
+			setIsPending(false);
+		}
 	};
 
 	return (
@@ -91,7 +93,7 @@ export const LoginForm = () => {
 							)}
 						/>
 					</div>
-					{errors && <FormError message={errors}/>}
+					{error && <FormError message={error}/>}
 					<FormButton pending={pending}>
 						Login
 					</FormButton>

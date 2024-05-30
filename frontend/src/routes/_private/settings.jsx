@@ -16,10 +16,10 @@ export const Route = createFileRoute("/_private/settings")({
 
 
 const tabConfig = [
-    {label: "General", form: <GeneralForm/>},
-    {label: "MediaList", form: <MediaListForm/>},
-    {label: "Password", form: <PasswordForm/>},
-    {label: "Advanced", form: <DangerForm/>},
+    { label: "General", form: <GeneralForm/> },
+    { label: "MediaList", form: <MediaListForm/> },
+    { label: "Password", form: <PasswordForm/> },
+    { label: "Advanced", form: <DangerForm/> },
 ];
 
 

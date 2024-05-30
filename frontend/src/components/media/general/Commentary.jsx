@@ -4,7 +4,6 @@ import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
-import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const Commentary = ({ initContent, updateComment }) => {
@@ -55,7 +54,7 @@ export const Commentary = ({ initContent, updateComment }) => {
                             Cancel
                         </Button>
                         <Button size="sm" onClick={handleSave} disabled={(contents === initContents) || isLoading}>
-                            {isLoading ? <LoadingIcon size={4}/> : "Save"}
+                            Save
                         </Button>
                     </div>
                 </>

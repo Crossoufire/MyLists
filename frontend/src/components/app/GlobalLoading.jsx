@@ -14,19 +14,19 @@ export const GlobalLoading = () => {
             setLoadingStartTime(Date.now());
             timeoutId = setTimeout(() => {
                 setShowLoading(true);
-            }, 250);
+            }, 400);
         }
         else {
             // noinspection JSUnusedAssignment
             clearTimeout(timeoutId);
             const elapsedTime = Date.now() - loadingStartTime;
-            if (elapsedTime >= 800) {
+            if (elapsedTime >= 900) {
                 setShowLoading(false);
             }
             else {
                 timeoutId = setTimeout(() => {
                     setShowLoading(false);
-                }, 800 - elapsedTime);
+                }, 900 - elapsedTime);
             }
         }
 

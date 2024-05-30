@@ -12,7 +12,7 @@ const Textarea = React.forwardRef(({ className, ...props }, ref) => {
             {...props}
         />
     );
-})
+});
 Textarea.displayName = "Textarea";
 
 

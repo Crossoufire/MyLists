@@ -211,14 +211,23 @@ class GamesList(MediaListMixin, db.Model):
     def to_dict(self) -> Dict:
         """ Serialization of the gameslist class """
 
+        is_feeling = self.user.add_feeling
+
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        # Add more info
+        del media_dict["feeling"]
+        del media_dict["score"]
+
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = self.Status.to_list()
+
+        media_dict["rating"] = {
+            "type": "feeling" if is_feeling else "score",
+            "value": self.feeling if is_feeling else self.score
+        }
 
         return media_dict
 
@@ -268,15 +277,11 @@ class GamesList(MediaListMixin, db.Model):
 
     @staticmethod
     def update_time_spent(old_value: int = 0, new_value: int = 0):
-        """ Computed new time for the user """
-
         old_time = current_user.time_spent_games
         current_user.time_spent_games = old_time + (new_value - old_value)
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict[str, ColumnElement]:
-        """ Return the available sorting for games """
-
         sorting_dict = {
             "Title A-Z": Games.name.asc(),
             "Title Z-A": Games.name.desc(),
@@ -321,7 +326,7 @@ class GamesGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List:
         """ Return the available genres for the games """
-        return ["All", "4X", "Action",  "Adventure", "Arcade", "Business", "Card Game", "Comedy", "Drama",
+        return ["4X", "Action",  "Adventure", "Arcade", "Business", "Card Game", "Comedy", "Drama",
                 "Educational", "Erotic", "Fantasy", "Fighting", "Hack and Slash", "Historical", "Horror", "Indie",
                 "Kids", "MOBA", "Music", "Mystery", "Non-fiction", "Open world", "Party", "Pinball", "Platform",
                 "Point-and-click", "Puzzle", "Quiz", "Racing", "Real Time Strategy (RTS)", "Role-playing (RPG)",

@@ -76,5 +76,5 @@ class Config:
 
     # Caching
     CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
-    CACHE_DIR = os.environ.get("CACHE_DIR") or "backend/cache"
+    CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(basedir, "cache")
     CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000
