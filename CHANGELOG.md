@@ -1,3 +1,35 @@
+## CHANGELOG v1.4.0
+---
+### Under the Hood
+- Created different user routes settings in backend
+- Misc refactoring backend
+- Cleaned frontend components
+- Add backend unit tests (5/11)
+- Replaced React-router by TanStack Router (change the loading page behavior)
+- Replaced Recharts with Nivo (reduce bundle size)
+
+### Features
+- Added a dedicated stats page for each user in `/stats/<media_type>/<username>`
+- Added a present in list media checkmark for creator/actor/network etc... on `/details`
+- Added a 20 min long-polling for the notifications system
+
+### UI Modifications
+- Re-created the `/settings` UI
+- Re-created the `/list` interface completely
+- Re-created the media cards in `/coming_next` and `/details/jobs` with the same style as `/list`
+- Created a LabelManager, accessible in `/details` and `/list`
+- Better edit forms in `/details/form`
+- Removed ":" for the follow cards in `/details`
+
+### Fixes
+- Fix subtle errors for 401 Unauthorized errors
+- Fix can add two times a label for the same media in `/details`
+- Fix comments on `/lists`: subtle bad behaviors + no saving
+- Fix Seasons and episodes in `/lists` and `/details`
+- Fix books: avoid update page if page did not change
+- Fix some frontend React keys and nested a/button warnings
+- Fix cache and now using SystemFileCache instead of memory
+
 ## CHANGELOG v1.3.1
 ---
 ### Fixes
