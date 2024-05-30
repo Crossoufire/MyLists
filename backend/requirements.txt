@@ -107,7 +107,7 @@ python-dotenv==1.0.0
     # via -r requirements.in
 ratelimit==2.2.1
     # via -r requirements.in
-requests==2.31.0
+requests==2.32.2
     # via
     #   -r requirements.in
     #   howlongtobeatpy
