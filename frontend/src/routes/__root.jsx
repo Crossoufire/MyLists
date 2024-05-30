@@ -1,9 +1,9 @@
+import React from "react";
 import {Toaster} from "@/components/ui/sonner";
 import {Footer} from "@/components/app/Footer";
 import {Navbar} from "@/components/navbar/Navbar";
 import {SheetProvider} from "@/providers/SheetProvider";
 import {GlobalLoading} from "@/components/app/GlobalLoading";
-import {TanStackRouterDevtools} from "@tanstack/router-devtools";
 import {createRootRoute, Outlet, ScrollRestoration} from "@tanstack/react-router";
 
 
@@ -28,3 +28,9 @@ function MainLayout() {
         </>
     );
 }
+
+
+const TanStackRouterDevtools = !import.meta.env.DEV ? () => null :
+    React.lazy(() => import("@tanstack/router-devtools")
+        .then((res) => ({ default: res.TanStackRouterDevtools }))
+    );

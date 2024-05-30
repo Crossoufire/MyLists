@@ -117,6 +117,8 @@ sqlalchemy==2.0.25
     #   flask-sqlalchemy
 tomli==2.0.1
     # via pytest
+tqdm==4.66.3
+    # via -r requirements.in
 typing-extensions==4.9.0
     # via
     #   alembic
