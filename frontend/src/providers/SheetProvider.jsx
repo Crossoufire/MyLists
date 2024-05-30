@@ -3,6 +3,7 @@ import {createContext, useContext, useState} from "react";
 
 const SheetContext = createContext(undefined);
 
+
 export const SheetProvider = ({ children }) => {
     const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -13,12 +14,11 @@ export const SheetProvider = ({ children }) => {
     );
 };
 
+
 export const useSheet = () => {
     const context = useContext(SheetContext);
-
     if (!context) {
-        throw new Error("useExpansion must be used within the NavigationProvider");
+        throw new Error("useSheet must be used within a SheetProvider");
     }
-
     return context;
 };

@@ -8,7 +8,7 @@ export const useCollapse = (initPos = true) => {
 
     const toggleCollapse = () => {
         setIsOpen(!isOpen);
-        !isOpen ? setCaret(<FaCaretRight size={21}/>) : setCaret(<FaCaretDown size={21}/>);
+        isOpen ? setCaret(<FaCaretDown size={21}/>) : setCaret(<FaCaretRight size={21}/>);
     };
 
     return { isOpen, caret, toggleCollapse };

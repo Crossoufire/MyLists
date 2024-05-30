@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
@@ -47,4 +47,3 @@ export const ProfileFollows = ({ username, follows }) => {
         </Card>
     );
 };
-

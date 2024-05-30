@@ -1,41 +1,42 @@
 import {useState} from "react";
-import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
 
-// TODO: separate loading and disable states between season episodes and status
 
 export const TvUserDetails = ({ userData, updatesAPI }) => {
-    const { currentUser } = useUser();
     const [redo, setRedo] = useState(userData.rewatched);
     const [status, setStatus] = useState(userData.status);
+    const [rating, setRating] = useState(userData.rating);
     const [season, setSeason] = useState(userData.current_season);
     const [episode, setEpisode] = useState(userData.last_episode_watched);
-    const [rating, setRating] = useState(currentUser.add_feeling ? userData.feeling : userData.score);
 
-    const callbackStatus = (value) => {
-        setStatus(value);
+    const callbackStatus = (status) => {
+        setStatus(status);
 
-        if (["Plan to Watch", "Random"].includes(value)) {
+        if (episode === 0 && !["Plan to Watch", "Random"].includes(status)) {
+            setEpisode(1);
+        }
+
+        if (["Plan to Watch", "Random"].includes(status)) {
             setSeason(1);
             setEpisode(1);
         }
 
-        if (value === "Completed") {
+        if (status === "Completed") {
             setSeason(userData.eps_per_season.length);
             setEpisode(userData.eps_per_season[userData.eps_per_season.length - 1]);
         }
 
-        setRating(rating);
+        setRating({ ...rating });
         setRedo(0);
     };
 
     const callbackRating = (value) => {
-        setRating(value);
-    }
+        setRating({ ...rating, value });
+    };
 
     return (
         <>
@@ -60,7 +61,6 @@ export const TvUserDetails = ({ userData, updatesAPI }) => {
             {status !== "Plan to Watch" &&
                 <RatingDrop
                     rating={rating}
-                    isFeeling={currentUser.add_feeling}
                     updateRating={updatesAPI.rating}
                     callbackRating={callbackRating}
                 />

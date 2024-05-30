@@ -4,7 +4,6 @@ import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
 
 
 export const Commentary = ({ initContent, updateComment }) => {
@@ -13,27 +12,30 @@ export const Commentary = ({ initContent, updateComment }) => {
     const [contents, setContents] = useState(initContent || "");
     const [initContents, setInitContents] = useState(initContent || "");
 
+    const buttonText = contents ? "Edit" : "Add";
+    const commentText = contents ? "Edit comment" : "Add comment";
+    const isContentsEmpty = contents === "" || contents === null;
+
     const handleComment = () => {
         setCommentInput(!commentInput);
-    }
+        setContents(initContents);
+    };
 
     const handleSave = async () => {
-        if (initContent === contents) {
-            return;
-        }
+        if (initContent === contents) return;
 
         await handleLoading(updateComment, contents);
         setInitContents(contents);
         setCommentInput(false);
-    }
+    };
 
     return (
         <>
             <h4 className="text-lg flex justify-between items-center mt-5 font-semibold">
                 Comment
-                <Tooltip text={contents ? "Edit comment" : "Add comment"}>
-                    <span role="button" className="text-muted-foreground text-sm mt-1 italic" onClick={handleComment}>
-                        {contents ? "Edit" : "Add"}
+                <Tooltip text={commentText}>
+                    <span role="button" onClick={handleComment} className="text-muted-foreground text-sm mt-1 italic">
+                        {buttonText}
                     </span>
                 </Tooltip>
             </h4>
@@ -52,13 +54,13 @@ export const Commentary = ({ initContent, updateComment }) => {
                             Cancel
                         </Button>
                         <Button size="sm" onClick={handleSave} disabled={(contents === initContents) || isLoading}>
-                            {isLoading ? <LoadingIcon size={4}/> : "Save"}
+                            Save
                         </Button>
                     </div>
                 </>
                 :
                 <p className="text-muted-foreground italic">
-                    {(contents === "" || contents === null) ? <>No comments added yet</> : `${contents}`}
+                    {isContentsEmpty ? "No comments added yet" : `${contents}`}
                 </p>
             }
         </>

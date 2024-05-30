@@ -1,12 +1,15 @@
 import path from "path";
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
-import {visualizer} from "rollup-plugin-visualizer";
+import {TanStackRouterVite} from "@tanstack/router-vite-plugin";
 
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
-    plugins: [react(), visualizer()],
+    plugins: [
+        react(),
+        TanStackRouterVite()
+    ],
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
@@ -15,7 +18,8 @@ export default defineConfig({
     server: {
         watch: {
             usePolling: true,
-            interval: 300,
+            interval: 800,
+            binaryInterval: 800,
         },
         open: true,
         port: 3000,
@@ -31,7 +35,9 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     react: ["react", "react-dom"],
-                    recharts: ["recharts"]
+                    nivoCore: ["@nivo/core"],
+                    nivoBar: ["@nivo/bar"],
+                    nivoPie: ["@nivo/pie"],
                 },
             },
         },

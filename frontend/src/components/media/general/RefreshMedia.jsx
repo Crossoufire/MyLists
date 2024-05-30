@@ -3,7 +3,7 @@ import {FaRedo} from "react-icons/fa";
 import {createLocalDate} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
+import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
@@ -18,17 +18,15 @@ export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
         }
     };
 
+    if (isLoading) {
+        return <LoadingIcon size={6} cssOverride={{marginTop: 12}}/>;
+    }
+
     return (
-        <>
-            {isLoading ?
-                <LoadingIcon size={8} cssOverride={{marginTop: 12}}/>
-                :
-                <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
-                    <div role="button" onClick={handleRefresh}>
-                        <FaRedo size={18} className="mt-2"/>
-                    </div>
-                </Tooltip>
-            }
-        </>
+        <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
+            <div role="button" onClick={handleRefresh}>
+                <FaRedo size={18} className="mt-2"/>
+            </div>
+        </Tooltip>
     );
 };

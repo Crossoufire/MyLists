@@ -1,0 +1,23 @@
+{
+    "media_data": {
+        "name": "Harry Potter \u00e0 L'\u00e9cole des Sorciers",
+        "release_date": "2015",
+        "pages": 322,
+        "publishers": "Pottermore Publishing",
+        "synopsis": "Le jour de ses onze ans, Harry Potter, un orphelin \u00e9lev\u00e9 par un oncle et une tante qui le d\u00e9testent, voit son existence boulevers\u00e9e. Un g\u00e9ant vient le chercher pour l\u2019emmener \u00e0 Poudlard, une \u00e9cole de sorcellerie! Voler en balai, jeter des sorts, combattre les trolls : Harry Potter se r\u00e9v\u00e8le un sorcier dou\u00e9. Mais un myst\u00e8re entoure sa naissance et l\u2019effroyable V..., le mage dont personne n\u2019ose prononcer le nom. Amiti\u00e9, surprises, dangers, sc\u00e8nes comiques, Harry d\u00e9couvre ses pouvoirs et la vie \u00e0 Poudlard. Le premier tome des aventures du jeune h\u00e9ros vous ensorcelle aussit\u00f4t!",
+        "language": "fr",
+        "api_id": "nvijsUyJYR4C",
+        "image_cover": "35a5c4e3f19547d2.jpg",
+        "lock_status": true
+    },
+    "genres_data": [
+        {
+            "genre": "Unknown"
+        }
+    ],
+    "authors_data": [
+        {
+            "name": "J.K. Rowling"
+        }
+    ]
+}

@@ -1,8 +1,7 @@
 import {useState} from "react";
+import {LuRotateCw} from "react-icons/lu";
 import {getRedoValues} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
-import {Tooltip} from "@/components/ui/tooltip";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -20,23 +19,20 @@ export const RedoListDrop = ({ isCurrent, initRedo, updateRedo }) => {
     };
 
     return (
-        <>
+        <div className="flex items-center gap-2">
+            <LuRotateCw/>
             {isCurrent ?
-                <Select value={isLoading ? undefined : `${redo}`} onValueChange={selectChange} disabled={!isCurrent || isLoading}>
-                    <Tooltip text="Redo" offset={4}>
-                        <SelectTrigger className="w-[20px]" size="list" variant="noIcon">
-                            <SelectValue placeholder={<LoadingIcon size={6}/>}/>
-                        </SelectTrigger>
-                    </Tooltip>
+                <Select value={`${redo}`} onValueChange={selectChange} disabled={isLoading}>
+                    <SelectTrigger className="w-[20px]" size="list" variant="noIcon">
+                        <SelectValue/>
+                    </SelectTrigger>
                     <SelectContent align="center">
                         {redoValues.map(val => <SelectItem key={val} value={`${val}`}>{`${val}`}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 :
-                <Tooltip text="Redo" offset={4}>
-                    <span>{redo}</span>
-                </Tooltip>
+                <span>{redo}</span>
             }
-        </>
+        </div>
     );
 };

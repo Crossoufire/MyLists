@@ -1,11 +1,10 @@
 from __future__ import annotations
+import json
 import secrets
-from datetime import datetime, timedelta
-from enum import Enum
+from datetime import datetime, timedelta, timezone
 from time import time
 from typing import List, Dict
 import jwt
-import pytz
 from flask import url_for, current_app, abort
 from flask_bcrypt import check_password_hash
 from sqlalchemy import desc, func, Integer, case, select, union_all, literal
@@ -13,7 +12,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
-from backend.api.utils.functions import get_level, get_models_group, change_air_format, get_models_type, safe_div
+from backend.api.utils.functions import get_level, safe_div, ModelsFetcher
 
 
 followers = db.Table(
@@ -25,8 +24,6 @@ followers = db.Table(
 
 class Token(db.Model):
     """ Class for the management of the user's connexion tokens """
-
-    GROUP = "User"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True)
@@ -58,10 +55,10 @@ class Token(db.Model):
         self.refresh_expiration = datetime.utcnow() + timedelta(days=0)
 
         self.admin_token = secrets.token_urlsafe()
-        self.admin_expiration = datetime.utcnow() + timedelta(minutes=5)
+        self.admin_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ADMIN_TOKEN_MINUTES"])
 
     def expire(self, delay: int = None):
-        """ Add an expiration time on both the <access token> and the <refresh token> """
+        """ Add an expiration time on old <access_token>, <refresh_token>, and <admin_token> """
 
         # Add 5 second delay for simultaneous requests
         if delay is None:
@@ -85,8 +82,6 @@ class Token(db.Model):
 
 class User(db.Model):
     """ User class representation """
-
-    GROUP = "User"
 
     def __repr__(self):
         return f"<{self.username} - {self.id}>"
@@ -131,7 +126,8 @@ class User(db.Model):
     games_list = db.relationship("GamesList", backref="user", lazy="select")
     books_list = db.relationship("BooksList", backref="user", lazy="select")
     notifications = db.relationship("Notifications", backref="user", lazy="select")
-    last_updates = db.relationship("UserLastUpdate", backref="user", order_by="desc(UserLastUpdate.date)", lazy="dynamic")
+    last_updates = db.relationship("UserLastUpdate", backref="user", order_by="desc(UserLastUpdate.date)",
+                                   lazy="dynamic")
     followed = db.relationship(
         "User",
         secondary=followers,
@@ -172,29 +168,23 @@ class User(db.Model):
     def profile_level(self) -> int:
         """ Return the user's profile level """
 
-        # Calculate <total_time>
-        total_time = self.time_spent_series + self.time_spent_movies
-
-        if self.add_anime: total_time += self.time_spent_anime
-        if self.add_books: total_time += self.time_spent_books
-        if self.add_games: total_time += self.time_spent_games
+        total_time = 0
+        for media_type in self.activated_media_type():
+            total_time += getattr(self, f"time_spent_{media_type.value}")
 
         return int(get_level(total_time))
 
     # noinspection PyMethodParameters
     @profile_level.expression
     def profile_level(cls) -> int:
-        """ Return the user's profile level as an SQLAlchemy query for the <Hall of Fame> endpoint """
+        """ Return the user's profile level as an SQLAlchemy query """
 
-        # Calculate <total_time>
         total_time = cls.time_spent_series + cls.time_spent_movies
         total_time = case(*[(cls.add_anime, total_time + cls.time_spent_anime)], else_=total_time)
         total_time = case(*[(cls.add_books, total_time + cls.time_spent_books)], else_=total_time)
         total_time = case(*[(cls.add_games, total_time + cls.time_spent_games)], else_=total_time)
 
-        profile_level = func.cast(((func.power(400 + 80 * total_time, 0.5)) - 20) / 40, Integer)
-
-        return profile_level
+        return func.cast(((func.power(400 + 80 * total_time, 0.5)) - 20) / 40, Integer)
 
     def to_dict(self) -> Dict:
         """ Serialize the <user> class. Exclude the <email> and <password> fields """
@@ -216,15 +206,16 @@ class User(db.Model):
         return user_dict
 
     def activated_media_type(self) -> List[MediaType]:
-        """ Return only the MediaType activated by the user (default: Series and Movies) """
+        """ Return only the MediaType activated by the user """
 
-        user_media_type = list(MediaType)
+        activated_media_types = []
+        for mt in MediaType:
+            if hasattr(self, f"add_{mt.value.lower()}") and getattr(self, f"add_{mt.value.lower()}"):
+                activated_media_types.append(mt)
 
-        for mt in MediaType.optional_media_types():
-            if not getattr(self, f"add_{mt.value.lower()}"):
-                user_media_type.remove(mt)
+        activated_media_types += MediaType.default()
 
-        return user_media_type
+        return sorted(activated_media_types)
 
     def verify_password(self, password: str) -> bool:
         """ Verify the user password hash using bcrypt """
@@ -261,19 +252,19 @@ class User(db.Model):
         return token
 
     def check_autorization(self, username: str) -> User:
-        """ Check if the user can see the other <user> profile page """
+        """ Check if the <current_user> can see the other <user> profile page """
 
         user = self.query.filter_by(username=username).first()
         if not user:
             return abort(404)
 
-        # <admin> protection
+        # <Admin> account protection
         if user.username == "admin" and self.role != RoleType.ADMIN:
             return abort(403)
 
         return user
 
-    def set_view_count(self, user: User, media_type: Enum):
+    def set_view_count(self, user: User, media_type: MediaType):
         """ Set new view count to the <user> if different from <current_user> """
 
         if self.role != RoleType.ADMIN and self.id != user.id:
@@ -299,14 +290,17 @@ class User(db.Model):
         follows = self.followed.all()
         return {"total":  len(follows), "follows": [follow.to_dict() for follow in follows[:limit_]]}
 
-    def get_last_notifications(self, limit_: int = 8) -> List[Notifications]:
+    def get_last_notifications(self, limit_: int = 8) -> List[Dict]:
         """ Get the last <limit_> notifications for the current user """
 
-        # noinspection PyTestUnpassedFixture
-        notifications = db.session.scalars(db.select(Notifications).filter_by(user_id=self.id)
-                                           .order_by(desc(Notifications.timestamp)).limit(limit_)).all()
+        # Register read time
+        current_user.last_notif_read_time = datetime.utcnow()
+        db.session.commit()
 
-        return notifications
+        query = (Notifications.query.filter_by(user_id=self.id)
+                 .order_by(desc(Notifications.timestamp)).limit(limit_).all())
+
+        return [notification.to_dict() for notification in query]
 
     def count_notifications(self) -> int:
         """ Count the number of unread notifications for the current user """
@@ -317,11 +311,10 @@ class User(db.Model):
     def get_global_media_stats(self) -> Dict:
         """ Get the user's global media stats based on the user's activated MediaType """
 
-        # Fetch and select <list> models
-        models_list = get_models_type(ModelTypes.LIST, self)
+        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
 
         # Calculate time per media [hours]
-        query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models_list]
+        query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models]
         time_per_media = [t / 60 for t in db.session.query(*query_attrs).filter_by(id=self.id).first()]
 
         # Total time [hours]
@@ -337,7 +330,7 @@ class User(db.Model):
             # Query feelings for each model
             user_feelings = union_all(*[db.session.query(model.feeling.label("feeling"))
                                       .filter(model.user_id == self.id, model.feeling.isnot(None))
-                                        for model in models_list]).subquery()
+                                        for model in models]).subquery()
 
             # Query results as list of tuple
             results = (db.session.query(all_feelings.c.feeling, func.count(user_feelings.c.feeling))
@@ -351,7 +344,7 @@ class User(db.Model):
         rating = "feeling" if self.add_feeling else "score"
         subqueries = union_all(*[(db.session.query(func.count(model.media_id), func.count(getattr(model, rating)),
                                                    func.coalesce(func.sum(getattr(model, rating)), 0))
-                                  .filter(model.user_id == self.id)) for model in models_list])
+                                  .filter(model.user_id == self.id)) for model in models])
         results = db.session.execute(subqueries).all()
 
         # Calculation for total media, percent scored, and mean score
@@ -368,7 +361,7 @@ class User(db.Model):
             percent_scored=percent_scored,
             mean_score=mean_score,
             count_per_feeling=count_per_feeling,
-            media_types=[model.GROUP.value for model in models_list],
+            media_types=[model.GROUP.value for model in models],
         )
 
         return data
@@ -376,7 +369,7 @@ class User(db.Model):
     def get_one_media_details(self, media_type: MediaType) -> Dict:
         """ Get the selected media details for the user """
 
-        media_list, media_label = get_models_group(media_type, types=[ModelTypes.LIST, ModelTypes.LABELS])
+        media_list, media_label = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,
@@ -384,7 +377,7 @@ class User(db.Model):
             count_per_metric=media_list.get_media_count_per_rating(self),
             time_hours=int(getattr(self, f"time_spent_{media_type.value}") / 60),
             time_days=int(getattr(self, f"time_spent_{media_type.value}") / 1440),
-            labels=media_label.get_total_labels(self.id),
+            labels=media_label.get_total_and_labels_names(self.id, limit_=10),
         )
 
         media_dict.update(media_list.get_media_count_per_status(self.id))
@@ -396,21 +389,17 @@ class User(db.Model):
     def get_list_levels(self) -> List[Dict]:
         """ Get all list levels for a user """
 
-        list_models = get_models_type(ModelTypes.LIST, self)
-
-        # Fetch all ranks at once
         from backend.api.models.utils_models import Ranks
+
+        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
         all_ranks = {rank.level: {"image": rank.image, "name": rank.name} for rank in Ranks.query.all()}
 
         level_per_ml = []
-        for i, ml in enumerate(list_models):
+        for i, ml in enumerate(models):
             time_in_min = getattr(self, f"time_spent_{ml.GROUP.value}")
 
-            # Get level and percent
             level, level_percent = map(float, divmod(get_level(time_in_min), 1))
-            level_percent = level_percent * 100
-
-            # Fetch associated rank from dict
+            level_percent *= 100
             rank_info = all_ranks.get(min(level, 149))
 
             level_per_ml.append({
@@ -433,7 +422,7 @@ class User(db.Model):
         follows_updates = (UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
                            .order_by(desc(UserLastUpdate.date)).limit(limit_))
 
-        return [{ "username": update.user.username, **update.to_dict()} for update in follows_updates]
+        return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 
     def generate_jwt_token(self, expires_in: int = 600) -> str:
         """ Generate a <register token> or a <forgot password token> """
@@ -462,28 +451,6 @@ class User(db.Model):
         } for user in users.items]
 
         return {"items": users_list, "total": users.total, "pages": users.pages}
-
-    @classmethod
-    def get_total_time_spent(cls) -> Dict:
-        """ Get the total time spent [minutes] by all the users for all the media and return a dict """
-
-        query = (db.session.query(func.sum(cls.time_spent_series), func.sum(cls.time_spent_anime),
-                                  func.sum(cls.time_spent_movies), func.sum(cls.time_spent_books),
-                                  func.sum(cls.time_spent_games))
-                 .filter(cls.role != RoleType.ADMIN, cls.active == True).first())
-
-        total_time_spent = [0 if not v else v for v in query]
-
-        results = {
-            "total": sum(total_time_spent),
-            "series": total_time_spent[0] // 60,
-            "anime": total_time_spent[1] // 60,
-            "movies": total_time_spent[2] // 60,
-            "books": total_time_spent[3] // 60,
-            "games": total_time_spent[4] // 60,
-        }
-
-        return results
 
     @staticmethod
     def verify_access_token(access_token: str) -> User:
@@ -516,9 +483,10 @@ class User(db.Model):
 
     @staticmethod
     def verify_refresh_token(refresh_token: str, access_token: str) -> Token:
-        """ Verify the <refresh token> of the user """
+        """ Verify the <refresh_token> of the user """
 
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
+
         if token:
             if token.refresh_expiration > datetime.utcnow():
                 return token
@@ -544,14 +512,13 @@ class User(db.Model):
 class UserLastUpdate(db.Model):
     """ UserLastUpdate SQL model """
 
-    GROUP = "User"
     THRESHOLD = 600
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
 
     media_name = db.Column(db.String(50), nullable=False)
-    media_type = db.Column(db.Enum(MediaType), nullable=False)
+    media_type = db.Column(db.Enum(MediaType), index=True, nullable=False)
     date = db.Column(db.DateTime, index=True, nullable=False)
 
     media_id = db.Column(db.Integer)
@@ -578,7 +545,8 @@ class UserLastUpdate(db.Model):
             update_dict["update"] = [f"p. {int(self.old_page)}", f"p. {int(self.new_page)}"]
 
         # Playtime update
-        elif self.old_playtime is not None and self.new_playtime is not None and self.old_playtime >= 0 and self.new_playtime >= 0:
+        elif (self.old_playtime is not None and self.new_playtime is not None and self.old_playtime >= 0
+              and self.new_playtime >= 0):
             update_dict["update"] = [f"{int(self.old_playtime / 60)} h", f"{int(self.new_playtime / 60)} h"]
 
         # Redo update
@@ -602,7 +570,7 @@ class UserLastUpdate(db.Model):
             ]
 
         # Update date and add media name
-        update_dict["date"] = self.date.replace(tzinfo=pytz.UTC).isoformat()
+        update_dict["date"] = self.date.replace(tzinfo=timezone.utc).isoformat()
         update_dict["media_name"] = self.media_name
         update_dict["media_id"] = self.media_id
         update_dict["media_type"] = self.media_type.value
@@ -663,8 +631,6 @@ class UserLastUpdate(db.Model):
 class Notifications(db.Model):
     """ Notification SQL model """
 
-    GROUP = "User"
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     media_type = db.Column(db.String(50))
@@ -681,41 +647,14 @@ class Notifications(db.Model):
 
         return data
 
+    def to_dict(self):
+        """ Serialize the Notifications data """
 
-def get_coming_next(media_type: MediaType) -> List[Dict]:
-    """ Fetch the media that are coming next for the current user """
-
-    # Get models
-    media, media_list = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LIST])
-
-    # Get <date> column attribute
-    media_date = "release_date"
-    if media_type in (MediaType.SERIES, MediaType.ANIME):
-        media_date = "next_episode_to_air"
-
-    if media_type == MediaType.GAMES:
-        subquery = (media.query.join(media_list, media.id == media_list.media_id)
-                    .filter(media_list.user_id == current_user.id, media_list.status != Status.DROPPED)
-                    .order_by(getattr(media, media_date).asc()).all())
-
-        data = []
-        for game in subquery:
-            try:
-                if datetime.utcfromtimestamp(int(game.release_date)) > datetime.utcnow():
-                    serialized = game.to_dict()
-                    serialized["date"] = change_air_format(game.release_date, games=True)
-                    data.append(serialized)
-            except:
-                if game.release_date == "Unknown":
-                    serialized = game.to_dict()
-                    serialized["date"] = "Unknown"
-                    data.append(serialized)
+        data = dict(
+            media_id=self.media_id,
+            media=self.media_type.replace("list", "") if self.media_type else None,
+            timestamp=self.timestamp.replace(tzinfo=timezone.utc).isoformat(),
+            payload=json.loads(self.payload_json)
+        )
 
         return data
-
-    query = (db.session.query(media).join(media_list, media.id == media_list.media_id)
-             .filter(getattr(media, media_date) > datetime.utcnow()).filter(media_list.user_id == current_user.id)
-             .filter(media_list.status.notin_([Status.DROPPED, Status.RANDOM]))
-             .order_by(getattr(media, media_date).asc()).all())
-
-    return [q.to_dict(coming_next=True) for q in query]

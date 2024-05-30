@@ -1,13 +1,13 @@
 import {Fragment} from "react";
-import {Link, useParams} from "react-router-dom";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {UserUpdate} from "@/components/reused/UserUpdate";
+import {UserUpdate} from "@/components/app/UserUpdate";
+import {Link, useParams} from "@tanstack/react-router";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
 export const UserUpdates = ({ updates, followers = false }) => {
-    const { username } = useParams();
+    const { username } = useParams({ strict: false });
     const { isOpen, caret, toggleCollapse } = useCollapse();
 
     return (

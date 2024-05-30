@@ -1,35 +1,32 @@
+import {ResponsivePie} from "@nivo/pie";
+import {pieTheme} from "@/lib/constants";
 import {useEffect, useState} from "react";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {getMediaColor, getRatingValues} from "@/lib/utils";
-import {Cell, Pie, PieChart, ResponsiveContainer} from "recharts";
+import {getFeelingValues, getMediaColor} from "@/lib/utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
 export const GlobalStats = ({ userData, global }) => {
-    const [chartPie, setChartPie] = useState([]);
+    const [pieData, setPieData] = useState([]);
     const { isOpen, caret, toggleCollapse } = useCollapse();
 
     useEffect(() => {
-        setChartPie(global.time_per_media.map(value => ({ value })));
+        setPieData(transformToPieData(global))
     }, [global]);
 
-    const customLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-        const radius = innerRadius + (outerRadius - innerRadius) * 0.62;
-        const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-        const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-        const displayLabel = percent > 15 / 360;
+    const transformToPieData = (global) => {
+        const timeSum = global.time_per_media.reduce((acc, curr) => acc + curr, 0);
+        if (timeSum === 0) return [];
 
-        return (
-            <>
-                {displayLabel &&
-                    <text x={x} y={y} fill="black" className="font-semibold" textAnchor="middle" dominantBaseline="middle">
-                        {`${(percent * 100).toFixed(0)}%`}
-                    </text>
-                }
-            </>
-        );
+        return global.time_per_media.map((time, idx) => ({
+            id: idx + 1,
+            value: time,
+            label: global.media_types[idx],
+            color: getMediaColor(global.media_types[idx]),
+            total: ((time/timeSum) * 100).toFixed(0) + "%",
+        }));
     };
 
     return (
@@ -46,16 +43,22 @@ export const GlobalStats = ({ userData, global }) => {
                 {isOpen &&
                     <div className="grid grid-cols-12 gap-4 items-center">
                         <div className="col-span-12 sm:col-span-5">
-                            <ResponsiveContainer width="100%" height={200}>
-                                <PieChart>
-                                    <Pie data={chartPie} dataKey="value" stroke="black" isAnimationActive={false}
-                                         label={customLabel} labelLine={false} outerRadius={90}>
-                                        {global.media_types.map((media, idx) =>
-                                            <Cell key={`cell-${idx}`} fill={getMediaColor(media)}/>
-                                        )}
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <div className="flex items-center h-[200px]">
+                                <ResponsivePie
+                                    data={pieData}
+                                    borderWidth={1}
+                                    theme={pieTheme}
+                                    isInteractive={false}
+                                    arcLabelsSkipAngle={20}
+                                    enableArcLinkLabels={false}
+                                    arcLabelsRadiusOffset={0.65}
+                                    arcLabelsTextColor={"#121212"}
+                                    colors={{ datum: "data.color" }}
+                                    arcLabel={(data) => data.data.total}
+                                    margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                                    borderColor={{ from: "color", modifiers: [["darker", 3]] }}
+                                />
+                            </div>
                         </div>
                         <div className="col-span-12 sm:col-span-7 items-center text-center">
                             <div className="flex flex-col gap-6">
@@ -80,7 +83,7 @@ export const GlobalStats = ({ userData, global }) => {
                                             </Tooltip>
                                         </div>
                                         <div className="flex font-semibold items-center justify-around">
-                                            {getRatingValues("Feeling").slice(1).reverse().map((f, idx) =>
+                                            {getFeelingValues().slice(1).reverse().map((f, idx) =>
                                                 <div key={idx} className="space-y-2 text-center">
                                                     <div>{f.icon}</div>
                                                     <div>{global.count_per_feeling[idx]}</div>

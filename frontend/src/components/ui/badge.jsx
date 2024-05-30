@@ -23,7 +23,7 @@ const badgeVariants = cva("inline-flex items-center rounded-md border px-2.5 py-
             variant: "default",
         },
     }
-)
+);
 
 
 function Badge({ className, variant, ...props}) {

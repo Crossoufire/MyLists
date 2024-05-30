@@ -1,7 +1,8 @@
+import React from "react";
 import errorImage from "@/images/error.jpg";
 
 
-export const ErrorPage = ({ status, message, description }) => {
+export function ErrorPage({ status, message, description }) {
     if (status === undefined) {
         status = 404;
         message = "Page not found";
@@ -9,10 +10,10 @@ export const ErrorPage = ({ status, message, description }) => {
     }
 
     return (
-        <div className="flex flex-col items-center text-center mt-8">
+        <div className="flex flex-col mt-8">
             <h2 className="text-4xl mt-3 font-semibold">{status} - {message}</h2>
             <h4 className="text-xl mt-4">{description}</h4>
-            <div className="justify-center mt-10">
+            <div className="flex items-center justify-center mt-14">
                 <img
                     src={errorImage || ""}
                     height={300}
@@ -22,4 +23,4 @@ export const ErrorPage = ({ status, message, description }) => {
             </div>
         </div>
     );
-};
+}

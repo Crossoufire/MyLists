@@ -1,10 +1,10 @@
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {capitalize, getStatusColor} from "@/lib/utils";
+import {BulletIcon} from "@/components/app/base/BulletIcon";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
-import {BulletIcon} from "@/components/primitives/BulletIcon.jsx";
 
 
 export const MediaStats = ({ user, media }) => (
@@ -71,7 +71,7 @@ export const MediaStats = ({ user, media }) => (
             </div>
         </div>
         <div>
-            <Link to={`/list/${media.media_type}/${user.username}?status=Favorite`} className="text-lg font-medium
+            <Link to={`/list/${media.media_type}/${user.username}?favorite=true`} className="text-lg font-medium
             hover:underline hover:underline-offset-2">
                 Favorites ({media.total_favorites})
             </Link>
@@ -100,25 +100,24 @@ export const MediaStats = ({ user, media }) => (
             mediaType={media.media_type}
         />
         <div>
-            <Link to={`/list/${media.media_type}/${user.username}?status=Labels`} className="text-lg font-medium
-            hover:underline hover:underline-offset-2">
+            <div className="font-medium text-lg">
                 Labels ({media.labels.count})
-            </Link>
+            </div>
             {media.labels.names.length === 0 ?
                 <div className="text-muted-foreground mt-2.5 italic">No labels created yet</div>
                 :
                 <div className="flex flex-wrap justify-start gap-2 mt-2">
                     {media.labels.names.map(lb =>
-                        <Link key={lb} to={`/list/${media.media_type}/${user.username}?status=Labels&label_name=${lb}`}>
+                        <Link key={lb} to={`/list/${media.media_type}/${user.username}?labels=${lb}`}>
                             <Badge variant="label" className="font-semibold">{lb}</Badge>
                         </Link>
                     )}
                 </div>
             }
         </div>
-        <Link to={`/list/${media.media_type}/${user.username}?status=Stats`} className="text-lg font-medium
-        hover:underline hover:underline-offset-2">
-            More stats
+        <Link to={`/stats/${media.media_type}/${user.username}`} className="text-lg font-medium hover:underline
+        hover:underline-offset-2">
+            Detailed stats
         </Link>
     </div>
 );

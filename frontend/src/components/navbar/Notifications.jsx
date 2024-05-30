@@ -1,64 +1,89 @@
 import {toast} from "sonner";
+import {api} from "@/api/MyApiClient";
+import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useApi} from "@/providers/ApiProvider";
+import {POLL_NOTIF_INTER} from "@/lib/constants";
 import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
-import {Link, useLocation} from "react-router-dom";
 import {Separator} from "@/components/ui/separator";
-import {Loading} from "@/components/primitives/Loading";
-import {FaLongArrowAltRight, FaBell} from "react-icons/fa";
-import {MediaIcon} from "@/components/primitives/MediaIcon";
+import {Loading} from "@/components/app/base/Loading";
+import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const Notifications = ({ isMobile }) => {
-    const api = useApi();
     const popRef = useRef();
-    const location = useLocation();
     const { setSheetOpen } = useSheet();
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
     const [numberUnreadNotif, setNumberUnreadNotif] = useState(0);
-
-    const countNotifications = async () => {
-        const response = await api.get("/notifications/count");
-        if (!response.ok) {
-            return toast.error(response.body.description);
-        }
-
-        setNumberUnreadNotif(response.body.data);
-    };
+    const [lastNotifPollTime, setLastNotifPollTime] = useState(() => {
+        const savedTime = localStorage.getItem("lastNotifPollTime");
+        return savedTime ? new Date(savedTime).getTime() : null;
+    });
 
     useEffect(() => {
-        (async () => {
-            await countNotifications();
-        })();
-    }, [location.pathname]);
+        let timeoutId;
 
-    const fetchNotifications = async () => {
-        setLoading(true);
-        const response = await api.get("/notifications");
-        setLoading(false);
+        const setNextPoll = () => {
+            const currentTime = new Date().getTime();
+            const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + POLL_NOTIF_INTER) : currentTime;
+            const delay = Math.max(nextPollTime - currentTime, 0);
+            timeoutId = setTimeout(pollCountNotifications, delay);
+        };
 
-        if (!response.ok) {
-            return toast.error(response.body.description);
+        const pollCountNotifications = async () => {
+            try {
+                const response = await api.get("/notifications/count");
+                if (!response.ok) {
+                    return toast.error("An error occurred trying to fetch the notifications.");
+                }
+                setNumberUnreadNotif(response.body.data);
+                const currentTime = new Date().getTime();
+                localStorage.setItem("lastNotifPollTime", currentTime.toString());
+                setLastNotifPollTime(currentTime);
+            }
+            finally {
+                setNextPoll();
+            }
+        };
+
+        if (api.isAuthenticated()) {
+            setNextPoll();
         }
 
-        setNotifications(response.body.data);
-        setNumberUnreadNotif(0);
+        return () => clearTimeout(timeoutId);
+    }, [lastNotifPollTime]);
+
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get("/notifications");
+
+            if (!response.ok) {
+                return toast.error("Failed to retrieve the notifications");
+            }
+
+            setNotifications(response.body.data);
+            setNumberUnreadNotif(0);
+        }
+        finally {
+            setLoading(false);
+        }
     };
 
     const handlePopoverClose = () => {
         popRef?.current?.click();
         setSheetOpen(false);
-    }
+    };
 
     return (
         <Popover modal={isMobile}>
             <PopoverTrigger asChild>
                 <div className="flex items-center">
-                    <Button variant="ghost" size="sm" onClick={async () => await fetchNotifications()} className="mr-3">
+                    <Button variant="ghost" size="sm" className="mr-3" onClick={fetchNotifications}>
                         <FaBell className="w-5 h-5 mr-1"/>
                         {isMobile && <div className="text-lg ml-2 mr-3">Notifications</div>}
                         <Badge variant="notif" className={numberUnreadNotif > 0 && "bg-destructive"}>
@@ -68,17 +93,17 @@ export const Notifications = ({ isMobile }) => {
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
-            <PopoverContent className="w-[300px] max-h-[400px] overflow-y-auto" align={isMobile ? "start" : "end"}>
+            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto" align={isMobile ? "start" : "end"}>
                 {loading ?
-                    <Loading forPage={false}/>
+                    <div className="p-3"><Loading/></div>
                     :
                     notifications.length === 0 ?
                         <i className="text-muted-foreground">No notifications to display</i>
                         :
                         notifications.map(data =>
                             <MediaLink
-                                key={data.timestamp}
                                 data={data}
+                                key={data.timestamp}
                                 handlePopoverClose={handlePopoverClose}
                             />
                         )
@@ -94,38 +119,38 @@ const MediaLink = ({ data, handlePopoverClose }) => {
 
     return (
         <Link to={dest} onClick={handlePopoverClose}>
-            <div className="flex items-center gap-2">
-                {!data.media ?
-                    <>
-                        <MediaIcon mediaType={"user"} size={16}/>
-                        <div className="line-clamp-1">{data.payload.message}</div>
-                    </>
-                    :
-                    <>
-                        <MediaIcon mediaType={data.media} size={16}/>
-                        <div>
-                            {data.payload.name} &nbsp;
+            <div className="py-2.5 px-3.5 hover:bg-neutral-600/20">
+                <div className="flex items-center gap-2">
+                    {data.media ?
+                        <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-3">
+                            <MediaIcon mediaType={data.media} size={16}/>
+                            <div className="truncate">{data.payload.name}</div>
                             {((data.media === "anime" || data.media === "series") && data.payload?.finale) &&
                                 <Badge variant="passiveSmall">Finale</Badge>
                             }
                         </div>
-                    </>
+                        :
+                        <>
+                            <MediaIcon mediaType={"user"} size={16}/>
+                            <div className="line-clamp-1">{data.payload.message}</div>
+                        </>
+                    }
+                </div>
+                {data.media &&
+                    <div className="flex items-center gap-2 text-neutral-400">
+                        <div>
+                            {(data.media === "anime" || data.media === "series") ?
+                                <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
+                                :
+                                <div>Release</div>
+                            }
+                        </div>
+                        <div><FaLongArrowAltRight/></div>
+                        <div>{data.payload.release_date}</div>
+                    </div>
                 }
             </div>
-            {data.media &&
-                <div className="flex items-center gap-2 text-neutral-400">
-                    <div>
-                        {(data.media === "anime" || data.media === "series") ?
-                            <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
-                            :
-                            <div>Release</div>
-                        }
-                    </div>
-                    <div><FaLongArrowAltRight/></div>
-                    <div>{data.payload.release_date}</div>
-                </div>
-            }
-            <Separator/>
+            <Separator className="mt-0 mb-0"/>
         </Link>
     );
 };

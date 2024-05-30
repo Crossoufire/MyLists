@@ -7,11 +7,11 @@ from PIL.Image import Resampling
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.classes.API_data import ApiData
+from backend.api.data_managers.api_data_manager import ApiData
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
-from backend.api.utils.functions import get_models_group
+from backend.api.utils.functions import get, ModelsFetcher
 
 details_bp = Blueprint("api_details", __name__)
 
@@ -22,133 +22,125 @@ details_bp = Blueprint("api_details", __name__)
 def media_details(media_type: MediaType, media_id: int):
     """ Media Details and the user details """
 
-    search_arg = request.args.get("search")
-    media_model, label_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
 
-    if search_arg:
-        media = media_model.query.filter_by(api_id=media_id).first()
-        if not media:
-            API_class = ApiData.get_API_class(media_type)
-            try:
-                media = API_class(API_id=media_id).save_media_to_db()
-                db.session.commit()
-            except Exception as e:
-                current_app.logger.error(f"Error trying to add ({media_type.value}) ID [{media_id}] to DB: {e}")
-                return abort(400, "Sorry, an error occurred loading the media info. Please try again later.")
-    else:
-        # Check <media> in database
-        media = media_model.query.filter_by(id=media_id).first()
-        if not media:
-            return abort(404, "The media could not be found.")
+    external_arg = request.args.get("external")
+    filter_id = {"api_id": media_id} if external_arg else {"id": media_id}
+    media = media_model.query.filter_by(**filter_id).first()
+
+    if external_arg and not media:
+        API_class = ApiData.get_API_class(media_type)
+        media = API_class(API_id=media_id).save_media_to_db()
+        db.session.commit()
+    elif not media:
+        return abort(404, "The media could not be found.")
 
     data = dict(
         media=media.to_dict(),
+        similar_media=media.get_similar_media(),
         user_data=media.get_user_list_info(label_model),
         follows_data=media.in_follows_lists(),
-        redirect=True if search_arg else False,
     )
 
     return jsonify(data=data)
 
 
-@details_bp.route("/details/form/<media_type>/<media_id>", methods=["GET", "POST"])
+@details_bp.route("/details/form/<media_type>/<media_id>", methods=["GET"])
 @token_auth.login_required
 @validate_media_type
-def media_details_form(media_type: MediaType, media_id: int):
-    """ Post new media details after edition """
-
-    status = 200
-    message = {"message": "Media data successfully updated"}
-
-    # Only <admin> and <managers> can access
+def get_details_form(media_type: MediaType, media_id: int):
     if current_user.role == RoleType.USER:
         return abort(403, "You are not authorized")
 
-    # Get models using <media_type>
-    media_model, genre_model = get_models_group(media_type, types=[ModelTypes.MEDIA, ModelTypes.GENRE])
+    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
-    # Get <media> and check if exists
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
-        return abort(400, "This media does not exists")
+        return abort(404, "The media does not exists")
 
     # Accepted form fields
     forms_fields = media_model.form_only()
 
-    if request.method == "GET":
-        data = {
-            "fields": [(k, v) for k, v in media.to_dict().items() if k in forms_fields],
-            "genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
-        }
+    data = {
+        "fields": [(key, val) for (key, val) in media.to_dict().items() if key in forms_fields],
+        "genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
+    }
 
-        return jsonify(data=data)
+    return jsonify(data=data), 200
 
-    # Lock media
-    media.lock_status = True
 
-    # Get <data> from JSON
-    try:
-        data = request.get_json()
-    except:
-        return abort(400)
+@details_bp.route("/details/form", methods=["POST"])
+@token_auth.login_required
+@validate_json_data()
+def post_details_form(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+    """ Post new media details after edition """
 
-    # Add genres if BOOKS
-    if media_type == MediaType.BOOKS and (len(data.get("genres", []) or [])) != 0:
-        genre_model.replace_genres(data["genres"], media.id)
+    payload = {} if payload is None else payload
+
+    if current_user.role == RoleType.USER:
+        return abort(403, "You are not authorized")
+
+    media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
+    if not media:
+        return abort(404, "This media does not exists")
 
     # Suppress all non-allowed fields
-    try:
-        updates = {k: v for (k, v) in data.items() if k in forms_fields}
-        updates["image_cover"] = request.get_json().get("image_cover", "") or ""
-    except:
-        return abort(400)
+    form_authorized = models[ModelTypes.MEDIA].form_only()
+    updates = {key: val for (key, val) in payload.items() if key in form_authorized}
+    updates["image_cover"] = get(payload, "image_cover")
 
-    # Check media cover update
-    if updates["image_cover"] == "":
+    if not updates["image_cover"]:
         picture_fn = media.image_cover
     else:
-        picture_fn = f"{secrets.token_hex(8)}.jpg"
+        picture_fn = f"{secrets.token_hex(12)}.jpg"
         picture_path = Path(current_app.root_path, f"static/covers/{media_type.value}_covers", picture_fn)
         try:
-            urlretrieve(f"{updates['image_cover']}", f"{picture_path}")
-            img = Image.open(f"{picture_path}")
+            urlretrieve(str(updates["image_cover"]), str(picture_path))
+            img = Image.open(str(picture_path))
             img = img.resize((300, 450), Resampling.LANCZOS)
-            img.save(f"{picture_path}", quality=90)
+            img.save(str(picture_path), quality=90)
         except Exception as e:
-            current_app.logger.error(f"[ERROR] - occurred when updating the media cover with ID [{media.id}]: {e}")
-            picture_fn = media.image_cover
-            message = {"description": "Not allowed to copy this media cover"}
-            status = 403
+            current_app.logger.error(f"[ERROR] - occurred updating media cover with ID [{media.id}]: {e}")
+            return abort(403, "Not allowed to upload this media cover")
 
     updates["image_cover"] = picture_fn
+    media.lock_status = True
 
-    # Set new attributes
+    if media_type == MediaType.BOOKS and bool(get(payload, "genres")):
+        models[ModelTypes.GENRE].replace_genres(payload["genres"], media_id)
+
     for name, value in updates.items():
         setattr(media, name, value)
 
-    # Commit changes
     db.session.commit()
 
-    return message, status
+    return {}, 204
 
 
 @details_bp.route("/details/<media_type>/<job>/<info>", methods=["GET"])
 @token_auth.login_required
 @validate_media_type
-def information(media_type: MediaType, job: str, info: str):
-    """ Get information on media (director, tv creator, tv network, actor, developer, or author) """
+def job_details(media_type: MediaType, job: str, info: str):
+    """
+    Load all the media associated with the <job> and the <info>
+    job can be:
+        - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
+        - `actor`: actors (series/anime/movies)
+        - `network`: tv network (series/anime)
+    """
 
-    media_model = get_models_group(media_type, types=ModelTypes.MEDIA)
-
-    # Get data associated to information
+    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
     media_data = media_model.get_information(job, info)
+
+    for media in media_data:
+        media.update(media_id=media.pop("id"), media_name=media.pop("name"))
 
     data = dict(
         data=media_data,
         total=len(media_data),
     )
 
-    return jsonify(data=data)
+    return jsonify(data=data), 200
 
 
 # noinspection PyUnusedLocal
@@ -170,9 +162,9 @@ def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Di
     try:
         refreshed_data = api_model(API_id=media.api_id).update_media_data()
         media.refresh_element_data(media.api_id, refreshed_data)
-        current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID = [{media.api_id}]")
+        current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID: [{media.api_id}]")
     except Exception as e:
-        current_app.logger.error(f"[ERROR] - While refreshing {media_type.value} with API ID = [{media.api_id}]: {e}")
+        current_app.logger.error(f"[ERROR] - While refreshing {media_type.value} with API ID: [{media.api_id}]: {e}")
         return abort(400, "An error occurred trying to refresh the media")
 
     return {}, 204
@@ -184,19 +176,14 @@ def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Di
 def lock_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Lock a media so the API does not update it anymore """
 
-    # Check user > user role
     if current_user.role == RoleType.USER:
-        return abort(400)
+        return abort(401, "Unauthorized to refresh this media")
 
-    # Check if media exists
     media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
     if not media:
         return abort(400)
 
-    # Lock media
     media.lock_status = payload
-
-    # Commit changes
     db.session.commit()
     current_app.logger.info(f"{media_type} [ID {media_id}] successfully locked.")
 

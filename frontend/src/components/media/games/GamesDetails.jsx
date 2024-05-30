@@ -3,7 +3,6 @@ import {formatTime} from "@/lib/utils";
 import {Separator} from "@/components/ui/separator";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {MapDetails} from "@/components/media/general/MapDetails";
-import {ReleaseDate} from "@/components/media/general/ReleaseDate";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
 
 
@@ -27,9 +26,9 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                             mediaType={mediaType}
                             valueList={mediaData.developers}
                         />
-                        <ReleaseDate
+                        <GenericDetails
                             name="Release date"
-                            start={mediaData.formated_date}
+                            value={mediaData.formatted_date}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

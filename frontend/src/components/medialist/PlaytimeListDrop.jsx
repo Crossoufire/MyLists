@@ -1,7 +1,6 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {getPlaytimeValues} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
-import {LoadingIcon} from "@/components/primitives/LoadingIcon";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -15,17 +14,15 @@ export const PlaytimeListDrop = ({ isCurrent, initPlaytime, updatePlaytime }) =>
         if (response) {
             setPlaytime(value);
         }
-    }
+    };
 
     return (
         <>
             {isCurrent ?
-                <div className="flex justify-center items-center h-[32px] w-full opacity-90 bg-gray-900 border
-                border-x-black border-b-black rounded-bl-md rounded-br border-t-transparent">
-                    <Select value={isLoading ? undefined : playtime} onValueChange={handlePlaytime}
-                            disabled={isLoading}>
-                        <SelectTrigger className="w-36 text-base" size="list" variant="noIcon">
-                            <SelectValue placeholder={<LoadingIcon size={5}/>}/>
+                <div className="h-[28px]">
+                    <Select value={playtime} onValueChange={handlePlaytime} disabled={isLoading}>
+                        <SelectTrigger size="list" variant="noIcon">
+                            <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>
                             {playValues.map(p => <SelectItem key={p} value={p}>{p} hours</SelectItem>)}
@@ -33,8 +30,7 @@ export const PlaytimeListDrop = ({ isCurrent, initPlaytime, updatePlaytime }) =>
                     </Select>
                 </div>
                 :
-                <div className="flex justify-around items-center h-[32px] w-full opacity-90 bg-gray-900 border
-                border-x-black border-b-black rounded-bl-md rounded-br border-t-transparent">
+                <div className="h-[28px]">
                     <div>{playtime} hours</div>
                 </div>
             }

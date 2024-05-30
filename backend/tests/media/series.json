@@ -1,0 +1,69 @@
+{
+    "media_data": {
+        "name": "Breaking Bad",
+        "original_name": "Breaking Bad",
+        "first_air_date": "2008-01-20",
+        "last_air_date": "2013-09-29",
+        "homepage": "https://www.sonypictures.com/tv/breakingbad",
+        "in_production": false,
+        "total_seasons": 5,
+        "total_episodes": 62,
+        "status": "Ended",
+        "vote_average": 8.907,
+        "vote_count": 13338,
+        "synopsis": "Walter White, a New Mexico chemistry teacher, is diagnosed with Stage III cancer and given a prognosis of only two years left to live. He becomes filled with a sense of fearlessness and an unrelenting desire to secure his family's financial future at any cost as he enters the dangerous world of drugs and crime.",
+        "popularity": 481.713,
+        "api_id": 1396,
+        "last_api_update": "2024-04-01T18:27:26.170648",
+        "image_cover": "cbd51f975e521967.jpg",
+        "next_episode_to_air": null,
+        "season_to_air": null,
+        "episode_to_air": null,
+        "duration": 40,
+        "origin_country": "US",
+        "created_by": "Vince Gilligan"
+    },
+    "seasons_data": [
+        {
+            "season": 1,
+            "episodes": 7
+        },
+        {
+            "season": 2,
+            "episodes": 13
+        },
+        {
+            "season": 3,
+            "episodes": 13
+        },
+        {
+            "season": 4,
+            "episodes": 13
+        },
+        {
+            "season": 5,
+            "episodes": 16
+        }
+    ],
+    "genres_data": [
+        {
+            "genre": "Drama",
+            "genre_id": 18
+        },
+        {
+            "genre": "Crime",
+            "genre_id": 80
+        }
+    ],
+    "anime_genres_data": [],
+    "actors_data": [
+        {"name": "Bryan Cranston"},
+        {"name": "Aaron Paul"},
+        {"name": "Anna Gunn"},
+        {"name": "Dean Norris"},
+        {"name": "Jonathan Banks"}
+    ],
+    "networks_data": [
+        {"network": "AMC"}
+    ]
+}

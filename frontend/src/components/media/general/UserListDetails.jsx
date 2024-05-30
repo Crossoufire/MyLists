@@ -1,7 +1,8 @@
-import {FaMinus, FaPlus} from "react-icons/fa";
+import {toast} from "sonner";
 import {useLoading} from "@/hooks/LoadingHook";
+import {FaMinus, FaPlus} from "react-icons/fa";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
-import {FormButton} from "@/components/primitives/FormButton";
+import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
 import {TvUserDetails} from "@/components/media/tv/TvUserDetails";
@@ -20,14 +21,12 @@ const mediaComponentMap = (value) => {
 		anime: TvUserDetails,
 		games: GamesUserDetails,
 		books: BooksUserDetails,
-		default: undefined,
 	};
-
-	return components[value] || components.default;
+	return components[value];
 };
 
 
-export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
+export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 	const [isLoading, handleLoading] = useLoading();
 	const MediaUserDetails = mediaComponentMap(mediaType);
 	const updatesAPI = useApiUpdater(apiData.media.id, mediaType);
@@ -35,19 +34,18 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 	const handleAddMediaUser = async () => {
 		const response = await handleLoading(updatesAPI.addMedia);
 		if (response) {
-			await mutateData({ ...apiData, user_data: response }, false);
+			setApiData({ ...apiData, user_data: response });
+			toast.success("Media added to your list");
 		}
 	};
 
 	const handleDeleteMedia = async () => {
-		const confirm = window.confirm("Do you want to remove this media from your list?")
-		if (!confirm) {
-			return;
-		}
-
+		const confirm = window.confirm("Do you want to remove this media from your list?");
+		if (!confirm) return;
 		const response = await handleLoading(updatesAPI.deleteMedia);
 		if (response) {
-			await mutateData({ ...apiData, user_data: false }, false);
+			setApiData({ ...apiData, user_data: false });
+			toast.warning("Media deleted from your list");
 		}
 	};
 
@@ -85,14 +83,12 @@ export const UserListDetails = ({ apiData, mediaType, mutateData }) => {
 						initContent={apiData.user_data.comment}
 					/>
 					<LabelLists
-						mediaType={mediaType}
-						updatesAPI={updatesAPI}
-						initIn={apiData.user_data.labels.already_in}
-						initAvailable={apiData.user_data.labels.available}
+						mediaId={apiData.media.id}
+						alreadyIn={apiData.user_data.labels.already_in}
 					/>
 				</TabsContent>
 				<TabsContent value="history" className="w-[300px] p-5 pt-3 bg-card rounded-md overflow-y-hidden
-				hover:overflow-y-auto max-h-[355px]">
+					hover:overflow-y-auto max-h-[355px]">
 					<HistoryDetails
 						history={apiData.user_data.history}
 					/>

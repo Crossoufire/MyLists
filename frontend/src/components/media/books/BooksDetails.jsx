@@ -1,7 +1,6 @@
 import {capitalize, formatTime} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {MapDetails} from "@/components/media/general/MapDetails";
-import {ReleaseDate} from "@/components/media/general/ReleaseDate";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
 
 
@@ -17,9 +16,9 @@ export const BooksDetails = ({ mediaData, mediaType }) => {
                             mediaType={mediaType}
                             valueList={mediaData.authors}
                         />
-                        <ReleaseDate
+                        <GenericDetails
                             name="Release date"
-                            start={mediaData.formated_date}
+                            value={mediaData.formatted_date}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

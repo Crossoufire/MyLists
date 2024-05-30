@@ -1,15 +1,12 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Dict, Tuple
-
+from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
-from sqlalchemy import func, text, and_
-
+from sqlalchemy import func, ColumnElement
 from backend.api import db
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
@@ -47,24 +44,21 @@ class Movies(MediaMixin, db.Model):
     genres = db.relationship("MoviesGenre", backref="movies", lazy=True)
     actors = db.relationship("MoviesActors", backref="movies", lazy=True)
     list_info = db.relationship("MoviesList", back_populates="media", lazy="dynamic")
+    labels = db.relationship("MoviesLabels", back_populates="media", lazy="dynamic")
 
-    def to_dict(self, coming_next: bool = False) -> Dict:
+    def to_dict(self) -> Dict:
         """ Serialization of the movies class """
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        if coming_next:
-            media_dict["media_cover"] = self.media_cover
-            media_dict["date"] = change_air_format(self.release_date)
-            return media_dict
-
-        media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = change_air_format(self.release_date)
-        media_dict["actors"] = self.actors_list
-        media_dict["genres"] = self.genres_list
-        media_dict["similar_media"] = self.get_similar_genres()
+        media_dict.update({
+            "media_cover": self.media_cover,
+            "formatted_date": change_air_format(self.release_date),
+            "actors": self.actors_list,
+            "genres": self.genres_list,
+        })
 
         return media_dict
 
@@ -96,16 +90,26 @@ class Movies(MediaMixin, db.Model):
         else:
             return abort(400)
 
-        return [q.to_dict(coming_next=True) for q in query]
+        media_in_user_list = (
+            db.session.query(MoviesList)
+            .filter(MoviesList.user_id == current_user.id, MoviesList.media_id.in_([media.id for media in query]))
+            .all()
+        )
+        user_media_ids = [media.media_id for media in media_in_user_list]
+
+        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
 
     @classmethod
     def remove_non_list_media(cls):
         """ Remove all movies that are not present in a User list from the database and the disk """
 
         try:
-            # Movies remover
-            movies_to_delete = (cls.query.outerjoin(MoviesList, MoviesList.media_id == cls.id)
-                                .filter(MoviesList.media_id.is_(None)).all())
+            movies_to_delete = (
+                cls.query.outerjoin(MoviesList, MoviesList.media_id == cls.id)
+                .filter(MoviesList.media_id.is_(None))
+                .all()
+            )
+
             count = 0
             for movie in movies_to_delete:
                 MoviesActors.query.filter_by(media_id=movie.id).delete()
@@ -129,14 +133,16 @@ class Movies(MediaMixin, db.Model):
 
         try:
             # noinspection PyComparisonWithNone
-            query = (db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
-            .join(MoviesList, cls.id == MoviesList.media_id)
-            .filter(and_(
-                cls.release_date != None,
-                cls.release_date > datetime.utcnow(),
-                cls.release_date <= datetime.utcnow() + timedelta(days=7),
-                MoviesList.status != Status.PLAN_TO_WATCH,
-                ))).all()
+            query = (
+                db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
+                .join(MoviesList, cls.id == MoviesList.media_id)
+                .filter(
+                    cls.release_date.is_not(None),
+                    cls.release_date > datetime.utcnow(),
+                    cls.release_date <= datetime.utcnow() + timedelta(days=7),
+                    MoviesList.status != Status.PLAN_TO_WATCH
+                ).all()
+            )
 
             for info in query:
                 notif = Notifications.search(info[1], "movieslist", info[0])
@@ -166,10 +172,11 @@ class Movies(MediaMixin, db.Model):
 
         locking_threshold = datetime.utcnow() - timedelta(days=cls.LOCKING_DAYS)
 
-        query = (cls.query.filter(and_(cls.lock_status != True, cls.image_cover != "default.jpg",
-                                       cls.release_date < locking_threshold))
-                 .update({"lock_status": True}, synchronize_session="fetch"))
-
+        query = (
+            cls.query.filter(cls.lock_status != True, cls.image_cover != "default.jpg",
+                             cls.release_date < locking_threshold)
+            .update({"lock_status": True}, synchronize_session="fetch")
+        )
         db.session.commit()
 
         locked_movies = query
@@ -216,22 +223,29 @@ class MoviesList(MediaListMixin, db.Model):
     media = db.relationship("Movies", back_populates="list_info", lazy=False)
 
     class Status(ExtendedEnum):
-        """ Special status class for the movies """
-
         COMPLETED = "Completed"
         PLAN_TO_WATCH = "Plan to Watch"
 
     def to_dict(self) -> Dict:
-        """ Serialization of the movieslist class """
+        """ Serialization of the MoviesList SQL model """
+
+        is_feeling = self.user.add_feeling
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        # Add more info
+        del media_dict["feeling"]
+        del media_dict["score"]
+
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = self.Status.to_list()
+        media_dict["labels"] = [label.label for label in self.media.labels]
+        media_dict["rating"] = {
+            "type": "feeling" if is_feeling else "score",
+            "value": self.feeling if is_feeling else self.score
+        }
 
         return media_dict
 
@@ -272,77 +286,17 @@ class MoviesList(MediaListMixin, db.Model):
         current_user.time_spent_movies = old_time + ((new_value - old_value) * self.media.duration)
 
     @classmethod
-    def get_media_stats(cls, user: User) -> List[Dict]:
-        """ Get the movies stats for a user and return a list of dict """
-
-        subquery = MoviesList.query.filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_WATCH).subquery()
-        rating = subquery.c.feeling if user.add_feeling else subquery.c.score
-
-        runtimes = (db.session.query(((Movies.duration // 30) * 30).label("bin"), func.count(Movies.id).label("count"))
-                    .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.duration != "Unknown"))
-                    .group_by("bin").order_by("bin").all())
-
-        release_dates = (db.session.query((((func.extract("year", Movies.release_date)) // 10) * 10).label("decade"),
-                                          func.count(Movies.release_date))
-                         .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.release_date != "Unknown"))
-                         .group_by("decade").order_by(Movies.release_date.asc()).all())
-
-        top_directors = (db.session.query(Movies.director_name, func.count(Movies.director_name).label("count"))
-                         .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.director_name != "Unknown"))
-                         .group_by(Movies.director_name).order_by(text("count desc")).limit(10).all())
-
-        # top_rated_directors = (db.session.query(Movies.director_name, func.count(Movies.director_name),
-        #                                         func.round(func.avg(rating), 2), func.group_concat(Movies.name),
-        #                                         func.ifnull(func.sum(subquery.c.favorite), 0))
-        #                        .join(subquery, (Movies.id == subquery.c.media_id) & (rating.isnot(None)))
-        #                        .group_by(Movies.director_name).having(func.count(Movies.director_name) >= 5)
-        #                        .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
-        #                        .limit(10).all())
-
-        top_actors = (db.session.query(MoviesActors.name, func.count(MoviesActors.name).label("count"))
-                      .join(subquery, (MoviesActors.media_id == subquery.c.media_id) & (MoviesActors.name != "Unknown"))
-                      .group_by(MoviesActors.name).order_by(text("count desc")).limit(10).all())
-
-        # top_rated_actors = (db.session.query(MoviesActors.name, func.count(MoviesActors.name),
-        #                                      func.round(func.avg(rating), 2),
-        #                                      func.ifnull(func.sum(subquery.c.favorite), 0))
-        #                     .join(subquery, (MoviesActors.media_id == subquery.c.media_id) &
-        #                           (rating.isnot(None)) & (MoviesActors.name != "Unknown"))
-        #                     .group_by(MoviesActors.name).having(func.count(MoviesActors.name) >= 8)
-        #                     .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
-        #                     .limit(10).all())
-
-        top_genres = (db.session.query(MoviesGenre.genre, func.count(MoviesGenre.genre).label("count"))
-                      .join(subquery, (MoviesGenre.media_id == subquery.c.media_id) & (MoviesGenre.genre != "Unknown"))
-                      .group_by(MoviesGenre.genre).order_by(text("count desc")).limit(10).all())
-
-        # top_rated_genres = (db.session.query(MoviesGenre.genre, func.count(MoviesGenre.genre),
-        #                                      func.round(func.avg(rating), 2),
-        #                                      func.ifnull(func.sum(subquery.c.favorite), 0))
-        #                     .join(subquery, (MoviesGenre.media_id == subquery.c.media_id) &
-        #                           (rating.isnot(None)) & (MoviesGenre.genre != "Unknown"))
-        #                     .group_by(MoviesGenre.genre).having(func.count(MoviesGenre.genre) >= 15)
-        #                     .order_by(func.avg(rating).desc(), func.sum(subquery.c.favorite).desc())
-        #                     .limit(10).all())
-
-        top_languages = (db.session.query(Movies.original_language, func.count(Movies.original_language).label("nb"))
-                         .join(subquery, (Movies.id == subquery.c.media_id) & (Movies.original_language != "Unknown"))
-                         .group_by(Movies.original_language).order_by(text("nb desc")).limit(10).all())
-
-        stats = [
-            {"name": "Runtimes", "values": [(run, count_) for run, count_ in runtimes]},
-            {"name": "Releases date", "values": [(rel, count_) for rel, count_ in release_dates]},
-            {"name": "Directors", "values": [(director, count_) for director, count_ in top_directors]},
-            {"name": "Actors", "values": [(actor, count_) for actor, count_ in top_actors]},
-            {"name": "Genres", "values": [(genre,count_) for genre, count_ in top_genres]},
-            {"name": "Languages", "values": [(lang, count_) for lang, count_ in top_languages]},
-        ]
-
-        return stats
-
-    @classmethod
     def total_user_time_def(cls):
         return func.sum(Movies.duration * cls.total)
+
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple[Type[MoviesActors], bool]]:
+        return [(MoviesActors, MoviesActors.media_id == Movies.id),]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Movies.name.ilike(f"%{search}%"), Movies.original_name.ilike(f"%{search}%"),
+                Movies.director_name.ilike(f"%{search}%"), MoviesActors.name.ilike(f"%{search}%")]
 
 
 class MoviesGenre(db.Model):
@@ -359,7 +313,7 @@ class MoviesGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List:
         """ Return the available genres for the movies """
-        return ["All", "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
+        return ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
                 "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Science Fiction", "TV Movie",
                 "Thriller", "War", "Western"]
 

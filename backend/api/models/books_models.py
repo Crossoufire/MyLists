@@ -1,12 +1,12 @@
 from __future__ import annotations
 import datetime
 from enum import Enum
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from flask import abort, current_app
-from sqlalchemy import func, text
+from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.routes.handlers import current_user
-from backend.api.models.user_models import User, UserLastUpdate, Notifications
+from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.functions import change_air_format
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
@@ -15,8 +15,8 @@ from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 class Books(MediaMixin, db.Model):
     """ Books SQL model """
 
-    TYPE = ModelTypes.MEDIA
     GROUP = MediaType.BOOKS
+    TYPE = ModelTypes.MEDIA
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -33,32 +33,23 @@ class Books(MediaMixin, db.Model):
     authors = db.relationship("BooksAuthors")
     list_info = db.relationship("BooksList", back_populates="media", lazy="dynamic")
 
-    @property
-    def authors_list(self) -> List[str]:
-        """ Helper function to get the authors of a book """
-        return [d.name for d in self.authors]
-
-    def to_dict(self, coming_next: bool = False) -> Dict:
+    def to_dict(self) -> Dict:
         """ Serialization of the books class """
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        if coming_next:
-            media_dict["media_cover"] = self.media_cover
-            media_dict["date"] = change_air_format(self.release_date, books=True)
-            return media_dict
-
-        media_dict["media_cover"] = self.media_cover
-        media_dict["formated_date"] = change_air_format(self.release_date, books=True)
-        media_dict["authors"] = self.authors_list
-        media_dict["genres"] = self.genres_list
-        media_dict["similar_media"] = self.get_similar_genres()
+        media_dict.update({
+            "media_cover": self.media_cover,
+            "formatted_date": change_air_format(self.release_date, books=True),
+            "authors": [author.name for author in self.authors],
+            "genres": self.genres_list,
+        })
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Enum, user_id: int) -> int:
+    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
         """ Add a new book to the user and return the <new_read> value """
 
         new_read = self.pages if new_status == Status.COMPLETED else 0
@@ -77,7 +68,7 @@ class Books(MediaMixin, db.Model):
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
-        """ Get all the authors books """
+        """ Get all the authors' related books """
 
         if job == "creator":
             query = (cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
@@ -85,7 +76,14 @@ class Books(MediaMixin, db.Model):
         else:
             return abort(400)
 
-        return [q.to_dict() for q in query]
+        media_in_user_list = (
+            db.session.query(BooksList)
+            .filter(BooksList.user_id == current_user.id, BooksList.media_id.in_([media.id for media in query]))
+            .all()
+        )
+        user_media_ids = [media.media_id for media in media_in_user_list]
+
+        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
 
     @classmethod
     def remove_non_list_media(cls):
@@ -112,14 +110,9 @@ class Books(MediaMixin, db.Model):
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing books and related records: {str(e)}")
 
-    @classmethod
-    def get_new_releasing_media(cls):
-        """ Not Implemented for books because it is not available (Google books API) """
-        return
-
     @staticmethod
     def form_only() -> List[str]:
-        """ Return the allowed fields for the edit form """
+        """ Return the allowed fields for the edit book form """
         return ["name", "release_date", "pages", "language", "publishers", "synopsis"]
 
 
@@ -157,17 +150,23 @@ class BooksList(MediaListMixin, db.Model):
         PLAN_TO_READ = "Plan to Read"
 
     def to_dict(self) -> Dict:
-        """ Serialization of the bookslist class """
+        is_feeling = self.user.add_feeling
 
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        # Add more info
+        del media_dict["feeling"]
+        del media_dict["score"]
+
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["total_pages"] = self.media.pages
         media_dict["all_status"] = self.Status.to_list()
+        media_dict["rating"] = {
+            "type": "feeling" if is_feeling else "score",
+            "value": self.feeling if is_feeling else self.score
+        }
 
         return media_dict
 
@@ -210,43 +209,6 @@ class BooksList(MediaListMixin, db.Model):
         current_user.time_spent_books = old_time + ((new_value - old_value) * self.TIME_PER_PAGE)
 
     @classmethod
-    def get_media_stats(cls, user: User) -> List[Dict]:
-        """ Get the selected user books stats """
-
-        subquery = (db.session.query(cls.media_id)
-                    .filter(cls.user_id == user.id, cls.status != Status.PLAN_TO_READ).subquery())
-
-        per_pages = (db.session.query(((Books.pages // 100) * 100).label("bin"), func.count(Books.id).label("count"))
-                     .join(subquery, (Books.id == subquery.c.media_id) & (Books.pages != 0))
-                     .group_by("bin").order_by("bin").all())
-
-        release_dates = (db.session.query(((Books.release_date // 10) * 10).label("decade"), func.count(Books.release_date))
-                         .join(subquery, (Books.id == subquery.c.media_id) & (Books.release_date != "Unknown"))
-                         .group_by("decade").order_by(Books.release_date.asc()).all())
-
-        top_genres = (db.session.query(BooksGenre.genre, func.count(BooksGenre.genre).label("count"))
-                      .join(subquery, (BooksGenre.media_id == subquery.c.media_id) & (BooksGenre.genre != "Unknown"))
-                      .group_by(BooksGenre.genre).order_by(text("count desc")).limit(10).all())
-
-        top_authors = (db.session.query(BooksAuthors.name, func.count(BooksAuthors.name).label("count"))
-                       .join(subquery, (BooksAuthors.media_id == subquery.c.media_id) & (BooksAuthors.name != "Unknown"))
-                       .group_by(BooksAuthors.name).order_by(text("count desc")).limit(10).all())
-
-        top_languages = (db.session.query(Books.language, func.count(Books.language).label("count"))
-                         .join(subquery, (Books.id == subquery.c.media_id) & (Books.language != "Unknown"))
-                         .group_by(Books.language).order_by(text("count desc")).limit(10).all())
-
-        stats = [
-            {"name": "Pages", "values": [(page, count_) for page, count_ in per_pages]},
-            {"name": "Releases date", "values": [(rel, count_) for rel, count_ in release_dates]},
-            {"name": "Authors", "values": [(author, count_) for author, count_ in top_authors]},
-            {"name": "Genres", "values": [(genre, count_) for genre, count_ in top_genres]},
-            {"name": "Languages", "values": [(lang, count_) for lang, count_ in top_languages]},
-        ]
-
-        return stats
-
-    @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
         """ Return the available sorting for books """
 
@@ -267,6 +229,14 @@ class BooksList(MediaListMixin, db.Model):
     def total_user_time_def(cls):
         return func.sum(cls.TIME_PER_PAGE * cls.total)
 
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple]:
+        return [(BooksAuthors, BooksAuthors.media_id == Books.id)]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Books.name.ilike(f"%{search}%"), BooksAuthors.name.ilike(f"%{search}%")]
+
 
 class BooksGenre(db.Model):
     """ Books genres SQL model """
@@ -275,7 +245,7 @@ class BooksGenre(db.Model):
     GROUP = MediaType.BOOKS
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
     genre = db.Column(db.String(100), nullable=False)
 
     @classmethod
@@ -294,7 +264,7 @@ class BooksGenre(db.Model):
     @staticmethod
     def get_available_genres() -> List:
         """ Return the available genres for the books """
-        return ["All", "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
+        return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
                 "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
                 "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
                 "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
@@ -307,7 +277,7 @@ class BooksAuthors(db.Model):
     GROUP = MediaType.BOOKS
 
     id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
     name = db.Column(db.String(150))
 
 

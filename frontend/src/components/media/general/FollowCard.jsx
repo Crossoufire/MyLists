@@ -1,13 +1,19 @@
-import {Link} from "react-router-dom";
-import {getRatingValues} from "@/lib/utils";
+import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
+import {getFeelingValues, zeroPad} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
-import {MoreFollowDetails} from "@/components/media/general/MoreFollowDetails";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {FaAlignJustify, FaCommentAlt, FaHeart, FaRedoAlt, FaRegCommentAlt, FaRegHeart, FaStar} from "react-icons/fa";
+import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 
 
 export const FollowCard = ({ follow, mediaType }) => {
+    const formatRating = () => {
+        if (follow.rating.type === "feeling") {
+            return getFeelingValues(17).find(data => data.value === follow.rating.value).icon;
+        }
+        return follow.rating.value === null ? "--" : follow.rating.value.toFixed(1);
+    };
+
     return (
         <Card className="h-full">
             <CardContent className="p-3">
@@ -27,41 +33,28 @@ export const FollowCard = ({ follow, mediaType }) => {
                         </Link>
                         <div className="flex justify-between items-center pr-3">
                             <div className="flex items-center gap-x-2">
-                                <FaStar size={15}/>
-                                <div>
-                                    {follow.add_feeling ?
-                                        (follow.feeling === -1 || follow.feeling === null) ?
-                                            "---" :
-                                            <>{getRatingValues(follow.add_feeling).slice(1)[follow.feeling].icon}</>
-                                        :
-                                        (follow.score === -1 || follow.score === null) ?
-                                            "---" : <>{follow.score}</>
-                                    }
-                                </div>
+                                <LuStar size={15}/>
+                                <div>{formatRating()}</div>
                             </div>
                             {(follow.status === "Completed" && mediaType !== "games") &&
                                 <div className="flex items-center gap-x-2">
-                                    <FaRedoAlt size={15}/> {follow.rewatched}
+                                    <LuRotateCw size={15}/> {follow.rewatched}
                                 </div>
                             }
                             <div className="flex items-center gap-x-2">
                                 {follow.comment ?
                                     <Popover>
                                         <PopoverTrigger>
-                                            <FaCommentAlt size={15} className="text-amber-500"/>
+                                            <LuMessageSquare size={15} className="text-amber-500"/>
                                         </PopoverTrigger>
                                         <PopoverContent>{follow.comment}</PopoverContent>
                                     </Popover>
                                     :
-                                    <FaRegCommentAlt size={15}/>
+                                    <LuMessageSquare size={15}/>
                                 }
                             </div>
                             <div className="flex gap-x-2">
-                                {follow.favorite ?
-                                    <FaHeart size={15} className="text-red-700"/>
-                                    :
-                                    <FaRegHeart size={15}/>
-                                }
+                                <LuHeart size={15} className={follow.favorite && "text-red-700"}/>
                             </div>
                         </div>
                     </div>
@@ -69,7 +62,7 @@ export const FollowCard = ({ follow, mediaType }) => {
                 <Separator/>
                 <div>
                     <div className="flex gap-x-3">
-                        <FaAlignJustify className="mt-1"/> {follow.status}
+                        <LuAlignJustify className="mt-1"/> {follow.status}
                     </div>
                     <MoreFollowDetails
                         mediaType={mediaType}
@@ -79,4 +72,32 @@ export const FollowCard = ({ follow, mediaType }) => {
             </CardContent>
         </Card>
     );
+};
+
+
+const MoreFollowDetails = ({ mediaType, follow }) => {
+    if (mediaType === "series" || mediaType === "anime") {
+        if (!["Random", "Plan to Watch"].includes(follow.status)) {
+            return (
+                <div className="flex gap-x-3 items-center">
+                    <LuPlay size={16} className="mt-1"/>
+                    Season {zeroPad(follow.current_season)} - Episode {zeroPad(follow.last_episode_watched)}
+                </div>
+            );
+        }
+    }
+    else if (mediaType === "books" && follow.status !== "Plan to Read") {
+        return (
+            <div className="flex gap-x-3 items-center">
+                <LuPlay size={16} className="mt-1"/> Page {follow.actual_page}/{follow.total_pages}
+            </div>
+        );
+    }
+    else if (mediaType === "games" && follow.status !== "Plan to Play") {
+        return (
+            <div className="flex gap-x-3 items-center">
+                <LuPlay size={16} className="mt-1"/> Played {follow.playtime / 60} h
+            </div>
+        );
+    }
 };

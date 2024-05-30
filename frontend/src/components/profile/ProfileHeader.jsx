@@ -1,14 +1,16 @@
+import {toast} from "sonner";
+import {useState} from "react";
 import {FaPen} from "react-icons/fa";
-import {Link} from "react-router-dom";
+import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
-import {useUser} from "@/providers/UserProvider";
-import {FollowButton} from "@/components/profile/FollowButton";
+import {api, userClient} from "@/api/MyApiClient";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
-    const { currentUser } = useUser();
-    const isCurrent = currentUser?.id === user.id;
+    const isCurrent = userClient.currentUser?.id === user.id;
 
     return (
         <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_image})`}}>
@@ -51,7 +53,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
             <div className="absolute left-[242px] bottom-[25px] max-xs:bottom-3 max-xs:left-[50%] max-xs:-translate-x-1/2">
                 <div className="flex gap-3 items-center font-medium mb-2 mt-0">
                     <div className="text-3xl">{user.username}</div>
-                    {(!isCurrent && currentUser) &&
+                    {!isCurrent &&
                         <FollowButton
                             followId={followId}
                             initFollow={initFollow}
@@ -69,4 +71,40 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
             </div>
         </div>
     );
+};
+
+
+const FollowButton = ({ initFollow, followId }) => {
+    const [isLoading, handleLoading] = useLoading();
+    const [isFollowing, setFollowing] = useState(initFollow);
+
+    const content = isFollowing ? "Unfollow" : "Follow";
+    const buttonColor = isFollowing ? "destructive" : "secondary";
+
+    const updateFollow = async (followId, followValue) => {
+        const response = await api.post("/update_follow", {
+            follow_id: followId,
+            follow_status: followValue,
+        });
+
+        if (!response.ok) {
+            toast.error("The following status could not be processed");
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleFollow = async () => {
+        const response = await handleLoading(updateFollow, followId, !isFollowing);
+        if (response) {
+            setFollowing(!isFollowing);
+        }
+    };
+
+    return (
+        <Button variant={buttonColor} size="xs" onClick={handleFollow} disabled={isLoading}>
+            <div className="font-semibold">{content}</div>
+        </Button>
+    )
 };

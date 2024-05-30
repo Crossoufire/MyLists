@@ -12,10 +12,8 @@ const mediaDetailsMap = (value) => {
         anime: TvDetails,
         games: GamesDetails,
         books: BooksDetails,
-        default: undefined,
     };
-
-    return components[value] || components.default;
+    return components[value];
 };
 
 

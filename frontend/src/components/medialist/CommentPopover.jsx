@@ -1,88 +1,100 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
+import {LuMessageSquare} from "react-icons/lu";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
-import {FaCommentAlt, FaRegCommentAlt} from "react-icons/fa";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
     const [isLoading, handleLoading] = useLoading();
     const [isEdit, setIsEdit] = useState(false);
-    const [contents, setContents] = useState(initContent || "");
-    const [initContents, setInitContents] = useState(initContent || "");
+    const [contentsState, setContentsState] = useState(initContent || "");
+    const [initContentState, setInitContentState] = useState(initContent || "");
 
-    useEffect(() => {
-        if (isCurrent) {
-            setIsEdit(initContents === "");
+    const checkInitContent = () => {
+        if (isCurrent && contentsState === "") {
+            setIsEdit(true);
         }
-    }, [isCurrent, initContent]);
+    };
 
     const handleSave = async () => {
-        if (initContent === contents) {
+        if (initContentState === contentsState) {
             return;
         }
-        await handleLoading(updateComment, contents);
-        setInitContents(contents);
+
+        await handleLoading(updateComment, contentsState);
+        setInitContentState(contentsState);
         setIsEdit(false);
+    };
+
+    const onEditCancel = () => {
+        setContentsState(initContentState);
+        setIsEdit(false);
+    };
+
+    const onPopoverClickOutside = (ev) => {
+        if (isEdit && contentsState !== "") {
+            ev.preventDefault();
+        }
     };
 
     return (
         <Popover>
             <Tooltip text="Comment">
                 <div className="flex items-center">
-                    {(!isCurrent && !contents) &&
-                        <FaRegCommentAlt/>
-                    }
-                    {(!isCurrent && contents) &&
-                        <PopoverTrigger>
-                            <FaCommentAlt className="text-amber-500"/>
+                    {isCurrent ?
+                        <PopoverTrigger onClick={checkInitContent}>
+                            <LuMessageSquare className={contentsState && "text-amber-500"}/>
                         </PopoverTrigger>
-                    }
-                    {(isCurrent && !contents) &&
-                        <PopoverTrigger>
-                            <FaRegCommentAlt/>
-                        </PopoverTrigger>
-                    }
-                    {(isCurrent && contents) &&
-                        <PopoverTrigger>
-                            <FaCommentAlt className="text-amber-500"/>
-                        </PopoverTrigger>
+                        :
+                        <>
+                            {contentsState ?
+                                <PopoverTrigger>
+                                    <LuMessageSquare className="text-amber-500"/>
+                                </PopoverTrigger>
+                                :
+                                <LuMessageSquare/>
+                            }
+                        </>
                     }
                 </div>
             </Tooltip>
-            <PopoverContent align="center" side="top">
+            <PopoverContent align="center" side="top" onInteractOutside={onPopoverClickOutside}>
                 {(isCurrent && isEdit) ?
                     <>
                         <Textarea
-                            value={contents}
-                            onChange={(ev) => setContents(ev.target.value)}
-                            onBlur={() => setIsEdit(false)}
+                            value={contentsState}
+                            onChange={(ev) => setContentsState(ev.target.value)}
                             placeholder="Enter your comment..."
                             className="w-full h-[100px]"
                             disabled={isLoading}
                         />
-                        <Button className="mt-3" size="sm" onClick={handleSave} disabled={(contents === initContents) || isLoading}>
+                        <Button className="mt-3" size="sm" onClick={handleSave}
+                        disabled={initContentState === contentsState || isLoading}>
                             Save
                         </Button>
-                        <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={() => setIsEdit(false)}>
+                        <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={onEditCancel}
+                        disabled={initContentState === contentsState || isLoading}>
                             Cancel
                         </Button>
                     </>
                     :
-                    <p>
+                    <div>
                         {isCurrent ?
                             <>
-                                <div>{contents}</div>
+                                <p>{contentsState}</p>
                                 <Separator/>
-                                <Button className="mt-1" size="sm" onClick={() => setIsEdit(true)}>Edit</Button>
+                                <Button className="mt-1" size="sm" onClick={() => setIsEdit(true)}>
+                                    Edit
+                                </Button>
                             </>
                             :
-                            contents
+                            contentsState
                         }
-                    </p>
+                    </div>
                 }
             </PopoverContent>
         </Popover>

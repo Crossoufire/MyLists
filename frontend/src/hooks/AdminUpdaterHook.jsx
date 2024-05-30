@@ -1,10 +1,8 @@
 import {toast} from "sonner";
-import {useApi} from "@/providers/ApiProvider";
+import {api} from "@/api/MyApiClient";
 
 
 export const useAdminApi = () => {
-    const api = useApi();
-
     const makeUpdateFunction = (url) => async (user_id, payload = null) => {
         const response = await api.post(url, {
             user_id: user_id,

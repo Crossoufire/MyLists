@@ -13,5 +13,4 @@ howlongtobeatpy
 ratelimit
 python-dotenv
 gunicorn
-pytz
-tqdm
+pytest

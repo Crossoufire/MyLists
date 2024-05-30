@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils.jsx";
+import {cn} from "@/lib/utils";
 
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (
@@ -25,7 +25,7 @@ CardHeader.displayName = "CardHeader";
 const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
     <h3
         ref={ref}
-        className={cn("font-semibold text-xl flex flex-row items-center justify-between", className)}
+        className={cn("font-semibold text-xl flex items-center justify-between", className)}
         {...props}
     />
 ))
@@ -35,7 +35,7 @@ CardTitle.displayName = "CardTitle"
 const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
     <p
         ref={ref}
-        className={cn("text-sm text-muted-foreground", className)}
+        className={cn("text-sm text-muted-foreground font-normal", className)}
         {...props}
     />
 ))

@@ -4,7 +4,7 @@ from backend.api import db
 from backend.api.models.user_models import Notifications, Token, User, UserLastUpdate, followers
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.enums import ModelTypes, RoleType
-from backend.api.utils.functions import get_models_type
+from backend.api.utils.functions import ModelsFetcher
 
 admin_bp = Blueprint("api_admin", __name__)
 
@@ -23,21 +23,13 @@ def admin_auth():
     except:
         return abort(404)
 
-    # Check admin account in database
     admin = User.query.filter_by(id=1).first()
     if not admin or not admin.verify_password(password):
         return abort(403, "You do not have the permission to access this page.")
 
-    # Generate admin <token>
     token = admin.generate_admin_token()
-
-    # Add admin token to db
     db.session.add(token)
-
-    # Clean Token table from old tokens
     Token.clean()
-
-    # Commit changes
     db.session.commit()
 
     headers = {
@@ -48,6 +40,7 @@ def admin_auth():
             secure=True,
             httponly=True,
             samesite="none",
+            max_age=current_app.config["ADMIN_TOKEN_MINUTES"] * 60,
         ),
     }
 
@@ -79,7 +72,7 @@ def dashboard():
         "notif": user.last_notif_read_time
     } for user in User.query.filter(User.id != 1).all()]
 
-    return jsonify(data=data)
+    return jsonify(data=data), 200
 
 
 @admin_bp.route("/admin/update_role", methods=["POST"])
@@ -123,26 +116,18 @@ def delete_account():
         return abort(403, "You do not have the permission to access this page.")
 
     try:
-        # Delete all tokens associated with user
         Token.query.filter_by(user_id=user_id).delete()
-
-        # Delete user
         User.query.filter_by(id=user_id).delete()
 
-        # Remove all entries where user is a follower or followed
-        db.session.query(followers).filter((followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)).delete()
+        db.session.query(followers).filter((followers.c.follower_id == user_id) |
+                                           (followers.c.followed_id == user_id)).delete()
 
-        # Delete user's last update information
         UserLastUpdate.query.filter_by(user_id=user_id).delete()
-
-        # Delete all user's notifications
         Notifications.query.filter_by(user_id=user_id).delete()
 
-        # Get all LIST models
-        models_list = get_models_type(ModelTypes.LIST)
+        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
 
-        # Delete all media entries associated with user
-        for model in models_list:
+        for model in models.values():
             model.query.filter_by(user_id=user_id).delete()
 
         db.session.commit()
