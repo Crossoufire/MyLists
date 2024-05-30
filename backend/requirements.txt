@@ -30,6 +30,8 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via flask
+exceptiongroup==1.2.1
+    # via pytest
 fake-useragent==1.4.0
     # via howlongtobeatpy
 flask==3.0.0
@@ -72,6 +74,8 @@ idna==3.7
     # via
     #   requests
     #   yarl
+iniconfig==2.0.0
+    # via pytest
 itsdangerous==2.1.2
     # via flask
 jinja2==3.1.4
@@ -88,18 +92,22 @@ multidict==6.0.4
     #   aiohttp
     #   yarl
 packaging==23.2
-    # via gunicorn
+    # via
+    #   gunicorn
+    #   pytest
 pillow==10.3.0
     # via -r requirements.in
+pluggy==1.5.0
+    # via pytest
 pyjwt==2.8.0
+    # via -r requirements.in
+pytest==8.2.1
     # via -r requirements.in
 python-dotenv==1.0.0
     # via -r requirements.in
-pytz==2023.3.post1
-    # via -r requirements.in
 ratelimit==2.2.1
     # via -r requirements.in
-requests==2.31.0
+requests==2.32.2
     # via
     #   -r requirements.in
     #   howlongtobeatpy
@@ -107,8 +115,8 @@ sqlalchemy==2.0.25
     # via
     #   alembic
     #   flask-sqlalchemy
-tqdm==4.66.3
-    # via -r requirements.in
+tomli==2.0.1
+    # via pytest
 typing-extensions==4.9.0
     # via
     #   alembic
