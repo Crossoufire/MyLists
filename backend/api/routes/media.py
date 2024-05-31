@@ -14,11 +14,13 @@ media_bp = Blueprint("api_media", __name__)
 @media_bp.route("/coming_next", methods=["GET"])
 @token_auth.login_required
 def coming_next():
-    from backend.api.models.books_models import BooksList
-
-    # Remove <BooksList> because no coming next possible
     models_list = ModelsFetcher.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
-    models_list.remove(BooksList)
+    try:
+        # Remove <BooksList> because no coming next possible
+        from backend.api.models.books_models import BooksList
+        models_list.remove(BooksList)
+    except:
+        pass
 
     data = [{"media_type": model.GROUP.value, "items": model.get_coming_next()} for model in models_list]
 
