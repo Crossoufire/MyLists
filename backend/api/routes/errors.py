@@ -14,7 +14,7 @@ def log_http_exception(error: HTTPException):
         return
 
     # In dev or prod: no 401/404 errors logged
-    if error.code == 404 or error == 401:
+    if error.code == 404 or error.code == 401:
         return
 
     # Add error to logger and send mail to admin (prod only)
