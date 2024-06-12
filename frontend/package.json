@@ -1,6 +1,6 @@
 {
     "name": "my-lists",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "private": true,
     "type": "module",
     "scripts": {
@@ -48,13 +48,9 @@
         "@tanstack/eslint-plugin-query": "^5.43.1",
         "@tanstack/router-devtools": "^1.36.0",
         "@tanstack/router-vite-plugin": "^1.35.4",
-        "@testing-library/jest-dom": "^6.4.6",
-        "@testing-library/react": "^16.0.0",
-        "@testing-library/user-event": "^14.5.2",
-        "@types/node": "^20.14.2",
         "@vitejs/plugin-react": "^4.3.1",
         "autoprefixer": "^10.4.19",
-        "eslint": "^9.4.0",
+        "eslint": "^8",
         "eslint-plugin-react": "^7.34.2",
         "postcss": "^8.4.38",
         "tailwind-merge": "^2.3.0",

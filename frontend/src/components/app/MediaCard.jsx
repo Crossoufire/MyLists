@@ -6,11 +6,11 @@ import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 export const MediaCard = ({ children, media, mediaType, isLoading = false }) => {
     return (
         <Card className="border border-black rounded-lg">
-            <div className="relative">
+            <div className="relative" style={{ width: "100%", height: "100%" }}>
                 <Link to={`/details/${mediaType}/${media.media_id}`}>
                     <img
                         src={media.media_cover}
-                        className="w-full rounded-lg"
+                        className="object-cover w-full h-full rounded-lg"
                         alt={media.media_name}
                     />
                 </Link>

@@ -186,9 +186,9 @@ const SortComponent = ({ sorting, allSorting, applySorting }) => (
             </Button>
         </Drop.DropdownMenuTrigger>
         <Drop.DropdownMenuContent align="end">
-            <Drop.DropdownMenuRadioGroup value={sorting}>
+            <Drop.DropdownMenuRadioGroup value={sorting} onValueChange={applySorting}>
                 {allSorting.map(sort =>
-                    <Drop.DropdownMenuRadioItem key={sort} value={sort} onSelect={applySorting}>
+                    <Drop.DropdownMenuRadioItem key={sort} value={sort}>
                         {sort}
                     </Drop.DropdownMenuRadioItem>
                 )}
@@ -391,12 +391,8 @@ function MediaList() {
     const { username, mediaType } = Route.useParams();
     const isCurrent = (userClient.currentUser.id === apiData.user_data.id);
 
-    console.log(apiData);
-
     const fetchNewData = async (params) => {
-        if (JSON.stringify(params) === JSON.stringify(apiData.filters)) {
-            return;
-        }
+        if (JSON.stringify(params) === JSON.stringify(apiData.filters)) return;
         await navigate({ search: params });
     };
 
@@ -419,8 +415,8 @@ function MediaList() {
         await fetchNewData(filters);
     };
 
-    const applySorting = async (ev) => {
-        await fetchNewData({ ...apiData.filters, sort: ev.target.textContent });
+    const applySorting = async (sortValue) => {
+        await fetchNewData({ ...apiData.filters, sort: sortValue });
     };
 
     const applyStatus = async (ev) => {
@@ -459,7 +455,7 @@ function MediaList() {
                     />
                     <SortComponent
                         applySorting={applySorting}
-                        sorting={apiData.filters.sorting}
+                        sorting={apiData.filters.sort}
                         allSorting={apiData.pagination.all_sorting}
                     />
                     <DotsOthers isCurrent={isCurrent}/>
