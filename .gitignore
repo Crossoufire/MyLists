@@ -118,5 +118,6 @@ backend/api/static/covers/books_covers/*
 
 # FRONTEND STUFF
 /frontend/node_modules
+/frontend/package-lock.json
 
 # -------------------------------------------------------------------------------------

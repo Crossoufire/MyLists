@@ -19,7 +19,7 @@ export const SearchMediaList = ({ updateSearch }) => {
     };
 
     return (
-        <div className="flex flex-col bg-transparent w-64 rounded-md border border-gray-800">
+        <div className="flex flex-col bg-transparent w-64 rounded-md border border-gray-700">
             <div className="flex items-center min-h-2 pl-2.5">
                 <LuSearch className="h-5 w-5"/>
                 <Input
