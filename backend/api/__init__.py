@@ -13,7 +13,6 @@ from backend.api.utils.enums import RoleType
 from backend.config import Config
 
 
-# Globally accessible Flask modules
 mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
@@ -110,8 +109,6 @@ def _create_first_db_data():
 
 
 def create_app(config_class: Type[Config] = Config) -> Flask:
-    """ Create and initialize the app """
-
     app = Flask(__name__, static_url_path="/api/static")
     app.config.from_object(config_class)
     app.url_map.strict_slashes = False
@@ -132,8 +129,6 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
 
         from backend.api.utils.scheduled_tasks import add_cli_commands
         add_cli_commands()
-
-        # _create_first_db_data()
 
         return app
 

@@ -15,7 +15,7 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                 <div className="grid lg:grid-flow-col lg:auto-cols-fr grid-cols-2">
                     <div className="flex flex-col gap-y-4">
                         <div>
-                            <div className="font-semibold text-neutral-500">TMDB Rating</div>
+                            <div className="font-semibold text-neutral-500">IGDB Rating</div>
                             <div className="flex items-center gap-2">
                                 <FaStar/> {(mediaData.vote_average / 10).toFixed(1)} ({mediaData.vote_count})
                             </div>

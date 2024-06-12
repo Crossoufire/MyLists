@@ -1,4 +1,4 @@
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader";
 import {capitalize, zeroPad} from "@/lib/utils";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaCard} from "@/components/app/MediaCard";

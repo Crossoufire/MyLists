@@ -23,23 +23,27 @@ export const MediaStats = ({ user, media }) => (
                 {media.media_type !== "games" &&
                     <div>
                         <div className="text-neutral-500">
-                            {media.media_type === "books" && <>Pages</>}
-                            {media.media_type === "movies" && <>Watched</>}
-                            {["series", "anime"].includes(media.media_type) && <>Episodes</>}
+                            {media.media_type === "books" && "Pages"}
+                            {media.media_type === "movies" && "Watched"}
+                            {["series", "anime"].includes(media.media_type) && "Episodes"}
                         </div>
                         <div>{media.specific_total}</div>
                     </div>
                 }
                 <div>
-                    <div className="text-neutral-500">Media</div>
+                    <div className="text-neutral-500">Entries</div>
                     <div>{media.total_media}</div>
                 </div>
                 {!user.add_feeling &&
                     <div>
-                        <div className="text-neutral-500">Score</div>
+                        <div className="text-neutral-500">Mean Rating</div>
                         <div>{media.mean_metric.toFixed(2)}</div>
                     </div>
                 }
+                <div>
+                    <div className="text-neutral-500">Time</div>
+                    <div>{parseInt(media.time_days)} days</div>
+                </div>
                 <div>
                     <div className="text-neutral-500">Scored</div>
                     <div>{media.media_metric}/{media.total_media}</div>

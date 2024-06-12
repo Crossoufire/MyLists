@@ -30,7 +30,6 @@ export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
             />
         );
     }
-
     if (mediaType === "books" && status !== "Plan to Read") {
         return (
             <PagesInput

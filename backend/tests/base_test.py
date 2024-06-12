@@ -1,9 +1,7 @@
 import unittest
 from datetime import datetime
 from typing import Type, Dict
-
 from flask_bcrypt import generate_password_hash
-
 from backend.api import create_app, db
 from backend.api.utils.enums import RoleType
 from backend.config import Config

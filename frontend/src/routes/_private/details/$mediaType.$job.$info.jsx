@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaCard} from "@/components/app/MediaCard";
 import {Pagination} from "@/components/app/Pagination";

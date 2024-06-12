@@ -50,7 +50,7 @@ def media_details(media_type: MediaType, media_id: int):
 @validate_media_type
 def get_details_form(media_type: MediaType, media_id: int):
     if current_user.role == RoleType.USER:
-        return abort(403, "You are not authorized")
+        return abort(403, "You are not authorized. Please contact an admin.")
 
     media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
@@ -58,12 +58,10 @@ def get_details_form(media_type: MediaType, media_id: int):
     if not media:
         return abort(404, "The media does not exists")
 
-    # Accepted form fields
-    forms_fields = media_model.form_only()
-
     data = {
-        "fields": [(key, val) for (key, val) in media.to_dict().items() if key in forms_fields],
-        "genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
+        "fields": [(key, val) for (key, val) in media.to_dict().items() if key in media_model.form_only()],
+        "all_genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
+        "genres": [genre.genre for genre in media.genres],
     }
 
     return jsonify(data=data), 200

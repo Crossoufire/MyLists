@@ -112,7 +112,6 @@ class Books(MediaMixin, db.Model):
 
     @staticmethod
     def form_only() -> List[str]:
-        """ Return the allowed fields for the edit book form """
         return ["name", "release_date", "pages", "language", "publishers", "synopsis"]
 
 
@@ -250,8 +249,6 @@ class BooksGenre(db.Model):
 
     @classmethod
     def replace_genres(cls, genres: List[Dict], media_id: int):
-        """ Replace the old genres by the new ones """
-
         # Remove actual genres
         cls.query.filter_by(media_id=media_id).delete()
 
@@ -263,7 +260,6 @@ class BooksGenre(db.Model):
 
     @staticmethod
     def get_available_genres() -> List:
-        """ Return the available genres for the books """
         return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
                 "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
                 "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",

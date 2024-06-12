@@ -5,7 +5,7 @@ import {useLoading} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const RedoListDrop = ({ isCurrent, initRedo, updateRedo }) => {
+export const RedoListDrop = ({ isCurrent, initRedo, updateRedo, isDisabled = false }) => {
     const redoValues = getRedoValues();
     const [isLoading, handleLoading] = useLoading();
     const [redo, setRedo] = useState(initRedo || 0);
@@ -19,10 +19,10 @@ export const RedoListDrop = ({ isCurrent, initRedo, updateRedo }) => {
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" title="Redo">
             <LuRotateCw/>
             {isCurrent ?
-                <Select value={`${redo}`} onValueChange={selectChange} disabled={isLoading}>
+                <Select value={`${redo}`} onValueChange={selectChange} disabled={isLoading || isDisabled}>
                     <SelectTrigger className="w-[20px]" size="list" variant="noIcon">
                         <SelectValue/>
                     </SelectTrigger>

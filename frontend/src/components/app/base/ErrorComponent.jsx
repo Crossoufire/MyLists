@@ -2,7 +2,7 @@ import React from "react";
 import errorImage from "@/images/error.jpg";
 
 
-export function ErrorPage({ status, message, description }) {
+export const ErrorComponent = ({ status, message, description }) => {
     if (status === undefined) {
         status = 404;
         message = "Page not found";
@@ -23,4 +23,4 @@ export function ErrorPage({ status, message, description }) {
             </div>
         </div>
     );
-}
+};

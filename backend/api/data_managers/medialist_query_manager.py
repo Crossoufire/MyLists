@@ -1,7 +1,9 @@
 from typing import Tuple, Dict, List
+
 from flask import abort, request
 from sqlalchemy import asc, or_, ColumnElement
 from werkzeug.exceptions import HTTPException
+
 from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.routes.handlers import current_user
@@ -162,7 +164,7 @@ class MediaListQuery:
             self.common_filter,
             self.labels_filter,
             self.status_filter,
-        )
+            )
 
         paginate_results = (
             base_query.distinct(self.media_label.label).group_by(self.media.id)
@@ -175,12 +177,23 @@ class MediaListQuery:
         self.results = [media.to_dict() for media in paginate_results.items]
 
     def _items_query(self):
-        paginated_results = (
+        outerjoin_to_add = []
+
+        if self.genres and self.genres[0] != "All":
+            outerjoin_to_add.append([self.media_genre, self.media_genre.media_id == self.media_list.media_id])
+        if self.labels and self.labels[0] != "All":
+            outerjoin_to_add.append([self.media_label, self.media_label.media_id == self.media_list.media_id])
+
+        base_query = (
             db.session.query(self.media_list)
             .outerjoin(self.media, self.media.id == self.media_list.media_id)
-            .outerjoin(self.media_genre, self.media_genre.media_id == self.media.id)
-            .outerjoin(self.media_label, self.media_label.media_id == self.media.id)
-            .filter(
+        )
+
+        for table, condition in outerjoin_to_add:
+            base_query = base_query.outerjoin(table, condition)
+
+        base_query = (
+            base_query.filter(
                 self.media_list.user_id == self.user.id,
                 self.favorite_filter,
                 self.genres_filter,
@@ -189,15 +202,14 @@ class MediaListQuery:
                 self.labels_filter,
                 self.status_filter,
                 self.comment_filter,
-                )
-            .distinct(self.media_label.label).group_by(self.media.id)
-            .order_by(self.sorting_filter, asc(self.media.name))
+            )
+            .group_by(self.media_list.media_id).order_by(self.sorting_filter, asc(self.media.name))
             .paginate(page=int(self.page), per_page=self.PER_PAGE, error_out=True)
         )
 
-        self.total = paginated_results.total
-        self.pages = paginated_results.pages
-        self.results = [media.to_dict() for media in paginated_results.items]
+        self.total = base_query.total
+        self.pages = base_query.pages
+        self.results = [media.to_dict() for media in base_query.items]
 
     def return_results(self) -> Tuple[Dict, Dict, List, Dict]:
         if self.search:
@@ -215,14 +227,13 @@ class MediaListQuery:
 
         filters = dict(
             page=self.page,
+            lang=self.lang,
             sort=self.sorting,
             search=self.search,
             status=self.status,
             genres=self.genres,
             labels=self.labels,
-            lang=self.lang,
             comment=self.comment,
-            sorting=self.sorting,
             common=self.common,
             favorite=self.favorite,
         )

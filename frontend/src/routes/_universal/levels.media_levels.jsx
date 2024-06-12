@@ -1,4 +1,4 @@
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute, useLoaderData} from "@tanstack/react-router";
 

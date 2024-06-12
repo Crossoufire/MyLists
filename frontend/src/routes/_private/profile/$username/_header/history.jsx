@@ -3,7 +3,7 @@ import {api} from "@/api/MyApiClient";
 import {Fragment, useState} from "react";
 import {createLocalDate} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Separator} from "@/components/ui/separator";

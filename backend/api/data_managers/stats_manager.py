@@ -16,12 +16,11 @@ class BaseStats:
 
     def __init__(self, user: User):
         self.user = user
-        self.data = {"values": {}, "lists": {}}
+        self.data = {"values": {}, "lists": {}, "is_feeling": self.user.add_feeling}
 
         self.media_models = ModelsFetcher.get_dict_models(self.GROUP, "all")
         self._initialize_media_models()
 
-        self.data["is_feeling"] = self.user.add_feeling
         self.rating = self.media_list.feeling if self.user.add_feeling else self.media_list.score
         self.common_join = [self.media_list, self.media_list.media_id == self.media.id]
         self.common_filter = []
