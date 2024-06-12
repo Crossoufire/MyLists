@@ -1,6 +1,5 @@
 import os
 from unittest import mock
-
 from backend.api.utils.functions import ModelsFetcher
 from backend.tests.base_test import BaseTest
 

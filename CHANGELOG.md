@@ -1,3 +1,21 @@
+## CHANGELOG v1.4.1
+---
+### Under the Hood
+- Improved UI performance and backend of `/list`
+- Updated the `package.json` dependencies
+
+### Features
+- Added the option for the users to compare their stats with another user in `/stats` (alpha)
+
+### UI Modifications
+- Removed the misc sidebar and added cards carousel to the main stats in `/stats`
+- Changed TMDB to IGDB for games in `/details`
+- Changed Top Watched to Top Read for Books and Top Played for Games in `/stats`
+- 
+### Fixes
+- Fixed error in user last updates in `/profile`
+
+
 ## CHANGELOG v1.4.0
 ---
 ### Under the Hood

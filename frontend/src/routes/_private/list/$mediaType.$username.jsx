@@ -1,14 +1,14 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {capitalize, cn} from "@/lib/utils";
-import {useCallback, useState} from "react";
 import {Badge} from "@/components/ui/badge";
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader";
+import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import * as Sheet from "@/components/ui/sheet";
 import {useLoading} from "@/hooks/LoadingHook";
 import * as Pop from "@/components/ui/popover";
 import {Tooltip} from "@/components/ui/tooltip";
-import {api, userClient} from "@/api/MyApiClient";
 import {Checkbox} from "@/components/ui/checkbox";
 import {MediaCard} from "@/components/app/MediaCard";
 import {PageTitle} from "@/components/app/PageTitle";
@@ -31,7 +31,7 @@ import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({
-    component: MediaListWrapper,
+    component: MediaList,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ params, deps }) => fetcher(`/list/${params.mediaType}/${params.username}`, deps.search),
 });
@@ -387,19 +387,18 @@ const MediaItem = ({ isCurrent, media, filters, initCommon }) => {
 
 function MediaList() {
     const navigate = useNavigate();
-    const initData = Route.useLoaderData();
-    const [apiData, setApiData] = useState(initData);
+    const apiData = Route.useLoaderData();
     const { username, mediaType } = Route.useParams();
     const isCurrent = (userClient.currentUser.id === apiData.user_data.id);
 
-    const fetchNewData = useCallback(async (params) => {
-        const response = await api.get(`/list/${mediaType}/${username}`, params);
-        if (!response.ok) {
-            return toast.error(response.body.description);
+    console.log(apiData);
+
+    const fetchNewData = async (params) => {
+        if (JSON.stringify(params) === JSON.stringify(apiData.filters)) {
+            return;
         }
-        setApiData(response.body.data);
-        await navigate({ search: response.body.data.filters });
-    }, [mediaType, username]);
+        await navigate({ search: params });
+    };
 
     const removeAFilter = async (type, filter) => {
         const newFilters = { ...apiData.filters };
@@ -436,72 +435,62 @@ function MediaList() {
         await fetchNewData({ ...apiData.filters, search });
     };
 
-    console.log(apiData);
-
     return (
-        <>
-            <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
-                <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
-                    <h3 className="text-3xl font-medium">
-                        {username} {capitalize(mediaType)} Collection
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                        <SearchMediaList
-                            updateSearch={updateSearch}
-                        />
-                        <StatusComponent
-                            applyStatus={applyStatus}
-                            status={apiData.filters.status}
-                            allStatus={apiData.pagination.all_status}
-                        />
-                        <FilterComponent
-                            isCurrent={isCurrent}
-                            applyFilters={applyFilters}
-                            initFilters={apiData.filters}
-                            allFilters={apiData.pagination}
-                            key={JSON.stringify(apiData.filters)}
-                        />
-                        <SortComponent
-                            applySorting={applySorting}
-                            sorting={apiData.filters.sorting}
-                            allSorting={apiData.pagination.all_sorting}
-                        />
-                        <DotsOthers isCurrent={isCurrent}/>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 mb-8">
-                    <div className="font-medium text-lg">
-                        {apiData.pagination.total} {capitalize(mediaType)}
-                    </div>
-                    <CurrentFilters
-                        removeFilter={removeAFilter}
-                        removeAllFilters={removeAllFilters}
-                        currentFilters={apiData.current_filters}
+        <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
+            <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
+                <h3 className="text-3xl font-medium line-clamp-1">
+                    {username} {capitalize(mediaType)} Collection
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                    <SearchMediaList
+                        updateSearch={updateSearch}
                     />
+                    <StatusComponent
+                        applyStatus={applyStatus}
+                        status={apiData.filters.status}
+                        allStatus={apiData.pagination.all_status}
+                    />
+                    <FilterComponent
+                        isCurrent={isCurrent}
+                        applyFilters={applyFilters}
+                        initFilters={apiData.filters}
+                        allFilters={apiData.pagination}
+                        key={JSON.stringify(apiData.filters)}
+                    />
+                    <SortComponent
+                        applySorting={applySorting}
+                        sorting={apiData.filters.sorting}
+                        allSorting={apiData.pagination.all_sorting}
+                    />
+                    <DotsOthers isCurrent={isCurrent}/>
                 </div>
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:gap-4 lg:grid-cols-5 sm:gap-5">
-                    {apiData.media_data.media_list.map(media =>
-                        <MediaItem
-                            media={media}
-                            key={media.media_id}
-                            isCurrent={isCurrent}
-                            filters={apiData.filters}
-                            initCommon={apiData.media_data.common_ids.includes(media.media_id)}
-                        />
-                    )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mb-8">
+                <div className="font-medium text-lg">
+                    {apiData.pagination.total} {capitalize(mediaType)}
                 </div>
-                <Pagination
-                    currentPage={apiData.pagination.page}
-                    totalPages={apiData.pagination.pages}
-                    onChangePage={onPageChange}
+                <CurrentFilters
+                    removeFilter={removeAFilter}
+                    removeAllFilters={removeAllFilters}
+                    currentFilters={apiData.current_filters}
                 />
-            </PageTitle>
-        </>
+            </div>
+            <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:gap-4 lg:grid-cols-5 sm:gap-5">
+                {apiData.media_data.media_list.map(media =>
+                    <MediaItem
+                        media={media}
+                        key={media.media_id}
+                        isCurrent={isCurrent}
+                        filters={apiData.filters}
+                        initCommon={apiData.media_data.common_ids.includes(media.media_id)}
+                    />
+                )}
+            </div>
+            <Pagination
+                currentPage={apiData.pagination.page}
+                totalPages={apiData.pagination.pages}
+                onChangePage={onPageChange}
+            />
+        </PageTitle>
     );
-}
-
-
-function MediaListWrapper() {
-    const { mediaType, username } = Route.useParams();
-    return <MediaList key={`${mediaType}-${username}`}/>;
 }

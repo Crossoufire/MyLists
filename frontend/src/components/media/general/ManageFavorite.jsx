@@ -1,7 +1,6 @@
 import {useState} from "react";
 import {LuHeart} from "react-icons/lu";
 import {useLoading} from "@/hooks/LoadingHook";
-import {Tooltip} from "@/components/ui/tooltip";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
@@ -25,14 +24,14 @@ export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) =>
     }
 
     return (
-        <Tooltip text="Favorite">
+        <>
             {isCurrent ?
                 <div role="button" onClick={handleFavorite}>
-                    <LuHeart className={favorite && "text-red-700"}/>
+                    <LuHeart className={favorite && "text-red-700"} title="Favorite"/>
                 </div>
                 :
-                <span><LuHeart className={favorite && "text-red-700"}/></span>
+                <span><LuHeart className={favorite && "text-red-700"} title="Favorite"/></span>
             }
-        </Tooltip>
+        </>
     );
 };

@@ -2,8 +2,8 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Input} from "@/components/ui/input";
-import {fetcher} from "@/hooks/FetchDataHook";
 import {Textarea} from "@/components/ui/textarea";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormButton} from "@/components/app/base/FormButton";
@@ -21,12 +21,16 @@ export const Route = createFileRoute("/_private/details/form/$mediaType/$mediaId
 
 
 function MediaEditPage() {
-    const form = useForm();
     const navigate = useNavigate();
     const apiData = Route.useLoaderData();
     const { mediaId, mediaType } = Route.useParams();
     const parts = sliceIntoParts(apiData.fields, 3);
     const [isPending, setIsPending] = useState(false);
+    const form = useForm({
+        defaultValues: {
+            genres: genreListsToListsOfDict(apiData.genres),
+        }
+    });
 
     const onSubmit = async (data) => {
         try {
@@ -41,9 +45,8 @@ function MediaEditPage() {
                 return toast.error(response.body.description);
             }
 
-            window.scrollTo(0, 0);
             toast.success("Media successfully updated!");
-            await navigate({ to: `/details/${mediaType}/${mediaId}` });
+            await navigate({ to: `/details/${mediaType}/${mediaId}`, resetScroll: true });
         }
         finally {
             setIsPending(false);
@@ -96,17 +99,22 @@ function MediaEditPage() {
                                 <FormField
                                     name="genres"
                                     control={form.control}
-                                    render={({field}) => (
+                                    render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Genres (Select up to 5)</FormLabel>
                                             <FormControl>
                                                 <MultipleSelector
                                                     maxSelected={5}
+                                                    className={"mb-0"}
                                                     value={field.value}
                                                     onChange={field.onChange}
-                                                    className="mb-0"
                                                     placeholder={"Select Genres..."}
-                                                    defaultOptions={genreListsToListsOfDict(apiData.genres)}
+                                                    defaultOptions={genreListsToListsOfDict(apiData.all_genres)}
+                                                    emptyIndicator={
+                                                        <p className="text-center text-lg text-gray-400">
+                                                            No genres found
+                                                        </p>
+                                                    }
                                                 />
                                             </FormControl>
                                             <FormMessage/>

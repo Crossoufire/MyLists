@@ -90,8 +90,6 @@ def revoke_token():
 
 @tokens.route("/tokens/reset_password_token", methods=["POST"])
 def reset_password_token():
-    """ Generate a password reset token and send the mail to the user """
-
     try:
         data = request.get_json()
     except:

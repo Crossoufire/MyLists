@@ -236,7 +236,7 @@ def int_to_money(value: int):
         value /= 1000
         exp += 1
 
-    return f"{round(value, 0)} {suffixes[exp]}$"
+    return f"{int(value)} {suffixes[exp]}$"
 
 
 def display_time(minutes: int) -> str:

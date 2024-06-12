@@ -3,7 +3,7 @@ import {useState} from "react";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
-import {fetcher} from "@/hooks/FetchDataHook";
+import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {api, userClient} from "@/api/MyApiClient";

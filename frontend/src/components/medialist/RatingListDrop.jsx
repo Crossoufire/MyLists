@@ -50,14 +50,14 @@ export const RatingListDrop = ({ isCurrent, initRating, updateRating }) => {
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" title="Rating">
             <LuStar/>
             {isCurrent ?
                 <SelectDrop
+                    items={selectItems}
                     rating={rating.value}
                     isLoading={isLoading}
                     handleSelectChange={handleSelectChange}
-                    items={selectItems}
                 />
                 :
                 (rating.type === "feeling") ?

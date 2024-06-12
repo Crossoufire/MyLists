@@ -6,8 +6,6 @@ from flask import current_app, Flask
 
 
 def _send_async_email(app: Flask, to: str, username: str, subject: str, template: str, callback: str, token: str):
-    """ Send an email using a new thread to not block the main thread """
-
     with app.app_context():
         path = Path(current_app.root_path, f"static/emails/{template}.html")
         with open(path) as fp:
@@ -26,8 +24,6 @@ def _send_async_email(app: Flask, to: str, username: str, subject: str, template
 
 
 def send_email(to: str, username: str, subject: str, template: str, callback: str, token: str):
-    """ Create thread to send asynchronously the email """
-
     # noinspection PyProtectedMember,PyUnresolvedReferences
     app = current_app._get_current_object()
     thread = Thread(target=_send_async_email, args=(app, to, username, subject, template, callback, token))

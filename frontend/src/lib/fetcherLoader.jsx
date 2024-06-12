@@ -2,9 +2,6 @@ import {api} from "@/api/MyApiClient";
 
 
 export const fetcher = async (url, query, options) => {
-    const delay = options?.delay || 0;
-    await new Promise(resolve => setTimeout(resolve, delay * 1000));
-
     const response = await api.get(url, query, options);
 
     if (!response.ok) {

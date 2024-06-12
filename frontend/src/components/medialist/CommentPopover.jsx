@@ -43,25 +43,21 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
 
     return (
         <Popover>
-            <Tooltip text="Comment">
-                <div className="flex items-center">
-                    {isCurrent ?
-                        <PopoverTrigger onClick={checkInitContent}>
-                            <LuMessageSquare className={contentsState && "text-amber-500"}/>
-                        </PopoverTrigger>
-                        :
-                        <>
-                            {contentsState ?
-                                <PopoverTrigger>
-                                    <LuMessageSquare className="text-amber-500"/>
-                                </PopoverTrigger>
-                                :
-                                <LuMessageSquare/>
-                            }
-                        </>
-                    }
-                </div>
-            </Tooltip>
+            <div className="flex items-center" title="Comment">
+                {isCurrent ?
+                    <PopoverTrigger onClick={checkInitContent}>
+                        <LuMessageSquare className={contentsState && "text-amber-500"}/>
+                    </PopoverTrigger>
+                    :
+                    <>
+                        {contentsState ?
+                            <PopoverTrigger><LuMessageSquare className="text-amber-500"/></PopoverTrigger>
+                            :
+                            <LuMessageSquare/>
+                        }
+                    </>
+                }
+            </div>
             <PopoverContent align="center" side="top" onInteractOutside={onPopoverClickOutside}>
                 {(isCurrent && isEdit) ?
                     <>
@@ -87,9 +83,7 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
                             <>
                                 <p>{contentsState}</p>
                                 <Separator/>
-                                <Button className="mt-1" size="sm" onClick={() => setIsEdit(true)}>
-                                    Edit
-                                </Button>
+                                <Button className="mt-1" size="sm" onClick={() => setIsEdit(true)}>Edit</Button>
                             </>
                             :
                             contentsState

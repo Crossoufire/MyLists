@@ -413,7 +413,7 @@ class User(db.Model):
         return level_per_ml
 
     def get_last_updates(self, limit_: int) -> List[Dict]:
-        """ Get the last media updates of the current user """
+        """ Get last current user's media updates """
         return [update.to_dict() for update in self.last_updates.filter_by(user_id=self.id).limit(limit_).all()]
 
     def get_follows_updates(self, limit_: int) -> List[Dict]:
@@ -510,8 +510,6 @@ class User(db.Model):
 
 
 class UserLastUpdate(db.Model):
-    """ UserLastUpdate SQL model """
-
     THRESHOLD = 600
 
     id = db.Column(db.Integer, primary_key=True)
@@ -536,8 +534,6 @@ class UserLastUpdate(db.Model):
     new_redo = db.Column(db.Integer)
 
     def to_dict(self) -> Dict:
-        """ Transform a <UserLastUpdate> object into a dict """
-
         update_dict = {}
 
         # Page update
@@ -564,10 +560,15 @@ class UserLastUpdate(db.Model):
 
         # Season and episode update
         else:
-            update_dict["update"] = [
-                f"S{self.old_season:02d}.E{self.old_episode:02d}",
-                f"S{self.new_season:02d}.E{self.new_episode:02d}",
-            ]
+            try:
+                update_dict["update"] = [
+                    f"S{self.old_season:02d}.E{self.old_episode:02d}",
+                    f"S{self.new_season:02d}.E{self.new_episode:02d}",
+                ]
+            except:
+                update_dict["update"] = ["Watching"]
+                current_app.logger.error(f"[ERROR] - An error occurred updating the user last updates for: "
+                                         f"({self.media_id}, {self.media_name}, {self.media_type})")
 
         # Update date and add media name
         update_dict["date"] = self.date.replace(tzinfo=timezone.utc).isoformat()

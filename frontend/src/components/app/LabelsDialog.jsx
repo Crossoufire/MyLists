@@ -27,9 +27,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     const [isRenaming, setIsRenaming] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
+    const { addMediaToLabel, removeLabelFromMedia } = useApiUpdater(mediaId, mediaType);
     const [listMessage, setListMessage] = useState({type: "error", value: ""});
     const [messageTab2, setMessageTab2] = useState({type: "error", value: ""});
-    const { addMediaToLabel, removeLabelFromMedia } = useApiUpdater(mediaId, mediaType);
 
     useEffect(() => {
         if (isOpen) {
@@ -38,11 +38,13 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                     setLoading(true);
                     const response = await api.get(`/labels_for_media/${mediaType}/${mediaId}`);
                     if (!response.ok) {
-                        return setListMessage({ type: "error", value: "Sorry, an error occurred while fetching the labels" })
+                        return setListMessage({
+                            type: "error",
+                            value: "Sorry, an error occurred while fetching the labels",
+                        })
                     }
                     updateLabelsInList(response.body.data.already_in);
                     setLabelsToAdd(response.body.data.available);
-                    console.log(response);
                 }
                 finally {
                     setLoading(false);
