@@ -105,6 +105,10 @@ export const getMediaColor = (media) => {
 };
 
 export const genreListsToListsOfDict = (stringList) => {
+    if (!Array.isArray(stringList)) {
+        return [];
+    }
+
     const listDict = [];
 
     stringList.forEach((str) => {
