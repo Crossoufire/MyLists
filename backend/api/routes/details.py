@@ -61,7 +61,7 @@ def get_details_form(media_type: MediaType, media_id: int):
     data = {
         "fields": [(key, val) for (key, val) in media.to_dict().items() if key in media_model.form_only()],
         "all_genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
-        "genres": [genre.genre for genre in media.genres],
+        "genres": [genre.genre for genre in media.genres] if media_type == MediaType.BOOKS else None,
     }
 
     return jsonify(data=data), 200
