@@ -21,33 +21,30 @@ export const Notifications = ({ isMobile }) => {
     const [numberUnreadNotif, setNumberUnreadNotif] = useState(0);
     const [lastNotifPollTime, setLastNotifPollTime] = useState(() => {
         const savedTime = localStorage.getItem("lastNotifPollTime");
-        return savedTime ? new Date(savedTime).getTime() : null;
+        return savedTime ? parseInt(savedTime, 10) : null;
     });
 
     useEffect(() => {
         let timeoutId;
 
         const setNextPoll = () => {
-            const currentTime = new Date().getTime();
+            const currentTime = Date.now();
             const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + POLL_NOTIF_INTER) : currentTime;
             const delay = Math.max(nextPollTime - currentTime, 0);
             timeoutId = setTimeout(pollCountNotifications, delay);
         };
 
         const pollCountNotifications = async () => {
-            try {
-                const response = await api.get("/notifications/count");
-                if (!response.ok) {
-                    return toast.error("An error occurred trying to fetch the notifications.");
-                }
+            const response = await api.get("/notifications/count");
+            if (response.ok) {
                 setNumberUnreadNotif(response.body.data);
-                const currentTime = new Date().getTime();
-                localStorage.setItem("lastNotifPollTime", currentTime.toString());
-                setLastNotifPollTime(currentTime);
+            } else {
+                toast.error("An error occurred trying to fetch the notifications.");
             }
-            finally {
-                setNextPoll();
-            }
+
+            const currentTime = Date.now();
+            localStorage.setItem("lastNotifPollTime", currentTime.toString());
+            setLastNotifPollTime(currentTime);
         };
 
         if (api.isAuthenticated()) {
