@@ -106,10 +106,10 @@ class MyApiClient {
             response = await this.post(`/tokens/oauth2/${usernameOrProvider}`, passwordOrProviderData);
         }
         else {
-            response = await this.post("/tokens", JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
-                headers: {
-                    Authorization:  `Basic ${window.btoa(`${usernameOrProvider}:${passwordOrProviderData}`)}`
-                }
+            const utf8Bytes = new TextEncoder().encode(`${usernameOrProvider}:${passwordOrProviderData}`);
+            response = await this.post("/tokens",
+                JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
+                headers: { Authorization:  `Basic ${btoa(String.fromCharCode(...utf8Bytes))}` }
             });
         }
 
