@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {api, userClient} from "@/api/MyApiClient";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 

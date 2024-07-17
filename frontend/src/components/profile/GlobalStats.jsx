@@ -67,12 +67,12 @@ export const GlobalStats = ({ userData, global }) => {
                                         <div className="grid grid-cols-3 font-semibold">
                                             <Tooltip text={`${global.total_days} days`}>
                                                 <div>
-                                                    <div className="text-neutral-500 text-lg">Total time</div>
+                                                    <div className="text-neutral-500 text-lg">Total Time</div>
                                                     <div>{global.total_hours} h</div>
                                                 </div>
                                             </Tooltip>
                                             <div>
-                                                <div className="text-neutral-500 text-lg">Total Media</div>
+                                                <div className="text-neutral-500 text-lg">Total Entries</div>
                                                 <div>{global.total_media}</div>
                                             </div>
                                             <Tooltip text={`${global.total_scored}/${global.total_media}`}>
@@ -96,12 +96,12 @@ export const GlobalStats = ({ userData, global }) => {
                                         <div className="grid grid-cols-2 font-semibold">
                                             <Tooltip text={`${global.total_days} days`}>
                                                 <div>
-                                                    <div className="text-neutral-500 text-lg">Total time</div>
+                                                    <div className="text-neutral-500 text-lg">Total Time</div>
                                                     <div>{global.total_hours} h</div>
                                                 </div>
                                             </Tooltip>
                                             <div>
-                                                <div className="text-neutral-500 text-lg">Total Media</div>
+                                                <div className="text-neutral-500 text-lg">Total Entries</div>
                                                 <div>{global.total_media}</div>
                                             </div>
                                         </div>

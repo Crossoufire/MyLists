@@ -148,6 +148,17 @@ def history(username: str):
     return jsonify(data=data), 200
 
 
+@users.route("/update_modal", methods=["POST"])
+@token_auth.login_required
+def update_modal():
+    """ Hide the Update Modal in /profile """
+
+    current_user.show_update_modal = False
+    db.session.commit()
+
+    return {}, 204
+
+
 @users.route("/update_follow", methods=["POST"])
 @token_auth.login_required
 def update_follow():

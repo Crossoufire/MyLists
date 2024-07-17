@@ -16,8 +16,9 @@ from backend.api.utils.functions import change_air_format
 class Games(MediaMixin, db.Model):
     """ Games SQL model """
 
-    TYPE = ModelTypes.MEDIA
-    GROUP = MediaType.GAMES
+    TYPE: ModelTypes = ModelTypes.MEDIA
+    GROUP: MediaType = MediaType.GAMES
+    RELEASE_WINDOW: int = 7
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -64,7 +65,7 @@ class Games(MediaMixin, db.Model):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Enum, user_id: int) -> int:
+    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
         """ Add a new game to the current user, and return the current playtime """
 
         # noinspection PyArgumentList
@@ -72,7 +73,6 @@ class Games(MediaMixin, db.Model):
             user_id=user_id,
             media_id=self.id,
             status=new_status,
-            completion=False,
             playtime=0,
         )
 
@@ -104,24 +104,28 @@ class Games(MediaMixin, db.Model):
         """ Remove all games that are not present in a User list from the database and the disk """
 
         try:
-            # Games remover
-            games_to_delete = (cls.query.outerjoin(GamesList, GamesList.media_id == cls.id)
-                               .filter(GamesList.media_id.is_(None)).all())
+            games_to_delete = (
+                cls.query.outerjoin(GamesList, GamesList.media_id == cls.id)
+                .filter(GamesList.media_id.is_(None))
+                .all()
+            )
 
-            count_ = 0
-            for game in games_to_delete:
-                GamesPlatforms.query.filter_by(media_id=game.id).delete()
-                GamesCompanies.query.filter_by(media_id=game.id).delete()
-                GamesGenre.query.filter_by(media_id=game.id).delete()
-                UserLastUpdate.query.filter_by(media_type=MediaType.GAMES, media_id=game.id).delete()
-                Notifications.query.filter_by(media_type="gameslist", media_id=game.id).delete()
-                GamesLabels.query.filter_by(media_id=game.id).delete()
-                Games.query.filter_by(id=game.id).delete()
+            current_app.logger.info(f"Games to delete: {len(games_to_delete)}")
+            games_ids = [game.id for game in games_to_delete]
 
-                count_ += 1
-                current_app.logger.info(f"Removed game with ID: [{game.id}]")
+            GamesPlatforms.query.filter(GamesPlatforms.media_id.in_(games_ids)).delete()
+            GamesCompanies.query.filter(GamesCompanies.media_id.in_(games_ids)).delete()
+            GamesGenre.query.filter(GamesGenre.media_id.in_(games_ids)).delete()
+            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.GAMES,
+                                        UserLastUpdate.media_id.in_(games_ids)).delete()
+            Notifications.query.filter(Notifications.media_type == "gameslist",
+                                       Notifications.media_id.in_(games_ids)).delete()
+            GamesLabels.query.filter(GamesLabels.media_id.in_(games_ids)).delete()
+            cls.query.filter(cls.id.in_(games_ids)).delete()
 
-            current_app.logger.info(f"Total games removed: {count_}")
+            db.session.commit()
+
+            current_app.logger.info(f"Games successfully deleted")
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing games and related records: {str(e)}")
@@ -131,27 +135,27 @@ class Games(MediaMixin, db.Model):
         """ Check for the new releasing games in a week or less from the IGDB API """
 
         try:
-            raw_sql = text(""" SELECT games.id, games_list.user_id, games.release_date, games.name 
-            FROM games JOIN games_list ON games.id = games_list.media_id
-            WHERE datetime(games.release_date, 'unixepoch') IS NOT NULL 
-            AND datetime(games.release_date, 'unixepoch') > datetime('now')
-            AND datetime(games.release_date, 'unixepoch') <= datetime('now', '+7 days') 
-            AND games_list.status != 'PLAN TO PLAY'; """)
+            raw_sql = text(f""" 
+                SELECT games.id, games_list.user_id, games.release_date, games.name FROM games 
+                JOIN games_list ON games.id = games_list.media_id
+                WHERE datetime(games.release_date, 'unixepoch') IS NOT NULL 
+                AND datetime(games.release_date, 'unixepoch') > datetime('now')
+                AND datetime(games.release_date, 'unixepoch') <= datetime('now', '+{cls.RELEASE_WINDOW} days'); 
+            """)
 
             query = db.session.execute(raw_sql).all()
 
             for info in query:
-                notif = Notifications.search(info[1], "gameslist", info[0])
+                game_id, user_id, release_date, name = info
+                notif = Notifications.search(user_id, "gameslist", game_id)
 
                 if notif is None:
-                    release_date = datetime.utcfromtimestamp(int(info[2])).strftime("%b %d %Y")
-
-                    # noinspection PyArgumentList
+                    release_date = datetime.utcfromtimestamp(int(release_date)).strftime("%b %d %Y")
                     new_notification = Notifications(
-                        user_id=info[1],
+                        user_id=user_id,
+                        media_id=game_id,
                         media_type="gameslist",
-                        media_id=info[0],
-                        payload_json=json.dumps({"name": info[3], "release_date": release_date})
+                        payload_json=json.dumps({"name": name, "release_date": release_date})
                     )
                     db.session.add(new_notification)
 
@@ -162,9 +166,8 @@ class Games(MediaMixin, db.Model):
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):
-        """ Refresh a media using the new_data from ApiData """
+        """ Refresh a media using the updated data created with the ApiData class """
 
-        # Update main details and commit changes
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         db.session.commit()
 
@@ -187,13 +190,11 @@ class GamesList(MediaListMixin, db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)
     status = db.Column(db.Enum(Status), nullable=False)
-    completion = db.Column(db.Boolean)
     playtime = db.Column(db.Integer)
     favorite = db.Column(db.Boolean)
     feeling = db.Column(db.String(30))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
-    completion_date = db.Column(db.DateTime)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Games", back_populates="list_info", lazy=False)
@@ -231,14 +232,11 @@ class GamesList(MediaListMixin, db.Model):
 
         return media_dict
 
-    def update_status(self, new_status: Enum) -> int:
+    def update_status(self, new_status: Status) -> int:
         """ Change the status of the game for the current user """
 
         self.status = new_status
-
-        if new_status == Status.COMPLETED:
-            self.completion_date = datetime.today()
-        elif new_status == Status.PLAN_TO_PLAY:
+        if new_status == Status.PLAN_TO_PLAY:
             self.playtime = 0
 
         return self.playtime
@@ -256,7 +254,8 @@ class GamesList(MediaListMixin, db.Model):
             WHERE 
                 (games.release_date == 'Unknown' OR datetime(games.release_date, 'unixepoch') > datetime('now'))
                 AND games_list.status != 'DROPPED' 
-                AND games_list.user_id == {current_user.id};
+                AND games_list.user_id == {current_user.id}
+            ORDER BY games.release_date ASC;
         """)
 
         next_games = db.session.execute(raw_sql).all()

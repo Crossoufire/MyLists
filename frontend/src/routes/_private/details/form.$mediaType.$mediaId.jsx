@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {FormButton} from "@/components/app/base/FormButton";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";

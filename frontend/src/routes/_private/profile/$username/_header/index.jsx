@@ -1,7 +1,9 @@
+import {userClient} from "@/api/MyApiClient";
 import {createFileRoute} from "@tanstack/react-router";
 import {MediaLevels} from "@/components/profile/MediaLevels";
 import {UserUpdates} from "@/components/profile/UserUpdates";
 import {GlobalStats} from "@/components/profile/GlobalStats";
+import {UpdatesModal} from "@/components/app/UpdatesModal.jsx";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
@@ -62,6 +64,9 @@ function ProfileMain() {
                     followers={true}
                 />
             </div>
+            {(userClient.currentUser.id === apiData.user_data.id) &&
+                <UpdatesModal userData={apiData.user_data}/>
+            }
         </div>
     );
 }

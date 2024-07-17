@@ -17,6 +17,7 @@ from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.utils.functions import change_air_format, clean_html_text, get, is_latin, ModelsFetcher
 
+
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
 
@@ -31,7 +32,7 @@ class ApiData:
     RESULTS_PER_PAGE: int = 7
 
     def __init__(self, API_id: Optional[int, str] = None):
-        """ Initialize the ApiData instance with its optional API ID """
+        """ Initialize the ApiData instance with an optional API ID """
 
         self.API_id = API_id
         self.media: db.Model = None
@@ -43,16 +44,16 @@ class ApiData:
         """ Save the media data to the database and return the main media data """
 
         self._fetch_details_from_API()
-        self._from_API_to_dict()
+        self._format_API_data()
         self._add_data_to_db()
 
         return self.media
 
-    def update_media_data(self) -> Dict:
-        """ Update the media data and return a dict containing the data """
+    def get_refreshed_media_data(self) -> Dict:
+        """ Update the media data and return a dict containing the refreshed data """
 
         self._fetch_details_from_API()
-        self._from_API_to_dict(updating=True)
+        self._format_API_data(updating=True)
 
         return self.all_data
 
@@ -64,7 +65,7 @@ class ApiData:
         """ Overwritten in inherited class """
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _from_API_to_dict(self, updating: bool = False):
+    def _format_API_data(self, updating: bool = False):
         """ Overwritten in inherited class """
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -194,7 +195,7 @@ class ApiTMDB(ApiData):
         return search_dict
 
     def get_changed_api_ids(self) -> List:
-        """ Fetch the IDs that changed in the last 24h from the TMDB API for Series and Anime """
+        """ Fetch the IDs that changed in the last 24h from the TMDB API """
 
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
         model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
@@ -294,8 +295,8 @@ class ApiTV(ApiTMDB):
 
     MAX_NETWORK = 4
 
-    def _from_API_to_dict(self, updating: bool = False):
-        """ Transform the TMDB API data to dict to add to the local database """
+    def _format_API_data(self, updating: bool = False):
+        """ Format the TMDB TV API data to dict to add to the local database """
 
         self.media_details = dict(
             name=get(self.API_data, "name", default="Unknown"),
@@ -347,8 +348,9 @@ class ApiTV(ApiTMDB):
             networks_list.append({"network": "Unknown"})
 
         # Add <genres_list>, <actors_list> and <anime_genres_list>
-        genres_list, actors_list, anime_genres_list = (self._get_genres(), self._get_actors(),
-                                                       self._get_anime_genres()) if not updating else ([], [], [])
+        genres_list, actors_list, anime_genres_list = (
+            self._get_genres(), self._get_actors(), self._get_anime_genres()
+        ) if not updating else ([], [], [])
 
         # Populate <all_data> attribute
         self.all_data = dict(
@@ -361,12 +363,11 @@ class ApiTV(ApiTMDB):
         )
 
     def _get_anime_genres(self):
-        """ This method is only for the <Anime> and not the <Series>. Overridden in the <ApiAnime> class """
+        """ Method only for <Anime>, not <Series>. Overridden in <ApiAnime> class """
         return []
 
     def _get_writers(self) -> List[Dict]:
-        """ Get the top two writers (selected by popularity) for the <created_by> field using the crew of the
-        series/anime """
+        """ Get top 2 writers (by popularity) for <created_by> field using the series/anime crew """
 
         tv_crew = get(self.API_data, "credits", "crew", default=[])
 
@@ -390,7 +391,7 @@ class ApiSeries(ApiTV):
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
 
     def get_and_format_trending(self) -> List[Dict]:
-        """ Fetch and format <MAX_TRENDING> trending TV obtained from the TMDB API """
+        """ Fetch and format <MAX_TRENDING> trending TV obtained from TMDB API """
 
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
         API_data = response.json()
@@ -498,7 +499,7 @@ class ApiMovies(ApiTMDB):
 
         return movies_results
 
-    def _from_API_to_dict(self, updating: bool = False):
+    def _format_API_data(self, updating: bool = False):
         """ Transform API data to dict """
 
         self.media_details = dict(
@@ -625,7 +626,7 @@ class ApiGames(ApiData):
         response = self.call_api("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
         self.API_data = json.loads(response.text)[0]
 
-    def _from_API_to_dict(self, updating: bool = False):
+    def _format_API_data(self, updating: bool = False):
         """ Transform API data to dict to add to database """
 
         self.media_details = dict(
@@ -736,7 +737,7 @@ class ApiGames(ApiData):
         return cover_name
 
     def update_API_key(self):
-        """ Method to update the IGDB API key every month. Backend needs to restart to update the env variable """
+        """ Update IGDB API key every month. Backend needs to restart to update the env variable. """
 
         import dotenv
 
@@ -753,8 +754,8 @@ class ApiGames(ApiData):
             # Write new IGDB API KEY to <.env> file
             dotenv_file = dotenv.find_dotenv()
             dotenv.set_key(dotenv_file, "IGDB_API_KEY", new_IGDB_token)
-        except (requests.exceptions.RequestException, Exception) as e:
-            current_app.logger.error(f"[ERROR] - An error occurred: {e}")
+        except Exception as ex:
+            current_app.logger.error(f"[ERROR] - An error occurred obtaining the new IGDB API key: {ex}")
 
     def get_changed_api_ids(self) -> List:
         model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
@@ -853,7 +854,7 @@ class ApiBooks(ApiData):
 
         return data
 
-    def _from_API_to_dict(self, updating: bool = False):
+    def _format_API_data(self, updating: bool = False):
         """ Transform API data to dict to add to local database """
 
         self.media_details = dict(

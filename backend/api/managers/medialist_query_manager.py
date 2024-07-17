@@ -248,4 +248,6 @@ class MediaListQuery:
             total=self.total,
         )
 
+        db.session.commit()
+
         return media_data, filters, current_filters, pagination

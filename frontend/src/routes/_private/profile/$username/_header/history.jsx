@@ -3,16 +3,16 @@ import {api} from "@/api/MyApiClient";
 import {Fragment, useState} from "react";
 import {createLocalDate} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Separator} from "@/components/ui/separator";
 import {Return} from "@/components/app/base/Return";
-import {PageTitle} from "@/components/app/PageTitle";
 import {Payload} from "@/components/app/base/Payload";
 import {Pagination} from "@/components/app/Pagination";
-import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {createFileRoute, Link} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -107,7 +107,11 @@ function AllUpdates() {
                                     <div className="col-span-2 mx-auto">
                                         <MediaIcon mediaType={item.media_type} size={20}/>
                                     </div>
-                                    <div className="col-span-4">{item.media_name}</div>
+                                    <div className="col-span-4">
+                                        <Link to={`/details/${item.media_type}/${item.media_id}`} className="hover:underline">
+                                            {item.media_name}
+                                        </Link>
+                                    </div>
                                     <div className="col-span-3"><Payload payload={item.update}/></div>
                                     <div className="col-span-3">{createLocalDate(item.date, true)}</div>
                                 </div>

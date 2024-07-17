@@ -1,16 +1,19 @@
 from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Tuple
+
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
-from backend.api.routes.handlers import current_user
 from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format, ModelsFetcher
+from backend.api.utils.functions import change_air_format, ModelsFetcher, reorder_seas_eps
 
 
 class TVModel(db.Model):
@@ -19,6 +22,7 @@ class TVModel(db.Model):
     __abstract__ = True
 
     TYPE = ModelTypes.MEDIA
+    RELEASE_WINDOW: int = 7
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -53,7 +57,7 @@ class TVModel(db.Model):
 
     @property
     def eps_per_season_list(self):
-        return [r.episodes for r in self.eps_per_season]
+        return [s.episodes for s in self.eps_per_season]
 
     def to_dict(self):
         media_dict = {}
@@ -71,36 +75,34 @@ class TVModel(db.Model):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Enum, user_id: int) -> int:
-        """ Add a new series or anime to the current user and return the <new_watched> value """
+    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+        """ Add a new series or anime to the current user and return the <total_watched> value """
 
-        new_watched, new_season, new_episode, completion_date = 1, 1, 1, None
+        total_watched, new_season, new_episode = 1, 1, 1
         if new_status == Status.COMPLETED:
             new_season = len(self.eps_per_season)
             new_episode = self.eps_per_season[-1].episodes
-            new_watched = self.total_episodes
-            completion_date = datetime.today()
+            # Better using <sum(eps_per_season)> than <total_episodes> (discrepancy happens between the two)
+            total_watched = sum(self.eps_per_season_list)
         elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
             new_episode = 0
-            new_watched = 0
+            total_watched = 0
 
-        # Get either <SeriesList> or <AnimeList> SQL model
+        # Get <SeriesList> or <AnimeList> model
         tv_list = eval(f"{self.__class__.__name__}List")
 
-        # Set new media to user
         user_list = tv_list(
             user_id=user_id,
             media_id=self.id,
             current_season=new_season,
             last_episode_watched=new_episode,
             status=new_status,
-            total=new_watched,
-            completion_date=completion_date
+            total=total_watched,
         )
 
         db.session.add(user_list)
 
-        return new_watched
+        return total_watched
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
@@ -130,105 +132,120 @@ class TVModel(db.Model):
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):
-        """ Refresh a media using the new_data from ApiData """
+        """ Refresh a media using the updated data created with the ApiData class """
 
-        # Update main details
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         media = cls.query.filter_by(api_id=api_id).first()
 
+        old_seas_eps = [season.episodes for season in media.eps_per_season]
+        new_seas_eps = [season["episodes"] for season in new_data["seasons_data"]]
+
         # Check episodes/seasons compared to refreshed data
-        old_seas_eps = [n.episodes for n in media.eps_per_season]
-        new_seas_eps = [d["episodes"] for d in new_data["seasons_data"]]
-
-        # Only if two list are different
-        if new_seas_eps != old_seas_eps:
-            # Get all users with media in list
-            all_users_list = media.list_info.filter_by(media_id=media.id).all()
-
-            # For each user update new seasons/episodes
-            for user in all_users_list:
-                episodes_watched = user.total
-                seasons_data = new_data["seasons_data"]
-
-                # Total episodes watched by user >= total new episodes => last season and episode
-                if episodes_watched >= sum(s["episodes"] for s in seasons_data):
-                    user.last_episode_watched = seasons_data[-1]["episodes"]
-                    user.current_season = seasons_data[-1]["season"]
-                    continue
-
-                # Else recalculate new season and episodes based on new data
-                count = 0
-                for season_dict in seasons_data:
-                    count += season_dict["episodes"]
-                    if count >= episodes_watched:
-                        user.last_episode_watched = season_dict["episodes"] - (count - episodes_watched)
-                        user.current_season = season_dict["season"]
-                        break
-
-            # Delete old seasons/episodes for this media
-            eps_seas_model = eval(f"{cls.__name__}EpisodesPerSeason")
-            eps_seas_model.query.filter_by(media_id=media.id).delete()
-
-            # Commit deletion
+        if new_seas_eps == old_seas_eps:
             db.session.commit()
+            return
 
-            # Add new seasons/episodes
-            for seas in new_data["seasons_data"]:
-                season = eps_seas_model(
-                    media_id=media.id,
-                    season=seas["season"],
-                    episodes=seas["episodes"]
-                )
-                db.session.add(season)
+        # Different lists of episodes
+        all_users_list = media.list_info.filter_by(media_id=media.id).all()
+        for user_list in all_users_list:
+            total_eps = (sum(user_list.media.eps_per_season_list[:user_list.current_season - 1])
+                         + user_list.last_episode_watched)
+            last_episode, last_season, new_total = reorder_seas_eps(total_eps, new_seas_eps)
+            user_list.current_season = last_season
+            user_list.last_episode_watched = last_episode
+            user_list.total = new_total * (user_list.rewatched + 1)
 
-        # Finally commit
+            # # Send notifications to new episodes/seasons and update media status to <ON_HOLD>
+            # if sum(old_seas_eps) < sum(new_seas_eps) and user_list.status == Status.COMPLETED:
+            #     user_list.status = Status.ON_HOLD
+            #     user_list.total = new_total
+            #     user_list.rewatched = 0
+            #     new_notification = Notifications(
+            #         user_id=user_list.user_id,
+            #         media_type=f"{cls.GROUP.value}list",
+            #         media_id=media.id,
+            #         payload_json=json.dumps({
+            #             "new": True,
+            #             "name": user_list.media.name,
+            #             "message": "New episodes available!",
+            #         }),
+            #     )
+            #     db.session.add(new_notification)
+            #     UserLastUpdate.set_new_update(
+            #         media=media,
+            #         update_type="status",
+            #         old_value=Status.COMPLETED,
+            #         new_value=Status.ON_HOLD,
+            #     )
+
+        # Delete old seasons/episodes for this media
+        eps_seas_model = eval(f"{cls.__name__}EpisodesPerSeason")
+        eps_seas_model.query.filter_by(media_id=media.id).delete()
+        db.session.commit()
+
+        # Add new seasons/episodes
+        new_eps_seas_list = []
+        for season, episodes in enumerate(new_seas_eps, start=1):
+            new_eps_seas_list.append(eps_seas_model(media_id=media.id, season=season, episodes=episodes))
+        db.session.add_all(new_eps_seas_list)
         db.session.commit()
 
     @classmethod
     def get_new_releasing_media(cls):
-        """ Check for the new releasing series/anime in a week or less from the TMDB API """
+        """ Check for the new releasing TV media in a week or less from the TMDB API """
 
         media_list, eps_model = ModelsFetcher.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
         media_list_str = f"{cls.GROUP.value}list"
 
         try:
-            top_eps_sub = (db.session.query(eps_model.media_id, eps_model.episodes.label("last_episode"),
-                                            func.max(eps_model.season))
-                           .group_by(eps_model.media_id).subquery())
+            top_eps_sub = (
+                db.session.query(
+                    eps_model.media_id, eps_model.episodes.label("last_episode"),
+                    func.max(eps_model.season)
+                ).group_by(eps_model.media_id)
+                .subquery()
+            )
 
-            # noinspection PyComparisonWithNone
-            query = (db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
-                                      media_list.user_id, top_eps_sub.c.last_episode)
-                     .join(media_list, cls.id == media_list.media_id)
-                     .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
-                     .filter(cls.next_episode_to_air != None, cls.next_episode_to_air > datetime.utcnow(),
-                             cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=7),
-                             media_list.status.notin_([Status.RANDOM, Status.DROPPED])).all())
+            query = (
+                db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
+                                 media_list.user_id, top_eps_sub.c.last_episode)
+                .join(media_list, cls.id == media_list.media_id)
+                .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
+                .filter(
+                    cls.next_episode_to_air.is_not(None),
+                    cls.next_episode_to_air > datetime.utcnow(),
+                    cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
+                    media_list.status.notin_([Status.RANDOM, Status.DROPPED])
+                ).all()
+            )
 
             for info in query:
-                notif = Notifications.search(info[5], media_list_str, info[0])
-                release_date = datetime.strptime(info[4], "%Y-%m-%d").strftime("%b %d %Y")
+                tv_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode = info
+                notif = Notifications.search(user_id, media_list_str, tv_id)
+                release_date = datetime.strptime(next_eps_to_air, "%Y-%m-%d").strftime("%b %d %Y")
 
+                # Check if notification fresh
                 if notif:
                     payload = json.loads(notif.payload_json)
-                    # Check if notification fresh
-                    if (release_date == payload["release_date"] and int(info[1]) == int(payload["episode"])
-                            and int(info[2]) == int(payload["season"])):
+                    if (
+                            release_date == payload["release_date"]
+                            and int(eps_to_air) == int(payload["episode"])
+                            and int(seas_to_air) == int(payload["season"])
+                    ):
                         continue
 
-                payload = {
-                    "name": info[3],
-                    "release_date": release_date,
-                    "season": f"{info[2]:02d}",
-                    "episode": f"{info[1]:02d}",
-                    "finale": info[6] == info[1],
-                }
+                payload = dict(
+                    name=name,
+                    release_date=release_date,
+                    season=f"{seas_to_air:02d}",
+                    episode=f"{eps_to_air:02d}",
+                    finale=(last_episode == eps_to_air),
+                )
 
-                # noinspection PyArgumentList
                 new_notification = Notifications(
-                    user_id=info[5],
+                    user_id=user_id,
                     media_type=media_list_str,
-                    media_id=info[0],
+                    media_id=tv_id,
                     payload_json=json.dumps(payload)
                 )
                 db.session.add(new_notification)
@@ -240,7 +257,7 @@ class TVModel(db.Model):
 
     @classmethod
     def remove_non_list_media(cls):
-        """ Remove all the TV data not present in a List from the database and locally """
+        """ Remove all the TV data not present in a List from the database and the disk """
 
         models = ModelsFetcher.get_dict_models(cls.GROUP, "all")
         media_model = models[ModelTypes.MEDIA]
@@ -253,24 +270,29 @@ class TVModel(db.Model):
         notifications_model = f"{cls.GROUP.value}list"
 
         try:
-            media_to_delete = (cls.query.outerjoin(media_list_model, media_list_model.media_id == cls.id)
-                               .filter(media_list_model.media_id.is_(None)).all())
+            media_to_delete = (
+                cls.query.outerjoin(media_list_model, media_list_model.media_id == cls.id)
+                .filter(media_list_model.media_id.is_(None))
+                .all()
+            )
 
-            count_ = 0
-            for media in media_to_delete:
-                actors_model.query.filter_by(media_id=media.id).delete()
-                genres_model.query.filter_by(media_id=media.id).delete()
-                network_model.query.filter_by(media_id=media.id).delete()
-                eps_model.query.filter_by(media_id=media.id).delete()
-                UserLastUpdate.query.filter_by(media_type=cls.GROUP, media_id=media.id).delete()
-                Notifications.query.filter_by(media_type=notifications_model, media_id=media.id).delete()
-                label_model.query.filter_by(media_id=media.id).delete()
-                media_model.query.filter_by(id=media.id).delete()
+            current_app.logger.info(f"{cls.GROUP.value} to delete: {len(media_to_delete)}")
+            media_ids = [media.id for media in media_to_delete]
 
-                count_ += 1
-                current_app.logger.info(f"Removed {cls.GROUP.value} with ID: [{media.id}]")
+            actors_model.query.filter(actors_model.media_id.in_(media_ids)).delete()
+            genres_model.query.filter(genres_model.media_id.in_(media_ids)).delete()
+            network_model.query.filter(network_model.media_id.in_(media_ids)).delete()
+            eps_model.query.filter(eps_model.media_id.in_(media_ids)).delete()
+            UserLastUpdate.query.filter(UserLastUpdate.media_type == cls.GROUP,
+                                        UserLastUpdate.media_id.in_(media_ids)).delete()
+            Notifications.query.filter(Notifications.media_type == notifications_model,
+                                       Notifications.media_id.in_(media_ids)).delete()
+            label_model.query.filter(label_model.media_id.in_(media_ids)).delete()
+            media_model.query.filter(cls.id.in_(media_ids)).delete()
 
-            current_app.logger.info(f"Total {cls.GROUP.value} removed: {count_}")
+            db.session.commit()
+
+            current_app.logger.info(f"{cls.GROUP.value} successfully deleted")
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing {cls.GROUP.value} and related records: {str(e)}")
@@ -303,7 +325,6 @@ class TVListModel(MediaListMixin, db.Model):
     score = db.Column(db.Float)
     total = db.Column(db.Integer)
     comment = db.Column(db.Text)
-    completion_date = db.Column(db.DateTime)
 
     class Status(ExtendedEnum):
         """ Status class specific for the series and easiness """
@@ -339,12 +360,13 @@ class TVListModel(MediaListMixin, db.Model):
         return media_dict
 
     def update_total_watched(self, new_rewatch: int) -> int:
-        """ Update the new total watched series and total and return new total """
+        """ Update the new rewatched and total watched for Series and Anime. The <media.total_episodes> is unused
+        for discrepancy happening with the <sum(eps_per_season)>. Return the new total. """
 
         self.rewatched = new_rewatch
 
-        # Calculate new total
-        new_total = self.media.total_episodes + (new_rewatch * self.media.total_episodes)
+        sum_episodes = sum(self.media.eps_per_season_list)
+        new_total = sum_episodes + (new_rewatch * sum_episodes)
         self.total = new_total
 
         return new_total
@@ -352,9 +374,13 @@ class TVListModel(MediaListMixin, db.Model):
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
         """ Compute the new time spent for the user """
 
-        old_time = getattr(current_user, f"time_spent_{self.GROUP.value}")
-        setattr(current_user, f"time_spent_{self.GROUP.value}", old_time
-                + ((new_value - old_value) * self.media.duration))
+        time_spent_attr = f"time_spent_{self.GROUP.value}"
+        old_time = getattr(current_user, time_spent_attr)
+        setattr(
+            current_user,
+            time_spent_attr,
+            old_time + ((new_value - old_value) * self.media.duration),
+        )
 
     @classmethod
     def total_user_time_def(cls):

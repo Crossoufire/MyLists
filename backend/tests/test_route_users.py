@@ -1,13 +1,14 @@
 import os
 from unittest import mock
+from flask import current_app
 from backend.api.utils.functions import ModelsFetcher
-from backend.tests.base_test import BaseTest
+from backend.tests.base_test import BaseTest, TEST_USER
 
 
 class UserTests(BaseTest):
-    access_token: str = None
-
     def test_register_user(self):
+        current_app.config["USER_ACTIVE_PER_DEFAULT"] = False
+
         with mock.patch("backend.api.routes.users.send_email") as send_email:
             rv = self.client.post("/api/register_user", json={
                 "username": "user",
@@ -26,6 +27,7 @@ class UserTests(BaseTest):
 
             token = send_email.call_args[1]["token"]
 
+            # Username should be unique
             rv = self.client.post("/api/register_user", json={
                 "username": "user",
                 "email": "user2@example.com",
@@ -34,6 +36,7 @@ class UserTests(BaseTest):
             })
             assert rv.status_code == 401
 
+            # Email should be unique
             rv = self.client.post("/api/register_user", json={
                 "username": "user2",
                 "email": "user@example.com",
@@ -66,15 +69,12 @@ class UserTests(BaseTest):
         assert rv.status_code == 401
 
     def test_get_current_user(self):
-        headers = self.connexion()
-
-        rv = self.client.get("/api/current_user", headers=headers)
+        rv = self.client.get("/api/current_user", headers=self.connexion())
         assert rv.json["username"] == "test"
         assert "password" not in rv.json and "email" not in rv.json
 
     def test_get_profile(self):
-        headers = self.connexion()
-        rv = self.client.get(f"/api/profile/test", headers=headers)
+        rv = self.client.get(f"/api/profile/test", headers=self.connexion())
         assert rv.status_code == 200
 
         data = rv.json["data"]
@@ -88,81 +88,79 @@ class UserTests(BaseTest):
         assert "media_data" in data
 
     def test_follows_followers_notifications(self):
-        """ Test the adding/deleting of a follows, check followers and check notification send to followed user """
-
         headers = self.connexion()
         self.register_new_user(username="bobby")
 
         # Check <test> follows
         rv = self.client.get(f"/api/profile/test/follows", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
-        assert "user_data" in rv.json["data"]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
+        self.assertEqual("user_data" in rv.json["data"], True)
 
         # Check <test> followers
         rv = self.client.get(f"/api/profile/test/followers", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
-        assert "user_data" in rv.json["data"]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
+        self.assertEqual("user_data" in rv.json["data"], True)
 
         # <test> can't follow himself
         rv = self.client.post(f"/api/update_follow", headers=headers, json={
             "follow_id": 1,
             "follow_status": True,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         # <test> try follows user does not exist (failure)
         rv = self.client.post(f"/api/update_follow", headers=headers, json={
             "follow_id": 3,
             "follow_status": True,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         # <test> follows <bobby> (success)
         rv = self.client.post(f"/api/update_follow", headers=headers, json={
             "follow_id": 2,
             "follow_status": True,
         })
-        assert rv.status_code == 204
+        self.assertEqual(rv.status_code, 204)
 
         # Check <test> has 1 follow
         rv = self.client.get(f"/api/profile/test/follows", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 1
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 1)
 
         # Check <test> has 0 follower
         rv = self.client.get(f"/api/profile/test/followers", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
 
         # Check <bobby> has 1 follower
         rv = self.client.get(f"/api/profile/bobby/followers", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 1
-        assert "user_data" in rv.json["data"]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 1)
+        self.assertEqual("user_data" in rv.json["data"], True)
 
         # Check <bobby> has 0 follower
         rv = self.client.get(f"/api/profile/bobby/follows", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
-        assert "user_data" in rv.json["data"]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
+        self.assertEqual("user_data" in rv.json["data"], True)
 
         # Connect as <bobby>
-        headers = self.connexion("bobby", "pipou")
+        headers = self.connexion("bobby", "good-password")
 
         # Check <bobby> has 1 notification
         rv = self.client.get(f"/api/notifications/count", headers=headers)
-        assert rv.status_code == 200
-        assert rv.json["data"] == 1
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["data"], 1)
 
         # Check <bobby> notification from <test>
         rv = self.client.get(f"/api/notifications", headers=headers)
-        assert rv.status_code == 200
-        assert rv.json["data"][0]["media"] is None
-        assert rv.json["data"][0]["media_id"] is None
-        assert rv.json["data"][0]["payload"] == {"message": "test is following you", "username": "test"}
-        assert "timestamp" in rv.json["data"][0]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["data"][0]["media"], None)
+        self.assertEqual(rv.json["data"][0]["media_id"], None)
+        self.assertEqual(rv.json["data"][0]["payload"], {"message": "test is following you", "username": "test"})
+        self.assertEqual("timestamp" in rv.json["data"][0], True)
 
         # Reconnect as <test>
         headers = self.connexion()
@@ -172,122 +170,118 @@ class UserTests(BaseTest):
             "follow_id": 2,
             "follow_status": False,
         })
-        assert rv.status_code == 204
+        self.assertEqual(rv.status_code, 204)
 
         # Check no follows for <test>
         rv = self.client.get(f"/api/profile/test/follows", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
 
         # Check no followers for <bobby>
         rv = self.client.get(f"/api/profile/bobby/followers", headers=headers)
-        assert rv.status_code == 200
-        assert len(rv.json["data"]["follows"]) == 0
-        assert "user_data" in rv.json["data"]
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(len(rv.json["data"]["follows"]), 0)
+        self.assertEqual("user_data" in rv.json["data"], True)
 
     def test_history(self):
-        headers = self.connexion()
+        rv = self.client.get(f"/api/profile/test/history", headers=self.connexion())
 
-        rv = self.client.get(f"/api/profile/test/history", headers=headers)
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)
         assert "history" in rv.json["data"]
         assert "active_page" in rv.json["data"]
         assert "pages" in rv.json["data"]
         assert "total" in rv.json["data"]
 
-        rv = self.client.get(f"/api/profile/janine/history", headers=headers)
-        assert rv.status_code == 404
+        rv = self.client.get(f"/api/profile/janine/history", headers=self.connexion())
+        self.assertEqual(rv.status_code, 404)
 
-        rv = self.client.get(f"/api/profile/test/history?search=toto&page=1", headers=headers)
-        assert rv.status_code == 200
+        rv = self.client.get(f"/api/profile/test/history?search=toto&page=1", headers=self.connexion())
+        self.assertEqual(rv.status_code, 200)
 
         # Put page as 1
-        rv = self.client.get(f"/api/profile/test/history?search=toto&page=lol", headers=headers)
-        assert rv.status_code == 200
+        rv = self.client.get(f"/api/profile/test/history?search=toto&page=lol", headers=self.connexion())
+        self.assertEqual(rv.status_code, 200)
 
     def test_settings_delete_account(self):
         from backend.api.models.user_models import User, UserLastUpdate, Notifications, Token
         from backend.api.utils.enums import ModelTypes
 
         self.register_new_user(username="delete")
-        headers = self.connexion("delete", "pipou")
+        headers = self.connexion("delete", "good-password")
 
         rv = self.client.get("/api/current_user", headers=headers)
         user_id = rv.json["id"]
 
-        assert Token.query.filter_by(user_id=user_id).count() == 1
-        assert User.query.filter_by(id=user_id).count() == 1
-        assert UserLastUpdate.query.filter_by(user_id=user_id).count() == 0
-        assert Notifications.query.filter_by(user_id=user_id).count() == 0
+        self.assertEqual(Token.query.filter_by(user_id=user_id).count(), 1)
+        self.assertEqual(User.query.filter_by(id=user_id).count(), 1)
+        self.assertEqual(UserLastUpdate.query.filter_by(user_id=user_id).count(), 0)
+        self.assertEqual(Notifications.query.filter_by(user_id=user_id).count(), 0)
 
         models = ModelsFetcher.get_dict_models("all", [ModelTypes.LIST, ModelTypes.LABELS])
 
         for model_type in models.values():
             for model in model_type.values():
-                assert model.query.filter_by(user_id=user_id).count() == 0
+                self.assertEqual(model.query.filter_by(user_id=user_id).count(), 0)
 
         rv = self.client.post("/api/settings/delete_account", headers=headers)
-        assert rv.status_code == 204
+        self.assertEqual(rv.status_code, 204)
 
-        assert Token.query.filter_by(user_id=user_id).count() == 0
-        assert User.query.filter_by(id=user_id).count() == 0
-        assert UserLastUpdate.query.filter_by(user_id=user_id).count() == 0
-        assert Notifications.query.filter_by(user_id=user_id).count() == 0
+        self.assertEqual(Token.query.filter_by(user_id=user_id).count(), 0)
+        self.assertEqual(User.query.filter_by(id=user_id).count(), 0)
+        self.assertEqual(UserLastUpdate.query.filter_by(user_id=user_id).count(), 0)
+        self.assertEqual(Notifications.query.filter_by(user_id=user_id).count(), 0)
 
         for model_type in models.values():
             for model in model_type.values():
-                assert model.query.filter_by(user_id=user_id).count() == 0
+                self.assertEqual(model.query.filter_by(user_id=user_id).count(), 0)
 
     def test_settings_general(self):
         rv = self.client.post("/api/settings/general")
-        assert rv.status_code == 401
+        self.assertEqual(rv.status_code, 401)
 
         self.register_new_user(username="bobby")
-
         headers = self.connexion()
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "test"})
-        assert rv.status_code == 200
-        assert rv.json["updated_user"]["username"] == "test"
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["updated_user"]["username"], "test")
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "robert"})
-        assert rv.status_code == 200
-        assert rv.json["updated_user"]["username"] == "robert"
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["updated_user"]["username"], "robert")
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "too-long-username"})
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "t"})
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "bobby"})
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
-        with open("backend/tests/images/anonymous_scrambled.jpg", "rb") as fp:
+        with open("tests/images/anonymous_scrambled.jpg", "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-        with open("backend/tests/images/anonymous_scrambled.jpg", "rb") as fp:
+        with open("tests/images/anonymous_scrambled.jpg", "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-        with open(os.path.join(os.path.abspath("."), f"backend/api/static/covers/default.jpg"), "rb") as fp:
+        with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
             assert rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pics/")
 
-        with open(os.path.join(os.path.abspath("."), f"backend/api/static/covers/default.jpg"), "rb") as fp:
+        with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
             assert rv.json["updated_user"]["back_image"].startswith("/api/static/background_pics/")
 
     def test_settings_medialist(self):
         rv = self.client.post("/api/settings/medialist")
         assert rv.status_code == 401
 
-        headers = self.connexion()
-
-        rv = self.client.post("/api/settings/medialist", headers=headers, json={
+        rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": True,
             "add_anime": True,
             "add_games": True,
@@ -299,7 +293,7 @@ class UserTests(BaseTest):
         assert rv.json["updated_user"]["add_games"] == True
         assert rv.json["updated_user"]["add_books"] == True
 
-        rv = self.client.post("/api/settings/medialist", headers=headers, json={
+        rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": False,
             "add_anime": False,
             "add_games": False,
@@ -313,25 +307,25 @@ class UserTests(BaseTest):
 
     def test_settings_password(self):
         rv = self.client.post("/api/settings/password")
-        assert rv.status_code == 401
+        self.assertEqual(rv.status_code, 401)
 
         headers = self.connexion()
 
         rv = self.client.post("/api/settings/password", headers=headers, json={"new_password": "titi"})
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/password", headers=headers, json={
             "new_password": "titi",
-            "current_password": "toto",
+            "current_password": TEST_USER["password"],
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/password", headers=headers, json={
             "new_password": "titititi",
-            "current_password": "toto",
+            "current_password": TEST_USER["password"],
         })
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)
 
         headers = self.connexion("test", "titititi")
         rv = self.client.get("/api/current_user", headers=headers)
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)

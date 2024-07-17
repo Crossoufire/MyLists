@@ -16,9 +16,10 @@ from backend.api.utils.functions import change_air_format
 class Movies(MediaMixin, db.Model):
     """ Movies SQLAlchemy model """
 
-    TYPE = ModelTypes.MEDIA
-    GROUP = MediaType.MOVIES
-    LOCKING_DAYS = 180
+    TYPE: ModelTypes = ModelTypes.MEDIA
+    GROUP: MediaType = MediaType.MOVIES
+    LOCKING_DAYS: int = 180
+    RELEASE_WINDOW: int = 7
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -62,21 +63,21 @@ class Movies(MediaMixin, db.Model):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Enum, user_id: int) -> int:
-        """ Add a new movie to the user and return the <new_watched> value """
+    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+        """ Add a new movie to the user and return the <total_watched> value """
 
-        new_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
+        total_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
 
         # noinspection PyArgumentList
         add_movie = MoviesList(
             user_id=user_id,
             media_id=self.id,
             status=new_status,
-            total=new_watched
+            total=total_watched,
         )
         db.session.add(add_movie)
 
-        return new_watched
+        return total_watched
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
@@ -110,19 +111,21 @@ class Movies(MediaMixin, db.Model):
                 .all()
             )
 
-            count = 0
-            for movie in movies_to_delete:
-                MoviesActors.query.filter_by(media_id=movie.id).delete()
-                MoviesGenre.query.filter_by(media_id=movie.id).delete()
-                UserLastUpdate.query.filter_by(media_type=MediaType.MOVIES, media_id=movie.id).delete()
-                Notifications.query.filter_by(media_type="movieslist", media_id=movie.id).delete()
-                MoviesLabels.query.filter_by(media_id=movie.id).delete()
-                Movies.query.filter_by(id=movie.id).delete()
+            current_app.logger.info(f"Movies to delete: {len(movies_to_delete)}")
+            movie_ids = [movie.id for movie in movies_to_delete]
 
-                count += 1
-                current_app.logger.info(f"Removed movie with ID: [{movie.id}]")
+            MoviesActors.query.filter(MoviesActors.media_id.in_(movie_ids)).delete()
+            MoviesGenre.query.filter(MoviesGenre.media_id.in_(movie_ids)).delete()
+            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.MOVIES,
+                                        UserLastUpdate.media_id.in_(movie_ids)).delete()
+            Notifications.query.filter(Notifications.media_type == "movieslist",
+                                       Notifications.media_id.in_(movie_ids)).delete()
+            MoviesLabels.query.filter(MoviesLabels.media_id.in_(movie_ids)).delete()
+            cls.query.filter(cls.id.in_(movie_ids)).delete()
 
-            current_app.logger.info(f"Total movies removed: {count}")
+            db.session.commit()
+
+            current_app.logger.info(f"Movies successfully deleted")
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing movies and related records: {str(e)}")
@@ -132,38 +135,33 @@ class Movies(MediaMixin, db.Model):
         """ Check for the new releasing movies in a week or less from the TMDB API """
 
         try:
-            # noinspection PyComparisonWithNone
             query = (
                 db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
                 .join(MoviesList, cls.id == MoviesList.media_id)
                 .filter(
                     cls.release_date.is_not(None),
                     cls.release_date > datetime.utcnow(),
-                    cls.release_date <= datetime.utcnow() + timedelta(days=7),
-                    MoviesList.status != Status.PLAN_TO_WATCH
+                    cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
                 ).all()
             )
 
             for info in query:
-                notif = Notifications.search(info[1], "movieslist", info[0])
+                movie_id, user_id, release_date, name = info
+                notif = Notifications.search(user_id, "movieslist", movie_id)
 
                 if notif is None:
-                    release_date = datetime.strptime(info[2], "%Y-%m-%d").strftime("%b %d %Y")
-                    payload = {"name": info[3].name,
-                               "release_date": release_date}
-
-                    # noinspection PyArgumentList
+                    release_date = datetime.strptime(release_date, "%Y-%m-%d").strftime("%b %d %Y")
                     new_notification = Notifications(
-                        user_id=info[1],
+                        user_id=user_id,
+                        media_id=movie_id,
                         media_type="movieslist",
-                        media_id=info[0],
-                        payload_json=json.dumps(payload)
+                        payload_json=json.dumps({"name": name, "release_date": release_date})
                     )
                     db.session.add(new_notification)
 
             db.session.commit()
         except Exception as e:
-            current_app.logger.error(f"Error occurred while checking for new releasing anime: {e}")
+            current_app.logger.error(f"Error occurred checking for new releasing movies: {e}")
             db.session.rollback()
 
     @classmethod
@@ -172,23 +170,23 @@ class Movies(MediaMixin, db.Model):
 
         locking_threshold = datetime.utcnow() - timedelta(days=cls.LOCKING_DAYS)
 
-        query = (
-            cls.query.filter(cls.lock_status != True, cls.image_cover != "default.jpg",
-                             cls.release_date < locking_threshold)
-            .update({"lock_status": True}, synchronize_session="fetch")
+        locked_movies = (
+            cls.query.filter(
+                cls.lock_status != True,
+                cls.image_cover != "default.jpg",
+                cls.release_date < locking_threshold
+            ).update(dict(lock_status=True), synchronize_session="fetch")
         )
         db.session.commit()
 
-        locked_movies = query
         unlocked_movies = cls.query.filter(cls.lock_status == False).count()
 
         return locked_movies, unlocked_movies
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):
-        """ Refresh a media using the new_data from ApiData """
+        """ Refresh a media using the updated data created with the ApiData class """
 
-        # Update main details and commit changes
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         db.session.commit()
 
@@ -217,7 +215,6 @@ class MoviesList(MediaListMixin, db.Model):
     feeling = db.Column(db.String(50))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
-    completion_date = db.Column(db.DateTime)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Movies", back_populates="list_info", lazy=False)
@@ -253,29 +250,22 @@ class MoviesList(MediaListMixin, db.Model):
         """ Update the new total watched movies and total and return new total """
 
         self.rewatched = new_rewatch
-
-        # Calculate new total
         new_total = 1 + new_rewatch
         self.total = new_total
 
         return new_total
 
-    def update_status(self, new_status: Enum) -> int:
+    def update_status(self, new_status: Status) -> int:
         """ Change the movie status for the current user and return the new total watched """
 
-        # Set new status
         self.status = new_status
-
+        self.rewatched = 0
         if new_status == Status.COMPLETED:
-            self.completion_date = datetime.today()
             self.total = 1
             new_total = 1
         else:
             self.total = 0
             new_total = 0
-
-        # Reset rewatched value
-        self.rewatched = 0
 
         return new_total
 

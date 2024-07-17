@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Type, List
-from sqlalchemy import func, text, ColumnElement
+from sqlalchemy import func, text, ColumnElement, case, desc
 from backend.api import db
-from backend.api.models.user_models import User
+from backend.api.models.user_models import User, followers
 from backend.api.models.user_models import UserLastUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money, ModelsFetcher
@@ -125,12 +125,12 @@ class BaseStats:
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
         query = (
-            db.session.query(metric, func.count(metric).label("count"))
-            .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-            .filter(*self.common_filter, metric != "Unknown", *filters)
-            .group_by(metric).order_by(text("count desc"))
-            .limit(self.LIMIT).all()
-        ) or [("-", 0)]
+                    db.session.query(metric, func.count(metric).label("count"))
+                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
+                    .filter(*self.common_filter, metric != "Unknown", *filters)
+                    .group_by(metric).order_by(text("count desc"))
+                    .limit(self.LIMIT).all()
+                ) or [("-", 0)]
 
         return query
 
@@ -140,13 +140,13 @@ class BaseStats:
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
         query = (
-            db.session.query(metric, func.avg(self.rating).label("rating"))
-            .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-            .filter(*self.common_filter, metric != "Unknown", self.rating.is_not(None), *filters)
-            .group_by(metric).having((func.count(metric) >= min_))
-            .order_by(text("rating desc"))
-            .limit(self.LIMIT).all()
-        ) or [("-", 0)]
+                    db.session.query(metric, func.avg(self.rating).label("rating"))
+                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
+                    .filter(*self.common_filter, metric != "Unknown", self.rating.is_not(None), *filters)
+                    .group_by(metric).having((func.count(metric) >= min_))
+                    .order_by(text("rating desc"))
+                    .limit(self.LIMIT).all()
+                ) or [("-", 0)]
 
         return query
 
@@ -156,13 +156,13 @@ class BaseStats:
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
         query = (
-            db.session.query(metric, func.count(self.media_list.favorite).label("count"))
-            .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-            .filter(*self.common_filter, metric != "Unknown", self.media_list.favorite.is_(True), *filters)
-            .group_by(metric)
-            .order_by(text("count desc"))
-            .limit(self.LIMIT).all()
-        ) or [("-", 0)]
+                    db.session.query(metric, func.count(self.media_list.favorite).label("count"))
+                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
+                    .filter(*self.common_filter, metric != "Unknown", self.media_list.favorite.is_(True), *filters)
+                    .group_by(metric)
+                    .order_by(text("count desc"))
+                    .limit(self.LIMIT).all()
+                ) or [("-", 0)]
 
         return query
 
@@ -425,6 +425,36 @@ class MoviesStats(TMDBStats):
         )
 
         self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
+
+    def compute_most_common(self):
+        """ Compute the most common media with the user's follows. """
+
+        # TODO: compute_most_common: NOT USED FOR NOW.
+
+        sub_q = db.session.query(followers).filter(followers.c.follower_id == self.user.id).subquery()
+
+        results = (
+            db.session.query(
+                self.media_list.media_id,
+                self.media.name,
+                func.count().label("watch_count"),
+                func.sum(self.media_list.rewatched).label("total_rewatched"),
+                func.avg(
+                    case(
+                        (self.media_list.score.is_not(None), self.media_list.score),
+                        else_=self.media_list.feeling * 2
+                    )
+                ).label("combined_score")
+            )
+            .join(sub_q, self.media_list.user_id == sub_q.c.followed_id)
+            .join(self.media, self.media.id == self.media_list.media_id)
+            .filter(self.media_list.status == Status.COMPLETED)
+            .group_by(self.media_list.media_id)
+            .order_by(desc("watch_count"), desc("combined_score"), desc("total_rewatched"))
+            .limit(10).all()
+        )
+
+        self.data["lists"]["most_common"] = [{"name": n, "value": a, "value2": c} for (_, n, c, _, a) in results]
 
     def create_stats(self):
         self.compute_total_hours()

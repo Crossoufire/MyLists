@@ -106,10 +106,11 @@ class MyApiClient {
             response = await this.post(`/tokens/oauth2/${usernameOrProvider}`, passwordOrProviderData);
         }
         else {
-            response = await this.post("/tokens", JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
-                headers: {
-                    Authorization:  `Basic ${window.btoa(`${usernameOrProvider}:${passwordOrProviderData}`)}`
-                }
+            const utf8Bytes = new TextEncoder().encode(`${usernameOrProvider}:${passwordOrProviderData}`);
+            const base64Encoded = btoa(String.fromCharCode(...utf8Bytes));
+            response = await this.post("/tokens",
+                JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
+                headers: { Authorization:  `Basic ${base64Encoded}` }
             });
         }
 
@@ -144,9 +145,22 @@ class MyApiClient {
 
 
 class UserClient {
-    constructor(currentUser = null) {
-        this.currentUser = currentUser;
+    constructor() {
+        this.currentUser = null;
         this.subscribers = [];
+        this.wasInitialized = false;
+    }
+
+    async initialize() {
+        let currentUser = null;
+
+        if (api.isAuthenticated()) {
+            const response = await api.get("/current_user");
+            currentUser = response.ok ? response.body : null;
+        }
+
+        this.wasInitialized = true;
+        this.setCurrentUser(currentUser);
     }
 
     setCurrentUser(newData) {
@@ -164,17 +178,6 @@ class UserClient {
 
     unsubscribe(callbackFunction) {
         this.subscribers = this.subscribers.filter(sub => sub !== callbackFunction);
-    }
-
-    static async initialize() {
-        let currentUser = null;
-
-        if (api.isAuthenticated()) {
-			const response = await api.get("/current_user");
-			currentUser = response.ok ? response.body : null;
-        }
-
-        return new UserClient(currentUser);
     }
 
     async login(usernameOrProvider, passwordOrProviderData, oAuth2 = false) {
@@ -197,15 +200,7 @@ class UserClient {
 
 const api = new MyApiClient();
 
-
-let userClient = null;
-
-
-export async function initializeUserClient() {
-    if (!userClient) {
-        userClient = await UserClient.initialize();
-    }
-}
+const userClient = new UserClient();
 
 
 export { api, userClient };

@@ -10,9 +10,10 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from backend.api.utils.enums import RoleType
-from backend.config import Config
+from backend.config import Config, get_config
 
 
+# Load globally accessible plugins
 mail = Mail()
 db = SQLAlchemy()
 migrate = Migrate()
@@ -81,7 +82,7 @@ def _create_first_db_data():
     """ Create all DB tables the first time and add the first data to the DB """
 
     from backend.api.models.user_models import User
-    from backend.api.utils.scheduled_tasks import compute_media_time_spent
+    from backend.api.utils.cli_tasks import compute_media_time_spent
     from backend.api.models.utils_models import Ranks, Frames
 
     # Create all DB tables - does not update existing tables
@@ -108,8 +109,12 @@ def _create_first_db_data():
     db.session.commit()
 
 
-def create_app(config_class: Type[Config] = Config) -> Flask:
+def create_app(config_class: Type[Config] = None) -> Flask:
     app = Flask(__name__, static_url_path="/api/static")
+
+    if config_class is None:
+        config_class = get_config()
+
     app.config.from_object(config_class)
     app.url_map.strict_slashes = False
 
@@ -127,13 +132,13 @@ def create_app(config_class: Type[Config] = Config) -> Flask:
             _create_app_logger(app)
             _create_mail_handler(app)
 
-        from backend.api.utils.scheduled_tasks import add_cli_commands
-        add_cli_commands()
+        from backend.api.utils.cli_cmds import cli_commands
+        cli_commands()
 
         return app
 
 
-# Needed for import problems
+# Needed for circular imports
 from backend.api.models.books_models import *
 from backend.api.models.games_models import *
 from backend.api.models.movies_models import *

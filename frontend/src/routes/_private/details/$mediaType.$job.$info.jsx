@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {MediaCard} from "@/components/app/MediaCard";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute} from "@tanstack/react-router";

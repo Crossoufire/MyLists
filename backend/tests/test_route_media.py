@@ -12,12 +12,13 @@ class MediaTests(BaseTest):
 
     @staticmethod
     def create_all_media():
-        from backend.api.data_managers.api_data_manager import ApiData
+        from backend.api.managers.api_data_manager import ApiData
 
         media_files = ["series.json", "anime.json", "movies.json", "books.json", "games.json"]
+        base_dir = os.path.abspath(os.path.dirname(__file__))
 
         for media_type, media_file in zip(MediaType, media_files):
-            with open(os.path.join(os.path.abspath("."), f"backend/tests/media/{media_file}")) as fp:
+            with open(f"{base_dir}/media/{media_file}") as fp:
                 media_data = json.load(fp)
 
             API_class = ApiData.get_API_class(media_type)()
@@ -612,35 +613,35 @@ class MediaTests(BaseTest):
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
             model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
-            json_data = dict(media_id=1, media_type=media_type.value, payload=2)
+            json_data = {"media_id": 1, "media_type": media_type.value, "payload": 2}
 
             rv = self.client.post("/api/update_season", headers=headers, json=json_data)
-            assert rv.status_code == 404
+            self.assertEqual(rv.status_code, 404)
 
             rv = self.client.post("/api/add_media", headers=headers, json={**json_data, "payload": "Watching"})
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
             rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": 467})
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": -4})
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             # Series has 5 seasons and Anime 4 seasons
             rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": 3})
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
 
             if media_type == MediaType.SERIES:
-                assert query.current_season == 3
-                assert query.last_episode_watched == 1
-                assert query.status == "Watching"
-                assert query.total == 21
+                self.assertEqual(query.current_season, 3)
+                self.assertEqual(query.last_episode_watched, 1)
+                self.assertEqual(query.status, "Watching")
+                self.assertEqual(query.total, 21)
             else:
-                assert query.current_season == 3
-                assert query.last_episode_watched == 1
-                assert query.status == "Watching"
-                assert query.total == 38
+                self.assertEqual(query.current_season, 3)
+                self.assertEqual(query.last_episode_watched, 1)
+                self.assertEqual(query.status, "Watching")
+                self.assertEqual(query.total, 38)
 
     def test_update_episode(self):
         headers = self.connexion()

@@ -3,7 +3,7 @@ import os
 import re
 import secrets
 from datetime import datetime, timezone
-from typing import Dict, List, Any, Iterable, Literal
+from typing import Dict, List, Any, Iterable, Literal, Tuple
 from flask import current_app, abort
 from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType
@@ -131,11 +131,9 @@ def get(state: Iterable, *path: Any, default: Any = None):
 
 def get_level(total_time: float) -> float:
     """ Returns the level based on time spent in [minutes] """
-
     if total_time < 0:
         current_app.logger.error("the total time given to the 'total_time' function is negative!")
         raise Exception("Total time must be greater than 0")
-
     return (((400 + 80 * total_time) ** 0.5) - 20) / 40
 
 
@@ -265,3 +263,17 @@ def display_time(minutes: int) -> str:
         return "0 hours"
 
     return ", ".join(time_components)
+
+
+def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int, int, int]:
+    """ Reorder the seasons and episodes. If eps_watched > sum(list_of_episodes) => last episode and last season """
+
+    if eps_watched > sum(list_of_episodes):
+        return list_of_episodes[-1], len(list_of_episodes), sum(list_of_episodes)
+
+    count = 0
+    for seas, eps in enumerate(list_of_episodes, start=1):
+        count += eps
+        if count >= eps_watched:
+            last_episode = int(eps - (count - eps_watched))
+            return last_episode, seas, eps_watched

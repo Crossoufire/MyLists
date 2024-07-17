@@ -19,6 +19,7 @@ export const LoginForm = () => {
 
 	const onSubmit = async (data) => {
 		setError("");
+
 		try {
 			setIsPending(true);
 			const response = await userClient.login(data.username, data.password);

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, url_for, current_app, abort
 from sqlalchemy import desc, func
 from backend.api import cache, db
-from backend.api.data_managers.api_data_manager import ApiSeries, ApiMovies
+from backend.api.managers.api_data_manager import ApiSeries, ApiMovies
 from backend.api.models.user_models import User
 from backend.api.models.utils_models import Ranks, MyListsStats, Frames
 from backend.api.routes.handlers import token_auth
@@ -47,7 +47,6 @@ def hall_of_fame():
     page = request.args.get("page", 1, type=int)
     sorting = request.args.get("sorting", "profile", type=str)
 
-    # noinspection PyTestUnpassedFixture
     ranking = User.profile_level.desc() if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
 
     ranked_users = db.session.query(User, func.rank().over(order_by=ranking).label("rank")).cte()

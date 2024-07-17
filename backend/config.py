@@ -6,7 +6,6 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 def as_bool(value: str) -> bool:
-    """ Change value as boolean """
     if value:
         return value.lower() in ["true", "yes", "on", "1"]
     return False
@@ -15,9 +14,16 @@ def as_bool(value: str) -> bool:
 class Config:
     """ Config class for environment variables """
 
+    # Debug options
+    DEBUG = False
+    TESTING = False
+    USER_ACTIVE_PER_DEFAULT = False
+
     # Database option
-    SQLALCHEMY_DATABASE_URI = (os.environ.get("MYLISTS_DATABASE_URI") or
-                               f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}")
+    SQLALCHEMY_DATABASE_URI = (
+            os.environ.get("MYLISTS_DATABASE_URI") or
+            f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}"
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Security options
@@ -27,9 +33,6 @@ class Config:
     RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
     ADMIN_TOKEN_MINUTES = int(os.environ.get("ADMIN_TOKEN_MINUTES") or "5")
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
-
-    # Debug option
-    USER_ACTIVE_PER_DEFAULT = as_bool(os.environ.get("USER_ACTIVE_PER_DEFAULT") or False)
 
     # Email options
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
@@ -78,3 +81,43 @@ class Config:
     CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
     CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(basedir, "cache")
     CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000
+
+
+class DevConfig(Config):
+    DEBUG = True
+
+
+class ProdConfig(Config):
+    pass
+
+
+class TestConfig(Config):
+
+    TESTING = True
+
+    # Set for using url_for in tests
+    SERVER_NAME = "localhost:5000"
+
+    CACHE_TYPE = "SimpleCache"
+    USER_ACTIVE_PER_DEFAULT = True
+    SQLALCHEMY_DATABASE_URI = "sqlite://"
+    OAUTH2_PROVIDERS = {
+        "foo": {
+            "client_id": "foo-id",
+            "client_secret": "foo-secret",
+            "authorize_url": "https://foo.com/login",
+            "access_token_url": "https://foo.com/token",
+            "get_user": {
+                "url": "https://foo.com/current",
+                "email": lambda json: json["email"],
+            },
+            "scopes": ["user", "email"],
+        },
+    }
+
+
+def get_config():
+    env = os.getenv("FLASK_ENV", "development")
+    if env == "production":
+        return ProdConfig
+    return DevConfig

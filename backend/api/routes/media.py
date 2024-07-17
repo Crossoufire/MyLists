@@ -51,7 +51,7 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
     if in_list:
         return abort(400, "The media is already present in your list")
 
-    new_watched = media.add_media_to_user(new_status, current_user.id)
+    total_watched = media.add_media_to_user(new_status, current_user.id)
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} added [ID {media_id}] with "
                             f"status: {new_status}")
@@ -60,7 +60,7 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
 
     # Compute new time spent (re-query necessary!)
     in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    in_list.update_time_spent(new_value=new_watched)
+    in_list.update_time_spent(new_value=total_watched)
 
     db.session.commit()
 
@@ -83,10 +83,8 @@ def delete_media(media_type: MediaType, media_id: int, payload: Any, models: Dic
 
     # <Games> model do not have <total>
     old_total = media.total if media_type != MediaType.GAMES else media.playtime
-
     media.update_time_spent(old_value=old_total, new_value=0)
 
-    # Deletion
     db.session.delete(media)
     models[ModelTypes.LABELS].query.filter_by(user_id=current_user.id, media_id=media_id).delete()
     UserLastUpdate.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media.GROUP).delete()
@@ -183,28 +181,33 @@ def update_rating(media_type: MediaType, media_id: int, payload: Any, models: Di
 @token_auth.login_required
 @validate_json_data(int)
 def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Update the media redo value for a user """
-
-    if media_type == MediaType.GAMES:
-        return abort(400, "This value can't be set for games")
+    """ Update the media re-read/re-watched value for a user """
 
     new_redo = payload
-    if new_redo < 0 or new_redo > 10:
-        return abort(400, "This value needs to be comprise between 0 and 10")
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media or media.status != Status.COMPLETED:
+    if media_type == MediaType.GAMES:
+        return abort(400, "This value cannot be set for games")
+
+    if new_redo < 0 or new_redo > 10:
+        return abort(400, "This value should to be between 0 and 10 included")
+
+    media_list = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_list:
+        return abort(400, "This media is not present in your list")
+
+    if media_list.status != Status.COMPLETED:
         return abort(400, "To update this value the media needs to be completed first")
 
-    old_redo = media.rewatched
-    old_total = media.total
-    new_total = media.update_total_watched(new_redo)
+    old_redo = media_list.rewatched
+    old_total = media_list.total
+    new_total = media_list.update_total_watched(new_redo)
 
-    media.update_time_spent(old_value=old_total, new_value=new_total)
-    UserLastUpdate.set_new_update(media.media, "redo", old_redo, new_redo)
+    media_list.update_time_spent(old_value=old_total, new_value=new_total)
+
+    UserLastUpdate.set_new_update(media_list.media, "redo", old_redo, new_redo)
 
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type}] rewatched {new_redo}x times")
+    current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type.value}] rewatched {new_redo}x times")
 
     return {}, 204
 
@@ -266,27 +269,26 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
 
     new_season = payload
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_user = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_user:
         return abort(404, "The media could not be found")
 
-    if 1 > new_season or new_season > media.media.eps_per_season[-1].season:
+    if 1 > new_season or new_season > media_user.media.eps_per_season[-1].season:
         return abort(400)
 
-    old_season = media.current_season
-    old_eps = media.last_episode_watched
-    old_total = media.total
+    old_season = media_user.current_season
+    old_eps = media_user.last_episode_watched
+    old_total = media_user.total
 
-    new_watched = sum([x.episodes for x in media.media.eps_per_season[:new_season - 1]]) + 1
-    media.current_season = new_season
-    media.last_episode_watched = 1
-    new_total = new_watched + (media.rewatched * media.media.total_episodes)
-    media.total = new_total
+    new_watched = sum(media_user.media.eps_per_season_list[:new_season - 1]) + 1
+    media_user.current_season = new_season
+    media_user.last_episode_watched = 1
+    new_total = new_watched + (media_user.rewatched * sum(media_user.media.eps_per_season_list))
+    media_user.total = new_total
 
-    UserLastUpdate.set_new_update(media.media, "season", old_season, new_season,
-                                  old_episode=old_eps, new_episode=1)
-
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserLastUpdate.set_new_update(media_user.media, "season", old_season, new_season, old_episode=old_eps,
+                                  new_episode=1)
+    media_user.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new season = {new_season}")
@@ -300,29 +302,29 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
 def update_episode(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Update the episode of an updated anime or series from a user """
 
-    new_episode = payload
+    new_eps = payload
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_user = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_user:
         return abort(404, "The media could not be found")
 
-    if 1 > new_episode or new_episode > media.media.eps_per_season[media.current_season - 1].episodes:
+    if 1 > new_eps or new_eps > media_user.media.eps_per_season[media_user.current_season - 1].episodes:
         return abort(400)
 
-    old_season = media.current_season
-    old_episode = media.last_episode_watched
-    old_total = media.total
+    old_season = media_user.current_season
+    old_episode = media_user.last_episode_watched
+    old_total = media_user.total
+    new_watched = sum(media_user.media.eps_per_season_list[:old_season - 1]) + new_eps
+    new_total = new_watched + (media_user.rewatched * sum(media_user.media.eps_per_season_list))
 
-    new_watched = sum([x.episodes for x in media.media.eps_per_season[:old_season - 1]]) + new_episode
-    media.last_episode_watched = new_episode
-    new_total = new_watched + (media.rewatched * media.media.total_episodes)
-    media.total = new_total
+    media_user.last_episode_watched = new_eps
+    media_user.total = new_total
 
-    UserLastUpdate.set_new_update(media.media, "episode", old_episode, new_episode, old_season=old_season)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserLastUpdate.set_new_update(media_user.media, "episode", old_episode, new_eps, old_season=old_season)
+    media_user.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new episode = {new_episode}")
+    current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new episode = {new_eps}")
 
     return {}, 204
 

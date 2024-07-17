@@ -3,7 +3,7 @@ import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";

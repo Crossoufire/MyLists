@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, abort, current_app
 from backend.api.routes.handlers import token_auth
-from backend.api.data_managers.api_data_manager import ApiTMDB, ApiGames, ApiBooks
+from backend.api.managers.api_data_manager import ApiTMDB, ApiGames, ApiBooks
 from backend.api.models.user_models import User
 
 search_bp = Blueprint("api_search", __name__)

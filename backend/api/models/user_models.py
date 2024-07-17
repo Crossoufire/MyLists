@@ -100,6 +100,7 @@ class User(db.Model):
     activated_on = db.Column(db.DateTime)
     last_notif_read_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    show_update_modal = db.Column(db.Boolean, default=True)
 
     time_spent_series = db.Column(db.Integer, nullable=False, default=0)
     time_spent_anime = db.Column(db.Integer, nullable=False, default=0)
@@ -439,9 +440,14 @@ class User(db.Model):
     def create_search_results(cls, search: str, page: int = 1) -> Dict:
         """ Create the <users> search results for /autocomplete """
 
-        # noinspection PyTestUnpassedFixture
-        users = db.paginate(db.select(cls).filter(cls.username.like(f"%{search}%"), cls.role != RoleType.ADMIN),
-                            page=page, per_page=8, error_out=True)
+        users = db.paginate(
+            db.select(cls).filter(
+                cls.username.like(f"%{search}%"),
+                cls.role != RoleType.ADMIN,
+                cls.active == True
+            ),
+            page=page, per_page=8, error_out=True
+        )
 
         users_list = [{
             "name": user.username,
@@ -583,8 +589,11 @@ class UserLastUpdate(db.Model):
         """ Add a new <Status> update to the model. Kwargs for specific details """
 
         # Check previous database entry
-        previous_entry = (cls.query.filter_by(user_id=current_user.id, media_type=media.GROUP, media_id=media.id)
-                          .order_by(desc(cls.date)).first())
+        previous_entry = (
+            cls.query.filter_by(user_id=current_user.id, media_type=media.GROUP, media_id=media.id)
+            .order_by(desc(cls.date))
+            .first()
+        )
 
         time_difference = float("inf")
         if previous_entry:
@@ -643,8 +652,11 @@ class Notifications(db.Model):
     def search(cls, user_id: int, media_type: str, media_id: int):
         """ Search if there are existing notifications for a user related to a specific <media_type> and <media_id> """
 
-        data = (cls.query.filter_by(user_id=user_id, media_type=media_type, media_id=media_id)
-                .order_by(desc(cls.timestamp)).first())
+        data = (
+            cls.query.filter_by(user_id=user_id, media_type=media_type, media_id=media_id)
+            .order_by(desc(cls.timestamp))
+            .first()
+        )
 
         return data
 

@@ -3,12 +3,12 @@ import {FaList} from "react-icons/fa6";
 import {ResponsiveBar} from "@nivo/bar";
 import {barTheme} from "@/lib/constants";
 import {fetcher} from "@/lib/fetcherLoader";
-import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
+import {Sidebar} from "@/components/app/Sidebar";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {FaQuestionCircle, FaTimes} from "react-icons/fa";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {UserComboBox} from "@/components/app/UserComboBox";
 import {capitalize, changeValueFormat, cn} from "@/lib/utils";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -644,6 +644,8 @@ function StatsPage() {
         setStatsDataOtherUser([]);
     };
 
+    const handleTabChange = (tab) => setSelectedTab(tab);
+
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Stats`} subtitle="Detailed stats for the user">
             <div className="flex items-center gap-4 m-4 ml-0 max-sm:justify-center">
@@ -677,15 +679,11 @@ function StatsPage() {
                 }
             </div>
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
-                <nav className="flex flex-wrap text-muted-foreground justify-center md:flex-col md:gap-3 md:justify-start">
-                    {statsData.map(data =>
-                        <Button key={data.sidebarTitle} className="justify-start text-base"
-                                onClick={() => setSelectedTab(data.sidebarTitle)}
-                                variant={selectedTab === data.sidebarTitle ? "secondary" : "ghost"}>
-                            {data.sidebarTitle}
-                        </Button>
-                    )}
-                </nav>
+                <Sidebar
+                    items={statsData}
+                    selectedTab={selectedTab}
+                    onTabChange={handleTabChange}
+                />
                 <div>
                     {(apiData.is_feeling && feelingInfo) &&
                         <div className="mb-4 p-3 bg-cyan-900/80 rounded-md">

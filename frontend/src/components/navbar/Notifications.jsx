@@ -21,33 +21,30 @@ export const Notifications = ({ isMobile }) => {
     const [numberUnreadNotif, setNumberUnreadNotif] = useState(0);
     const [lastNotifPollTime, setLastNotifPollTime] = useState(() => {
         const savedTime = localStorage.getItem("lastNotifPollTime");
-        return savedTime ? new Date(savedTime).getTime() : null;
+        return savedTime ? parseInt(savedTime, 10) : null;
     });
 
     useEffect(() => {
         let timeoutId;
 
         const setNextPoll = () => {
-            const currentTime = new Date().getTime();
+            const currentTime = Date.now();
             const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + POLL_NOTIF_INTER) : currentTime;
             const delay = Math.max(nextPollTime - currentTime, 0);
             timeoutId = setTimeout(pollCountNotifications, delay);
         };
 
         const pollCountNotifications = async () => {
-            try {
-                const response = await api.get("/notifications/count");
-                if (!response.ok) {
-                    return toast.error("An error occurred trying to fetch the notifications.");
-                }
+            const response = await api.get("/notifications/count");
+            if (response.ok) {
                 setNumberUnreadNotif(response.body.data);
-                const currentTime = new Date().getTime();
-                localStorage.setItem("lastNotifPollTime", currentTime.toString());
-                setLastNotifPollTime(currentTime);
+            } else {
+                toast.error("An error occurred trying to fetch the notifications.");
             }
-            finally {
-                setNextPoll();
-            }
+
+            const currentTime = Date.now();
+            localStorage.setItem("lastNotifPollTime", currentTime.toString());
+            setLastNotifPollTime(currentTime);
         };
 
         if (api.isAuthenticated()) {
@@ -131,26 +128,33 @@ const MediaLink = ({ data, handlePopoverClose }) => {
                         </div>
                         :
                         <>
-                            <MediaIcon mediaType={"user"} size={16}/>
+                            <MediaIcon mediaType="user" size={16}/>
                             <div className="line-clamp-1">{data.payload.message}</div>
                         </>
                     }
                 </div>
                 {data.media &&
                     <div className="flex items-center gap-2 text-neutral-400">
-                        <div>
-                            {(data.media === "anime" || data.media === "series") ?
-                                <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
-                                :
-                                <div>Release</div>
-                            }
-                        </div>
-                        <div><FaLongArrowAltRight/></div>
-                        <div>{data.payload.release_date}</div>
+                        {data.payload?.new ?
+                            <div className="line-clamp-1">{data.payload.message}</div>
+                            :
+                            <>
+                                <div>
+                                    {(data.media === "anime" || data.media === "series") ?
+                                        <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
+                                        :
+                                        <div>Release</div>
+                                    }
+                                </div>
+                                <div><FaLongArrowAltRight/></div>
+                                <div>{data.payload.release_date}</div>
+                            </>
+                        }
                     </div>
                 }
             </div>
             <Separator className="mt-0 mb-0"/>
         </Link>
-    );
+    )
+        ;
 };

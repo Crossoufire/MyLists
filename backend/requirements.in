@@ -13,4 +13,3 @@ howlongtobeatpy
 ratelimit
 python-dotenv
 gunicorn
-pytest

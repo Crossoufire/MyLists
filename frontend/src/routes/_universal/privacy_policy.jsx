@@ -1,4 +1,4 @@
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
 
 

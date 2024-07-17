@@ -27,15 +27,17 @@ export const Navbar = () => {
             setCurrentUser(newData);
         };
         userClient.subscribe(navbarCurrentUserChange);
-        return () => userClient.unsubscribe(navbarCurrentUserChange);
+        return () => {
+            userClient.unsubscribe(navbarCurrentUserChange);
+        }
     }, []);
 
     const logoutUser = async () => {
         await userClient.logout();
-        return navigate({ to: "/" });
+        await navigate({ to: "/" });
     };
 
-    // Login page and public pages
+    // Login page and public pages when not logged
     if (currentUser === null) {
         return (
             <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
@@ -59,10 +61,10 @@ export const Navbar = () => {
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
                             <Nav.NavigationMenuItem>
-                                <NavMediaDrop/>
+                                <NavMediaDrop currentUser={currentUser}/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <SearchBar/>
+                                <SearchBar currentUser={currentUser}/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
                                 <NavLink to="/hall_of_fame" className={Nav.navigationMenuTriggerStyle()}>
@@ -99,9 +101,9 @@ export const Navbar = () => {
                                         <Button variant="invisible" className="flex items-center gap-2 text-lg
                                         font-semibold px-1">
                                             <img
+                                                alt="profile-picture"
                                                 src={currentUser.profile_image}
                                                 className="h-10 w-10 rounded-full"
-                                                alt="profile-picture"
                                             />
                                             <CaretSortIcon/>
                                         </Button>
@@ -110,16 +112,16 @@ export const Navbar = () => {
                                     <PopoverContent align="end" className="w-36 p-2">
                                         <ul>
                                             <NavMediaItem
-                                                to={`/profile/${currentUser.username}`}
-                                                icon={<FaUser className="text-grey"/>}
-                                                text="Profile"
                                                 popRef={popRef}
+                                                text={"Profile"}
+                                                icon={<FaUser className="text-grey"/>}
+                                                to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
-                                                to="/settings"
-                                                icon={<FaCog className="text-grey"/>}
-                                                text="Settings"
                                                 popRef={popRef}
+                                                to={"/settings"}
+                                                text={"Settings"}
+                                                icon={<FaCog className="text-grey"/>}
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
@@ -150,10 +152,10 @@ export const Navbar = () => {
                             <Nav.NavigationMenu className="mt-4">
                                 <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
                                     <Nav.NavigationMenuItem className="mt-4">
-                                        <SearchBar/>
+                                        <SearchBar currentUser={currentUser}/>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavMediaDrop/>
+                                        <NavMediaDrop currentUser={currentUser}/>
                                     </Nav.NavigationMenuItem>
                                     <Separator/>
                                     <Nav.NavigationMenuItem>
@@ -182,15 +184,15 @@ export const Navbar = () => {
                                     </Nav.NavigationMenuItem>
                                     <div>
                                         <NavMediaItem
-                                            to={`/profile/${currentUser.username}`}
-                                            icon={<FaUser className="text-grey"/>}
                                             text="Profile"
+                                            icon={<FaUser className="text-grey"/>}
+                                            to={`/profile/${currentUser.username}`}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
-                                            icon={<FaCog className="text-grey"/>}
                                             text="Settings"
+                                            icon={<FaCog className="text-grey"/>}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <li>

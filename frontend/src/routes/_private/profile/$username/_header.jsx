@@ -1,5 +1,5 @@
 import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
 import {createFileRoute, getRouteApi, Outlet} from "@tanstack/react-router";
 
@@ -16,8 +16,6 @@ export const profileHeaderRoute = getRouteApi("/_private/profile/$username/_head
 function ProfileTop() {
     const apiData = Route.useLoaderData();
     const { username } = Route.useParams();
-
-    console.log(apiData);
 
     return (
         <PageTitle title={`${username} Profile`} onlyHelmet>

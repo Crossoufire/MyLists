@@ -7,7 +7,7 @@ import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {api, userClient} from "@/api/MyApiClient";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute, Link} from "@tanstack/react-router";

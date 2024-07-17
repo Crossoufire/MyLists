@@ -50,21 +50,21 @@ class Books(MediaMixin, db.Model):
         return media_dict
 
     def add_media_to_user(self, new_status: Status, user_id: int) -> int:
-        """ Add a new book to the user and return the <new_read> value """
+        """ Add a new book to the user and return the <total_read> value """
 
-        new_read = self.pages if new_status == Status.COMPLETED else 0
+        total_read = self.pages if new_status == Status.COMPLETED else 0
 
         # noinspection PyArgumentList
         user_list = BooksList(
             user_id=user_id,
             media_id=self.id,
-            actual_page=new_read,
+            actual_page=total_read,
             status=new_status,
-            total=new_read
+            total=total_read,
         )
         db.session.add(user_list)
 
-        return new_read
+        return total_read
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
@@ -90,22 +90,27 @@ class Books(MediaMixin, db.Model):
         """ Remove all books that are not present in a User list from the database and the disk """
 
         try:
-            # Books remover
-            books_to_delete = (cls.query.outerjoin(BooksList, BooksList.media_id == cls.id)
-                               .filter(BooksList.media_id.is_(None)).all())
-            count_ = 0
-            for book in books_to_delete:
-                BooksAuthors.query.filter_by(media_id=book.id).delete()
-                BooksGenre.query.filter_by(media_id=book.id).delete()
-                UserLastUpdate.query.filter_by(media_type=MediaType.BOOKS, media_id=book.id).delete()
-                Notifications.query.filter_by(media_type="bookslist", media_id=book.id).delete()
-                BooksLabels.query.filter_by(media_id=book.id).delete()
-                Books.query.filter_by(id=book.id).delete()
+            books_to_delete = (
+                cls.query.outerjoin(BooksList, BooksList.media_id == cls.id)
+                .filter(BooksList.media_id.is_(None))
+                .all()
+            )
 
-                count_ += 1
-                current_app.logger.info(f"Removed book with ID: [{book.id}]")
+            current_app.logger.info(f"Books to delete: {len(books_to_delete)}")
+            books_ids = [book.id for book in books_to_delete]
 
-            current_app.logger.info(f"Total books removed: {count_}")
+            BooksAuthors.query.filter(BooksAuthors.media_id.in_(books_ids)).delete()
+            BooksGenre.query.filter(BooksGenre.media_id.in_(books_ids)).delete()
+            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.BOOKS,
+                                        UserLastUpdate.media_id.in_(books_ids)).delete()
+            Notifications.query.filter(Notifications.media_type == "bookslist",
+                                       Notifications.media_id.in_(books_ids)).delete()
+            BooksLabels.query.filter(BooksLabels.media_id.in_(books_ids)).delete()
+            cls.query.filter(cls.id.in_(books_ids)).delete()
+
+            db.session.commit()
+
+            current_app.logger.info(f"Books successfully deleted")
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing books and related records: {str(e)}")
@@ -135,7 +140,6 @@ class BooksList(MediaListMixin, db.Model):
     feeling = db.Column(db.String(30))
     score = db.Column(db.Float)
     comment = db.Column(db.Text)
-    completion_date = db.Column(db.DateTime)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Books", back_populates="list_info", lazy=False)
@@ -173,31 +177,26 @@ class BooksList(MediaListMixin, db.Model):
         """ Update total read and return the new total """
 
         self.rewatched = new_rewatch
-
-        # Computed new total
         new_total = self.media.pages + (new_rewatch * self.media.pages)
         self.total = new_total
 
         return new_total
 
-    def update_status(self, new_status: Enum) -> int:
+    def update_status(self, new_status: Status) -> int:
         """ Change the book status for the current user and return the new total """
 
-        #  Set new status and actual page
-        self.status = new_status
         new_total = self.total
+
+        self.status = new_status
+        self.rewatched = 0
         if new_status == Status.COMPLETED:
             self.actual_page = self.media.pages
             self.total = self.media.pages
             new_total = self.media.pages
-            self.completion_date = datetime.datetime.today()
         elif new_status == Status.PLAN_TO_READ:
             self.actual_page = 0
             self.total = 0
             new_total = 0
-
-        #  Reset rewatched
-        self.rewatched = 0
 
         return new_total
 

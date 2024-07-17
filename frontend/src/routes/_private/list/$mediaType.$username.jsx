@@ -11,7 +11,7 @@ import * as Pop from "@/components/ui/popover";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Checkbox} from "@/components/ui/checkbox";
 import {MediaCard} from "@/components/app/MediaCard";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
@@ -392,7 +392,11 @@ function MediaList() {
     const isCurrent = (userClient.currentUser.id === apiData.user_data.id);
 
     const fetchNewData = async (params) => {
-        if (JSON.stringify(params) === JSON.stringify(apiData.filters)) return;
+        if (JSON.stringify(params) === JSON.stringify(apiData.filters)) {
+            return;
+        }
+
+        // noinspection JSCheckFunctionSignatures
         await navigate({ search: params });
     };
 
@@ -404,23 +408,23 @@ function MediaList() {
         else {
             delete newFilters[type];
         }
-        await fetchNewData(newFilters);
+        await fetchNewData({ ...newFilters, page: 1 });
     };
 
     const removeAllFilters = async () => {
-        await fetchNewData({ sort: apiData.filters.sort });
+        await fetchNewData({ sort: apiData.filters.sort, page: 1 });
     };
 
     const applyFilters = async (filters) => {
-        await fetchNewData(filters);
+        await fetchNewData({ ...filters, page: 1 });
     };
 
     const applySorting = async (sortValue) => {
-        await fetchNewData({ ...apiData.filters, sort: sortValue });
+        await fetchNewData({ ...apiData.filters, sort: sortValue, page: 1 });
     };
 
     const applyStatus = async (ev) => {
-        await fetchNewData({ ...apiData.filters, status: [ev.target.textContent] });
+        await fetchNewData({ ...apiData.filters, status: [ev.target.textContent], page: 1 });
     };
 
     const onPageChange = async (page) => {
@@ -428,7 +432,7 @@ function MediaList() {
     };
 
     const updateSearch = async (search) => {
-        await fetchNewData({ ...apiData.filters, search });
+        await fetchNewData({ ...apiData.filters, search, page: 1 });
     };
 
     return (

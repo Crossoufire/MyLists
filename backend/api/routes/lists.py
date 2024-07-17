@@ -1,11 +1,11 @@
 from flask import jsonify, Blueprint
-from backend.api import db, cache
+from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.routes.handlers import token_auth, current_user
-from backend.api.data_managers.medialist_query_manager import MediaListQuery
+from backend.api.managers.medialist_query_manager import MediaListQuery
 from backend.api.utils.decorators import validate_media_type
 from backend.api.utils.enums import MediaType, RoleType
-from backend.api.data_managers.stats_manager import BaseStats
+from backend.api.managers.stats_manager import BaseStats
 
 
 lists_bp = Blueprint("api_lists", __name__)

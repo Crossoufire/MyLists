@@ -3,7 +3,7 @@ import {api} from "@/api/MyApiClient";
 import {createLocalDate} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {useAdminApi} from "@/hooks/AdminUpdaterHook";
 import {createFileRoute, redirect, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";

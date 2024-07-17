@@ -12,6 +12,7 @@ from backend.api.routes.handlers import basic_auth, current_user
 from backend.api.routes.email import send_email
 from backend.api.models.user_models import Token, User
 
+
 tokens = Blueprint("api_tokens", __name__)
 
 

@@ -11,7 +11,7 @@
 - Removed the misc sidebar and added cards carousel to the main stats in `/stats`
 - Changed TMDB to IGDB for games in `/details`
 - Changed Top Watched to Top Read for Books and Top Played for Games in `/stats`
-- 
+
 ### Fixes
 - Fixed error in user last updates in `/profile`
 

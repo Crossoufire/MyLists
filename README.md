@@ -46,7 +46,7 @@ pip install -r requirements.txt
 3. Set up the `.flaskenv` file
 ```
 FLASK_APP=server.py
-FLASK_DEBUG=<0|1>
+FLASK_ENV=< development | production >
 ```
 
 4. Create a `.env` file
@@ -82,8 +82,8 @@ The backend will be served by default at [http://localhost:5000](http://localhos
 
 ## Prerequisites
 - WSL2 recommended for Windows
-- Node.js > 19
-- npm > 9
+- Node.js > 19.0
+- npm > 9.0
 
 ## Steps
 1. Clone this repo and install the requirements
@@ -101,4 +101,3 @@ VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
 VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
 3. Run the command`npm run dev` inside the `MyLists/frontend` folder. The frontend will be served by default at http://localhost:3000.
-

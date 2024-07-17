@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {api} from "@/api/MyApiClient.js";
+import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {FormError} from "@/components/app/base/FormError";
@@ -26,21 +26,25 @@ export const RegisterForm = () => {
 	const onSubmit = async (data) => {
 		setErrors({});
 
-		setPending(true);
-		const response = await api.post("/register_user", {
-			username: data.username,
-			email: data.email,
-			password: data.password,
-			callback: import.meta.env.VITE_REGISTER_CALLBACK,
-		});
-		setPending(false);
+		try {
+			setPending(true);
+			const response = await api.post("/register_user", {
+				username: data.username,
+				email: data.email,
+				password: data.password,
+				callback: import.meta.env.VITE_REGISTER_CALLBACK,
+			});
 
-		if (response.status === 401) {
-			return setErrors(response.body.description);
+			if (response.status === 401) {
+				return setErrors(response.body.description);
+			}
+
+			if (!response.ok) {
+				return toast.error(response.body.description);
+			}
 		}
-
-		if (!response.ok) {
-			return toast.error(response.body.description);
+		finally {
+			setPending(false);
 		}
 
 		toast.success("Your account has been created. Check your email to activate your account");

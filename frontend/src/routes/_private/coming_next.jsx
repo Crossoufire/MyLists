@@ -1,6 +1,6 @@
 import {fetcher} from "@/lib/fetcherLoader";
 import {capitalize, zeroPad} from "@/lib/utils";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {MediaCard} from "@/components/app/MediaCard";
 import {createFileRoute} from "@tanstack/react-router";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";

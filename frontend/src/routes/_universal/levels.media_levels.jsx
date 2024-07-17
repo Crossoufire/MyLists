@@ -1,5 +1,5 @@
 import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute, useLoaderData} from "@tanstack/react-router";
 
 

@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
-from flask import url_for, current_app
+from typing import Dict, List, Callable
+from flask import url_for, current_app, abort
 from sqlalchemy import desc, asc, func
 from backend.api import db
 from backend.api.routes.handlers import current_user
@@ -27,17 +27,12 @@ class MediaMixin:
     @property
     def actors_list(self) -> List:
         """ Fetch the media actors """
-        return [d.name for d in self.actors]
+        return [actor.name for actor in self.actors]
 
     @property
     def genres_list(self) -> List:
         """ Fetch the media genres """
         return [g.genre for g in self.genres[:5]]
-
-    @property
-    def networks(self) -> List:
-        """ Fetch the media networks """
-        return [n.network for n in self.networks]
 
     @property
     def media_cover(self) -> str:
@@ -53,11 +48,11 @@ class MediaMixin:
             return []
 
         sim_genres = (
-            db.session.query(media, func.count(func.distinct(media_genre.genre)).label("genre_c"))
+            db.session.query(media, func.count(func.distinct(media_genre.genre)).label("genre_count"))
             .join(media_genre, media.id == media_genre.media_id)
             .filter(media_genre.genre.in_(self.genres_list), media_genre.media_id != self.id)
             .group_by(media.id).having(func.count(func.distinct(media_genre.genre)) >= 1)
-            .order_by(desc("genre_c")).limit(self.SIMILAR_GENRES).all()
+            .order_by(desc("genre_count")).limit(self.SIMILAR_GENRES).all()
         )
 
         return [{"media_id": m[0].id, "media_name": m[0].name, "media_cover": m[0].media_cover} for m in sim_genres]
@@ -118,30 +113,26 @@ class MediaListMixin:
     comment: str
     media: db.Model
     query: db.Model
-    completion_date: datetime
     Status: Status
 
     def update_status(self, new_status: str) -> int:
-        """ Change the status of the TV media (overwritten for other media) for the current user and return the
-        new total """
+        """ Change the TV media status (overwritten for other media) for current user and return the new total """
 
-        self.status = new_status
         new_total = self.total
 
+        self.status = new_status
+        self.rewatched = 0
         if new_status == Status.COMPLETED:
+            total_eps = sum(self.media.eps_per_season_list)
             self.current_season = len(self.media.eps_per_season)
             self.last_episode_watched = self.media.eps_per_season[-1].episodes
-            self.total = self.media.total_episodes
-            new_total = self.media.total_episodes
-            self.completion_date = datetime.today()
+            self.total = total_eps
+            new_total = total_eps
         elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
+            new_total = 0
+            self.total = 0
             self.current_season = 1
             self.last_episode_watched = 0
-            self.total = 0
-            new_total = 0
-
-        #  Reset rewatched value
-        self.rewatched = 0
 
         return new_total
 
@@ -370,7 +361,6 @@ class Ranks(db.Model):
                     ) for rk in list_all_ranks[len(ranks) + 1:]
                 ])
 
-        # Commit changes
         db.session.commit()
 
 

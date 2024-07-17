@@ -7,11 +7,12 @@ from PIL.Image import Resampling
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.data_managers.api_data_manager import ApiData
+from backend.api.managers.api_data_manager import ApiData
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
 from backend.api.utils.functions import get, ModelsFetcher
+
 
 details_bp = Blueprint("api_details", __name__)
 
@@ -42,7 +43,7 @@ def media_details(media_type: MediaType, media_id: int):
         follows_data=media.in_follows_lists(),
     )
 
-    return jsonify(data=data)
+    return jsonify(data=data), 200
 
 
 @details_bp.route("/details/form/<media_type>/<media_id>", methods=["GET"])
@@ -158,7 +159,7 @@ def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Di
         return abort(404)
 
     try:
-        refreshed_data = api_model(API_id=media.api_id).update_media_data()
+        refreshed_data = api_model(API_id=media.api_id).get_refreshed_media_data()
         media.refresh_element_data(media.api_id, refreshed_data)
         current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID: [{media.api_id}]")
     except Exception as e:

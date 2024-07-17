@@ -37,7 +37,6 @@ import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/p
 import { Route as PrivateListMediaTypeUsernameImport } from './routes/_private/list/$mediaType.$username'
 import { Route as PrivateDetailsMediaTypeMediaIdImport } from './routes/_private/details/$mediaType.$mediaId'
 import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_private/profile/$username/_header/index'
-import { Route as PrivateStatsOldMediaTypeUsernameImport } from './routes/_private/stats/old_.$mediaType.$username'
 import { Route as PrivateProfileUsernameHeaderHistoryImport } from './routes/_private/profile/$username/_header/history'
 import { Route as PrivateProfileUsernameHeaderFollowsImport } from './routes/_private/profile/$username/_header/follows'
 import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
@@ -184,12 +183,6 @@ const PrivateProfileUsernameHeaderIndexRoute =
   PrivateProfileUsernameHeaderIndexImport.update({
     path: '/',
     getParentRoute: () => PrivateProfileUsernameHeaderRoute,
-  } as any)
-
-const PrivateStatsOldMediaTypeUsernameRoute =
-  PrivateStatsOldMediaTypeUsernameImport.update({
-    path: '/stats/old/$mediaType/$username',
-    getParentRoute: () => PrivateRoute,
   } as any)
 
 const PrivateProfileUsernameHeaderHistoryRoute =
@@ -429,13 +422,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateProfileUsernameHeaderHistoryImport
       parentRoute: typeof PrivateProfileUsernameHeaderImport
     }
-    '/_private/stats/old/$mediaType/$username': {
-      id: '/_private/stats/old/$mediaType/$username'
-      path: '/stats/old/$mediaType/$username'
-      fullPath: '/stats/old/$mediaType/$username'
-      preLoaderRoute: typeof PrivateStatsOldMediaTypeUsernameImport
-      parentRoute: typeof PrivateImport
-    }
     '/_private/profile/$username/_header/': {
       id: '/_private/profile/$username/_header/'
       path: '/'
@@ -471,7 +457,6 @@ export const routeTree = rootRoute.addChildren({
     PrivateStatsMediaTypeUsernameRoute,
     PrivateDetailsMediaTypeJobInfoRoute,
     PrivateDetailsFormMediaTypeMediaIdRoute,
-    PrivateStatsOldMediaTypeUsernameRoute,
   }),
   PublicRoute: PublicRoute.addChildren({
     PublicForgotpasswordRoute,
@@ -516,8 +501,7 @@ export const routeTree = rootRoute.addChildren({
         "/_private/profile/$username",
         "/_private/stats/$mediaType/$username",
         "/_private/details/$mediaType/$job/$info",
-        "/_private/details/form/$mediaType/$mediaId",
-        "/_private/stats/old/$mediaType/$username"
+        "/_private/details/form/$mediaType/$mediaId"
       ]
     },
     "/_public": {
@@ -651,10 +635,6 @@ export const routeTree = rootRoute.addChildren({
     "/_private/profile/$username/_header/history": {
       "filePath": "_private/profile/$username/_header/history.jsx",
       "parent": "/_private/profile/$username/_header"
-    },
-    "/_private/stats/old/$mediaType/$username": {
-      "filePath": "_private/stats/old_.$mediaType.$username.jsx",
-      "parent": "/_private"
     },
     "/_private/profile/$username/_header/": {
       "filePath": "_private/profile/$username/_header/index.jsx",

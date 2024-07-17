@@ -15,10 +15,9 @@ import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const SearchBar = () => {
+export const SearchBar = ({ currentUser }) => {
     const searchRef = useRef();
     const [results, setResults] = useState();
-    const currentUser = userClient.currentUser;
     const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);
     const [selectDrop, setSelectDrop] = useState("TMDB");
@@ -153,13 +152,13 @@ const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) =>
                 :
                 results.items.map(media =>
                     <MediaSearch
+                        date={media.date}
+                        name={media.name}
                         key={media.api_id}
                         apiId={media.api_id}
-                        name={media.name}
+                        resetSearch={resetSearch}
                         mediaType={media.media_type}
                         thumbnail={media.image_cover}
-                        date={media.date}
-                        resetSearch={resetSearch}
                     />
                 )
             }

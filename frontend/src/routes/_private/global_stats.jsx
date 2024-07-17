@@ -4,7 +4,7 @@ import {barTheme} from "@/lib/constants";
 import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/PageTitle";
+import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {capitalize, changeValueFormat} from "@/lib/utils";
