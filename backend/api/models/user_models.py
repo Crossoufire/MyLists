@@ -1,8 +1,8 @@
 from __future__ import annotations
 import json
 import secrets
+import time
 from datetime import datetime, timedelta, timezone
-from time import time
 from typing import List, Dict
 import jwt
 from flask import url_for, current_app, abort
@@ -23,8 +23,6 @@ followers = db.Table(
 
 
 class Token(db.Model):
-    """ Class for the management of the user's connexion tokens """
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True)
     access_token = db.Column(db.String(64), nullable=False, index=True)
@@ -429,7 +427,7 @@ class User(db.Model):
         """ Generate a <register token> or a <forgot password token> """
 
         token = jwt.encode(
-            payload={"token": self.id, "exp": time() + expires_in},
+            payload={"token": self.id, "exp": time.time() + expires_in},
             key=current_app.config["SECRET_KEY"],
             algorithm="HS256",
         )

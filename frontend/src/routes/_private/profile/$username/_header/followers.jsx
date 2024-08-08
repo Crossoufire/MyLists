@@ -1,6 +1,6 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Return} from "@/components/app/base/Return";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 
 

@@ -18,6 +18,7 @@ class Config:
     DEBUG = False
     TESTING = False
     USER_ACTIVE_PER_DEFAULT = False
+    DISABLE_AUTH = False
 
     # Database option
     SQLALCHEMY_DATABASE_URI = (

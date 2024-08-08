@@ -15,6 +15,43 @@ from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.utils.functions import ModelsFetcher
 
 
+def profile_route_time(num_requests=250):
+    import time
+    import requests
+    import statistics
+    from tqdm import tqdm
+
+    current_app.config["DISABLE_AUTH"] = True
+
+    headers = {"Authorization": f"Bearer 15m7Z2G8Q9RWXnO3A2YLVxNRMn2-WSCc3jMaaHZSfAQ"}
+    times = []
+
+    for _ in tqdm(range(num_requests), ncols=70):
+        start_time = time.time()
+        response = requests.get("http://localhost:5000/api/profile/Maxine", headers=headers)
+        end_time = time.time()
+
+        if response.status_code == 200:
+            execution_time = end_time - start_time
+            times.append(execution_time)
+        else:
+            print(f"Request failed with status code: {response.status_code}")
+
+    if times:
+        avg_time = statistics.mean(times)
+        min_time = min(times)
+        max_time = max(times)
+        std_dev = statistics.stdev(times) if len(times) > 1 else 0
+
+        print(f"Number of successful requests: {len(times)}")
+        print(f"Average execution time: {int(avg_time * 1000)} ms")
+        print(f"Minimum execution time: {int(min_time * 1000)} ms")
+        print(f"Maximum execution time: {int(max_time * 1000)} ms")
+        print(f"Standard deviation: {int(std_dev * 1000)} ms")
+    else:
+        print("No successful requests were made.")
+
+
 def correct_random_and_ptw_data():
     """ The <last_episode_watched>, <current_season>, and <total> should be zero when in <PLAN_TO_WATCH> or <RANDOM>
     status for Series and Anime """
@@ -122,7 +159,7 @@ def reactivate_update_modal(value: bool = True):
 
 
 def remove_non_list_media():
-    """ Remove all media not present in User list from database and disk """
+    """ Remove all media not present in a user list from db """
 
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Media Remover -")
