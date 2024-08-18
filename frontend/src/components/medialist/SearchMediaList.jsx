@@ -6,8 +6,8 @@ import {useParams} from "@tanstack/react-router";
 
 
 export const SearchMediaList = ({ updateSearch }) => {
-    const [search, setSearch] = useState("");
     const { mediaType } = useParams({ strict: false });
+    const [search, setSearch] = useState("");
 
     const handleOnKeyUp = async (ev) => {
         const newValue = ev.target.value;

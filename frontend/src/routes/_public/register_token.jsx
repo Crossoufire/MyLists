@@ -16,11 +16,12 @@ function RegisterTokenPage() {
 
     useEffect(() => {
         const registrationTimeout = setTimeout(async () => {
-            const response = await api.post("/tokens/register_token", { token: token });
+            const response = await api.post("/auth/device-token", { token: token });
 
             if (!response.ok) {
                 toast.error(response.body.description);
-            } else {
+            }
+            else {
                 toast.success("Your account has been successfully activated. Feel free to log-in now.");
             }
 
@@ -32,7 +33,7 @@ function RegisterTokenPage() {
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
-            <div className="text-xl mb-2 font-semibold">Registration In Progress...</div>
+            <div className="text-xl mb-2 font-semibold">Authentication In Progress...</div>
         </div>
     );
 }

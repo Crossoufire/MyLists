@@ -1,6 +1,6 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
@@ -9,7 +9,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/trends")({
     component: TrendsPage,
-    loader: async () => fetcher("/current_trends"),
+    loader: async () => fetcher("/general/trends"),
 });
 
 

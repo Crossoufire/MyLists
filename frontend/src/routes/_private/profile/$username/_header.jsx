@@ -7,7 +7,7 @@ import {createFileRoute, getRouteApi, Outlet} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header")({
     component: ProfileTop,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}`),
+    loader: async ({ params }) => fetcher(`/user/profile/${params.username}`),
 });
 
 export const profileHeaderRoute = getRouteApi("/_private/profile/$username/_header");

@@ -18,7 +18,7 @@ class SearchTests(BaseTest):
         self.assertEqual(rv.status_code, 200)
         assert rv.json["data"]["items"][0]["name"] == "test"
         assert rv.json["data"]["items"][0]["media_type"] == "User"
-        assert rv.json["data"]["items"][0]["image_cover"] == "/api/static/profile_pics/default.jpg"
+        assert rv.json["data"]["items"][0]["image_cover"] == "/api/static/profile_pictures/default.jpg"
         assert "date" in rv.json["data"]["items"][0]
         assert rv.json["data"]["total"] == 1
         assert rv.json["data"]["pages"] == 1

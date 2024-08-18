@@ -7,7 +7,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/followers")({
     component: ProfileFollowers,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}/followers`),
+    loader: async ({ params }) => fetcher(`/user/${params.username}/followers`),
 });
 
 

@@ -19,21 +19,20 @@ export const useApiUpdater = (mediaId, mediaType) => {
     };
 
     const actions = {
-        addMedia: "/add_media",
-        deleteMedia: "/delete_media",
-        favorite: "/update_favorite",
-        status: "/update_status",
-        rating: "/update_rating",
-        redo: "/update_redo",
-        season: "/update_season",
-        episode: "/update_episode",
-        page: "/update_page",
-        playtime: "/update_playtime",
-        comment: "/update_comment",
-        refresh: "/details/refresh",
-        addBookCover: "/details/add_book_cover",
-        removeLabelFromMedia: "/remove_label_from_media",
-        addMediaToLabel: "/add_media_to_label",
+        addMedia: `/list/${mediaType}/add`,
+        deleteMedia: `/list/${mediaType}/delete`,
+        favorite: `/list/${mediaType}/favorite`,
+        status: `/list/${mediaType}/status`,
+        rating: `/list/${mediaType}/rating`,
+        redo: `/list/${mediaType}/redo`,
+        season: `/list/${mediaType}/season`,
+        episode: `/list/${mediaType}/episode`,
+        page: `/list/${mediaType}/page`,
+        playtime: `/list/${mediaType}/playtime`,
+        comment: `/list/${mediaType}/comment`,
+        refresh: `/media/${mediaType}/refresh`,
+        removeLabelFromMedia: `/list/${mediaType}/label/remove`,
+        addMediaToLabel: `/list/${mediaType}/label/add`,
     };
 
     const updateFunctions = {};

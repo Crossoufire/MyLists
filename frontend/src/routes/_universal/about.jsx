@@ -1,11 +1,11 @@
 import {mail} from "@/lib/constants";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
 export const Route = createFileRoute("/_universal/about")({
-  component: AboutPage,
+	component: AboutPage,
 });
 
 

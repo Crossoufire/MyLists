@@ -9,7 +9,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/coming_next")({
     component: ComingNextPage,
-    loader: async () => fetcher("/coming_next"),
+    loader: async () => fetcher("/list/upcoming"),
 });
 
 

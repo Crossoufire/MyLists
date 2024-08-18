@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ title }} {{ version }}</title>
+    <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+    <!--suppress CssUnusedSymbol -->
+    <style>
+        [data-theme="dark"] .elements-container :is(.token.string, .token.function, .token.property, .token.punctuation) {
+            color: #dfdfdf !important;
+        }
+        [data-theme="dark"] .elements-container .sl-text-primary {
+            color: #2ba5cd !important;
+        }
+        [data-theme="dark"] .elements-container .sl-text-warning {
+            color: #f3692d !important;
+        }
+        [data-theme="dark"] .elements-container :is(.sl-text-danger, .token.operator)  {
+            color: #b94a55 !important;
+        }
+        [data-theme="dark"] .elements-container .sl-text-success {
+            color: #0aa60a !important;
+        }
+        [data-theme="dark"] .elements-container .token.keyword {
+            color: #f38352 !important;
+        }
+        [data-theme="dark"] .elements-container .token.console {
+            color: #72c666 !important;
+        }
+        [data-theme="dark"] .elements-container :is(.token.number, .token.boolean) {
+            color: #5cd9ed !important;
+        }
+        [data-theme="dark"] .elements-container .sl-font-mono {
+            color: #e6e6e6 !important;
+        }
+        [data-theme="dark"] .elements-container .sl-text-muted {
+            color: #c8baba !important;
+        }
+    </style>
+</head>
+<body>
+<div class="elements-container">
+    <elements-api
+        apiDescriptionUrl="{{ url_for('apifairy.json') }}"
+        router="hash"
+        layout="sidebar"
+        hideSchemas="true"
+        logo="https://mylists.info/favicon.ico"
+    />
+</div>
+</body>
+</html>

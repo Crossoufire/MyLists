@@ -1,9 +1,10 @@
-import imghdr
 import os
 import re
 import secrets
 from datetime import datetime, timezone
+from io import BytesIO
 from typing import Dict, List, Any, Iterable, Literal, Tuple
+from PIL import Image
 from flask import current_app, abort
 from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType
@@ -129,25 +130,21 @@ def get(state: Iterable, *path: Any, default: Any = None):
     return state or default
 
 
-def get_level(total_time: float) -> float:
-    """ Returns the level based on time spent in [minutes] """
+def compute_level(total_time: float) -> float:
     if total_time < 0:
         current_app.logger.error("the total time given to the 'total_time' function is negative!")
         raise Exception("Total time must be greater than 0")
     return (((400 + 80 * total_time) ** 0.5) - 20) / 40
 
 
-def get_media_level(user: db.Model, media_type: MediaType) -> int:
-    """ Fetch the time spent in [minutes] and return the level of media for a user """
-    time_min = getattr(user, f"time_spent_{media_type.value}")
-    return int(f"{get_level(time_min):.2f}".split(".")[0])
-
-
 def save_picture(form_picture, old_picture: str, profile: bool = True):
-    """ Save the account picture either profile or background """
+    """ Save an account picture """
 
-    if imghdr.what(form_picture) not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
-        current_app.logger.error(f"[SYSTEM] Invalid picture format: {imghdr.what(form_picture)}")
+    try:
+        image = Image.open(BytesIO(form_picture))
+        if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
+            return abort(400, "Invalid picture format")
+    except:
         return abort(400, "Invalid picture format")
 
     file = form_picture
@@ -156,39 +153,22 @@ def save_picture(form_picture, old_picture: str, profile: bool = True):
     picture_fn = random_hex + f_ext
 
     if profile:
-        file.save(os.path.join(current_app.root_path, "static/profile_pics", picture_fn))
+        file.save(os.path.join(current_app.root_path, "static/profile_pictures", picture_fn))
     else:
-        file.save(os.path.join(current_app.root_path, "static/background_pics", picture_fn))
+        file.save(os.path.join(current_app.root_path, "static/back_pictures", picture_fn))
 
     try:
         if old_picture != "default.jpg":
             if profile:
-                os.remove(os.path.join(current_app.root_path, "static/profile_pics", old_picture))
+                os.remove(os.path.join(current_app.root_path, "static/profile_pictures", old_picture))
                 current_app.logger.info(f"Settings updated: Removed old picture: {old_picture}")
             else:
-                os.remove(os.path.join(current_app.root_path, "static/background_pics", old_picture))
+                os.remove(os.path.join(current_app.root_path, "static/back_pictures", old_picture))
                 current_app.logger.info(f"Settings updated: Removed old background: {old_picture}")
     except:
         current_app.logger.error(f"Error trying to remove an old picture: {old_picture}")
 
     return picture_fn
-
-
-def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str:
-    try:
-        if tv:
-            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
-        elif games:
-            return datetime.fromtimestamp(int(date_), timezone.utc).strftime("%d %b %Y")
-        elif books:
-            try:
-                return re.findall(re.compile("\d{4}"), date_)[0]
-            except:
-                return "N/A"
-        else:
-            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
-    except (ValueError, TypeError):
-        return "N/A"
 
 
 def safe_div(a: float, b: float, percentage: bool = False):
@@ -223,48 +203,6 @@ def clean_html_text(raw_html: str) -> str:
     return cleantext
 
 
-def int_to_money(value: int):
-    suffixes = ["", "K", "M", "B"]
-
-    if value < 1000:
-        return f"{value} $"
-
-    exp = 0
-    while value >= 1000 and exp < len(suffixes) - 1:
-        value /= 1000
-        exp += 1
-
-    return f"{int(value)} {suffixes[exp]}$"
-
-
-def display_time(minutes: int) -> str:
-    """ Display time in the MyLists <Stats> page """
-
-    dt = datetime.fromtimestamp(minutes * 60, timezone.utc)
-    years = dt.year - 1970
-    months = dt.month - 1
-    days = dt.day - 1
-    hours = dt.hour
-
-    time_components = []
-    if years > 0:
-        time_components.append(f"{years} years")
-    if months > 0:
-        time_components.append(f"{months} months")
-    if days > 0:
-        time_components.append(f"{days} days")
-    # noinspection PyChainedComparisons
-    if years <= 0 and months <= 0 and days <= 0 and hours > 0:
-        time_components.append(f"{hours} hours")
-    elif hours > 0:
-        time_components.append(f"and {hours} hours")
-
-    if not time_components:
-        return "0 hours"
-
-    return ", ".join(time_components)
-
-
 def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int, int, int]:
     """ Reorder the seasons and episodes. If eps_watched > sum(list_of_episodes) => last episode and last season """
 
@@ -277,3 +215,36 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
         if count >= eps_watched:
             last_episode = int(eps - (count - eps_watched))
             return last_episode, seas, eps_watched
+
+
+def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str:
+    try:
+        if tv:
+            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
+        elif games:
+            return datetime.fromtimestamp(int(date_), timezone.utc).strftime("%d %b %Y")
+        elif books:
+            try:
+                return re.findall(r"\d{4}", date_)[0]
+            except:
+                return "N/A"
+        else:
+            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
+    except (ValueError, TypeError):
+        return "N/A"
+
+
+def format_datetime(data) -> datetime | None:
+    """ Format to a universal datetime format or None if datetime not valid before saving to db """
+
+    date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d", "%Y"]
+
+    for pattern in date_patterns:
+        try:
+            return datetime.strptime(data, pattern)
+        except:
+            try:
+                return datetime.fromtimestamp(int(data))
+            except:
+                return None
+    return None

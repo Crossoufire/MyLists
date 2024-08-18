@@ -20,7 +20,7 @@ export const SearchBar = ({ currentUser }) => {
     const [results, setResults] = useState();
     const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);
-    const [selectDrop, setSelectDrop] = useState("TMDB");
+    const [selectDrop, setSelectDrop] = useState("media");
 
     const changeSelect = (value) => setSelectDrop(value);
 
@@ -42,10 +42,9 @@ export const SearchBar = ({ currentUser }) => {
             return;
         }
 
-        const response = await api.get("/autocomplete", {
+        const response = await api.get(`/search/${selectDrop}`, {
             q: query,
             page: page,
-            selector: selectDrop,
         });
 
         if (!response.ok) {
@@ -76,9 +75,9 @@ export const SearchBar = ({ currentUser }) => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            {<SelectItem value="TMDB">Media</SelectItem>}
-                            {currentUser.add_books && <SelectItem value="BOOKS">Books</SelectItem>}
-                            {currentUser.add_games && <SelectItem value="IGDB">Games</SelectItem>}
+                            {<SelectItem value="media">Media</SelectItem>}
+                            {currentUser.add_books && <SelectItem value="books">Books</SelectItem>}
+                            {currentUser.add_games && <SelectItem value="games">Games</SelectItem>}
                             <SelectItem value="users">Users</SelectItem>
                         </SelectGroup>
                     </SelectContent>

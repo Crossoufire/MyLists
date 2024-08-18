@@ -13,8 +13,8 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const LoginForm = () => {
 	const navigate = useNavigate();
-	const [error, setError] = useState("");
 	const form = useForm({ shouldFocusError: false });
+	const [error, setError] = useState("");
 	const [pending, setIsPending] = useState(false);
 
 	const onSubmit = async (data) => {
@@ -40,7 +40,7 @@ export const LoginForm = () => {
 		setError("");
 		try {
 			setIsPending(true);
-			const response = await api.get(`/tokens/oauth2/${provider}`, {
+			const response = await api.get(`/auth/oauth2/${provider}`, {
 				callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
 			});
 			if (!response.ok) {

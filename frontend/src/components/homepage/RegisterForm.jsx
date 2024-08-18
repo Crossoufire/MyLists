@@ -28,7 +28,7 @@ export const RegisterForm = () => {
 
 		try {
 			setPending(true);
-			const response = await api.post("/register_user", {
+			const response = await api.post("/auth/signup", {
 				username: data.username,
 				email: data.email,
 				password: data.password,

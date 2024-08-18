@@ -11,11 +11,11 @@ import * as Pop from "@/components/ui/popover";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Checkbox} from "@/components/ui/checkbox";
 import {MediaCard} from "@/components/app/MediaCard";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {Pagination} from "@/components/app/Pagination";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
@@ -55,8 +55,8 @@ const StatusComponent = ({ status, allStatus, applyStatus }) => (
 );
 
 
-const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) => {
-    const [filters, setFilters] = useState(initFilters);
+const FilterComponent = ({ isCurrent, filters, setFilters, applyFilters, allStatus }) => {
+    // TODO: Make an api call to get all the different filters (use memoization if possible)
 
     const checkboxChange = (filterType, value) => {
         setFilters((prevFilters) => {
@@ -85,7 +85,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                     <LuFilter className="w-4 h-4"/> Filter
                 </Button>
             </Sheet.SheetTrigger>
-            <Sheet.SheetContent side="left">
+            <Sheet.SheetContent side="left" className="overflow-y-auto">
                 <form onSubmit={handleOnSubmit}>
                     <Sheet.SheetHeader>
                         <Sheet.SheetTitle>Filtering</Sheet.SheetTitle>
@@ -104,7 +104,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                         <div>
                             <h3 className="text-lg font-semibold">Status</h3>
                             <ul className="max-h-[190px] overflow-hidden hover:overflow-auto">
-                                {allFilters.all_status.map(status =>
+                                {allStatus.map(status =>
                                     <li key={status} className="flex items-center gap-3">
                                         <Checkbox
                                             id={`${status}-id`}
@@ -285,7 +285,7 @@ const ShowStatus = ({ allStatus, status }) => {
 };
 
 
-const MediaItem = ({ isCurrent, media, filters, initCommon }) => {
+const MediaItem = ({ isCurrent, media, allStatus, initCommon }) => {
     const { mediaType } = Route.useParams();
     const [isLoading, handleLoading] = useLoading();
     const [status, setStatus] = useState(media.status);
@@ -353,7 +353,7 @@ const MediaItem = ({ isCurrent, media, filters, initCommon }) => {
                 </h3>
                 <ShowStatus
                     status={status}
-                    allStatus={filters.status}
+                    allStatus={allStatus}
                 />
                 <div className="flex items-center justify-between h-[24px]">
                     <ManageFavorite
@@ -389,6 +389,23 @@ function MediaList() {
     const navigate = useNavigate();
     const apiData = Route.useLoaderData();
     const { username, mediaType } = Route.useParams();
+    const [filters, setFilters] = useState({
+        page: 1,
+        search: null,
+        sorting: apiData.pagination.sorting,
+        common: true,
+        comment: false,
+        favorite: false,
+        lang: ["All"],
+        status: ["All"],
+        genres: ["All"],
+        labels: ["All"],
+        actors: ["All"],
+        authors: ["All"],
+        directors: ["All"],
+        platforms: ["All"],
+        companies:["All"],
+    });
     const isCurrent = (userClient.currentUser.id === apiData.user_data.id);
 
     const fetchNewData = async (params) => {
@@ -446,20 +463,21 @@ function MediaList() {
                         updateSearch={updateSearch}
                     />
                     <StatusComponent
+                        status={filters.status}
                         applyStatus={applyStatus}
-                        status={apiData.filters.status}
                         allStatus={apiData.pagination.all_status}
                     />
                     <FilterComponent
+                        filters={filters}
                         isCurrent={isCurrent}
+                        setFilters={setFilters}
                         applyFilters={applyFilters}
-                        initFilters={apiData.filters}
-                        allFilters={apiData.pagination}
                         key={JSON.stringify(apiData.filters)}
+                        allStatus={apiData.pagination.all_status}
                     />
                     <SortComponent
+                        sorting={filters.sorting}
                         applySorting={applySorting}
-                        sorting={apiData.filters.sort}
                         allSorting={apiData.pagination.all_sorting}
                     />
                     <DotsOthers isCurrent={isCurrent}/>
@@ -470,9 +488,9 @@ function MediaList() {
                     {apiData.pagination.total} {capitalize(mediaType)}
                 </div>
                 <CurrentFilters
+                    currentFilters={filters}
                     removeFilter={removeAFilter}
                     removeAllFilters={removeAllFilters}
-                    currentFilters={apiData.current_filters}
                 />
             </div>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:gap-4 lg:grid-cols-5 sm:gap-5">
@@ -481,7 +499,7 @@ function MediaList() {
                         media={media}
                         key={media.media_id}
                         isCurrent={isCurrent}
-                        filters={apiData.filters}
+                        allStatus={apiData.pagination.all_status}
                         initCommon={apiData.media_data.common_ids.includes(media.media_id)}
                     />
                 )}

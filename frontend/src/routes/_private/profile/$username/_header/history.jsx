@@ -18,7 +18,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/history")({
     component: AllUpdates,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}/history`, INIT_PARAMS),
+    loader: async ({ params }) => fetcher(`/user/${params.username}/media-history`, INIT_PARAMS),
 });
 
 
@@ -36,7 +36,7 @@ function AllUpdates() {
     });
 
     const fetchData = async (params) => {
-        const response = await api.get(`/profile/${username}/history`, params);
+        const response = await api.get(`/user/${username}/media-history`, params);
 
         if (!response.ok) {
             return toast.error(response.body.description);

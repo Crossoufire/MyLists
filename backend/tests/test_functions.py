@@ -3,16 +3,15 @@ from backend.api import db
 from werkzeug.exceptions import BadRequest
 from backend.tests.base_test import BaseTest
 from werkzeug.datastructures import FileStorage
-from backend.api.utils.enums import MediaType
-from backend.api.utils.functions import (save_picture, get_class_registry, get_level, display_time, clean_html_text,
-                                         is_latin, safe_div, change_air_format, get_media_level)
+from backend.api.utils.functions import (save_picture, get_class_registry, compute_level, clean_html_text,
+                                         is_latin, safe_div, change_air_format)
 
 
 class UtilsFunctionTests(BaseTest):
     def setUp(self):
         super().setUp()
 
-        from backend.api.models.user_models import User
+        from backend.api.models.users import User
 
         base_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -21,7 +20,7 @@ class UtilsFunctionTests(BaseTest):
         self.user = User.query.first()
 
     def _test_save_picture(self, file: FileStorage, user_attr: str, is_profile: bool):
-        file_path = "profile_pics" if is_profile else "background_pics"
+        file_path = "profile_pictures" if is_profile else "back_pictures"
         picture_fn = save_picture(file, getattr(self.user, user_attr), profile=is_profile)
         self.assertIs(os.path.isfile(os.path.join(self.app.root_path, "static", file_path, picture_fn)), True)
         return picture_fn
@@ -47,41 +46,16 @@ class UtilsFunctionTests(BaseTest):
 
         self.assertRaises(AttributeError, get_class_registry, DummyModel)
 
-    def test_get_level(self):
-        self.assertAlmostEqual(get_level(0), 0.00000, places=5)
-        self.assertAlmostEqual(get_level(1), 0.04772, places=5)
-        self.assertAlmostEqual(get_level(2), 0.09161, places=5)
-        self.assertAlmostEqual(get_level(5), 0.20711, places=5)
-        self.assertAlmostEqual(get_level(1000), 6.58872, places=5)
-        self.assertAlmostEqual(get_level(100000), 70.21245, places=5)
-        self.assertAlmostEqual(get_level(10000000), 706.60696, places=5)
-        self.assertRaises(Exception, get_level, -10)
-        self.assertRaises(Exception, get_level, "toto")
-
-    def test_get_media_level(self):
-        media_lvl = get_media_level(self.user, MediaType.SERIES)
-        self.assertEqual(media_lvl, 0)
-
-        self.user.time_spent_series = 12675
-        db.session.commit()
-
-        media_lvl = get_media_level(self.user, MediaType.SERIES)
-        self.assertEqual(media_lvl, 24)
-
-        self.assertRaises(AttributeError, get_media_level, self.user, "toto")
-        self.assertRaises(AttributeError, get_media_level, "toto", MediaType.SERIES)
-
-    def test_display_time(self):
-        self.assertEqual(display_time(0), "0 hours")
-        self.assertEqual(display_time(60), "1 hours")
-        self.assertEqual(display_time(1440), "1 days")
-        self.assertEqual(display_time(43800), "30 days, and 10 hours")
-        self.assertEqual(display_time(525600), "1 years")
-        self.assertEqual(display_time(568800), "1 years, 30 days")
-        self.assertEqual(display_time(5256000), "9 years, 11 months, 29 days")
-        self.assertEqual(display_time(1568768765), "2982 years, 8 months, 25 days, and 18 hours")
-        self.assertEqual(display_time(-466795), "1 months, 9 days, and 20 hours")
-        self.assertRaises(TypeError, display_time, "toto")
+    def test_compute_level(self):
+        self.assertAlmostEqual(compute_level(0), 0.00000, places=5)
+        self.assertAlmostEqual(compute_level(1), 0.04772, places=5)
+        self.assertAlmostEqual(compute_level(2), 0.09161, places=5)
+        self.assertAlmostEqual(compute_level(5), 0.20711, places=5)
+        self.assertAlmostEqual(compute_level(1000), 6.58872, places=5)
+        self.assertAlmostEqual(compute_level(100000), 70.21245, places=5)
+        self.assertAlmostEqual(compute_level(10000000), 706.60696, places=5)
+        self.assertRaises(Exception, compute_level, -10)
+        self.assertRaises(Exception, compute_level, "toto")
 
     def test_clean_html_text(self):
         self.assertEqual(clean_html_text(" "), " ")
@@ -135,9 +109,9 @@ class UtilsFunctionTests(BaseTest):
         with open(self.image_path, "rb") as fp:
             file = FileStorage(fp)
             picture_fn = self._test_save_picture(file, "image_file", True)
-            os.remove(os.path.join(self.app.root_path, "static", "profile_pics", picture_fn))
+            os.remove(os.path.join(self.app.root_path, "static", "profile_pictures", picture_fn))
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pics", picture_fn)),
+                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pictures", picture_fn)),
                 False
             )
 
@@ -150,9 +124,9 @@ class UtilsFunctionTests(BaseTest):
         with open(self.image_path, "rb") as fp:
             file = FileStorage(fp)
             picture_fn = self._test_save_picture(file, "background_image", False)
-            os.remove(os.path.join(self.app.root_path, "static", "background_pics", picture_fn))
+            os.remove(os.path.join(self.app.root_path, "static", "back_pictures", picture_fn))
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", picture_fn)),
+                os.path.isfile(os.path.join(self.app.root_path, "static", "back_pictures", picture_fn)),
                 False
             )
 
@@ -173,16 +147,16 @@ class UtilsFunctionTests(BaseTest):
             picture_fn = self._test_save_picture(file, "image_file", True)
 
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pics", picture_fn)),
+                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pictures", picture_fn)),
                 True
             )
 
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pics", self.user.image_file)),
+                os.path.isfile(os.path.join(self.app.root_path, "static", "profile_pictures", self.user.image_file)),
                 False
             )
 
-            os.remove(os.path.join(self.app.root_path, "static", "profile_pics", picture_fn))
+            os.remove(os.path.join(self.app.root_path, "static", "profile_pictures", picture_fn))
 
     def test_erase_old_user_background(self):
         with open(self.image_path, "rb") as fp:
@@ -196,14 +170,13 @@ class UtilsFunctionTests(BaseTest):
             picture_fn = self._test_save_picture(file, "background_image", False)
 
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", picture_fn)),
+                os.path.isfile(os.path.join(self.app.root_path, "static", "back_pictures", picture_fn)),
                 True
             )
 
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path,
-                                            "static", "background_pics", self.user.background_image)),
+                os.path.isfile(os.path.join(self.app.root_path,"static", "back_pictures", self.user.background_image)),
                 False
             )
 
-            os.remove(os.path.join(self.app.root_path, "static", "background_pics", picture_fn))
+            os.remove(os.path.join(self.app.root_path, "static", "back_pictures", picture_fn))

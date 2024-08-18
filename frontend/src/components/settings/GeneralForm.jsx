@@ -17,7 +17,6 @@ export const GeneralForm = () => {
 
     const onSubmit = async (data) => {
         setErrors("");
-        setPending(true);
 
         const formData = new FormData();
         Object.keys(data).forEach(key => {
@@ -30,15 +29,20 @@ export const GeneralForm = () => {
             }
         });
 
-        const response = await api.post("/settings/general", formData, { removeContentType: true });
-        setPending(false);
+        try {
+            setPending(true);
+            const response = await api.post("/user/settings/general", formData, { removeContentType: true });
 
-        if (!response.ok) {
-            return setErrors(response.body.description);
+            if (!response.ok) {
+                return setErrors(response.body.description);
+            }
+
+            userClient.setCurrentUser(response.body);
+            toast.success("Settings successfully updated");
         }
-
-        userClient.setCurrentUser(response.body.updated_user);
-        toast.success("Settings successfully updated");
+        finally {
+            setPending(false);
+        }
     };
 
     return (

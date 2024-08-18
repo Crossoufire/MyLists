@@ -1,13 +1,13 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Return} from "@/components/app/base/Return";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/follows")({
     component: ProfileFollows,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}/follows`),
+    loader: async ({ params }) => fetcher(`/user/${params.username}/following`),
 });
 
 

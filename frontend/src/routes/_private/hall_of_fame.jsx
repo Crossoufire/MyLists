@@ -3,13 +3,13 @@ import {useState} from "react";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {api, userClient} from "@/api/MyApiClient";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 
@@ -17,7 +17,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/hall_of_fame")({
     component: HallOfFamePage,
-    loader: async () => fetcher("/hall_of_fame", INIT_PARAMS),
+    loader: async () => fetcher("/general/hall-of-fame", INIT_PARAMS),
 });
 
 
@@ -30,25 +30,29 @@ function HallOfFamePage() {
     const [search, setSearch] = useState(INIT_PARAMS.search);
     const [sorting, setSorting] = useState(INIT_PARAMS.sorting);
     const [users, setUsers] = useState({
-        data: data.users,
+        data: data.data,
         page: INIT_PARAMS.page,
-        totalPages: data.pages,
+        totalPages: data.pagination.pages,
     });
 
     const fetchData = async (params) => {
-        setLoading(true);
-        const response = await api.get("/hall_of_fame", params);
-        setLoading(false);
+        try {
+            setLoading(true);
+            const response = await api.get("/general/hall-of-fame", params);
 
-        if (!response.ok) {
-            return toast.error(response.body.description);
+            if (!response.ok) {
+                return toast.error(response.body.description);
+            }
+
+            setUsers({
+                data: response.body.data,
+                page: response.body.pagination.page,
+                totalPages: response.body.pagination.pages,
+            });
         }
-
-        setUsers({
-            data: response.body.data.users,
-            page: response.body.data.page,
-            totalPages: response.body.data.pages,
-        });
+        finally {
+            setLoading(false);
+        }
     };
 
     const resetSearch = async () => {
@@ -70,7 +74,7 @@ function HallOfFamePage() {
 
     const onChangePage = (newPage) => {
         void fetchData({ search, page: newPage, sorting });
-        window.scrollTo({top: 0, behavior: "smooth"});
+        window.scrollTo({ top: 0 });
     };
 
     const onSortClicked = (sorting) => {

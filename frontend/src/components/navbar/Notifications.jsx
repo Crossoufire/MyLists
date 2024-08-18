@@ -35,7 +35,7 @@ export const Notifications = ({ isMobile }) => {
         };
 
         const pollCountNotifications = async () => {
-            const response = await api.get("/notifications/count");
+            const response = await api.get("/user/notifications/unread-count");
             if (response.ok) {
                 setNumberUnreadNotif(response.body.data);
             } else {
@@ -57,7 +57,7 @@ export const Notifications = ({ isMobile }) => {
     const fetchNotifications = async () => {
         try {
             setLoading(true);
-            const response = await api.get("/notifications");
+            const response = await api.get("/user/notifications");
 
             if (!response.ok) {
                 return toast.error("Failed to retrieve the notifications");

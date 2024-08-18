@@ -1,147 +1,151 @@
-import logging
-import os
-from logging.handlers import SMTPHandler, RotatingFileHandler
-from typing import Type
-from flask import Flask
-from flask_bcrypt import Bcrypt
-from flask_caching import Cache
-from flask_cors import CORS
-from flask_mail import Mail
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
-from backend.api.utils.enums import RoleType
-from backend.config import Config, get_config
+"""
+# Welcome to the documentation for the MyLists API!
+
+This project is written in Python, with the [Flask](https://flask.palletsprojects.com/) web framework.
+This documentation is generated automatically from the [project's source code]
+(https://github.com/Crossoufire/MyLists) using the [APIFairy](https://github.com/miguelgrinberg/apifairy)
+Flask extension.
 
 
-# Load globally accessible plugins
-mail = Mail()
-db = SQLAlchemy()
-migrate = Migrate()
-bcrypt = Bcrypt()
-cache = Cache()
-cors = CORS()
+## Introduction
+
+The MyLists API is the companion API for the MyLists web app. It is an ideal project to use when learning a front
+end framework, as it provides a fully implemented back end that you can integrate against.
+
+MyLists API provides lots of features:
+
+- User registration, login and logout
+- Password recovery flow with reset emails
+- Post creation and deletion
+- Follow and unfollow users
+- Feed with posts from followed users
+- Pagination
+- Option to disable authentication during development
 
 
-def _import_blueprints(app: Flask):
-    """ Import and register the blueprints for the app """
+## Configuration
 
-    from backend.api.routes.tokens import tokens as api_tokens_bp
-    from backend.api.routes.users import users as api_users_bp
-    from backend.api.routes.media import media_bp as api_media_bp
-    from backend.api.routes.search import search_bp as api_search_bp
-    from backend.api.routes.general import general as api_general_bp
-    from backend.api.routes.errors import errors as api_errors_bp
-    from backend.api.routes.admin import admin_bp as api_admin_bp
-    from backend.api.routes.details import details_bp as api_details_bp
-    from backend.api.routes.lists import lists_bp as api_lists_bp
-    from backend.api.routes.labels import labels_bp as api_labels_bp
+If you are running MyLists API yourself while developing your front end,
+there are a number of environment variables that you can set to configure its
+behavior. The variables can be defined directly in the environment or in a
+`.env` file in the project directory. The following table lists all the
+environment variables that are currently used:
 
-    api_blueprints = [api_tokens_bp, api_users_bp, api_media_bp, api_search_bp, api_general_bp, api_errors_bp,
-                      api_admin_bp, api_details_bp, api_lists_bp, api_labels_bp]
-
-    for blueprint in api_blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api")
-
-
-def _create_app_logger(app: Flask):
-    """ Create an app logger registering the INFO, WARNING, and ERRORS for the app """
-
-    log_file_path = f"{os.path.abspath(os.path.dirname(__file__))}/static/log/mylists.log"
-
-    if not os.path.exists(log_file_path):
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        with open(log_file_path, "a"):
-            pass
-
-    handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
-    handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
-    handler.setLevel(logging.INFO)
-
-    app.logger.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
-    app.logger.info("MyLists is starting up...")
+| Environment Variable | Default | Description |
+| - | - | - |
+| `SECRET_KEY` | `top-secret!` | A secret key used when signing tokens. |
+| `DATABASE_URL`  | `sqlite:///db.sqlite` | The database URL, as defined by the
+[SQLAlchemy](https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls) framework. |
+| `SQL_ECHO` | not defined | Whether to echo SQL statements to the console for debugging purposes. |
+| `ACCESS_TOKEN_MINUTES` | `15` | The number of minutes an access token is valid for. |
+| `REFRESH_TOKEN_DAYS` | `7` | The number of days a refresh token is valid for. |
+| `REFRESH_TOKEN_IN_COOKIE` | `yes` | Whether to return the refresh token in a secure cookie. |
+| `REFRESH_TOKEN_IN_BODY` | `no` | Whether to return the refresh token in the response body. |
+| `RESET_TOKEN_MINUTES` | `15` | The number of minutes a reset token is valid for. |
+| `PASSWORD_RESET_URL` | `http://localhost:3000/reset` | The URL that will be used in password reset links. |
+| `DOCS_UI` | `elements` | The documentation UI library. Values are `swagger_ui`, `redoc`, `rapidoc` and `elements`. |
+| `MAIL_SERVER` | `localhost` | The mail server to use for sending emails. |
+| `MAIL_PORT` | `25` | The port to use for sending emails. |
+| `MAIL_USE_TLS` | not defined | Whether to use TLS when sending emails. |
+| `MAIL_USERNAME` | not defined | The username to use for sending emails. |
+| `MAIL_PASSWORD` | not defined | The password to use for sending emails. |
+| `MAIL_DEFAULT_SENDER` | `donotreply@microblog.example.com` | The default sender to use for emails. |
+| `GITHUB_CLIENT_ID` | not defined | GitHub OAuth2 Client ID, used for logging in with a GitHub account. |
+| `GITHUB_CLIENT_SECRET` | not defined | GitHub OAuth2 client secret, used for logging in with a GitHub account. |
+| `GOOGLE_CLIENT_ID` | not defined | Google OAuth2 client ID, used for logging in with a Google account. |
+| `GOOGLE_CLIENT_SECRET` | not defined | Google OAuth2 client secret, used for logging in with a Google account. |
+| `OAUTH2_REDIRECT_URI` | `http://localhost:3000/oauth2/{provider}/callback` | Redirect URI to use for OAuth2 logins.
+A `{provider}` placeholder can be used to have the provider name inserted dynamically. |
 
 
-def _create_mail_handler(app: Flask):
-    """ Create a mail handler (TLS only) associated with the app logger: send email when errors occurs """
+## Authentication
 
-    mail_handler = SMTPHandler(
-        mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
-        fromaddr=app.config["MAIL_USERNAME"],
-        toaddrs=app.config["MAIL_USERNAME"],
-        subject="MyLists - Exceptions occurred",
-        credentials=(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"]),
-        secure=(),
-    )
+The authentication flow for this API is based on *access* and *refresh* tokens.
 
-    mail_handler.setLevel(logging.ERROR)
-    app.logger.addHandler(mail_handler)
+To obtain an access and refresh token pair, the client must send a `POST` request to the `/api/tokens` endpoint,
+passing the username and password of the user in a `Authorization` header, according to HTTP Basic Authentication
+scheme. The response includes the access and refresh tokens in the body. For added security in single-page
+applications, the refresh token is also returned in a secure cookie.
 
+Most endpoints in this API are authenticated with the access token, passed in the `Authorization` header, using the
+`Bearer` scheme.
 
-def _create_first_db_data():
-    """ Create all DB tables the first time and add the first data to the DB """
+Access tokens are valid for 15 minutes (by default) from the time they are issued. When the access token is expired,
+the client can renew it using the refresh token. For this, the client must send a `PUT` request to the `/api/tokens`
+endpoint, passing the expired access token in the body of the request, and the refresh token either in the body, or
+through the secure cookie sent when the tokens were requested. The response to this request will include a new pair
+of tokens. Refresh tokens have a default validity period of 7 days, and can only be used to renew the access token
+they were returned with. An attempt to use a refresh token more than once is considered a possible attack, and will
+cause all existing tokens for the user to be revoked immediately as a mitigation measure.
 
-    from backend.api.models.user_models import User
-    from backend.api.utils.cli_tasks import compute_media_time_spent
-    from backend.api.models.utils_models import Ranks, Frames
-
-    # Create all DB tables - does not update existing tables
-    db.create_all()
-
-    # Create an <admin> if no user in DB
-    if User.query.filter_by(id=1).first() is None:
-        admin = User(
-            username="admin",
-            email="admin@admin.com",
-            password=bcrypt.generate_password_hash("password").decode("utf-8"),
-            active=True,
-            registered_on=datetime.utcnow(),
-            activated_on=datetime.utcnow(),
-            role=RoleType.ADMIN,
-        )
-
-        db.session.add(admin)
-        db.session.commit()
-
-    Ranks.update_db_ranks()
-    Frames.update_db_frames()
-    compute_media_time_spent()
-    db.session.commit()
+All authentication failures are handled with a `401` status code in the response.
 
 
-def create_app(config_class: Type[Config] = None) -> Flask:
-    app = Flask(__name__, static_url_path="/api/static")
+### Password Resets
 
-    if config_class is None:
-        config_class = get_config()
+This API supports a password reset flow, to help users who forget their passwords regain access to their accounts.
+To issue a password reset request, the client must send a `POST` request to `/api/tokens/reset`, passing the user's
+email in the body of the request. The user will receive a password reset link by email, based on the password reset
+URL entered in configuration and a `token` query string parameter set to an email reset token, with a
+validity of 15 minutes.
 
-    app.config.from_object(config_class)
-    app.url_map.strict_slashes = False
-
-    mail.init_app(app)
-    db.init_app(app)
-    bcrypt.init_app(app)
-    cache.init_app(app)
-    migrate.init_app(app, db, compare_type=False, render_as_batch=True)
-    cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
-
-    with app.app_context():
-        _import_blueprints(app)
-
-        if not app.debug and not app.testing:
-            _create_app_logger(app)
-            _create_mail_handler(app)
-
-        from backend.api.utils.cli_cmds import cli_commands
-        cli_commands()
-
-        return app
+When the user clicks on the password reset link, the client application must capture the `token` query string argument
+and send it in a `PUT` request to `/api/tokens/reset`, along with the new password chosen by the user.
 
 
-# Needed for circular imports
-from backend.api.models.books_models import *
-from backend.api.models.games_models import *
-from backend.api.models.movies_models import *
-from backend.api.models.tv_models import *
-from backend.api.models.user_models import *
-from backend.api.models.utils_models import *
+## Pagination
+
+API endpoints that return collections of resources, such as the users or posts, implement pagination, and the client
+must use query string arguments to specify the range of items to return.
+
+The number of items to return is specified by the `limit` argument, which is optional. If not specified, the server
+sets the limit to a reasonable value for the endpoint. If the limit is too large, the server may decide to use a lower
+value instead. The following example shows how to request the first 10 users:
+
+    http://localhost:5000/api/users?limit=10
+
+The `offset` argument is used to specify the zero-based index of the first item to return. If not given, the server
+sets the offset to 0. The following example shows how to request the second page of users with a page size of 10:
+
+    http://localhost:5000/api/users?limit=10&offset=10
+
+Sometimes paginating with the `offset` argument can be inconvenient, such as with collections where new elements are
+not always inserted at the end of the list. As an alternative to `offset`, the `after` argument can be used to set
+the start item to the item after the one specified. This API supports `after` for collections of blog posts, which
+are sorted by their publication time in descending order, and for collections of users, which are sorted by their
+username in ascending order. For blog posts, the `after` argument must be set to a date and time specification in
+ISO 8601 format, such as `2020-01-01T00:00:00Z`. For users, the `after` argument must be set to a string. Examples:
+
+    http://localhost:5000/api/posts?limit=10&after=2021-01-01T00:00:00
+    http://localhost:5000/api/users/me/followers?limit=10&after=diana
+
+The response body in a paginated request contains a `data` attribute that is set to the list of entities that are in
+the requested page. A `pagination` attribute is also included with `offset`, `limit`, `count` and `total`
+sub-attributes, which should enable the client to present pagination controls to the user.
+
+
+## Errors
+
+All errors returned by this API use the following JSON structure:
+
+```json
+{
+    "code": <numeric error code>,
+    "message": <short error message>,
+    "description": <longer error description>,
+}
+```
+
+In the case of schema validation errors, an `errors` property is also returned, containing a detailed list of
+validation errors found in the submitted request:
+
+```json
+{
+    "code": <error code>,
+    "message": <error message>,
+    "description": <error description>,
+    "errors": [ <error details>, ... ]
+}
+```
+"""
+from backend.api.app import create_app, db, ma, fairy, cache

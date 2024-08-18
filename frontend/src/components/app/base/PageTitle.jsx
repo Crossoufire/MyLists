@@ -1,5 +1,5 @@
 import {Helmet} from "react-helmet";
-import {Separator} from "@/components/ui/separator.jsx";
+import {Separator} from "@/components/ui/separator";
 
 
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => {

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -25,15 +25,19 @@ function ForgotPasswordPage() {
     const onSubmit = async (data) => {
         setErrors("");
 
-        setPending(true);
-        const response = await api.post("/tokens/reset_password_token", {
-            email: data.email,
-            callback: import.meta.env.VITE_RESET_PASSWORD_CALLBACK,
-        });
-        setPending(false);
+        try {
+            setPending(true);
+            const response = await api.post("/auth/password-reset", {
+                email: data.email,
+                callback: import.meta.env.VITE_RESET_PASSWORD_CALLBACK,
+            });
 
-        if (response.status !== 204) {
-            return setErrors(response.body.description);
+            if (response.status !== 204) {
+                return setErrors(response.body.description);
+            }
+        }
+        finally {
+            setPending(false);
         }
 
         toast.success("A reset email has been sent to change your password");

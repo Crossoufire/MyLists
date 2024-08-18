@@ -20,7 +20,7 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
     component: StatsPage,
-    loader: async ({ params }) => fetcher(`/stats/${params.mediaType}/${params.username}`),
+    loader: async ({ params }) => fetcher(`/list/stats/${params.mediaType}/${params.username}`),
 });
 
 

@@ -36,7 +36,7 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
             (async () => {
                 try {
                     setLoading(true);
-                    const response = await api.get(`/labels_for_media/${mediaType}/${mediaId}`);
+                    const response = await api.get(`/list/${mediaType}/labels/${mediaId}`);
                     if (!response.ok) {
                         return setListMessage({
                             type: "error",
@@ -99,10 +99,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
             });
         }
 
-        const response = await api.post("/rename_label", {
-            media_type: mediaType,
-            old_label_name: selectedLabel,
-            new_label_name: newLabelName,
+        const response = await api.post(`/list/${mediaType}/label/rename`, {
+            old_name: selectedLabel,
+            new_name: newLabelName,
         });
 
         if (!response.ok) {
@@ -121,10 +120,7 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
 
         if (!window.confirm("Do you really want to delete this label?")) return;
 
-        const response = await api.post("/delete_label", {
-            media_type: mediaType,
-            label: label
-        });
+        const response = await api.post(`/list/${mediaType}/label/delete`, { label: label });
 
         if (!response.ok) {
             return setMessageTab2({ type: "error", value: response.body.description });

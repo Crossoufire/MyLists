@@ -1,11 +1,11 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
 import {barTheme} from "@/lib/constants";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {capitalize, changeValueFormat} from "@/lib/utils";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
@@ -15,7 +15,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/global_stats")({
     component: GlobalStatsPage,
-    loader: async () => fetcher("/mylists_stats"),
+    loader: async () => fetcher("/general/mylists-stats"),
 });
 
 

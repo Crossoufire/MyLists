@@ -12,7 +12,7 @@ class MediaTests(BaseTest):
 
     @staticmethod
     def create_all_media():
-        from backend.api.managers.api_data_manager import ApiData
+        from backend.api.managers.ApiManager import BaseApiManager
 
         media_files = ["series.json", "anime.json", "movies.json", "books.json", "games.json"]
         base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -21,57 +21,57 @@ class MediaTests(BaseTest):
             with open(f"{base_dir}/media/{media_file}") as fp:
                 media_data = json.load(fp)
 
-            API_class = ApiData.get_API_class(media_type)()
-            API_class.all_data = media_data
-            API_class.all_data["media_data"]["last_api_update"] = datetime.utcnow()
+            api_manager = BaseApiManager.get_subclass(media_type)
+            api_manager.all_data = media_data
+            api_manager.all_data["media_data"]["last_api_update"] = datetime.utcnow()
             if media_type == MediaType.BOOKS:
-                del API_class.all_data["media_data"]["last_api_update"]
-            API_class._add_data_to_db()
+                del api_manager.all_data["media_data"]["last_api_update"]
+            api_manager._add_data_to_db()
 
     def add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:
         self.create_all_media()
 
-        rv = self.client.post("/api/add_media")
-        assert rv.status_code == 401
+        rv = self.client.post(f"/api/list/{media_type}/add")
+        self.assertEqual(rv.status_code, 401)
 
         headers = self.connexion()
 
-        rv = self.client.get("/api/current_user", headers=headers)
-        assert rv.status_code == 200
+        rv = self.client.get("/api/user/me", headers=headers)
+        self.assertEqual(rv.status_code, 200)
 
         invalid_payloads = [
             (media_id, "toto", status),
             (media_id, media_type, "toto"),
             (2, media_type, status),
         ]
-
         for payload in invalid_payloads:
-            rv = self.client.post("/api/add_media", headers=headers, json={
+            rv = self.client.post(f"/api/list/{media_type}/add", headers=headers, json={
                 "media_id": payload[0],
                 "media_type": payload[1],
                 "payload": payload[2],
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-        rv_good = self.client.post("/api/add_media", headers=headers, json={
+        rv_good = self.client.post(f"/api/list/{media_type}/add", headers=headers, json={
             "media_id": media_id,
             "media_type": media_type,
             "payload": status,
         })
-        assert rv_good.status_code == 200
+        self.assertEqual(rv_good.status_code, 200)
 
         # Media already in <test> media list
-        rv = self.client.post("/api/add_media", headers=headers, json={
+        rv = self.client.post(f"/api/list/{media_type}/add", headers=headers, json={
             "media_id": media_id,
             "media_type": media_type,
             "payload": status,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
         # Check time spent
-        rv = self.client.get("/api/current_user", headers=headers)
-        assert rv.status_code == 200
+        rv = self.client.get("/api/user/me", headers=headers)
+        self.assertEqual(rv.status_code, 200)
         assert rv.json[f"time_spent_{media_type}"] == time_spent
+
         return rv_good.json["data"]
 
     def test_add_series(self):
@@ -147,7 +147,7 @@ class MediaTests(BaseTest):
         assert "date" in data["history"][0]
 
     def test_add_books(self):
-        from backend.api.models.books_models import BooksList
+        from backend.api.models.books import BooksList
 
         data = self.add_media("books", 1, "Completed", 322 * BooksList.TIME_PER_PAGE)
 
@@ -406,110 +406,96 @@ class MediaTests(BaseTest):
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
             assert query.feeling is None
 
-    def test_update_redo(self):
-
+    def test_set_redo(self):
         headers = self.connexion()
         self.create_all_media()
 
+        payload = {"media_id": 1, "payload": 3}
+
         for media_type in MediaType:
+            # noinspection PyTypeChecker
             model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
-            rv = self.client.post("/api/update_redo", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": 3,
-            })
-            assert rv.status_code == 400
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json=payload)
+            self.assertEqual(rv.status_code, 400)
 
-            rv = self.client.post("/api/add_media", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/add", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": "Completed",
             })
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
+            # Not available for games
             if media_type == MediaType.GAMES:
-                rv = self.client.post("/api/update_redo", headers=headers, json={
-                    "media_id": 1,
-                    "media_type": media_type.value,
-                    "payload": 3,
-                })
-                assert rv.status_code == 400
-
+                rv = self.client.post("/api/games/set_redo", headers=headers, json=payload)
+                self.assertEqual(rv.status_code, 400)
                 continue
 
-            rv = self.client.post("/api/update_redo", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": 11,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-            rv = self.client.post("/api/update_redo", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": -2,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             # Round to int
-            rv = self.client.post("/api/update_redo", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": 7.5,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.rewatched == 7
+            self.assertEqual(query.redo, 7)
 
-            rv = self.client.post("/api/update_redo", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": 4,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.rewatched == 4
+            self.assertEqual(query.redo, 4)
 
-            rv = self.client.post("/api/update_status", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_status", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": "Watching",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             # Media needs to be Completed
-            rv = self.client.post("/api/update_redo", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": 5,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-    def test_update_comment(self):
+    def test_set_comment(self):
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in MediaType:
+            # noinspection PyTypeChecker
             model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
-            rv = self.client.post("/api/update_comment", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_comment", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": "yes",
             })
-            assert rv.status_code == 404
+            self.assertEqual(rv.status_code, 404)
 
-            rv = self.client.post("/api/add_media", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/add", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": "Completed",
             })
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
-            rv = self.client.post("/api/update_comment", headers=headers, json={
+            # Comment too long
+            rv = self.client.post(f"/api/{media_type.value}/set_comment", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": """
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the 
                 industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type 
@@ -536,99 +522,104 @@ class MediaTests(BaseTest):
                 with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
 				""",
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
-            rv = self.client.post("/api/update_comment", headers=headers, json={
+            rv = self.client.post(f"/api/{media_type.value}/set_comment", headers=headers, json={
                 "media_id": 1,
-                "media_type": media_type.value,
                 "payload": "This is a comment",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.comment == "This is a comment"
+            self.assertEqual(query.comment, "This is a comment")
 
-    def test_update_playtime(self):
+    def test_set_playtime(self):
         headers = self.connexion()
         self.create_all_media()
 
         model_list = ModelsFetcher.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": 2000,
         })
-        assert rv.status_code == 404
+        self.assertEqual(rv.status_code, 404)
 
-        rv = self.client.post("/api/add_media", headers=headers, json={
+        rv = self.client.post("/api/games/add", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": "Completed",
         })
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.SERIES.value,
             "payload": 11000,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": 11000,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": -500,
         })
-        assert rv.status_code == 400
+        self.assertEqual(rv.status_code, 400)
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": 123.27,
         })
-        assert rv.status_code == 204
+        self.assertEqual(rv.status_code, 204)
         query = model_list.query.filter_by(user_id=1, media_id=1).first()
-        assert query.playtime == 123 * 60  # playtime converted in [min]
+        self.assertEqual(query.current_playtime, 123 * 60)  # playtime converted in [min]
 
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
+        rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": 5000,
         })
-        assert rv.status_code == 204
+        self.assertEqual(rv.status_code, 204)
         query = model_list.query.filter_by(user_id=1, media_id=1).first()
-        assert query.playtime == 5000 * 60  # playtime converted in [min]
+        self.assertEqual(query.current_playtime, 5000 * 60)  # playtime converted in [min]
 
-    def test_update_season(self):
+    def test_set_season(self):
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
             model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
-            json_data = {"media_id": 1, "media_type": media_type.value, "payload": 2}
-
-            rv = self.client.post("/api/update_season", headers=headers, json=json_data)
+            rv = self.client.post(f"/api/{media_type.value}/set_season", headers=headers, json={
+                "media_id": 1,
+                "payload": 2,
+            })
             self.assertEqual(rv.status_code, 404)
 
-            rv = self.client.post("/api/add_media", headers=headers, json={**json_data, "payload": "Watching"})
+            rv = self.client.post(f"/api/{media_type.value}/add", headers=headers, json={
+                "media_id": 1,
+                "payload": "Watching",
+            })
             self.assertEqual(rv.status_code, 200)
 
-            rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": 467})
+            rv = self.client.post(f"/api/{media_type.value}/set_season", headers=headers, json={
+                "media_id": 1,
+                "payload": 467,
+            })
             self.assertEqual(rv.status_code, 400)
 
-            rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": -4})
+            rv = self.client.post(f"/api/{media_type.value}/set_season", headers=headers, json={
+                "media_id": 1,
+                "payload": -4,
+            })
             self.assertEqual(rv.status_code, 400)
 
             # Series has 5 seasons and Anime 4 seasons
-            rv = self.client.post("/api/update_season", headers=headers, json={**json_data, "payload": 3})
+            rv = self.client.post(f"/api/{media_type.value}/set_season", headers=headers, json={
+                "media_id": 1,
+                "payload": 3,
+            })
             self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
 
@@ -643,42 +634,55 @@ class MediaTests(BaseTest):
                 self.assertEqual(query.status, "Watching")
                 self.assertEqual(query.total, 38)
 
-    def test_update_episode(self):
+    def test_set_episode(self):
         headers = self.connexion()
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
             media_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
 
-            json_data = dict(media_id=1, media_type=media_type.value, payload=2)
+            rv = self.client.post(f"/api/{media_type.value}/set_episode", headers=headers, json={
+                "media_id": 1,
+                "payload": 2,
+            })
+            self.assertEqual(rv.status_code, 404)
 
-            rv = self.client.post("/api/update_episode", headers=headers, json=json_data)
-            assert rv.status_code == 404
+            rv = self.client.post(f"/api/{media_type.value}/add", headers=headers, json={
+                "media_id": 1,
+                "payload": "Watching",
+            })
+            self.assertEqual(rv.status_code, 200)
 
-            rv = self.client.post("/api/add_media", headers=headers, json={**json_data, "payload": "Watching"})
-            assert rv.status_code == 200
+            rv = self.client.post(f"/api/{media_type.value}/set_episode", headers=headers, json={
+                "media_id": 1,
+                "payload": 467,
+            })
+            self.assertEqual(rv.status_code, 400)
 
-            rv = self.client.post("/api/update_episode", headers=headers, json={**json_data, "payload": 467})
-            assert rv.status_code == 400
-
-            rv = self.client.post("/api/update_episode", headers=headers, json={**json_data, "payload": -4})
-            assert rv.status_code == 400
+            rv = self.client.post(f"/api/{media_type.value}/set_episode", headers=headers, json={
+                "media_id": 1,
+                "payload": -4,
+            })
+            self.assertEqual(rv.status_code, 400)
 
             # Series has 5 seasons and Anime 4 seasons
-            rv = self.client.post("/api/update_episode", headers=headers, json={**json_data, "payload": 3})
-            assert rv.status_code == 204
+            rv = self.client.post(f"/api/{media_type.value}/set_episode", headers=headers, json={
+                "media_id": 1,
+                "payload": 3,
+            })
+            self.assertEqual(rv.status_code, 204)
             query = media_list.query.filter_by(user_id=1, media_id=1).first()
 
             if media_type == MediaType.SERIES:
-                assert query.current_season == 1
-                assert query.last_episode_watched == 3
-                assert query.status == "Watching"
-                assert query.total == 3
+                self.assertEqual(query.current_season, 1)
+                self.assertEqual(query.current_episode, 3)
+                self.assertEqual(query.status, "Watching")
+                self.assertEqual(query.total, 3)
             else:
-                assert query.current_season == 1
-                assert query.last_episode_watched == 3
-                assert query.status == "Watching"
-                assert query.total == 3
+                self.assertEqual(query.current_season, 1)
+                self.assertEqual(query.current_episode, 3)
+                self.assertEqual(query.status, "Watching")
+                self.assertEqual(query.total, 3)
 
-    def test_update_page(self):
+    def test_set_page(self):
         pass

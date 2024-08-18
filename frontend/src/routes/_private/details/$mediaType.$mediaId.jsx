@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
 	component: MediaDetailsWrapper,
 	loaderDeps: ({ search: { external } }) => ({ external }),
 	loader: async ({ params, deps }) => {
-		return await fetcher(`/details/${params.mediaType}/${params.mediaId}`, { external: deps.external });
+		return await fetcher(`/media/${params.mediaType}/${params.mediaId}`, { external: deps.external });
 	},
 });
 
@@ -32,7 +32,7 @@ function MediaDetailsPage() {
 	const { refresh } = useApiUpdater(apiData.media.id, mediaType);
 
 	const mutateData = async () => {
-		const data = await fetcher(`/details/${mediaType}/${apiData.media.id}`);
+		const data = await fetcher(`/media/${mediaType}/${apiData.media.id}`);
 		setApiData(data);
 	};
 

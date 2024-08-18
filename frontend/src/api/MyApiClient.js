@@ -33,9 +33,9 @@ class MyApiClient {
     async request(data) {
         let response = await this.requestInternal(data);
 
-        if (response.status === 401 && data.url !== "/tokens") {
+        if (response.status === 401 && data.url !== "/auth/tokens") {
             let beforeRenewAccessToken = localStorage.getItem("accessToken");
-            const refreshResponse = await this.put("/tokens", {
+            const refreshResponse = await this.put("/auth/tokens", {
                 access_token: localStorage.getItem("accessToken"),
             });
 
@@ -83,7 +83,6 @@ class MyApiClient {
                 }
             };
         }
-
         return {
             ok: response.ok,
             status: response.status,
@@ -91,24 +90,16 @@ class MyApiClient {
         }
     };
 
-    async adminLogin(password) {
-        return await this.post("/admin/auth", {password}, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            }
-        });
-    };
-
     async login(usernameOrProvider, passwordOrProviderData, oAuth2) {
         let response;
 
         if (oAuth2) {
-            response = await this.post(`/tokens/oauth2/${usernameOrProvider}`, passwordOrProviderData);
+            response = await this.post(`/auth/oauth2/${usernameOrProvider}`, passwordOrProviderData);
         }
         else {
             const utf8Bytes = new TextEncoder().encode(`${usernameOrProvider}:${passwordOrProviderData}`);
             const base64Encoded = btoa(String.fromCharCode(...utf8Bytes));
-            response = await this.post("/tokens",
+            response = await this.post("/auth/tokens",
                 JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
                 headers: { Authorization:  `Basic ${base64Encoded}` }
             });
@@ -122,7 +113,7 @@ class MyApiClient {
     };
 
     async logout() {
-        await this.delete("/tokens");
+        await this.delete("/auth/logout");
         localStorage.removeItem("accessToken");
     };
 
@@ -155,7 +146,7 @@ class UserClient {
         let currentUser = null;
 
         if (api.isAuthenticated()) {
-            const response = await api.get("/current_user");
+            const response = await api.get("/user/me");
             currentUser = response.ok ? response.body : null;
         }
 
@@ -184,7 +175,7 @@ class UserClient {
         const logging = await api.login(usernameOrProvider, passwordOrProviderData, oAuth2);
 
         if (logging.ok) {
-            const response = await api.get("/current_user");
+            const response = await api.get("/user/me");
             this.setCurrentUser(response.ok ? response.body : null);
         }
 

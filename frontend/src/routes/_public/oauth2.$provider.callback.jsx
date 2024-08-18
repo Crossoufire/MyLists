@@ -15,21 +15,25 @@ function OAuth2CallbackPage() {
     const { provider } = Route.useParams();
     const searchParams = Route.useSearch();
 
+    const loginUsingOAuth = async () => {
+        const oauth2Data = {
+            ...searchParams,
+            callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
+        };
+
+        const response = await userClient.login(provider, oauth2Data, true);
+
+        if (!response.ok) {
+            toast.error(response.body.description);
+            return navigate({ to: "/" });
+        }
+
+        return navigate({ to: `/profile/${userClient.currentUser.username}` });
+    }
+
     useEffect(() => {
         (async () => {
-            const oauth2Data = {
-                ...searchParams,
-                callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
-            };
-
-            const response = await userClient.login(provider, oauth2Data, true);
-
-            if (!response.ok) {
-                toast.error(response.body.description);
-                return navigate({ to: "/" });
-            }
-
-            return navigate({ to: `/profile/${userClient.currentUser.username}` });
+            await loginUsingOAuth();
         })();
     }, []);
 

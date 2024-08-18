@@ -6,6 +6,9 @@ flask-mail
 flask-caching
 flask-httpauth
 flask-migrate
+flask-marshmallow
+marshmallow
+marshmallow-sqlalchemy
 pillow
 PyJWT
 requests

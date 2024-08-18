@@ -3,7 +3,7 @@ import {Toaster} from "@/components/ui/sonner";
 import {Footer} from "@/components/app/Footer";
 import {Navbar} from "@/components/navbar/Navbar";
 import {SheetProvider} from "@/providers/SheetProvider";
-import {GlobalLoading} from "@/components/app/base/GlobalLoading.jsx";
+import {GlobalLoading} from "@/components/app/base/GlobalLoading";
 import {createRootRoute, Outlet, ScrollRestoration} from "@tanstack/react-router";
 
 

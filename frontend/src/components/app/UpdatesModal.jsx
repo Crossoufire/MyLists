@@ -33,7 +33,7 @@ export const UpdatesModal = () => {
     const doNotShowModalAgain = async () => {
         setIsOpen(false);
 
-        const response = await api.post("/update_modal");
+        const response = await api.post("/user/modal-preference");
         if (!response.ok) {
             return toast.error("An error occurred. Please try again later.");
         }

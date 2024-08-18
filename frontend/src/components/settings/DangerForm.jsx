@@ -17,7 +17,7 @@ export const DangerForm = () => {
 
         try {
             setPending(true);
-            const response = await api.post("/settings/delete_account");
+            const response = await api.post("/user/settings/delete");
             if (!response.ok) {
                 return setError(response.body.description);
             }

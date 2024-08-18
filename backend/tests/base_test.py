@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime
 from typing import Dict
-from flask_bcrypt import generate_password_hash
 from backend.api import create_app, db
 from backend.api.utils.enums import RoleType
 from backend.config import TestConfig
@@ -15,14 +14,14 @@ TEST_USER = {
 
 class BaseTest(unittest.TestCase):
     def connexion(self, username: str = TEST_USER["username"], password: str = TEST_USER["password"]) -> Dict:
-        rv = self.client.post("/api/tokens", auth=(username, password))
+        rv = self.client.post("/api/auth/tokens", auth=(username, password))
         self.access_token = rv.json["access_token"]
 
         return {"Authorization": f"Bearer {self.access_token}"}
 
     def register_new_user(self, username: str):
         self.app.config["USER_ACTIVE_PER_DEFAULT"] = True
-        rv = self.client.post("/api/register_user", json={
+        rv = self.client.post("/api/auth/signup", json={
             "username": username,
             "email": f"{username}@example.com",
             "password": "good-password",
@@ -35,17 +34,16 @@ class BaseTest(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
 
-        # Create tables
         db.create_all()
 
-        from backend.api.models.user_models import User
-        from backend.api.models.utils_models import Ranks
+        from backend.api.models.users import User
 
+        # noinspection PyArgumentList
         self.user = User(
             username=TEST_USER["username"],
             email=f"{TEST_USER['username']}@example.com",
             registered_on=datetime.utcnow(),
-            password=generate_password_hash(TEST_USER["password"]),
+            password=TEST_USER["password"],
             activated_on=datetime.utcnow(),
             role=RoleType.USER,
             active=True,
@@ -53,8 +51,6 @@ class BaseTest(unittest.TestCase):
 
         db.session.add(self.user)
         db.session.commit()
-
-        Ranks.update_db_ranks()
 
         self.client = self.app.test_client()
 

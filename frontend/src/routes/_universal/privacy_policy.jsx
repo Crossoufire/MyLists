@@ -1,5 +1,5 @@
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols

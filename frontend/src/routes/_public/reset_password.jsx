@@ -3,7 +3,7 @@ import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, useNavigate, useSearch} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -20,7 +20,7 @@ function ResetPasswordPage() {
     const { token } = Route.useSearch();
 
     const onSubmit = async (data) => {
-        const response = await api.post("/tokens/reset_password", {
+        const response = await api.post("/auth/password-reset/confirm", {
             token: token,
             new_password: data.password,
         });

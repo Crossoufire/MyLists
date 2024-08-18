@@ -82,9 +82,9 @@ const FollowButton = ({ initFollow, followId }) => {
     const buttonColor = isFollowing ? "destructive" : "secondary";
 
     const updateFollow = async (followId, followValue) => {
-        const response = await api.post("/update_follow", {
+        const response = await api.post("/user/follow", {
             follow_id: followId,
-            follow_status: followValue,
+            status: followValue,
         });
 
         if (!response.ok) {
