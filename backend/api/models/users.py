@@ -13,8 +13,8 @@ from backend.api.core.handlers import current_user
 from backend.api.models.mixins import SearchableMixin
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes, PrivacyType, RatingSystem, UpdateType, \
     NotificationType
-from backend.api.utils.functions import compute_level, safe_div, ModelsFetcher
-
+from backend.api.utils.functions import compute_level, safe_div
+from backend.api.managers.ModelsManager import ModelsManager
 
 followers = db.Table(
     "followers",
@@ -189,7 +189,7 @@ class User(db.Model, SearchableMixin):
         """ Get the user's global media stats based on the user's activated MediaType """
 
         activated_media_types = [setting.media_type for setting in self.user.settings if setting.active]
-        models = ModelsFetcher.get_lists_models(activated_media_types, ModelTypes.LIST)
+        models = ModelsManager.get_lists_models(activated_media_types, ModelTypes.LIST)
 
         # Calculate time per media [hours]
         query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models]
@@ -247,7 +247,7 @@ class User(db.Model, SearchableMixin):
     def get_one_media_details(self, media_type: MediaType) -> Dict:
         """ Get the selected media details for the user """
 
-        media_list, media_label = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+        media_list, media_label = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,

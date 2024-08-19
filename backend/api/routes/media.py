@@ -11,7 +11,8 @@ from backend.api.models.users import UserMediaUpdate
 from backend.api.schemas.core import EmptySchema
 from backend.api.schemas.media import *
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
-from backend.api.utils.functions import get, ModelsFetcher
+from backend.api.utils.functions import get
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.my_apifairy import authenticate, arguments, response, other_responses, body
 
 media = Blueprint("media", __name__)
@@ -30,7 +31,7 @@ def get_media_details(args, media_type: MediaType, media_id: int | str):
     """
 
     media_model, label_model, list_model = (
-        ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS, ModelTypes.LIST])
+        ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS, ModelTypes.LIST])
     )
 
     filter_id = {"api_id": media_id} if args["external"] else {"id": media_id}
@@ -69,7 +70,7 @@ def get_media_details(args, media_type: MediaType, media_id: int | str):
 def get_media_form(media_type: MediaType, media_id: int):
     """ Media form """
 
-    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+    media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
@@ -94,7 +95,7 @@ def get_media_form(media_type: MediaType, media_id: int):
 def submit_media_form(data, media_type: MediaType):
     """ Update Media details """
 
-    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+    media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
     media = media_model.query.filter_by(id=data["media_id"]).first()
     if not media:
@@ -142,7 +143,7 @@ def get_job_details(media_type: MediaType, job: JobType, name: str):
     - `platform`: tv platform (series/anime) or game platform (games)
     """
 
-    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
     all_media  = media_model.get_information(job, name)
 
     return all_media
@@ -156,7 +157,7 @@ def get_job_details(media_type: MediaType, job: JobType, name: str):
 def refresh_media_data(data, media_type: MediaType):
     """ Refresh media details """
 
-    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
 
     media = media_model.query.filter_by(id=data["media_id"]).first()
     if media is None:
@@ -179,7 +180,7 @@ def refresh_media_data(data, media_type: MediaType):
 def lock_media_edit(data, media_type: MediaType):
     """ Lock media details """
 
-    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
 
     media = media_model.query.filter_by(id=data["media_id"]).first()
     if not media:

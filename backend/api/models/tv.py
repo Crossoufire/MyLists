@@ -9,7 +9,8 @@ from backend.api.models.abstracts import Platform, Actors, Media, MediaList, Gen
 from backend.api.models.users import Notifications, User, UserMediaUpdate
 from backend.api.core.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ModelTypes, NotificationType, JobType
-from backend.api.utils.functions import ModelsFetcher, reorder_seas_eps
+from backend.api.utils.functions import reorder_seas_eps
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class TVModel(Media):
@@ -64,7 +65,7 @@ class TVModel(Media):
 
     @classmethod
     def create_new_release_notification(cls):
-        media_list, eps_model = ModelsFetcher.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
+        media_list, eps_model = ModelsManager.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
 
         top_eps_sub = (
             db.session.query(
@@ -210,7 +211,7 @@ class TVModel(Media):
 
     @classmethod
     def remove_non_list_media(cls):
-        models = ModelsFetcher.get_dict_models(cls.GROUP, "all")
+        models = ModelsManager.get_dict_models(cls.GROUP, "all")
         media_model = models[ModelTypes.MEDIA]
         media_list_model = models[ModelTypes.LIST]
         actors_model = models[ModelTypes.ACTORS]
@@ -311,7 +312,7 @@ class TVListModel(MediaList):
 
     @classmethod
     def time_spent_calculation(cls) -> ColumnElement:
-        media_model = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
+        media_model = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
         return func.sum(media_model.duration * cls.total)
 
 

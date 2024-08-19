@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.tests.base_test import BaseTest
 
 
@@ -26,7 +26,7 @@ class MediaTests(BaseTest):
             api_manager.all_data["media_data"]["last_api_update"] = datetime.utcnow()
             if media_type == MediaType.BOOKS:
                 del api_manager.all_data["media_data"]["last_api_update"]
-            api_manager._add_data_to_db()
+            api_manager.add_data_to_db()
 
     def add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:
         self.create_all_media()
@@ -300,7 +300,7 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             json_data = {
                 "media_id": 1,
@@ -356,7 +356,7 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in MediaType:
-            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             self.client.post("/api/add_media", headers=headers, json={
                 "media_id": 1,
@@ -414,7 +414,7 @@ class MediaTests(BaseTest):
 
         for media_type in MediaType:
             # noinspection PyTypeChecker
-            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post(f"/api/{media_type.value}/set_redo", headers=headers, json=payload)
             self.assertEqual(rv.status_code, 400)
@@ -479,7 +479,7 @@ class MediaTests(BaseTest):
 
         for media_type in MediaType:
             # noinspection PyTypeChecker
-            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post(f"/api/{media_type.value}/set_comment", headers=headers, json={
                 "media_id": 1,
@@ -536,7 +536,7 @@ class MediaTests(BaseTest):
         headers = self.connexion()
         self.create_all_media()
 
-        model_list = ModelsFetcher.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
+        model_list = ModelsManager.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
 
         rv = self.client.post("/api/games/set_playtime", headers=headers, json={
             "media_id": 1,
@@ -589,7 +589,7 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
-            model_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post(f"/api/{media_type.value}/set_season", headers=headers, json={
                 "media_id": 1,
@@ -639,7 +639,7 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in [MediaType.SERIES, MediaType.ANIME]:
-            media_list = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+            media_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
             rv = self.client.post(f"/api/{media_type.value}/set_episode", headers=headers, json={
                 "media_id": 1,

@@ -24,7 +24,7 @@ import { Route as PublicRegistertokenImport } from './routes/_public/register_to
 import { Route as PublicForgotpasswordImport } from './routes/_public/forgot_password'
 import { Route as PrivateTrendsImport } from './routes/_private/trends'
 import { Route as PrivateSettingsImport } from './routes/_private/settings'
-import { Route as PrivateHalloffameImport } from './routes/_private/hall_of_fame'
+import { Route as PrivateHalloffameImport } from './routes/_private/hall-of-fame'
 import { Route as PrivateGlobalstatsImport } from './routes/_private/global_stats'
 import { Route as PrivateComingnextImport } from './routes/_private/coming_next'
 import { Route as PrivateAdminIndexImport } from './routes/_private/admin/index'
@@ -107,7 +107,7 @@ const PrivateSettingsRoute = PrivateSettingsImport.update({
 } as any)
 
 const PrivateHalloffameRoute = PrivateHalloffameImport.update({
-  path: '/hall_of_fame',
+  path: '/hall-of-fame',
   getParentRoute: () => PrivateRoute,
 } as any)
 
@@ -254,10 +254,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateGlobalstatsImport
       parentRoute: typeof PrivateImport
     }
-    '/_private/hall_of_fame': {
-      id: '/_private/hall_of_fame'
-      path: '/hall_of_fame'
-      fullPath: '/hall_of_fame'
+    '/_private/hall-of-fame': {
+      id: '/_private/hall-of-fame'
+      path: '/hal-of-fame'
+      fullPath: '/hall-of-fame'
       preLoaderRoute: typeof PrivateHalloffameImport
       parentRoute: typeof PrivateImport
     }
@@ -491,7 +491,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/_private/coming_next",
         "/_private/global_stats",
-        "/_private/hall_of_fame",
+        "/_private/hall-of-fame",
         "/_private/settings",
         "/_private/trends",
         "/_private/admin/dashboard",
@@ -531,8 +531,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_private/global_stats.jsx",
       "parent": "/_private"
     },
-    "/_private/hall_of_fame": {
-      "filePath": "_private/hall_of_fame.jsx",
+    "/_private/hall-of-fame": {
+      "filePath": "_private/hall-of-fame.jsx",
       "parent": "/_private"
     },
     "/_private/settings": {

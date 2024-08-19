@@ -67,7 +67,7 @@ export const Navbar = () => {
                                 <SearchBar currentUser={currentUser}/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/hall_of_fame" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}>
                                     HoF
                                 </NavLink>
                             </Nav.NavigationMenuItem>
@@ -159,7 +159,7 @@ export const Navbar = () => {
                                     </Nav.NavigationMenuItem>
                                     <Separator/>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/hall_of_fame" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
                                             HoF
                                         </NavLink>
                                     </Nav.NavigationMenuItem>

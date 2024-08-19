@@ -7,7 +7,8 @@ from backend.api.schemas.core import SearchPaginationSchema, EmptySchema
 from backend.api.schemas.user import *
 from backend.api.utils.decorators import check_privacy_access, paginated_response
 from backend.api.utils.enums import NotificationType, MediaType, ModelTypes
-from backend.api.utils.functions import save_picture, ModelsFetcher
+from backend.api.utils.functions import save_picture
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.my_apifairy import response, authenticate, other_responses, body
 
 user = Blueprint("user", __name__)
@@ -222,11 +223,11 @@ def delete_account():
         UserMediaUpdate.query.filter_by(user_id=current_user.id).delete()
         Notifications.query.filter_by(user_id=current_user.id).delete()
 
-        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model in models.values():
             model.query.filter_by(user_id=current_user.id).delete()
 
-        models_labels = ModelsFetcher.get_dict_models("all", ModelTypes.LABELS)
+        models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
         for model in models_labels.values():
             model.query.filter_by(user_id=current_user.id).delete()
 

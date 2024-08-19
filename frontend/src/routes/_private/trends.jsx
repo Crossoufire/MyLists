@@ -25,24 +25,18 @@ function TrendsPage() {
                 </TabsList>
                 <TabsContent value="series">
                     <div className="grid grid-cols-12 gap-6">
-                        {apiData.tv_trends.map((media, idx) =>
+                        {apiData.tv_trends.map(media =>
                             <div key={media.api_id} className="col-span-12 md:col-span-6 lg:col-span-4">
-                                <TrendItem
-                                    media={media}
-                                    idx={idx}
-                                />
+                                <TrendItem media={media}/>
                             </div>
                         )}
                     </div>
                 </TabsContent>
                 <TabsContent value="movies">
                     <div className="grid grid-cols-12 gap-6">
-                        {apiData.movies_trends.map((media, idx) =>
+                        {apiData.movies_trends.map(media =>
                             <div key={media.api_id} className="col-span-12 md:col-span-6 lg:col-span-4">
-                                <TrendItem
-                                    media={media}
-                                    idx={idx}
-                                />
+                                <TrendItem media={media}/>
                             </div>
                         )}
                     </div>
@@ -78,5 +72,5 @@ const TrendItem = ({ media }) => {
                 </div>
             </div>
         </Card>
-    )
+    );
 };

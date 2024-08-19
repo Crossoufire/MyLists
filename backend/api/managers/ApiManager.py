@@ -15,10 +15,10 @@ from requests import Response
 from backend.api import db
 from backend.api.models import Media
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import (change_air_format, clean_html_text, get, is_latin, ModelsFetcher,
-                                         format_datetime)
+from backend.api.utils.functions import (change_air_format, clean_html_text, get, is_latin, format_datetime)
+from backend.api.managers.ModelsManager import ModelsManager
 
-""" --- GENERAL --------------------------------------------------------------------------------------------- """
+""" --- SUPERCLASSES ----------------------------------------------------------------------------------- """
 
 
 class ApiMeta(type):
@@ -46,29 +46,29 @@ class BaseApiManager(metaclass=ApiMeta):
         self.all_data = {}
 
     def save_media_to_db(self) -> Media:
-        self._fetch_details_from_api()
-        self._format_api_data()
-        self._add_data_to_db()
+        self.fetch_details_from_api()
+        self.format_api_data()
+        self.add_data_to_db()
 
         return self.media
 
     def get_refreshed_media_data(self) -> Dict:
-        self._fetch_details_from_api()
-        self._format_api_data(updating=True)
+        self.fetch_details_from_api()
+        self.format_api_data(updating=True)
 
         return self.all_data
 
     def get_changed_api_ids(self) -> List[int]:
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _fetch_details_from_api(self):
+    def fetch_details_from_api(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _format_api_data(self, updating: bool = False):
+    def format_api_data(self, updating: bool = False):
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _add_data_to_db(self):
-        models = ModelsFetcher.get_dict_models(self.GROUP, "all")
+    def add_data_to_db(self):
+        models = ModelsManager.get_dict_models(self.GROUP, "all")
 
         self.media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
         db.session.add(self.media)
@@ -121,7 +121,6 @@ class TMDBApiManager(BaseApiManager):
             f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}"
             f"&query={query}&page={page}"
         )
-
         self.api_data = response.json()
 
     def format_search_results(self) -> Dict:
@@ -140,9 +139,9 @@ class TMDBApiManager(BaseApiManager):
                 media_data["image_cover"] = self.POSTER_BASE_URL + result.get("poster_path")
 
             if result.get("media_type") == "tv":
-                media_data.update(self._process_tv(result))
+                media_data.update(self.process_search_tv(result))
             elif result.get("media_type") == "movie":
-                media_data.update(self._process_movie(result))
+                media_data.update(self.process_search_movies(result))
 
             search_results.append(media_data)
 
@@ -153,7 +152,7 @@ class TMDBApiManager(BaseApiManager):
 
     def get_changed_api_ids(self) -> List[int]:
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
-        model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
+        model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         response = self.api_call(f"https://api.themoviedb.org/3/{type_}/changes?api_key={self.API_KEY}")
         data = json.loads(response.text)
@@ -164,7 +163,7 @@ class TMDBApiManager(BaseApiManager):
 
         return api_ids_to_refresh
 
-    def _fetch_details_from_api(self):
+    def fetch_details_from_api(self):
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
         response = self.api_call(
             f"https://api.themoviedb.org/3/{type_}/{self.api_id}?api_key={self.API_KEY}"
@@ -172,7 +171,7 @@ class TMDBApiManager(BaseApiManager):
         )
         self.api_data = json.loads(response.text)
 
-    def _get_genres(self) -> List[Dict]:
+    def format_genres(self) -> List[Dict]:
         genres_list = []
         all_genres = get(self.api_data, "genres", default=[])
         for genre in all_genres:
@@ -182,7 +181,7 @@ class TMDBApiManager(BaseApiManager):
 
         return genres_list
 
-    def _get_actors(self) -> List[Dict]:
+    def format_actors(self) -> List[Dict]:
         actors_list = []
         all_actors = get(self.api_data, "credits", "cast", default=[])
         for actor in all_actors[:self.MAX_ACTORS]:
@@ -192,7 +191,7 @@ class TMDBApiManager(BaseApiManager):
 
         return actors_list
 
-    def _get_media_cover(self) -> str:
+    def fetch_and_save_media_cover(self) -> str:
         cover_name = "default.jpg"
         cover_path = self.api_data.get("poster_path") or None
         if cover_path:
@@ -208,7 +207,7 @@ class TMDBApiManager(BaseApiManager):
         return cover_name
 
     @staticmethod
-    def _process_tv(result):
+    def process_search_tv(result):
         media_info = dict(
             media_type=MediaType.SERIES,
             date=change_air_format(result.get("first_air_date")),
@@ -224,7 +223,7 @@ class TMDBApiManager(BaseApiManager):
         return media_info
 
     @staticmethod
-    def _process_movie(result):
+    def process_search_movies(result):
         media_info = dict(
             media_type=MediaType.MOVIES,
             date=change_air_format(result.get("release_date")),
@@ -236,7 +235,7 @@ class TMDBApiManager(BaseApiManager):
 class TVApiManager(TMDBApiManager):
     MAX_PLATFORMS = 4
 
-    def _format_api_data(self, updating: bool = False):
+    def format_api_data(self, updating: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "name", default="Undefined"),
             original_name=get(self.api_data, "original_name", default="Undefined"),
@@ -252,10 +251,10 @@ class TVApiManager(TMDBApiManager):
             popularity=get(self.api_data, "popularity", default=0),
             duration=get(self.api_data, "episode_run_time", 0, default=self.DURATION),
             origin_country=get(self.api_data, "origin_country", 0, default="Undefined"),
-            created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self._get_writers())),
+            created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self.format_writers())),
             api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
-            image_cover=self._get_media_cover(),
+            image_cover=self.fetch_and_save_media_cover(),
             next_episode_to_air=None,
             season_to_air=None,
             episode_to_air=None,
@@ -286,9 +285,9 @@ class TVApiManager(TMDBApiManager):
         actors_list = []
         anime_genres_list = []
         if not updating:
-            genres_list = self._get_genres()
-            actors_list = self._get_actors()
-            anime_genres_list = self._get_anime_genres()
+            genres_list = self.format_genres()
+            actors_list = self.format_actors()
+            anime_genres_list = self.format_anime_genres()
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -299,11 +298,11 @@ class TVApiManager(TMDBApiManager):
             platforms_data=platforms_list,
         )
 
-    def _get_anime_genres(self):
+    def format_anime_genres(self):
         """ Overridden in the `AnimeApiManager` class """
         return []
 
-    def _get_writers(self) -> List[Dict]:
+    def format_writers(self) -> List[Dict]:
         """ Get top 2 writers (by popularity) for <created_by> """
 
         tv_crew = get(self.api_data, "credits", "crew", default=[])
@@ -319,7 +318,7 @@ class TVApiManager(TMDBApiManager):
         return sorted(creator_names, key=lambda x: x.get("popularity", 0), reverse=True)[:2]
 
 
-""" --- CLASS CALL ------------------------------------------------------------------------------------------ """
+""" --- SUBCLASSES ------------------------------------------------------------------------------------- """
 
 
 class SeriesApiManager(TVApiManager):
@@ -366,7 +365,7 @@ class AnimeApiManager(TVApiManager):
         response = self.api_call(f"https://api.jikan.moe/v4/anime?q={anime_name}")
         return json.loads(response.text)
 
-    def _get_anime_genres(self) -> List[Dict]:
+    def format_anime_genres(self) -> List[Dict]:
         """ Get anime genre from Jikan API (fusion between genre, themes, and demographic) """
 
         anime_genres_list = []
@@ -415,7 +414,7 @@ class MoviesApiManager(TMDBApiManager):
             movies_results.append(media_data)
         return movies_results
 
-    def _format_api_data(self, updating: bool = False):
+    def format_api_data(self, updating: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "title", default="Undefined"),
             director="Undefined",
@@ -432,7 +431,7 @@ class MoviesApiManager(TMDBApiManager):
             language=get(self.api_data, "original_language", default="Undefined"),
             tagline=self.api_data.get("tagline"),
             api_id=self.api_data.get("id"),
-            image_cover=self._get_media_cover(),
+            image_cover=self.fetch_and_save_media_cover(),
             last_api_update=datetime.utcnow(),
         )
 
@@ -445,8 +444,8 @@ class MoviesApiManager(TMDBApiManager):
         actors_list = []
         genres_list = []
         if not updating:
-            actors_list = self._get_actors()
-            genres_list = self._get_genres()
+            actors_list = self.format_actors()
+            genres_list = self.format_genres()
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -511,7 +510,7 @@ class GamesApiManager(BaseApiManager):
 
         return data
 
-    def _fetch_details_from_api(self):
+    def fetch_details_from_api(self):
         body = (
             f"fields name, cover.image_id, collection.name, game_engines.name, game_modes.name, "
             f"platforms.name, genres.name, player_perspectives.name, total_rating, total_rating_count, "
@@ -523,7 +522,7 @@ class GamesApiManager(BaseApiManager):
         response = self.api_call("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
         self.api_data = json.loads(response.text)[0]
 
-    def _get_platforms(self) -> List[Dict]:
+    def format_platforms(self) -> List[Dict]:
         platforms_list = []
         for platform in get(self.api_data, "platforms", default=[]):
             platforms_list.append({"name": platform["name"]})
@@ -533,7 +532,7 @@ class GamesApiManager(BaseApiManager):
 
         return platforms_list
 
-    def _get_companies(self) -> List[Dict]:
+    def format_companies(self) -> List[Dict]:
         companies_list = []
         for item in get(self.api_data, "involved_companies", default=[]):
             if item["developer"] is False and item["publisher"] is False:
@@ -548,7 +547,7 @@ class GamesApiManager(BaseApiManager):
 
         return companies_list
 
-    def _get_genres(self) -> List[Dict]:
+    def format_genres(self) -> List[Dict]:
         all_genres = get(self.api_data, "genres", default=[])
         all_themes = get(self.api_data, "themes", default=[])
         fusion_list = all_genres + all_themes
@@ -573,7 +572,7 @@ class GamesApiManager(BaseApiManager):
 
         return genres_list
 
-    def _format_api_data(self, updating: bool = False):
+    def format_api_data(self, updating: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "name", default="Undefined"),
             release_date=format_datetime(get(self.api_data, "first_release_date", default="Undefined")),
@@ -586,7 +585,7 @@ class GamesApiManager(BaseApiManager):
             game_modes="Undefined",
             api_id=self.api_data.get("id"),
             last_api_update=datetime.utcnow(),
-            image_cover=self._get_media_cover(),
+            image_cover=self.fetch_and_save_media_cover(),
             hltb_main_time=None,
             hltb_main_and_extra_time=None,
             hltb_total_complete_time=None,
@@ -596,7 +595,7 @@ class GamesApiManager(BaseApiManager):
         if game_modes:
             self.media_details["game_modes"] = ", ".join([g["name"] for g in game_modes])
 
-        hltb_time = self._get_HLTB_time(self.media_details["name"])
+        hltb_time = self.fetch_hltb_time(self.media_details["name"])
         self.media_details["hltb_main_time"] = hltb_time["main"]
         self.media_details["hltb_main_extra_time"] = hltb_time["extra"]
         self.media_details["hltb_total_time"] = hltb_time["completionist"]
@@ -605,9 +604,9 @@ class GamesApiManager(BaseApiManager):
         platforms_list = []
         companies_list = []
         if not updating:
-            genres_list = self._get_genres()
-            platforms_list = self._get_platforms()
-            companies_list = self._get_companies()
+            genres_list = self.format_genres()
+            platforms_list = self.format_platforms()
+            companies_list = self.format_companies()
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -616,7 +615,7 @@ class GamesApiManager(BaseApiManager):
             companies_data=companies_list,
         )
 
-    def _save_api_cover(self, cover_path: str, cover_name: str):
+    def _fetch_and_save_media_cover(self, cover_path: str, cover_name: str):
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) "
                           "Chrome/23.0.1271.64 Safari/537.11",
@@ -635,13 +634,13 @@ class GamesApiManager(BaseApiManager):
             img_resized = img.resize((300, 450), resample=Image.Resampling.LANCZOS)
             img_resized.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
 
-    def _get_media_cover(self) -> str:
+    def fetch_and_save_media_cover(self) -> str:
         cover_name = "default.jpg"
         cover_path = self.api_data.get("cover")["image_id"] or None
         if cover_path:
             cover_name = f"{secrets.token_hex(20)}.jpg"
             try:
-                self._save_api_cover(cover_path, cover_name)
+                self._fetch_and_save_media_cover(cover_path, cover_name)
             except:
                 cover_name = "default.jpg"
 
@@ -674,7 +673,7 @@ class GamesApiManager(BaseApiManager):
         return api_ids_to_refresh
 
     @staticmethod
-    def _get_HLTB_time(game_name: str) -> Dict:
+    def fetch_hltb_time(game_name: str) -> Dict:
         games_list = HowLongToBeat().search(game_name.lower(), similarity_case_sensitive=False)
 
         main, extra, completionist = None, None, None
@@ -707,7 +706,7 @@ class BooksApiManager(BaseApiManager):
 
     @sleep_and_retry
     @limits(calls=2, period=1)
-    def _fetch_details_from_api(self):
+    def fetch_details_from_api(self):
         response = self.api_call(f"https://www.googleapis.com/books/v1/volumes/{self.api_id}")
         self.api_data = json.loads(response.text)["volumeInfo"]
 
@@ -735,7 +734,7 @@ class BooksApiManager(BaseApiManager):
 
         return dict(items=media_results, total=total, pages=pages)
 
-    def _format_api_data(self, updating: bool = False):
+    def format_api_data(self, updating: bool = False):
         self.media_details = dict(
             api_id=self.api_id,
             name=get(self.api_data, "title", default="Undefined"),
@@ -744,7 +743,7 @@ class BooksApiManager(BaseApiManager):
             synopsis=clean_html_text(get(self.api_data, "description", default="Undefined")),
             language=get(self.api_data, "language", default="Undefined"),
             release_date=format_datetime(change_air_format(self.api_data.get("publishedDate"), books=True)),
-            image_cover=self._get_media_cover(),
+            image_cover=self.fetch_and_save_media_cover(),
             lock_status=True
         )
 
@@ -757,21 +756,21 @@ class BooksApiManager(BaseApiManager):
             authors_data=authors_list,
         )
 
-    def _save_api_cover(self, cover_path: str, cover_name: str):
+    def _fetch_and_save_media_cover(self, cover_path: str, cover_name: str):
         request.urlretrieve(f"{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
         img = Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}")
         img = img.resize((300, 450), Image.Resampling.LANCZOS)
         img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
 
-    def _get_media_cover(self) -> str:
+    def fetch_and_save_media_cover(self) -> str:
         cover_name = f"{secrets.token_hex(20)}.jpg"
         try:
             cover_url = get(self.api_data, "imageLinks", "medium")
-            self._save_api_cover(cover_url, cover_name)
+            self._fetch_and_save_media_cover(cover_url, cover_name)
         except:
             try:
                 cover_url = get(self.api_data, "imageLinks", "large")
-                self._save_api_cover(cover_url, cover_name)
+                self._fetch_and_save_media_cover(cover_url, cover_name)
             except:
                 cover_name = "default.jpg"
 

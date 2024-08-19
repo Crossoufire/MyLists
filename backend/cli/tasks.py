@@ -12,14 +12,14 @@ from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.movies import Movies
 from backend.api.models.users import User
 from backend.api.utils.enums import ModelTypes, MediaType, Status
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 def correct_random_and_ptw_data():
     """ The <last_episode_watched>, <current_season>, and <total> should be zero when in <PLAN_TO_WATCH> or <RANDOM>
     status for Series and Anime """
 
-    models = ModelsFetcher.get_lists_models([MediaType.SERIES, MediaType.ANIME], ModelTypes.LIST)
+    models = ModelsManager.get_lists_models([MediaType.SERIES, MediaType.ANIME], ModelTypes.LIST)
     for model in models:
         query = model.query.filter(model.status.in_([Status.PLAN_TO_WATCH, Status.RANDOM])).all()
         for data in query:
@@ -123,7 +123,7 @@ def remove_non_list_media():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Media Remover -")
 
-    models = ModelsFetcher.get_dict_models("all", ModelTypes.MEDIA)
+    models = ModelsManager.get_dict_models("all", ModelTypes.MEDIA)
     for model in models.values():
         model.remove_non_list_media()
         db.session.commit()
@@ -136,7 +136,7 @@ def remove_all_old_covers():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Covers Remover -")
 
-    models = ModelsFetcher.get_dict_models("all", ModelTypes.MEDIA)
+    models = ModelsManager.get_dict_models("all", ModelTypes.MEDIA)
     for model in models.values():
         path_covers = Path(current_app.root_path, f"static/covers/{model.GROUP.value}_covers/")
         images_in_db = set(db.session.execute(select(model.image_cover)).scalars().all())
@@ -163,7 +163,7 @@ def automatic_media_refresh():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Media Refresh -")
 
-    models = ModelsFetcher.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
+    models = ModelsManager.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
     for model in models:
         api_manager = BaseApiManager.get_subclass(model.GROUP)
         api_ids_to_refresh = api_manager().get_changed_api_ids()
@@ -189,7 +189,7 @@ def add_media_related_notifications():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Checking New Releasing Media -")
 
-    models = ModelsFetcher.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
+    models = ModelsManager.get_lists_models([mt for mt in MediaType if mt != MediaType.BOOKS], ModelTypes.MEDIA)
     for model in models:
         model.create_new_release_notification()
 
@@ -215,7 +215,7 @@ def compute_media_time_spent():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Calculating User Total Time -")
 
-    models = ModelsFetcher.get_dict_models("all", [ModelTypes.MEDIA, ModelTypes.LIST])
+    models = ModelsManager.get_dict_models("all", [ModelTypes.MEDIA, ModelTypes.LIST])
 
     for model in models.values():
         media, media_list = model[ModelTypes.MEDIA], model[ModelTypes.LIST]

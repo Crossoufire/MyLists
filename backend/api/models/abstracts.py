@@ -8,7 +8,7 @@ from backend.api.core.handlers import current_user
 from backend.api.models.mixins import SearchableMixin
 from backend.api.models.users import User, followers
 from backend.api.utils.enums import ModelTypes, MediaType, Status
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class Media(db.Model, SearchableMixin):
@@ -34,7 +34,7 @@ class Media(db.Model, SearchableMixin):
 
     def get_similar(self, limit: int = 12) -> List[Media]:
         media_model = self.__class__
-        media_genre = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.GENRE)
+        media_genre = ModelsManager.get_unique_model(self.GROUP, ModelTypes.GENRE)
 
         if len(self.genres) == 0 or self.genres[0].name == "Undefined":
             return []
@@ -50,7 +50,7 @@ class Media(db.Model, SearchableMixin):
         return similar_media
 
     def in_follows_lists(self) -> List[Dict]:
-        media_list = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.LIST)
+        media_list = ModelsManager.get_unique_model(self.GROUP, ModelTypes.LIST)
 
         in_follows_lists = (
             db.session.query(User, media_list)
@@ -87,7 +87,7 @@ class MediaList(db.Model, SearchableMixin):
     def get_upcoming_media(cls) -> List[Dict]:
         """ Fetch the upcoming media for the current user. Not available for Books """
 
-        media = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
+        media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         upcoming_media = (
             db.session.query(media).join(cls)

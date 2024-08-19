@@ -6,7 +6,7 @@ from backend.api import db
 from backend.api.models.users import User
 from backend.api.core.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class ListQueryManager:
@@ -18,7 +18,7 @@ class ListQueryManager:
         self.media_type = media_type
         self.args = args
 
-        self._initialize_media_models()
+        self._initialize_models()
 
         self.results = []
         self.pages = 0
@@ -30,8 +30,8 @@ class ListQueryManager:
 
         self.all_sorting = self.media_list.available_sorting()
 
-    def _initialize_media_models(self):
-        media_models = ModelsFetcher.get_dict_models(self.media_type, "all")
+    def _initialize_models(self):
+        media_models = ModelsManager.get_dict_models(self.media_type, "all")
 
         # Always exists
         self.media = media_models[ModelTypes.MEDIA]
@@ -48,27 +48,19 @@ class ListQueryManager:
     @property
     def sorting_order(self) -> ColumnElement:
         self.args["sorting"] = self.args["sorting"] or self.media_list.DEFAULT_SORTING
-        try:
-            return self.all_sorting[self.args["sorting"]]
-        except KeyError:
-            raise Exception
+        return self.all_sorting[self.args["sorting"]]
 
     @property
     def status_filter(self) -> ColumnElement | bool:
-        try:
-            statuses = [Status(status) for status in self.args["status"]]
-            if Status.ALL in statuses or not statuses:
-                self.args["status"] = []
-                return True
-            return self.media_list.status.in_(statuses)
-        except:
-            raise Exception
+        statuses = [Status(status) for status in self.args["status"]]
+        if Status.ALL in statuses or not statuses:
+            self.args["status"] = []
+            return True
+        return self.media_list.status.in_(statuses)
 
     @property
     def lang_filter(self) -> ColumnElement | bool:
-        if not getattr(self.media, "language", None):
-            return True
-        return self._create_filter("lang", self.media.language)
+        return True if not getattr(self.media, "language", None) else self._create_filter("lang", self.media.language)
 
     @property
     def common_filter(self) -> ColumnElement | bool:
@@ -80,33 +72,23 @@ class ListQueryManager:
 
     @property
     def actors_filter(self) -> ColumnElement | bool:
-        if not self.media_actors:
-            return True
-        return self._create_filter("actors", self.media_actors.name)
+        return True if not self.media_actors else self._create_filter("actors", self.media_actors.name)
 
     @property
     def directors_filter(self) -> ColumnElement | bool:
-        if not getattr(self.media, "director", None):
-            return True
-        return self._create_filter("directors", self.media.director)
+        return True if not getattr(self.media, "director", None) else self._create_filter("directors", self.media.director)
 
     @property
     def authors_filter(self) -> ColumnElement | bool:
-        if not self.media_authors:
-            return True
-        return self._create_filter("authors", self.media_authors.name)
+        return True if not self.media_authors else self._create_filter("authors", self.media_authors.name)
 
     @property
     def companies_filter(self) -> ColumnElement | bool:
-        if not self.media_companies:
-            return True
-        return self._create_filter("companies", self.media_companies.name)
+        return True if not self.media_companies else self._create_filter("companies", self.media_companies.name)
 
     @property
     def platforms_filter(self) -> ColumnElement | bool:
-        if not self.media_platform:
-            return True
-        return self._create_filter("platforms", self.media_platform.name)
+        return True if not self.media_platform else self._create_filter("platforms", self.media_platform.name)
 
     @property
     def labels_filter(self) -> ColumnElement | bool:
@@ -122,9 +104,7 @@ class ListQueryManager:
 
     @property
     def search_filter(self) -> ColumnElement | bool:
-        if self.args["search"]:
-            return self.media.name.ilike(f"%{self.args['search']}%")
-        return True
+        return self.media.name.ilike(f"%{self.args['search']}%") if self.args["search"] else True
 
     def _create_filter(self, attr: str, model_attr: Any) -> ColumnElement | bool:
         if self.ALL_VALUE in self.args[attr]:
@@ -145,20 +125,18 @@ class ListQueryManager:
         return [media_id[0] for media_id in common_ids_query]
 
     def _apply_joins(self, query) -> Query:
-        if self.args["genres"][0] != self.ALL_VALUE:
-            query = query.join(self.media_genre, self.media.id == self.media_genre.media_id)
-        if self.args["labels"][0] != self.ALL_VALUE:
-            query = query.join(self.media_label, self.media.id == self.media_label.media_id)
+        joins = [
+            (self.media_genre, "genres"),
+            (self.media_label, "labels"),
+            (self.media_actors, "actors"),
+            (self.media_authors, "authors"),
+            (self.media_platform, "platforms"),
+            (self.media_companies, "companies"),
+        ]
 
-        # Check if media type has related model and join if needed
-        if self.args["actors"][0] != self.ALL_VALUE and self.media_actors:
-            query = query.join(self.media_actors, self.media.id == self.media_actors.media_id)
-        if self.args["authors"][0] != self.ALL_VALUE and self.media_authors:
-            query = query.join(self.media_authors, self.media.id == self.media_authors.media_id)
-        if self.args["platforms"][0] != self.ALL_VALUE and self.media_platform:
-            query = query.join(self.media_platform, self.media.id == self.media_platform.media_id)
-        if self.args["companies"][0] != self.ALL_VALUE and self.media_companies:
-            query = query.join(self.media_companies, self.media.id == self.media_companies.media_id)
+        for model, value in joins:
+            if model and self.args[value][0] != self.ALL_VALUE:
+                query = query.join(model, self.media.id == model.media_id)
 
         return query
 
@@ -221,7 +199,7 @@ class ListFiltersManager:
         self._initialize_media_models()
 
     def _initialize_media_models(self):
-        media_models = ModelsFetcher.get_dict_models(self.media_type, "all")
+        media_models = ModelsManager.get_dict_models(self.media_type, "all")
 
         # Always exists
         self.media = media_models[ModelTypes.MEDIA]

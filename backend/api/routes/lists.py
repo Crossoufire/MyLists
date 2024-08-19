@@ -9,7 +9,7 @@ from backend.api.schemas.core import EmptySchema
 from backend.api.schemas.lists import *
 from backend.api.utils.decorators import check_privacy_access
 from backend.api.utils.enums import MediaType, Status, UpdateType, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 lists = Blueprint("lists", __name__)
 
@@ -38,7 +38,7 @@ def get_upcoming_releases():
     """ Upcoming releases """
 
     activated_media_types = [setting.media_type for setting in current_user.settings if setting.active]
-    models_list = ModelsFetcher.get_lists_models(activated_media_types, ModelTypes.LIST)
+    models_list = ModelsManager.get_lists_models(activated_media_types, ModelTypes.LIST)
     if BooksList in models_list:
         models_list.remove(BooksList)
 
@@ -77,7 +77,7 @@ def get_list_stats(media_type: MediaType):
 def add_to_list(data, media_type: MediaType):
     """ Add a media to user's list """
 
-    media_model, list_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LIST])
+    media_model, list_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LIST])
 
     media = media_model.query.filter_by(id=data["media_id"]).first()
     if not media:
@@ -109,7 +109,7 @@ def add_to_list(data, media_type: MediaType):
 def remove_from_list(data, media_type: MediaType):
     """ Remove media from list """
 
-    list_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+    list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -135,7 +135,7 @@ def remove_from_list(data, media_type: MediaType):
 def toggle_favorite(data, media_type: MediaType):
     """ Toggle favorite status of a media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -155,7 +155,7 @@ def toggle_favorite(data, media_type: MediaType):
 def set_status(data, media_type: MediaType):
     """ Set the status of a media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -186,7 +186,7 @@ def set_status(data, media_type: MediaType):
 def set_rating(data, media_type: MediaType):
     """ Set the rating of a media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -205,7 +205,7 @@ def set_rating(data, media_type: MediaType):
 def set_redo(data, media_type: MediaType):
     """ Set the redo of a media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -239,7 +239,7 @@ def set_redo(data, media_type: MediaType):
 def set_comment(data, media_type: MediaType):
     """ Update the comment of a media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if media_assoc is None:
@@ -259,7 +259,7 @@ def set_comment(data, media_type: MediaType):
 def set_playtime(data):
     """ Update playtime of a game """
 
-    list_model = ModelsFetcher.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -289,7 +289,7 @@ def set_playtime(data):
 def set_season(data, media_type: MediaType):
     """ Update the season of a TV media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -328,7 +328,7 @@ def set_season(data, media_type: MediaType):
 def set_episode(data, media_type: MediaType):
     """ Update the episode of a TV media """
 
-    list_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -367,7 +367,7 @@ def set_episode(data, media_type: MediaType):
 def set_page(data):
     """ Update the page of a book """
 
-    list_model = ModelsFetcher.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -403,7 +403,7 @@ def set_page(data):
 def get_media_labels(media_type: MediaType, media_id: int):
     """ Labels associated with a media and a user """
 
-    media_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
 
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
@@ -420,7 +420,7 @@ def get_media_labels(media_type: MediaType, media_id: int):
 def add_label_to_media(data, media_type: MediaType):
     """ Add a label to a media """
 
-    list_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+    list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -445,7 +445,7 @@ def add_label_to_media(data, media_type: MediaType):
 def remove_label_from_media(data, media_type: MediaType):
     """ Remove label from media """
 
-    list_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+    list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
@@ -465,7 +465,7 @@ def remove_label_from_media(data, media_type: MediaType):
 def rename_label(data, media_type: MediaType):
     """ Rename a label """
 
-    labels_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LABELS)
+    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
 
     label_name = (
         labels_model.query
@@ -492,7 +492,7 @@ def rename_label(data, media_type: MediaType):
 def delete_label_totally(data, media_type: MediaType):
     """ Delete label and associations """
 
-    labels_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LABELS)
+    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
     labels_model.query.filter_by(user_id=current_user.id, name=data["name"]).delete()
     db.session.commit()
 
