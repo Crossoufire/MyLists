@@ -1,6 +1,6 @@
 from apifairy import authenticate, response
 from flask import Blueprint, abort, request
-from sqlalchemy import func, case, text
+from sqlalchemy import func, case, and_, desc
 from backend.api.app import cache, db
 from backend.api.core.handlers import token_auth
 from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
@@ -31,7 +31,7 @@ def get_trends():
 
 @general.route("/general/hall-of-fame", methods=["GET"])
 @authenticate(token_auth)
-@paginated_response(HallOfFameSchema, model=User, p_schema=HoFPaginationSchema, hof=True)
+@paginated_response(HallOfFameSchema, model=User, p_schema=HoFPaginationSchema, hof=True, per_page_=10)
 def get_hall_of_fame():
     """ Hall of Fame """
 
@@ -44,15 +44,18 @@ def get_hall_of_fame():
                 func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0))
                 .label("time_spent")
             ).group_by(UserMediaSettings.user_id)
-            .order_by(text("time_spent desc")).subquery()
+            .order_by(desc("time_spent")).subquery()
         )
     else:
         ranking = (
             db.session.query(
                 UserMediaSettings.user_id,
-                case((UserMediaSettings.media_type == sorting, UserMediaSettings.time_spent), else_=0)
-                .label("time_spent")
-            ).order_by(text("time_spent desc")).subquery()
+                func.sum(case((
+                    and_(UserMediaSettings.media_type == sorting, UserMediaSettings.active),
+                    UserMediaSettings.time_spent
+                ), else_=0)).label("time_spent")
+            ).group_by(UserMediaSettings.user_id)
+            .order_by(desc("time_spent")).subquery()
         )
 
     ranked_users = (
@@ -72,11 +75,11 @@ def get_hall_of_fame():
 @general.route("/general/mylists-stats", methods=["GET"])
 @authenticate(token_auth)
 @response(GlobalStatsSchema, 200, description="Global MyLists stats")
-@cache.cached(timeout=86400, key_prefix="mylists-stats")
+# @cache.cached(timeout=86400, key_prefix="mylists-stats")
 def get_mylist_stats():
     """
     Global MyLists stats
     Actualized every day at 3:00 AM UTC+1
     """
     # TODO: Create schema
-    return GlobalStats().compute_global_stats()
+    return GlobalStats().compute_global_stats(), 200

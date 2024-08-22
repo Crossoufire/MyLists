@@ -7,7 +7,7 @@ export const Sidebar = ({ items, selectedTab, onTabChange }) => {
             {items.map(item => (
                 <Button
                     key={item.sidebarTitle}
-                    className="justify-start text-base"
+                    className="justify-start text-sm"
                     onClick={() => onTabChange(item.sidebarTitle)}
                     variant={selectedTab === item.sidebarTitle ? "secondary" : "ghost"}
                 >

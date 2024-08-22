@@ -83,3 +83,14 @@ def init_cli_commands():
         automatic_movies_locking()
         compute_media_time_spent()
         update_Mylists_stats()
+
+    @current_app.cli.command()
+    def myl_v2():
+        """ MyLists v2 """
+        change_add_feeling_with_rating_system()
+        add_user_media_settings_data_from_user_table()
+        correct_media_data()
+        add_data_to_user_media_updates()
+        correct_notifications_to_db()
+        replace_score_and_feeling_with_rating_system()
+        remove_non_dev_nor_publisher_companies()

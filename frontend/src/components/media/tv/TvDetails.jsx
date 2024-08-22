@@ -1,9 +1,9 @@
 import {FaStar} from "react-icons/fa";
-import {createLocalDate, formatTime} from "@/lib/utils";
+import {createLocalDate, formatDateTime, formatTime} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
-import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
+import {MapDetails} from "@/components/media/general/MapDetails.jsx";
 
 
 export const TvDetails = ({ mediaData, mediaType }) => {
@@ -21,18 +21,18 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             </div>
                         </div>
                         <MapDetails
-                            name="Created by"
                             job="creator"
-                            mediaType={mediaType}
+                            name="Created by"
                             valueList={creators}
+                            mediaType={mediaType}
                         />
                         <GenericDetails
                             name="Airing dates"
-                            value={<>{mediaData.formatted_date[0]}<br/>{mediaData.formatted_date[1]}</>}
+                            value={<>{formatDateTime(mediaData.release_date)}<br/>{formatDateTime(mediaData.last_air_date)}</>}
                         />
                         <GenericDetails
                             name="Prod. Status"
-                            value={mediaData.status}
+                            value={mediaData.prod_status}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
@@ -58,11 +58,11 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             name="Actors"
                             job="actor"
                             mediaType={mediaType}
-                            valueList={mediaData.actors}
+                            valueList={mediaData.actors.map(actor => actor.name)}
                         />
                         <GenericDetails
-                            name="Origin"
-                            value={mediaData.origin_country}
+                            name="Lang"
+                            value={mediaData.language}
                         />
                         {mediaData.next_episode_to_air &&
                             <GenericDetails
@@ -73,14 +73,14 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <MapDetails
-                            name="Networks"
                             job="network"
+                            name="Networks"
                             mediaType={mediaType}
-                            valueList={mediaData.networks}
+                            valueList={mediaData.platforms}
                         />
                         <MapDetails
                             name="Genres"
-                            valueList={mediaData.genres}
+                            valueList={mediaData.genres.map(genre => genre.name)}
                         />
                     </div>
                 </div>
@@ -89,7 +89,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                 synopsis={mediaData.synopsis}
             />
             <EpsPerSeason
-                epsPerSeason={mediaData.eps_per_season}
+                epsPerSeason={mediaData.eps_seasons}
                 epsDuration={mediaData.duration}
             />
         </div>

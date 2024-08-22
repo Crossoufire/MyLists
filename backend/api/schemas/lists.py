@@ -124,12 +124,12 @@ class UpdateStatusSchema(ma.Schema):
 
 
 class UpdateRatingSchema(ma.Schema):
-    payload = ma.Float(required=True)
+    payload = ma.Float(allow_none=True)
     media_id = ma.Integer(required=True)
 
     @validates("payload")
     def validate_payload(self, value):
-        if value < 0 or value > 10:
+        if value is not None and (value < 0 or value > 10):
             raise ValidationError("Rating needs to be between 0 and 10")
 
 
@@ -228,8 +228,8 @@ class RemoveFromListSchema(ma.Schema):
 
 
 class MediaLabelSchema(ma.Schema):
-    applied = ma.List(ma.Nested(SimpleNameSchema))
-    available = ma.List(ma.Nested(SimpleNameSchema))
+    already_in = ma.List(ma.String())
+    available = ma.List(ma.String())
 
 
 class RenameLabelSchema(ma.Schema):
@@ -238,7 +238,7 @@ class RenameLabelSchema(ma.Schema):
 
 
 class AddLabelToMediaSchema(ma.Schema):
-    name = ma.String(required=True)
+    payload = ma.String(required=True)
     media_id = ma.Integer(required=True)
 
 

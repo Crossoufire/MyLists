@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Blueprint, request, abort, g
 from backend.api import db
 from backend.api.core.handlers import token_auth
+from backend.api.managers.ProfileStatsManager import ProfileStatsManager
 from backend.api.schemas.core import SearchPaginationSchema, EmptySchema
 from backend.api.schemas.user import *
 from backend.api.utils.decorators import check_privacy_access, paginated_response
@@ -27,10 +28,16 @@ def me():
 @check_privacy_access
 @response(ProfileSchema, 200, description="Return the profile data")
 @other_responses({404: "User not found", 401: "Authentication required", 403: "Unauthorized"})
-def get_profile():
+def get_profile(username: str):
     """ Get User Profile """
 
     user = g.requested_user
+
+    media_stats = []
+    for setting in user.settings:
+        if setting.active:
+            profile_manager = ProfileStatsManager.get_subclass(setting.media_type)
+            media_stats.append(profile_manager(user).compute_media_stats())
 
     profile_data = dict(
         user_data=user,
@@ -38,7 +45,8 @@ def get_profile():
         is_following=False if not current_user else current_user.is_following(user),
         user_updates=UserMediaUpdate.get_last_updates(user.id, 6),
         follows_updates=UserMediaUpdate.get_last_updates(user.id, 10, True),
-        media_data=pm.get_user_media_data(),
+        media_stats=media_stats,
+        global_stats=ProfileStatsManager.compute_global_stats(media_stats),
     )
 
     return profile_data
@@ -49,7 +57,7 @@ def get_profile():
 @check_privacy_access
 @response(FollowsSchema(many=True), 200, description="List of the user's followers")
 @other_responses({404: "User not found", 401: "Authentication required", 403: "Unauthorized"})
-def get_followers():
+def get_followers(username: str):
     """ Get User Followers """
     return g.requested_user.followers.all()
 
@@ -59,7 +67,7 @@ def get_followers():
 @check_privacy_access
 @response(FollowsSchema(many=True), 200, description="List of the user's follows")
 @other_responses({404: "User not found", 401: "Authentication required", 403: "Unauthorized"})
-def get_following():
+def get_following(username: str):
     """ Get User Follows """
     return g.requested_user.followed.all()
 
@@ -68,7 +76,7 @@ def get_following():
 @authenticate(token_auth, optional=True)
 @check_privacy_access
 @paginated_response(UserMediaUpdateSchema, model=UserMediaUpdate, p_schema=SearchPaginationSchema)
-def get_media_history():
+def get_media_history(username: str):
     """ Get User History """
     return g.requested_user.updates
 
@@ -98,7 +106,7 @@ def toggle_follow(data):
     if data["status"] is True:
         current_user.add_follow(user)
 
-        new_notification = Notifications(
+        new_notification = NewNotifications(
             user_id=user.id,
             notif_type=NotificationType.FOLLOW,
             notif_data=json.dumps({
@@ -122,7 +130,7 @@ def get_notifications():
     """ Get Current User Notifications """
     current_user.last_notif_read_time = datetime.utcnow()
     db.session.commit()
-    return current_user.notifications.limit(8).all()
+    return current_user.new_notifications.limit(8).all()
 
 
 @user.route("/user/notifications/unread-count", methods=["GET"])
@@ -131,10 +139,10 @@ def get_notifications():
 def get_notification_count():
     """ Count Current User Unread Notifications """
     last_notif_read_time = current_user.last_notif_read_time or datetime(1970, 1, 1)
-    return current_user.notifications.filter(Notifications.timestamp > last_notif_read_time).count()
+    return dict(count=current_user.new_notifications.filter(NewNotifications.timestamp > last_notif_read_time).count())
 
 
-@user.route("/user/settings/general", methods=["PUT"])
+@user.route("/user/settings/general", methods=["POST"])
 @authenticate(token_auth)
 @response(UserSchema, 200, description="User settings successfully updated")
 def update_general_settings():
@@ -153,10 +161,10 @@ def update_general_settings():
                 return abort(400, "This username is not available")
             current_user.username = new_username
 
-    profile_image = request.files.get("profile_image")
-    if profile_image:
+    profile_cover = request.files.get("profile_image")
+    if profile_cover:
         old_picture = current_user.image_file
-        current_user.image_file = save_picture(profile_image, old_picture)
+        current_user.image_file = save_picture(profile_cover, old_picture)
 
     back_image = request.files.get("background_image")
     if back_image:
@@ -168,37 +176,42 @@ def update_general_settings():
     return current_user, 200
 
 
-@user.route("/user/settings/medialist", methods=["PUT"])
+@user.route("/user/settings/medialist", methods=["POST"])
 @authenticate(token_auth)
 @body(UpdateMediaListUserSchema)
 @response(UserSchema, 200, description="User medialist settings successfully updated")
 def update_medialist_settings(data):
     """ Edit Current User Active Medialist """
 
-    current_user.rating_system = data["rating_system"]
+    rating_system = data.get("rating_system")
+    if rating_system is not None:
+        current_user.rating_system = rating_system
+
+    media_type_map = {
+        MediaType.ANIME: "anime_list",
+        MediaType.GAMES: "games_list",
+        MediaType.BOOKS: "books_list",
+    }
 
     for setting in current_user.settings:
-        if setting.media_type == MediaType.ANIME:
-            setting.active = data["anime_list"]
-        elif setting.media_type == MediaType.GAMES:
-            setting.active = data["games_list"]
-        elif setting.media_type == MediaType.BOOKS:
-            setting.active = data["books_list"]
+        media_list_name = media_type_map.get(setting.media_type)
+        if media_list_name and media_list_name in data:
+            setting.active = data.get(media_list_name)
 
     db.session.commit()
 
     return current_user
 
 
-@user.route("/user/settings/password", methods=["PUT"])
+@user.route("/user/settings/password", methods=["POST"])
 @authenticate(token_auth)
 @body(UpdatePasswordUserSchema)
-@response(EmptySchema, 204, description="User password successfully updated")
+@response(UserSchema, 200, description="User password successfully updated")
 def change_password(data):
     """ Change Current User Password """
     current_user.password = data["new_password"]
     db.session.commit()
-    return {}
+    return current_user
 
 
 @user.route("/user/delete", methods=["DELETE"])
@@ -221,7 +234,7 @@ def delete_account():
         ).delete()
 
         UserMediaUpdate.query.filter_by(user_id=current_user.id).delete()
-        Notifications.query.filter_by(user_id=current_user.id).delete()
+        NewNotifications.query.filter_by(user_id=current_user.id).delete()
 
         models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model in models.values():

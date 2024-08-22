@@ -1,10 +1,10 @@
 import {useState} from "react";
+import {fetcher} from "@/lib/fetcherLoader";
 import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
@@ -36,6 +36,8 @@ function MediaDetailsPage() {
 		setApiData(data);
 	};
 
+	console.log(apiData);
+
 	return (
 		<PageTitle title={apiData.media.name} onlyHelmet>
 			<div className="max-w-[1000px] mx-auto">
@@ -58,14 +60,14 @@ function MediaDetailsPage() {
 					<div className="col-span-12 md:col-span-5 lg:col-span-4">
 						<div className="flex flex-col items-center sm:items-start gap-4">
 							<img
+								alt="media-cover"
 								src={apiData.media.media_cover}
 								className="w-[300px] h-[450px] rounded-md"
-								alt="media-cover"
 							/>
 							<UserListDetails
 								apiData={apiData}
-								setApiData={setApiData}
 								mediaType={mediaType}
+								setApiData={setApiData}
 							/>
 						</div>
 					</div>
@@ -77,8 +79,8 @@ function MediaDetailsPage() {
 							</TabsList>
 							<TabsContent value="mediaDetails">
 								<MediaDataDetails
-									mediaData={apiData.media}
 									mediaType={mediaType}
+									mediaData={apiData.media}
 								/>
 								<SimilarMedia
 									mediaType={mediaType}
@@ -89,12 +91,11 @@ function MediaDetailsPage() {
 								{apiData.follows_data.length !== 0 &&
 									<div className="mb-10 mt-6">
 										<div className="grid grid-cols-12 gap-4">
-											{apiData.follows_data.map(follow =>
-												<div key={follow.id} className="col-span-12 md:col-span-6 lg:col-span-6">
+											{apiData.follows_data.map(data =>
+												<div key={data.id} className="col-span-12 md:col-span-6 lg:col-span-6">
 													<FollowCard
-														key={follow.username}
-														follow={follow}
-														mediaType={mediaType}
+														data={data}
+														key={data.username}
 													/>
 												</div>
 											)}

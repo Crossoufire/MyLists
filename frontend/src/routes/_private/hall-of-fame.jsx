@@ -1,11 +1,15 @@
+import {useState} from "react";
+import {FaTimes} from "react-icons/fa";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {fetcher} from "@/lib/fetcherLoader";
 import {userClient} from "@/api/MyApiClient";
+import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {PageTitle} from "@/components/app/base/PageTitle";
+import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 
@@ -13,25 +17,28 @@ import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
-    loaderDeps: ({ params }) => ({ params }),
-    loader: async ({ deps }) => fetcher("/general/hall-of-fame", deps.params),
+    loaderDeps: ({ search }) => ({ search }),
+    loader: async ({ deps }) => fetcher("/general/hall-of-fame", deps.search),
 });
+
+
+const DEFAULT = { page: 1, search: "", sorting: "profile" };
 
 
 function HallOfFamePage() {
     const navigate = useNavigate();
     const apiData = Route.useLoaderData();
-    const [search, setSearch] = useState(apiData.pagination.search);
-
-    const sorting = apiData.pagination.sorting;
-    const currentPage = apiData.pagination.page;
-    const loaded_params = { search, page: currentPage, sorting };
+    const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = Route.useSearch();
+    const [currentSearch, setCurrentSearch] = useState(search);
 
     const fetchData = async (params) => {
-        if (JSON.stringify(params) === JSON.stringify(loaded_params)) {
-            return;
-        }
-        await navigate({ params });
+        // noinspection JSCheckFunctionSignatures
+        await navigate({ search: params });
+    };
+
+    const resetFilters = async () => {
+        setCurrentSearch(DEFAULT.search);
+        await fetchData(DEFAULT);
     };
 
     const onPageChange = async(newPage) => {
@@ -52,21 +59,28 @@ function HallOfFamePage() {
 
     return (
         <PageTitle title="Hall of Fame" subtitle="This is the showcase of profiles ranked by level">
-            <div className="mt-2 md:w-[900px] mx-auto w-full">
+            <div className="mt-2 md:w-[850px] mx-auto w-full">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start mt-2 mb-4">
                         <Input
-                            value={search}
+                            value={currentSearch}
                             onKeyUp={onSearchEnter}
                             className={"rounded-md w-56"}
                             placeholder={"Search by username"}
-                            onChange={(ev) => setSearch(ev.target.value)}
+                            onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
+                        {currentSearch &&
+                            <Button variant="ghost" size="icon" className="ml-3" onClick={resetFilters}>
+                                <FaTimes/>
+                            </Button>
+                        }
                     </div>
                     <div>
-                        <Select value={sorting} onValueChange={onSortingChanged}>
+                        <Select value={sorting} onValueChange={onSortingChanged} disabled={apiData.data.length === 0}>
                             <SelectTrigger className="w-[130px]">
-                                <div className="font-medium">Rank by &nbsp;&#8226;&nbsp; {capitalize(sorting)}</div>
+                                <div className="font-medium">
+                                    Rank by &nbsp;&#8226;&nbsp; {capitalize(sorting)}
+                                </div>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="profile">Profile</SelectItem>
@@ -79,26 +93,33 @@ function HallOfFamePage() {
                         </Select>
                     </div>
                 </div>
-                {apiData.data.map(item =>
-                    <HoFCard key={item.user.username} item={item}/>)
-                }
+                {apiData.data.length === 0 ?
+                    <div className="italic text-muted-foreground text-center mt-6">
+                        No users found
+                    </div>
+                    :
+                    apiData.data.map(item =>
+                        <HoFCard
+                            item={item}
+                            key={item.user.username}
+                        />
+                    )}
                 <Pagination
-                    currentPage={currentPage}
+                    currentPage={page}
                     onChangePage={onPageChange}
                     totalPages={apiData.pagination.pages}
                 />
             </div>
         </PageTitle>
-    )
+    );
 }
 
 
 const HoFCard = ({ item }) => {
-    const cU = userClient.currentUser;
-
     return (
-        <Card key={item.user.username} className={cn("p-2 mb-5 bg-card", cU.id === item.user.id && "bg-teal-950")}>
-            <CardContent className="p-0">
+        <Card key={item.user.username} className={cn("p-2 mb-5 bg-card",
+            userClient.currentUser.id === item.user.id && "bg-teal-950")}>
+            <CardContent className="max-sm:py-5 p-0">
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 md:col-span-1">
                         <div className="flex items-center justify-center text-lg h-full font-medium">
@@ -108,7 +129,7 @@ const HoFCard = ({ item }) => {
                     <div className="col-span-9 md:col-span-4">
                         <div className="relative">
                             <img
-                                src={item.user.profile_image}
+                                src={item.user.profile_cover}
                                 className="z-10 absolute top-[53px] left-[46px] rounded-full h-[70px] w-[70px]"
                                 alt="profile-image"
                             />
@@ -132,6 +153,7 @@ const HoFCard = ({ item }) => {
                             {item.user.settings.map(setting =>
                                 <ListItem
                                     setting={setting}
+                                    key={setting.media_type}
                                     username={item.user.username}
                                 />
                             )}
@@ -140,24 +162,21 @@ const HoFCard = ({ item }) => {
                 </div>
             </CardContent>
         </Card>
-    )
+    );
 };
 
 
 const ListItem = ({ setting, username }) => {
     return (
-        <div className="flex flex-col justify-evenly items-center h-full">
+        <div className="flex flex-col justify-evenly items-center gap-2">
             <div>{capitalize(setting.media_type)}</div>
-            {setting.active ?
-                <Link to={`/list/${setting.media_type}/${username}`}>
-                    <div className="mb-1">
-                        {/* TODO: Recreate the CSS circle as in the profile page */}
-                    </div>
-                    <div>{setting.level}</div>
-                </Link>
-                :
-                <div className="flex content-center items-center h-[68px]">Disabled</div>
-            }
+            <Link to={`/list/${setting.media_type}/${username}`} disabled={!setting.active}>
+                <MediaLevelCircle
+                    intLevel={setting.level}
+                    isActive={setting.active}
+                    className="w-[40px] h-[40px]"
+                />
+            </Link>
         </div>
     );
 };

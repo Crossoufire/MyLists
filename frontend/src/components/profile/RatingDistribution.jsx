@@ -1,25 +1,25 @@
 import {getFeelingValues} from "@/lib/utils";
 import {Tooltip} from "@/components/ui/tooltip";
+import {MutedText} from "@/components/app/base/MutedText";
 
 
-export const RatingDistribution = ({ isFeeling, ratingCount, mediaType }) => {
+export const RatingDistribution = ({ ratingSystem, ratingCount, mediaType }) => {
     const maxValue = Math.max(...ratingCount);
-    const ratingName = isFeeling ? "Feeling" : "Score";
 
     return (
         <div>
             <div className="font-medium text-lg">
-                {ratingName} distribution
+                Rating distribution
             </div>
             {maxValue === 0 ?
-                <div className="text-muted-foreground mt-2.5 italic">No {ratingName.toLowerCase()} added yet</div>
+                <MutedText text="No rating added yet" className="mt-2.5"/>
                 :
-                isFeeling ?
+                ratingSystem === "feeling" ?
                     <div className="flex font-semibold items-center justify-evenly mt-4">
-                        {getFeelingValues().slice(1).reverse().map((f, idx) =>
-                            <div key={idx} className="space-y-2 text-center">
-                                <div>{f.icon}</div>
-                                <div>{ratingCount[ratingCount.length - 1 - idx]}</div>
+                        {getFeelingValues().slice(1).reverse().map(feelIcon =>
+                            <div key={feelIcon.value} className="space-y-2 text-center">
+                                <div>{feelIcon.icon}</div>
+                                <div>{ratingCount[feelIcon.value * 4]}</div>
                             </div>
                         )}
                     </div>

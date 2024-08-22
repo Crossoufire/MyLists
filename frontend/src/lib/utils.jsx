@@ -3,33 +3,6 @@ import {twMerge} from "tailwind-merge";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
-export const cn = (...inputs) => {
-    return twMerge(clsx(inputs));
-};
-
-export const zeroPad = (value) => {
-    if (value) return String(value).padStart(2, "0");
-    return "00";
-};
-
-export const capitalize = (str) => {
-    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
-    return str;
-};
-
-export const createLocalDate = (date_, addYear = false, addHours = true) => {
-    if (!date_) return "";
-
-    const d = new Date(date_);
-    const tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const localDate = d.toLocaleString("en-GB", { timeZone: tz });
-    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const hours = addHours ? `at ${localDate.slice(11, 17)}` : "";
-    const year = addYear ? d.getFullYear() : (new Date().getFullYear() === d.getFullYear() ? "" : d.getFullYear());
-
-    return `${localDate.slice(0, 2)} ${month[d.getMonth()]} ${year} ${hours}`;
-};
-
 export const formatTime = (timeInMinutes, onlyHours) => {
     if (isNaN(timeInMinutes)) return "--";
 
@@ -45,18 +18,6 @@ export const formatTime = (timeInMinutes, onlyHours) => {
 
 export const getScoreValues = () => {
     return [null, 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
-};
-
-export const getFeelingValues = (size = 20) => {
-    return [
-        {value: null, icon: "--"},
-        {value: 0, icon: <FaPoop color="saddlebrown" size={size}/>},
-        {value: 1, icon: <FaAngry color="indianred" size={size}/>},
-        {value: 2, icon: <FaFrown color="#d0a141" size={size}/>},
-        {value: 3, icon: <FaSmile color="darkseagreen" size={size}/>},
-        {value: 4, icon: <FaGrinAlt color="#59a643" size={size}/>},
-        {value: 5, icon: <FaGrinStars color="#019101" size={size}/>},
-    ]
 };
 
 export const getPlaytimeValues = () => [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150,
@@ -93,17 +54,6 @@ export const getStatusColor = (status) => {
     return colors[status];
 };
 
-export const getMediaColor = (media) => {
-    const colors = {
-        "series": "#216e7d",
-        "anime": "#945141",
-        "movies": "#8c7821",
-        "books": "#584c6e",
-        "games": "#196219",
-    };
-    return colors[media];
-};
-
 export const genreListsToListsOfDict = (stringList) => {
     if (!Array.isArray(stringList)) {
         return [];
@@ -135,4 +85,148 @@ export const sliceIntoParts = (arr, n) => {
     }
 
     return result;
+};
+
+
+// ----------------------------------------------------------------------------------------------------
+
+
+export const cn = (...inputs) => {
+    return twMerge(clsx(inputs));
+};
+
+export const createLocalDate = (date_, addYear = false, addHours = true) => {
+    if (!date_) return "";
+
+    const d = new Date(date_);
+    const tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localDate = d.toLocaleString("en-GB", { timeZone: tz });
+    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const hours = addHours ? `at ${localDate.slice(11, 17)}` : "";
+    const year = addYear ? d.getFullYear() : (new Date().getFullYear() === d.getFullYear() ? "" : d.getFullYear());
+
+    return `${localDate.slice(0, 2)} ${month[d.getMonth()]} ${year} ${hours}`;
+};
+
+export const getFeelingValues = (size = 20) => {
+    return [
+        {value: null, icon: "--"},
+        {value: 0, icon: <FaPoop color="saddlebrown" size={size}/>},
+        {value: 1, icon: <FaAngry color="indianred" size={size}/>},
+        {value: 2, icon: <FaFrown color="#d0a141" size={size}/>},
+        {value: 3, icon: <FaSmile color="darkseagreen" size={size}/>},
+        {value: 4, icon: <FaGrinAlt color="#59a643" size={size}/>},
+        {value: 5, icon: <FaGrinStars color="#019101" size={size}/>},
+    ]
+};
+
+export const zeroPad = (value) => {
+    if (value) {
+        return String(value).padStart(2, "0");
+    }
+    return "00";
+};
+
+export const capitalize = (str) => {
+    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
+    return str;
+};
+
+export const getMediaColor = (mediaType) => {
+    const colors = {
+        "series": "#216e7d",
+        "anime": "#945141",
+        "movies": "#8c7821",
+        "books": "#584c6e",
+        "games": "#196219",
+    };
+    return colors[mediaType];
+};
+
+export const formatDateTime = (datetimeStr) => {
+    if (!datetimeStr) return "Undefined";
+
+    const date = new Date(datetimeStr);
+
+    const options = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour12: false,
+    };
+
+    return new Intl.DateTimeFormat("en-En", options).format(date);
+};
+
+export const getLevelColor = (intLevel) => {
+    const customPower = (x, p) => Math.pow(x, p);
+    const normalizedLevel = customPower(intLevel / 350, 0.75);
+
+    if (normalizedLevel <= 0.2) {
+        return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
+    }
+    else if (normalizedLevel <= 0.4) {
+        return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
+    }
+    else if (normalizedLevel <= 0.6) {
+        return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
+    }
+    else if (normalizedLevel <= 0.8) {
+        return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
+    }
+    else {
+        return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
+    }
+};
+
+export const globalStatsTimeFormat = (minutes) => {
+    const MINUTES_PER_HOUR = 60;
+    const HOURS_PER_DAY = 24;
+    const DAYS_PER_YEAR = 365.25;
+    const MONTHS_ARRAY = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    const years = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR));
+    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR;
+
+    let months = 0;
+    let days = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY));
+
+    while (days >= MONTHS_ARRAY[months % 12]) {
+        days -= MONTHS_ARRAY[months % 12];
+        months++;
+    }
+
+    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY;
+    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+
+    const parts = [];
+    if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
+    if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
+    if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+
+    if (parts.length === 0) return "less than an hour";
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts.join(" and ");
+
+    const lastPart = parts.pop();
+    return parts.join(", ") + ", and " + lastPart;
+};
+
+export const formatTimeTo = (to, time, asInt = true) => {
+    if (to === "hours") {
+        if (asInt) {
+            return Math.floor(time / 60);
+        } else {
+            return time / 60;
+        }
+    }
+    else if (to === "days") {
+        if (asInt) {
+            return Math.floor(time / 1440);
+        } else {
+            return time / 1440;
+        }
+    }
+    return time;
 };

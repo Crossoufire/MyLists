@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {capitalize} from "@/lib/utils";
+import {capitalize, cn} from "@/lib/utils";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
@@ -52,7 +52,7 @@ export const SearchBar = ({ currentUser }) => {
             return toast.error(response.body.description);
         }
 
-        setResults(response.body.data);
+        setResults(response.body);
         setActivePage(page);
     };
 
@@ -65,9 +65,9 @@ export const SearchBar = ({ currentUser }) => {
                 <LuSearch size={26}/>
                 <Input
                     value={query}
+                    className="border-none"
                     onChange={handleSearchChange}
                     placeholder="Search media/users"
-                    className="border-none focus-visible:ring-0"
                 />
                 <Select defaultValue={selectDrop} onValueChange={changeSelect}>
                     <SelectTrigger className="w-[160px]">
@@ -76,8 +76,12 @@ export const SearchBar = ({ currentUser }) => {
                     <SelectContent>
                         <SelectGroup>
                             {<SelectItem value="media">Media</SelectItem>}
-                            {currentUser.add_books && <SelectItem value="books">Books</SelectItem>}
-                            {currentUser.add_games && <SelectItem value="games">Games</SelectItem>}
+                            {userClient.getMediaSettings("books").active &&
+                                <SelectItem value="books">Books</SelectItem>
+                            }
+                            {userClient.getMediaSettings("games").active &&
+                                <SelectItem value="games">Games</SelectItem>
+                            }
                             <SelectItem value="users">Users</SelectItem>
                         </SelectGroup>
                     </SelectContent>
@@ -169,7 +173,7 @@ const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) =>
 const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) => {
     const { setSheetOpen } = useSheet();
     const imageHeight = mediaType === "User" ? 64 : 96;
-    const url = mediaType === "User" ? `/profile/${name}` : `/details/${mediaType}/${apiId}?external=True`;
+    const url = (mediaType === "User") ? `/profile/${name}` : `/details/${mediaType}/${apiId}?external=True`;
 
     const handleLinkClick = () => {
         resetSearch();
@@ -180,10 +184,10 @@ const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) =
         <Link to={url} onClick={handleLinkClick}>
             <div className="flex border-b gap-x-4 p-3 items-center w-full min-h-6 hover:bg-neutral-900">
                 <img
+                    alt={name}
                     src={thumbnail}
                     height={imageHeight}
-                    className="w-16 rounded-sm"
-                    alt={name}
+                    className={"w-16 rounded-sm"}
                 />
                 <div>
                     <div className="font-semibold mb-2">{name}</div>

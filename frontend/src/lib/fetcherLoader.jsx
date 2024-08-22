@@ -14,5 +14,5 @@ export const fetcher = async (url, query, options) => {
         );
     }
 
-    return response.body.data;
+    return response.body;
 };

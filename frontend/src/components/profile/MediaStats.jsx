@@ -2,9 +2,10 @@ import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
-import {capitalize, getStatusColor} from "@/lib/utils";
 import {BulletIcon} from "@/components/app/base/BulletIcon";
+import {capitalize, formatTimeTo, getStatusColor} from "@/lib/utils";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
+import {MutedText} from "@/components/app/base/MutedText.jsx";
 
 
 export const MediaStats = ({ user, media }) => (
@@ -12,13 +13,13 @@ export const MediaStats = ({ user, media }) => (
         <div>
             <div className="flex justify-between font-medium">
                 <div>{capitalize(media.media_type)}</div>
-                <div>{parseInt(media.time_days)} days</div>
+                <div>{formatTimeTo("days", media.time_spent)} days</div>
             </div>
             <Separator/>
             <div className="flex flex-wrap justify-between text-center font-medium">
                 <div>
                     <div className="text-neutral-500">Hours</div>
-                    <div>{media.time_hours}</div>
+                    <div>{formatTimeTo("hours", media.time_spent)}</div>
                 </div>
                 {media.media_type !== "games" &&
                     <div>
@@ -32,28 +33,24 @@ export const MediaStats = ({ user, media }) => (
                 }
                 <div>
                     <div className="text-neutral-500">Entries</div>
-                    <div>{media.total_media}</div>
+                    <div>{media.rating.total_media}</div>
                 </div>
-                {!user.add_feeling &&
+                {user.rating_system !== "feeling" &&
                     <div>
-                        <div className="text-neutral-500">Mean Rating</div>
-                        <div>{media.mean_metric.toFixed(2)}</div>
+                        <div className="text-neutral-500">Avg. Rating</div>
+                        <div>{media.rating.mean_rating.toFixed(2)}</div>
                     </div>
                 }
                 <div>
-                    <div className="text-neutral-500">Time</div>
-                    <div>{parseInt(media.time_days)} days</div>
-                </div>
-                <div>
-                    <div className="text-neutral-500">Scored</div>
-                    <div>{media.media_metric}/{media.total_media}</div>
+                    <div className="text-neutral-500"># Rated</div>
+                    <div>{media.rating.total_rated} / {media.rating.total_media}</div>
                 </div>
             </div>
             <div className="flex h-8 mt-2 mb-2">
-                {media.no_data ?
+                {media.status_count.no_data ?
                     <span className="flex-grow bg-black rounded-md"/>
                     :
-                    media.status_count.map(status =>
+                    media.status_count.status_count.map(status =>
                         <Tooltip key={`${status.status}-${media.media_type}`} text={status.status}>
                             <span
                                 className="flex-grow"
@@ -64,7 +61,7 @@ export const MediaStats = ({ user, media }) => (
                 }
             </div>
             <div className="grid grid-cols-2 font-medium text-sm gap-y-2 gap-x-8 md:text-base md:px-2">
-                {media.status_count.map(s =>
+                {media.status_count.status_count.map(s =>
                     <div key={`${s.status}-${media.media_type}`} className="flex justify-between">
                         <Link to={`/list/${media.media_type}/${user.username}?status=${s.status}`} className="text-neutral-500">
                             <BulletIcon color={getStatusColor(s.status)}/> {s.status}
@@ -77,20 +74,20 @@ export const MediaStats = ({ user, media }) => (
         <div>
             <Link to={`/list/${media.media_type}/${user.username}?favorite=true`} className="text-lg font-medium
             hover:underline hover:underline-offset-2">
-                Favorites ({media.total_favorites})
+                Favorites ({media.favorites.total_favorites})
             </Link>
-            {media.total_favorites === 0 ?
-                <div className="text-muted-foreground mt-2.5 italic">No favorites added yet</div>
+            {media.favorites.total_favorites === 0 ?
+                <MutedText text="No favorites added yet" className="mt-2.5"/>
                 :
                 <div className="flex flex-wrap justify-start gap-2 mt-2">
-                    {media.favorites.map(m =>
+                    {media.favorites.favorites.map(m =>
                         <Link key={m.media_name} to={`/details/${media.media_type}/${m.media_id}`}>
                             <Tooltip text={m.media_name}>
                                 <img
-                                    id={`${media.media_type}-${m.media_id}`}
-                                    src={m.media_cover}
-                                    className="h-[78px] w-[52px] rounded-sm"
                                     alt={m.media_name}
+                                    src={m.media_cover}
+                                    id={`${media.media_type}-${m.media_id}`}
+                                    className={"h-[78px] w-[52px] rounded-sm"}
                                 />
                             </Tooltip>
                         </Link>
@@ -99,19 +96,19 @@ export const MediaStats = ({ user, media }) => (
             }
         </div>
         <RatingDistribution
-            isFeeling={user.add_feeling}
-            ratingCount={media.count_per_metric}
             mediaType={media.media_type}
+            ratingCount={media.rating_count}
+            ratingSystem={user.rating_system}
         />
         <div>
             <div className="font-medium text-lg">
-                Labels ({media.labels.count})
+                Labels ({media.labels.length})
             </div>
-            {media.labels.names.length === 0 ?
-                <div className="text-muted-foreground mt-2.5 italic">No labels created yet</div>
+            {media.labels.length === 0 ?
+                <MutedText text="No labels created yet" className="mt-2.5"/>
                 :
                 <div className="flex flex-wrap justify-start gap-2 mt-2">
-                    {media.labels.names.map(lb =>
+                    {media.labels.map(lb =>
                         <Link key={lb} to={`/list/${media.media_type}/${user.username}?labels=${lb}`}>
                             <Badge variant="label" className="font-semibold">{lb}</Badge>
                         </Link>

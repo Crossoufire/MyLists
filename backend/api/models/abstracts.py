@@ -25,7 +25,7 @@ class Media(db.Model, SearchableMixin):
     synopsis = db.Column(db.Text)
     image_cover = db.Column(db.String, nullable=False)
     api_id = db.Column(db.Integer, nullable=False)
-    lock_status = db.Column(db.Boolean, default=0)
+    lock_status = db.Column(db.Boolean, nullable=False, default=0)
     last_api_update = db.Column(db.DateTime)
 
     @property
@@ -36,12 +36,12 @@ class Media(db.Model, SearchableMixin):
         media_model = self.__class__
         media_genre = ModelsManager.get_unique_model(self.GROUP, ModelTypes.GENRE)
 
-        if len(self.genres) == 0 or self.genres[0].name == "Undefined":
+        if not self.genres:
             return []
 
         similar_media = (
             db.session.query(media_model).outerjoin(media_model.genres)
-            .filter(media_genre.id.in_([g.id for g in self.genres]), media_model.id != self.id)
+            .filter(media_genre.name.in_([g.name for g in self.genres]), media_model.id != self.id)
             .group_by(media_model.id).having(func.count(media_genre.id) >= 1)
             .order_by(func.count(media_genre.id).desc())
             .limit(limit).all()
@@ -64,6 +64,7 @@ class Media(db.Model, SearchableMixin):
             username=user.username,
             profile_cover=user.profile_cover,
             media_assoc=media_list,
+            rating_system=user.rating_system,
         ) for user, media_list in in_follows_lists]
 
         return data
@@ -79,6 +80,8 @@ class MediaList(db.Model, SearchableMixin):
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     status = db.Column(db.Enum(Status), nullable=False)
+    feeling = db.Column(db.String)
+    score = db.Column(db.Float)
     rating = db.Column(db.Float)
     favorite = db.Column(db.Boolean)
     comment = db.Column(db.Text)
@@ -102,9 +105,9 @@ class MediaList(db.Model, SearchableMixin):
             media_id=media.id,
             media_name=media.name,
             media_cover=media.media_cover,
+            release_date=media.release_date,
             season_to_air=media.season_to_air if cls.GROUP in [MediaType.SERIES, MediaType.ANIME] else None,
             episode_to_air=media.episode_to_air if cls.GROUP in [MediaType.SERIES, MediaType.ANIME] else None,
-            release_date=datetime.strptime(media.release_date, "%Y-%m-%d").strftime("%d %b %Y"),
         ) for media in upcoming_media]
 
         return data
@@ -139,13 +142,13 @@ class Labels(db.Model):
 
     @classmethod
     def get_user_labels(cls, user_id: int) -> List[str]:
-        q_all = db.session.query(cls.label.distinct()).filter_by(user_id=user_id).order_by(cls.label).all()
+        q_all = db.session.query(cls.name.distinct()).filter_by(user_id=user_id).order_by(cls.name).all()
         return [label[0] for label in q_all]
 
     @classmethod
     def get_user_media_labels(cls, user_id: int, media_id: int) -> Dict:
         all_labels = set(cls.get_user_labels(user_id))
-        q_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).order_by(cls.label).all()
+        q_in = db.session.query(cls.name).filter_by(user_id=user_id, media_id=media_id).order_by(cls.name).all()
         already_in = {label[0] for label in q_in}
         available = all_labels - already_in
         return dict(already_in=list(already_in), available=list(available))

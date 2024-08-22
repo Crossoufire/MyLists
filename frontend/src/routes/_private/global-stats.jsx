@@ -7,13 +7,13 @@ import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
-import {capitalize, changeValueFormat} from "@/lib/utils";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {changeValueFormat, getMediaColor, globalStatsTimeFormat} from "@/lib/utils";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/global_stats")({
+export const Route = createFileRoute("/_private/global-stats")({
     component: GlobalStatsPage,
     loader: async () => fetcher("/general/mylists-stats"),
 });
@@ -23,35 +23,35 @@ function GlobalStatsPage() {
     const apiData = Route.useLoaderData();
 
     const graphData = [
-        { id: "Series", value: apiData.total_time.series, color: "#216e7d" },
-        { id: "Anime", value: apiData.total_time.anime, color: "#945141" },
-        { id: "Movies", value: apiData.total_time.movies, color: "#8c7821" },
-        { id: "Books", value: apiData.total_time.books, color: "#584c6e" },
-        { id: "Games", value: apiData.total_time.games, color: "#196219" },
+        { id: "Series", value: apiData.total_time.series, color: getMediaColor("series") },
+        { id: "Anime", value: apiData.total_time.anime, color: getMediaColor("anime") },
+        { id: "Movies", value: apiData.total_time.movies, color: getMediaColor("movies") },
+        { id: "Books", value: apiData.total_time.books, color: getMediaColor("books") },
+        { id: "Games", value: apiData.total_time.games, color: getMediaColor("games") },
     ];
 
     const mediaData = [
-        {name: "series", count: apiData.nb_media.series},
-        {name: "anime", count: apiData.nb_media.anime},
-        {name: "movies", count: apiData.nb_media.movies},
-        {name: "books", count: apiData.nb_media.books},
-        {name: "games", count: apiData.nb_media.games},
-        {name: "user", count: apiData.nb_users}
+        {name: "Series", icon:"series", count: apiData.nb_media.series},
+        {name: "Anime", icon:"anime", count: apiData.nb_media.anime},
+        {name: "Movies", icon:"movies", count: apiData.nb_media.movies},
+        {name: "Books", icon:"books", count: apiData.nb_media.books},
+        {name: "Games", icon:"games", count: apiData.nb_media.games},
+        {name: "Users", icon:"user", count: apiData.nb_users}
     ];
 
     return (
         <PageTitle title="Global Statistics" subtitle="The global statistics of all the users using MyLists.info">
             <div className="flex flex-col gap-4 mt-4 mx-auto max-w-[1000px]">
                 <div className="font-medium text-center py-6 rounded-md bg-card max-sm:text-2xl text-5xl">
-                    {apiData.total_time.total}
+                    {globalStatsTimeFormat(apiData.total_time.total)}
                 </div>
                 <div className="grid grid-cols-12 justify-center items-center gap-4">
                     {mediaData.map((media, idx) =>
                         <div key={idx} className="col-span-6 md:col-span-4 lg:col-span-2">
                             <div className="flex flex-col justify-center items-center rounded-md p-2 bg-card">
-                                <MediaIcon mediaType={media.name} size={25}/>
+                                <MediaIcon mediaType={media.icon} size={25}/>
                                 <div className="text-lg font-medium mt-2">
-                                    {media.count} {capitalize(media.name)}
+                                    {media.count} {media.name}
                                 </div>
                             </div>
                         </div>

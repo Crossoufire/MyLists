@@ -2,10 +2,11 @@ import os
 import re
 import secrets
 from datetime import datetime, timezone
-from io import BytesIO
 from typing import List, Any, Iterable, Tuple
 from PIL import Image
 from flask import current_app, abort
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 
 
 def get(state: Iterable, *path: Any, default: Any = None):
@@ -27,38 +28,41 @@ def compute_level(total_time: float) -> float:
     return (((400 + 80 * total_time) ** 0.5) - 20) / 40
 
 
-def save_picture(form_picture, old_picture: str, profile: bool = True):
+def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = True):
     """ Save an account picture """
 
     try:
-        image = Image.open(BytesIO(form_picture))
+        image = Image.open(form_picture)
         if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
             return abort(400, "Invalid picture format")
-    except:
-        return abort(400, "Invalid picture format")
 
-    file = form_picture
-    random_hex = secrets.token_hex(10)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
+        random_hex = secrets.token_hex(14)
+        _, f_ext = os.path.splitext(secure_filename(form_picture.filename))
+        picture_fn = random_hex + f_ext
 
-    if profile:
-        file.save(os.path.join(current_app.root_path, "static/profile_pictures", picture_fn))
-    else:
-        file.save(os.path.join(current_app.root_path, "static/back_pictures", picture_fn))
+        if profile:
+            save_path = os.path.join(current_app.root_path, "static/profile_pictures", picture_fn)
+        else:
+            save_path = os.path.join(current_app.root_path, "static/back_pictures", picture_fn)
 
-    try:
-        if old_picture != "default.jpg":
-            if profile:
-                os.remove(os.path.join(current_app.root_path, "static/profile_pictures", old_picture))
-                current_app.logger.info(f"Settings updated: Removed old picture: {old_picture}")
-            else:
-                os.remove(os.path.join(current_app.root_path, "static/back_pictures", old_picture))
-                current_app.logger.info(f"Settings updated: Removed old background: {old_picture}")
-    except:
-        current_app.logger.error(f"Error trying to remove an old picture: {old_picture}")
+        image.save(save_path)
+        image.close()
 
-    return picture_fn
+        if old_picture and old_picture != "default.jpg":
+            try:
+                old_path = os.path.join(
+                    current_app.root_path,
+                    "static/profile_pictures" if profile else "static/back_pictures", old_picture
+                )
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+            except Exception as e:
+                current_app.logger.error(f"Error trying to remove an old picture: {str(e)}")
+
+        return picture_fn
+
+    except Exception as e:
+        return abort(400, f"An error occurred saving the picture")
 
 
 def safe_div(a: float, b: float, percentage: bool = False):
@@ -107,7 +111,7 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
             return last_episode, seas, eps_watched
 
 
-def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str:
+def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str | None:
     try:
         if tv:
             return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
@@ -117,11 +121,11 @@ def change_air_format(date_: str, tv: bool = False, games: bool = False, books: 
             try:
                 return re.findall(r"\d{4}", date_)[0]
             except:
-                return "Undefined"
+                return None
         else:
             return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
     except (ValueError, TypeError):
-        return "Undefined"
+        return None
 
 
 def format_datetime(data) -> datetime | None:
@@ -136,5 +140,5 @@ def format_datetime(data) -> datetime | None:
             try:
                 return datetime.fromtimestamp(int(data))
             except:
-                return None
+                pass
     return None

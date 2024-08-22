@@ -1,6 +1,6 @@
 import json
 from typing import Tuple, Dict
-from sqlalchemy import func, text
+from sqlalchemy import func, text, desc
 from backend.api import db
 from backend.api.models.users import User
 from backend.api.utils.enums import MediaType, Status, ModelTypes
@@ -35,10 +35,10 @@ class GlobalStats:
         models = ModelsManager.get_dict_models("all", [ModelTypes.GENRE, ModelTypes.LIST])
         for media_type, mt in models.items():
             query = (
-                db.session.query(mt[ModelTypes.GENRE].genre, func.count(mt[ModelTypes.GENRE].genre).label("count"))
+                db.session.query(mt[ModelTypes.GENRE].name, func.count(mt[ModelTypes.GENRE].name).label("count"))
                 .join(mt[ModelTypes.LIST], mt[ModelTypes.GENRE].media_id == mt[ModelTypes.LIST].media_id)
-                .filter(mt[ModelTypes.GENRE].genre != "Unknown")
-                .group_by(mt[ModelTypes.GENRE].genre)
+                .filter(mt[ModelTypes.GENRE].name != "Unknown")
+                .group_by(mt[ModelTypes.GENRE].name)
                 .order_by(text("count desc"))
                 .limit(self.LIMIT).all()
             )
@@ -94,11 +94,11 @@ class GlobalStats:
     def get_top_directors(self) -> Dict:
         media_m, list_m = ModelsManager.get_lists_models(MediaType.MOVIES, [ModelTypes.MEDIA, ModelTypes.LIST])
         query = (
-            db.session.query(media_m.director_name, func.count(media_m.director_name).label("count"))
+            db.session.query(media_m.director, func.count(media_m.director).label("count"))
             .join(list_m, media_m.id == list_m.media_id)
-            .group_by(media_m.director_name)
-            .filter(media_m.director_name != "Unknown")
-            .order_by(text("count desc"))
+            .group_by(media_m.director)
+            .filter(media_m.director != "Unknown")
+            .order_by(desc("count"))
             .limit(self.LIMIT).all()
         )
 
@@ -172,7 +172,7 @@ class GlobalStats:
     @staticmethod
     def get_total_book_pages() -> Dict:
         model = ModelsManager.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
-        return db.session.query(func.sum(model.actual_page)).first()[0] or 0
+        return db.session.query(func.sum(model.current_page)).first()[0] or 0
 
     def compute_global_stats(self) -> Dict[str, Dict | int]:
         nb_users, nb_media = self.get_nb_media_and_users()

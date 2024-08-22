@@ -16,8 +16,10 @@ export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")(
 
 function InfoPage() {
     const apiData = Route.useLoaderData();
-    const { mediaType, info } = Route.useParams();
+    const { mediaType, name } = Route.useParams();
     const [currentPage, setCurrentPage] = useState(1);
+
+    console.log(apiData);
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -25,13 +27,13 @@ function InfoPage() {
     };
 
     const mediaPerPage = 25;
-    const totalPages = Math.ceil(apiData.total / mediaPerPage);
+    const totalPages = Math.ceil(apiData.length / mediaPerPage);
     const startIndex = (currentPage - 1) * mediaPerPage;
     const endIndex = startIndex + mediaPerPage;
-    const currentItems = apiData.data.slice(startIndex, endIndex);
+    const currentItems = apiData.slice(startIndex, endIndex);
 
     return (
-        <PageTitle title={`${info}'s ${mediaType} (${apiData.total})`}>
+        <PageTitle title={`${name}'s ${mediaType} (${apiData.length})`}>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
                 {currentItems.map(media =>
                     <div key={media.media_id} className="col-span-1">

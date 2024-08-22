@@ -75,7 +75,24 @@ class User(db.Model, SearchableMixin):
     last_notif_read_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     show_update_modal = db.Column(db.Boolean, default=True)
+
+    time_spent_series = db.Column(db.Integer, nullable=False, default=0)
+    time_spent_anime = db.Column(db.Integer, nullable=False, default=0)
+    time_spent_movies = db.Column(db.Integer, nullable=False, default=0)
+    time_spent_games = db.Column(db.Integer, nullable=False, default=0)
+    time_spent_books = db.Column(db.Integer, nullable=False, default=0)
+
     profile_views = db.Column(db.Integer, nullable=False, default=0)
+    series_views = db.Column(db.Integer, nullable=False, default=0)
+    anime_views = db.Column(db.Integer, nullable=False, default=0)
+    movies_views = db.Column(db.Integer, nullable=False, default=0)
+    games_views = db.Column(db.Integer, nullable=False, default=0)
+    books_views = db.Column(db.Integer, nullable=False, default=0)
+
+    add_anime = db.Column(db.Boolean, nullable=False, default=False)
+    add_books = db.Column(db.Boolean, nullable=False, default=False)
+    add_games = db.Column(db.Boolean, nullable=False, default=False)
+    add_feeling = db.Column(db.Boolean, nullable=False, default=False)
 
     __searchable__ = ["username"]
 
@@ -101,6 +118,13 @@ class User(db.Model, SearchableMixin):
         order_by="desc(Notifications.timestamp)",
         lazy="dynamic",
     )
+    new_notifications = db.relationship(
+        "NewNotifications",
+        primaryjoin="NewNotifications.user_id == User.id",
+        back_populates="user",
+        order_by="desc(NewNotifications.timestamp)",
+        lazy="dynamic",
+    )
     followed = db.relationship(
         "User",
         secondary=followers,
@@ -120,11 +144,11 @@ class User(db.Model, SearchableMixin):
         self.password_hash = generate_password_hash(password)
 
     @property
-    def profile_image(self) -> str:
+    def profile_cover(self) -> str:
         return url_for("static", filename=f"profile_pictures/{self.image_file}")
 
     @property
-    def back_image(self) -> str:
+    def back_cover(self) -> str:
         return url_for("static", filename=f"back_pictures/{self.background_image}")
 
     @property
@@ -142,6 +166,10 @@ class User(db.Model, SearchableMixin):
         for setting in self.settings:
             total_time += setting.time_spent if setting.active else 0
         return int(compute_level(total_time))
+
+    @property
+    def followers_count(self) -> int:
+        return self.followers.count()
 
     def ping(self):
         self.last_seen = datetime.utcnow()
@@ -303,6 +331,10 @@ class UserMediaSettings(db.Model):
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="settings", lazy="select")
 
+    @property
+    def level(self):
+        return int(compute_level(self.time_spent))
+
 
 class UserMediaUpdate(db.Model, SearchableMixin):
     THRESHOLD = 600
@@ -319,10 +351,10 @@ class UserMediaUpdate(db.Model, SearchableMixin):
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="updates", lazy="joined")
 
-    __searchable_rs__ = {"media": {"model": "Media", "fields": ["name"]}}
+    __searchable__ = {"media_name"}
 
     @classmethod
-    def get_last_updates(cls, user_id: int, limit_: int = 10, follows: bool = False) -> List[UserMediaUpdate]:
+    def get_last_updates(cls, user_id: int, limit: int = 10, follows: bool = False) -> List[UserMediaUpdate]:
         query = cls.query
 
         if follows:
@@ -331,7 +363,7 @@ class UserMediaUpdate(db.Model, SearchableMixin):
         else:
             query = query.filter_by(user_id=user_id)
 
-        return query.order_by(cls.timestamp.desc()).limit(limit_).all()
+        return query.order_by(cls.timestamp.desc()).limit(limit).all()
 
     @classmethod
     def set_new_update(cls, user_id: int, media: db.Model, update_type: UpdateType, old_value, new_value):
@@ -349,7 +381,7 @@ class UserMediaUpdate(db.Model, SearchableMixin):
             user_id=user_id,
             media_id=media.id,
             media_name=media.name,
-            media_type=media.media_type,
+            media_type=media.GROUP,
             update_type=update_type,
             update_data=json.dumps({"old_value": old_value, "new_value": new_value}),
         )
@@ -496,6 +528,18 @@ class UserLastUpdate(db.Model):
 
 class Notifications(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    media_type = db.Column(db.String(50))
+    media_id = db.Column(db.Integer)
+    payload_json = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    # --- Relationships ----------------------------------------------------------------
+    user = db.relationship("User", back_populates="notifications", lazy="select")
+
+
+class NewNotifications(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     media_id = db.Column(db.Integer, index=True)
     media_type = db.Column(db.Enum(MediaType), index=True)
@@ -504,4 +548,4 @@ class Notifications(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     # --- Relationships ----------------------------------------------------------------
-    user = db.relationship("User", back_populates="notifications", lazy="select")
+    user = db.relationship("User", back_populates="new_notifications", lazy="select")

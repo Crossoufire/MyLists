@@ -3,7 +3,7 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createFileRoute("/_universal/privacy_policy")({
+export const Route = createFileRoute("/_universal/privacy-policy")({
     component: PrivacyPolicyPage,
 });
 

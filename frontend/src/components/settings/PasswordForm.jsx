@@ -16,6 +16,9 @@ export const PasswordForm = () => {
     const onSubmit = async (data) => {
         setErrors("");
 
+        // No need to send confirm_new_password field
+        delete data.confirm_new_password;
+
         try {
             setPending(true);
             const response = await api.post("/user/settings/password", data);

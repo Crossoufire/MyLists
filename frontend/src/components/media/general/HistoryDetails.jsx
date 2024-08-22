@@ -1,22 +1,19 @@
 import {Fragment} from "react";
-import {UserUpdate} from "@/components/app/UserUpdate.jsx";
+import {UserUpdate} from "@/components/app/UserUpdate";
+import {MutedText} from "@/components/app/base/MutedText";
 
 
 export const HistoryDetails = ({ history }) => {
     if (history.length === 0) {
-        return <div className="text-muted-foreground italic">No history to display</div>;
+        return <MutedText text="No history to display"/>;
     }
 
     return (
         <>
             {history.map(data =>
                 <UserUpdate
-                    key={data.date}
-                    mediaId={data.media_id}
-                    mediaType={data.media_type}
-                    mediaName={data.media_name}
-                    payload={data.update}
-                    date_={data.date}
+                    update={data}
+                    key={data.timestamp}
                 />
             )}
         </>

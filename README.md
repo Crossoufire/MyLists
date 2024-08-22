@@ -96,8 +96,8 @@ npm install
 2. Create the `.env.development` file for development (`.env.production` for production)
 ```
 VITE_BASE_API_URL=http://localhost:5000
-VITE_REGISTER_CALLBACK=http://localhost:3000/register_token
-VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
+VITE_REGISTER_CALLBACK=http://localhost:3000/register-token
+VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset-password
 VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
 3. Run the command`npm run dev` inside the `MyLists/frontend` folder. The frontend will be served by default at http://localhost:3000.

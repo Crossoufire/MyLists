@@ -14,9 +14,9 @@ export const SimilarMedia = ({ mediaType, similarMedia }) => {
                         <Link to={`/details/${mediaType}/${media.media_id}`}>
                             <Tooltip text={media.media_name}>
                                 <img
-                                    src={media.media_cover}
-                                    className="rounded-sm"
                                     alt={media.media_name}
+                                    src={media.media_cover}
+                                    className={"rounded-sm"}
                                 />
                             </Tooltip>
                         </Link>

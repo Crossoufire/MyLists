@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createFileRoute("/_public/forgot_password")({
+export const Route = createFileRoute("/_public/forgot-password")({
     component: ForgotPasswordPage,
 });
 

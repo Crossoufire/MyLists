@@ -1,4 +1,3 @@
-from apifairy import authenticate, other_responses, response, body, arguments
 from flask import Blueprint, abort, g
 from backend.api import db
 from backend.api.core.handlers import token_auth, current_user
@@ -10,6 +9,7 @@ from backend.api.schemas.lists import *
 from backend.api.utils.decorators import check_privacy_access
 from backend.api.utils.enums import MediaType, Status, UpdateType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.my_apifairy import authenticate, arguments, response, body, other_responses
 
 lists = Blueprint("lists", __name__)
 
@@ -186,13 +186,14 @@ def set_status(data, media_type: MediaType):
 def set_rating(data, media_type: MediaType):
     """ Set the rating of a media """
 
-    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
+    list_model = ModelsManager.get_unique_model(MediaType(media_type), ModelTypes.LIST)
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:
         return abort(404, "Media not present in your list")
 
     media_assoc.rating = data["payload"]
+    db.session.commit()
 
     return {}
 
@@ -298,6 +299,7 @@ def set_season(data, media_type: MediaType):
     if data["payload"] > media_assoc.media.eps_seasons[-1].season:
         return abort(400, "Invalid season")
 
+    old_episode = media_assoc.current_episode
     old_season = media_assoc.current_season
     old_total = media_assoc.total
 
@@ -312,8 +314,8 @@ def set_season(data, media_type: MediaType):
         user_id=current_user.id,
         media=media_assoc.media,
         update_type=UpdateType.TV,
-        old_value=old_season,
-        new_value=data["payload"]
+        old_value=(old_season, old_episode),
+        new_value=(data["payload"], 1),
     )
     db.session.commit()
 
@@ -351,8 +353,8 @@ def set_episode(data, media_type: MediaType):
         user_id=current_user.id,
         media=media_assoc.media,
         update_type=UpdateType.TV,
-        old_value=old_episode,
-        new_value=data["payload"]
+        old_value=(old_season, old_episode),
+        new_value=(old_season, data["payload"]),
     )
     db.session.commit()
 
@@ -403,7 +405,7 @@ def set_page(data):
 def get_media_labels(media_type: MediaType, media_id: int):
     """ Labels associated with a media and a user """
 
-    media_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsManager.get_lists_models(MediaType(media_type), [ModelTypes.MEDIA, ModelTypes.LABELS])
 
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
@@ -420,7 +422,10 @@ def get_media_labels(media_type: MediaType, media_id: int):
 def add_label_to_media(data, media_type: MediaType):
     """ Add a label to a media """
 
-    list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+    list_model, label_model = ModelsManager.get_lists_models(
+        MediaType(media_type),
+        [ModelTypes.LIST, ModelTypes.LABELS]
+    )
 
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if not media_assoc:

@@ -13,7 +13,7 @@ class Books(Media):
     GROUP = MediaType.BOOKS
 
     pages = db.Column(db.Integer, nullable=False)
-    language = db.Column(db.String, nullable=False)
+    language = db.Column(db.String)
     publishers = db.Column(db.String)
 
     # --- Relationships -----------------------------------------------------------
@@ -29,7 +29,7 @@ class Books(Media):
         user_list = BooksList(
             user_id=user_id,
             media_id=self.id,
-            actual_page=total_read,
+            current_page=total_read,
             status=status,
             total=total_read,
         )

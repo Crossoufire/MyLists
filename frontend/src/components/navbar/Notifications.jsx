@@ -37,7 +37,7 @@ export const Notifications = ({ isMobile }) => {
         const pollCountNotifications = async () => {
             const response = await api.get("/user/notifications/unread-count");
             if (response.ok) {
-                setNumberUnreadNotif(response.body.data);
+                setNumberUnreadNotif(response.body.count);
             } else {
                 toast.error("An error occurred trying to fetch the notifications.");
             }
@@ -63,7 +63,7 @@ export const Notifications = ({ isMobile }) => {
                 return toast.error("Failed to retrieve the notifications");
             }
 
-            setNotifications(response.body.data);
+            setNotifications(response.body);
             setNumberUnreadNotif(0);
         }
         finally {
@@ -97,10 +97,10 @@ export const Notifications = ({ isMobile }) => {
                     notifications.length === 0 ?
                         <i className="text-muted-foreground">No notifications to display</i>
                         :
-                        notifications.map(data =>
+                        notifications.map((data, idx) =>
                             <MediaLink
+                                key={idx}
                                 data={data}
-                                key={data.timestamp}
                                 handlePopoverClose={handlePopoverClose}
                             />
                         )
@@ -112,42 +112,44 @@ export const Notifications = ({ isMobile }) => {
 
 
 const MediaLink = ({ data, handlePopoverClose }) => {
-    const dest = data.media ? `/details/${data.media}/${data.media_id}` : `/profile/${data.payload.username}`;
+    const destination = data.notif_type === "media"
+        ? `/details/${data.media_type}/${data.media_id}`
+        : `/profile/${data.notif_data.username}`;
 
     return (
-        <Link to={dest} onClick={handlePopoverClose}>
+        <Link to={destination} onClick={handlePopoverClose}>
             <div className="py-2.5 px-3.5 hover:bg-neutral-600/20">
                 <div className="flex items-center gap-2">
-                    {data.media ?
+                    {data.notif_type === "media" ?
                         <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-3">
-                            <MediaIcon mediaType={data.media} size={16}/>
-                            <div className="truncate">{data.payload.name}</div>
-                            {((data.media === "anime" || data.media === "series") && data.payload?.finale) &&
+                            <MediaIcon mediaType={data.media_type} size={16}/>
+                            <div className="truncate">{data.notif_data.name}</div>
+                            {((data.media_type === "anime" || data.media_type === "series") && data.notif_data?.finale) &&
                                 <Badge variant="passiveSmall">Finale</Badge>
                             }
                         </div>
                         :
                         <>
                             <MediaIcon mediaType="user" size={16}/>
-                            <div className="line-clamp-1">{data.payload.message}</div>
+                            <div className="line-clamp-1">{data.notif_data.message}</div>
                         </>
                     }
                 </div>
-                {data.media &&
+                {data.notif_type === "media" &&
                     <div className="flex items-center gap-2 text-neutral-400">
-                        {data.payload?.new ?
-                            <div className="line-clamp-1">{data.payload.message}</div>
+                        {data.notif_data?.new ?
+                            <div className="line-clamp-1">{data.notif_data.message}</div>
                             :
                             <>
                                 <div>
-                                    {(data.media === "anime" || data.media === "series") ?
-                                        <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
+                                    {(data.media_type === "anime" || data.media_type === "series") ?
+                                        <div>{`S${data.notif_data.season}.E${data.notif_data.episode}`}</div>
                                         :
                                         <div>Release</div>
                                     }
                                 </div>
                                 <div><FaLongArrowAltRight/></div>
-                                <div>{data.payload.release_date}</div>
+                                <div>{data.notif_data.release_date}</div>
                             </>
                         }
                     </div>

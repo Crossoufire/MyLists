@@ -31,6 +31,8 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 	const MediaUserDetails = mediaComponentMap(mediaType);
 	const updatesAPI = useApiUpdater(apiData.media.id, mediaType);
 
+	console.log(apiData);
+
 	const handleAddMediaUser = async () => {
 		const response = await handleLoading(updatesAPI.addMedia);
 		if (response) {
@@ -67,20 +69,20 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 					<TabsTrigger value="history" className="w-full">History ({apiData.user_data.history.length})</TabsTrigger>
 					<div className="flex items-center justify-end w-full mr-3 text-primary text-xl">
 						<ManageFavorite
-							initFav={apiData.user_data.favorite}
 							updateFavorite={updatesAPI.favorite}
+							initFav={apiData.user_data.media_assoc.favorite}
 						/>
 					</div>
 				</TabsList>
 				<TabsContent value="yourInfo" className="w-[300px] p-5 pt-3 bg-card rounded-md">
 					<MediaUserDetails
-						userData={apiData.user_data}
-						totalPages={apiData.media.pages}
 						updatesAPI={updatesAPI}
+						mediaData={apiData.media}
+						userData={apiData.user_data}
 					/>
 					<Commentary
 						updateComment={updatesAPI.comment}
-						initContent={apiData.user_data.comment}
+						initContent={apiData.user_data.media_assoc.comment}
 					/>
 					<LabelLists
 						mediaId={apiData.media.id}

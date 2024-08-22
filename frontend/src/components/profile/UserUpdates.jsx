@@ -3,6 +3,7 @@ import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {UserUpdate} from "@/components/app/UserUpdate";
 import {Link, useParams} from "@tanstack/react-router";
+import {MutedText} from "@/components/app/base/MutedText";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
@@ -32,17 +33,13 @@ export const UserUpdates = ({ updates, followers = false }) => {
                 {isOpen &&
                     <>
                         {updates.length === 0 ?
-                            <div className="text-muted-foreground italic pb-3">No updates to display yet</div>
+                            <MutedText className="pb-3" text="No updates to display yet"/>
                             :
                             updates.map(update =>
                                 <UserUpdate
-                                    key={update.date}
+                                    update={update}
+                                    key={update.timestamp}
                                     username={followers && update.username}
-                                    mediaType={update.media_type}
-                                    mediaId={update.media_id}
-                                    mediaName={update.media_name}
-                                    payload={update.update}
-                                    date_={update.date}
                                 />
                             )}
                     </>

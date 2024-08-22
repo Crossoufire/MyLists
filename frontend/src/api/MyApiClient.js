@@ -83,6 +83,7 @@ class MyApiClient {
                 }
             };
         }
+
         return {
             ok: response.ok,
             status: response.status,
@@ -139,7 +140,7 @@ class UserClient {
     constructor() {
         this.currentUser = null;
         this.subscribers = [];
-        this.wasInitialized = false;
+        this.isInitialized = false;
     }
 
     async initialize() {
@@ -150,7 +151,7 @@ class UserClient {
             currentUser = response.ok ? response.body : null;
         }
 
-        this.wasInitialized = true;
+        this.isInitialized = true;
         this.setCurrentUser(currentUser);
     }
 
@@ -185,6 +186,13 @@ class UserClient {
     async logout() {
         await api.logout();
         this.setCurrentUser(null);
+    }
+
+    getMediaSettings(mediaType) {
+        if (!this.currentUser || !this.currentUser.settings) {
+            return null;
+        }
+        return this.currentUser.settings.find(media => media.media_type === mediaType);
     }
 }
 

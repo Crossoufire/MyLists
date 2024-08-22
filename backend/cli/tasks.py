@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import os
 from pathlib import Path
 from typing import List
@@ -6,13 +7,201 @@ import dotenv
 from flask import current_app
 from sqlalchemy import select, text
 from sqlalchemy.orm import aliased
+from tqdm import tqdm
 from backend.api import db, cache
 from backend.api.managers.ApiManager import BaseApiManager, GamesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.api.models.movies import Movies
-from backend.api.models.users import User
-from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.models import GamesCompanies
+from backend.api.models.movies import Movies
+from backend.api.models.users import (User, UserMediaSettings, UserLastUpdate, UserMediaUpdate, Notifications,
+                                      NewNotifications)
+from backend.api.utils.enums import ModelTypes, MediaType, Status, RatingSystem, UpdateType, NotificationType
+from backend.api.utils.functions import format_datetime
+
+
+def correct_data(data: str):
+    if data == "Unknown" or data == "Not Defined.":
+        return None
+
+    return data
+
+
+def format_hltb_time(time: str | None | float):
+    if time is None:
+        return None
+
+    if isinstance(time, str) and "½" in time:
+        time = time.split("½")[0]
+        return float(int(time) + 0.5)
+
+    time = float(time)
+    if time == -1 or time == 0:
+        return None
+
+    return time
+
+
+def check_update_type(data):
+    if data.old_status is not None or data.new_status is not None:
+        return UpdateType.STATUS, {"old_value": data.old_status, "new_value": data.new_status}
+    elif data.old_season is not None or data.new_season is not None:
+        return UpdateType.TV, {
+            "old_value": (int(data.old_season), int(data.old_episode)),
+            "new_value": (int(data.new_season), int(data.new_episode)),
+        }
+    elif data.old_playtime is not None or data.new_playtime is not None:
+        return UpdateType.PLAYTIME, {"old_value": data.old_playtime, "new_value": data.new_playtime}
+    elif data.old_page is not None or data.new_page is not None:
+        return UpdateType.PAGE, {"old_value": data.old_page, "new_value": data.new_page}
+    elif data.old_redo is not None or data.new_redo is not None:
+        return UpdateType.REDO, {"old_value": data.old_redo, "new_value": data.new_redo}
+
+
+def check_notification_type(data):
+    if data.media_type:
+        media_type = MediaType(data.media_type.replace("list", ""))
+        return NotificationType.MEDIA, media_type
+    else:
+        return NotificationType.FOLLOW, None
+
+
+def transform_media_list_data(data):
+    user = User.query.filter_by(id=data.user_id).first()
+    if user.rating_system == RatingSystem.SCORE:
+        return data.score
+    else:
+        try:
+            feeling = float(data.feeling) * 2
+        except:
+            feeling = None
+        return feeling
+
+
+# -------------------------------------------------------------------------------------------
+
+
+def change_add_feeling_with_rating_system():
+    print("Changing add_feeling with rating_system...")
+    for user in tqdm(User.query.all(), ncols=70):
+        user.rating_system = RatingSystem.FEELING if user.add_feeling else RatingSystem.SCORE
+    db.session.commit()
+
+
+def add_user_media_settings_data_from_user_table():
+    print("Adding user_media_settings...")
+    for user in tqdm(User.query.all(), ncols=70):
+        for media_type in MediaType:
+            time_spent_col = f"time_spent_{media_type.value}"
+            views_col = f"{media_type.value}_views"
+            active_col = f"add_{media_type.value}"
+            media_time = UserMediaSettings(
+                user_id=user.id,
+                media_type=media_type,
+                views=getattr(user, views_col),
+                active=getattr(user, active_col, True),
+                time_spent=getattr(user, time_spent_col),
+            )
+            db.session.add(media_time)
+    db.session.commit()
+
+
+def correct_media_data():
+    """ Executed after Mylists-v2 migration """
+    print("Correcting media data...")
+    models = ModelsManager.get_lists_models(list(MediaType), ModelTypes.MEDIA)
+    for model in models:
+        query = model.query.all()
+        for data in tqdm(query, ncols=70, desc=f"Correcting {model.GROUP.value.capitalize()} data"):
+            if getattr(data, "director", None):
+                data.director = correct_data(data.director)
+            if getattr(data, "created_by", None):
+                data.created_by = correct_data(data.created_by)
+            if getattr(data, "last_air_date", None):
+                data.last_air_date = correct_data(data.last_air_date)
+            if getattr(data, "collection_name", None):
+                data.collection_name = correct_data(data.collection_name)
+            if getattr(data, "synopsis", None):
+                data.synopsis = correct_data(data.synopsis)
+            if getattr(data, "homepage", None):
+                data.homepage = correct_data(data.homepage)
+            if getattr(data, "language", None):
+                data.language = correct_data(data.language)
+            if getattr(data, "prod_status", None):
+                data.prod_status = correct_data(data.prod_status)
+            if getattr(data, "tagline", None):
+                data.tagline = correct_data(data.tagline)
+            if getattr(data, "release_date", None):
+                data.release_date = format_datetime(data.release_date)
+            if getattr(data, "game_engine", None):
+                data.game_engine = correct_data(data.game_engine)
+            if getattr(data, "game_modes", None):
+                data.game_modes = correct_data(data.game_modes)
+            if getattr(data, "player_perspective", None):
+                data.player_perspective = correct_data(data.player_perspective)
+            if getattr(data, "hltb_main_time", None):
+                data.hltb_main_time = format_hltb_time(data.hltb_main_time)
+            if getattr(data, "hltb_main_extra_time", None):
+                data.hltb_main_extra_time = format_hltb_time(data.hltb_main_extra_time)
+            if getattr(data, "hltb_total_time", None):
+                data.hltb_total_time = format_hltb_time(data.hltb_total_time)
+        db.session.commit()
+
+
+def add_data_to_user_media_updates():
+    print("Adding user_media_updates...")
+    for data in tqdm(UserLastUpdate.query.all(), ncols=70):
+        update_type, update_data = check_update_type(data)
+        # noinspection PyArgumentList
+        update = UserMediaUpdate(
+            user_id=data.user_id,
+            media_name=data.media_name,
+            media_id=data.media_id,
+            media_type=data.media_type,
+            timestamp=format_datetime(data.date),
+            update_type=update_type,
+            update_data=json.dumps(update_data),
+        )
+        db.session.add(update)
+    db.session.commit()
+
+
+def correct_notifications_to_db():
+    print("Modifying Notifications...")
+    for data in tqdm(Notifications.query.all(), ncols=70):
+        notif_type, media_type_or_none = check_notification_type(data)
+        # noinspection PyArgumentList
+        notif = NewNotifications(
+            user_id=data.user_id,
+            media_id=data.media_id,
+            media_type=media_type_or_none,
+            timestamp=format_datetime(data.timestamp),
+            notif_type=notif_type,
+            notif_data=data.payload_json,
+        )
+        db.session.add(notif)
+    db.session.commit()
+
+
+def replace_score_and_feeling_with_rating_system():
+    print("Replacing score and feeling with rating_system in media_list...")
+    models = ModelsManager.get_lists_models(list(MediaType), ModelTypes.LIST)
+    for model in models:
+        for data in tqdm(model.query.all(), ncols=70, desc=f"Replacing {model.GROUP.value.capitalize()} data"):
+            value = transform_media_list_data(data)
+            data.rating = value
+        db.session.commit()
+
+
+def remove_non_dev_nor_publisher_companies():
+    print("Removing non dev nor publisher companies...")
+    for company in tqdm(GamesCompanies.query.all(), ncols=70):
+        if not company.developer and not company.publisher:
+            db.session.delete(company)
+    db.session.commit()
+
+
+# -------------------------------------------------------------------------------------------
 
 
 def correct_random_and_ptw_data():

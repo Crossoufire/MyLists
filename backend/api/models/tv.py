@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
-from flask import current_app, abort
+from flask import current_app
 from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.models.abstracts import Platform, Actors, Media, MediaList, Genre, Labels
@@ -16,13 +16,12 @@ from backend.api.managers.ModelsManager import ModelsManager
 class TVModel(Media):
     __abstract__ = True
 
-    original_name = db.Column(db.String, nullable=False)
+    original_name = db.Column(db.String)
     last_air_date = db.Column(db.String)
     next_episode_to_air = db.Column(db.String)
     season_to_air = db.Column(db.Integer)
     episode_to_air = db.Column(db.Integer)
     homepage = db.Column(db.String)
-    in_production = db.Column(db.Boolean)
     created_by = db.Column(db.String)
     duration = db.Column(db.Integer)
     total_seasons = db.Column(db.Integer)
@@ -94,17 +93,16 @@ class TVModel(Media):
                 Notifications.query.filter_by(user_id=user_id, media_id=media_id, media_type=cls.GROUP)
                 .first()
             )
-            release_date = datetime.strptime(next_eps_to_air, "%Y-%m-%d").strftime("%b %d %Y")
 
             if notification:
                 payload = json.loads(notification.notif_data)
-                if (release_date == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
+                if (next_eps_to_air == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
                         and int(seas_to_air) == int(payload["season"])):
                     continue
 
             payload = dict(
                 name=name,
-                release_date=release_date,
+                release_date=next_eps_to_air,
                 season=f"{seas_to_air:02d}",
                 episode=f"{eps_to_air:02d}",
                 finale=(last_episode == eps_to_air),
@@ -156,8 +154,8 @@ class TVModel(Media):
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         media = cls.query.filter_by(api_id=api_id).first()
 
-        old_seas_eps = [season.episodes for season in media.eps_seasons]
-        new_seas_eps = [season["episodes"] for season in new_data["seasons_data"]]
+        old_seas_eps = [season.episode for season in media.eps_seasons]
+        new_seas_eps = [season["episode"] for season in new_data["seasons_data"]]
 
         # Check episodes/seasons compared to refreshed data
         if new_seas_eps == old_seas_eps:
@@ -327,7 +325,7 @@ class Series(TVModel):
     actors = db.relationship("SeriesActors", back_populates="media", lazy="select")
     labels = db.relationship("SeriesLabels", back_populates="media", lazy="dynamic")
     media_list = db.relationship("SeriesList", back_populates="media", lazy="dynamic")
-    platforms = db.relationship("SeriesPlatform", back_populates="media", lazy="select")
+    platforms = db.relationship("SeriesNetwork", back_populates="media", lazy="select")
     eps_seasons = db.relationship("SeriesEpsPerSeason", back_populates="media", lazy="joined")
 
 
@@ -368,7 +366,7 @@ class SeriesEpsPerSeason(db.Model):
     media = db.relationship("Series", back_populates="eps_seasons", lazy="select")
 
 
-class SeriesPlatform(Platform):
+class SeriesNetwork(Platform):
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
@@ -406,8 +404,8 @@ class Anime(TVModel):
     actors = db.relationship("AnimeActors", back_populates="media", lazy="select")
     labels = db.relationship("AnimeLabels", back_populates="media", lazy="dynamic")
     media_list = db.relationship("AnimeList", back_populates="media", lazy="dynamic")
-    platforms = db.relationship("AnimePlatform", back_populates="media", lazy="select")
-    eps_seasons = db.relationship("AnimeEpsPerSeason", back_populates="media", lazy="joined")
+    platforms = db.relationship("AnimeNetwork", back_populates="media", lazy="select")
+    eps_seasons = db.relationship("AnimeEpisodesPerSeason", back_populates="media", lazy="joined")
 
 
 class AnimeList(TVListModel):
@@ -437,7 +435,7 @@ class AnimeGenre(Genre):
                 "Psychological", "Thriller", "Seinen", "Josei"]
 
 
-class AnimeEpsPerSeason(db.Model):
+class AnimeEpisodesPerSeason(db.Model):
     TYPE = ModelTypes.EPS
     GROUP = MediaType.ANIME
 
@@ -450,7 +448,7 @@ class AnimeEpsPerSeason(db.Model):
     media = db.relationship("Anime", back_populates="eps_seasons", lazy="select")
 
 
-class AnimePlatform(Platform):
+class AnimeNetwork(Platform):
     GROUP = MediaType.ANIME
 
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)

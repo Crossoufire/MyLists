@@ -25,7 +25,7 @@ class BaseTest(unittest.TestCase):
             "username": username,
             "email": f"{username}@example.com",
             "password": "good-password",
-            "callback": "http://localhost:3000/register_token",
+            "callback": "http://localhost:3000/register-token",
         })
         self.assertEqual(rv.status_code, 204)
 

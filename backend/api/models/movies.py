@@ -14,7 +14,7 @@ from backend.api.utils.enums import MediaType, Status, NotificationType, JobType
 class Movies(Media):
     GROUP: MediaType = MediaType.MOVIES
 
-    original_name = db.Column(db.String, nullable=False)
+    original_name = db.Column(db.String)
     director = db.Column(db.String)
     homepage = db.Column(db.String)
     duration = db.Column(db.Integer)
@@ -132,7 +132,6 @@ class Movies(Media):
             )
 
             if not notification:
-                release_date = datetime.strptime(release_date, "%Y-%m-%d").strftime("%b %d %Y")
                 new_notification = Notifications(
                     user_id=user_id,
                     media_id=media_id,

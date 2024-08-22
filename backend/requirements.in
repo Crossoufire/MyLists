@@ -7,6 +7,7 @@ flask-caching
 flask-httpauth
 flask-migrate
 flask-marshmallow
+flask-admin
 marshmallow
 marshmallow-sqlalchemy
 pillow

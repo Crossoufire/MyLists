@@ -17,6 +17,7 @@ class Games(Media):
     game_engine = db.Column(db.String)
     game_modes = db.Column(db.String)
     player_perspective = db.Column(db.String)
+    collection_name = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
     homepage = db.Column(db.String)
@@ -112,7 +113,6 @@ class Games(Media):
             )
 
             if not notification:
-                release_date = datetime.strptime(release_date, "%Y-%m-%d").strftime("%b %d %Y")
                 new_notification = Notifications(
                     user_id=user_id,
                     media_id=media_id,
@@ -217,7 +217,8 @@ class GamesCompanies(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)
     name = db.Column(db.String)
-    job = db.Column(db.String)  # developer or publisher
+    developer = db.Column(db.Boolean)
+    publisher = db.Column(db.Boolean)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Games", back_populates="companies", lazy="select")

@@ -1,14 +1,17 @@
 from marshmallow import validates, ValidationError, validate
 from backend.api import ma
 from backend.api.core.handlers import current_user
-from backend.api.models.users import (User, UserMediaUpdate, Notifications, PrivacyType, RoleType, RatingSystem,
-                                      UserMediaSettings)
-from backend.api.schemas.core import MyEnum
+from backend.api.models.users import (User, UserMediaUpdate, PrivacyType, RoleType, RatingSystem, UserMediaSettings,
+                                      NewNotifications)
+from backend.api.schemas.core import MyEnum, JSON
+from backend.api.utils.enums import MediaType, UpdateType
 
 
 class UserMediaSettingsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = UserMediaSettings
+
+    level = ma.Integer()
 
 
 class UserSchema(ma.SQLAlchemySchema):
@@ -30,7 +33,7 @@ class UserSchema(ma.SQLAlchemySchema):
     show_update_modal = ma.Boolean(dump_only=True)
     profile_views = ma.Integer(dump_only=True)
     settings = ma.List(ma.Nested(UserMediaSettingsSchema), dump_only=True)
-
+    followers_count = ma.Integer(dump_only=True)
     profile_level = ma.Integer(dump_only=True)
     callback = ma.String(load_only=True, required=True)
 
@@ -51,14 +54,16 @@ class UserMediaUpdateSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = UserMediaUpdate
 
+    update_type = MyEnum(UpdateType)
     username = ma.String(attribute="user.username")
+    update_data = JSON()
 
 
 class NotificationSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        model = Notifications
+        model = NewNotifications
 
-    notif_data = ma.String()
+    notif_data = JSON()
 
 
 class FollowsSchema(ma.Schema):
@@ -83,12 +88,12 @@ class UpdateMediaListUserSchema(ma.Schema):
 
 
 class UpdatePasswordUserSchema(ma.Schema):
-    old_password = ma.String(required=True, validate=validate.Length(min=8))
+    current_password = ma.String(required=True, validate=validate.Length(min=8))
     new_password = ma.String(required=True, validate=validate.Length(min=8))
 
-    @validates("old_password")
-    def validate_old_password(self, old_password: str):
-        if not current_user.verify_password(old_password):
+    @validates("current_password")
+    def validate_current_password(self, current_password: str):
+        if not current_user.verify_password(current_password):
             raise ValidationError("Password is incorrect")
 
 
@@ -107,7 +112,8 @@ class FavoritesSchema(ma.Schema):
 
 
 class RatingDataSchema(ma.Schema):
-    media_rating = ma.Integer()
+    total_media = ma.Integer()
+    total_rated = ma.Integer()
     percent_rating = ma.Float()
     mean_rating = ma.Float()
 
@@ -130,12 +136,11 @@ class MediaStatusCountSchema(ma.Schema):
 
 
 class SpecificMediaDataSchema(ma.Schema):
-    media_type = ma.String()
+    media_type = MyEnum(MediaType)
     level = ma.Float()
     specific_total = ma.Integer()
     rating_count = ma.List(ma.Integer())
-    time_hours = ma.Float()
-    time_days = ma.Float()
+    time_spent = ma.Float()
     labels = ma.List(ma.String())
     status_count = ma.Nested(MediaStatusCountSchema)
     favorites = ma.Nested(FavoritesDataSchema)
@@ -143,25 +148,21 @@ class SpecificMediaDataSchema(ma.Schema):
 
 
 class GlobalMediaDataSchema(ma.Schema):
-    total_hours = ma.Float()
-    total_days = ma.Float()
-    time_per_media = ma.List(ma.Tuple((ma.Float(), ma.String())))
+    total_time_spent = ma.Float()
+    time_per_media = ma.List(ma.Tuple((ma.Float(), MyEnum(MediaType))))
     total_media = ma.Integer()
-    total_scored = ma.Float()
-    percent_scored = ma.Float()
-    mean_score = ma.Float()
-    count_per_rating = ma.List(ma.Dict(keys=ma.String(), values=ma.Integer()))
-
-
-class ProfileMediaDataSchema(ma.Schema):
-    global_data = ma.Nested(GlobalMediaDataSchema)
-    media_data = ma.List(ma.Nested(SpecificMediaDataSchema))
+    total_rated = ma.Float()
+    percent_rated = ma.Float()
+    avg_rating = ma.Float()
+    count_per_rating = ma.List(ma.Integer())
 
 
 class ProfileSchema(ma.Schema):
     user_data = ma.Nested(UserSchema)
-    user_updates = ma.List(ma.Nested(UserMediaUpdateSchema))
-    follows_updates = ma.List(ma.Nested(UserMediaUpdateSchema))
     follows = ma.Nested(ProfileFollowsSchema)
     is_following = ma.Boolean()
-    media_data = ma.Nested(ProfileMediaDataSchema)
+    user_updates = ma.List(ma.Nested(UserMediaUpdateSchema))
+    follows_updates = ma.List(ma.Nested(UserMediaUpdateSchema))
+    media_stats = ma.List(ma.Nested(SpecificMediaDataSchema))
+    global_stats = ma.Nested(GlobalMediaDataSchema)
+

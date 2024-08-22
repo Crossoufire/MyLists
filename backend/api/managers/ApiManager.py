@@ -146,7 +146,7 @@ class TMDBApiManager(BaseApiManager):
             search_results.append(media_data)
 
         total = self.api_data.get("total_results", 0)
-        pages = total // 25
+        pages = (total // 20) + 1
 
         return dict(items=search_results, total=total, pages=pages)
 
@@ -250,7 +250,7 @@ class TVApiManager(TMDBApiManager):
             synopsis=get(self.api_data, "overview", default="Undefined"),
             popularity=get(self.api_data, "popularity", default=0),
             duration=get(self.api_data, "episode_run_time", 0, default=self.DURATION),
-            origin_country=get(self.api_data, "origin_country", 0, default="Undefined"),
+            language=get(self.api_data, "origin_country", 0, default="Undefined"),
             created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self.format_writers())),
             api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
@@ -335,9 +335,9 @@ class SeriesApiManager(TVApiManager):
         for result in results[:self.MAX_TRENDING]:
             media_data = dict(
                 api_id=result.get("id"),
-                overview=get(result, "overview", default="Undefined"),
-                display_name=get(result, "name", default="Undefined"),
-                release_date=change_air_format(result.get("first_air_date")),
+                overview=result.get("overview"),
+                display_name=result.get("name"),
+                release_date=result.get("first_air_date"),
                 media_type=MediaType.SERIES,
             )
 
@@ -399,9 +399,9 @@ class MoviesApiManager(TMDBApiManager):
         for result in results[:self.MAX_TRENDING]:
             media_data = dict(
                 api_id=result.get("id"),
-                overview=get(result, "overview", default="Undefined"),
-                display_name=get(result, "title", default="Undefined"),
-                release_date=change_air_format(result.get("release_date")),
+                overview=result.get("overview"),
+                display_name=result.get("title"),
+                release_date=result.get("release_date"),
                 media_type=MediaType.MOVIES,
             )
 
@@ -473,7 +473,7 @@ class GamesApiManager(BaseApiManager):
     @limits(calls=4, period=1)
     def search(self, query: str, page: int = 1):
         data = (
-            f"fields id, name, cover.image_id, first_release_date, storyline; limit 10; offset {(page - 1) * 25}; "
+            f"fields id, name, cover.image_id, first_release_date, storyline; limit 10; offset {(page - 1) * 15}; "
             f"search '{query}';"
         )
 
@@ -539,11 +539,9 @@ class GamesApiManager(BaseApiManager):
                 continue
             companies_list.append({
                 "name": item["company"]["name"],
-                "job": "developer" if item["developer"] else "publisher",
+                "developer": item["developer"],
+                "publisher": item["publisher"],
             })
-
-        if not companies_list:
-            return [{"name": "Undefined", "job": "developer"}, {"name": "Undefined", "job": "publisher"}]
 
         return companies_list
 

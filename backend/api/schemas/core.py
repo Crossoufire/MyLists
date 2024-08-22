@@ -1,16 +1,31 @@
 from __future__ import annotations
+import json
 from marshmallow import validate
 from backend.api import ma
 from backend.api.utils.enums import MediaType, Status
+
 
 paginated_schema_cache = {}
 
 
 class MyEnum(ma.Enum):
+    # def _deserialize(self, value, attr, data, **kwargs):
+    #     return self.enum(value)
+
     def _serialize(self, value, attr, obj, **kwargs):
         if isinstance(value, self.enum):
-            return value.value.lower()
+            return value.value
         return super()._serialize(value, attr, obj, **kwargs)
+
+
+class JSON(ma.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        if value:
+            try:
+                return json.loads(value)
+            except ValueError:
+                return None
+        return None
 
 
 class EmptySchema(ma.Schema):
@@ -51,8 +66,6 @@ def PCollection(schema: ma.Schema, p_schema=PaginationSchema):
 
 
 def create_list_schema(media_list_model, with_cover: bool = False):
-    allowed_statuses = Status.by(media_list_model.GROUP)
-
     if with_cover:
         class ListDetailsSchema(ma.SQLAlchemyAutoSchema):
             class Meta:
@@ -60,12 +73,14 @@ def create_list_schema(media_list_model, with_cover: bool = False):
 
             media_name = ma.String(attribute="media.name")
             media_cover = ma.String(attribute="media.media_cover")
-            status = ma.String(metadata={"enum": allowed_statuses})
+            status = MyEnum(Status)
+            all_status = ma.List(MyEnum(Status))
     else:
         class ListDetailsSchema(ma.SQLAlchemyAutoSchema):
             class Meta:
                 model = media_list_model
 
-            status = ma.String(metadata={"enum": allowed_statuses})
+            all_status = ma.List(MyEnum(Status))
+            status = MyEnum(Status)
 
     return ListDetailsSchema

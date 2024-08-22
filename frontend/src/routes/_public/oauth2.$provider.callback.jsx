@@ -29,7 +29,7 @@ function OAuth2CallbackPage() {
         }
 
         return navigate({ to: `/profile/${userClient.currentUser.username}` });
-    }
+    };
 
     useEffect(() => {
         (async () => {

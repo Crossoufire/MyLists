@@ -46,14 +46,14 @@ export const MediaListForm = () => {
                     </h3>
                     <FormField
                         control={form.control}
-                        name="add_anime"
+                        name="anime_list"
                         render={({field}) => (
                             <FormItem className="flex flex-row items-start space-x-2 space-y-0">
                                 <FormControl>
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_anime}
+                                        defaultChecked={userClient.getMediaSettings("anime").active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -64,14 +64,14 @@ export const MediaListForm = () => {
                     />
                     <FormField
                         control={form.control}
-                        name="add_games"
+                        name="games_list"
                         render={({field}) => (
                             <FormItem className="flex flex-row items-start space-x-2 space-y-0">
                                 <FormControl>
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_games}
+                                        defaultChecked={userClient.getMediaSettings("games").active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -82,14 +82,14 @@ export const MediaListForm = () => {
                     />
                     <FormField
                         control={form.control}
-                        name="add_books"
+                        name="books_list"
                         render={({field}) => (
                             <FormItem className="flex flex-row items-start space-x-2 space-y-0">
                                 <FormControl>
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_books}
+                                        defaultChecked={userClient.getMediaSettings("books").active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -117,14 +117,14 @@ export const MediaListForm = () => {
                     </h3>
                     <FormField
                         control={form.control}
-                        name="add_feeling"
-                        render={({field}) => (
+                        name="rating_system"
+                        render={({ field }) => (
                             <FormItem className="flex flex-row items-start space-x-2 space-y-0">
                                 <FormControl>
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_feeling}
+                                        defaultChecked={userClient.currentUser.rating_system === "feeling"}
                                     />
                                 </FormControl>
                                 <div className="leading-none">

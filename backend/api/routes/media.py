@@ -10,7 +10,7 @@ from backend.api.managers.ApiManager import BaseApiManager
 from backend.api.models.users import UserMediaUpdate
 from backend.api.schemas.core import EmptySchema
 from backend.api.schemas.media import *
-from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
+from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType, Status
 from backend.api.utils.functions import get
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.my_apifairy import authenticate, arguments, response, other_responses, body
@@ -31,7 +31,10 @@ def get_media_details(args, media_type: MediaType, media_id: int | str):
     """
 
     media_model, label_model, list_model = (
-        ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS, ModelTypes.LIST])
+        ModelsManager.get_lists_models(
+            MediaType(media_type),
+            [ModelTypes.MEDIA, ModelTypes.LABELS, ModelTypes.LIST]
+        )
     )
 
     filter_id = {"api_id": media_id} if args["external"] else {"id": media_id}
@@ -47,6 +50,7 @@ def get_media_details(args, media_type: MediaType, media_id: int | str):
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=media.id).first()
     user_data = {}
     if media_assoc:
+        media_assoc.all_status = Status.by(media_type)
         user_data = dict(
             media_assoc=media_assoc,
             history=UserMediaUpdate.get_history(current_user.id, media.id, media_type),
@@ -144,7 +148,7 @@ def get_job_details(media_type: MediaType, job: JobType, name: str):
     """
 
     media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
-    all_media  = media_model.get_information(job, name)
+    all_media = media_model.get_information(job, name)
 
     return all_media
 
@@ -157,15 +161,16 @@ def get_job_details(media_type: MediaType, job: JobType, name: str):
 def refresh_media_data(data, media_type: MediaType):
     """ Refresh media details """
 
-    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
+    media_model = ModelsManager.get_unique_model(MediaType(media_type), ModelTypes.MEDIA)
 
     media = media_model.query.filter_by(id=data["media_id"]).first()
     if media is None:
         return abort(404, "Media not found")
 
     try:
-        api_manager = BaseApiManager.get_subclass(data["media_type"])
-        api_manager(api_id=media.api_id).refresh_media_data()
+        api_manager = BaseApiManager.get_subclass(media_type)
+        refreshed_data = api_manager(api_id=media.api_id).get_refreshed_media_data()
+        media.refresh_element_data(media.api_id, refreshed_data)
     except:
         return abort(400, "Error Refreshing Media")
 

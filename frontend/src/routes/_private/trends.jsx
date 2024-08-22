@@ -1,9 +1,11 @@
+import {formatDateTime} from "@/lib/utils";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {MutedText} from "@/components/app/base/MutedText.jsx";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -61,12 +63,15 @@ const TrendItem = ({ media }) => {
                         <Link to={`/details/${media.media_type}/${media.api_id}?external=True`}>
                             <CardTitle className="flex flex-col items-start">
                                 <div className="text-lg line-clamp-2">{media.display_name}</div>
-                                <div className="text-muted-foreground text-sm text-grey mt-1 italic">{media.release_date}</div>
+                                <MutedText
+                                    className="text-sm"
+                                    text={formatDateTime(media.release_date)}
+                                />
                             </CardTitle>
                         </Link>
                         <Separator/>
                         <CardContent className="line-clamp-5 p-0">
-                            {media.overview}
+                            {media.overview || "No overview available"}
                         </CardContent>
                     </CardContent>
                 </div>

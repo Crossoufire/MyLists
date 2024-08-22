@@ -57,7 +57,7 @@ def check_privacy_access(f: Callable):
     return wrapper
 
 
-def paginated_response(schema: ma.Schema, max_: int = 100, order_dir: str = "desc",
+def paginated_response(schema: ma.Schema, max_: int = 100, order_dir: str = "desc", per_page_: int = 25,
                        order_by=None, model=None, p_schema=PaginationSchema, hof: bool = False):
     def inner(f):
         @wraps(f)
@@ -67,7 +67,7 @@ def paginated_response(schema: ma.Schema, max_: int = 100, order_dir: str = "des
             pagination = args.pop(-1)
 
             page = pagination.get("page", 1)
-            per_page = pagination.get("per_page", 25)
+            per_page = pagination.get("per_page", per_page_)
             search = pagination.get("search")
 
             select_query = f(*args, **kwargs)

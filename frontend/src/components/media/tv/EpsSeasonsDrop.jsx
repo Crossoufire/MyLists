@@ -5,11 +5,11 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 export const EpsSeasonsDrop = ({ initSeason, initEpisode, epsPerSeason, updateSeason, updateEpisode }) => {
     const [isLoading, handleLoading] = useLoading();
-    const [loadFromEps, setLoadFromEps] = useState(false);
+    const [_, setLoadFromEps] = useState(false);
     const [season, setSeason] = useState(initSeason || "1");
     const [episode, setEpisode] = useState(initEpisode || "1");
     const seasons = [...Array(epsPerSeason.length).keys()].map(v => v + 1);
-    const episodes = [...Array(epsPerSeason[season-1]).keys()].map(v => v + 1);
+    const episodes = Array.from({ length: epsPerSeason[season-1].episode }, (v, i) => i + 1);
 
     useEffect(() => {
         setSeason(initSeason);

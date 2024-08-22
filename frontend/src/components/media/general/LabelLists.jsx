@@ -4,6 +4,7 @@ import {userClient} from "@/api/MyApiClient";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {Link, useParams} from "@tanstack/react-router";
+import {MutedText} from "@/components/app/base/MutedText";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
 
 
@@ -37,12 +38,12 @@ export const LabelLists = ({ mediaId, alreadyIn }) => {
             <Separator variant="large"/>
             <div className="flex flex-wrap gap-2">
                 {labelsInList.length === 0 ?
-                    <div className="text-muted-foreground italic">Not labels added yet</div>
+                    <MutedText text="Not labels added yet"/>
                     :
-                    labelsInList.map(lab =>
-                        <Link key={lab} to={`/list/${mediaType}/${username}?labels=${lab}`}>
-                            <Badge key={lab} variant="label">
-                                <div className="flex justify-between gap-2">{lab}</div>
+                    labelsInList.map(labelName =>
+                        <Link key={labelName} to={`/list/${mediaType}/${username}?labels=${labelName}`}>
+                            <Badge key={labelName} variant="label">
+                                <div className="flex justify-between gap-2">{labelName}</div>
                             </Badge>
                         </Link>
                     )

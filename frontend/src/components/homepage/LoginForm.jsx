@@ -109,7 +109,7 @@ export const LoginForm = () => {
 					<FaGithub size={20}/>&nbsp;&nbsp;Connexion via Github
 				</FormButton>
 			</div>
-			<Link to="/forgot_password" className="text-blue-500">
+			<Link to="/forgot-password" className="text-blue-500">
 				<div className="mt-4">Forgot password?</div>
 			</Link>
 		</div>

@@ -92,7 +92,7 @@ def init_api_fairy_routes(app: Flask):
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path="/api/static")
     app.wsgi_app = LoggingMiddleware(app.wsgi_app)
 
     if config_class is None:

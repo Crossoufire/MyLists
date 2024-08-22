@@ -4,28 +4,30 @@ import {useEffect, useState} from "react";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, getMediaColor} from "@/lib/utils";
+import {formatTimeTo, getFeelingValues, getMediaColor} from "@/lib/utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
-export const GlobalStats = ({ userData, global }) => {
+export const GlobalStats = ({ userData, globalStats }) => {
     const [pieData, setPieData] = useState([]);
     const { isOpen, caret, toggleCollapse } = useCollapse();
 
     useEffect(() => {
-        setPieData(transformToPieData(global))
-    }, [global]);
+        setPieData(transformToPieData(globalStats))
+    }, [globalStats]);
 
-    const transformToPieData = (global) => {
-        const timeSum = global.time_per_media.reduce((acc, curr) => acc + curr, 0);
-        if (timeSum === 0) return [];
+    const transformToPieData = (globalStats) => {
+        const summedTime = globalStats.time_per_media.reduce((acc, curr) => acc + curr[0], 0);
+        if (summedTime === 0) {
+            return [];
+        }
 
-        return global.time_per_media.map((time, idx) => ({
+        return globalStats.time_per_media.map((data, idx) => ({
             id: idx + 1,
-            value: time,
-            label: global.media_types[idx],
-            color: getMediaColor(global.media_types[idx]),
-            total: ((time/timeSum) * 100).toFixed(0) + "%",
+            value: data[0],
+            label: data[1],
+            color: getMediaColor(data[1]),
+            total: ((data[0]/summedTime) * 100).toFixed(0) + "%",
         }));
     };
 
@@ -62,62 +64,10 @@ export const GlobalStats = ({ userData, global }) => {
                         </div>
                         <div className="col-span-12 sm:col-span-7 items-center text-center">
                             <div className="flex flex-col gap-6">
-                                {userData.add_feeling ?
-                                    <>
-                                        <div className="grid grid-cols-3 font-semibold">
-                                            <Tooltip text={`${global.total_days} days`}>
-                                                <div>
-                                                    <div className="text-neutral-500 text-lg">Total Time</div>
-                                                    <div>{global.total_hours} h</div>
-                                                </div>
-                                            </Tooltip>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">Total Entries</div>
-                                                <div>{global.total_media}</div>
-                                            </div>
-                                            <Tooltip text={`${global.total_scored}/${global.total_media}`}>
-                                                <div>
-                                                    <div className="text-neutral-500 text-lg">% Rated</div>
-                                                    <div>{global.percent_scored.toFixed(1)} %</div>
-                                                </div>
-                                            </Tooltip>
-                                        </div>
-                                        <div className="flex font-semibold items-center justify-around">
-                                            {getFeelingValues().slice(1).reverse().map((f, idx) =>
-                                                <div key={idx} className="space-y-2 text-center">
-                                                    <div>{f.icon}</div>
-                                                    <div>{global.count_per_feeling[idx]}</div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </>
+                                {userData.rating_system === "feeling" ?
+                                    <GlobalStatsWithFeeling globalStats={globalStats}/>
                                     :
-                                    <>
-                                        <div className="grid grid-cols-2 font-semibold">
-                                            <Tooltip text={`${global.total_days} days`}>
-                                                <div>
-                                                    <div className="text-neutral-500 text-lg">Total Time</div>
-                                                    <div>{global.total_hours} h</div>
-                                                </div>
-                                            </Tooltip>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">Total Entries</div>
-                                                <div>{global.total_media}</div>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 font-semibold">
-                                            <Tooltip text={`${global.total_scored}/${global.total_media}`}>
-                                                <div>
-                                                    <div className="text-neutral-500 text-lg">% Rated</div>
-                                                    <div>{global.percent_scored.toFixed(1)} %</div>
-                                                </div>
-                                            </Tooltip>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">Mean Score</div>
-                                                <div>{global.mean_score.toFixed(2)}/10</div>
-                                            </div>
-                                        </div>
-                                    </>
+                                    <GlobalStatsWithScore globalStats={globalStats}/>
                                 }
                             </div>
                         </div>
@@ -128,3 +78,68 @@ export const GlobalStats = ({ userData, global }) => {
     );
 };
 
+
+const GlobalStatsWithScore = ({ globalStats }) => {
+    return (
+        <>
+            <div className="grid grid-cols-2 font-semibold">
+                <Tooltip text={`${formatTimeTo("days", globalStats.total_time_spent)} days`}>
+                    <div>
+                        <div className="text-neutral-500 text-lg">Total Time</div>
+                        <div>{formatTimeTo("hours", globalStats.total_time_spent)} h</div>
+                    </div>
+                </Tooltip>
+                <div>
+                    <div className="text-neutral-500 text-lg">Total Entries</div>
+                    <div>{globalStats.total_media}</div>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 font-semibold">
+                <Tooltip text={`${globalStats.total_rated} / ${globalStats.total_media}`}>
+                    <div>
+                        <div className="text-neutral-500 text-lg">% Rated</div>
+                        <div>{globalStats.percent_rated.toFixed(1)} %</div>
+                    </div>
+                </Tooltip>
+                <div>
+                    <div className="text-neutral-500 text-lg">Avg. Rating</div>
+                    <div>{globalStats.avg_rating.toFixed(2)}/10</div>
+                </div>
+            </div>
+        </>
+    )
+};
+
+
+const GlobalStatsWithFeeling = ({ globalStats }) => {
+    return (
+        <>
+            <div className="grid grid-cols-3 font-semibold">
+                <Tooltip text={`${formatTimeTo("days", globalStats.total_time_spent)} days`}>
+                    <div>
+                        <div className="text-neutral-500 text-lg">Total Time</div>
+                        <div>{formatTimeTo("hours", globalStats.total_time_spent)} h</div>
+                    </div>
+                </Tooltip>
+                <div>
+                    <div className="text-neutral-500 text-lg">Total Entries</div>
+                    <div>{globalStats.total_media}</div>
+                </div>
+                <Tooltip text={`${globalStats.total_rated} / ${globalStats.total_media}`}>
+                    <div>
+                        <div className="text-neutral-500 text-lg">% Rated</div>
+                        <div>{globalStats.percent_rated.toFixed(1)} %</div>
+                    </div>
+                </Tooltip>
+            </div>
+            <div className="flex font-semibold items-center justify-around">
+                {getFeelingValues().slice(1).reverse().map(feelIcon =>
+                    <div key={feelIcon.value} className="flex flex-col gap-1 items-center">
+                        <div>{feelIcon.icon}</div>
+                        <div>{globalStats.count_per_rating[feelIcon.value * 4]}</div>
+                    </div>
+                )}
+            </div>
+        </>
+    )
+};

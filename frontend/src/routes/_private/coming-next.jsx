@@ -1,13 +1,15 @@
+import {Fragment} from "react";
 import {fetcher} from "@/lib/fetcherLoader";
-import {capitalize, zeroPad} from "@/lib/utils";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {capitalize, formatDateTime, zeroPad} from "@/lib/utils";
 import {MediaCard} from "@/components/app/MediaCard";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
+import {MutedText} from "@/components/app/base/MutedText";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/coming_next")({
+export const Route = createFileRoute("/_private/coming-next")({
     component: ComingNextPage,
     loader: async () => fetcher("/list/upcoming"),
 });
@@ -22,7 +24,7 @@ function ComingNextPage() {
                 <TabsList className="mb-5 max-sm:flex max-sm:justify-around">
                     {apiData.map(next =>
                         <TabsTrigger key={next.media_type} value={next.media_type} className="md:px-8">
-                            {capitalize(next.media_type)}
+                            {capitalize(next.media_type)} ({next.items.length})
                         </TabsTrigger>
                     )}
                 </TabsList>
@@ -30,17 +32,17 @@ function ComingNextPage() {
                     <TabsContent key={next.media_type} value={next.media_type}>
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
                             {next.items.length === 0 ?
-                                <div className="px-2 text-muted-foreground italic col-span-12">
-                                    No new coming next for {next.media_type} found
-                                </div>
+                                <MutedText
+                                    className="col-span-12 px-2"
+                                    text={`No upcoming ${next.media_type} found`}
+                                />
                                 :
                                 next.items.map(media =>
-                                    <div key={media.media_id}>
-                                        <NextMedia
-                                            media={media}
-                                            mediaType={next.media_type}
-                                        />
-                                    </div>
+                                    <NextMedia
+                                        media={media}
+                                        key={media.media_id}
+                                        mediaType={next.media_type}
+                                    />
                                 )
                             }
                         </div>
@@ -53,13 +55,14 @@ function ComingNextPage() {
 
 
 const NextMedia = ({ media, mediaType }) => {
+    console.log(media);
     return (
         <MediaCard media={media} mediaType={mediaType}>
             <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-950 w-full rounded-b-sm text-center">
                 {(mediaType === "anime" || mediaType === "series") &&
                     <div>S{zeroPad(media.season_to_air)}&nbsp;-&nbsp;E{zeroPad(media.episode_to_air)}</div>
                 }
-                <div>{media.formatted_date}</div>
+                <div>{formatDateTime(media.release_date)}</div>
             </div>
         </MediaCard>
     );

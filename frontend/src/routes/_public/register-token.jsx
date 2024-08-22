@@ -5,7 +5,7 @@ import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_public/register_token")({
+export const Route = createFileRoute("/_public/register-token")({
     component: RegisterTokenPage,
 });
 

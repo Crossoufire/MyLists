@@ -43,8 +43,8 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                             value: "Sorry, an error occurred while fetching the labels",
                         })
                     }
-                    updateLabelsInList(response.body.data.already_in);
-                    setLabelsToAdd(response.body.data.available);
+                    updateLabelsInList(response.body.already_in);
+                    setLabelsToAdd(response.body.available);
                 }
                 finally {
                     setLoading(false);
@@ -148,9 +148,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     };
 
     const labelClick = (label) => {
+        setNewLabelName(label);
         setSelectedLabel(label);
         setIsRenaming(true);
-        setNewLabelName(label);
     };
 
     return (

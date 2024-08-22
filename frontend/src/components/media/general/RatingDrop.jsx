@@ -1,13 +1,14 @@
 import {useLoading} from "@/hooks/LoadingHook";
 import {getFeelingValues, getScoreValues} from "@/lib/utils";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {userClient} from "@/api/MyApiClient.js";
 
 
 export const RatingDrop = ({ rating, updateRating, callbackRating }) => {
     const [isLoading, handleLoading] = useLoading();
 
     let selectItems;
-    if (rating.type === "feeling") {
+    if (userClient.currentUser.rating_system === "feeling") {
         selectItems = getFeelingValues(16).map(val =>
             <SelectItem key={val.value} value={val.value}>
                 {val.icon}
@@ -23,6 +24,7 @@ export const RatingDrop = ({ rating, updateRating, callbackRating }) => {
     }
 
     const handleSelectChange = async (value) => {
+        console.log(value);
         const response = await handleLoading(updateRating, value);
         if (response) {
             callbackRating(value);
@@ -32,7 +34,7 @@ export const RatingDrop = ({ rating, updateRating, callbackRating }) => {
     return (
         <div className="flex justify-between items-center">
             <div>Rating</div>
-            <Select value={rating.value} onValueChange={handleSelectChange} disabled={isLoading}>
+            <Select value={rating} onValueChange={handleSelectChange} disabled={isLoading}>
                 <SelectTrigger className="w-[130px]" size="details">
                     <SelectValue/>
                 </SelectTrigger>

@@ -4,9 +4,9 @@ from backend.api.models.books import Books, BooksList
 from backend.api.models.games import Games, GamesList
 from backend.api.models.movies import Movies, MoviesList
 from backend.api.models.tv import Series, Anime, SeriesList, AnimeList
-from backend.api.schemas.core import create_list_schema
+from backend.api.schemas.core import create_list_schema, MyEnum
 from backend.api.schemas.user import UserMediaUpdateSchema
-from backend.api.utils.enums import MediaType
+from backend.api.utils.enums import MediaType, RatingSystem
 
 
 class SimpleNameSchema(ma.Schema):
@@ -37,6 +37,7 @@ class MediaFormPostSchema(ma.Schema):
 
 class RefreshMediaSchema(ma.Schema):
     media_id = ma.Integer()
+    payload = ma.String(allow_none=True)
 
 
 class LockMediaSchema(ma.Schema):
@@ -63,8 +64,8 @@ class SimilarMediaSchema(ma.Schema):
 
 
 class LabelMediaSchema(ma.Schema):
-    applied = ma.List(ma.Nested(SimpleNameSchema))
-    available = ma.List(ma.Nested(SimpleNameSchema))
+    already_in = ma.List(ma.String())
+    available = ma.List(ma.String())
 
 
 # ---------------------------------------
@@ -73,6 +74,8 @@ class LabelMediaSchema(ma.Schema):
 class SeriesDetailsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Series
+
+    media_cover = ma.String(attribute="media_cover")
 
     eps_seasons = ma.List(ma.Nested(EpsPerSeasonSchema))
     platforms = ma.List(ma.Nested(SimpleNameSchema))
@@ -116,6 +119,7 @@ class BooksDetailsSchema(ma.SQLAlchemyAutoSchema):
 class FollowsDetailsSchema(ma.Schema):
     username = ma.String()
     profile_cover = ma.String()
+    rating_system = MyEnum(RatingSystem)
 
 
 class FollowsSeriesDetailsSchema(FollowsDetailsSchema):
@@ -178,8 +182,8 @@ class SeriesDetailsResponseSchema(DetailsResponseSchema):
         title = "Series Details"
 
     media = ma.Nested(SeriesDetailsSchema)
-    follows_data = ma.List(ma.Nested(FollowsSeriesDetailsSchema))
     user_data = ma.Nested(UserSeriesDataSchema)
+    follows_data = ma.List(ma.Nested(FollowsSeriesDetailsSchema))
 
 
 class AnimeDetailsResponseSchema(DetailsResponseSchema):
@@ -187,8 +191,8 @@ class AnimeDetailsResponseSchema(DetailsResponseSchema):
         title = "Anime Details"
 
     media = ma.Nested(AnimeDetailsSchema)
-    follows_data = ma.List(ma.Nested(FollowsAnimeDetailsSchema))
     user_data = ma.Nested(UserAnimeDataSchema)
+    follows_data = ma.List(ma.Nested(FollowsAnimeDetailsSchema))
 
 
 class MoviesDetailsResponseSchema(DetailsResponseSchema):
@@ -196,8 +200,8 @@ class MoviesDetailsResponseSchema(DetailsResponseSchema):
         title = "Movies Details"
 
     media = ma.Nested(MoviesDetailsSchema)
-    follows_data = ma.List(ma.Nested(FollowsMoviesDetailsSchema))
     user_data = ma.Nested(UserMoviesDataSchema)
+    follows_data = ma.List(ma.Nested(FollowsMoviesDetailsSchema))
 
 
 class BooksDetailsResponseSchema(DetailsResponseSchema):
@@ -205,8 +209,8 @@ class BooksDetailsResponseSchema(DetailsResponseSchema):
         title = "Books Details"
 
     media = ma.Nested(BooksDetailsSchema)
-    follows_data = ma.List(ma.Nested(FollowsBooksDetailsSchema))
     user_data = ma.Nested(UserBooksDataSchema)
+    follows_data = ma.List(ma.Nested(FollowsBooksDetailsSchema))
 
 
 class GamesDetailsResponseSchema(DetailsResponseSchema):
@@ -214,8 +218,8 @@ class GamesDetailsResponseSchema(DetailsResponseSchema):
         title = "Games Details"
 
     media = ma.Nested(GamesDetailsSchema)
-    follows_data = ma.List(ma.Nested(FollowsGamesDetailsSchema))
     user_data = ma.Nested(UserGamesDataSchema)
+    follows_data = ma.List(ma.Nested(FollowsGamesDetailsSchema))
 
 
 # ---------------------------------------

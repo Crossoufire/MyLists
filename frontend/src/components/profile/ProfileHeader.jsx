@@ -1,6 +1,7 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {FaPen} from "react-icons/fa";
+import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -10,10 +11,10 @@ import {api, userClient} from "@/api/MyApiClient";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
-    const isCurrent = userClient.currentUser?.id === user.id;
+    const isCurrent = (userClient.currentUser?.id === user.id);
 
     return (
-        <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_image})`}}>
+        <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_cover})`}}>
             {isCurrent &&
                 <Tooltip text="Change background image" side="bottom">
                     <Link to="/settings" className="absolute top-4 right-4 opacity-40 hover:opacity-70">
@@ -26,7 +27,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
                     <Link to="/settings">
                         <Tooltip text="Change profile image">
                             <img
-                                src={user.profile_image}
+                                src={user.profile_cover}
                                 className="z-10 absolute left-[50%] bottom-[5px] h-[97px] w-[97px] transform
                                 -translate-x-1/2 -translate-y-1/2 hover:brightness-50 rounded-full"
                                 alt="profile-picture"
@@ -35,7 +36,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
                     </Link>
                     :
                     <img
-                        src={user.profile_image}
+                        src={user.profile_cover}
                         className="z-10 absolute left-[50%] bottom-1.5 h-24 w-24 transform -translate-x-1/2
                         -translate-y-1/2 rounded-full"
                         alt="profile-picture"
@@ -61,7 +62,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
                     }
                 </div>
                 <div className="font-medium">
-                    <div>Joined: {user.registered_on}</div>
+                    <div>Joined: {formatDateTime(user.activated_on)}</div>
                     <Link to={`/profile/${user.username}/followers`}>
                         <div className="hover:underline hover:underline-offset-2">
                             Followers: {user.followers_count}
@@ -77,7 +78,6 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
 const FollowButton = ({ initFollow, followId }) => {
     const [isLoading, handleLoading] = useLoading();
     const [isFollowing, setFollowing] = useState(initFollow);
-
     const content = isFollowing ? "Unfollow" : "Follow";
     const buttonColor = isFollowing ? "destructive" : "secondary";
 

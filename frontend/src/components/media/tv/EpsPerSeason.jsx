@@ -5,10 +5,10 @@ export const EpsPerSeason = ({ epsPerSeason }) => (
     <div>
         <MediaTitle>Episodes/Seasons</MediaTitle>
         <div className="grid grid-cols-12 gap-3 pr-2 overflow-y-auto max-h-[224px]">
-            {epsPerSeason.map((val, idx) =>
+            {epsPerSeason.map((vals, idx) =>
                 <div key={idx} className="col-span-4 md:col-span-2 p-2 bg-cyan-900 rounded-md">
-                    <div className="font-medium">Season {idx + 1}</div>
-                    <div>{val} Eps</div>
+                    <div className="font-medium">Season {vals.season}</div>
+                    <div>{vals.episode} Eps</div>
                 </div>
             )}
         </div>

@@ -18,7 +18,7 @@ def get_media_search(args):
 
     try:
         api_manager = TMDBApiManager()
-        api_manager.search(args["query"], args["page"])
+        api_manager.search(args["q"], args["page"])
         results = api_manager.format_search_results()
     except:
         return abort(400, "Error searching the TMDB API. Please try again later.")
@@ -36,7 +36,7 @@ def get_games_search(args):
 
     try:
         api_manager = GamesApiManager()
-        api_manager.search(args["query"], args["page"])
+        api_manager.search(args["q"], args["page"])
         results = api_manager.format_search_results()
     except Exception:
         return abort(400, "Error searching the IGDB API. Please try again later.")
@@ -54,7 +54,7 @@ def get_books_search(args):
 
     try:
         api_manager = BooksApiManager()
-        api_manager.search(args["query"], args["page"])
+        api_manager.search(args["q"], args["page"])
         results = api_manager.format_search_results()
     except Exception:
         return abort(400, "Error searching the Google Books API. Please try again later.")
@@ -72,12 +72,12 @@ def get_users_search(args):
 
     try:
         users = (
-            User.query.filter(User.username.ilike(f"%{args['query']}%"), User.active == True)
+            User.query.filter(User.username.ilike(f"%{args['q']}%"), User.active == True)
             .paginate(page=args["page"], per_page=8, error_out=True)
         )
         users_list = [dict(
             name=user.username,
-            image_cover=user.profile_image,
+            image_cover=user.profile_cover,
             date=user.registered_on.strftime("%d %b %Y"),
             media_type="User"
         ) for user in users.items]

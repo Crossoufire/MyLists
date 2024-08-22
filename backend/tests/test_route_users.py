@@ -14,7 +14,7 @@ class UserTests(BaseTest):
                 "username": "user",
                 "email": "user@example.com",
                 "password": "password",
-                "callback": "http://localhost:3000/register_token",
+                "callback": "http://localhost:3000/register-token",
             })
             self.assertEqual(rv.status_code, 204)
 
@@ -23,7 +23,7 @@ class UserTests(BaseTest):
             self.assertEqual(send_email.call_args[1]["username"], "user")
             self.assertEqual(send_email.call_args[1]["subject"], "Register account")
             self.assertEqual(send_email.call_args[1]["template"], "register")
-            self.assertEqual(send_email.call_args[1]["callback"], "http://localhost:3000/register_token")
+            self.assertEqual(send_email.call_args[1]["callback"], "http://localhost:3000/register-token")
 
             token = send_email.call_args[1]["token"]
 
@@ -32,7 +32,7 @@ class UserTests(BaseTest):
                 "username": "user",
                 "email": "user2@example.com",
                 "password": "password",
-                "callback": "http://localhost:3000/register_token",
+                "callback": "http://localhost:3000/register-token",
             })
             self.assertEqual(rv.status_code, 401)
 
@@ -41,7 +41,7 @@ class UserTests(BaseTest):
                 "username": "user2",
                 "email": "user@example.com",
                 "password": "password",
-                "callback": "http://localhost:3000/register_token",
+                "callback": "http://localhost:3000/register-token",
             })
             self.assertEqual(rv.status_code, 401)
 
@@ -56,7 +56,7 @@ class UserTests(BaseTest):
             "username": "aaaaaaaaaaaaaaaaa",
             "email": "oui@example.com",
             "password": "password",
-            "callback": "http://localhost:3000/register_token",
+            "callback": "http://localhost:3000/register-token",
         })
         self.assertEqual(rv.status_code, 401)
 
@@ -64,7 +64,7 @@ class UserTests(BaseTest):
             "username": "",
             "email": "toto@example.com",
             "password": "password",
-            "callback": "http://localhost:3000/register_token",
+            "callback": "http://localhost:3000/register-token",
         })
         self.assertEqual(rv.status_code, 401)
 
@@ -268,12 +268,12 @@ class UserTests(BaseTest):
         with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 200)
-            assert rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pictures/")
+            assert rv.json["updated_user"]["profile_cover"].startswith("/api/static/profile_pictures/")
 
         with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 200)
-            assert rv.json["updated_user"]["back_image"].startswith("/api/static/back_pictures/")
+            assert rv.json["updated_user"]["back_cover"].startswith("/api/static/back_pictures/")
 
     def test_settings_medialist(self):
         rv = self.client.post("/api/settings/medialist")

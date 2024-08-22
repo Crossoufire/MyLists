@@ -35,7 +35,7 @@ export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
             <PagesInput
                 status={status}
                 isCurrent={isCurrent}
-                initPage={media.actual_page}
+                initPage={media.current_page}
                 totalPages={media.total_pages}
                 updatePage={updateUserAPI.page}
             />

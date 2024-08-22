@@ -1,5 +1,5 @@
 from backend.api import ma
-from backend.api.schemas.core import MyEnum
+from backend.api.schemas.core import MyEnum, JSON
 from backend.api.schemas.user import UserSchema
 from backend.api.utils.enums import MediaType
 
@@ -20,9 +20,24 @@ class TMDBTrendsSchema(ma.Schema):
 
 
 class HallOfFameSchema(ma.Schema):
-    user = ma.Nested(UserSchema)
+    user = ma.Nested(UserSchema(
+        only=["id", "username", "profile_cover", "profile_border", "profile_level", "settings"]
+    ))
     rank = ma.Integer()
 
 
 class GlobalStatsSchema(ma.Schema):
-    data = ma.Dict(keys=ma.String(), values=ma.String())
+    nb_users = ma.Integer()
+    nb_media = JSON()
+    total_pages = ma.Integer()
+    total_episodes = JSON()
+    total_seasons = JSON()
+    total_time = JSON()
+    top_media = JSON()
+    top_genres = JSON()
+    top_actors = JSON()
+    top_directors = JSON()
+    top_dropped = JSON()
+    total_movies = JSON()
+    top_authors = JSON()
+    top_developers = JSON()

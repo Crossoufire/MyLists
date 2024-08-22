@@ -317,13 +317,13 @@ class AuthTests(BaseTest):
         with mock.patch("backend.api.routes.auth.send_email") as send_email:
             rv = self.client.post("/api/auth/password-reset", json={
                 "email": "bad@example.com",
-                "callback": "http://localhost:3000/reset_password",
+                "callback": "http://localhost:3000/reset-password",
             })
             self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/auth/password-reset", json={
                 "email": "test@example.com",
-                "callback": "http://localhost:3000/reset_password",
+                "callback": "http://localhost:3000/reset-password",
             })
             self.assertEqual(rv.status_code, 204)
 
@@ -332,7 +332,7 @@ class AuthTests(BaseTest):
         self.assertEqual(send_email.call_args[1]["username"], TEST_USER["username"])
         self.assertEqual(send_email.call_args[1]["subject"], "Password Reset Request")
         self.assertEqual(send_email.call_args[1]["template"], "password_reset")
-        self.assertEqual(send_email.call_args[1]["callback"], "http://localhost:3000/reset_password")
+        self.assertEqual(send_email.call_args[1]["callback"], "http://localhost:3000/reset-password")
 
         token = send_email.call_args[1]["token"]
 

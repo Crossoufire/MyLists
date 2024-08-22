@@ -6,12 +6,12 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
 
 
-export const TvUserDetails = ({ userData, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
-    const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(userData.rating);
-    const [season, setSeason] = useState(userData.current_season);
-    const [episode, setEpisode] = useState(userData.last_episode_watched);
+export const TvUserDetails = ({ userData, mediaData, updatesAPI }) => {
+    const [redo, setRedo] = useState(userData.media_assoc.redo);
+    const [status, setStatus] = useState(userData.media_assoc.status);
+    const [rating, setRating] = useState(userData.media_assoc.rating);
+    const [season, setSeason] = useState(userData.media_assoc.current_season);
+    const [episode, setEpisode] = useState(userData.media_assoc.current_episode);
 
     const callbackStatus = (status) => {
         setStatus(status);
@@ -26,8 +26,8 @@ export const TvUserDetails = ({ userData, updatesAPI }) => {
         }
 
         if (status === "Completed") {
-            setSeason(userData.eps_per_season.length);
-            setEpisode(userData.eps_per_season[userData.eps_per_season.length - 1]);
+            setSeason(userData.eps_seasons.length);
+            setEpisode(userData.eps_seasons[userData.eps_seasons.length - 1]);
         }
 
         setRating({ ...rating });
@@ -35,24 +35,24 @@ export const TvUserDetails = ({ userData, updatesAPI }) => {
     };
 
     const callbackRating = (value) => {
-        setRating({ ...rating, value });
+        setRating(value);
     };
 
     return (
         <>
             <StatusDrop
                 status={status}
-                allStatus={userData.all_status}
-                updateStatus={updatesAPI.status}
                 callbackStatus={callbackStatus}
+                updateStatus={updatesAPI.status}
+                allStatus={userData.media_assoc.all_status}
             />
             {(status !== "Plan to Watch" && status !== "Random") &&
                 <EpsSeasonsDrop
                     initSeason={season}
                     initEpisode={episode}
-                    epsPerSeason={userData.eps_per_season}
                     updateSeason={updatesAPI.season}
                     updateEpisode={updatesAPI.episode}
+                    epsPerSeason={mediaData.eps_seasons}
                 />
             }
             {(status !== "Plan to Watch" || status === "Completed") &&
@@ -61,14 +61,14 @@ export const TvUserDetails = ({ userData, updatesAPI }) => {
             {status !== "Plan to Watch" &&
                 <RatingDrop
                     rating={rating}
-                    updateRating={updatesAPI.rating}
                     callbackRating={callbackRating}
+                    updateRating={updatesAPI.rating}
                 />
             }
             {status === "Completed" &&
                 <RedoDrop
-                    name="Re-watched"
                     initRedo={redo}
+                    name={"Re-watched"}
                     updateRedo={updatesAPI.redo}
                 />
             }

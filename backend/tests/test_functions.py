@@ -3,8 +3,8 @@ from backend.api import db
 from werkzeug.exceptions import BadRequest
 from backend.tests.base_test import BaseTest
 from werkzeug.datastructures import FileStorage
-from backend.api.utils.functions import (save_picture, get_class_registry, compute_level, clean_html_text,
-                                         is_latin, safe_div, change_air_format)
+from backend.api.utils.functions import (save_picture, compute_level, clean_html_text, is_latin, safe_div,
+                                         change_air_format)
 
 
 class UtilsFunctionTests(BaseTest):

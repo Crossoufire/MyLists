@@ -9,7 +9,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createFileRoute("/_public/reset_password")({
+export const Route = createFileRoute("/_public/reset-password")({
     component: ResetPasswordPage,
 });
 

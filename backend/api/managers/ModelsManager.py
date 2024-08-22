@@ -1,3 +1,4 @@
+from enum import EnumMeta
 from typing import List, Literal, Dict, Type, Tuple
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
@@ -63,7 +64,8 @@ class ModelsManager:
     def get_lists_models(cls, media_types: ListMeTs, model_types: ListMoTs) -> List[Type[db.Model]]:
         cls._initialize_caches()
 
-        if isinstance(media_types, MediaType) and isinstance(model_types, ModelTypes):
+        if ((isinstance(media_types, EnumMeta) or isinstance(media_types, MediaType))
+                and isinstance(model_types, ModelTypes)):
             raise Exception("At least one argument needs to be a list")
 
         if isinstance(media_types, list) and isinstance(model_types, list):
