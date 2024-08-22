@@ -125,12 +125,12 @@ class BaseStats:
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
         query = (
-            db.session.query(metric, func.count(metric).label("count"))
-            .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-            .filter(*self.common_filter, metric != "Unknown", *filters)
-            .group_by(metric).order_by(text("count desc"))
-            .limit(self.LIMIT).all()
-        ) or [("-", 0)]
+                    db.session.query(metric, func.count(metric).label("count"))
+                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
+                    .filter(*self.common_filter, metric != "Unknown", *filters)
+                    .group_by(metric).order_by(text("count desc"))
+                    .limit(self.LIMIT).all()
+                ) or [("-", 0)]
 
         return query
 

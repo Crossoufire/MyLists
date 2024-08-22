@@ -7,10 +7,6 @@ def cli_commands():
     """ Register the commands to the Flask CLI """
 
     @current_app.cli.command()
-    def profile_time():
-        profile_route_time()
-
-    @current_app.cli.command()
     def dbml():
         """ Create DBML file from Models """
         generate_dbml()

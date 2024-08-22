@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement

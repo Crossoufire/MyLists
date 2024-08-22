@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
-from flask import url_for, current_app
+from typing import Dict, List, Callable
+from flask import url_for, current_app, abort
 from sqlalchemy import desc, asc, func
 from backend.api import db
 from backend.api.routes.handlers import current_user
@@ -13,6 +13,8 @@ from backend.api.utils.functions import safe_div, change_air_format, ModelsFetch
 
 
 class MediaMixin:
+    """ Media Mixin class for the SQLAlchemy classes: Series/Anime/Movies/Games/Books """
+
     GROUP = None
     SIMILAR_GENRES = 12
 
@@ -94,6 +96,8 @@ class MediaMixin:
 
 
 class MediaListMixin:
+    """ MediaListMixin SQLAlchemy model for: <SeriesList>, <AnimeList>, <MoviesList>, <GamesList>, and <BooksList> """
+
     GROUP = None
 
     # Define fields for PyCharm

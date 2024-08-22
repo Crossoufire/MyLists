@@ -1,9 +1,13 @@
 from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import List, Dict, Tuple
+
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
@@ -13,6 +17,8 @@ from backend.api.utils.functions import change_air_format, ModelsFetcher, reorde
 
 
 class TVModel(db.Model):
+    """ Abstract SQL model for the <Series> and <Anime> models """
+
     __abstract__ = True
 
     TYPE = ModelTypes.MEDIA
@@ -299,6 +305,8 @@ class TVModel(db.Model):
 
 
 class TVListModel(MediaListMixin, db.Model):
+    """ Abstract SQL model for the <SeriesList> and <AnimeList> models """
+
     __abstract__ = True
 
     GROUP = None
@@ -381,6 +389,8 @@ class TVListModel(MediaListMixin, db.Model):
 
 
 class TVLabelsModel(MediaLabelMixin, db.Model):
+    """ Abstract SQL model for the <SeriesLabels> and <AnimeLabels> models """
+
     __abstract__ = True
 
     TYPE = ModelTypes.LABELS
@@ -407,6 +417,8 @@ class TVLabelsModel(MediaLabelMixin, db.Model):
 
 
 class Series(MediaMixin, TVModel):
+    """ Series SQL model """
+
     GROUP = MediaType.SERIES
 
     genres = db.relationship("SeriesGenre", backref="series", lazy=True)
@@ -417,6 +429,8 @@ class Series(MediaMixin, TVModel):
 
 
 class SeriesList(TVListModel):
+    """ SeriesList SQL Model """
+
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
@@ -436,6 +450,8 @@ class SeriesList(TVListModel):
 
 
 class SeriesGenre(db.Model):
+    """ Series genres SQL Model """
+
     TYPE = ModelTypes.GENRE
     GROUP = MediaType.SERIES
 

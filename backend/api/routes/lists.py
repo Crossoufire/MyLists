@@ -3,7 +3,7 @@ from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.managers.medialist_query_manager import MediaListQuery
-from backend.api.utils.decorators import validate_media_type, timer
+from backend.api.utils.decorators import validate_media_type
 from backend.api.utils.enums import MediaType, RoleType
 from backend.api.managers.stats_manager import BaseStats
 
@@ -34,6 +34,7 @@ def media_list(media_type: MediaType, username: str):
 
 
 @lists_bp.route("/stats/<media_type>/<username>", methods=["GET"])
+# @cache.cached(timeout=3600)
 @token_auth.login_required
 @validate_media_type
 def stats_page(media_type: MediaType, username: str):

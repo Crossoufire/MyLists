@@ -1,12 +1,11 @@
 from __future__ import annotations
 from http import HTTPStatus
 from typing import Tuple, Dict
-from flask import abort, current_app
+from flask import abort
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.exceptions import Forbidden, Unauthorized
 from werkzeug.local import LocalProxy
 
-from backend.api import db
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -42,10 +41,6 @@ def basic_auth_error(status: int = HTTPStatus.UNAUTHORIZED) -> Tuple[Dict, int, 
 
 @token_auth.verify_token
 def verify_token(access_token: str) -> str | None:
-    user = db.session.get(User, 3)
-    user.ping()
-    return user
-
     return User.verify_access_token(access_token) if access_token else None
 
 

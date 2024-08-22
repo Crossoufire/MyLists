@@ -53,6 +53,8 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
 
     total_watched = media.add_media_to_user(new_status, current_user.id)
     db.session.commit()
+    current_app.logger.info(f"[User {current_user.id}] {media_type.value} added [ID {media_id}] with "
+                            f"status: {new_status}")
 
     UserLastUpdate.set_new_update(media=media, update_type="status", old_value=None, new_value=new_status)
 
