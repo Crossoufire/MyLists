@@ -3,9 +3,8 @@ from backend.api import db
 from werkzeug.exceptions import BadRequest
 from backend.tests.base_test import BaseTest
 from werkzeug.datastructures import FileStorage
-from backend.api.utils.enums import MediaType
-from backend.api.utils.functions import (save_picture, get_class_registry, get_level, display_time, clean_html_text,
-                                         is_latin, safe_div, change_air_format, get_media_level)
+from backend.api.utils.functions import (save_picture, compute_level, display_time, clean_html_text, is_latin, safe_div,
+                                         change_air_format)
 
 
 class UtilsFunctionTests(BaseTest):
@@ -26,50 +25,16 @@ class UtilsFunctionTests(BaseTest):
         self.assertIs(os.path.isfile(os.path.join(self.app.root_path, "static", file_path, picture_fn)), True)
         return picture_fn
 
-    def test_get_class_registry(self):
-        class DummyModel:
-            pass
-
-        class RegistryMock:
-            _decl_class_registry = {"DummyModel": DummyModel}
-
-        class RegistryMock2:
-            class DummyClass:
-                _class_registry = {"DummyModel": DummyModel}
-
-            _sa_registry = DummyClass()
-
-        registry = get_class_registry(RegistryMock)
-        self.assertEqual(registry, {"DummyModel": DummyModel})
-
-        registry = get_class_registry(RegistryMock2)
-        self.assertEqual(registry, {"DummyModel": DummyModel})
-
-        self.assertRaises(AttributeError, get_class_registry, DummyModel)
-
     def test_get_level(self):
-        self.assertAlmostEqual(get_level(0), 0.00000, places=5)
-        self.assertAlmostEqual(get_level(1), 0.04772, places=5)
-        self.assertAlmostEqual(get_level(2), 0.09161, places=5)
-        self.assertAlmostEqual(get_level(5), 0.20711, places=5)
-        self.assertAlmostEqual(get_level(1000), 6.58872, places=5)
-        self.assertAlmostEqual(get_level(100000), 70.21245, places=5)
-        self.assertAlmostEqual(get_level(10000000), 706.60696, places=5)
-        self.assertRaises(Exception, get_level, -10)
-        self.assertRaises(Exception, get_level, "toto")
-
-    def test_get_media_level(self):
-        media_lvl = get_media_level(self.user, MediaType.SERIES)
-        self.assertEqual(media_lvl, 0)
-
-        self.user.time_spent_series = 12675
-        db.session.commit()
-
-        media_lvl = get_media_level(self.user, MediaType.SERIES)
-        self.assertEqual(media_lvl, 24)
-
-        self.assertRaises(AttributeError, get_media_level, self.user, "toto")
-        self.assertRaises(AttributeError, get_media_level, "toto", MediaType.SERIES)
+        self.assertAlmostEqual(compute_level(0), 0.00000, places=5)
+        self.assertAlmostEqual(compute_level(1), 0.04772, places=5)
+        self.assertAlmostEqual(compute_level(2), 0.09161, places=5)
+        self.assertAlmostEqual(compute_level(5), 0.20711, places=5)
+        self.assertAlmostEqual(compute_level(1000), 6.58872, places=5)
+        self.assertAlmostEqual(compute_level(100000), 70.21245, places=5)
+        self.assertAlmostEqual(compute_level(10000000), 706.60696, places=5)
+        self.assertRaises(Exception, compute_level, -10)
+        self.assertRaises(Exception, compute_level, "toto")
 
     def test_display_time(self):
         self.assertEqual(display_time(0), "0 hours")

@@ -2,10 +2,10 @@ from flask import jsonify, Blueprint
 from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.routes.handlers import token_auth, current_user
-from backend.api.managers.medialist_query_manager import MediaListQuery
+from backend.api.managers.ListQueryManager import ListQueryManager
 from backend.api.utils.decorators import validate_media_type
 from backend.api.utils.enums import MediaType, RoleType
-from backend.api.managers.stats_manager import BaseStats
+from backend.api.managers.StatsManager import BaseStats
 
 
 lists_bp = Blueprint("api_lists", __name__)
@@ -18,7 +18,7 @@ def media_list(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
     current_user.set_view_count(user, media_type)
-    media_data, filters, current_filters, pagination = MediaListQuery(user, media_type).return_results()
+    media_data, filters, current_filters, pagination = ListQueryManager(user, media_type).return_results()
     db.session.commit()
 
     data = dict(
@@ -40,8 +40,8 @@ def media_list(media_type: MediaType, username: str):
 def stats_page(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
-    stats_class = BaseStats.get_stats_class(media_type)
-    stats = stats_class(user).create_stats()
+    stats_manager = BaseStats.get_subclass(media_type)
+    stats = stats_manager(user).create_stats()
 
     data = dict(
         is_current=(user.id == current_user.id),

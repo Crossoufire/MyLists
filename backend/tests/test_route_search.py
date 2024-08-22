@@ -36,7 +36,7 @@ class SearchTests(BaseTest):
             self.assertEqual(rv.status_code, 400)
 
     def test_autocomplete_tmdb(self):
-        with mock.patch("backend.api.routes.search.ApiTMDB.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.TMDBApiManager.create_search_results") as mock_search:
             mock_search.return_value = {
                 "items": [{
                     "api_id": 154,
@@ -59,7 +59,7 @@ class SearchTests(BaseTest):
             assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/friends.jpg"
             assert rv.json["data"]["total"] == 1
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiTMDB.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.TMDBApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=TMDB", headers=self.connexion())
@@ -67,7 +67,7 @@ class SearchTests(BaseTest):
             assert len(rv.json["data"]["items"]) == 0
             assert rv.json["data"]["total"] == 0
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiTMDB.search") as mock_search:
+        with mock.patch("backend.api.routes.search.TMDBApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=friends&selector=TMDB", headers=self.connexion())

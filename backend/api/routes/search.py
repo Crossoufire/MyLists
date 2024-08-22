@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, abort, current_app
 from backend.api.routes.handlers import token_auth
-from backend.api.managers.api_data_manager import ApiTMDB, ApiGames, ApiBooks
+from backend.api.managers.ApiManager import TMDBApiManager, ApiGames, ApiBooks
 from backend.api.models.user_models import User
 
 search_bp = Blueprint("api_search", __name__)
@@ -24,7 +24,7 @@ def autocomplete():
         return jsonify(data=results), 200
 
     if selector == "TMDB":
-        Api_data = ApiTMDB()
+        Api_data = TMDBApiManager()
     elif selector == "IGDB":
         Api_data = ApiGames()
     elif selector == "BOOKS":

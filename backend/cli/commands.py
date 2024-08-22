@@ -1,6 +1,6 @@
 import unittest
 import click
-from backend.api.utils.cli_tasks import *
+from backend.cli.tasks import *
 
 
 def cli_commands():

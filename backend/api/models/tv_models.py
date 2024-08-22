@@ -13,7 +13,8 @@ from backend.api.models.user_models import UserLastUpdate, Notifications
 from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format, ModelsFetcher, reorder_seas_eps
+from backend.api.utils.functions import change_air_format, reorder_seas_eps
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class TVModel(db.Model):
@@ -194,7 +195,7 @@ class TVModel(db.Model):
     def get_new_releasing_media(cls):
         """ Check for the new releasing TV media in a week or less from the TMDB API """
 
-        media_list, eps_model = ModelsFetcher.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
+        media_list, eps_model = ModelsManager.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
         media_list_str = f"{cls.GROUP.value}list"
 
         try:
@@ -259,7 +260,7 @@ class TVModel(db.Model):
     def remove_non_list_media(cls):
         """ Remove all the TV data not present in a List from the database and the disk """
 
-        models = ModelsFetcher.get_dict_models(cls.GROUP, "all")
+        models = ModelsManager.get_dict_models(cls.GROUP, "all")
         media_model = models[ModelTypes.MEDIA]
         media_list_model = models[ModelTypes.LIST]
         actors_model = models[ModelTypes.ACTORS]
@@ -384,7 +385,7 @@ class TVListModel(MediaListMixin, db.Model):
 
     @classmethod
     def total_user_time_def(cls):
-        media_model = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
+        media_model = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
         return func.sum(media_model.duration * cls.total)
 
 

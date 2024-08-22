@@ -4,7 +4,7 @@ from sqlalchemy import func, text
 from backend.api import db
 from backend.api.models.user_models import User
 from backend.api.utils.enums import MediaType, Status, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class GlobalStats:
@@ -17,7 +17,7 @@ class GlobalStats:
 
     def get_top_media(self) -> Dict:
         results = {}
-        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model_list in models.values():
             query = (
                 db.session.query(model_list, func.count(model_list.media_id).label("count"))
@@ -32,7 +32,7 @@ class GlobalStats:
 
     def get_top_genres(self) -> Dict:
         results = {}
-        models = ModelsFetcher.get_dict_models("all", [ModelTypes.GENRE, ModelTypes.LIST])
+        models = ModelsManager.get_dict_models("all", [ModelTypes.GENRE, ModelTypes.LIST])
         for media_type, mt in models.items():
             query = (
                 db.session.query(mt[ModelTypes.GENRE].genre, func.count(mt[ModelTypes.GENRE].genre).label("count"))
@@ -49,7 +49,7 @@ class GlobalStats:
 
     def get_top_actors(self) -> Dict:
         results = {}
-        models = ModelsFetcher.get_dict_models(self.tmdb_media_type, [ModelTypes.ACTORS, ModelTypes.LIST])
+        models = ModelsManager.get_dict_models(self.tmdb_media_type, [ModelTypes.ACTORS, ModelTypes.LIST])
         for media_type, mt in models.items():
             query = (
                 db.session.query(mt[ModelTypes.ACTORS].name, func.count(mt[ModelTypes.ACTORS].name).label("count"))
@@ -66,7 +66,7 @@ class GlobalStats:
 
     def get_top_dropped(self) -> Dict:
         results = {}
-        models = ModelsFetcher.get_dict_models(self.tv_media_type, [ModelTypes.MEDIA, ModelTypes.LIST])
+        models = ModelsManager.get_dict_models(self.tv_media_type, [ModelTypes.MEDIA, ModelTypes.LIST])
         for media_type, mt in models.items():
             query = (
                 db.session.query(mt[ModelTypes.MEDIA].name,
@@ -84,7 +84,7 @@ class GlobalStats:
 
     def get_total_eps_seasons(self) -> Dict:
         results = {}
-        models = ModelsFetcher.get_lists_models(self.tv_media_type, ModelTypes.LIST)
+        models = ModelsManager.get_lists_models(self.tv_media_type, ModelTypes.LIST)
         for model in models:
             query = db.session.query(func.sum(model.current_season), func.sum(model.total)).all()
             results[model.GROUP.value] = [{"seasons": seas, "episodes": ep} for seas, ep in query]
@@ -92,7 +92,7 @@ class GlobalStats:
         return results
 
     def get_top_directors(self) -> Dict:
-        media_m, list_m = ModelsFetcher.get_lists_models(MediaType.MOVIES, [ModelTypes.MEDIA, ModelTypes.LIST])
+        media_m, list_m = ModelsManager.get_lists_models(MediaType.MOVIES, [ModelTypes.MEDIA, ModelTypes.LIST])
         query = (
             db.session.query(media_m.director_name, func.count(media_m.director_name).label("count"))
             .join(list_m, media_m.id == list_m.media_id)
@@ -105,7 +105,7 @@ class GlobalStats:
         return {media_m.GROUP.value: [{"info": director, "quantity": count} for director, count in query]}
 
     def get_top_developers(self) -> Dict:
-        comp_m, list_m = ModelsFetcher.get_lists_models(MediaType.GAMES, [ModelTypes.COMPANIES, ModelTypes.LIST])
+        comp_m, list_m = ModelsManager.get_lists_models(MediaType.GAMES, [ModelTypes.COMPANIES, ModelTypes.LIST])
         query = (
             db.session.query(comp_m.name, func.count(comp_m.name).label("count"))
             .join(list_m, comp_m.media_id == list_m.media_id)
@@ -118,7 +118,7 @@ class GlobalStats:
         return {list_m.GROUP.value: [{"info": dev, "quantity": count} for dev, count in query]}
 
     def get_top_authors(self) -> Dict:
-        author_m, list_m = ModelsFetcher.get_lists_models(MediaType.BOOKS, [ModelTypes.AUTHORS, ModelTypes.LIST])
+        author_m, list_m = ModelsManager.get_lists_models(MediaType.BOOKS, [ModelTypes.AUTHORS, ModelTypes.LIST])
         query = (
             db.session.query(author_m.name, func.count(author_m.name).label("count"))
             .join(list_m, author_m.media_id == list_m.media_id)
@@ -158,7 +158,7 @@ class GlobalStats:
                     .scalar_one())
 
         nb_media = {}
-        models = ModelsFetcher.get_dict_models("all", ModelTypes.MEDIA)
+        models = ModelsManager.get_dict_models("all", ModelTypes.MEDIA)
         for model in models.values():
             nb_media[model.GROUP.value] = db.session.execute(db.select(func.count(model.id))).scalar_one()
 
@@ -166,12 +166,12 @@ class GlobalStats:
 
     @staticmethod
     def get_total_movies() -> Dict:
-        model = ModelsFetcher.get_unique_model(MediaType.MOVIES, ModelTypes.MEDIA)
+        model = ModelsManager.get_unique_model(MediaType.MOVIES, ModelTypes.MEDIA)
         return {model.GROUP.value: db.session.query(model).count() or 0}
 
     @staticmethod
     def get_total_book_pages() -> Dict:
-        model = ModelsFetcher.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
+        model = ModelsManager.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
         return db.session.query(func.sum(model.actual_page)).first()[0] or 0
 
     def return_results(self) -> Dict[str, Dict | int]:

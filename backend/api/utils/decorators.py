@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Callable, Any
 from flask import abort, request
 from backend.api.utils.enums import MediaType
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 def validate_media_type(f: Callable):
@@ -41,7 +41,7 @@ def validate_json_data(type_: Any = None):
 
             try:
                 media_type = MediaType(media_type)
-                models = ModelsFetcher.get_dict_models(media_type, "all")
+                models = ModelsManager.get_dict_models(media_type, "all")
             except ValueError:
                 return abort(400, "The <media_type> key is not valid.")
 

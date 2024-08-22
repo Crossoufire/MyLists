@@ -4,7 +4,7 @@ from backend.api import db
 from backend.api.models.user_models import Notifications, Token, User, UserLastUpdate, followers
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.enums import ModelTypes, RoleType
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 admin_bp = Blueprint("api_admin", __name__)
 
@@ -125,7 +125,7 @@ def delete_account():
         UserLastUpdate.query.filter_by(user_id=user_id).delete()
         Notifications.query.filter_by(user_id=user_id).delete()
 
-        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
 
         for model in models.values():
             model.query.filter_by(user_id=user_id).delete()

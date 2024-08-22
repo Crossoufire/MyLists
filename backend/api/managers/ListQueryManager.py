@@ -1,25 +1,25 @@
-from typing import Tuple, Dict, List
-
+from typing import Tuple, Dict, List, Any
 from flask import abort, request
+from flask_sqlalchemy.query import Query
 from sqlalchemy import asc, or_, ColumnElement
-from werkzeug.exceptions import HTTPException
-
 from backend.api import db
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user_models import User
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import get, ModelsFetcher
+from backend.api.utils.functions import get
 
 
-class MediaListQuery:
+class ListQueryManager:
     PER_PAGE: int = 25
+    ALL_VALUE: str = "All"
 
     def __init__(self, user: User, media_type: MediaType):
         self.user = user
         self.media_type = media_type
+
         self._initialize_media_models()
 
-        # Requests Args
         self.search = request.args.get("search")
         self.page = int(request.args.get("page", 1))
         self.lang = get(request.args, "lang", default="All").split(",")
@@ -31,57 +31,58 @@ class MediaListQuery:
         self.common = request.args.get("common", "true").lower() == "true"
         self.comment = request.args.get("comment", "false").lower() == "true"
 
-        # Pre-defined attributes
-        self.total_media = 0
-        self.common_ids = []
-        if current_user.id != self.user.id:
-            self.total_media = self._calculate_total_media()
-            self.common_ids = self._calculate_common_ids()
-
         self.results = []
         self.pages = 0
         self.total = 0
 
-        # All Filters/Sort
+        self.common_ids = []
+        if current_user and (current_user.id != self.user.id):
+            self.common_ids = self._calculate_common_ids()
+
         self.all_genres = self.media_genre.get_available_genres()
         self.all_status = self.media_list.Status.to_list()
         self.all_labels = self.media_label.get_user_labels(self.user.id)
         self.all_sorting = self.media_list.get_available_sorting(self.user.add_feeling)
 
     def _initialize_media_models(self):
-        media_models = ModelsFetcher.get_dict_models(self.media_type, "all")
+        media_models = ModelsManager.get_dict_models(self.media_type, "all")
 
+        # Always exists
         self.media = media_models[ModelTypes.MEDIA]
         self.media_list = media_models[ModelTypes.LIST]
         self.media_genre = media_models[ModelTypes.GENRE]
         self.media_label = media_models[ModelTypes.LABELS]
-        self.media_mores = media_models
+
+        # Media type dependent
+        self.media_actors = media_models.get(ModelTypes.ACTORS)
+        self.media_authors = media_models.get(ModelTypes.AUTHORS)
+        self.media_platform = media_models.get(ModelTypes.PLATFORMS)
+        self.media_companies = media_models.get(ModelTypes.COMPANIES)
+
+    def _create_filter(self, attr: str, model_attr: Any) -> ColumnElement | bool:
+        if self.ALL_VALUE in getattr(self, attr):
+            setattr(self, attr, [])
+            return True
+        return model_attr.in_(getattr(self, attr))
 
     @property
-    def status_filter(self) -> ColumnElement | HTTPException | bool:
-        try:
-            statuses = [Status(status) for status in self.status]
-            if Status.ALL in statuses or not statuses:
-                self.status = []
-                return True
-            return self.media_list.status.in_(statuses)
-        except:
-            return abort(400)
+    def sorting_filter(self) -> ColumnElement:
+        return self.all_sorting[self.sorting]
 
     @property
-    def sorting_filter(self) -> ColumnElement | HTTPException:
-        try:
-            sort_filter = self.all_sorting[self.sorting]
-        except KeyError:
-            return abort(400, "This sorting is undefined")
-        return sort_filter
+    def status_filter(self) -> ColumnElement | bool:
+        statuses = [Status(status) for status in self.status]
+        if Status.ALL in statuses or not statuses:
+            self.status = []
+            return True
+        return self.media_list.status.in_(statuses)
 
     @property
     def lang_filter(self) -> ColumnElement | bool:
-        if "All" in self.lang or self.media_type != MediaType.MOVIES:
+        if self.media_type != MediaType.MOVIES:
             self.lang = []
             return True
-        return self.media.original_language.in_(self.lang)
+        return self._create_filter("lang", self.media.original_language)
 
     @property
     def common_filter(self) -> ColumnElement | bool:
@@ -89,17 +90,11 @@ class MediaListQuery:
 
     @property
     def genres_filter(self) -> ColumnElement | bool:
-        if "All" in self.genres:
-            self.genres = []
-            return True
-        return self.media_genre.genre.in_(self.genres)
+        return self._create_filter("genres", self.media_genre.genre)
 
     @property
     def labels_filter(self) -> ColumnElement | bool:
-        if "All" in self.labels:
-            self.labels = []
-            return True
-        return self.media_label.label.in_(self.labels)
+        return self._create_filter("labels", self.media_label.label)
 
     @property
     def favorite_filter(self) -> ColumnElement | bool:
@@ -107,20 +102,19 @@ class MediaListQuery:
 
     @property
     def comment_filter(self) -> ColumnElement | bool:
-        return self.media_list.comment.isnot(None) if self.comment else True
+        return self.media_list.comment.is_not(None) if self.comment else True
 
-    def _calculate_total_media(self) -> int:
-        return db.session.query(self.media_list.media_id).filter(self.media_list.user_id == self.user.id).count()
-
-    def _calculate_common_ids(self) -> List:
-        sub_query = (db.session.query(self.media_list.media_id).filter(self.media_list.user_id == current_user.id)
-                     .subquery())
+    def _calculate_common_ids(self) -> List[int]:
+        subq = (
+            self.media_list.query.with_entities(self.media_list.media_id)
+            .filter_by(user_id=current_user.id).subquery()
+        )
         common_ids_query = (
             db.session.query(self.media_list.media_id)
-            .filter(self.media_list.user_id == self.user.id, self.media_list.media_id.in_(sub_query))
+            .filter(self.media_list.user_id == self.user.id, self.media_list.media_id.in_(subq))
             .all()
         )
-        return [id_tuple[0] for id_tuple in common_ids_query]
+        return [media_id[0] for media_id in common_ids_query]
 
     def _create_current_filters(self) -> List[Dict]:
         current_filters = []
@@ -143,6 +137,30 @@ class MediaListQuery:
             current_filters.append({"type": "common", "values": ["No Commons"]})
 
         return current_filters
+
+    def _apply_joins(self, query) -> Query:
+        joins = [
+            (self.media_genre, "genres"),
+            (self.media_label, "labels"),
+        ]
+
+        for model, value in joins:
+            if model and getattr(self, value)[0] != self.ALL_VALUE:
+                query = query.join(model, model.media_id == self.media.id)
+
+        return query
+
+    def _apply_filters(self, query) -> Query:
+        return query.filter(
+            self.media_list.user_id == self.user.id,
+            self.lang_filter,
+            self.favorite_filter,
+            self.common_filter,
+            self.status_filter,
+            self.comment_filter,
+            self.genres_filter,
+            self.labels_filter,
+            )
 
     def _search_query(self):
         base_query = (
@@ -176,50 +194,28 @@ class MediaListQuery:
         self.pages = paginate_results.pages
         self.results = [media.to_dict() for media in paginate_results.items]
 
-    def _items_query(self):
-        outerjoin_to_add = []
+    def _execute_query(self):
+        base_query = db.session.query(self.media_list).join(self.media)
+        query = self._apply_joins(base_query)
+        query = self._apply_filters(query)
+        query = query.order_by(self.sorting_filter, self.media.name)
+        paginated_query = query.paginate(page=int(self.page), per_page=self.PER_PAGE, error_out=True)
 
-        if self.genres and self.genres[0] != "All":
-            outerjoin_to_add.append([self.media_genre, self.media_genre.media_id == self.media_list.media_id])
-        if self.labels and self.labels[0] != "All":
-            outerjoin_to_add.append([self.media_label, self.media_label.media_id == self.media_list.media_id])
-
-        base_query = (
-            db.session.query(self.media_list)
-            .outerjoin(self.media, self.media.id == self.media_list.media_id)
-        )
-
-        for table, condition in outerjoin_to_add:
-            base_query = base_query.outerjoin(table, condition)
-
-        base_query = (
-            base_query.filter(
-                self.media_list.user_id == self.user.id,
-                self.favorite_filter,
-                self.genres_filter,
-                self.lang_filter,
-                self.common_filter,
-                self.labels_filter,
-                self.status_filter,
-                self.comment_filter,
-            )
-            .group_by(self.media_list.media_id).order_by(self.sorting_filter, asc(self.media.name))
-            .paginate(page=int(self.page), per_page=self.PER_PAGE, error_out=True)
-        )
-
-        self.total = base_query.total
-        self.pages = base_query.pages
-        self.results = [media.to_dict() for media in base_query.items]
+        self.total = paginated_query.total
+        self.pages = paginated_query.pages
+        self.results = [media.to_dict() for media in paginated_query.items]
 
     def return_results(self) -> Tuple[Dict, Dict, List, Dict]:
-        if self.search:
-            self._search_query()
-        else:
-            self._items_query()
+        try:
+            if self.search:
+                self._search_query()
+            else:
+                self._execute_query()
+        except:
+            abort(400, "Invalid query")
 
         media_data = dict(
             media_list=self.results,
-            total_media=self.total_media,
             common_ids=self.common_ids,
         )
 

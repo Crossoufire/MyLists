@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request, url_for, current_app, abort
 from sqlalchemy import desc, func
 from backend.api import cache, db
-from backend.api.managers.api_data_manager import ApiSeries, ApiMovies
+from backend.api.managers.ApiManager import ApiSeries, MoviesApiManager
 from backend.api.models.user_models import User
 from backend.api.models.utils_models import Ranks, MyListsStats, Frames
 from backend.api.routes.handlers import token_auth
 from backend.api.utils.enums import RoleType
-from backend.api.utils.functions import display_time, get_level
+from backend.api.utils.functions import display_time, compute_level
 
 general = Blueprint("api_general", __name__)
 
@@ -22,7 +22,7 @@ def current_trends():
 
     try:
         tv_trends = ApiSeries().get_and_format_trending()
-        movies_trends = ApiMovies().get_and_format_trending()
+        movies_trends = MoviesApiManager().get_and_format_trending()
     except Exception as e:
         error = True
         current_app.logger.error(f"[ERROR] - Fetching the trending data: {e}")
@@ -67,7 +67,7 @@ def hall_of_fame():
         user_dict["rank"] = rank_value
         for media_type in user.activated_media_type():
             time_in_minutes = getattr(user, f"time_spent_{media_type.value}")
-            media_level = int(f"{get_level(time_in_minutes):.2f}".split(".")[0])
+            media_level = int(f"{compute_level(time_in_minutes):.2f}".split(".")[0])
             user_dict[f"{media_type.value}_level"] = media_level
             for grade in all_grades[::-1]:
                 if media_level > 149 or media_level == grade.level:

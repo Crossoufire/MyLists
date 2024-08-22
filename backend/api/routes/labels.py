@@ -4,8 +4,7 @@ from backend.api import db
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
-
+from backend.api.managers.ModelsManager import ModelsManager
 
 labels_bp = Blueprint("api_labels", __name__)
 
@@ -14,7 +13,7 @@ labels_bp = Blueprint("api_labels", __name__)
 @token_auth.login_required
 @validate_media_type
 def media_in_label(media_type: MediaType, media_id: int):
-    label_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LABELS)
+    label_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
     data = label_model.get_user_media_labels(user_id=current_user.id, media_id=media_id)
     return jsonify(data=data), 200
 
@@ -67,7 +66,7 @@ def rename_label():
     except:
         return abort(400)
 
-    labels_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LABELS)
+    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
     label_name = labels_model.query.filter_by(user_id=current_user.id, label=new_label_name).first()
     if label_name:
         return abort(400, "The new label name already exists.")
@@ -94,7 +93,7 @@ def delete_label():
     except:
         return abort(400)
 
-    labels_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.LABELS)
+    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
     labels_model.query.filter_by(user_id=current_user.id, label=label).delete()
     db.session.commit()
 

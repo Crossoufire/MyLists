@@ -12,8 +12,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
-from backend.api.utils.functions import get_level, safe_div, ModelsFetcher
-
+from backend.api.utils.functions import compute_level, safe_div
+from backend.api.managers.ModelsManager import ModelsManager
 
 followers = db.Table(
     "followers",
@@ -23,8 +23,6 @@ followers = db.Table(
 
 
 class Token(db.Model):
-    """ Class for the management of the user's connexion tokens """
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True)
     access_token = db.Column(db.String(64), nullable=False, index=True)
@@ -173,7 +171,7 @@ class User(db.Model):
         for media_type in self.activated_media_type():
             total_time += getattr(self, f"time_spent_{media_type.value}")
 
-        return int(get_level(total_time))
+        return int(compute_level(total_time))
 
     # noinspection PyMethodParameters
     @profile_level.expression
@@ -188,12 +186,9 @@ class User(db.Model):
         return func.cast(((func.power(400 + 80 * total_time, 0.5)) - 20) / 40, Integer)
 
     def to_dict(self) -> Dict:
-        """ Serialize the <user> class. Exclude the <email> and <password> fields """
-
         excluded_attrs = ("email", "password")
         user_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name not in excluded_attrs}
 
-        # Additional attributes
         user_dict.update({
             "role": self.role.value,
             "registered_on": self.registered_on.strftime("%d %b %Y"),
@@ -207,8 +202,6 @@ class User(db.Model):
         return user_dict
 
     def activated_media_type(self) -> List[MediaType]:
-        """ Return only the MediaType activated by the user """
-
         activated_media_types = []
         for mt in MediaType:
             if hasattr(self, f"add_{mt.value.lower()}") and getattr(self, f"add_{mt.value.lower()}"):
@@ -219,37 +212,26 @@ class User(db.Model):
         return sorted(activated_media_types)
 
     def verify_password(self, password: str) -> bool:
-        """ Verify the user password hash using bcrypt """
-
         if password == "" or password is None:
             return False
 
         return check_password_hash(self.password, password)
 
     def ping(self):
-        """ Ping the user """
         self.last_seen = datetime.utcnow()
 
     def revoke_all_tokens(self):
-        """ Revoke all the <access token> and <refresh token> of the current user """
-
         Token.query.filter(Token.user == self).delete()
         db.session.commit()
 
     def generate_auth_token(self) -> Token:
-        """ Generate and return an authentication token for the user """
-
         token = Token(user=self)
         token.generate()
-
         return token
 
     def generate_admin_token(self) -> Token:
-        """ Generate and return an authentication token for the user """
-
         token = Token(user=self)
         token.generate_admin()
-
         return token
 
     def check_autorization(self, username: str) -> User:
@@ -312,7 +294,7 @@ class User(db.Model):
     def get_global_media_stats(self) -> Dict:
         """ Get the user's global media stats based on the user's activated MediaType """
 
-        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
+        models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
 
         # Calculate time per media [hours]
         query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models]
@@ -370,7 +352,7 @@ class User(db.Model):
     def get_one_media_details(self, media_type: MediaType) -> Dict:
         """ Get the selected media details for the user """
 
-        media_list, media_label = ModelsFetcher.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+        media_list, media_label = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,
@@ -392,14 +374,14 @@ class User(db.Model):
 
         from backend.api.models.utils_models import Ranks
 
-        models = ModelsFetcher.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
+        models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
         all_ranks = {rank.level: {"image": rank.image, "name": rank.name} for rank in Ranks.query.all()}
 
         level_per_ml = []
         for i, ml in enumerate(models):
             time_in_min = getattr(self, f"time_spent_{ml.GROUP.value}")
 
-            level, level_percent = map(float, divmod(get_level(time_in_min), 1))
+            level, level_percent = map(float, divmod(compute_level(time_in_min), 1))
             level_percent *= 100
             rank_info = all_ranks.get(min(level, 149))
 

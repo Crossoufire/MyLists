@@ -7,7 +7,8 @@ from sqlalchemy import desc, asc, func
 from backend.api import db
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import safe_div, change_air_format, ModelsFetcher
+from backend.api.utils.functions import safe_div, change_air_format
+from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- MIXIN MODELS ---------------------------------------------------------------------------------------- """
 
@@ -42,7 +43,7 @@ class MediaMixin:
     def get_similar_media(self) -> List[Dict]:
         """ Get the similar genres compared to the media """
 
-        media, media_genre = ModelsFetcher.get_lists_models(self.GROUP, [ModelTypes.MEDIA, ModelTypes.GENRE])
+        media, media_genre = ModelsManager.get_lists_models(self.GROUP, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
         if len(self.genres_list) == 0 or self.genres_list[0] == "Unknown":
             return []
@@ -60,7 +61,7 @@ class MediaMixin:
     def in_follows_lists(self) -> List[Dict]:
         """ Verify whether the <media> is included in the list of users followed by the <current_user> """
 
-        media_list = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.LIST)
+        media_list = ModelsManager.get_unique_model(self.GROUP, ModelTypes.LIST)
 
         in_follows_lists = (
             db.session.query(User, media_list, followers)
@@ -236,7 +237,7 @@ class MediaListMixin:
         if cls.GROUP == MediaType.MOVIES:
             release_date = "release_date"
 
-        media = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
+        media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {
             "Title A-Z": media.name.asc(),
@@ -258,7 +259,7 @@ class MediaListMixin:
         """ Fetch the next coming media for the current user. For Series/Anime/Movies. Overridden by Games.
         Not possible for Books """
 
-        media = ModelsFetcher.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
+        media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         media_date = "release_date"
         if cls.GROUP in (MediaType.SERIES, MediaType.ANIME):

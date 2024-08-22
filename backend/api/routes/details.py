@@ -7,12 +7,12 @@ from PIL.Image import Resampling
 from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
-from backend.api.managers.api_data_manager import ApiData
+from backend.api.managers.ApiManager import ApiManager
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
-from backend.api.utils.functions import get, ModelsFetcher
-
+from backend.api.utils.functions import get
+from backend.api.managers.ModelsManager import ModelsManager
 
 details_bp = Blueprint("api_details", __name__)
 
@@ -23,15 +23,15 @@ details_bp = Blueprint("api_details", __name__)
 def media_details(media_type: MediaType, media_id: int):
     """ Media Details and the user details """
 
-    media_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
 
     external_arg = request.args.get("external")
     filter_id = {"api_id": media_id} if external_arg else {"id": media_id}
     media = media_model.query.filter_by(**filter_id).first()
 
     if external_arg and not media:
-        API_class = ApiData.get_API_class(media_type)
-        media = API_class(API_id=media_id).save_media_to_db()
+        api_manager = ApiManager.get_subclass(media_type)
+        media = api_manager(api_id=media_id).save_media_to_db()
         db.session.commit()
     elif not media:
         return abort(404, "The media could not be found.")
@@ -53,7 +53,7 @@ def get_details_form(media_type: MediaType, media_id: int):
     if current_user.role == RoleType.USER:
         return abort(403, "You are not authorized. Please contact an admin.")
 
-    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+    media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
     media = media_model.query.filter_by(id=media_id).first()
     if not media:
@@ -128,7 +128,7 @@ def job_details(media_type: MediaType, job: str, info: str):
         - `network`: tv network (series/anime)
     """
 
-    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
     media_data = media_model.get_information(job, info)
 
     for media in media_data:
@@ -152,14 +152,14 @@ def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Di
     if current_user.role == RoleType.USER:
         return abort(401, "Unauthorized to refresh this media")
 
-    api_model = ApiData.get_API_class(media_type)
+    api_manager = ApiManager.get_subclass(media_type)
 
     media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
     if media is None:
         return abort(404)
 
     try:
-        refreshed_data = api_model(API_id=media.api_id).get_refreshed_media_data()
+        refreshed_data = api_manager(api_id=media.api_id).get_refreshed_media_data()
         media.refresh_element_data(media.api_id, refreshed_data)
         current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID: [{media.api_id}]")
     except Exception as e:

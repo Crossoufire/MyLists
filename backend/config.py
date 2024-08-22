@@ -12,8 +12,6 @@ def as_bool(value: str) -> bool:
 
 
 class Config:
-    """ Config class for environment variables """
-
     # Debug options
     DEBUG = False
     TESTING = False
@@ -41,6 +39,18 @@ class Config:
     MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL"))
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
+    # API keys
+    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY") or None
+    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY") or None
+    CLIENT_IGDB = os.environ.get("CLIENT_IGDB") or None
+    SECRET_IGDB = os.environ.get("SECRET_IGDB") or None
+    IGDB_API_KEY = os.environ.get("IGDB_API_KEY") or None
+
+    # Caching
+    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
+    CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(basedir, "instance/cache")
+    CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000
 
     # OAuth2
     OAUTH2_PROVIDERS = {
@@ -70,21 +80,11 @@ class Config:
         },
     }
 
-    # API keys
-    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY") or None
-    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY") or None
-    CLIENT_IGDB = os.environ.get("CLIENT_IGDB") or None
-    SECRET_IGDB = os.environ.get("SECRET_IGDB") or None
-    IGDB_API_KEY = os.environ.get("IGDB_API_KEY") or None
-
-    # Caching
-    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
-    CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(basedir, "cache")
-    CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000
-
 
 class DevConfig(Config):
     DEBUG = True
+    ACCESS_TOKEN_MINUTES = int("99999999")
+    USER_ACTIVE_PER_DEFAULT = False
 
 
 class ProdConfig(Config):
@@ -92,7 +92,6 @@ class ProdConfig(Config):
 
 
 class TestConfig(Config):
-
     TESTING = True
 
     # Set for using url_for in tests

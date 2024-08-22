@@ -7,7 +7,8 @@ from backend.api.routes.handlers import token_auth, current_user
 from backend.api.routes.email import send_email
 from backend.api.models.user_models import (Notifications, UserLastUpdate, User, Token, followers)
 from backend.api.utils.enums import RoleType, ModelTypes
-from backend.api.utils.functions import save_picture, ModelsFetcher
+from backend.api.utils.functions import save_picture
+from backend.api.managers.ModelsManager import ModelsManager
 
 users = Blueprint("api_users", __name__)
 
@@ -76,7 +77,7 @@ def profile(username: str):
     follows_updates = user.get_follows_updates(limit_=10)
     list_levels = user.get_list_levels()
     media_global = user.get_global_media_stats()
-    models = ModelsFetcher.get_lists_models(user.activated_media_type(), ModelTypes.LIST)
+    models = ModelsManager.get_lists_models(user.activated_media_type(), ModelTypes.LIST)
     media_data = [user.get_one_media_details(model.GROUP) for model in models]
 
     db.session.commit()
@@ -307,11 +308,11 @@ def settings_delete():
         UserLastUpdate.query.filter_by(user_id=current_user.id).delete()
         Notifications.query.filter_by(user_id=current_user.id).delete()
 
-        models = ModelsFetcher.get_dict_models("all", ModelTypes.LIST)
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model in models.values():
             model.query.filter_by(user_id=current_user.id).delete()
 
-        models_labels = ModelsFetcher.get_dict_models("all", ModelTypes.LABELS)
+        models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
         for model in models_labels.values():
             model.query.filter_by(user_id=current_user.id).delete()
 

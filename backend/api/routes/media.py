@@ -6,7 +6,7 @@ from backend.api.routes.handlers import token_auth, current_user
 from backend.api.models.user_models import UserLastUpdate
 from backend.api.utils.decorators import validate_json_data
 from backend.api.utils.enums import MediaType, Status, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 
 media_bp = Blueprint("api_media", __name__)
 
@@ -14,7 +14,7 @@ media_bp = Blueprint("api_media", __name__)
 @media_bp.route("/coming_next", methods=["GET"])
 @token_auth.login_required
 def coming_next():
-    models_list = ModelsFetcher.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
+    models_list = ModelsManager.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
     try:
         # Remove <BooksList> because no coming next possible
         from backend.api.models.books_models import BooksList

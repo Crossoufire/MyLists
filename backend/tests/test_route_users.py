@@ -1,7 +1,7 @@
 import os
 from unittest import mock
 from flask import current_app
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.tests.base_test import BaseTest, TEST_USER
 
 
@@ -217,7 +217,7 @@ class UserTests(BaseTest):
         self.assertEqual(UserLastUpdate.query.filter_by(user_id=user_id).count(), 0)
         self.assertEqual(Notifications.query.filter_by(user_id=user_id).count(), 0)
 
-        models = ModelsFetcher.get_dict_models("all", [ModelTypes.LIST, ModelTypes.LABELS])
+        models = ModelsManager.get_dict_models("all", [ModelTypes.LIST, ModelTypes.LABELS])
 
         for model_type in models.values():
             for model in model_type.values():

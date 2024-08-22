@@ -5,20 +5,31 @@ from backend.api import db
 from backend.api.models.user_models import User, followers
 from backend.api.models.user_models import UserLastUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
-from backend.api.utils.functions import int_to_money, ModelsFetcher
+from backend.api.utils.functions import int_to_money
+from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- GENERAL ----------------------------------------------------------------------------------------- """
 
 
-class BaseStats:
-    GROUP: MediaType
+class StatsMeta(type):
+    subclasses = {}
+
+    def __new__(cls, name, bases, attrs):
+        new_class = super().__new__(cls, name, bases, attrs)
+        if "GROUP" in attrs:
+            cls.subclasses[attrs["GROUP"]] = new_class
+        return new_class
+
+
+class BaseStats(metaclass=StatsMeta):
+    GROUP: MediaType = None
     LIMIT: int = 10
 
     def __init__(self, user: User):
         self.user = user
         self.data = {"values": {}, "lists": {}, "is_feeling": self.user.add_feeling}
 
-        self.media_models = ModelsFetcher.get_dict_models(self.GROUP, "all")
+        self.media_models = ModelsManager.get_dict_models(self.GROUP, "all")
         self._initialize_media_models()
 
         self.rating = self.media_list.feeling if self.user.add_feeling else self.media_list.score
@@ -177,29 +188,8 @@ class BaseStats:
         self.data["values"][genre.lower().replace(" ", "_")] = misc_genre
 
     @classmethod
-    def _find_subclass(cls, media_type: MediaType, subclass: Type['BaseStats']) -> Type['BaseStats'] | None:
-        """ Recursively search for subclass matching the <media_type> """
-
-        if hasattr(subclass, "GROUP") and subclass.GROUP == media_type:
-            return subclass
-
-        for sub_subclass in subclass.__subclasses__():
-            result = cls._find_subclass(media_type, sub_subclass)
-            if result:
-                return result
-
-        return None
-
-    @classmethod
-    def get_stats_class(cls, media_type: MediaType) -> Type['BaseStats']:
-        """ Get appropriate inherited class depending on <media_type> """
-
-        for subclass in cls.__subclasses__():
-            result = cls._find_subclass(media_type, subclass)
-            if result:
-                return result
-
-        raise ValueError(f"No subclass found for media type: {media_type.value}")
+    def get_subclass(cls, media_type: MediaType):
+        return cls.subclasses.get(media_type, cls)
 
 
 class TMDBStats(BaseStats):
@@ -335,7 +325,6 @@ class TvStats(TMDBStats):
 
 
 class SeriesStats(TvStats):
-
     GROUP = MediaType.SERIES
 
     def __init__(self, user: User):
@@ -343,7 +332,6 @@ class SeriesStats(TvStats):
 
 
 class AnimeStats(TvStats):
-
     GROUP = MediaType.ANIME
 
     def __init__(self, user: User):
@@ -351,7 +339,6 @@ class AnimeStats(TvStats):
 
 
 class MoviesStats(TMDBStats):
-
     GROUP = MediaType.MOVIES
 
     def __init__(self, user: User):
@@ -426,36 +413,6 @@ class MoviesStats(TMDBStats):
 
         self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
 
-    def compute_most_common(self):
-        """ Compute the most common media with the user's follows. """
-
-        # TODO: compute_most_common: NOT USED FOR NOW.
-
-        sub_q = db.session.query(followers).filter(followers.c.follower_id == self.user.id).subquery()
-
-        results = (
-            db.session.query(
-                self.media_list.media_id,
-                self.media.name,
-                func.count().label("watch_count"),
-                func.sum(self.media_list.rewatched).label("total_rewatched"),
-                func.avg(
-                    case(
-                        (self.media_list.score.is_not(None), self.media_list.score),
-                        else_=self.media_list.feeling * 2
-                    )
-                ).label("combined_score")
-            )
-            .join(sub_q, self.media_list.user_id == sub_q.c.followed_id)
-            .join(self.media, self.media.id == self.media_list.media_id)
-            .filter(self.media_list.status == Status.COMPLETED)
-            .group_by(self.media_list.media_id)
-            .order_by(desc("watch_count"), desc("combined_score"), desc("total_rewatched"))
-            .limit(10).all()
-        )
-
-        self.data["lists"]["most_common"] = [{"name": n, "value": a, "value2": c} for (_, n, c, _, a) in results]
-
     def create_stats(self):
         self.compute_total_hours()
         self.compute_total_media()
@@ -475,7 +432,6 @@ class MoviesStats(TMDBStats):
 
 
 class BooksStats(BaseStats):
-
     GROUP = MediaType.BOOKS
 
     def __init__(self, user: User):
@@ -579,7 +535,6 @@ class BooksStats(BaseStats):
 
 
 class GamesStats(BaseStats):
-
     GROUP = MediaType.GAMES
 
     def __init__(self, user: User):

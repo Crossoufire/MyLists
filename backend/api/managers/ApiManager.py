@@ -1,11 +1,10 @@
 from __future__ import annotations
 import json
-import os.path
 import secrets
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Type, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from urllib import request
 import requests
 from PIL import Image
@@ -15,69 +14,57 @@ from ratelimit import sleep_and_retry, limits
 from requests import Response
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import change_air_format, clean_html_text, get, is_latin, ModelsFetcher
-
+from backend.api.utils.functions import change_air_format, clean_html_text, get, is_latin
+from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
 
-class ApiData:
-    """ Main class to manipulate the different APIs """
+class ApiMeta(type):
+    subclasses = {}
 
+    def __new__(cls, name, bases, attrs):
+        new_class = super().__new__(cls, name, bases, attrs)
+        if "GROUP" in attrs:
+            cls.subclasses[attrs["GROUP"]] = new_class
+        return new_class
+
+
+class ApiManager(metaclass=ApiMeta):
     GROUP: MediaType
     POSTER_BASE_URL: str
     LOCAL_COVER_PATH: str
     API_KEY: str
     DURATION: int
-    RESULTS_PER_PAGE: int = 7
+    RESULTS_PER_PAGE: int = 20
 
-    def __init__(self, API_id: Optional[int, str] = None):
-        """ Initialize the ApiData instance with an optional API ID """
-
-        self.API_id = API_id
+    def __init__(self, api_id: Optional[int, str] = None):
+        self.api_id = api_id
         self.media: db.Model = None
         self.media_details = {}
-        self.API_data = {}
+        self.api_data = {}
         self.all_data = {}
 
     def save_media_to_db(self) -> db.Model:
-        """ Save the media data to the database and return the main media data """
-
-        self._fetch_details_from_API()
-        self._format_API_data()
+        self._fetch_details_from_api()
+        self._format_api_data()
         self._add_data_to_db()
 
         return self.media
 
     def get_refreshed_media_data(self) -> Dict:
-        """ Update the media data and return a dict containing the refreshed data """
-
-        self._fetch_details_from_API()
-        self._format_API_data(updating=True)
+        self._fetch_details_from_api()
+        self._format_api_data(updating=True)
 
         return self.all_data
 
-    def get_changed_api_ids(self) -> List:
-        """ Get the changed API IDs for Series, Anime, Movies, and Games. Overwritten in inherited class """
-        raise NotImplementedError("Subclasses must implement this method.")
-
-    def _fetch_details_from_API(self):
-        """ Overwritten in inherited class """
-        raise NotImplementedError("Subclasses must implement this method.")
-
-    def _format_API_data(self, updating: bool = False):
-        """ Overwritten in inherited class """
-        raise NotImplementedError("Subclasses must implement this method.")
-
     def _add_data_to_db(self):
-        models = ModelsFetcher.get_dict_models(self.GROUP, "all")
+        models = ModelsManager.get_dict_models(self.GROUP, "all")
 
-        # Add main media data
         self.media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
         db.session.add(self.media)
         db.session.commit()
 
-        # Create related data dict
         related_data = {
             models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
             models.get(ModelTypes.ACTORS): self.all_data.get("actors_data", []),
@@ -88,36 +75,23 @@ class ApiData:
             models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
         }
 
-        # Add to DB each related data
         for model, data_list in related_data.items():
             for item in data_list:
                 item["media_id"] = self.media.id
                 db.session.add(model(**item))
 
-    @classmethod
-    def _find_subclass(cls, media_type: MediaType, subclass: Type['ApiData']) -> Type['ApiData'] | None:
-        """ Recursively search for subclass matching the <media_type> """
+    def get_changed_api_ids(self) -> List[int]:
+        raise NotImplementedError("Subclasses must implement this method.")
 
-        if hasattr(subclass, "GROUP") and subclass.GROUP == media_type:
-            return subclass
+    def _fetch_details_from_api(self):
+        raise NotImplementedError("Subclasses must implement this method.")
 
-        for sub_subclass in subclass.__subclasses__():
-            result = cls._find_subclass(media_type, sub_subclass)
-            if result:
-                return result
-
-        return None
+    def _format_api_data(self, updating: bool = False):
+        raise NotImplementedError("Subclasses must implement this method.")
 
     @classmethod
-    def get_API_class(cls, media_type: MediaType) -> Type['ApiData']:
-        """ Get appropriate inherited class depending on <media_type> """
-
-        for subclass in cls.__subclasses__():
-            result = cls._find_subclass(media_type, subclass)
-            if result:
-                return result
-
-        raise ValueError(f"No subclass found for media type: {media_type.value}")
+    def get_subclass(cls, media_type: MediaType):
+        return cls.subclasses.get(media_type, cls)
 
     @staticmethod
     def call_api(url: str, method: Literal["get", "post"] = "get", **kwargs) -> Response:
@@ -132,40 +106,29 @@ class ApiData:
         return response
 
 
-class ApiTMDB(ApiData):
-    """ TMDB API class for Series, Anime and Movies """
-
+class TMDBApiManager(ApiManager):
     POSTER_BASE_URL = "https://image.tmdb.org/t/p/w300"
     API_KEY = current_app.config["THEMOVIEDB_API_KEY"]
     MAX_TRENDING = 12
     MAX_RESULTS = 20
     MAX_ACTORS = 5
 
-    def __init__(self, API_id: int = None):
-        super().__init__(API_id)
-        self.API_id = API_id
+    def __init__(self, api_id: int = None):
+        super().__init__(api_id)
+        self.api_id = api_id
 
     def search(self, query: str, page: int = 1):
-        """ Search in the TMDB API (series, anime, and movies) """
-
-        response = self.call_api(f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}"
-                                 f"&query={query}&page={page}")
-
-        self.API_data = response.json()
+        response = self.call_api(
+            f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}"
+            f"&query={query}&page={page}"
+        )
+        self.api_data = response.json()
 
     def create_search_results(self) -> Dict:
-        """ Create the search results dict """
-
-        data_passed = 0
         search_results = []
-        API_results = get(self.API_data, "results", default=[])
-        for result in API_results[:self.MAX_RESULTS]:
-            if len(search_results) >= self.RESULTS_PER_PAGE:
-                break
-
-            # Continue if not Movies, Series or Anime
+        results = get(self.api_data, "results", default=[])
+        for result in results:
             if result.get("known_for_department"):
-                data_passed += 1
                 continue
 
             media_info = dict(
@@ -183,22 +146,16 @@ class ApiTMDB(ApiData):
 
             search_results.append(media_info)
 
-        total = self.API_data.get("total_results", 0) - data_passed
-        pages = total // self.RESULTS_PER_PAGE
+        total = self.api_data.get("total_results", 0)
+        pages = (total // self.RESULTS_PER_PAGE) + 1
 
-        search_dict = dict(
-            items=search_results,
-            total=total,
-            pages=pages,
-        )
-
-        return search_dict
+        return dict(items=search_results, total=total, pages=pages)
 
     def get_changed_api_ids(self) -> List:
         """ Fetch the IDs that changed in the last 24h from the TMDB API """
 
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
-        model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
+        model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         response = self.call_api(f"https://api.themoviedb.org/3/{type_}/changes?api_key={self.API_KEY}")
         data = json.loads(response.text)
@@ -209,19 +166,19 @@ class ApiTMDB(ApiData):
 
         return api_ids_to_refresh
 
-    def _fetch_details_from_API(self):
-        """ Get the details and credits data for a Movie from TMDB API """
-
+    def _fetch_details_from_api(self):
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
-        response = self.call_api(f"https://api.themoviedb.org/3/{type_}/{self.API_id}?api_key={self.API_KEY}"
-                                 f"&append_to_response=credits")
-        self.API_data = json.loads(response.text)
+        response = self.call_api(
+            f"https://api.themoviedb.org/3/{type_}/{self.api_id}?api_key={self.API_KEY}"
+            f"&append_to_response=credits"
+        )
+        self.api_data = json.loads(response.text)
 
     def _get_genres(self) -> List[Dict]:
         """ Fetch the series, anime, or movies genres (fallback for anime if Jikan API bug) """
 
         genres_list = []
-        all_genres = get(self.API_data, "genres", default=[])
+        all_genres = get(self.api_data, "genres", default=[])
         for genre in all_genres:
             genres_list.append({"genre": genre["name"], "genre_id": int(genre["id"])})
         if not genres_list:
@@ -233,7 +190,7 @@ class ApiTMDB(ApiData):
         """ Get the <MAX_ACTORS> actors for series, anime and movies """
 
         actors_list = []
-        all_actors = get(self.API_data, "credits", "cast", default=[])
+        all_actors = get(self.api_data, "credits", "cast", default=[])
         for actor in all_actors[:self.MAX_ACTORS]:
             actors_list.append({"name": actor["name"]})
         if not actors_list:
@@ -245,9 +202,9 @@ class ApiTMDB(ApiData):
         """ Create a name for the media image cover or fallback on the <default.jpg> """
 
         cover_name = "default.jpg"
-        cover_path = self.API_data.get("poster_path") or None
+        cover_path = self.api_data.get("poster_path") or None
         if cover_path:
-            cover_name = f"{secrets.token_hex(12)}.jpg"
+            cover_name = f"{secrets.token_hex(16)}.jpg"
             try:
                 request.urlretrieve(f"{self.POSTER_BASE_URL}{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
                 with Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}") as img:
@@ -261,13 +218,11 @@ class ApiTMDB(ApiData):
 
     @staticmethod
     def _process_tv(result):
-        """ Process TV data (Series/Anime from TMDB) """
-
-        media_info = {
-            "media_type": MediaType.SERIES.value,
-            "date": change_air_format(result.get("first_air_date")),
-            "name": result.get("original_name") if is_latin(result.get("original_name")) else result.get("name")
-        }
+        media_info = dict(
+            media_type=MediaType.SERIES.value,
+            date=change_air_format(result.get("first_air_date")),
+            name=result.get("original_name") if is_latin(result.get("original_name")) else result.get("name")
+        )
 
         # Change <media_type> to <anime> on conditions
         is_jap = result.get("origin_country") == "JP" or result.get("original_language") == "ja"
@@ -281,41 +236,37 @@ class ApiTMDB(ApiData):
     def _process_movie(result):
         """ Process the Movie data from TMDB """
 
-        media_info = {
-            "media_type": MediaType.MOVIES.value,
-            "date": change_air_format(result.get("release_date")),
-            "name": result.get("original_title") if is_latin(result.get("original_title")) else result.get("title")
-        }
+        media_info = dict(
+            media_type=MediaType.MOVIES.value,
+            date=change_air_format(result.get("release_date")),
+            name=result.get("original_title") if is_latin(result.get("original_title")) else result.get("title")
+        )
 
         return media_info
 
 
-class ApiTV(ApiTMDB):
-    """ TMDB API class specifically for Series/Anime """
-
+class TVApiManager(TMDBApiManager):
     MAX_NETWORK = 4
 
-    def _format_API_data(self, updating: bool = False):
-        """ Format the TMDB TV API data to dict to add to the local database """
-
+    def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.API_data, "name", default="Unknown"),
-            original_name=get(self.API_data, "original_name", default="Unknown"),
-            first_air_date=get(self.API_data, "first_air_date", default="Unknown"),
-            last_air_date=get(self.API_data, "last_air_date", default="Unknown"),
-            homepage=get(self.API_data, "homepage", default="Unknown"),
-            in_production=get(self.API_data, "in_production", default=False),
-            total_seasons=get(self.API_data, "number_of_seasons", default=1),
-            total_episodes=get(self.API_data, "number_of_episodes", default=1),
-            status=get(self.API_data, "status", default="Unknown"),
-            vote_average=get(self.API_data, "vote_average", default=0),
-            vote_count=get(self.API_data, "vote_count", default=0),
-            synopsis=get(self.API_data, "overview", default="Undefined"),
-            popularity=get(self.API_data, "popularity", default=0),
-            duration=get(self.API_data, "episode_run_time", 0, default=self.DURATION),
-            origin_country=get(self.API_data, "origin_country", 0, default="Unknown"),
-            created_by=", ".join(cr["name"] for cr in (self.API_data.get("created_by") or self._get_writers())),
-            api_id=self.API_data["id"],
+            name=get(self.api_data, "name", default="Unknown"),
+            original_name=get(self.api_data, "original_name", default="Unknown"),
+            first_air_date=get(self.api_data, "first_air_date", default="Unknown"),
+            last_air_date=get(self.api_data, "last_air_date", default="Unknown"),
+            homepage=get(self.api_data, "homepage", default="Unknown"),
+            in_production=get(self.api_data, "in_production", default=False),
+            total_seasons=get(self.api_data, "number_of_seasons", default=1),
+            total_episodes=get(self.api_data, "number_of_episodes", default=1),
+            status=get(self.api_data, "status", default="Unknown"),
+            vote_average=get(self.api_data, "vote_average", default=0),
+            vote_count=get(self.api_data, "vote_count", default=0),
+            synopsis=get(self.api_data, "overview", default="Undefined"),
+            popularity=get(self.api_data, "popularity", default=0),
+            duration=get(self.api_data, "episode_run_time", 0, default=self.DURATION),
+            origin_country=get(self.api_data, "origin_country", 0, default="Unknown"),
+            created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self._get_writers())),
+            api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             next_episode_to_air=None,
@@ -324,7 +275,7 @@ class ApiTV(ApiTMDB):
         )
 
         # Add <next_episode_to_air>, <season_to_air>, and <episode_to_air>
-        next_episode_to_air = self.API_data.get("next_episode_to_air")
+        next_episode_to_air = self.api_data.get("next_episode_to_air")
         if next_episode_to_air:
             self.media_details["next_episode_to_air"] = next_episode_to_air["air_date"]
             self.media_details["season_to_air"] = next_episode_to_air["season_number"]
@@ -332,7 +283,7 @@ class ApiTV(ApiTMDB):
 
         # Add <seasons>
         seasons_list = []
-        seasons = get(self.API_data, "seasons", default=[])
+        seasons = get(self.api_data, "seasons", default=[])
         for season in seasons:
             if season.get("season_number", 0) > 0:
                 seasons_list.append({"season": season["season_number"], "episodes": season["episode_count"]})
@@ -341,7 +292,7 @@ class ApiTV(ApiTMDB):
 
         # Add <networks>
         networks_list = []
-        networks = get(self.API_data, "networks", default=[])
+        networks = get(self.api_data, "networks", default=[])
         for network in networks[:self.MAX_NETWORK]:
             networks_list.append({"network": network["name"]})
         if not networks_list:
@@ -369,7 +320,7 @@ class ApiTV(ApiTMDB):
     def _get_writers(self) -> List[Dict]:
         """ Get top 2 writers (by popularity) for <created_by> field using the series/anime crew """
 
-        tv_crew = get(self.API_data, "credits", "crew", default=[])
+        tv_crew = get(self.api_data, "credits", "crew", default=[])
 
         creator_names = [member for member in tv_crew if member.get("department") == "Writing"
                          and member.get("known_for_department") == "Writing"]
@@ -383,9 +334,7 @@ class ApiTV(ApiTMDB):
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
 
 
-class ApiSeries(ApiTV):
-    """ TMDB API class specifically for the Series """
-
+class ApiSeries(TVApiManager):
     DURATION = 40
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
@@ -394,8 +343,8 @@ class ApiSeries(ApiTV):
         """ Fetch and format <MAX_TRENDING> trending TV obtained from TMDB API """
 
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
-        API_data = response.json()
-        results = get(API_data, "results", default=[])
+        api_data = response.json()
+        results = get(api_data, "results", default=[])
 
         tv_results = []
         for result in results[:self.MAX_TRENDING]:
@@ -405,26 +354,20 @@ class ApiSeries(ApiTV):
                 display_name=get(result, "name", default="Unknown"),
                 release_date=change_air_format(result.get("first_air_date")),
                 media_type=MediaType.SERIES.value,
-                category="Series/Anime"
             )
 
-            # Get poster path
             poster_path = get(result, "poster_path", default=url_for("static", filename="covers/default.jpg"))
             media_data["poster_path"] = f"{self.POSTER_BASE_URL}{poster_path}"
 
-            # Change <original_name> if latin
             if is_latin(result.get("original_name")):
                 media_data["display_name"] = result.get("original_name")
 
-            # Append results
             tv_results.append(media_data)
 
         return tv_results
 
 
-class ApiAnime(ApiTV):
-    """ TMDB API class specifically for the Anime """
-
+class ApiAnime(TVApiManager):
     DURATION = 24
     GROUP = MediaType.ANIME
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/anime_covers/")
@@ -432,8 +375,10 @@ class ApiAnime(ApiTV):
     @sleep_and_retry
     @limits(calls=1, period=4)
     def api_anime_search(self, anime_name: str):
-        """ Fetch the anime name from the TMDB API to the Jikan API. Then use the Jikan API to get more accurate
-        genres with the <get_anime_genres> method """
+        """
+        Fetch the anime name from the TMDB API to the Jikan API. Then use the Jikan API to get more accurate
+        genres with the <get_anime_genres> method
+        """
 
         response = self.call_api(f"https://api.jikan.moe/v4/anime?q={anime_name}")
         return json.loads(response.text)
@@ -443,15 +388,12 @@ class ApiAnime(ApiTV):
 
         anime_genres_list = []
         try:
-            # Search using Jikan API
-            anime_search = self.api_anime_search(self.API_data["name"])
+            anime_search = self.api_anime_search(self.api_data["name"])
 
-            # Extract data
             anime_genres = anime_search["data"][0]["genres"]
             anime_demographic = anime_search["data"][0]["demographics"]
             anime_themes = anime_search["data"][0]["themes"]
 
-            # Combine and iterate
             for data_list in (anime_genres, anime_demographic, anime_themes):
                 for item in data_list:
                     anime_genres_list.append({"genre": item["name"], "genre_id": int(item["mal_id"])})
@@ -461,9 +403,7 @@ class ApiAnime(ApiTV):
         return anime_genres_list
 
 
-class ApiMovies(ApiTMDB):
-    """ TMDB API class specifically for the Movies """
-
+class MoviesApiManager(TMDBApiManager):
     DURATION = 90
     GROUP = MediaType.MOVIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/movies_covers")
@@ -472,8 +412,8 @@ class ApiMovies(ApiTMDB):
         """ Fetch and format <MAX_TRENDING> trending Series obtained from the TMDB API """
 
         response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
-        API_data = response.json()
-        results = get(API_data, "results", default=[])
+        api_data = response.json()
+        results = get(api_data, "results", default=[])
 
         movies_results = []
         for result in results[:self.MAX_TRENDING]:
@@ -483,57 +423,48 @@ class ApiMovies(ApiTMDB):
                 display_name=get(result, "title", default="Unknown"),
                 release_date=change_air_format(result.get("release_date")),
                 media_type=MediaType.MOVIES.value,
-                media_name="Movies",
             )
 
-            # Get poster path
             poster_path = get(result, "poster_path", default=url_for("static", filename="covers/default.jpg"))
             media_data["poster_path"] = f"{self.POSTER_BASE_URL}{poster_path}"
 
-            # Change <original_name> if latin
             if is_latin(result.get("original_title")):
                 media_data["display_name"] = result.get("original_title")
 
-            # Append results
             movies_results.append(media_data)
 
         return movies_results
 
-    def _format_API_data(self, updating: bool = False):
-        """ Transform API data to dict """
-
+    def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.API_data, "title", default="Unknown"),
-            original_name=get(self.API_data, "original_title", default="Unknown"),
-            release_date=get(self.API_data, "release_date", default="Unknown"),
-            homepage=get(self.API_data, "homepage", default="Unknown"),
-            released=get(self.API_data, "status", default="Unknown"),
-            vote_average=get(self.API_data, "vote_average", default=0),
-            vote_count=get(self.API_data, "vote_count", default=0),
-            synopsis=get(self.API_data, "overview", default="Undefined"),
-            popularity=get(self.API_data, "popularity", default=0),
-            budget=get(self.API_data, "budget", default=0),
-            revenue=get(self.API_data, "revenue", default=0),
-            duration=get(self.API_data, "runtime", default=self.DURATION),
-            original_language=get(self.API_data, "original_language", default="Unknown"),
-            tagline=self.API_data.get("tagline"),
-            api_id=self.API_data.get("id"),
+            name=get(self.api_data, "title", default="Unknown"),
+            original_name=get(self.api_data, "original_title", default="Unknown"),
+            release_date=get(self.api_data, "release_date", default="Unknown"),
+            homepage=get(self.api_data, "homepage", default="Unknown"),
+            released=get(self.api_data, "status", default="Unknown"),
+            vote_average=get(self.api_data, "vote_average", default=0),
+            vote_count=get(self.api_data, "vote_count", default=0),
+            synopsis=get(self.api_data, "overview", default="Undefined"),
+            popularity=get(self.api_data, "popularity", default=0),
+            budget=get(self.api_data, "budget", default=0),
+            revenue=get(self.api_data, "revenue", default=0),
+            duration=get(self.api_data, "runtime", default=self.DURATION),
+            original_language=get(self.api_data, "original_language", default="Unknown"),
+            tagline=self.api_data.get("tagline"),
+            api_id=self.api_data.get("id"),
             director_name="Unknown",
             image_cover=self._get_media_cover(),
             last_api_update=datetime.utcnow(),
         )
 
-        # Fetch <director_name> from crew
-        all_crew = get(self.API_data, "credits", "crew", default=[])
+        all_crew = get(self.api_data, "credits", "crew", default=[])
         for crew in all_crew:
             if crew.get("job") == "Director":
                 self.media_details["director_name"] = get(crew, "name", default="Unknown")
                 break
 
-        # Add <actors_list>, and <genres_list>
         actors_list, genres_list = (self._get_actors(), self._get_genres()) if not updating else ([], [])
 
-        # Populate <all_data> attribute
         self.all_data = dict(
             media_data=self.media_details,
             genres_data=genres_list,
@@ -541,9 +472,7 @@ class ApiMovies(ApiTMDB):
         )
 
 
-class ApiGames(ApiData):
-    """ IGDB API class specifically for the Games """
-
+class ApiGames(ApiManager):
     GROUP = MediaType.GAMES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/games_covers/")
     POSTER_BASE_URL = "https://images.igdb.com/igdb/image/upload/t_1080p/"
@@ -551,13 +480,12 @@ class ApiGames(ApiData):
     CLIENT_IGDB = current_app.config["CLIENT_IGDB"]
     SECRET_IGDB = current_app.config["SECRET_IGDB"]
 
-    def __init__(self, API_id: int = None):
-        super().__init__(API_id)
+    def __init__(self, api_id: int = None):
+        super().__init__(api_id)
 
-        self.API_id = API_id
+        self.api_id = api_id
         self.query = []
 
-        # Create specific IGDB header
         self.headers = {
             "Client-ID": self.CLIENT_IGDB,
             "Authorization": f"Bearer {self.API_KEY}"
@@ -566,27 +494,22 @@ class ApiGames(ApiData):
     @sleep_and_retry
     @limits(calls=4, period=1)
     def search(self, query: str, page: int = 1):
-        """ Search game using the IGDB API """
-
-        # Request body
-        data = (f'fields id, name, cover.image_id, first_release_date, storyline; limit 10; offset {(page - 1) * 10}; '
-                f'search "{query}";')
+        data = (
+            f'fields id, name, cover.image_id, first_release_date, storyline; limit 10; '
+            f'offset {(page - 1) * self.RESULTS_PER_PAGE}; search "{query}";'
+        )
 
         response = self.call_api("https://api.igdb.com/v4/games", method="post", data=data, headers=self.headers)
 
-        # Populate attribute
-        self.API_data = {
+        self.api_data = {
             "results": json.loads(response.text),
             "total": int(response.headers.get("X-Count", 0))
         }
 
     def create_search_results(self) -> Dict:
-        """ Get generate search results """
-
-        # Check API results
         search_results = []
-        API_results = get(self.API_data, "results", default=[])
-        for result in API_results:
+        api_data = get(self.api_data, "results", default=[])
+        for result in api_data:
             if len(search_results) >= self.RESULTS_PER_PAGE:
                 break
 
@@ -607,41 +530,38 @@ class ApiGames(ApiData):
 
         data = dict(
             items=search_results,
-            total=self.API_data.get("total", 0),
-            pages=self.API_data.get("total", 0) // self.RESULTS_PER_PAGE,
+            total=self.api_data.get("total", 0),
+            pages=self.api_data.get("total", 0) // self.RESULTS_PER_PAGE,
         )
 
         return data
 
-    def _fetch_details_from_API(self):
-        """ Get details and credits data from IGDB API """
-
-        # Create body query for IGDB API
-        body = f"fields name, cover.image_id, collection.name, game_engines.name, game_modes.name, " \
-               f"platforms.name, genres.name, player_perspectives.name, total_rating, total_rating_count, " \
-               f"first_release_date, involved_companies.company.name, involved_companies.developer, " \
-               f"involved_companies.publisher, storyline, summary, themes.name, url, external_games.uid, " \
-               f"external_games.category; where id={self.API_id};"
+    def _fetch_details_from_api(self):
+        body = (
+            f"fields name, cover.image_id, collection.name, game_engines.name, game_modes.name, "
+            f"platforms.name, genres.name, player_perspectives.name, total_rating, total_rating_count, "
+            f"first_release_date, involved_companies.company.name, involved_companies.developer, "
+            f"involved_companies.publisher, storyline, summary, themes.name, url, external_games.uid, "
+            f"external_games.category; where id={self.api_id};"
+        )
 
         response = self.call_api("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
-        self.API_data = json.loads(response.text)[0]
+        self.api_data = json.loads(response.text)[0]
 
-    def _format_API_data(self, updating: bool = False):
-        """ Transform API data to dict to add to database """
-
+    def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.API_data, "name", default="Unknown"),
-            release_date=get(self.API_data, "first_release_date", default="Unknown"),
-            IGDB_url=get(self.API_data, "url", default="Unknown"),
-            vote_average=get(self.API_data, "total_rating", default=0),
-            vote_count=get(self.API_data, "total_rating_count", default=0),
-            synopsis=get(self.API_data, "summary", default="Undefined"),
-            storyline=get(self.API_data, "storyline", default="Undefined"),
-            collection_name=get(self.API_data, "collection", "name", default="Unknown"),
-            game_engine=get(self.API_data, "game_engines", 0, "name", default="Unknown"),
-            player_perspective=get(self.API_data, "player_perspectives", 0, "name", default="Unknown"),
-            game_modes=",".join([g["name"] for g in get(self.API_data, "game_modes", default=[{"name": "Unknown"}])]),
-            api_id=self.API_data.get("id"),
+            name=get(self.api_data, "name", default="Unknown"),
+            release_date=get(self.api_data, "first_release_date", default="Unknown"),
+            IGDB_url=get(self.api_data, "url", default="Unknown"),
+            vote_average=get(self.api_data, "total_rating", default=0),
+            vote_count=get(self.api_data, "total_rating_count", default=0),
+            synopsis=get(self.api_data, "summary", default="Undefined"),
+            storyline=get(self.api_data, "storyline", default="Undefined"),
+            collection_name=get(self.api_data, "collection", "name", default="Unknown"),
+            game_engine=get(self.api_data, "game_engines", 0, "name", default="Unknown"),
+            player_perspective=get(self.api_data, "player_perspectives", 0, "name", default="Unknown"),
+            game_modes=",".join([g["name"] for g in get(self.api_data, "game_modes", default=[{"name": "Unknown"}])]),
+            api_id=self.api_data.get("id"),
             last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             hltb_main_time=None,
@@ -649,19 +569,17 @@ class ApiGames(ApiData):
             hltb_total_complete_time=None,
         )
 
-        # Get HLTB times
         hltb_time = self._get_HLTB_time(self.media_details["name"])
         self.media_details["hltb_main_time"] = hltb_time["main"]
         self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
         self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
 
-        # Add companies, genres + themes, and platforms
         companies_list, fusion_list, platforms_list = [], [], []
         if not updating:
-            platforms = get(self.API_data, "platforms", default=[{"name": "Unknown"}])
+            platforms = get(self.api_data, "platforms", default=[{"name": "Unknown"}])
             platforms_list = [{"name": pf["name"]} for pf in platforms]
 
-            companies = get(self.API_data, "involved_companies",
+            companies = get(self.api_data, "involved_companies",
                             default=[{"company": {"name": "Unknown"}, "publisher": True, "developer": True}])
             companies_list = [{
                 "name": company["company"]["name"],
@@ -669,15 +587,14 @@ class ApiGames(ApiData):
                 "developer": company["developer"],
             } for company in companies]
 
-            genres = get(self.API_data, "genres", default=[{"name": "Unknown"}])
+            genres = get(self.api_data, "genres", default=[{"name": "Unknown"}])
             genres_list = [{"genre": genre["name"]} for genre in genres]
 
-            themes = get(self.API_data, "themes", default=[{"name": "Unknown"}])
+            themes = get(self.api_data, "themes", default=[{"name": "Unknown"}])
             themes_list = [{"genre": theme["name"]} for theme in themes]
 
             fusion_list = genres_list + themes_list or [{"genre": "Unknown"}]
 
-            # Rename some genres/themes
             genre_mapping = {
                 "4X (explore, expand, exploit, and exterminate)": "4X",
                 "Hack and slash/Beat 'em up": "Hack and Slash",
@@ -696,9 +613,6 @@ class ApiGames(ApiData):
         )
 
     def _save_api_cover(self, cover_path: str, cover_name: str):
-        """ Save game cover using the IGDB API """
-
-        # Create specific header
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) "
                           "Chrome/23.0.1271.64 Safari/537.11",
@@ -709,23 +623,18 @@ class ApiGames(ApiData):
             "Connection": "keep-alive",
         }
 
-        # Create request
         request_ = request.Request(url=f"{self.POSTER_BASE_URL}{cover_path}.jpg", headers=headers)
 
-        # Fetch response
         with request.urlopen(request_) as response:
             image_data = response.read()
 
-        # Open image from binary data
         with Image.open(BytesIO(image_data)) as img:
             img_resized = img.resize((300, 450), resample=Image.Resampling.LANCZOS)
             img_resized.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
 
     def _get_media_cover(self) -> str:
-        """ Get the game cover """
-
         cover_name = "default.jpg"
-        cover_path = self.API_data.get("cover")["image_id"] or None
+        cover_path = self.api_data.get("cover")["image_id"] or None
         if cover_path:
             cover_name = f"{secrets.token_hex(12)}.jpg"
             try:
@@ -736,14 +645,16 @@ class ApiGames(ApiData):
 
         return cover_name
 
-    def update_API_key(self):
+    def update_api_key(self):
         """ Update IGDB API key every month. Backend needs to restart to update the env variable. """
 
         import dotenv
 
         try:
-            response = self.call_api(f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
-                                     f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", method="post")
+            response = self.call_api(
+                f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
+                f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", method="post"
+            )
             data = json.loads(response.text)
             new_IGDB_token = data.get("access_token")
 
@@ -758,7 +669,7 @@ class ApiGames(ApiData):
             current_app.logger.error(f"[ERROR] - An error occurred obtaining the new IGDB API key: {ex}")
 
     def get_changed_api_ids(self) -> List:
-        model = ModelsFetcher.get_unique_model(self.GROUP, ModelTypes.MEDIA)
+        model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         all_games = model.query.all()
         api_ids_to_refresh = []
@@ -773,8 +684,6 @@ class ApiGames(ApiData):
 
     @staticmethod
     def _get_HLTB_time(game_name: str) -> Dict:
-        """ Fetch HLTB time using HowLongToBeat scraping API """
-
         games_list = HowLongToBeat().search(game_name.lower(), similarity_case_sensitive=False)
 
         main, extra, completionist = None, None, None
@@ -784,50 +693,36 @@ class ApiGames(ApiData):
             extra = game.main_extra
             completionist = game.completionist
 
-        data = dict(
-            main=main,
-            extra=extra,
-            completionist=completionist,
-        )
-
-        return data
+        return dict(main=main, extra=extra, completionist=completionist)
 
 
-class ApiBooks(ApiData):
-    """ Google Books API class specifically for the Books """
-
+class ApiBooks(ApiManager):
     GROUP = MediaType.BOOKS
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/books_covers/")
     DEFAULT_PAGES = 50
 
-    def __init__(self, API_id: int = None):
-        super().__init__(API_id)
+    def __init__(self, api_id: int = None):
+        super().__init__(api_id)
 
         self.query = []
-        self.API_id = API_id
+        self.api_id = api_id
 
     @sleep_and_retry
     @limits(calls=2, period=1)
     def search(self, query: str, page: int = 1):
-        """ Search a book using the Google Books API. """
-
-        offset = (page - 1) * 10
+        offset = (page - 1) * self.RESULTS_PER_PAGE
         response = self.call_api(f"https://www.googleapis.com/books/v1/volumes?q={query}&startIndex={offset}")
-        self.API_data = json.loads(response.text)
+        self.api_data = json.loads(response.text)
 
     @sleep_and_retry
     @limits(calls=2, period=1)
-    def _fetch_details_from_API(self):
-        """ Get details and credits for books """
-
-        response = self.call_api(f"https://www.googleapis.com/books/v1/volumes/{self.API_id}")
-        self.API_data = json.loads(response.text)["volumeInfo"]
+    def _fetch_details_from_api(self):
+        response = self.call_api(f"https://www.googleapis.com/books/v1/volumes/{self.api_id}")
+        self.api_data = json.loads(response.text)["volumeInfo"]
 
     def create_search_results(self) -> Dict:
-        """ Create the search list """
-
         media_results = []
-        results = get(self.API_data, "items", default=[])
+        results = get(self.api_data, "items", default=[])
         for result in results:
             info = result["volumeInfo"]
             media_details = dict(
@@ -843,37 +738,27 @@ class ApiBooks(ApiData):
             # Append data
             media_results.append(media_details)
 
-        total = get(self.API_data, "totalItems", default=0)
+        total = get(self.api_data, "totalItems", default=0)
         pages = total // self.RESULTS_PER_PAGE
 
-        data = dict(
-            items=media_results,
-            total=total,
-            pages=pages,
-        )
+        return dict(items=media_results, total=total, pages=pages)
 
-        return data
-
-    def _format_API_data(self, updating: bool = False):
-        """ Transform API data to dict to add to local database """
-
+    def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            api_id=self.API_id,
-            name=get(self.API_data, "title", default="Unknown"),
-            pages=get(self.API_data, "pageCount", default=self.DEFAULT_PAGES),
-            publishers=get(self.API_data, "publisher", default="Unknown"),
-            synopsis=clean_html_text(get(self.API_data, "description", default="Unknown")),
-            language=get(self.API_data, "language", default="Unknown"),
-            release_date=change_air_format(self.API_data.get("publishedDate"), books=True),
+            api_id=self.api_id,
+            name=get(self.api_data, "title", default="Unknown"),
+            pages=get(self.api_data, "pageCount", default=self.DEFAULT_PAGES),
+            publishers=get(self.api_data, "publisher", default="Unknown"),
+            synopsis=clean_html_text(get(self.api_data, "description", default="Unknown")),
+            language=get(self.api_data, "language", default="Unknown"),
+            release_date=change_air_format(self.api_data.get("publishedDate"), books=True),
             image_cover=self._get_media_cover(),
             lock_status=True
         )
 
-        # Get authors
-        authors = get(self.API_data, "authors", default=["Unknown"])
+        authors = get(self.api_data, "authors", default=["Unknown"])
         authors_list = [{"name": author} for author in authors]
 
-        # Populate instance attribute
         self.all_data = dict(
             media_data=self.media_details,
             genres_data=[{"genre": "Unknown"}],
@@ -881,48 +766,21 @@ class ApiBooks(ApiData):
         )
 
     def _save_api_cover(self, cover_path: str, cover_name: str):
-        """ Save API book cover to the local disk """
-
-        # Retrieve cover
         request.urlretrieve(f"{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
-
-        # Resize and save with PIL
         img = Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}")
         img = img.resize((300, 450), Image.Resampling.LANCZOS)
         img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
 
     def _get_media_cover(self) -> str:
-        """ Get media cover, from Google Books API or using Google Image script in /static """
-
-        cover_name = f"{secrets.token_hex(12)}.jpg"
+        cover_name = f"{secrets.token_hex(16)}.jpg"
         try:
-            cover_url = get(self.API_data, "imageLinks", "medium")
+            cover_url = get(self.api_data, "imageLinks", "medium")
             self._save_api_cover(cover_url, cover_name)
         except:
             try:
-                cover_url = get(self.API_data, "imageLinks", "large")
+                cover_url = get(self.api_data, "imageLinks", "large")
                 self._save_api_cover(cover_url, cover_name)
             except:
-                from backend.api.static.books_img_ddl.books import GoogleImages
-
-                book_image_ddl = GoogleImages()
-
-                arguments = dict(
-                    keywords=f"cover {self.API_data['title']} {self.API_data['authors'][0]}",
-                    output_directory=str(self.LOCAL_COVER_PATH),
-                    size="medium",
-                )
-
-                try:
-                    all_paths = book_image_ddl.download(arguments)
-                    path = all_paths[0]["image"][-1]
-
-                    img = Image.open(path)
-                    img = img.resize((300, 450), Image.Resampling.LANCZOS)
-                    img.save(path)
-
-                    cover_name = os.path.basename(path)
-                except:
-                    cover_name = "default.jpg"
+                cover_name = "default.jpg"
 
         return cover_name

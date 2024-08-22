@@ -82,7 +82,7 @@ def _create_first_db_data():
     """ Create all DB tables the first time and add the first data to the DB """
 
     from backend.api.models.user_models import User
-    from backend.api.utils.cli_tasks import compute_media_time_spent
+    from backend.cli.tasks import compute_media_time_spent
     from backend.api.models.utils_models import Ranks, Frames
 
     # Create all DB tables - does not update existing tables
@@ -132,7 +132,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
             _create_app_logger(app)
             _create_mail_handler(app)
 
-        from backend.api.utils.cli_cmds import cli_commands
+        from backend.cli.commands import cli_commands
         cli_commands()
 
         return app
