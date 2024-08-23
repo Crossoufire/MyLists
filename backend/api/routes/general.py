@@ -3,7 +3,7 @@ from sqlalchemy import desc, func
 from backend.api import cache, db
 from backend.api.managers.ApiManager import ApiSeries, MoviesApiManager
 from backend.api.models.user import User
-from backend.api.models.mixins import Ranks, MyListsStats, Frames
+from backend.api.models.mixins import MyListsStats
 from backend.api.routes.handlers import token_auth
 from backend.api.utils.enums import RoleType
 from backend.api.utils.functions import display_time, compute_level
@@ -41,10 +41,8 @@ def current_trends():
 @general.route("/hall_of_fame", methods=["GET"])
 @token_auth.login_required
 def hall_of_fame():
-    """ Hall of Fame information for all users """
-
-    search_term = request.args.get("search", type=str)
     page = request.args.get("page", 1, type=int)
+    search = request.args.get("search", type=str)
     sorting = request.args.get("sorting", "profile", type=str)
 
     ranking = User.profile_level.desc() if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
@@ -53,13 +51,11 @@ def hall_of_fame():
 
     users_data = (
         db.session.query(User)
-        .join(ranked_users, User.id == ranked_users.c.id)
         .with_entities(User, ranked_users.c.rank)
-        .filter(User.username.ilike(f"%{search_term}%"), User.role != RoleType.ADMIN, User.active == True)
+        .join(ranked_users, User.id == ranked_users.c.id)
+        .filter(User.username.ilike(f"%{search}%"), User.role != RoleType.ADMIN, User.active.is_(True))
         .paginate(page=page, per_page=10, error_out=True)
     )
-
-    all_grades = Ranks.query.all()
 
     users_serialized = []
     for user, rank_value in users_data:
@@ -69,10 +65,6 @@ def hall_of_fame():
             time_in_minutes = getattr(user, f"time_spent_{media_type.value}")
             media_level = int(f"{compute_level(time_in_minutes):.2f}".split(".")[0])
             user_dict[f"{media_type.value}_level"] = media_level
-            for grade in all_grades[::-1]:
-                if media_level > 149 or media_level == grade.level:
-                    user_dict[f"{media_type.value}_image"] = grade.image
-                    break
 
         users_serialized.append(user_dict)
 
@@ -89,38 +81,21 @@ def hall_of_fame():
 @general.route("/mylists_stats", methods=["GET"])
 @token_auth.login_required
 def mylists_stats():
-    """ Get global MyLists stats. Actualized every day at 3:00 AM UTC+1 """
-
     data = MyListsStats.get_all_stats()
     data["total_time"]["total"] = display_time(data["total_time"]["total"])
-
-    return jsonify(data=data), 200
-
-
-@general.route("/levels/media_levels", methods=["GET"])
-def media_levels():
-    """ Fetch all the media levels """
-
-    data = [{
-        "level": rank.level,
-        "image": url_for("static", filename=f"/img/media_levels/{rank.image_id}.png"),
-        "name": rank.name,
-    } for rank in Ranks.query.filter_by(type="media_rank\n").all()]
-
     return jsonify(data=data), 200
 
 
 @general.route("/levels/profile_borders", methods=["GET"])
 def profile_borders():
-    """ Fetch all the profile borders """
-
     data = []
-    for border in Frames.query.all():
-        prefix, numeric_part = border.image_id.split("_")
-        image_id = f"{prefix}_{int(numeric_part):d}"
+    num_borders = 40
+
+    for i in range(1, num_borders + 1):
+        image_id = f"border_{i}.png"
         data.append({
-            "level": border.level,
-            "image": url_for("static", filename=f"/img/profile_borders/{image_id}.png"),
+            "level": i,
+            "image": url_for("static", filename=f"img/profile_borders/{image_id}")
         })
 
     return jsonify(data=data), 200

@@ -76,14 +76,8 @@ def create_mail_handler(app: Flask):
 
 def create_first_db_data():
     from backend.cli.tasks import compute_media_time_spent
-    from backend.api.models.mixins import Ranks, Frames
-
     db.create_all()
-
-    Ranks.update_db_ranks()
-    Frames.update_db_frames()
     compute_media_time_spent()
-
     db.session.commit()
 
 

@@ -136,3 +136,24 @@ export const sliceIntoParts = (arr, n) => {
 
     return result;
 };
+
+export const getLevelColor = (intLevel) => {
+    const customPower = (x, p) => Math.pow(x, p);
+    const normalizedLevel = customPower(intLevel / 350, 0.75);
+
+    if (normalizedLevel <= 0.2) {
+        return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
+    }
+    else if (normalizedLevel <= 0.4) {
+        return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
+    }
+    else if (normalizedLevel <= 0.6) {
+        return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
+    }
+    else if (normalizedLevel <= 0.8) {
+        return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
+    }
+    else {
+        return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
+    }
+};

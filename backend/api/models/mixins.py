@@ -1,14 +1,13 @@
 import json
 from datetime import datetime
-from pathlib import Path
 from typing import Dict, List
-from flask import url_for, current_app
+from flask import url_for
 from sqlalchemy import desc, asc, func, or_
 from backend.api import db
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import safe_div, change_air_format
-from backend.api.managers.ModelsManager import ModelsManager
 
 
 """ --- MIXIN MODELS ----------------------------------------------------------------------------------- """
@@ -150,7 +149,7 @@ class MediaListMixin:
         rating = cls.feeling if user.add_feeling else cls.score
 
         # Query to calculate media rating for given user_id
-        media_ratings = db.session.query(func.count(rating), func.count(cls.media_id), func.sum(rating))\
+        media_ratings = db.session.query(func.count(rating), func.count(cls.media_id), func.sum(rating)) \
             .filter(cls.user_id == user.id).all()
 
         # Calculate percentage scored and mean metric value
@@ -269,92 +268,6 @@ class SearchableMixin:
 
 
 """ --- OTHER MODELS ----------------------------------------------------------------------------------- """
-
-
-class Ranks(db.Model):
-    GROUP = "Other"
-
-    id = db.Column(db.Integer, primary_key=True)
-    level = db.Column(db.Integer, nullable=False)
-    image_id = db.Column(db.String(50), nullable=False)
-    name = db.Column(db.String(50), nullable=False)
-    type = db.Column(db.String(50))
-
-    @property
-    def image(self) -> str:
-        return url_for("static", filename=f"img/media_levels/{self.image_id}.png")
-
-    @classmethod
-    def update_db_ranks(cls):
-        list_all_ranks = []
-        path = Path(current_app.root_path, "static/csv_data/media_levels.csv")
-        with open(path) as fp:
-            for line in fp:
-                list_all_ranks.append(line.split(","))
-
-        if not list_all_ranks:
-            return
-
-        if cls.query.count() == 0:
-            db.session.add_all([cls(level=int(rk[0]), image_id=rk[1], name=rk[2]) for rk in list_all_ranks[1:]])
-        else:
-            ranks = cls.query.order_by(cls.id).all()
-
-            # -1 is removing header
-            for i in range(min(len(ranks), len(list_all_ranks) - 1)):
-                ranks[i].level = int(list_all_ranks[i + 1][0])
-                ranks[i].image_id = list_all_ranks[i + 1][1]
-                ranks[i].name = list_all_ranks[i + 1][2]
-
-            if len(list_all_ranks) > len(ranks) + 1:
-                db.session.add_all([
-                    cls(
-                        level=int(rk[0]),
-                        image_id=rk[1],
-                        name=rk[2]
-                    ) for rk in list_all_ranks[len(ranks) + 1:]
-                ])
-
-        db.session.commit()
-
-
-class Frames(db.Model):
-    GROUP = "Other"
-
-    id = db.Column(db.Integer, primary_key=True)
-    level = db.Column(db.Integer, nullable=False)
-    image_id = db.Column(db.String(50), nullable=False)
-
-    @classmethod
-    def update_db_frames(cls):
-        list_all_frames = []
-        path = Path(current_app.root_path, "static/csv_data/profile_borders.csv")
-        with open(path) as fp:
-            for line in fp:
-                list_all_frames.append(line.split(";"))
-
-        if not list_all_frames:
-            return
-
-        if cls.query.count() == 0:
-            db.session.add_all([cls(level=int(frame[0]), image_id=frame[1]) for frame in list_all_frames[1:]])
-        else:
-            frames = cls.query.order_by(cls.id).all()
-
-            # -1 is for header
-            for i in range(min(len(frames), len(list_all_frames) - 1)):
-                frames[i].level = int(list_all_frames[i + 1][0])
-                frames[i].image_id = list_all_frames[i + 1][1]
-
-            if len(list_all_frames) > len(frames) + 1:
-                db.session.add_all([
-                    cls(
-                        level=int(frame[0]),
-                        image_id=frame[1]
-                    ) for frame in list_all_frames[len(frames) + 1:]
-                ])
-
-        db.session.commit()
 
 
 class MyListsStats(db.Model):

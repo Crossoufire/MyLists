@@ -149,18 +149,14 @@ class User(db.Model):
 
     @property
     def profile_image(self) -> str:
-        """ Return the profile image url """
         return url_for("static", filename=f"profile_pics/{self.image_file}")
 
     @property
     def back_image(self) -> str:
-        """ Return the background image url """
         return url_for("static", filename=f"background_pics/{self.background_image}")
 
     @property
     def profile_border(self) -> str:
-        """ Get the profile border based on the profile level """
-
         profile_border = "border_40.png"
         profile_border_level = (self.profile_level // 8) + 1
         if profile_border_level < 40:
@@ -186,8 +182,6 @@ class User(db.Model):
     # noinspection PyMethodParameters
     @profile_level.expression
     def profile_level(cls) -> int:
-        """ Return the user's profile level as an SQLAlchemy query """
-
         total_time = cls.time_spent_series + cls.time_spent_movies
         total_time = case(*[(cls.add_anime, total_time + cls.time_spent_anime)], else_=total_time)
         total_time = case(*[(cls.add_books, total_time + cls.time_spent_books)], else_=total_time)
@@ -363,26 +357,16 @@ class User(db.Model):
         return media_dict
 
     def get_list_levels(self) -> List[Dict]:
-        from backend.api.models.mixins import Ranks
-
         models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
-        all_ranks = {rank.level: {"image": rank.image, "name": rank.name} for rank in Ranks.query.all()}
 
         level_per_ml = []
-        for i, ml in enumerate(models):
+        for ml in models:
             time_in_min = getattr(self, f"time_spent_{ml.GROUP.value}")
 
-            level, level_percent = map(float, divmod(compute_level(time_in_min), 1))
-            level_percent *= 100
-            rank_info = all_ranks.get(min(level, 149))
-
-            level_per_ml.append({
-                "media_type": ml.GROUP.value,
-                "level": level,
-                "level_percent": level_percent,
-                "rank_image": rank_info["image"],
-                "rank_name": rank_info["name"],
-            })
+            level_per_ml.append(dict(
+                media_type=ml.GROUP.value,
+                level=compute_level(time_in_min),
+            ))
 
         return level_per_ml
 

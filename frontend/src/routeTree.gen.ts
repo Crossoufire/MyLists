@@ -29,7 +29,6 @@ import { Route as PrivateGlobalstatsImport } from './routes/_private/global_stat
 import { Route as PrivateComingnextImport } from './routes/_private/coming_next'
 import { Route as PrivateAdminIndexImport } from './routes/_private/admin/index'
 import { Route as UniversalLevelsProfilelevelsImport } from './routes/_universal/levels.profile_levels'
-import { Route as UniversalLevelsMedialevelsImport } from './routes/_universal/levels.media_levels'
 import { Route as PrivateAdminDashboardImport } from './routes/_private/admin/dashboard'
 import { Route as PublicOauth2ProviderCallbackImport } from './routes/_public/oauth2.$provider.callback'
 import { Route as PrivateStatsMediaTypeUsernameImport } from './routes/_private/stats/$mediaType.$username'
@@ -136,13 +135,6 @@ const UniversalLevelsProfilelevelsRoute =
     path: '/levels/profile_levels',
     getParentRoute: () => UniversalRoute,
   } as any)
-
-const UniversalLevelsMedialevelsRoute = UniversalLevelsMedialevelsImport.update(
-  {
-    path: '/levels/media_levels',
-    getParentRoute: () => UniversalRoute,
-  } as any,
-)
 
 const PrivateAdminDashboardRoute = PrivateAdminDashboardImport.update({
   path: '/admin/dashboard',
@@ -324,13 +316,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateAdminDashboardImport
       parentRoute: typeof PrivateImport
     }
-    '/_universal/levels/media_levels': {
-      id: '/_universal/levels/media_levels'
-      path: '/levels/media_levels'
-      fullPath: '/levels/media_levels'
-      preLoaderRoute: typeof UniversalLevelsMedialevelsImport
-      parentRoute: typeof UniversalImport
-    }
     '/_universal/levels/profile_levels': {
       id: '/_universal/levels/profile_levels'
       path: '/levels/profile_levels'
@@ -468,7 +453,6 @@ export const routeTree = rootRoute.addChildren({
   UniversalRoute: UniversalRoute.addChildren({
     UniversalAboutRoute,
     UniversalPrivacypolicyRoute,
-    UniversalLevelsMedialevelsRoute,
     UniversalLevelsProfilelevelsRoute,
   }),
 })
@@ -519,7 +503,6 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/_universal/about",
         "/_universal/privacy_policy",
-        "/_universal/levels/media_levels",
         "/_universal/levels/profile_levels"
       ]
     },
@@ -570,10 +553,6 @@ export const routeTree = rootRoute.addChildren({
     "/_private/admin/dashboard": {
       "filePath": "_private/admin/dashboard.jsx",
       "parent": "/_private"
-    },
-    "/_universal/levels/media_levels": {
-      "filePath": "_universal/levels.media_levels.jsx",
-      "parent": "/_universal"
     },
     "/_universal/levels/profile_levels": {
       "filePath": "_universal/levels.profile_levels.jsx",

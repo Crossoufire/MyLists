@@ -38,7 +38,6 @@ class BaseTest(unittest.TestCase):
         db.create_all()
 
         from backend.api.models.user import User
-        from backend.api.models.mixins import Ranks
 
         self.user = User(
             username=TEST_USER["username"],
@@ -52,8 +51,6 @@ class BaseTest(unittest.TestCase):
 
         db.session.add(self.user)
         db.session.commit()
-
-        Ranks.update_db_ranks()
 
         self.client = self.app.test_client()
 

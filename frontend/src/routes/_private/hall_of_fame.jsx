@@ -3,14 +3,15 @@ import {useState} from "react";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {api, userClient} from "@/api/MyApiClient";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
+import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 
 
@@ -89,8 +90,8 @@ function HallOfFamePage() {
                         <Input
                             value={search}
                             onChange={onSearchChange}
-                            placeholder="Search by username"
                             className="rounded-md w-56"
+                            placeholder="Search by username"
                         />
                         {search && <Button className="ml-3" size="sm" onClick={resetSearch}>Cancel</Button>}
                     </div>
@@ -110,7 +111,9 @@ function HallOfFamePage() {
                         </Select>
                     </div>
                 </div>
-                {users.data.map(item => <HoFCard key={item.username} item={item}/>)}
+                {users.data.map(item =>
+                    <HoFCard key={item.username} item={item}/>
+                )}
                 <Pagination
                     currentPage={users.page}
                     totalPages={users.totalPages}
@@ -127,7 +130,7 @@ const HoFCard = ({ item }) => {
 
     return (
         <Card key={item.username} className={cn("p-2 mb-5 bg-card", currentUser?.id === item.id && "bg-teal-950")}>
-            <CardContent className="p-0">
+            <CardContent className="max-sm:py-5 p-0">
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 md:col-span-1">
                         <div className="flex items-center justify-center text-lg h-full font-medium">
@@ -176,16 +179,15 @@ const ListItem = ({ item, mediaType }) => {
     const checkDisabled = item.hasOwnProperty(`add_${mediaType}`) ? item[`add_${mediaType}`] === true : true;
 
     return (
-        <div className="flex flex-col justify-evenly items-center h-full">
+        <div className="flex flex-col justify-evenly items-center gap-3">
             <div>{capitalize(mediaType)}</div>
-            {checkDisabled ?
-                <Link to={`/list/${mediaType}/${item.username}`}>
-                    <div className="mb-1"><img src={item[`${mediaType}_image`]} alt={`${mediaType}-grade`} /></div>
-                    <div>{item[`${mediaType}_level`]}</div>
-                </Link>
-                :
-                <div className="flex content-center items-center h-[68px]">Disabled</div>
-            }
+            <Link to={`/list/${mediaType}/${item.username}`} disabled={!checkDisabled}>
+                <MediaLevelCircle
+                    isActive={checkDisabled}
+                    className={"w-[40px] h-[40px]"}
+                    intLevel={item[`${mediaType}_level`]}
+                />
+            </Link>
         </div>
     );
 };

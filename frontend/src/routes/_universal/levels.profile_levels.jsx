@@ -26,9 +26,9 @@ function ProfileLevelsPage() {
                     <div key={idx} className="col-span-6 md:col-span-4 lg:col-span-3 xl:col-span-2">
                         <div className="bg-card rounded-md flex flex-col justify-center items-center p-2">
                             <img
+                                alt={border.level}
                                 src={border.image}
                                 className="w-44 h-44 max-sm:w-40 max-sm:h-36"
-                                alt={border.name}
                             />
                             <BorderCalculus
                                 border={border}
