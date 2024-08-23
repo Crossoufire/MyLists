@@ -1,5 +1,5 @@
+import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
-import {createLocalDate} from "@/lib/utils";
 import {Separator} from "@/components/ui/separator";
 import {Payload} from "@/components/app/base/Payload";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
@@ -22,7 +22,7 @@ export const UserUpdate = ({ mediaId, username, mediaType, mediaName, payload, d
                     </Link>
                     <Payload payload={payload}/>
                     <div className="text-sm text-neutral-400">
-                        {createLocalDate(date_)}
+                        {formatDateTime(date_, { includeTime: true, useLocalTz: true })}
                         {username &&
                             <> by <Link to={`/profile/${username}`} className="text-blue-500">{username}</Link></>
                         }

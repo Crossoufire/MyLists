@@ -1,5 +1,5 @@
 import {FaStar} from "react-icons/fa";
-import {formatTime} from "@/lib/utils";
+import {formatDateTime, formatMinutes} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
@@ -24,13 +24,13 @@ export const MoviesDetails = ({ mediaType, mediaData }) => (
                     />
                     <GenericDetails
                         name="Release date"
-                        value={mediaData.formatted_date}
+                        value={formatDateTime(mediaData.release_date)}
                     />
                 </div>
                 <div className="flex flex-col gap-y-4">
                     <GenericDetails
                         name="Runtime"
-                        value={formatTime(mediaData.duration) + " min"}
+                        value={formatMinutes(mediaData.duration, { format: "hm" })}
                     />
                     <GenericDetails
                         name="Budget"

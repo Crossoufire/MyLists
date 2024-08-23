@@ -1,4 +1,5 @@
 """
+Added `show_update_modal` column to `User` table
 Revision ID: 1020f7fe78a5
 Revises: f933b1d35ca3
 Create Date: 2024-06-28 15:25:00.708510
@@ -7,7 +8,6 @@ from alembic import op
 import sqlalchemy as sa
 
 
-# Revision identifiers used by Alembic
 revision = "1020f7fe78a5"
 down_revision = "f933b1d35ca3"
 branch_labels = None

@@ -17,32 +17,6 @@ export const capitalize = (str) => {
     return str;
 };
 
-export const createLocalDate = (date_, addYear = false, addHours = true) => {
-    if (!date_) return "";
-
-    const d = new Date(date_);
-    const tz = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const localDate = d.toLocaleString("en-GB", { timeZone: tz });
-    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const hours = addHours ? `at ${localDate.slice(11, 17)}` : "";
-    const year = addYear ? d.getFullYear() : (new Date().getFullYear() === d.getFullYear() ? "" : d.getFullYear());
-
-    return `${localDate.slice(0, 2)} ${month[d.getMonth()]} ${year} ${hours}`;
-};
-
-export const formatTime = (timeInMinutes, onlyHours) => {
-    if (isNaN(timeInMinutes)) return "--";
-
-    let hours = Math.floor(timeInMinutes / 60);
-    let minutes = timeInMinutes % 60;
-
-    if (onlyHours) {
-        return `${String(hours).padStart(2, "0")} h`;
-    }
-
-    return `${String(hours).padStart(2, "0")} h ${String(Math.floor(minutes)).padStart(2, "0")}`;
-};
-
 export const getScoreValues = () => {
     return [null, 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 };
@@ -156,4 +130,71 @@ export const getLevelColor = (intLevel) => {
     else {
         return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
     }
+};
+
+
+// --- Time Formatting -------------------------------------------------------------------------------------
+
+
+export const formatMinutes = (minutes, options = {}) => {
+    if (isNaN(minutes) || !minutes) {
+        return "--";
+    }
+
+    const conversions = {
+        hours: 60,
+        days: 1440,
+    };
+
+    if (options.to && conversions[options.to]) {
+        const divisor = conversions[options.to];
+        const result = minutes / divisor;
+        return options.asInt ? Math.floor(result) : result;
+    }
+
+    if (options.format === "hm") {
+        let hours = Math.floor(minutes / 60);
+        let remainingMinutes = minutes % 60;
+
+        if (options.onlyHours) {
+            return `${String(hours).padStart(2, "0")} h`;
+        }
+
+        return `${String(hours).padStart(2, "0")} h ${String(Math.floor(remainingMinutes)).padStart(2, "0")}`;
+    }
+
+    return minutes;
+};
+
+export const formatDateTime = (dateInput, options = {}) => {
+    if (!dateInput) {
+        return "Undefined";
+    }
+
+    let date;
+    if (typeof dateInput === "number" && dateInput.toString().length === 10) {
+        date = new Date(dateInput * 1000);
+    } else {
+        date = new Date(dateInput);
+    }
+
+    if (isNaN(date.getTime())) {
+        return "Undefined";
+    }
+
+    const formatOptions = {
+        timeZone: options.useLocalTz ? new Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
+        year: "numeric",
+        month: options.onlyYear ? undefined : "short",
+        day: options.onlyYear ? undefined : "numeric",
+        hour: options.includeTime ? "numeric" : undefined,
+        minute: options.includeTime ? "numeric" : undefined,
+        hour12: false,
+    };
+
+    if (options.onlyYear) {
+        return date.toLocaleString("en-En", { timeZone: formatOptions.timeZone, year: "numeric" });
+    }
+
+    return new Intl.DateTimeFormat("en-En", formatOptions).format(date);
 };

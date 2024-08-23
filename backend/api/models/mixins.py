@@ -7,7 +7,7 @@ from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.core.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
-from backend.api.utils.functions import safe_div, change_air_format
+from backend.api.utils.functions import safe_div
 
 
 """ --- MIXIN MODELS ----------------------------------------------------------------------------------- """
@@ -184,17 +184,13 @@ class MediaListMixin:
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
-        release_date = "first_air_date"
-        if cls.GROUP == MediaType.MOVIES:
-            release_date = "release_date"
-
         media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {
             "Title A-Z": media.name.asc(),
             "Title Z-A": media.name.desc(),
-            "Release Date +": desc(getattr(media, release_date)),
-            "Release Date -": asc(getattr(media, release_date)),
+            "Release Date +": media.release_date.desc(),
+            "Release Date -": media.release_date.asc(),
             "Score TMDB +": media.vote_average.desc(),
             "Score TMDB -": media.vote_average.asc(),
             "Comments": cls.comment.desc(),
@@ -207,29 +203,28 @@ class MediaListMixin:
 
     @classmethod
     def get_coming_next(cls) -> List[Dict]:
-        """ Fetch the next coming media for the current user. For Series/Anime/Movies. Overridden by Games.
-        Not possible for Books """
+        """ Fetch the next coming media for the current user. Not possible for Books """
 
         media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
-
-        media_date = "release_date"
-        if cls.GROUP in (MediaType.SERIES, MediaType.ANIME):
-            media_date = "next_episode_to_air"
+        media_date = "next_episode_to_air" if cls.GROUP in (MediaType.SERIES, MediaType.ANIME) else "release_date"
 
         next_media = (
             db.session.query(media).join(cls, media.id == cls.media_id)
-            .filter(getattr(media, media_date) > datetime.utcnow(), cls.user_id == current_user.id,
-                    cls.status.notin_([Status.DROPPED, Status.RANDOM]))
-            .order_by(getattr(media, media_date).asc()).all()
+            .filter(
+                getattr(media, media_date) > datetime.utcnow(),
+                cls.user_id == current_user.id,
+                cls.status.notin_([Status.DROPPED, Status.RANDOM]),
+            ).order_by(getattr(media, media_date))
+            .all()
         )
 
         data = [{
             "media_id": media.id,
             "media_name": media.name,
             "media_cover": media.media_cover,
-            "season_to_air": media.season_to_air if cls.GROUP != MediaType.MOVIES else None,
-            "episode_to_air": media.episode_to_air if cls.GROUP != MediaType.MOVIES else None,
-            "formatted_date": change_air_format(getattr(media, media_date)),
+            "date": getattr(media, media_date),
+            "season_to_air": media.season_to_air if cls.GROUP in (MediaType.SERIES, MediaType.ANIME) else None,
+            "episode_to_air": media.episode_to_air if cls.GROUP in (MediaType.SERIES, MediaType.ANIME) else None,
         } for media in next_media]
 
         return data
@@ -294,7 +289,6 @@ class MyListsStats(db.Model):
     total_seasons = db.Column(db.Text)
     total_movies = db.Column(db.Text)
     total_pages = db.Column(db.Integer, default=0)
-
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     @classmethod

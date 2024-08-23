@@ -1,16 +1,15 @@
 from __future__ import annotations
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
-from flask import abort, current_app, url_for
-from sqlalchemy import text, func, ColumnElement
+from flask import abort, current_app
+from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.core.handlers import current_user
 from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format
 
 
 class Games(MediaMixin, Media):
@@ -22,13 +21,11 @@ class Games(MediaMixin, Media):
     player_perspective = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
-    release_date = db.Column(db.String)
     storyline = db.Column(db.Text)
     IGDB_url = db.Column(db.String)
     hltb_main_time = db.Column(db.String)
     hltb_main_and_extra_time = db.Column(db.String)
     hltb_total_complete_time = db.Column(db.String)
-    last_api_update = db.Column(db.DateTime)
 
     # --- Relationships -----------------------------------------------------------
     genres = db.relationship("GamesGenre", back_populates="media", lazy="select")
@@ -44,7 +41,6 @@ class Games(MediaMixin, Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "formatted_date": change_air_format(self.release_date, games=True),
             "developers": [comp.name for comp in self.companies if comp.developer],
             "publishers": [comp.name for comp in self.companies if comp.publisher],
             "platforms": [r.name for r in self.platforms_rl],
@@ -113,25 +109,23 @@ class Games(MediaMixin, Media):
     @classmethod
     def get_new_releasing_media(cls):
         try:
-            raw_sql = text(f""" 
-                SELECT games.id, games_list.user_id, games.release_date, games.name FROM games 
-                JOIN games_list ON games.id = games_list.media_id
-                WHERE datetime(games.release_date, 'unixepoch') IS NOT NULL 
-                AND datetime(games.release_date, 'unixepoch') > datetime('now')
-                AND datetime(games.release_date, 'unixepoch') <= datetime('now', '+{cls.RELEASE_WINDOW} days'); 
-            """)
+            query = (
+                db.session.query(cls.id, GamesList.user_id, cls.release_date, cls.name)
+                .join(GamesList, cls.id == GamesList.media_id)
+                .filter(
+                    cls.release_date.is_not(None),
+                    cls.release_date > datetime.utcnow(),
+                    cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
+                ).all()
+            )
 
-            query = db.session.execute(raw_sql).all()
-
-            for info in query:
-                game_id, user_id, release_date, name = info
-                notif = Notifications.search(user_id, "gameslist", game_id)
+            for media_id, user_id, release_date, name in query:
+                notif = Notifications.search(user_id, "gameslist", media_id)
 
                 if notif is None:
-                    release_date = datetime.utcfromtimestamp(int(release_date)).strftime("%b %d %Y")
                     new_notification = Notifications(
                         user_id=user_id,
-                        media_id=game_id,
+                        media_id=media_id,
                         media_type="gameslist",
                         payload_json=json.dumps({"name": name, "release_date": release_date})
                     )
@@ -139,7 +133,7 @@ class Games(MediaMixin, Media):
 
             db.session.commit()
         except Exception as e:
-            current_app.logger.error(f"Error occurred while checking for new releasing game: {e}")
+            current_app.logger.error(f"Error occurred checking for new releasing game: {e}")
             db.session.rollback()
 
     @classmethod
@@ -200,34 +194,6 @@ class GamesList(MediaListMixin, MediaList):
             self.playtime = 0
 
         return self.playtime
-
-    @classmethod
-    def get_coming_next(cls) -> List[Dict]:
-        raw_sql = text(f""" 
-            SELECT
-                games.id,
-                games.name,
-                games.image_cover,
-                games.release_date            
-            FROM games 
-            JOIN games_list ON games.id = games_list.media_id
-            WHERE 
-                (games.release_date == 'Unknown' OR datetime(games.release_date, 'unixepoch') > datetime('now'))
-                AND games_list.status != 'DROPPED' 
-                AND games_list.user_id == {current_user.id}
-            ORDER BY games.release_date ASC;
-        """)
-
-        next_games = db.session.execute(raw_sql).all()
-
-        data = [{
-            "media_id": game[0],
-            "media_name": game[1],
-            "media_cover": url_for("static", filename=f"covers/games_covers/{game[2]}"),
-            "formatted_date": change_air_format(game[3], games=True)
-        } for game in next_games]
-
-        return data
 
     @classmethod
     def get_specific_total(cls, user_id: int):

@@ -136,8 +136,10 @@ def history(username: str):
     search = request.args.get("search", "")
     page = request.args.get("page", 1, type=int)
 
-    history_query = (user.last_updates.filter(UserLastUpdate.media_name.ilike(f"%{search}%"))
-                     .paginate(page=page, per_page=25))
+    history_query = (
+        user.last_updates.filter(UserLastUpdate.media_name.ilike(f"%{search}%"))
+        .paginate(page=page, per_page=25)
+    )
 
     data = dict(
         history=[hist_item.to_dict() for hist_item in history_query.items],

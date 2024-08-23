@@ -10,15 +10,17 @@ class Media(db.Model, SearchableMixin):
 
     TYPE: ModelTypes = ModelTypes.MEDIA
     LOCKING_DAYS: int = 180
-    RELEASE_WINDOW: int = 7
+    RELEASE_WINDOW: int = 999999
     SIMILAR_GENRES: int = 12
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     synopsis = db.Column(db.Text)
+    release_date = db.Column(db.String)
     image_cover = db.Column(db.String, nullable=False)
-    api_id = db.Column(db.Integer, nullable=False)
+    api_id = db.Column(db.String, nullable=False)
     lock_status = db.Column(db.Boolean, nullable=False, default=0)
+    last_api_update = db.Column(db.DateTime)
 
     @property
     def media_cover(self) -> str:

@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {api} from "@/api/MyApiClient";
 import {Fragment, useState} from "react";
-import {createLocalDate} from "@/lib/utils";
+import {formatDateTime} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
@@ -113,7 +113,9 @@ function AllUpdates() {
                                         </Link>
                                     </div>
                                     <div className="col-span-3"><Payload payload={item.update}/></div>
-                                    <div className="col-span-3">{createLocalDate(item.date, true)}</div>
+                                    <div className="col-span-3">
+                                        {formatDateTime(item.date, { includeTime: true, useLocalTz: true })}
+                                    </div>
                                 </div>
                                 <Separator/>
                             </Fragment>

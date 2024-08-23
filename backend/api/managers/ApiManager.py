@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import re
 import secrets
 from datetime import datetime
 from io import BytesIO
@@ -14,7 +15,7 @@ from ratelimit import sleep_and_retry, limits
 from requests import Response
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import change_air_format, clean_html_text, get, is_latin
+from backend.api.utils.functions import clean_html_text, get, is_latin, format_datetime
 from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
@@ -220,7 +221,7 @@ class TMDBApiManager(ApiManager):
     def _process_tv(result):
         media_info = dict(
             media_type=MediaType.SERIES.value,
-            date=change_air_format(result.get("first_air_date")),
+            date=result.get("first_air_date"),
             name=result.get("original_name") if is_latin(result.get("original_name")) else result.get("name")
         )
 
@@ -234,14 +235,11 @@ class TMDBApiManager(ApiManager):
 
     @staticmethod
     def _process_movie(result):
-        """ Process the Movie data from TMDB """
-
         media_info = dict(
             media_type=MediaType.MOVIES.value,
-            date=change_air_format(result.get("release_date")),
+            date=result.get("release_date"),
             name=result.get("original_title") if is_latin(result.get("original_title")) else result.get("title")
         )
-
         return media_info
 
 
@@ -252,8 +250,8 @@ class TVApiManager(TMDBApiManager):
         self.media_details = dict(
             name=get(self.api_data, "name", default="Unknown"),
             original_name=get(self.api_data, "original_name", default="Unknown"),
-            first_air_date=get(self.api_data, "first_air_date", default="Unknown"),
-            last_air_date=get(self.api_data, "last_air_date", default="Unknown"),
+            release_date=format_datetime(get(self.api_data, "first_air_date")),
+            last_air_date=format_datetime(get(self.api_data, "last_air_date")),
             homepage=get(self.api_data, "homepage", default="Unknown"),
             in_production=get(self.api_data, "in_production", default=False),
             total_seasons=get(self.api_data, "number_of_seasons", default=1),
@@ -274,14 +272,12 @@ class TVApiManager(TMDBApiManager):
             episode_to_air=None,
         )
 
-        # Add <next_episode_to_air>, <season_to_air>, and <episode_to_air>
         next_episode_to_air = self.api_data.get("next_episode_to_air")
         if next_episode_to_air:
-            self.media_details["next_episode_to_air"] = next_episode_to_air["air_date"]
+            self.media_details["next_episode_to_air"] = format_datetime(next_episode_to_air["air_date"])
             self.media_details["season_to_air"] = next_episode_to_air["season_number"]
             self.media_details["episode_to_air"] = next_episode_to_air["episode_number"]
 
-        # Add <seasons>
         seasons_list = []
         seasons = get(self.api_data, "seasons", default=[])
         for season in seasons:
@@ -290,7 +286,6 @@ class TVApiManager(TMDBApiManager):
         if not seasons_list:
             seasons_list.append({"season": 1, "episodes": 1})
 
-        # Add <networks>
         networks_list = []
         networks = get(self.api_data, "networks", default=[])
         for network in networks[:self.MAX_NETWORK]:
@@ -298,12 +293,10 @@ class TVApiManager(TMDBApiManager):
         if not networks_list:
             networks_list.append({"network": "Unknown"})
 
-        # Add <genres_list>, <actors_list> and <anime_genres_list>
         genres_list, actors_list, anime_genres_list = (
             self._get_genres(), self._get_actors(), self._get_anime_genres()
         ) if not updating else ([], [], [])
 
-        # Populate <all_data> attribute
         self.all_data = dict(
             media_data=self.media_details,
             seasons_data=seasons_list,
@@ -334,14 +327,12 @@ class TVApiManager(TMDBApiManager):
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
 
 
-class ApiSeries(TVApiManager):
+class ApiSeriesManager(TVApiManager):
     DURATION = 40
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
 
     def get_and_format_trending(self) -> List[Dict]:
-        """ Fetch and format <MAX_TRENDING> trending TV obtained from TMDB API """
-
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
         api_data = response.json()
         results = get(api_data, "results", default=[])
@@ -352,7 +343,7 @@ class ApiSeries(TVApiManager):
                 api_id=result.get("id"),
                 overview=get(result, "overview", default="Unknown"),
                 display_name=get(result, "name", default="Unknown"),
-                release_date=change_air_format(result.get("first_air_date")),
+                release_date=result.get("first_air_date"),
                 media_type=MediaType.SERIES.value,
             )
 
@@ -367,7 +358,7 @@ class ApiSeries(TVApiManager):
         return tv_results
 
 
-class ApiAnime(TVApiManager):
+class ApiAnimeManager(TVApiManager):
     DURATION = 24
     GROUP = MediaType.ANIME
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/anime_covers/")
@@ -409,8 +400,6 @@ class MoviesApiManager(TMDBApiManager):
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/movies_covers")
 
     def get_and_format_trending(self) -> List[Dict]:
-        """ Fetch and format <MAX_TRENDING> trending Series obtained from the TMDB API """
-
         response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
         api_data = response.json()
         results = get(api_data, "results", default=[])
@@ -421,7 +410,7 @@ class MoviesApiManager(TMDBApiManager):
                 api_id=result.get("id"),
                 overview=get(result, "overview", default="Unknown"),
                 display_name=get(result, "title", default="Unknown"),
-                release_date=change_air_format(result.get("release_date")),
+                release_date=result.get("release_date"),
                 media_type=MediaType.MOVIES.value,
             )
 
@@ -439,9 +428,8 @@ class MoviesApiManager(TMDBApiManager):
         self.media_details = dict(
             name=get(self.api_data, "title", default="Unknown"),
             original_name=get(self.api_data, "original_title", default="Unknown"),
-            release_date=get(self.api_data, "release_date", default="Unknown"),
+            release_date=format_datetime(get(self.api_data, "release_date")),
             homepage=get(self.api_data, "homepage", default="Unknown"),
-            released=get(self.api_data, "status", default="Unknown"),
             vote_average=get(self.api_data, "vote_average", default=0),
             vote_count=get(self.api_data, "vote_count", default=0),
             synopsis=get(self.api_data, "overview", default="Undefined"),
@@ -472,7 +460,7 @@ class MoviesApiManager(TMDBApiManager):
         )
 
 
-class ApiGames(ApiManager):
+class ApiGamesManager(ApiManager):
     GROUP = MediaType.GAMES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/games_covers/")
     POSTER_BASE_URL = "https://images.igdb.com/igdb/image/upload/t_1080p/"
@@ -517,7 +505,7 @@ class ApiGames(ApiManager):
                 api_id=result.get("id"),
                 name=get(result, "name", default="Unknown"),
                 image_cover=url_for("static", filename="covers/default.jpg"),
-                date=change_air_format(result.get("first_release_date"), games=True),
+                date=result.get("first_release_date"),
                 media_type=MediaType.GAMES.value,
             )
 
@@ -551,7 +539,7 @@ class ApiGames(ApiManager):
     def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "name", default="Unknown"),
-            release_date=get(self.api_data, "first_release_date", default="Unknown"),
+            release_date=format_datetime(get(self.api_data, "first_release_date")),
             IGDB_url=get(self.api_data, "url", default="Unknown"),
             vote_average=get(self.api_data, "total_rating", default=0),
             vote_count=get(self.api_data, "total_rating_count", default=0),
@@ -696,7 +684,7 @@ class ApiGames(ApiManager):
         return dict(main=main, extra=extra, completionist=completionist)
 
 
-class ApiBooks(ApiManager):
+class ApiBooksManager(ApiManager):
     GROUP = MediaType.BOOKS
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/books_covers/")
     DEFAULT_PAGES = 50
@@ -731,7 +719,7 @@ class ApiBooks(ApiManager):
                 author=get(info, "authors", 0, default="Unknown"),
                 image_cover=get(info, "imageLinks", "thumbnail",
                                 default=url_for("static", filename="/covers/default.jpg")),
-                date=change_air_format(info.get("publishedDate"), books=True),
+                date=info.get("publishedDate"),
                 media_type=MediaType.BOOKS.value,
             )
 
@@ -751,9 +739,10 @@ class ApiBooks(ApiManager):
             publishers=get(self.api_data, "publisher", default="Unknown"),
             synopsis=clean_html_text(get(self.api_data, "description", default="Unknown")),
             language=get(self.api_data, "language", default="Unknown"),
-            release_date=change_air_format(self.api_data.get("publishedDate"), books=True),
+            release_date=format_datetime(self.api_data.get("publishedDate")),
             image_cover=self._get_media_cover(),
-            lock_status=True
+            last_api_update=datetime.utcnow(),
+            lock_status=True,
         )
 
         authors = get(self.api_data, "authors", default=["Unknown"])

@@ -44,7 +44,7 @@ function MediaDetailsPage() {
 						<div className="flex items-center gap-4">
 							{apiData.media.name}
 						</div>
-						{(currentUser.role !== "user" && mediaType !== "books") &&
+						{currentUser.role !== "user" &&
 							<RefreshMedia
 								updateRefresh={refresh}
 								mutateData={mutateData}

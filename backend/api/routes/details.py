@@ -11,7 +11,7 @@ from backend.api.managers.ApiManager import ApiManager
 from backend.api.core.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
-from backend.api.utils.functions import get
+from backend.api.utils.functions import get, format_datetime
 from backend.api.managers.ModelsManager import ModelsManager
 
 details_bp = Blueprint("api_details", __name__)
@@ -109,6 +109,8 @@ def post_details_form(media_type: MediaType, media_id: int, payload: Any, models
         models[ModelTypes.GENRE].replace_genres(payload["genres"], media_id)
 
     for name, value in updates.items():
+        if name in ("release_date", "last_air_date", "next_episode_to_air"):
+            value = format_datetime(value)
         setattr(media, name, value)
 
     db.session.commit()
@@ -147,8 +149,6 @@ def job_details(media_type: MediaType, job: str, info: str):
 @token_auth.login_required
 @validate_json_data()
 def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Refresh the details of a unique <media> if the user role is at least <manager> """
-
     if current_user.role == RoleType.USER:
         return abort(401, "Unauthorized to refresh this media")
 

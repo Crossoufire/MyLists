@@ -1,6 +1,6 @@
 import {FaStar} from "react-icons/fa";
-import {formatTime} from "@/lib/utils";
 import {Separator} from "@/components/ui/separator";
+import {formatDateTime, formatMinutes} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
@@ -28,7 +28,7 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Release date"
-                            value={mediaData.formatted_date}
+                            value={formatDateTime(mediaData.release_date)}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
@@ -54,15 +54,15 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                     <div className="flex flex-col gap-y-4">
                         <GenericDetails
                             name="HLTB Main"
-                            value={formatTime(mediaData.hltb_main_time * 60, true)}
+                            value={formatMinutes(mediaData.hltb_main_time * 60, { format: "hm", onlyHours: true })}
                         />
                         <GenericDetails
                             name="HLTB Extra"
-                            value={formatTime(mediaData.hltb_main_and_extra_time * 60, true)}
+                            value={formatMinutes(mediaData.hltb_main_and_extra_time * 60, { format: "hm", onlyHours: true })}
                         />
                         <GenericDetails
                             name="HLTB Total"
-                            value={formatTime(mediaData.hltb_total_complete_time * 60, true)}
+                            value={formatMinutes(mediaData.hltb_total_complete_time * 60, { format: "hm", onlyHours: true })}
                         />
                     </div>
                 </div>

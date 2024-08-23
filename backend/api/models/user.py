@@ -171,7 +171,7 @@ class User(db.Model):
 
         user_dict.update({
             "role": self.role.value,
-            "registered_on": self.registered_on.strftime("%d %b %Y"),
+            "registered_on": self.registered_on,
             "profile_image": self.profile_image,
             "back_image": self.back_image,
             "profile_level": self.profile_level,
@@ -471,8 +471,7 @@ class UserLastUpdate(db.Model):
                 current_app.logger.error(f"[ERROR] - An error occurred updating the user last updates for: "
                                          f"({self.media_id}, {self.media_name}, {self.media_type})")
 
-        # Update date and add media name
-        update_dict["date"] = self.date.replace(tzinfo=timezone.utc).isoformat()
+        update_dict["date"] = self.date
         update_dict["media_name"] = self.media_name
         update_dict["media_id"] = self.media_id
         update_dict["media_type"] = self.media_type.value

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, url_for, current_app, abort
 from sqlalchemy import desc, func
 from backend.api import cache, db
-from backend.api.managers.ApiManager import ApiSeries, MoviesApiManager
+from backend.api.managers.ApiManager import ApiSeriesManager, MoviesApiManager
 from backend.api.models.user import User
 from backend.api.models.mixins import MyListsStats
 from backend.api.core.handlers import token_auth
@@ -21,7 +21,7 @@ def current_trends():
     tv_trends, movies_trends = [], []
 
     try:
-        tv_trends = ApiSeries().get_and_format_trending()
+        tv_trends = ApiSeriesManager().get_and_format_trending()
         movies_trends = MoviesApiManager().get_and_format_trending()
     except Exception as e:
         error = True

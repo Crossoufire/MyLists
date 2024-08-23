@@ -11,6 +11,7 @@ import {Loading} from "@/components/app/base/Loading";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {formatDateTime} from "@/lib/utils.jsx";
 
 
 export const Notifications = ({ isMobile }) => {
@@ -147,7 +148,7 @@ const MediaLink = ({ data, handlePopoverClose }) => {
                                     }
                                 </div>
                                 <div><FaLongArrowAltRight/></div>
-                                <div>{data.payload.release_date}</div>
+                                <div>{formatDateTime(data.payload.release_date)}</div>
                             </>
                         }
                     </div>

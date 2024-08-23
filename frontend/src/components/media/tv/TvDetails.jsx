@@ -1,5 +1,5 @@
 import {FaStar} from "react-icons/fa";
-import {createLocalDate, formatTime} from "@/lib/utils";
+import {formatDateTime, formatMinutes} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
@@ -28,7 +28,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Airing dates"
-                            value={<>{mediaData.formatted_date[0]}<br/>{mediaData.formatted_date[1]}</>}
+                            value={<>{formatDateTime(mediaData.release_date)}<br/>{formatDateTime(mediaData.last_air_date)}</>}
                         />
                         <GenericDetails
                             name="Prod. Status"
@@ -50,7 +50,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Completion"
-                            value={formatTime(mediaData.total_episodes * mediaData.duration)}
+                            value={formatMinutes(mediaData.total_episodes * mediaData.duration, { format: "hm" })}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
@@ -67,7 +67,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         {mediaData.next_episode_to_air &&
                             <GenericDetails
                                 name="Next Airing"
-                                value={createLocalDate(mediaData.next_episode_to_air, true, false)}
+                                value={formatDateTime(mediaData.next_episode_to_air)}
                             />
                         }
                     </div>

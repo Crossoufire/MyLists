@@ -7,16 +7,14 @@ from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.core.handlers import current_user
 from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
-from backend.api.utils.functions import change_air_format
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 
 
 class Books(MediaMixin, Media):
     GROUP = MediaType.BOOKS
 
-    release_date = db.Column(db.String, nullable=False)
-    pages = db.Column(db.Integer, nullable=False)
-    language = db.Column(db.String, nullable=False)
+    pages = db.Column(db.Integer)
+    language = db.Column(db.String)
     publishers = db.Column(db.String)
 
     # --- Relationships -----------------------------------------------------------
@@ -32,7 +30,6 @@ class Books(MediaMixin, Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "formatted_date": change_air_format(self.release_date, books=True),
             "authors": [author.name for author in self.authors],
             "genres": self.genres_list,
         })
@@ -98,6 +95,11 @@ class Books(MediaMixin, Media):
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error occurred while removing books and related records: {str(e)}")
+
+    @classmethod
+    def refresh_element_data(cls, api_id: str, new_data: Dict):
+        cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
+        db.session.commit()
 
     @staticmethod
     def form_only() -> List[str]:
@@ -186,7 +188,6 @@ class BooksList(MediaListMixin, MediaList):
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Re-read": cls.rewatched.desc(),
         }
-
         return sorting_dict
 
     @classmethod

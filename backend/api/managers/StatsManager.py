@@ -114,6 +114,19 @@ class BaseStats(metaclass=StatsMeta):
         self.data["values"]["avg_updates"] = round(avg_updates, 2) if isinstance(avg_updates, float) else "-"
         self.data["lists"]["updates"] = [{"name": c, "value": v} for (v, c) in updates_distrib]
 
+    def compute_release_dates(self):
+        release_dates = (
+            db.session.query(
+                (((func.extract("year", self.media.release_date)) // 10) * 10).label("decade"),
+                func.count(self.media.release_date)
+            ).join(*self.common_join)
+            .filter(*self.common_filter, self.media.release_date.is_not(None))
+            .group_by("decade").order_by(self.media.release_date)
+            .all()
+        )
+
+        self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
+
     def compute_genres(self):
         min_ = 10 if self.GROUP == MediaType.MOVIES else 5
 
@@ -290,19 +303,6 @@ class TvStats(TMDBStats):
         top_values = self._query_top_values(self.media, self.media.origin_country)
         self.data["lists"]["countries"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
 
-    def compute_release_dates(self):
-        release_dates = (
-            db.session.query(
-                (((func.extract("year", self.media.first_air_date)) // 10) * 10).label("decade"),
-                func.count(self.media.first_air_date)
-            ).join(*self.common_join)
-            .filter(*self.common_filter, self.media.first_air_date != "Unknown")
-            .group_by("decade").order_by(self.media.first_air_date.asc())
-            .all()
-        )
-
-        self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
-
     def create_stats(self):
         self.compute_total_hours()
         self.compute_total_media()
@@ -400,19 +400,6 @@ class MoviesStats(TMDBStats):
         top_values = self._query_top_values(self.media, self.media.original_language)
         self.data["lists"]["languages"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
 
-    def compute_release_dates(self):
-        release_dates = (
-            db.session.query(
-                (((func.extract("year", self.media.release_date)) // 10) * 10).label("decade"),
-                func.count(self.media.release_date)
-            ).join(*self.common_join)
-            .filter(*self.common_filter, self.media.release_date != "Unknown",)
-            .group_by("decade").order_by(self.media.release_date.asc())
-            .all()
-        )
-
-        self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
-
     def create_stats(self):
         self.compute_total_hours()
         self.compute_total_media()
@@ -502,19 +489,6 @@ class BooksStats(BaseStats):
     def compute_languages(self):
         top_values = self._query_top_values(self.media, self.media.language)
         self.data["lists"]["languages"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
-
-    def compute_release_dates(self):
-        release_dates = (
-            db.session.query(
-                ((self.media.release_date // 10) * 10).label("decade"),
-                func.count(self.media.release_date)
-            ).join(*self.common_join)
-            .filter(*self.common_filter, self.media.release_date != "Unknown",)
-            .group_by("decade").order_by(self.media.release_date.asc())
-            .all()
-        )
-
-        self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
 
     def create_stats(self):
         self.compute_total_media()
@@ -632,19 +606,6 @@ class GamesStats(BaseStats):
     def compute_perspectives(self):
         top_values = self._query_top_values(self.media, self.media.player_perspective)
         self.data["lists"]["perspectives"] = [{"name": d, "value": c} for (d, c) in top_values]
-
-    def compute_release_dates(self):
-        release_dates = (
-            db.session.query(
-                ((func.strftime("%Y", func.datetime(self.media.release_date, "unixepoch")) // 5) * 5).label("re"),
-                func.count(self.media_list.media_id)
-            ).join(*self.common_join)
-            .filter(*self.common_filter, self.media.release_date != "Unknown", self.media.release_date.is_not(None))
-            .group_by(text("re")).order_by(text("re"))
-            .all()
-        )
-
-        self.data["lists"]["release_dates"] = [{"name": r, "value": c} for (r, c) in release_dates]
 
     def create_stats(self):
         self.compute_total_media()

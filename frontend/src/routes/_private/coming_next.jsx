@@ -1,5 +1,5 @@
 import {fetcher} from "@/lib/fetcherLoader";
-import {capitalize, zeroPad} from "@/lib/utils";
+import {capitalize, formatDateTime, zeroPad} from "@/lib/utils";
 import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {MediaCard} from "@/components/app/MediaCard";
 import {createFileRoute} from "@tanstack/react-router";
@@ -59,7 +59,7 @@ const NextMedia = ({ media, mediaType }) => {
                 {(mediaType === "anime" || mediaType === "series") &&
                     <div>S{zeroPad(media.season_to_air)}&nbsp;-&nbsp;E{zeroPad(media.episode_to_air)}</div>
                 }
-                <div>{media.formatted_date}</div>
+                <div>{formatDateTime(media.date)}</div>
             </div>
         </MediaCard>
     );

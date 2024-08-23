@@ -5,12 +5,11 @@ from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
-from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
-from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.core.handlers import current_user
+from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
+from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum
-from backend.api.utils.functions import change_air_format
 
 
 class Movies(MediaMixin, Media):
@@ -18,9 +17,7 @@ class Movies(MediaMixin, Media):
 
     original_name = db.Column(db.String, nullable=False)
     director_name = db.Column(db.String)
-    release_date = db.Column(db.String)
     homepage = db.Column(db.String)
-    released = db.Column(db.String)
     duration = db.Column(db.Integer)
     original_language = db.Column(db.String)
     vote_average = db.Column(db.Float)
@@ -29,7 +26,6 @@ class Movies(MediaMixin, Media):
     budget = db.Column(db.Float)
     revenue = db.Column(db.Float)
     tagline = db.Column(db.String)
-    last_api_update = db.Column(db.DateTime)
 
     # --- Relationships -----------------------------------------------------------
     genres = db.relationship("MoviesGenre", back_populates="media", lazy="select")
@@ -44,7 +40,6 @@ class Movies(MediaMixin, Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "formatted_date": change_air_format(self.release_date),
             "actors": self.actors_list,
             "genres": self.genres_list,
         })
@@ -122,15 +117,13 @@ class Movies(MediaMixin, Media):
                     cls.release_date.is_not(None),
                     cls.release_date > datetime.utcnow(),
                     cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                ).all()
+                    ).all()
             )
 
-            for info in query:
-                movie_id, user_id, release_date, name = info
+            for movie_id, user_id, release_date, name in query:
                 notif = Notifications.search(user_id, "movieslist", movie_id)
 
                 if notif is None:
-                    release_date = datetime.strptime(release_date, "%Y-%m-%d").strftime("%b %d %Y")
                     new_notification = Notifications(
                         user_id=user_id,
                         media_id=movie_id,

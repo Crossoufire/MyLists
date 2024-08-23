@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {FaRedo} from "react-icons/fa";
-import {createLocalDate} from "@/lib/utils";
+import {formatDateTime} from "@/lib/utils";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
@@ -8,7 +8,7 @@ import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
     const [isLoading, handleLoading] = useLoading();
-    const lastRefresh = lastApiUpdate ? createLocalDate(lastApiUpdate) : "Never";
+    const lastRefresh = lastApiUpdate ? formatDateTime(lastApiUpdate, { includeTime: true }) : "Never";
 
     const handleRefresh = async () => {
         const response = await handleLoading(updateRefresh);

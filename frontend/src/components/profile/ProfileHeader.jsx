@@ -7,6 +7,7 @@ import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {api, userClient} from "@/api/MyApiClient";
+import {formatDateTime} from "@/lib/utils.jsx";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
@@ -61,7 +62,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
                     }
                 </div>
                 <div className="font-medium">
-                    <div>Joined: {user.registered_on}</div>
+                    <div>Joined: {formatDateTime(user.registered_on)}</div>
                     <Link to={`/profile/${user.username}/followers`}>
                         <div className="hover:underline hover:underline-offset-2">
                             Followers: {user.followers_count}

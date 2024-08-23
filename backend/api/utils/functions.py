@@ -62,23 +62,6 @@ def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = Tr
         return abort(400, f"An error occurred saving the picture")
 
 
-def change_air_format(date_: str, tv: bool = False, games: bool = False, books: bool = False) -> str:
-    try:
-        if tv:
-            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
-        elif games:
-            return datetime.fromtimestamp(int(date_), timezone.utc).strftime("%d %b %Y")
-        elif books:
-            try:
-                return re.findall(re.compile("\d{4}"), date_)[0]
-            except:
-                return "N/A"
-        else:
-            return datetime.strptime(date_, "%Y-%m-%d").strftime("%d %b %Y")
-    except (ValueError, TypeError):
-        return "N/A"
-
-
 def safe_div(a: float, b: float, percentage: bool = False):
     try:
         if b == 0:
@@ -165,3 +148,19 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
         if count >= eps_watched:
             last_episode = int(eps - (count - eps_watched))
             return last_episode, seas, eps_watched
+
+
+def format_datetime(date) -> datetime | None:
+    """ Format to a universal datetime format or None if datetime not valid before saving to db """
+
+    date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d", "%Y"]
+    for pattern in date_patterns:
+        try:
+            return datetime.strptime(date, pattern)
+        except:
+            pass
+
+    try:
+        return datetime.fromtimestamp(int(date))
+    except:
+        return None

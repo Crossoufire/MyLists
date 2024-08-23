@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {capitalize} from "@/lib/utils";
+import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
@@ -7,10 +7,10 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {useDebounce} from "@/hooks/DebounceHook";
-import {api, userClient} from "@/api/MyApiClient";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
+import {capitalize, formatDateTime} from "@/lib/utils";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -181,15 +181,15 @@ const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) =
         <Link to={url} onClick={handleLinkClick}>
             <div className="flex border-b gap-x-4 p-3 items-center w-full min-h-6 hover:bg-neutral-900">
                 <img
+                    alt={name}
                     src={thumbnail}
                     height={imageHeight}
-                    className="w-16 rounded-sm"
-                    alt={name}
+                    className={"w-16 rounded-sm"}
                 />
                 <div>
                     <div className="font-semibold mb-2">{name}</div>
                     <div className="text-neutral-300">{capitalize(mediaType)}</div>
-                    <div className="text-muted-foreground text-sm">{date}</div>
+                    <div className="text-muted-foreground text-sm">{formatDateTime(date)}</div>
                 </div>
             </div>
         </Link>

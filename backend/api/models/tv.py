@@ -1,24 +1,24 @@
 from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
+from backend.api.core.handlers import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.core.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
-from backend.api.utils.functions import change_air_format, reorder_seas_eps
+from backend.api.utils.functions import reorder_seas_eps
 
 
 class TVModel(Media):
     __abstract__ = True
 
-    original_name = db.Column(db.String, nullable=False)
-    first_air_date = db.Column(db.String)
+    original_name = db.Column(db.String)
     last_air_date = db.Column(db.String)
     next_episode_to_air = db.Column(db.String)
     season_to_air = db.Column(db.Integer)
@@ -27,20 +27,13 @@ class TVModel(Media):
     in_production = db.Column(db.Boolean)
     created_by = db.Column(db.String)
     duration = db.Column(db.Integer)
-    total_seasons = db.Column(db.Integer, nullable=False)
+    total_seasons = db.Column(db.Integer)
     total_episodes = db.Column(db.Integer)
     origin_country = db.Column(db.String)
     status = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
     popularity = db.Column(db.Float)
-    last_api_update = db.Column(db.DateTime)
-
-    @property
-    def formatted_date(self) -> List[str]:
-        first_air_date = change_air_format(self.first_air_date, tv=True)
-        last_air_date = change_air_format(self.last_air_date, tv=True)
-        return [first_air_date, last_air_date]
 
     @property
     def eps_per_season_list(self):
@@ -53,7 +46,6 @@ class TVModel(Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "formatted_date": self.formatted_date,
             "eps_per_season": self.eps_per_season_list,
             "networks": [r.network for r in self.networks],
             "actors": self.actors_list,
@@ -135,29 +127,6 @@ class TVModel(Media):
             user_list.last_episode_watched = last_episode
             user_list.total = new_total * (user_list.rewatched + 1)
 
-            # # Send notifications to new episodes/seasons and update media status to <ON_HOLD>
-            # if sum(old_seas_eps) < sum(new_seas_eps) and user_list.status == Status.COMPLETED:
-            #     user_list.status = Status.ON_HOLD
-            #     user_list.total = new_total
-            #     user_list.rewatched = 0
-            #     new_notification = Notifications(
-            #         user_id=user_list.user_id,
-            #         media_type=f"{cls.GROUP.value}list",
-            #         media_id=media.id,
-            #         payload_json=json.dumps({
-            #             "new": True,
-            #             "name": user_list.media.name,
-            #             "message": "New episodes available!",
-            #         }),
-            #     )
-            #     db.session.add(new_notification)
-            #     UserLastUpdate.set_new_update(
-            #         media=media,
-            #         update_type="status",
-            #         old_value=Status.COMPLETED,
-            #         new_value=Status.ON_HOLD,
-            #     )
-
         # Delete old seasons/episodes for this media
         eps_seas_model = eval(f"{cls.__name__}EpisodesPerSeason")
         eps_seas_model.query.filter_by(media_id=media.id).delete()
@@ -193,37 +162,31 @@ class TVModel(Media):
                     cls.next_episode_to_air.is_not(None),
                     cls.next_episode_to_air > datetime.utcnow(),
                     cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                    media_list.status.notin_([Status.RANDOM, Status.DROPPED])
-                ).all()
+                    media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
+                    ).all()
             )
 
-            for info in query:
-                tv_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode = info
+            for tv_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode in query:
                 notif = Notifications.search(user_id, media_list_str, tv_id)
-                release_date = datetime.strptime(next_eps_to_air, "%Y-%m-%d").strftime("%b %d %Y")
 
-                # Check if notification fresh
                 if notif:
                     payload = json.loads(notif.payload_json)
-                    if (
-                            release_date == payload["release_date"]
-                            and int(eps_to_air) == int(payload["episode"])
-                            and int(seas_to_air) == int(payload["season"])
-                    ):
+                    if (next_eps_to_air == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
+                            and int(seas_to_air) == int(payload["season"])):
                         continue
 
                 payload = dict(
                     name=name,
-                    release_date=release_date,
                     season=f"{seas_to_air:02d}",
                     episode=f"{eps_to_air:02d}",
+                    release_date=next_eps_to_air,
                     finale=(last_episode == eps_to_air),
                 )
 
                 new_notification = Notifications(
+                    media_id=tv_id,
                     user_id=user_id,
                     media_type=media_list_str,
-                    media_id=tv_id,
                     payload_json=json.dumps(payload)
                 )
                 db.session.add(new_notification)
@@ -275,7 +238,7 @@ class TVModel(Media):
 
     @staticmethod
     def form_only() -> List[str]:
-        return ["name", "original_name", "first_air_date", "last_air_date", "homepage", "created_by", "duration",
+        return ["name", "original_name", "release_date", "last_air_date", "homepage", "created_by", "duration",
                 "origin_country", "status", "synopsis"]
 
 

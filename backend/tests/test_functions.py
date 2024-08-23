@@ -3,8 +3,7 @@ from backend.api import db
 from werkzeug.exceptions import BadRequest
 from backend.tests.base_test import BaseTest
 from werkzeug.datastructures import FileStorage
-from backend.api.utils.functions import (save_picture, compute_level, display_time, clean_html_text, is_latin, safe_div,
-                                         change_air_format)
+from backend.api.utils.functions import save_picture, compute_level, display_time, clean_html_text, is_latin, safe_div
 
 
 class UtilsFunctionTests(BaseTest):
@@ -84,17 +83,6 @@ class UtilsFunctionTests(BaseTest):
         self.assertEqual(safe_div(5, 2, percentage=True), 250)
         self.assertEqual(safe_div(-10, 2, percentage=True), -500)
         self.assertEqual(safe_div(3, 20, percentage=True), 15)
-
-    def test_change_air_format(self):
-        self.assertEqual(change_air_format("2023-05-20", tv=True), "20 May 2023")
-        self.assertEqual(change_air_format("2023/05/20", tv=True), "N/A")
-        self.assertEqual(change_air_format("1728128000", games=True), "05 Oct 2024")
-        self.assertEqual(change_air_format("abcd", games=True), "N/A")
-        self.assertEqual(change_air_format("Published 2008 by XYZ", books=True), "2008")
-        self.assertEqual(change_air_format("Random text", books=True), "N/A")
-        self.assertEqual(change_air_format("2023-05-20"), "20 May 2023")
-        self.assertEqual(change_air_format("2023/05/20"), "N/A")
-        self.assertEqual(change_air_format("Random text", tv=True, games=True, books=True), "N/A")
 
     def test_save_new_profile_image(self):
         with open(self.image_path, "rb") as fp:

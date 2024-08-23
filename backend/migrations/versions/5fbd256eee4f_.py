@@ -1,4 +1,5 @@
 """
+Removed `completion_date` column from all lists
 Revision ID: 5fbd256eee4f
 Revises: 1020f7fe78a5
 Create Date: 2024-06-30 16:33:45.245156

@@ -15,6 +15,9 @@ from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.managers.ModelsManager import ModelsManager
 
 
+""" --- CORRECTIONS ------------------------------------------------------------------------------------ """
+
+
 def correct_random_and_ptw_data():
     """ The <last_episode_watched>, <current_season>, and <total> should be zero when in <PLAN_TO_WATCH> or <RANDOM>
     status for Series and Anime """
@@ -62,6 +65,9 @@ def correct_medialist_duplicates():
 
         db.session.execute(delete_sql, {"id_" + str(i): id_ for (i, id_) in enumerate(ids_to_delete)})
         db.session.commit()
+
+
+""" --- MANAGEMENT ------------------------------------------------------------------------------------- """
 
 
 def generate_dbml():
@@ -261,8 +267,8 @@ def update_IGDB_API():
     current_app.logger.info("[SYSTEM] - Starting Fetching New IGDB API Key -")
 
     with current_app.app_context():
-        from backend.api.managers.ApiManager import ApiGames
-        ApiGames().update_api_key()
+        from backend.api.managers.ApiManager import ApiGamesManager
+        ApiGamesManager().update_api_key()
 
     current_app.logger.info("[SYSTEM] - Finished Fetching New IGDB API Key -")
     current_app.logger.info("###############################################################################")
@@ -270,5 +276,14 @@ def update_IGDB_API():
 
 def get_active_users(days: int = 180):
     from datetime import datetime, timedelta
+    from math import ceil
+
     delta_time = datetime.now() - timedelta(days=days)
-    print(f"### Active users (< {days // 30} months) = {User.query.filter(User.last_seen >= delta_time).count()}")
+    if days < 30:
+        period_repr = f"< {days} days"
+    else:
+        months = ceil(days / 30)
+        period_repr = f"< {months} months"
+
+    active_user_count = User.query.filter(User.last_seen >= delta_time).count()
+    print(f"### Active users ({period_repr}) = {active_user_count}")

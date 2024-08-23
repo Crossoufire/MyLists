@@ -4,6 +4,7 @@ import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {formatDateTime} from "@/lib/utils.jsx";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -67,7 +68,9 @@ const TrendItem = ({ media }) => {
                         <Link to={`/details/${media.media_type}/${media.api_id}?external=True`}>
                             <CardTitle className="flex flex-col items-start">
                                 <div className="text-lg line-clamp-2">{media.display_name}</div>
-                                <div className="text-muted-foreground text-sm text-grey mt-1 italic">{media.release_date}</div>
+                                <div className="text-muted-foreground text-sm text-grey italic">
+                                    {formatDateTime(media.release_date)}
+                                </div>
                             </CardTitle>
                         </Link>
                         <Separator/>

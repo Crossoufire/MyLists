@@ -160,7 +160,7 @@ class ListQueryManager:
             self.comment_filter,
             self.genres_filter,
             self.labels_filter,
-            )
+        )
 
     def _search_query(self):
         base_query = (
