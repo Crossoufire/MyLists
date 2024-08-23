@@ -74,7 +74,7 @@ class SearchTests(BaseTest):
             self.assertEqual(rv.status_code, 400)
 
     def test_autocomplete_igdb(self):
-        with mock.patch("backend.api.routes.search.ApiGames.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.GamesApiManager.create_search_results") as mock_search:
             mock_search.return_value = {
                 "items": [{
                     "api_id": 12,
@@ -97,7 +97,7 @@ class SearchTests(BaseTest):
             assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/halo.jpg"
             assert rv.json["data"]["total"] == 1
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiGames.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.GamesApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=IGDB", headers=self.connexion())
@@ -105,14 +105,14 @@ class SearchTests(BaseTest):
             assert len(rv.json["data"]["items"]) == 0
             assert rv.json["data"]["total"] == 0
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiGames.search") as mock_search:
+        with mock.patch("backend.api.routes.search.GamesApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=halo&selector=IGDB", headers=self.connexion())
             self.assertEqual(rv.status_code, 400)
 
     def test_autocomplete_books(self):
-        with mock.patch("backend.api.routes.search.ApiBooks.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.BooksApiManager.create_search_results") as mock_search:
             mock_search.return_value = {
                 "items": [{
                     "api_id": "zfv467z7f",
@@ -135,7 +135,7 @@ class SearchTests(BaseTest):
             assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/harry_potter.jpg"
             assert rv.json["data"]["total"] == 1
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiBooks.create_search_results") as mock_search:
+        with mock.patch("backend.api.routes.search.BooksApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=BOOKS", headers=self.connexion())
@@ -143,7 +143,7 @@ class SearchTests(BaseTest):
             assert len(rv.json["data"]["items"]) == 0
             assert rv.json["data"]["total"] == 0
             assert rv.json["data"]["pages"] == 1
-        with mock.patch("backend.api.routes.search.ApiBooks.search") as mock_search:
+        with mock.patch("backend.api.routes.search.BooksApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=harry%20potter&selector=BOOKS", headers=self.connexion())

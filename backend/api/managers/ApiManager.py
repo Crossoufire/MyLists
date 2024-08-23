@@ -327,7 +327,7 @@ class TVApiManager(TMDBApiManager):
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
 
 
-class ApiSeriesManager(TVApiManager):
+class SeriesApiManager(TVApiManager):
     DURATION = 40
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
@@ -358,7 +358,7 @@ class ApiSeriesManager(TVApiManager):
         return tv_results
 
 
-class ApiAnimeManager(TVApiManager):
+class AnimeApiManager(TVApiManager):
     DURATION = 24
     GROUP = MediaType.ANIME
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/anime_covers/")
@@ -460,7 +460,7 @@ class MoviesApiManager(TMDBApiManager):
         )
 
 
-class ApiGamesManager(ApiManager):
+class GamesApiManager(ApiManager):
     GROUP = MediaType.GAMES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/games_covers/")
     POSTER_BASE_URL = "https://images.igdb.com/igdb/image/upload/t_1080p/"
@@ -684,7 +684,7 @@ class ApiGamesManager(ApiManager):
         return dict(main=main, extra=extra, completionist=completionist)
 
 
-class ApiBooksManager(ApiManager):
+class BooksApiManager(ApiManager):
     GROUP = MediaType.BOOKS
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/books_covers/")
     DEFAULT_PAGES = 50

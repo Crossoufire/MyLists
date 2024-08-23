@@ -267,8 +267,8 @@ def update_IGDB_API():
     current_app.logger.info("[SYSTEM] - Starting Fetching New IGDB API Key -")
 
     with current_app.app_context():
-        from backend.api.managers.ApiManager import ApiGamesManager
-        ApiGamesManager().update_api_key()
+        from backend.api.managers.ApiManager import GamesApiManager
+        GamesApiManager().update_api_key()
 
     current_app.logger.info("[SYSTEM] - Finished Fetching New IGDB API Key -")
     current_app.logger.info("###############################################################################")
