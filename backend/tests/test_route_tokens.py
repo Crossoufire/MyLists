@@ -42,7 +42,7 @@ class AuthTests(BaseTest):
 
         access_token = rv.json["access_token"]
 
-        with mock.patch("backend.api.models.user_models.datetime") as dt:
+        with mock.patch("backend.api.models.user.datetime") as dt:
             dt.utcnow.return_value = datetime.utcnow() + timedelta(days=1)
             rv = self.client.get("/api/current_user", headers={"Authorization": f"Bearer {access_token}"})
             self.assertEqual(rv.status_code, 401)

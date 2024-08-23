@@ -8,9 +8,9 @@ from sqlalchemy.orm import aliased
 from backend.api import db
 from backend.api.managers.ApiManager import ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.api.models.movies_models import Movies
-from backend.api.models.user_models import User
-from backend.api.models.utils_models import MyListsStats
+from backend.api.models.movies import Movies
+from backend.api.models.user import User
+from backend.api.models.mixins import MyListsStats
 from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.managers.ModelsManager import ModelsManager
 

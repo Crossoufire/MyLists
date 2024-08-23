@@ -146,7 +146,7 @@ class MediaTests(BaseTest):
         assert "date" in data["history"][0]
 
     def test_add_books(self):
-        from backend.api.models.books_models import BooksList
+        from backend.api.models.books import BooksList
 
         data = self.add_media("books", 1, "Completed", 322 * BooksList.TIME_PER_PAGE)
 

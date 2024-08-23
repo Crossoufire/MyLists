@@ -1,7 +1,7 @@
 from flask import Blueprint, request, abort, jsonify, current_app
 from werkzeug.http import dump_cookie
 from backend.api import db
-from backend.api.models.user_models import Notifications, Token, User, UserLastUpdate, followers
+from backend.api.models.user import Notifications, Token, User, UserLastUpdate, followers
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.utils.enums import ModelTypes, RoleType
 from backend.api.managers.ModelsManager import ModelsManager

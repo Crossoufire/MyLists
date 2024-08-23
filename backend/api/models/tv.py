@@ -1,54 +1,40 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import List, Dict, Tuple
-
+from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
-
 from backend.api import db
-from backend.api.models.user_models import UserLastUpdate, Notifications
-from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
+from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 from backend.api.utils.functions import change_air_format, reorder_seas_eps
-from backend.api.managers.ModelsManager import ModelsManager
 
 
-class TVModel(db.Model):
-    """ Abstract SQL model for the <Series> and <Anime> models """
-
+class TVModel(Media):
     __abstract__ = True
 
-    TYPE = ModelTypes.MEDIA
-    RELEASE_WINDOW: int = 7
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    original_name = db.Column(db.String(50), nullable=False)
-    first_air_date = db.Column(db.String(30))
-    last_air_date = db.Column(db.String(30))
-    next_episode_to_air = db.Column(db.String(30))
+    original_name = db.Column(db.String, nullable=False)
+    first_air_date = db.Column(db.String)
+    last_air_date = db.Column(db.String)
+    next_episode_to_air = db.Column(db.String)
     season_to_air = db.Column(db.Integer)
     episode_to_air = db.Column(db.Integer)
-    homepage = db.Column(db.String(200))
+    homepage = db.Column(db.String)
     in_production = db.Column(db.Boolean)
-    created_by = db.Column(db.String(100))
+    created_by = db.Column(db.String)
     duration = db.Column(db.Integer)
     total_seasons = db.Column(db.Integer, nullable=False)
     total_episodes = db.Column(db.Integer)
-    origin_country = db.Column(db.String(20))
-    status = db.Column(db.String(50))
+    origin_country = db.Column(db.String)
+    status = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
-    synopsis = db.Column(db.Text)
     popularity = db.Column(db.Float)
-    image_cover = db.Column(db.String(100), nullable=False)
-    api_id = db.Column(db.Integer, nullable=False)
     last_api_update = db.Column(db.DateTime)
-    lock_status = db.Column(db.Boolean, default=0)
 
     @property
     def formatted_date(self) -> List[str]:
@@ -77,8 +63,6 @@ class TVModel(db.Model):
         return media_dict
 
     def add_media_to_user(self, new_status: Status, user_id: int) -> int:
-        """ Add a new series or anime to the current user and return the <total_watched> value """
-
         total_watched, new_season, new_episode = 1, 1, 1
         if new_status == Status.COMPLETED:
             new_season = len(self.eps_per_season)
@@ -107,8 +91,6 @@ class TVModel(db.Model):
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
-        """ Get either creator or actor and return its list of series/anime """
-
         if job == "creator":
             query = cls.query.filter(cls.created_by.ilike(f"%{info}%")).all()
         elif job == "actor":
@@ -120,7 +102,6 @@ class TVModel(db.Model):
         else:
             return abort(400)
 
-        # Check media in user's list
         tv_list = eval(f"{cls.__name__}List")
         media_in_user_list = (
             db.session.query(tv_list)
@@ -133,8 +114,6 @@ class TVModel(db.Model):
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):
-        """ Refresh a media using the updated data created with the ApiData class """
-
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         media = cls.query.filter_by(api_id=api_id).first()
 
@@ -193,8 +172,6 @@ class TVModel(db.Model):
 
     @classmethod
     def get_new_releasing_media(cls):
-        """ Check for the new releasing TV media in a week or less from the TMDB API """
-
         media_list, eps_model = ModelsManager.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
         media_list_str = f"{cls.GROUP.value}list"
 
@@ -258,8 +235,6 @@ class TVModel(db.Model):
 
     @classmethod
     def remove_non_list_media(cls):
-        """ Remove all the TV data not present in a List from the database and the disk """
-
         models = ModelsManager.get_dict_models(cls.GROUP, "all")
         media_model = models[ModelTypes.MEDIA]
         media_list_model = models[ModelTypes.LIST]
@@ -300,36 +275,21 @@ class TVModel(db.Model):
 
     @staticmethod
     def form_only() -> List[str]:
-        """ Return the allowed fields for a form """
         return ["name", "original_name", "first_air_date", "last_air_date", "homepage", "created_by", "duration",
                 "origin_country", "status", "synopsis"]
 
 
-class TVListModel(MediaListMixin, db.Model):
-    """ Abstract SQL model for the <SeriesList> and <AnimeList> models """
-
+class TVListModel(MediaListMixin, MediaList):
     __abstract__ = True
 
-    GROUP = None
-    TYPE = ModelTypes.LIST
-    DEFAULT_SORTING = "Title A-Z"
     DEFAULT_STATUS = Status.WATCHING
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     current_season = db.Column(db.Integer, nullable=False)
     last_episode_watched = db.Column(db.Integer, nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False)
     rewatched = db.Column(db.Integer, nullable=False, default=0)
-    favorite = db.Column(db.Boolean)
-    feeling = db.Column(db.String(30))
-    score = db.Column(db.Float)
     total = db.Column(db.Integer)
-    comment = db.Column(db.Text)
 
     class Status(ExtendedEnum):
-        """ Status class specific for the series and easiness """
-
         WATCHING = "Watching"
         COMPLETED = "Completed"
         ON_HOLD = "On Hold"
@@ -361,9 +321,6 @@ class TVListModel(MediaListMixin, db.Model):
         return media_dict
 
     def update_total_watched(self, new_rewatch: int) -> int:
-        """ Update the new rewatched and total watched for Series and Anime. The <media.total_episodes> is unused
-        for discrepancy happening with the <sum(eps_per_season)>. Return the new total. """
-
         self.rewatched = new_rewatch
 
         sum_episodes = sum(self.media.eps_per_season_list)
@@ -373,15 +330,13 @@ class TVListModel(MediaListMixin, db.Model):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        """ Compute the new time spent for the user """
-
         time_spent_attr = f"time_spent_{self.GROUP.value}"
         old_time = getattr(current_user, time_spent_attr)
         setattr(
             current_user,
             time_spent_attr,
             old_time + ((new_value - old_value) * self.media.duration),
-        )
+            )
 
     @classmethod
     def total_user_time_def(cls):
@@ -389,20 +344,10 @@ class TVListModel(MediaListMixin, db.Model):
         return func.sum(media_model.duration * cls.total)
 
 
-class TVLabelsModel(MediaLabelMixin, db.Model):
-    """ Abstract SQL model for the <SeriesLabels> and <AnimeLabels> models """
-
+class TVLabelsModel(MediaLabelMixin, Labels):
     __abstract__ = True
 
-    TYPE = ModelTypes.LABELS
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    label = db.Column(db.String(64), nullable=False)
-
     def to_dict(self) -> Dict:
-        """ Serialization of the <SeriesLabels> and <AnimeLabels> models """
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -414,33 +359,32 @@ class TVLabelsModel(MediaLabelMixin, db.Model):
         return media_dict
 
 
-# --- SERIES ------------------------------------------------------------------------------------------------------
+# --- SERIES -----------------------------------------------------------------------------------------------
 
 
 class Series(MediaMixin, TVModel):
-    """ Series SQL model """
-
     GROUP = MediaType.SERIES
 
-    genres = db.relationship("SeriesGenre", backref="series", lazy=True)
-    actors = db.relationship("SeriesActors", backref="series", lazy=True)
-    eps_per_season = db.relationship("SeriesEpisodesPerSeason", backref="series", lazy=False)
-    networks = db.relationship("SeriesNetwork", backref="series", lazy=True)
+    # --- Relationships -----------------------------------------------------------
+    genres = db.relationship("SeriesGenre", back_populates="media", lazy="select")
+    actors = db.relationship("SeriesActors", back_populates="media", lazy="select")
+    labels = db.relationship("SeriesLabels", back_populates="media", lazy="select")
     list_info = db.relationship("SeriesList", back_populates="media", lazy="dynamic")
+    networks = db.relationship("SeriesNetwork", back_populates="media", lazy="select")
+    eps_per_season = db.relationship("SeriesEpisodesPerSeason", back_populates="media", lazy="joined")
 
 
 class SeriesList(TVListModel):
-    """ SeriesList SQL Model """
-
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
+    user = db.relationship("User", back_populates="series_list", lazy="select")
     media = db.relationship("Series", back_populates="list_info", lazy="joined")
 
     @classmethod
-    def additional_search_joins(cls) -> List[Tuple[db.Model, ColumnElement]]:
+    def additional_search_joins(cls) -> List[Tuple[Type[db.Model], bool]]:
         return [(SeriesNetwork, SeriesNetwork.media_id == Series.id),
                 (SeriesActors, SeriesActors.media_id == Series.id)]
 
@@ -450,27 +394,22 @@ class SeriesList(TVListModel):
                 SeriesNetwork.network.ilike(f"%{search}%"), SeriesActors.name.ilike(f"%{search}%")]
 
 
-class SeriesGenre(db.Model):
-    """ Series genres SQL Model """
-
-    TYPE = ModelTypes.GENRE
+class SeriesGenre(Genres):
     GROUP = MediaType.SERIES
 
-    id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Series", back_populates="genres", lazy="select")
 
     @staticmethod
     def get_available_genres() -> List[str]:
-        """ Return all the series genres """
         return ["Action & Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Kids",
                 "Mystery", "News", "Reality", "Sci-Fi & Fantasy", "Soap", "Talk", "War & Politics", "Western"]
 
 
 class SeriesEpisodesPerSeason(db.Model):
-    """ Series episodes per season SQL Model """
-
     TYPE = ModelTypes.EPS
     GROUP = MediaType.SERIES
 
@@ -479,67 +418,66 @@ class SeriesEpisodesPerSeason(db.Model):
     season = db.Column(db.Integer, nullable=False)
     episodes = db.Column(db.Integer, nullable=False)
 
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Series", back_populates="eps_per_season", lazy="select")
+
 
 class SeriesNetwork(db.Model):
-    """ Series networks SQL Model """
-
     TYPE = ModelTypes.NETWORK
     GROUP = MediaType.SERIES
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    network = db.Column(db.String(150), nullable=False)
+    network = db.Column(db.String, nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Series", back_populates="networks", lazy="select")
 
 
-class SeriesActors(db.Model):
-    """ Series actors SQL Model """
-
-    TYPE = ModelTypes.ACTORS
-    GROUP = MediaType.SERIES
-
-    id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    name = db.Column(db.String(150))
-
-
-class SeriesLabels(TVLabelsModel):
-    """ SeriesLabels SQL model """
-
+class SeriesActors(Actors):
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Series", lazy="joined")
+    media = db.relationship("Series", back_populates="actors", lazy="select")
 
 
-# --- ANIME -------------------------------------------------------------------------------------------------------
+class SeriesLabels(TVLabelsModel):
+    GROUP = MediaType.SERIES
+
+    media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Series", back_populates="labels", lazy="select")
+
+
+# --- ANIME ------------------------------------------------------------------------------------------------
 
 
 class Anime(MediaMixin, TVModel):
-    """ Anime SQL Model """
-
     GROUP = MediaType.ANIME
 
-    genres = db.relationship("AnimeGenre", backref="anime", lazy=True)
-    actors = db.relationship("AnimeActors", backref="anime", lazy=True)
-    eps_per_season = db.relationship('AnimeEpisodesPerSeason', backref="anime", lazy=False)
-    networks = db.relationship("AnimeNetwork", backref="anime", lazy=True)
+    # --- Relationships -----------------------------------------------------------
+    genres = db.relationship("AnimeGenre", back_populates="media", lazy="select")
+    actors = db.relationship("AnimeActors", back_populates="media", lazy="select")
+    labels = db.relationship("AnimeLabels", back_populates="media", lazy="select")
     list_info = db.relationship("AnimeList", back_populates="media", lazy="dynamic")
+    networks = db.relationship("AnimeNetwork", back_populates="media", lazy="select")
+    eps_per_season = db.relationship("AnimeEpisodesPerSeason", back_populates="media", lazy="joined")
 
 
 class AnimeList(TVListModel):
-    """ AnimeList SQL model """
-
     GROUP = MediaType.ANIME
 
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
 
     # --- Relationships -------------------------------------------------------------
+    user = db.relationship("User", back_populates="anime_list", lazy="select")
     media = db.relationship("Anime", back_populates="list_info", lazy="joined")
 
     @classmethod
-    def additional_search_joins(cls) -> List[Tuple[db.Model, ColumnElement]]:
+    def additional_search_joins(cls) -> List[Tuple[Type[db.Model], bool]]:
         return [(AnimeNetwork, AnimeNetwork.media_id == Anime.id),
                 (AnimeActors, AnimeActors.media_id == Anime.id)]
 
@@ -549,20 +487,17 @@ class AnimeList(TVListModel):
                 AnimeNetwork.network.ilike(f"%{search}%"), AnimeActors.name.ilike(f"%{search}%")]
 
 
-class AnimeGenre(db.Model):
-    """ Anime genre SQL model """
-
-    TYPE = ModelTypes.GENRE
+class AnimeGenre(Genres):
     GROUP = MediaType.ANIME
 
-    id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Anime", back_populates="genres", lazy="select")
 
     @staticmethod
     def get_available_genres() -> List[str]:
-        """ Return all the anime genres """
         return ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Mystery", "Drama",
                 "Ecchi", "Fantasy", "Game", "Hentai", "Historical", "Horror", "Magic", "Martial Arts", "Mecha",
                 "Music", "Samurai", "Romance", "School", "Sci-Fi", "Shoujo", "Shounen", "Space", "Sports",
@@ -571,8 +506,6 @@ class AnimeGenre(db.Model):
 
 
 class AnimeEpisodesPerSeason(db.Model):
-    """ Anime episode per season SQL model """
-
     TYPE = ModelTypes.EPS
     GROUP = MediaType.ANIME
 
@@ -581,35 +514,35 @@ class AnimeEpisodesPerSeason(db.Model):
     season = db.Column(db.Integer, nullable=False)
     episodes = db.Column(db.Integer, nullable=False)
 
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Anime", back_populates="eps_per_season", lazy="select")
+
 
 class AnimeNetwork(db.Model):
-    """ Anime network SQL model """
-
     TYPE = ModelTypes.NETWORK
     GROUP = MediaType.ANIME
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    network = db.Column(db.String(150), nullable=False)
+    network = db.Column(db.String, nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Anime", back_populates="networks", lazy="select")
 
 
-class AnimeActors(db.Model):
-    """ Anime actors SQL model """
-
-    TYPE = ModelTypes.ACTORS
-    GROUP = MediaType.ANIME
-
-    id = db.Column(db.Integer, primary_key=True)
-    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    name = db.Column(db.String(150))
-
-
-class AnimeLabels(TVLabelsModel):
-    """ AnimeLabels SQL model """
-
+class AnimeActors(Actors):
     GROUP = MediaType.ANIME
 
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Anime", lazy="joined")
+    media = db.relationship("Anime", back_populates="actors", lazy="select")
+
+
+class AnimeLabels(TVLabelsModel):
+    GROUP = MediaType.ANIME
+
+    media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Anime", back_populates="labels", lazy="select")

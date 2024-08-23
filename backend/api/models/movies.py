@@ -1,55 +1,43 @@
 from __future__ import annotations
 import json
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
-from backend.api.models.user_models import UserLastUpdate, Notifications
-from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
+from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.routes.handlers import current_user
-from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ExtendedEnum
 from backend.api.utils.functions import change_air_format
 
 
-class Movies(MediaMixin, db.Model):
-    """ Movies SQLAlchemy model """
-
-    TYPE: ModelTypes = ModelTypes.MEDIA
+class Movies(MediaMixin, Media):
     GROUP: MediaType = MediaType.MOVIES
-    LOCKING_DAYS: int = 180
-    RELEASE_WINDOW: int = 7
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    original_name = db.Column(db.String(50), nullable=False)
-    director_name = db.Column(db.String(100))
-    release_date = db.Column(db.String(30))
-    homepage = db.Column(db.String(200))
-    released = db.Column(db.String(30))
+    original_name = db.Column(db.String, nullable=False)
+    director_name = db.Column(db.String)
+    release_date = db.Column(db.String)
+    homepage = db.Column(db.String)
+    released = db.Column(db.String)
     duration = db.Column(db.Integer)
-    original_language = db.Column(db.String(20))
-    synopsis = db.Column(db.Text)
+    original_language = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
     popularity = db.Column(db.Float)
     budget = db.Column(db.Float)
     revenue = db.Column(db.Float)
-    tagline = db.Column(db.String(30))
-    image_cover = db.Column(db.String(100), nullable=False)
-    api_id = db.Column(db.Integer, nullable=False)
-    lock_status = db.Column(db.Boolean, default=0)
+    tagline = db.Column(db.String)
     last_api_update = db.Column(db.DateTime)
 
-    genres = db.relationship("MoviesGenre", backref="movies", lazy=True)
-    actors = db.relationship("MoviesActors", backref="movies", lazy=True)
+    # --- Relationships -----------------------------------------------------------
+    genres = db.relationship("MoviesGenre", back_populates="media", lazy="select")
+    actors = db.relationship("MoviesActors", back_populates="media", lazy="select")
+    labels = db.relationship("MoviesLabels", back_populates="media", lazy="select")
     list_info = db.relationship("MoviesList", back_populates="media", lazy="dynamic")
-    labels = db.relationship("MoviesLabels", back_populates="media", lazy="dynamic")
 
     def to_dict(self) -> Dict:
-        """ Serialization of the movies class """
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -64,8 +52,6 @@ class Movies(MediaMixin, db.Model):
         return media_dict
 
     def add_media_to_user(self, new_status: Status, user_id: int) -> int:
-        """ Add a new movie to the user and return the <total_watched> value """
-
         total_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
 
         # noinspection PyArgumentList
@@ -81,8 +67,6 @@ class Movies(MediaMixin, db.Model):
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
-        """ Get the movies from a specific creator or actor """
-
         if job == "creator":
             query = cls.query.filter(cls.director_name.ilike(f"%{info}%")).all()
         elif job == "actor":
@@ -102,8 +86,6 @@ class Movies(MediaMixin, db.Model):
 
     @classmethod
     def remove_non_list_media(cls):
-        """ Remove all movies that are not present in a User list from the database and the disk """
-
         try:
             movies_to_delete = (
                 cls.query.outerjoin(MoviesList, MoviesList.media_id == cls.id)
@@ -132,8 +114,6 @@ class Movies(MediaMixin, db.Model):
 
     @classmethod
     def get_new_releasing_media(cls):
-        """ Check for the new releasing movies in a week or less from the TMDB API """
-
         try:
             query = (
                 db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
@@ -166,8 +146,6 @@ class Movies(MediaMixin, db.Model):
 
     @classmethod
     def automatic_locking(cls) -> Tuple[int, int]:
-        """ Automatically lock the movies that are more than about 6 months old """
-
         locking_threshold = datetime.utcnow() - timedelta(days=cls.LOCKING_DAYS)
 
         locked_movies = (
@@ -185,47 +163,31 @@ class Movies(MediaMixin, db.Model):
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):
-        """ Refresh a media using the updated data created with the ApiData class """
-
         cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
         db.session.commit()
 
     @staticmethod
     def form_only() -> List[str]:
-        """ Return the allowed fields for a form """
         return ["name", "original_name", "director_name", "release_date", "homepage", "original_language",
                 "duration", "synopsis", "budget", "revenue", "tagline"]
 
 
-class MoviesList(MediaListMixin, db.Model):
-    """ Movieslist SQL model """
-
-    TYPE = ModelTypes.LIST
+class MoviesList(MediaListMixin, MediaList):
     GROUP = MediaType.MOVIES
-    DEFAULT_SORTING = "Title A-Z"
-    DEFAULT_STATUS = Status.COMPLETED
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False)
     rewatched = db.Column(db.Integer, nullable=False, default=0)
     total = db.Column(db.Integer)
-    favorite = db.Column(db.Boolean)
-    feeling = db.Column(db.String(50))
-    score = db.Column(db.Float)
-    comment = db.Column(db.Text)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Movies", back_populates="list_info", lazy=False)
+    user = db.relationship("User", back_populates="movies_list", lazy="select")
+    media = db.relationship("Movies", back_populates="list_info", lazy="joined")
 
     class Status(ExtendedEnum):
         COMPLETED = "Completed"
         PLAN_TO_WATCH = "Plan to Watch"
 
     def to_dict(self) -> Dict:
-        """ Serialization of the MoviesList SQL model """
-
         is_feeling = self.user.add_feeling
 
         media_dict = {}
@@ -247,8 +209,6 @@ class MoviesList(MediaListMixin, db.Model):
         return media_dict
 
     def update_total_watched(self, new_rewatch: int) -> int:
-        """ Update the new total watched movies and total and return new total """
-
         self.rewatched = new_rewatch
         new_total = 1 + new_rewatch
         self.total = new_total
@@ -256,8 +216,6 @@ class MoviesList(MediaListMixin, db.Model):
         return new_total
 
     def update_status(self, new_status: Status) -> int:
-        """ Change the movie status for the current user and return the new total watched """
-
         self.status = new_status
         self.rewatched = 0
         if new_status == Status.COMPLETED:
@@ -270,8 +228,6 @@ class MoviesList(MediaListMixin, db.Model):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        """ Compute the new computed time for the movies """
-
         old_time = current_user.time_spent_movies
         current_user.time_spent_movies = old_time + ((new_value - old_value) * self.media.duration)
 
@@ -289,53 +245,40 @@ class MoviesList(MediaListMixin, db.Model):
                 Movies.director_name.ilike(f"%{search}%"), MoviesActors.name.ilike(f"%{search}%")]
 
 
-class MoviesGenre(db.Model):
-    """ Movies genres SQL model """
-
-    TYPE = ModelTypes.GENRE
+class MoviesGenre(Genres):
     GROUP = MediaType.MOVIES
 
-    id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    genre = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Movies", back_populates="genres", lazy="select")
 
     @staticmethod
     def get_available_genres() -> List:
-        """ Return the available genres for the movies """
         return ["Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family",
                 "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Science Fiction", "TV Movie",
                 "Thriller", "War", "Western"]
 
 
-class MoviesActors(db.Model):
-    """ Movies actors SQL model """
-
-    TYPE = ModelTypes.ACTORS
+class MoviesActors(Actors):
     GROUP = MediaType.MOVIES
 
-    id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    name = db.Column(db.String(150))
-
-
-class MoviesLabels(MediaLabelMixin, db.Model):
-    """ MoviesLabels SQL model """
-
-    TYPE = ModelTypes.LABELS
-    GROUP = MediaType.MOVIES
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    label = db.Column(db.String(64), nullable=False)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Movies", lazy=False)
+    media = db.relationship("Movies", back_populates="actors", lazy="select")
+
+
+class MoviesLabels(MediaLabelMixin, Labels):
+    GROUP = MediaType.MOVIES
+
+    media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Movies", back_populates="labels", lazy="select")
 
     def to_dict(self) -> Dict:
-        """ Serialization of the MoviesLabels class """
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}

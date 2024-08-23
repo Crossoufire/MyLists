@@ -3,7 +3,7 @@ from flask import current_app
 from flask import jsonify, Blueprint, abort
 from backend.api import db
 from backend.api.routes.handlers import token_auth, current_user
-from backend.api.models.user_models import UserLastUpdate
+from backend.api.models.user import UserLastUpdate
 from backend.api.utils.decorators import validate_json_data
 from backend.api.utils.enums import MediaType, Status, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
@@ -17,7 +17,7 @@ def coming_next():
     models_list = ModelsManager.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
     try:
         # Remove <BooksList> because no coming next possible
-        from backend.api.models.books_models import BooksList
+        from backend.api.models.books import BooksList
         models_list.remove(BooksList)
     except:
         pass

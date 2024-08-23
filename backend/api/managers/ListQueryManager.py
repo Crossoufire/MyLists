@@ -4,7 +4,7 @@ from flask_sqlalchemy.query import Query
 from sqlalchemy import asc, or_, ColumnElement
 from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.user_models import User
+from backend.api.models.user import User
 from backend.api.routes.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import get

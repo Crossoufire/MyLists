@@ -1,41 +1,31 @@
 from __future__ import annotations
-import datetime
-from enum import Enum
 from typing import List, Dict, Tuple
 from flask import abort, current_app
 from sqlalchemy import func, ColumnElement
 from backend.api import db
+from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.routes.handlers import current_user
-from backend.api.models.user_models import UserLastUpdate, Notifications
-from backend.api.models.utils_models import MediaMixin, MediaListMixin, MediaLabelMixin
+from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.functions import change_air_format
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 
 
-class Books(MediaMixin, db.Model):
-    """ Books SQL model """
-
+class Books(MediaMixin, Media):
     GROUP = MediaType.BOOKS
-    TYPE = ModelTypes.MEDIA
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    release_date = db.Column(db.String(30), nullable=False)
+    release_date = db.Column(db.String, nullable=False)
     pages = db.Column(db.Integer, nullable=False)
-    language = db.Column(db.String(20), nullable=False)
-    publishers = db.Column(db.String(50))
-    synopsis = db.Column(db.Text)
-    image_cover = db.Column(db.String(100), nullable=False)
-    api_id = db.Column(db.Integer)
-    lock_status = db.Column(db.Boolean, default=0)
+    language = db.Column(db.String, nullable=False)
+    publishers = db.Column(db.String)
 
-    genres = db.relationship("BooksGenre")
-    authors = db.relationship("BooksAuthors")
+    # --- Relationships -----------------------------------------------------------
+    genres = db.relationship("BooksGenre", back_populates="media", lazy="select")
+    labels = db.relationship("BooksLabels", back_populates="media", lazy="select")
+    authors = db.relationship("BooksAuthors", back_populates="media", lazy="select")
     list_info = db.relationship("BooksList", back_populates="media", lazy="dynamic")
 
     def to_dict(self) -> Dict:
-        """ Serialization of the books class """
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -50,8 +40,6 @@ class Books(MediaMixin, db.Model):
         return media_dict
 
     def add_media_to_user(self, new_status: Status, user_id: int) -> int:
-        """ Add a new book to the user and return the <total_read> value """
-
         total_read = self.pages if new_status == Status.COMPLETED else 0
 
         # noinspection PyArgumentList
@@ -68,8 +56,6 @@ class Books(MediaMixin, db.Model):
 
     @classmethod
     def get_information(cls, job: str, info: str) -> List[Dict]:
-        """ Get all the authors' related books """
-
         if job == "creator":
             query = (cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
                      .filter(BooksAuthors.name == info).all())
@@ -87,8 +73,6 @@ class Books(MediaMixin, db.Model):
 
     @classmethod
     def remove_non_list_media(cls):
-        """ Remove all books that are not present in a User list from the database and the disk """
-
         try:
             books_to_delete = (
                 cls.query.outerjoin(BooksList, BooksList.media_id == cls.id)
@@ -120,29 +104,19 @@ class Books(MediaMixin, db.Model):
         return ["name", "release_date", "pages", "language", "publishers", "synopsis"]
 
 
-class BooksList(MediaListMixin, db.Model):
-    """ Books list SQL model """
-
-    TYPE = ModelTypes.LIST
+class BooksList(MediaListMixin, MediaList):
     GROUP = MediaType.BOOKS
     TIME_PER_PAGE = 1.7
-    DEFAULT_SORTING = "Title A-Z"
     DEFAULT_STATUS = Status.READING
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    status = db.Column(db.Enum(Status), nullable=False)
     rewatched = db.Column(db.Integer, nullable=False, default=0)
     actual_page = db.Column(db.Integer)
     total = db.Column(db.Integer)
-    favorite = db.Column(db.Boolean)
-    feeling = db.Column(db.String(30))
-    score = db.Column(db.Float)
-    comment = db.Column(db.Text)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Books", back_populates="list_info", lazy=False)
+    user = db.relationship("User", back_populates="books_list", lazy="select")
+    media = db.relationship("Books", back_populates="list_info", lazy="joined")
 
     class Status(ExtendedEnum):
         """ New status class for easiness """
@@ -174,8 +148,6 @@ class BooksList(MediaListMixin, db.Model):
         return media_dict
 
     def update_total_watched(self, new_rewatch: int) -> int:
-        """ Update total read and return the new total """
-
         self.rewatched = new_rewatch
         new_total = self.media.pages + (new_rewatch * self.media.pages)
         self.total = new_total
@@ -183,8 +155,6 @@ class BooksList(MediaListMixin, db.Model):
         return new_total
 
     def update_status(self, new_status: Status) -> int:
-        """ Change the book status for the current user and return the new total """
-
         new_total = self.total
 
         self.status = new_status
@@ -201,15 +171,11 @@ class BooksList(MediaListMixin, db.Model):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        """ Update the new time spent reading for the user """
-
         old_time = current_user.time_spent_books
         current_user.time_spent_books = old_time + ((new_value - old_value) * self.TIME_PER_PAGE)
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
-        """ Return the available sorting for books """
-
         sorting_dict = {
             "Title A-Z": Books.name.asc(),
             "Title Z-A": Books.name.desc(),
@@ -236,29 +202,22 @@ class BooksList(MediaListMixin, db.Model):
         return [Books.name.ilike(f"%{search}%"), BooksAuthors.name.ilike(f"%{search}%")]
 
 
-class BooksGenre(db.Model):
-    """ Books genres SQL model """
-
-    TYPE = ModelTypes.GENRE
+class BooksGenre(Genres):
     GROUP = MediaType.BOOKS
 
-    id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    genre = db.Column(db.String(100), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Books", back_populates="genres", lazy="select")
 
     @classmethod
     def replace_genres(cls, genres: List[Dict], media_id: int):
-        # Remove actual genres
         cls.query.filter_by(media_id=media_id).delete()
-
-        # Add new genres
         db.session.add_all([cls(media_id=media_id, genre=genre["value"]) for genre in genres])
-
-        # Commit changes
         db.session.commit()
 
     @staticmethod
-    def get_available_genres() -> List:
+    def get_available_genres() -> List[str]:
         return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
                 "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
                 "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
@@ -266,38 +225,30 @@ class BooksGenre(db.Model):
 
 
 class BooksAuthors(db.Model):
-    """ Books authors SQL model """
-
     TYPE = ModelTypes.AUTHORS
     GROUP = MediaType.BOOKS
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    name = db.Column(db.String(150))
-
-
-class BooksLabels(MediaLabelMixin, db.Model):
-    """ Personal BooksList SQL model """
-
-    TYPE = ModelTypes.LABELS
-    GROUP = MediaType.BOOKS
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    label = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String)
 
     # --- Relationships -----------------------------------------------------------
-    media = db.relationship("Books", lazy=False)
+    media = db.relationship("Books", back_populates="authors", lazy="select")
+
+
+class BooksLabels(MediaLabelMixin, Labels):
+    GROUP = MediaType.BOOKS
+
+    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Books", back_populates="labels", lazy="select")
 
     def to_dict(self) -> Dict:
-        """ Serialization of the BooksLabels class """
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        # Add more info
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
 

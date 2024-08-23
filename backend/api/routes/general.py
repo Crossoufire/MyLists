@@ -2,8 +2,8 @@ from flask import Blueprint, jsonify, request, url_for, current_app, abort
 from sqlalchemy import desc, func
 from backend.api import cache, db
 from backend.api.managers.ApiManager import ApiSeries, MoviesApiManager
-from backend.api.models.user_models import User
-from backend.api.models.utils_models import Ranks, MyListsStats, Frames
+from backend.api.models.user import User
+from backend.api.models.mixins import Ranks, MyListsStats, Frames
 from backend.api.routes.handlers import token_auth
 from backend.api.utils.enums import RoleType
 from backend.api.utils.functions import display_time, compute_level

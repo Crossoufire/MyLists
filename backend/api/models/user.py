@@ -25,15 +25,15 @@ followers = db.Table(
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True)
-    access_token = db.Column(db.String(64), nullable=False, index=True)
+    access_token = db.Column(db.String, nullable=False, index=True)
     access_expiration = db.Column(db.DateTime, nullable=False)
-    refresh_token = db.Column(db.String(64), nullable=False, index=True)
+    refresh_token = db.Column(db.String, nullable=False, index=True)
     refresh_expiration = db.Column(db.DateTime, nullable=False)
-    admin_token = db.Column(db.String(64))
+    admin_token = db.Column(db.String)
     admin_expiration = db.Column(db.DateTime)
 
     # --- Relationships ------------------------------------------------------------
-    user = db.relationship("User", backref=db.backref("token", lazy="noload"))
+    user = db.relationship("User", back_populates="token", lazy="select")
 
     def generate(self):
         """ Generate the <access_token> and the <refresh_token> for a user """
@@ -79,22 +79,20 @@ class Token(db.Model):
 
 
 class User(db.Model):
-    """ User class representation """
-
     def __repr__(self):
         return f"<{self.username} - {self.id}>"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(15), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String, unique=True, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
     registered_on = db.Column(db.DateTime, nullable=False)
-    password = db.Column(db.String(60))
-    image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
-    background_image = db.Column(db.String(50), nullable=False, default="default.jpg")
+    password = db.Column(db.String)
+    image_file = db.Column(db.String, nullable=False, default="default.jpg")
+    background_image = db.Column(db.String, nullable=False, default="default.jpg")
     private = db.Column(db.Boolean, nullable=False, default=False)
     active = db.Column(db.Boolean, nullable=False, default=False)
     role = db.Column(db.Enum(RoleType), nullable=False, default=RoleType.USER)
-    transition_email = db.Column(db.String(120))
+    transition_email = db.Column(db.String)
     activated_on = db.Column(db.DateTime)
     last_notif_read_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -119,14 +117,26 @@ class User(db.Model):
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
 
     # --- Relationships ----------------------------------------------------------------
-    series_list = db.relationship("SeriesList", backref="user", lazy="select")
-    anime_list = db.relationship("AnimeList", backref="user", lazy="select")
-    movies_list = db.relationship("MoviesList", backref="user", lazy="select")
-    games_list = db.relationship("GamesList", backref="user", lazy="select")
-    books_list = db.relationship("BooksList", backref="user", lazy="select")
-    notifications = db.relationship("Notifications", backref="user", lazy="select")
-    last_updates = db.relationship("UserLastUpdate", backref="user", order_by="desc(UserLastUpdate.date)",
-                                   lazy="dynamic")
+    token = db.relationship("Token", back_populates="user", lazy="noload")
+    anime_list = db.relationship("AnimeList", back_populates="user", lazy="select")
+    games_list = db.relationship("GamesList", back_populates="user", lazy="select")
+    books_list = db.relationship("BooksList", back_populates="user", lazy="select")
+    movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
+    series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
+    notifications = db.relationship(
+        "Notifications",
+        primaryjoin="Notifications.user_id == User.id",
+        back_populates="user",
+        order_by="desc(Notifications.timestamp)",
+        lazy="dynamic",
+    )
+    last_updates = db.relationship(
+        "UserLastUpdate",
+        primaryjoin="UserLastUpdate.user_id == User.id",
+        back_populates="user",
+        order_by="desc(UserLastUpdate.date)",
+        lazy="dynamic",
+    )
     followed = db.relationship(
         "User",
         secondary=followers,
@@ -235,8 +245,6 @@ class User(db.Model):
         return token
 
     def check_autorization(self, username: str) -> User:
-        """ Check if the <current_user> can see the other <user> profile page """
-
         user = self.query.filter_by(username=username).first()
         if not user:
             return abort(404)
@@ -248,24 +256,17 @@ class User(db.Model):
         return user
 
     def set_view_count(self, user: User, media_type: MediaType):
-        """ Set new view count to the <user> if different from <current_user> """
-
         if self.role != RoleType.ADMIN and self.id != user.id:
             setattr(user, f"{media_type.value}_views", getattr(user, f"{media_type.value}_views") + 1)
 
     def add_follow(self, user: User):
-        """ Add the followed user to the current user """
-
         if not self.is_following(user):
             self.followed.append(user)
 
     def is_following(self, user: User) -> bool:
-        """ Check if the current user is not already following the other user """
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
     def remove_follow(self, user: User):
-        """ Remove the followed user from the current user """
-
         if self.is_following(user):
             self.followed.remove(user)
 
@@ -274,8 +275,6 @@ class User(db.Model):
         return {"total":  len(follows), "follows": [follow.to_dict() for follow in follows[:limit_]]}
 
     def get_last_notifications(self, limit_: int = 8) -> List[Dict]:
-        """ Get the last <limit_> notifications for the current user """
-
         # Register read time
         current_user.last_notif_read_time = datetime.utcnow()
         db.session.commit()
@@ -286,14 +285,10 @@ class User(db.Model):
         return [notification.to_dict() for notification in query]
 
     def count_notifications(self) -> int:
-        """ Count the number of unread notifications for the current user """
-
         last_notif_time = self.last_notif_read_time or datetime(1900, 1, 1)
         return Notifications.query.filter_by(user_id=self.id).filter(Notifications.timestamp > last_notif_time).count()
 
     def get_global_media_stats(self) -> Dict:
-        """ Get the user's global media stats based on the user's activated MediaType """
-
         models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
 
         # Calculate time per media [hours]
@@ -350,8 +345,6 @@ class User(db.Model):
         return data
 
     def get_one_media_details(self, media_type: MediaType) -> Dict:
-        """ Get the selected media details for the user """
-
         media_list, media_label = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
@@ -370,9 +363,7 @@ class User(db.Model):
         return media_dict
 
     def get_list_levels(self) -> List[Dict]:
-        """ Get all list levels for a user """
-
-        from backend.api.models.utils_models import Ranks
+        from backend.api.models.mixins import Ranks
 
         models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
         all_ranks = {rank.level: {"image": rank.image, "name": rank.name} for rank in Ranks.query.all()}
@@ -395,15 +386,12 @@ class User(db.Model):
 
         return level_per_ml
 
-    def get_last_updates(self, limit_: int) -> List[Dict]:
-        """ Get last current user's media updates """
-        return [update.to_dict() for update in self.last_updates.filter_by(user_id=self.id).limit(limit_).all()]
+    def get_last_updates(self, limit: int) -> List[Dict]:
+        return [update.to_dict() for update in self.last_updates.limit(limit).all()]
 
-    def get_follows_updates(self, limit_: int) -> List[Dict]:
-        """ Get the last updates of the current user's followed users """
-
+    def get_follows_updates(self, limit: int) -> List[Dict]:
         follows_updates = (UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
-                           .order_by(desc(UserLastUpdate.date)).limit(limit_))
+                           .order_by(desc(UserLastUpdate.date)).limit(limit))
 
         return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 
@@ -503,10 +491,9 @@ class UserLastUpdate(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
 
-    media_name = db.Column(db.String(50), nullable=False)
+    media_name = db.Column(db.String, nullable=False)
     media_type = db.Column(db.Enum(MediaType), index=True, nullable=False)
     date = db.Column(db.DateTime, index=True, nullable=False)
-
     media_id = db.Column(db.Integer)
     old_status = db.Column(db.Enum(Status))
     new_status = db.Column(db.Enum(Status))
@@ -520,6 +507,9 @@ class UserLastUpdate(db.Model):
     new_page = db.Column(db.Integer)
     old_redo = db.Column(db.Integer)
     new_redo = db.Column(db.Integer)
+
+    # --- Relationships -----------------------------------------------------------
+    user = db.relationship("User", back_populates="last_updates", lazy="select")
 
     def to_dict(self) -> Dict:
         update_dict = {}
@@ -568,8 +558,6 @@ class UserLastUpdate(db.Model):
 
     @classmethod
     def set_new_update(cls, media: db.Model, update_type: str, old_value, new_value, **kwargs):
-        """ Add a new <Status> update to the model. Kwargs for specific details """
-
         # Check previous database entry
         previous_entry = (
             cls.query.filter_by(user_id=current_user.id, media_type=media.GROUP, media_id=media.id)
@@ -612,8 +600,6 @@ class UserLastUpdate(db.Model):
 
     @classmethod
     def get_history(cls, media_type: MediaType, media_id: int) -> List[Dict]:
-        """ Get the <current_user> history for a specific <media> """
-
         history = cls.query.filter(cls.user_id == current_user.id, cls.media_type == media_type,
                                    cls.media_id == media_id).order_by(desc(UserLastUpdate.date)).all()
 
@@ -621,8 +607,6 @@ class UserLastUpdate(db.Model):
 
 
 class Notifications(db.Model):
-    """ Notification SQL model """
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     media_type = db.Column(db.String(50))
@@ -630,10 +614,11 @@ class Notifications(db.Model):
     payload_json = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
+    # --- Relationships -----------------------------------------------------------
+    user = db.relationship("User", back_populates="notifications", lazy="select")
+
     @classmethod
     def search(cls, user_id: int, media_type: str, media_id: int):
-        """ Search if there are existing notifications for a user related to a specific <media_type> and <media_id> """
-
         data = (
             cls.query.filter_by(user_id=user_id, media_type=media_type, media_id=media_id)
             .order_by(desc(cls.timestamp))
@@ -643,8 +628,6 @@ class Notifications(db.Model):
         return data
 
     def to_dict(self):
-        """ Serialize the Notifications data """
-
         data = dict(
             media_id=self.media_id,
             media=self.media_type.replace("list", "") if self.media_type else None,

@@ -9,7 +9,7 @@ from backend.config import TestConfig
 
 TEST_USER = {
     "username": "test",
-    "password": "good-password"
+    "password": "good-password",
 }
 
 
@@ -35,11 +35,10 @@ class BaseTest(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
 
-        # Create tables
         db.create_all()
 
-        from backend.api.models.user_models import User
-        from backend.api.models.utils_models import Ranks
+        from backend.api.models.user import User
+        from backend.api.models.mixins import Ranks
 
         self.user = User(
             username=TEST_USER["username"],

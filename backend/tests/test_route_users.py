@@ -203,7 +203,7 @@ class UserTests(BaseTest):
         self.assertEqual(rv.status_code, 200)
 
     def test_settings_delete_account(self):
-        from backend.api.models.user_models import User, UserLastUpdate, Notifications, Token
+        from backend.api.models.user import User, UserLastUpdate, Notifications, Token
         from backend.api.utils.enums import ModelTypes
 
         self.register_new_user(username="delete")

@@ -22,9 +22,7 @@ cache = Cache()
 cors = CORS()
 
 
-def _import_blueprints(app: Flask):
-    """ Import and register the blueprints for the app """
-
+def import_blueprints(app: Flask):
     from backend.api.routes.tokens import tokens as api_tokens_bp
     from backend.api.routes.users import users as api_users_bp
     from backend.api.routes.media import media_bp as api_media_bp
@@ -43,13 +41,11 @@ def _import_blueprints(app: Flask):
         app.register_blueprint(blueprint, url_prefix="/api")
 
 
-def _create_app_logger(app: Flask):
-    """ Create an app logger registering the INFO, WARNING, and ERRORS for the app """
+def create_app_logger(app: Flask):
+    log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "mylists.log")
 
-    log_file_path = f"{os.path.abspath(os.path.dirname(__file__))}/static/log/mylists.log"
-
+    os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
     if not os.path.exists(log_file_path):
-        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
         with open(log_file_path, "a"):
             pass
 
@@ -62,7 +58,7 @@ def _create_app_logger(app: Flask):
     app.logger.info("MyLists is starting up...")
 
 
-def _create_mail_handler(app: Flask):
+def create_mail_handler(app: Flask):
     """ Create a mail handler (TLS only) associated with the app logger: send email when errors occurs """
 
     mail_handler = SMTPHandler(
@@ -78,34 +74,16 @@ def _create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
-def _create_first_db_data():
-    """ Create all DB tables the first time and add the first data to the DB """
-
-    from backend.api.models.user_models import User
+def create_first_db_data():
     from backend.cli.tasks import compute_media_time_spent
-    from backend.api.models.utils_models import Ranks, Frames
+    from backend.api.models.mixins import Ranks, Frames
 
-    # Create all DB tables - does not update existing tables
     db.create_all()
-
-    # Create an <admin> if no user in DB
-    if User.query.filter_by(id=1).first() is None:
-        admin = User(
-            username="admin",
-            email="admin@admin.com",
-            password=bcrypt.generate_password_hash("password").decode("utf-8"),
-            active=True,
-            registered_on=datetime.utcnow(),
-            activated_on=datetime.utcnow(),
-            role=RoleType.ADMIN,
-        )
-
-        db.session.add(admin)
-        db.session.commit()
 
     Ranks.update_db_ranks()
     Frames.update_db_frames()
     compute_media_time_spent()
+
     db.session.commit()
 
 
@@ -126,22 +104,23 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
     with app.app_context():
-        _import_blueprints(app)
+        import_blueprints(app)
 
         if not app.debug and not app.testing:
-            _create_app_logger(app)
-            _create_mail_handler(app)
+            create_app_logger(app)
+            create_mail_handler(app)
+            create_first_db_data()
 
-        from backend.cli.commands import cli_commands
-        cli_commands()
+        from backend.cli.commands import init_cli_commands
+        init_cli_commands()
 
         return app
 
 
 # Needed for circular imports
-from backend.api.models.books_models import *
-from backend.api.models.games_models import *
-from backend.api.models.movies_models import *
-from backend.api.models.tv_models import *
-from backend.api.models.user_models import *
-from backend.api.models.utils_models import *
+from backend.api.models.books import *
+from backend.api.models.games import *
+from backend.api.models.movies import *
+from backend.api.models.tv import *
+from backend.api.models.user import *
+from backend.api.models.mixins import *

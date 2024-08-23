@@ -5,7 +5,7 @@ from flask_bcrypt import generate_password_hash
 from backend.api import db
 from backend.api.routes.handlers import token_auth, current_user
 from backend.api.routes.email import send_email
-from backend.api.models.user_models import (Notifications, UserLastUpdate, User, Token, followers)
+from backend.api.models.user import (Notifications, UserLastUpdate, User, Token, followers)
 from backend.api.utils.enums import RoleType, ModelTypes
 from backend.api.utils.functions import save_picture
 from backend.api.managers.ModelsManager import ModelsManager
@@ -73,8 +73,8 @@ def profile(username: str):
     if current_user.role != RoleType.ADMIN and user.id != current_user.id:
         user.profile_views += 1
 
-    user_updates = user.get_last_updates(limit_=6)
-    follows_updates = user.get_follows_updates(limit_=10)
+    user_updates = user.get_last_updates(limit=6)
+    follows_updates = user.get_follows_updates(limit=10)
     list_levels = user.get_list_levels()
     media_global = user.get_global_media_stats()
     models = ModelsManager.get_lists_models(user.activated_media_type(), ModelTypes.LIST)
@@ -198,14 +198,12 @@ def update_follow():
 @users.route("/notifications", methods=["GET"])
 @token_auth.login_required
 def notifications():
-    """ Fetch the current user's last notifications """
     return jsonify(data=current_user.get_last_notifications(8)), 200
 
 
 @users.route("/notifications/count", methods=["GET"])
 @token_auth.login_required
 def count_notifs():
-    """ Count the current user's notifications """
     return jsonify(data=current_user.count_notifications()), 200
 
 

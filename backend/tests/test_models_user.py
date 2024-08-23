@@ -1,5 +1,5 @@
 from backend.api import db
-from backend.api.models.user_models import Token
+from backend.api.models.user import Token
 from backend.api.utils.enums import RoleType, MediaType
 from backend.api.utils.functions import compute_level
 from backend.tests.base_test import BaseTest

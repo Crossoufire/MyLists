@@ -11,7 +11,7 @@ class UtilsFunctionTests(BaseTest):
     def setUp(self):
         super().setUp()
 
-        from backend.api.models.user_models import User
+        from backend.api.models.user import User
 
         base_dir = os.path.abspath(os.path.dirname(__file__))
 
