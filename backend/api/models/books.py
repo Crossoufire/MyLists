@@ -3,8 +3,8 @@ from typing import List, Dict, Tuple
 from flask import abort, current_app
 from sqlalchemy import func, ColumnElement
 from backend.api import db
+from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
-from backend.api.core.handlers import current_user
 from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 

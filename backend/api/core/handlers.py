@@ -2,16 +2,8 @@ from __future__ import annotations
 from http import HTTPStatus
 from typing import Tuple, Dict
 from flask import abort
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.exceptions import Forbidden, Unauthorized
-from werkzeug.local import LocalProxy
-
-
-basic_auth = HTTPBasicAuth()
-token_auth = HTTPTokenAuth()
-
-# Local proxy: make <current_user> available globally
-current_user = LocalProxy(lambda: token_auth.current_user())
+from backend.api.core import basic_auth, token_auth
 
 
 @basic_auth.verify_password

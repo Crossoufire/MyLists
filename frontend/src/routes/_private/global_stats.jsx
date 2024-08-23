@@ -1,15 +1,15 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
 import {barTheme} from "@/lib/constants";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
-import {capitalize, changeValueFormat} from "@/lib/utils";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {capitalize, changeValueFormat, globalStatsTimeFormat} from "@/lib/utils";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -43,7 +43,7 @@ function GlobalStatsPage() {
         <PageTitle title="Global Statistics" subtitle="The global statistics of all the users using MyLists.info">
             <div className="flex flex-col gap-4 mt-4 mx-auto max-w-[1000px]">
                 <div className="font-medium text-center py-6 rounded-md bg-card max-sm:text-2xl text-5xl">
-                    {apiData.total_time.total}
+                    {globalStatsTimeFormat(apiData.total_time.total)}
                 </div>
                 <div className="grid grid-cols-12 justify-center items-center gap-4">
                     {mediaData.map((media, idx) =>

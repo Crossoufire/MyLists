@@ -6,6 +6,11 @@ from backend.tests.base_test import BaseTest, TEST_USER
 
 
 class UserTests(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.bad_image_path = os.path.join(self.current_dir, "images/anonymous_scrambled.jpg")
+
     def test_register_user(self):
         current_app.config["USER_ACTIVE_PER_DEFAULT"] = False
 
@@ -259,20 +264,20 @@ class UserTests(BaseTest):
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "bobby"})
         self.assertEqual(rv.status_code, 400)
 
-        with open("tests/images/anonymous_scrambled.jpg", "rb") as fp:
+        with open(self.bad_image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 400)
 
-        with open("tests/images/anonymous_scrambled.jpg", "rb") as fp:
+        with open(self.bad_image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 400)
 
-        with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
+        with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 200)
             assert rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pics/")
 
-        with open(os.path.join(os.path.abspath("."), f"api/static/covers/default.jpg"), "rb") as fp:
+        with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 200)
             assert rv.json["updated_user"]["back_image"].startswith("/api/static/background_pics/")

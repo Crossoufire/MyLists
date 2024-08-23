@@ -132,6 +132,40 @@ export const getLevelColor = (intLevel) => {
     }
 };
 
+export const globalStatsTimeFormat = (minutes) => {
+    const MINUTES_PER_HOUR = 60;
+    const HOURS_PER_DAY = 24;
+    const DAYS_PER_YEAR = 365.25;
+    const MONTHS_ARRAY = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    const years = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR));
+    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY * DAYS_PER_YEAR;
+
+    let months = 0;
+    let days = Math.floor(minutes / (MINUTES_PER_HOUR * HOURS_PER_DAY));
+
+    while (days >= MONTHS_ARRAY[months % 12]) {
+        days -= MONTHS_ARRAY[months % 12];
+        months++;
+    }
+
+    minutes %= MINUTES_PER_HOUR * HOURS_PER_DAY;
+    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+
+    const parts = [];
+    if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
+    if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
+    if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+
+    if (parts.length === 0) return "Less than an hour";
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return parts.join(" and ");
+
+    const lastPart = parts.pop();
+    return parts.join(", ") + ", and " + lastPart;
+};
+
 
 // --- Time Formatting -------------------------------------------------------------------------------------
 

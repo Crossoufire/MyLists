@@ -12,7 +12,6 @@ def as_bool(value: str) -> bool:
 
 
 class Config:
-    # Debug options
     DEBUG = False
     TESTING = False
     USER_ACTIVE_PER_DEFAULT = False
@@ -118,4 +117,6 @@ def get_config():
     env = os.getenv("FLASK_ENV", "development")
     if env == "production":
         return ProdConfig
+    elif env == "testing":
+        return TestConfig
     return DevConfig

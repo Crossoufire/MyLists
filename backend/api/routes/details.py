@@ -8,7 +8,7 @@ from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
 from backend.api.managers.ApiManager import ApiManager
-from backend.api.core.handlers import token_auth, current_user
+from backend.api.core import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
 from backend.api.utils.functions import get, format_datetime

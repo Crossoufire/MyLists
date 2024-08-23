@@ -5,12 +5,11 @@ from typing import List
 from flask import current_app
 from sqlalchemy import select, text
 from sqlalchemy.orm import aliased
-from backend.api import db
+from backend.api import db, cache
 from backend.api.managers.ApiManager import ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.movies import Movies
 from backend.api.models.user import User
-from backend.api.models.mixins import MyListsStats
 from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -244,7 +243,6 @@ def compute_media_time_spent():
         for user, _, _, time_spent in query:
             setattr(user, f"time_spent_{media.GROUP.value}", time_spent)
 
-    # Commit changes
     db.session.commit()
 
     current_app.logger.info("[SYSTEM] - Finished Calculating User Total Time -")
@@ -252,12 +250,11 @@ def compute_media_time_spent():
 
 
 def update_Mylists_stats():
-    """ Update the MyLists global stats """
-
-    dict_stats = GlobalStats().return_results()
-    stats_to_add = MyListsStats(**dict_stats)
-    db.session.add(stats_to_add)
-    db.session.commit()
+    """ Update the MyLists global stats. Every day at 3:00 AM UTC+1 """
+    from flask import jsonify
+    stats = GlobalStats().compute_global_stats()
+    cache.set("mylists-stats", jsonify(data=stats), timeout=86400)
+    current_app.logger.info("*** Global stats calculated and cache refreshed.")
 
 
 def update_IGDB_API():

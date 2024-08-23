@@ -1,4 +1,3 @@
-import json
 from typing import Tuple, Dict
 from sqlalchemy import func, text
 from backend.api import db
@@ -174,23 +173,23 @@ class GlobalStats:
         model = ModelsManager.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
         return db.session.query(func.sum(model.actual_page)).first()[0] or 0
 
-    def return_results(self) -> Dict[str, Dict | int]:
+    def compute_global_stats(self) -> Dict[str, Dict | int]:
         nb_users, nb_media = self.get_nb_media_and_users()
         media_eps_seas = self.get_total_eps_seasons()
 
         return dict(
             nb_users=nb_users,
-            nb_media=json.dumps(nb_media),
+            nb_media=nb_media,
             total_pages=self.get_total_book_pages(),
-            total_episodes=json.dumps(media_eps_seas),
-            total_seasons=json.dumps(media_eps_seas),
-            total_time=json.dumps(self.get_total_time_spent()),
-            top_media=json.dumps(self.get_top_media()),
-            top_genres=json.dumps(self.get_top_genres()),
-            top_actors=json.dumps(self.get_top_actors()),
-            top_directors=json.dumps(self.get_top_directors()),
-            top_dropped=json.dumps(self.get_top_dropped()),
-            total_movies=json.dumps(self.get_total_movies()),
-            top_authors=json.dumps(self.get_top_authors()),
-            top_developers=json.dumps(self.get_top_developers()),
+            total_episodes=media_eps_seas,
+            total_seasons=media_eps_seas,
+            total_time=self.get_total_time_spent(),
+            top_media=self.get_top_media(),
+            top_genres=self.get_top_genres(),
+            top_actors=self.get_top_actors(),
+            top_directors=self.get_top_directors(),
+            top_dropped=self.get_top_dropped(),
+            total_movies=self.get_total_movies(),
+            top_authors=self.get_top_authors(),
+            top_developers=self.get_top_developers(),
         )

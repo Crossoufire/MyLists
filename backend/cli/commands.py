@@ -1,4 +1,3 @@
-import unittest
 import click
 from backend.cli.tasks import *
 
@@ -10,12 +9,6 @@ def create_cli_commands():
     def dbml():
         """ Create DBML file from Models """
         generate_dbml()
-
-    @current_app.cli.command()
-    def testing():
-        """ Run all backend tests """
-        tests = unittest.TestLoader().discover("tests")
-        result = unittest.TextTestRunner(verbosity=2).run(tests)
 
     @current_app.cli.command()
     @click.argument("days", type=int, default=180)

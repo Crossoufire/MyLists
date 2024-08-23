@@ -72,11 +72,10 @@ def create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
-def create_db_and_compute_time_spent():
-    from backend.cli.tasks import compute_media_time_spent
-    db.create_all()
+def init_stats_and_time_spent():
+    from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
     compute_media_time_spent()
-    db.session.commit()
+    update_Mylists_stats()
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
@@ -98,10 +97,12 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     with app.app_context():
         import_blueprints(app)
 
+        db.create_all()
+
         if not app.debug and not app.testing:
             create_app_logger(app)
             create_mail_handler(app)
-            create_db_and_compute_time_spent()
+            init_stats_and_time_spent()
 
         from backend.cli.commands import create_cli_commands
         create_cli_commands()

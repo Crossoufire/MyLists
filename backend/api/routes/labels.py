@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from flask import Blueprint, jsonify, abort, current_app, request
 from backend.api import db
-from backend.api.core.handlers import token_auth, current_user
+from backend.api.core import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager

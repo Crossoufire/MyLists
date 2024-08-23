@@ -12,10 +12,10 @@ class UtilsFunctionTests(BaseTest):
 
         from backend.api.models.user import User
 
-        base_dir = os.path.abspath(os.path.dirname(__file__))
+        current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        self.image_path = f"{base_dir}/images/anonymous.jpg"
-        self.bad_image_path = f"{base_dir}/images/anonymous_scrambled.jpg"
+        self.image_path = os.path.join(current_dir, "images/anonymous.jpg")
+        self.bad_image_path = os.path.join(current_dir, "images/anonymous_scrambled.jpg")
         self.user = User.query.first()
 
     def _test_save_picture(self, file: FileStorage, user_attr: str, is_profile: bool):
@@ -154,8 +154,10 @@ class UtilsFunctionTests(BaseTest):
             )
 
             self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path,
-                                            "static", "background_pics", self.user.background_image)),
+                os.path.isfile(os.path.join(
+                    self.app.root_path,
+                    "static", "background_pics", self.user.background_image)
+                ),
                 False
             )
 

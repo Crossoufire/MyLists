@@ -10,7 +10,7 @@ from flask_bcrypt import check_password_hash
 from sqlalchemy import desc, func, Integer, case, select, union_all, literal
 from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
-from backend.api.core.handlers import current_user
+from backend.api.core import current_user
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
 from backend.api.utils.functions import compute_level, safe_div
 from backend.api.managers.ModelsManager import ModelsManager

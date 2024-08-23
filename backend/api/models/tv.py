@@ -5,7 +5,7 @@ from typing import List, Dict, Tuple, Type
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
-from backend.api.core.handlers import current_user
+from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.user import UserLastUpdate, Notifications

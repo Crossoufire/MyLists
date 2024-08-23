@@ -2,11 +2,11 @@ from flask import Blueprint, jsonify, request, url_for, current_app, abort
 from sqlalchemy import desc, func
 from backend.api import cache, db
 from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
+from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User
-from backend.api.models.mixins import MyListsStats
 from backend.api.core.handlers import token_auth
 from backend.api.utils.enums import RoleType
-from backend.api.utils.functions import display_time, compute_level
+from backend.api.utils.functions import compute_level
 
 general = Blueprint("api_general", __name__)
 
@@ -80,10 +80,10 @@ def hall_of_fame():
 
 @general.route("/mylists_stats", methods=["GET"])
 @token_auth.login_required
+@cache.cached(timeout=86400, key_prefix="mylists-stats")
 def mylists_stats():
-    data = MyListsStats.get_all_stats()
-    data["total_time"]["total"] = display_time(data["total_time"]["total"])
-    return jsonify(data=data), 200
+    """ Global MyLists stats. Actualized every day at 3:00 AM UTC+1 """
+    return jsonify(data=GlobalStats().compute_global_stats()), 200
 
 
 @general.route("/levels/profile_borders", methods=["GET"])
