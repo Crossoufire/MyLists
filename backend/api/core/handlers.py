@@ -55,5 +55,4 @@ def token_auth_error(status: int = HTTPStatus.UNAUTHORIZED) -> Tuple[Dict, int]:
     return response, error.code
 
 
-# Avoid circular imports
 from backend.api.models.user import User

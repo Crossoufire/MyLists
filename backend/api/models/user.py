@@ -15,6 +15,7 @@ from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
 from backend.api.utils.functions import compute_level, safe_div
 from backend.api.managers.ModelsManager import ModelsManager
 
+
 followers = db.Table(
     "followers",
     db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
@@ -317,7 +318,7 @@ class User(db.Model):
             count_per_metric=media_list.get_media_count_per_rating(self),
             time_hours=int(getattr(self, f"time_spent_{media_type.value}") / 60),
             time_days=int(getattr(self, f"time_spent_{media_type.value}") / 1440),
-            labels=media_label.get_total_and_labels_names(self.id, limit_=10),
+            labels=media_label.get_total_and_labels_names(self.id, limit=10),
         )
 
         media_dict.update(media_list.get_media_count_per_status(self.id))
@@ -468,8 +469,10 @@ class UserLastUpdate(db.Model):
                 ]
             except:
                 update_dict["update"] = ["Watching"]
-                current_app.logger.error(f"[ERROR] - An error occurred updating the user last updates for: "
-                                         f"({self.media_id}, {self.media_name}, {self.media_type})")
+                current_app.logger.error(
+                    f"[ERROR] - An error occurred updating the user last updates for: "
+                    f"({self.media_id}, {self.media_name}, {self.media_type})"
+                )
 
         update_dict["date"] = self.date
         update_dict["media_name"] = self.media_name
@@ -480,7 +483,6 @@ class UserLastUpdate(db.Model):
 
     @classmethod
     def set_new_update(cls, media: db.Model, update_type: str, old_value, new_value, **kwargs):
-        # Check previous database entry
         previous_entry = (
             cls.query.filter_by(user_id=current_user.id, media_type=media.GROUP, media_id=media.id)
             .order_by(desc(cls.date))
@@ -491,7 +493,6 @@ class UserLastUpdate(db.Model):
         if previous_entry:
             time_difference = (datetime.utcnow() - previous_entry.date).total_seconds()
 
-        # Create new update dict
         update_dict = {
             "user_id": current_user.id,
             "media_name": media.name,
@@ -502,18 +503,14 @@ class UserLastUpdate(db.Model):
             "date": datetime.utcnow(),
         }
 
-        # Check for season
         if kwargs.get("old_episode") and kwargs.get("new_episode"):
             update_dict.update({"old_episode": kwargs["old_episode"], "new_episode": kwargs["new_episode"]})
 
-        # Check for episode
         if kwargs.get("old_season"):
             update_dict.update({"old_season": kwargs["old_season"], "new_season": kwargs["old_season"]})
 
-        # Create new update
         new_update = cls(**update_dict)
 
-        # Add new update
         if time_difference > cls.THRESHOLD:
             db.session.add(new_update)
         else:
@@ -522,9 +519,11 @@ class UserLastUpdate(db.Model):
 
     @classmethod
     def get_history(cls, media_type: MediaType, media_id: int) -> List[Dict]:
-        history = cls.query.filter(cls.user_id == current_user.id, cls.media_type == media_type,
-                                   cls.media_id == media_id).order_by(desc(UserLastUpdate.date)).all()
-
+        history = (
+            cls.query.filter(cls.user_id == current_user.id, cls.media_type == media_type, cls.media_id == media_id)
+            .order_by(desc(UserLastUpdate.date))
+            .all()
+        )
         return [update.to_dict() for update in history]
 
 

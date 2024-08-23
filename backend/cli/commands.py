@@ -3,7 +3,7 @@ import click
 from backend.cli.tasks import *
 
 
-def init_cli_commands():
+def create_cli_commands():
     """ Register the commands to the Flask CLI """
 
     @current_app.cli.command()

@@ -8,11 +8,10 @@ from backend.api import db
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.core.handlers import current_user
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 
 
-class Games(MediaMixin, Media):
+class Games(Media):
     GROUP: MediaType = MediaType.GAMES
 
     collection_name = db.Column(db.String)
@@ -147,7 +146,7 @@ class Games(MediaMixin, Media):
                 "synopsis", "hltb_main_time", "hltb_main_and_extra_time", "hltb_total_complete_time"]
 
 
-class GamesList(MediaListMixin, MediaList):
+class GamesList(MediaList):
     GROUP = MediaType.GAMES
     DEFAULT_SORTING = "Playtime +"
     DEFAULT_STATUS = Status.PLAYING
@@ -277,7 +276,7 @@ class GamesCompanies(db.Model):
     media = db.relationship("Games", back_populates="companies", lazy="select")
 
 
-class GamesLabels(MediaLabelMixin, Labels):
+class GamesLabels(Labels):
     GROUP = MediaType.GAMES
 
     media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)

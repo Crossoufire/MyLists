@@ -7,12 +7,11 @@ from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core.handlers import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
-from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum
 
 
-class Movies(MediaMixin, Media):
+class Movies(Media):
     GROUP: MediaType = MediaType.MOVIES
 
     original_name = db.Column(db.String, nullable=False)
@@ -40,7 +39,7 @@ class Movies(MediaMixin, Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "actors": self.actors_list,
+            "actors": [actor.name for actor in self.actors],
             "genres": self.genres_list,
         })
 
@@ -165,7 +164,7 @@ class Movies(MediaMixin, Media):
                 "duration", "synopsis", "budget", "revenue", "tagline"]
 
 
-class MoviesList(MediaListMixin, MediaList):
+class MoviesList(MediaList):
     GROUP = MediaType.MOVIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
@@ -263,7 +262,7 @@ class MoviesActors(Actors):
     media = db.relationship("Movies", back_populates="actors", lazy="select")
 
 
-class MoviesLabels(MediaLabelMixin, Labels):
+class MoviesLabels(Labels):
     GROUP = MediaType.MOVIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)

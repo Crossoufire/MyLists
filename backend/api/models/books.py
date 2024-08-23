@@ -6,11 +6,10 @@ from backend.api import db
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.core.handlers import current_user
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 
 
-class Books(MediaMixin, Media):
+class Books(Media):
     GROUP = MediaType.BOOKS
 
     pages = db.Column(db.Integer)
@@ -106,7 +105,7 @@ class Books(MediaMixin, Media):
         return ["name", "release_date", "pages", "language", "publishers", "synopsis"]
 
 
-class BooksList(MediaListMixin, MediaList):
+class BooksList(MediaList):
     GROUP = MediaType.BOOKS
     TIME_PER_PAGE = 1.7
     DEFAULT_STATUS = Status.READING
@@ -237,7 +236,7 @@ class BooksAuthors(db.Model):
     media = db.relationship("Books", back_populates="authors", lazy="select")
 
 
-class BooksLabels(MediaLabelMixin, Labels):
+class BooksLabels(Labels):
     GROUP = MediaType.BOOKS
 
     media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)

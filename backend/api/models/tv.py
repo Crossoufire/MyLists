@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
@@ -9,7 +8,6 @@ from backend.api import db
 from backend.api.core.handlers import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
-from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.models.user import UserLastUpdate, Notifications
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 from backend.api.utils.functions import reorder_seas_eps
@@ -242,7 +240,7 @@ class TVModel(Media):
                 "origin_country", "status", "synopsis"]
 
 
-class TVListModel(MediaListMixin, MediaList):
+class TVListModel(MediaList):
     __abstract__ = True
 
     DEFAULT_STATUS = Status.WATCHING
@@ -307,7 +305,7 @@ class TVListModel(MediaListMixin, MediaList):
         return func.sum(media_model.duration * cls.total)
 
 
-class TVLabelsModel(MediaLabelMixin, Labels):
+class TVLabelsModel(Labels):
     __abstract__ = True
 
     def to_dict(self) -> Dict:
@@ -325,7 +323,7 @@ class TVLabelsModel(MediaLabelMixin, Labels):
 # --- SERIES -----------------------------------------------------------------------------------------------
 
 
-class Series(MediaMixin, TVModel):
+class Series(TVModel):
     GROUP = MediaType.SERIES
 
     # --- Relationships -----------------------------------------------------------
@@ -418,7 +416,7 @@ class SeriesLabels(TVLabelsModel):
 # --- ANIME ------------------------------------------------------------------------------------------------
 
 
-class Anime(MediaMixin, TVModel):
+class Anime(TVModel):
     GROUP = MediaType.ANIME
 
     # --- Relationships -----------------------------------------------------------

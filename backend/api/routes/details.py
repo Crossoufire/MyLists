@@ -38,7 +38,7 @@ def media_details(media_type: MediaType, media_id: int):
 
     data = dict(
         media=media.to_dict(),
-        similar_media=media.get_similar_media(),
+        similar_media=media.get_similar(),
         user_data=media.get_user_list_info(label_model),
         follows_data=media.in_follows_lists(),
     )
