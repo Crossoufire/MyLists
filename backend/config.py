@@ -29,7 +29,6 @@ class Config:
     ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
     REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS") or "7")
     RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
-    ADMIN_TOKEN_MINUTES = int(os.environ.get("ADMIN_TOKEN_MINUTES") or "5")
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
 
     # Email options

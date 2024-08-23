@@ -5,7 +5,7 @@ from sqlalchemy import asc, or_, ColumnElement
 from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User
-from backend.api.routes.handlers import current_user
+from backend.api.core.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import get
 

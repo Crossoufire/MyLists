@@ -5,7 +5,7 @@ from flask import url_for
 from sqlalchemy import desc, asc, func, or_
 from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.routes.handlers import current_user
+from backend.api.core.handlers import current_user
 from backend.api.utils.enums import Status, MediaType, ModelTypes
 from backend.api.utils.functions import safe_div, change_air_format
 

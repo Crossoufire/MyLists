@@ -91,14 +91,6 @@ class MyApiClient {
         }
     };
 
-    async adminLogin(password) {
-        return await this.post("/admin/auth", {password}, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            }
-        });
-    };
-
     async login(usernameOrProvider, passwordOrProviderData, oAuth2) {
         let response;
 

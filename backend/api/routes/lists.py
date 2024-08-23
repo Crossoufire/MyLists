@@ -1,7 +1,7 @@
 from flask import jsonify, Blueprint
 from backend.api import db
 from backend.api.models.user import User
-from backend.api.routes.handlers import token_auth, current_user
+from backend.api.core.handlers import token_auth, current_user
 from backend.api.managers.ListQueryManager import ListQueryManager
 from backend.api.utils.decorators import validate_media_type
 from backend.api.utils.enums import MediaType, RoleType

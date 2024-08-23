@@ -8,7 +8,7 @@ from flask import current_app
 from flask import request, jsonify, Blueprint, abort
 from backend.api import db
 from backend.api.managers.ApiManager import ApiManager
-from backend.api.routes.handlers import token_auth, current_user
+from backend.api.core.handlers import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes
 from backend.api.utils.functions import get
@@ -51,7 +51,7 @@ def media_details(media_type: MediaType, media_id: int):
 @validate_media_type
 def get_details_form(media_type: MediaType, media_id: int):
     if current_user.role == RoleType.USER:
-        return abort(403, "You are not authorized. Please contact an admin.")
+        return abort(403, "Unauthorized")
 
     media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 

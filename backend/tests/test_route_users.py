@@ -16,7 +16,7 @@ class UserTests(BaseTest):
                 "password": "pipou",
                 "callback": "http://localhost:3000/register_token",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             send_email.assert_called_once()
             assert send_email.call_args[1]["to"] == "user@example.com"

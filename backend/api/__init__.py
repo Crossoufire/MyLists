@@ -28,14 +28,13 @@ def import_blueprints(app: Flask):
     from backend.api.routes.media import media_bp as api_media_bp
     from backend.api.routes.search import search_bp as api_search_bp
     from backend.api.routes.general import general as api_general_bp
-    from backend.api.routes.errors import errors as api_errors_bp
-    from backend.api.routes.admin import admin_bp as api_admin_bp
+    from backend.api.core.errors import errors as api_errors_bp
     from backend.api.routes.details import details_bp as api_details_bp
     from backend.api.routes.lists import lists_bp as api_lists_bp
     from backend.api.routes.labels import labels_bp as api_labels_bp
 
     api_blueprints = [api_tokens_bp, api_users_bp, api_media_bp, api_search_bp, api_general_bp, api_errors_bp,
-                      api_admin_bp, api_details_bp, api_lists_bp, api_labels_bp]
+                      api_details_bp, api_lists_bp, api_labels_bp]
 
     for blueprint in api_blueprints:
         app.register_blueprint(blueprint, url_prefix="/api")

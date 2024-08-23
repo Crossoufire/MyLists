@@ -70,7 +70,3 @@ class UserModelTests(BaseTest):
     def test_generate_auth_token(self):
         token = self.user.generate_auth_token()
         self.assertIsInstance(token, Token)
-
-    def test_generate_admin_token(self):
-        token = self.user.generate_admin_token()
-        self.assertIsInstance(token, Token)

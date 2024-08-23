@@ -27,9 +27,7 @@ import { Route as PrivateSettingsImport } from './routes/_private/settings'
 import { Route as PrivateHalloffameImport } from './routes/_private/hall_of_fame'
 import { Route as PrivateGlobalstatsImport } from './routes/_private/global_stats'
 import { Route as PrivateComingnextImport } from './routes/_private/coming_next'
-import { Route as PrivateAdminIndexImport } from './routes/_private/admin/index'
 import { Route as UniversalLevelsProfilelevelsImport } from './routes/_universal/levels.profile_levels'
-import { Route as PrivateAdminDashboardImport } from './routes/_private/admin/dashboard'
 import { Route as PublicOauth2ProviderCallbackImport } from './routes/_public/oauth2.$provider.callback'
 import { Route as PrivateStatsMediaTypeUsernameImport } from './routes/_private/stats/$mediaType.$username'
 import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
@@ -125,21 +123,11 @@ const PrivateProfileUsernameRoute = PrivateProfileUsernameImport.update({
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const PrivateAdminIndexRoute = PrivateAdminIndexImport.update({
-  path: '/admin/',
-  getParentRoute: () => PrivateRoute,
-} as any)
-
 const UniversalLevelsProfilelevelsRoute =
   UniversalLevelsProfilelevelsImport.update({
     path: '/levels/profile_levels',
     getParentRoute: () => UniversalRoute,
   } as any)
-
-const PrivateAdminDashboardRoute = PrivateAdminDashboardImport.update({
-  path: '/admin/dashboard',
-  getParentRoute: () => PrivateRoute,
-} as any)
 
 const PublicOauth2ProviderCallbackRoute =
   PublicOauth2ProviderCallbackImport.update({
@@ -309,26 +297,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexImport
       parentRoute: typeof PublicImport
     }
-    '/_private/admin/dashboard': {
-      id: '/_private/admin/dashboard'
-      path: '/admin/dashboard'
-      fullPath: '/admin/dashboard'
-      preLoaderRoute: typeof PrivateAdminDashboardImport
-      parentRoute: typeof PrivateImport
-    }
     '/_universal/levels/profile_levels': {
       id: '/_universal/levels/profile_levels'
       path: '/levels/profile_levels'
       fullPath: '/levels/profile_levels'
       preLoaderRoute: typeof UniversalLevelsProfilelevelsImport
       parentRoute: typeof UniversalImport
-    }
-    '/_private/admin/': {
-      id: '/_private/admin/'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof PrivateAdminIndexImport
-      parentRoute: typeof PrivateImport
     }
     '/_private/details/$mediaType/$mediaId': {
       id: '/_private/details/$mediaType/$mediaId'
@@ -426,8 +400,6 @@ export const routeTree = rootRoute.addChildren({
     PrivateHalloffameRoute,
     PrivateSettingsRoute,
     PrivateTrendsRoute,
-    PrivateAdminDashboardRoute,
-    PrivateAdminIndexRoute,
     PrivateDetailsMediaTypeMediaIdRoute,
     PrivateListMediaTypeUsernameRoute,
     PrivateProfileUsernameRoute: PrivateProfileUsernameRoute.addChildren({
@@ -478,8 +450,6 @@ export const routeTree = rootRoute.addChildren({
         "/_private/hall_of_fame",
         "/_private/settings",
         "/_private/trends",
-        "/_private/admin/dashboard",
-        "/_private/admin/",
         "/_private/details/$mediaType/$mediaId",
         "/_private/list/$mediaType/$username",
         "/_private/profile/$username",
@@ -550,17 +520,9 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_public/index.jsx",
       "parent": "/_public"
     },
-    "/_private/admin/dashboard": {
-      "filePath": "_private/admin/dashboard.jsx",
-      "parent": "/_private"
-    },
     "/_universal/levels/profile_levels": {
       "filePath": "_universal/levels.profile_levels.jsx",
       "parent": "/_universal"
-    },
-    "/_private/admin/": {
-      "filePath": "_private/admin/index.jsx",
-      "parent": "/_private"
     },
     "/_private/details/$mediaType/$mediaId": {
       "filePath": "_private/details/$mediaType.$mediaId.jsx",

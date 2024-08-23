@@ -9,7 +9,7 @@ from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.mixins import MediaMixin, MediaListMixin, MediaLabelMixin
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.routes.handlers import current_user
+from backend.api.core.handlers import current_user
 from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
 from backend.api.utils.functions import change_air_format, reorder_seas_eps
 

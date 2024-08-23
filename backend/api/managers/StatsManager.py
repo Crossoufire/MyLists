@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Type, List
-from sqlalchemy import func, text, ColumnElement, case, desc
+from typing import List
+from sqlalchemy import func, text, ColumnElement
 from backend.api import db
-from backend.api.models.user import User, followers
+from backend.api.models.user import User
 from backend.api.models.user import UserLastUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money

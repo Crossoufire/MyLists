@@ -4,7 +4,7 @@ from backend.api import cache, db
 from backend.api.managers.ApiManager import ApiSeries, MoviesApiManager
 from backend.api.models.user import User
 from backend.api.models.mixins import MyListsStats
-from backend.api.routes.handlers import token_auth
+from backend.api.core.handlers import token_auth
 from backend.api.utils.enums import RoleType
 from backend.api.utils.functions import display_time, compute_level
 

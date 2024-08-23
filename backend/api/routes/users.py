@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
 from backend.api import db
-from backend.api.routes.handlers import token_auth, current_user
-from backend.api.routes.email import send_email
+from backend.api.core.handlers import token_auth, current_user
+from backend.api.core.email import send_email
 from backend.api.models.user import (Notifications, UserLastUpdate, User, Token, followers)
 from backend.api.utils.enums import RoleType, ModelTypes
 from backend.api.utils.functions import save_picture

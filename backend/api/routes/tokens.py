@@ -8,8 +8,8 @@ from flask import Blueprint, request, abort, url_for, current_app, session
 from flask_bcrypt import generate_password_hash
 from werkzeug.http import dump_cookie
 from backend.api import db
-from backend.api.routes.handlers import basic_auth, current_user
-from backend.api.routes.email import send_email
+from backend.api.core.handlers import basic_auth, current_user
+from backend.api.core.email import send_email
 from backend.api.models.user import Token, User
 
 

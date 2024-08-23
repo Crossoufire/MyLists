@@ -16,8 +16,6 @@ current_user = LocalProxy(lambda: token_auth.current_user())
 
 @basic_auth.verify_password
 def verify_password(username: str, password: str) -> User:
-    """ Verify the user's username and password on login and return the <user> object if successful """
-
     user = User.query.filter_by(username=username).first()
 
     if not user or not user.verify_password(password):

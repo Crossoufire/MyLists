@@ -10,7 +10,7 @@ from flask_bcrypt import check_password_hash
 from sqlalchemy import desc, func, Integer, case, select, union_all, literal
 from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
-from backend.api.routes.handlers import current_user
+from backend.api.core.handlers import current_user
 from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
 from backend.api.utils.functions import compute_level, safe_div
 from backend.api.managers.ModelsManager import ModelsManager
@@ -29,52 +29,28 @@ class Token(db.Model):
     access_expiration = db.Column(db.DateTime, nullable=False)
     refresh_token = db.Column(db.String, nullable=False, index=True)
     refresh_expiration = db.Column(db.DateTime, nullable=False)
-    admin_token = db.Column(db.String)
-    admin_expiration = db.Column(db.DateTime)
 
     # --- Relationships ------------------------------------------------------------
     user = db.relationship("User", back_populates="token", lazy="select")
 
     def generate(self):
-        """ Generate the <access_token> and the <refresh_token> for a user """
-
         self.access_token = secrets.token_urlsafe()
         self.access_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
         self.refresh_token = secrets.token_urlsafe()
         self.refresh_expiration = datetime.utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
-    def generate_admin(self):
-        """ Generate a short-lived <admin_token> """
-
-        self.access_token = secrets.token_urlsafe()
-        self.access_expiration = datetime.utcnow() + timedelta(minutes=0)
-
-        self.refresh_token = secrets.token_urlsafe()
-        self.refresh_expiration = datetime.utcnow() + timedelta(days=0)
-
-        self.admin_token = secrets.token_urlsafe()
-        self.admin_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ADMIN_TOKEN_MINUTES"])
-
     def expire(self, delay: int = None):
-        """ Add an expiration time on old <access_token>, <refresh_token>, and <admin_token> """
-
         # Add 5 second delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
         self.access_expiration = datetime.utcnow() + timedelta(seconds=delay)
         self.refresh_expiration = datetime.utcnow() + timedelta(seconds=delay)
-        self.admin_expiration = datetime.utcnow() + timedelta(seconds=delay)
 
     @classmethod
     def clean(cls):
-        """ Remove all tokens that have been expired for more than a day to keep the database clean """
-
         yesterday = datetime.utcnow() - timedelta(days=1)
         cls.query.filter(cls.refresh_expiration < yesterday).delete()
-        cls.query.filter(cls.admin_expiration < yesterday).delete()
-
-        # Commit changes
         db.session.commit()
 
 
@@ -233,17 +209,11 @@ class User(db.Model):
         token.generate()
         return token
 
-    def generate_admin_token(self) -> Token:
-        token = Token(user=self)
-        token.generate_admin()
-        return token
-
     def check_autorization(self, username: str) -> User:
         user = self.query.filter_by(username=username).first()
         if not user:
             return abort(404)
 
-        # <Admin> account protection
         if user.username == "admin" and self.role != RoleType.ADMIN:
             return abort(403)
 
@@ -380,20 +350,15 @@ class User(db.Model):
         return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 
     def generate_jwt_token(self, expires_in: int = 600) -> str:
-        """ Generate a <register token> or a <forgot password token> """
-
         token = jwt.encode(
             payload={"token": self.id, "exp": time() + expires_in},
             key=current_app.config["SECRET_KEY"],
             algorithm="HS256",
         )
-
         return token
 
     @classmethod
     def create_search_results(cls, search: str, page: int = 1) -> Dict:
-        """ Create the <users> search results for /autocomplete """
-
         users = db.paginate(
             db.select(cls).filter(
                 cls.username.like(f"%{search}%"),
@@ -414,37 +379,16 @@ class User(db.Model):
 
     @staticmethod
     def verify_access_token(access_token: str) -> User:
-        """ Verify the <access token> viability of the user and return the user object or None """
-
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
 
         if token:
             if token.access_expiration > datetime.utcnow():
                 token.user.ping()
                 db.session.commit()
-
-                return token.user
-
-    @staticmethod
-    def verify_admin_token(admin_token: str) -> User | None:
-        """ Verify the <admin_token> and return the user object or None """
-
-        if admin_token is None:
-            return
-
-        token = Token.query.filter_by(admin_token=admin_token).first()
-
-        if token:
-            if token.admin_expiration > datetime.utcnow():
-                token.user.ping()
-                db.session.commit()
-
                 return token.user
 
     @staticmethod
     def verify_refresh_token(refresh_token: str, access_token: str) -> Token:
-        """ Verify the <refresh_token> of the user """
-
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
 
         if token:
@@ -453,19 +397,14 @@ class User(db.Model):
 
             # Try to refresh with expired token: revoke all tokens from user as precaution
             token.user.revoke_all_tokens()
-
-            # Commit changes
             db.session.commit()
 
     @staticmethod
     def verify_jwt_token(token: str) -> User | None:
-        """ Verify the user <jwt token> for the validation of his account or for the forgot password """
-
         try:
             user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])["token"]
         except:
             return None
-
         return User.query.filter_by(id=user_id).first()
 
 
