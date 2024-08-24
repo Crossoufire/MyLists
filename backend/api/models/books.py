@@ -6,7 +6,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
 class Books(Media):
@@ -27,15 +27,15 @@ class Books(Media):
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        media_dict.update({
-            "media_cover": self.media_cover,
-            "authors": [author.name for author in self.authors],
-            "genres": self.genres_list,
-        })
+        media_dict.update(dict(
+            media_cover=self.media_cover,
+            authors=[author.name for author in self.authors],
+            genres=self.genres_list)
+        )
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
         total_read = self.pages if new_status == Status.COMPLETED else 0
 
         # noinspection PyArgumentList
@@ -51,12 +51,14 @@ class Books(Media):
         return total_read
 
     @classmethod
-    def get_information(cls, job: str, info: str) -> List[Dict]:
-        if job == "creator":
-            query = (cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
-                     .filter(BooksAuthors.name == info).all())
+    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+        if job == JobType.CREATOR:
+            query = (
+                cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
+                .filter(BooksAuthors.name == name).all()
+            )
         else:
-            return abort(400)
+            return abort(400, "Invalid job type")
 
         media_in_user_list = (
             db.session.query(BooksList)

@@ -8,7 +8,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
 class Games(Media):
@@ -48,7 +48,7 @@ class Games(Media):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
         # noinspection PyArgumentList
         user_list = GamesList(
             user_id=user_id,
@@ -60,12 +60,15 @@ class Games(Media):
         return 0
 
     @classmethod
-    def get_information(cls, job: str, info: str) -> List[Dict]:
-        if job == "creator":
-            query = (cls.query.join(GamesCompanies, GamesCompanies.media_id == cls.id)
-                     .filter(GamesCompanies.name == info, GamesCompanies.developer == True).all())
+    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+        if job == JobType.CREATOR:
+            query = (
+                cls.query.join(GamesCompanies, GamesCompanies.media_id == cls.id)
+                .filter(GamesCompanies.name == name, GamesCompanies.developer == True)
+                .all()
+            )
         else:
-            return abort(400)
+            return abort(400, "Invalid job type")
 
         media_in_user_list = (
             db.session.query(GamesList)

@@ -8,15 +8,15 @@ import {TopRightCornerTriangle} from "@/routes/_private/list/$mediaType.$usernam
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/details/$mediaType/$job/$info")({
+export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
     component: InfoPage,
-    loader: async ({ params }) => fetcher(`/details/${params.mediaType}/${params.job}/${params.info}`),
+    loader: async ({ params }) => fetcher(`/details/${params.mediaType}/${params.job}/${params.name}`),
 });
 
 
 function InfoPage() {
     const apiData = Route.useLoaderData();
-    const { mediaType, info } = Route.useParams();
+    const { mediaType, name } = Route.useParams();
     const [currentPage, setCurrentPage] = useState(1);
 
     const handlePageChange = (newPage) => {
@@ -31,7 +31,7 @@ function InfoPage() {
     const currentItems = apiData.data.slice(startIndex, endIndex);
 
     return (
-        <PageTitle title={`${info}'s ${mediaType} (${apiData.total})`}>
+        <PageTitle title={`${name}'s ${mediaType} (${apiData.total})`}>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
                 {currentItems.map(media =>
                     <div key={media.media_id} className="col-span-1">

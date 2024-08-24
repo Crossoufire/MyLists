@@ -10,7 +10,7 @@ from backend.api import db
 from backend.api.managers.ApiManager import ApiManager
 from backend.api.core import token_auth, current_user
 from backend.api.utils.decorators import validate_media_type, validate_json_data
-from backend.api.utils.enums import MediaType, RoleType, ModelTypes
+from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
 from backend.api.utils.functions import get, format_datetime
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -118,30 +118,30 @@ def post_details_form(media_type: MediaType, media_id: int, payload: Any, models
     return {}, 204
 
 
-@details_bp.route("/details/<media_type>/<job>/<info>", methods=["GET"])
+@details_bp.route("/details/<media_type>/<job>/<name>", methods=["GET"])
 @token_auth.login_required
 @validate_media_type
-def job_details(media_type: MediaType, job: str, info: str):
+def job_details(media_type: MediaType, job: JobType, name: str):
     """
     Load all the media associated with the <job> and the <info>
     job can be:
         - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
         - `actor`: actors (series/anime/movies)
-        - `network`: tv network (series/anime)
+        - `platform`: tv network (series/anime)
     """
 
+    try:
+        job = JobType(job)
+    except:
+        return abort(400, "Invalid job type")
+
     media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
-    media_data = media_model.get_information(job, info)
+    media_data = media_model.get_associated_media(job, name)
 
     for media in media_data:
         media.update(media_id=media.pop("id"), media_name=media.pop("name"))
 
-    data = dict(
-        data=media_data,
-        total=len(media_data),
-    )
-
-    return jsonify(data=data), 200
+    return jsonify(data=dict(data=media_data, total=len(media_data))), 200
 
 
 # noinspection PyUnusedLocal

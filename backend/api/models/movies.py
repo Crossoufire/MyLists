@@ -8,7 +8,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status
+from backend.api.utils.enums import MediaType, Status, JobType
 
 
 class Movies(Media):
@@ -45,7 +45,7 @@ class Movies(Media):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
         total_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
 
         # noinspection PyArgumentList
@@ -60,14 +60,17 @@ class Movies(Media):
         return total_watched
 
     @classmethod
-    def get_information(cls, job: str, info: str) -> List[Dict]:
-        if job == "creator":
-            query = cls.query.filter(cls.director_name.ilike(f"%{info}%")).all()
-        elif job == "actor":
-            query = (cls.query.join(MoviesActors, MoviesActors.media_id == cls.id)
-                     .filter(MoviesActors.name == info).all())
+    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+        if job == JobType.CREATOR:
+            query = cls.query.filter(cls.director_name.ilike(f"%{name}%")).all()
+        elif job == JobType.ACTOR:
+            query = (
+                cls.query.join(MoviesActors, MoviesActors.media_id == cls.id)
+                .filter(MoviesActors.name == name)
+                .all()
+            )
         else:
-            return abort(400)
+            return abort(400, "Invalid job type")
 
         media_in_user_list = (
             db.session.query(MoviesList)

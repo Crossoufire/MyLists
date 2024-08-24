@@ -89,3 +89,9 @@ class ModelTypes(str, ExtendedEnum):
     PLATFORMS = "platforms"
     COMPANIES = "companies"
     AUTHORS = "authors"
+
+
+class JobType(str, Enum):
+    ACTOR = "actor"
+    CREATOR = "creator"
+    PLATFORM = "platform"

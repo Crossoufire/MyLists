@@ -73,8 +73,8 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <MapDetails
+                            job="platform"
                             name="Networks"
-                            job="network"
                             mediaType={mediaType}
                             valueList={mediaData.networks}
                         />

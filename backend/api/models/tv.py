@@ -9,7 +9,7 @@ from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 from backend.api.utils.functions import reorder_seas_eps
 
 
@@ -52,7 +52,7 @@ class TVModel(Media):
 
         return media_dict
 
-    def add_media_to_user(self, new_status: Status, user_id: int) -> int:
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
         total_watched, new_season, new_episode = 1, 1, 1
         if new_status == Status.COMPLETED:
             new_season = len(self.eps_per_season)
@@ -80,17 +80,17 @@ class TVModel(Media):
         return total_watched
 
     @classmethod
-    def get_information(cls, job: str, info: str) -> List[Dict]:
-        if job == "creator":
-            query = cls.query.filter(cls.created_by.ilike(f"%{info}%")).all()
-        elif job == "actor":
+    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+        if job == JobType.CREATOR:
+            query = cls.query.filter(cls.created_by.ilike(f"%{name}%")).all()
+        elif job == JobType.ACTOR:
             tv_actors = eval(f"{cls.__name__}Actors")
-            query = cls.query.join(tv_actors, tv_actors.media_id == cls.id).filter(tv_actors.name == info).all()
-        elif job == "network":
+            query = cls.query.join(tv_actors, tv_actors.media_id == cls.id).filter(tv_actors.name == name).all()
+        elif job == JobType.PLATFORM:
             tv_net = eval(f"{cls.__name__}Network")
-            query = cls.query.join(tv_net, tv_net.media_id == cls.id).filter(tv_net.network == info).all()
+            query = cls.query.join(tv_net, tv_net.media_id == cls.id).filter(tv_net.network == name).all()
         else:
-            return abort(400)
+            return abort(400, "Invalid job type")
 
         tv_list = eval(f"{cls.__name__}List")
         media_in_user_list = (

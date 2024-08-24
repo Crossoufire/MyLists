@@ -38,7 +38,7 @@ import { Route as PrivateProfileUsernameHeaderHistoryImport } from './routes/_pr
 import { Route as PrivateProfileUsernameHeaderFollowsImport } from './routes/_private/profile/$username/_header/follows'
 import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
 import { Route as PrivateDetailsFormMediaTypeMediaIdImport } from './routes/_private/details/form.$mediaType.$mediaId'
-import { Route as PrivateDetailsMediaTypeJobInfoImport } from './routes/_private/details/$mediaType.$job.$info'
+import { Route as PrivateDetailsMediaTypeJobNameImport } from './routes/_private/details/$mediaType.$job.$name'
 
 // Create Virtual Routes
 
@@ -189,9 +189,9 @@ const PrivateDetailsFormMediaTypeMediaIdRoute =
     getParentRoute: () => PrivateRoute,
   } as any)
 
-const PrivateDetailsMediaTypeJobInfoRoute =
-  PrivateDetailsMediaTypeJobInfoImport.update({
-    path: '/details/$mediaType/$job/$info',
+const PrivateDetailsMediaTypeJobNameRoute =
+  PrivateDetailsMediaTypeJobNameImport.update({
+    path: '/details/$mediaType/$job/$name',
     getParentRoute: () => PrivateRoute,
   } as any)
 
@@ -346,11 +346,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicOauth2ProviderCallbackImport
       parentRoute: typeof PublicImport
     }
-    '/_private/details/$mediaType/$job/$info': {
-      id: '/_private/details/$mediaType/$job/$info'
-      path: '/details/$mediaType/$job/$info'
-      fullPath: '/details/$mediaType/$job/$info'
-      preLoaderRoute: typeof PrivateDetailsMediaTypeJobInfoImport
+    '/_private/details/$mediaType/$job/$name': {
+      id: '/_private/details/$mediaType/$job/$name'
+      path: '/details/$mediaType/$job/$name'
+      fullPath: '/details/$mediaType/$job/$name'
+      preLoaderRoute: typeof PrivateDetailsMediaTypeJobNameImport
       parentRoute: typeof PrivateImport
     }
     '/_private/details/form/$mediaType/$mediaId': {
@@ -412,7 +412,7 @@ export const routeTree = rootRoute.addChildren({
         }),
     }),
     PrivateStatsMediaTypeUsernameRoute,
-    PrivateDetailsMediaTypeJobInfoRoute,
+    PrivateDetailsMediaTypeJobNameRoute,
     PrivateDetailsFormMediaTypeMediaIdRoute,
   }),
   PublicRoute: PublicRoute.addChildren({
@@ -454,7 +454,7 @@ export const routeTree = rootRoute.addChildren({
         "/_private/list/$mediaType/$username",
         "/_private/profile/$username",
         "/_private/stats/$mediaType/$username",
-        "/_private/details/$mediaType/$job/$info",
+        "/_private/details/$mediaType/$job/$name",
         "/_private/details/form/$mediaType/$mediaId"
       ]
     },
@@ -557,8 +557,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_public/oauth2.$provider.callback.jsx",
       "parent": "/_public"
     },
-    "/_private/details/$mediaType/$job/$info": {
-      "filePath": "_private/details/$mediaType.$job.$info.jsx",
+    "/_private/details/$mediaType/$job/$name": {
+      "filePath": "_private/details/$mediaType.$job.$name.jsx",
       "parent": "/_private"
     },
     "/_private/details/form/$mediaType/$mediaId": {
