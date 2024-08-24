@@ -47,12 +47,10 @@
     ],
     "genres_data": [
         {
-            "genre": "Drama",
-            "genre_id": 18
+            "name": "Drama"
         },
         {
-            "genre": "Crime",
-            "genre_id": 80
+            "name": "Crime"
         }
     ],
     "anime_genres_data": [],

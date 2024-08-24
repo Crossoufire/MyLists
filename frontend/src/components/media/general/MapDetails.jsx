@@ -18,6 +18,7 @@ export const MapDetails = ({ name, valueList, mediaType, job, asJoin }) => {
     return (
         <div>
             <div className="font-semibold text-neutral-500">{name}</div>
+            {valueList.length === 0 && "--"}
             {valueList.map((value, idx) =>
                 (mediaType && job && value !== "Unknown") ? renderLink(value) : renderValue(value, idx)
             )}

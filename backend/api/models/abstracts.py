@@ -35,7 +35,7 @@ class Media(db.Model, SearchableMixin):
 
     @property
     def genres_list(self) -> List[str]:
-        return [g.genre for g in self.genres[:5]]
+        return [g.name for g in self.genres[:5]]
 
     @property
     def actors_list(self) -> List[str]:
@@ -49,10 +49,10 @@ class Media(db.Model, SearchableMixin):
             return []
 
         similar_media = (
-            db.session.query(media_model, func.count(func.distinct(media_genre.genre)).label("genre_c"))
+            db.session.query(media_model, func.count(func.distinct(media_genre.name)).label("genre_c"))
             .join(media_genre, media_model.id == media_genre.media_id)
-            .filter(media_genre.genre.in_(self.genres_list), media_genre.media_id != self.id)
-            .group_by(media_model.id).having(func.count(func.distinct(media_genre.genre)) >= 1)
+            .filter(media_genre.name.in_(self.genres_list), media_genre.media_id != self.id)
+            .group_by(media_model.id).having(func.count(func.distinct(media_genre.name)) >= 1)
             .order_by(desc("genre_c")).limit(self.SIMILAR_GENRES).all()
         )
 
@@ -255,7 +255,7 @@ class Genres(db.Model):
     TYPE: ModelTypes = ModelTypes.GENRE
 
     id = db.Column(db.Integer, primary_key=True)
-    genre = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
 
 
 class Actors(db.Model):

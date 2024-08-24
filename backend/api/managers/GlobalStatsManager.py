@@ -34,10 +34,9 @@ class GlobalStats:
         models = ModelsManager.get_dict_models("all", [ModelTypes.GENRE, ModelTypes.LIST])
         for media_type, mt in models.items():
             query = (
-                db.session.query(mt[ModelTypes.GENRE].genre, func.count(mt[ModelTypes.GENRE].genre).label("count"))
+                db.session.query(mt[ModelTypes.GENRE].name, func.count(mt[ModelTypes.GENRE].name).label("count"))
                 .join(mt[ModelTypes.LIST], mt[ModelTypes.GENRE].media_id == mt[ModelTypes.LIST].media_id)
-                .filter(mt[ModelTypes.GENRE].genre != "Unknown")
-                .group_by(mt[ModelTypes.GENRE].genre)
+                .group_by(mt[ModelTypes.GENRE].name)
                 .order_by(text("count desc"))
                 .limit(self.LIMIT).all()
             )

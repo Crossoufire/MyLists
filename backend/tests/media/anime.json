@@ -43,50 +43,39 @@
     ],
     "genres_data": [
         {
-            "genre": "Animation",
-            "genre_id": 16
+            "name": "Animation"
         },
         {
-            "genre": "Sci-Fi & Fantasy",
-            "genre_id": 10765
+            "name": "Sci-Fi & Fantasy"
         },
         {
-            "genre": "Action & Adventure",
-            "genre_id": 10759
+            "name": "Action & Adventure"
         }
     ],
     "anime_genres_data": [
         {
-            "genre": "Action",
-            "genre_id": 1
+            "name": "Action"
         },
         {
-            "genre": "Award Winning",
-            "genre_id": 46
+            "name": "Award Winning"
         },
         {
-            "genre": "Drama",
-            "genre_id": 8
+            "name": "Drama"
         },
         {
-            "genre": "Suspense",
-            "genre_id": 41
+            "name": "Suspense"
         },
         {
-            "genre": "Shounen",
-            "genre_id": 27
+            "name": "Shounen"
         },
         {
-            "genre": "Gore",
-            "genre_id": 58
+            "name": "Gore"
         },
         {
-            "genre": "Military",
-            "genre_id": 38
+            "name": "Military"
         },
         {
-            "genre": "Survival",
-            "genre_id": 76
+            "name": "Survival"
         }
     ],
     "actors_data": [

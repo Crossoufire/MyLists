@@ -20,16 +20,13 @@
     },
     "genres_data": [
         {
-            "genre": "Adventure",
-            "genre_id": 12
+            "name": "Adventure"
         },
         {
-            "genre": "Drama",
-            "genre_id": 18
+            "name": "Drama"
         },
         {
-            "genre": "Science Fiction",
-            "genre_id": 878
+            "name": "Science Fiction"
         }
     ],
     "actors_data": [

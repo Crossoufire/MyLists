@@ -90,7 +90,7 @@ class ListQueryManager:
 
     @property
     def genres_filter(self) -> ColumnElement | bool:
-        return self._create_filter("genres", self.media_genre.genre)
+        return self._create_filter("genres", self.media_genre.name)
 
     @property
     def labels_filter(self) -> ColumnElement | bool:

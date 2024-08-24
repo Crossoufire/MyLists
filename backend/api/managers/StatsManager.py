@@ -130,9 +130,9 @@ class BaseStats(metaclass=StatsMeta):
     def compute_genres(self):
         min_ = 10 if self.GROUP == MediaType.MOVIES else 5
 
-        top_values = self._query_top_values(self.media_genre, self.media_genre.genre)
-        top_rated = self._query_top_rated(self.media_genre, self.media_genre.genre, min_=min_)
-        top_favorited = self._query_top_favorites(self.media_genre, self.media_genre.genre)
+        top_values = self._query_top_values(self.media_genre, self.media_genre.name)
+        top_rated = self._query_top_rated(self.media_genre, self.media_genre.name, min_=min_)
+        top_favorited = self._query_top_favorites(self.media_genre, self.media_genre.name)
 
         self.data["lists"]["genres"] = {
             "top_values": [{"name": d, "value": c} for (d, c) in top_values],
@@ -190,15 +190,15 @@ class BaseStats(metaclass=StatsMeta):
 
         return query
 
-    def _query_misc_genres(self, genre: str):
+    def _query_misc_genres(self, genre_name: str):
         misc_genre = (
             db.session.query(func.count(self.media_genre.media_id))
             .join(self.media_list, self.media_list.media_id == self.media_genre.media_id)
-            .filter(*self.common_filter, self.media_genre.genre == genre)
+            .filter(*self.common_filter, self.media_genre.name == genre_name)
             .scalar()
         )
 
-        self.data["values"][genre.lower().replace(" ", "_")] = misc_genre
+        self.data["values"][genre_name.lower().replace(" ", "_")] = misc_genre
 
     @classmethod
     def get_subclass(cls, media_type: MediaType):

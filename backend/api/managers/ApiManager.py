@@ -175,14 +175,10 @@ class TMDBApiManager(ApiManager):
         self.api_data = json.loads(response.text)
 
     def _get_genres(self) -> List[Dict]:
-        """ Fetch the series, anime, or movies genres (fallback for anime if Jikan API bug) """
+        """ Fetch series, anime, or movies genres (fallback for anime if Jikan API bug) """
 
-        genres_list = []
         all_genres = get(self.api_data, "genres", default=[])
-        for genre in all_genres:
-            genres_list.append({"genre": genre["name"], "genre_id": int(genre["id"])})
-        if not genres_list:
-            genres_list = [{"genre": "Unknown", "genre_id": 0}]
+        genres_list = [dict(name=genre["name"]) for genre in all_genres]
 
         return genres_list
 
@@ -574,23 +570,23 @@ class GamesApiManager(ApiManager):
                 "developer": company["developer"],
             } for company in companies]
 
-            genres = get(self.api_data, "genres", default=[{"name": "Unknown"}])
-            genres_list = [{"genre": genre["name"]} for genre in genres]
+            genres = get(self.api_data, "genres", default=[])
+            genres_list = [dict(name=genre["name"]) for genre in genres]
 
-            themes = get(self.api_data, "themes", default=[{"name": "Unknown"}])
-            themes_list = [{"genre": theme["name"]} for theme in themes]
+            themes = get(self.api_data, "themes", default=[])
+            themes_list = [dict(name=theme["name"]) for theme in themes]
 
-            fusion_list = genres_list + themes_list or [{"genre": "Unknown"}]
+            fusion_list = genres_list + themes_list or []
 
             genre_mapping = {
                 "4X (explore, expand, exploit, and exterminate)": "4X",
                 "Hack and slash/Beat 'em up": "Hack and Slash",
                 "Card & Board Game": "Card Game",
-                "Quiz/Trivia": "Quiz"
+                "Quiz/Trivia": "Quiz",
             }
 
             for data in fusion_list:
-                data["genre"] = genre_mapping.get(data["genre"], data["genre"])
+                data["name"] = genre_mapping.get(data["name"], data["name"])
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -749,7 +745,7 @@ class BooksApiManager(ApiManager):
 
         self.all_data = dict(
             media_data=self.media_details,
-            genres_data=[{"genre": "Unknown"}],
+            genres_data=[],
             authors_data=authors_list
         )
 

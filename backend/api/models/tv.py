@@ -359,7 +359,6 @@ class SeriesGenre(Genres):
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    genre_id = db.Column(db.Integer, nullable=False)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Series", back_populates="genres", lazy="select")
@@ -452,7 +451,6 @@ class AnimeGenre(Genres):
     GROUP = MediaType.ANIME
 
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    genre_id = db.Column(db.Integer, nullable=False)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Anime", back_populates="genres", lazy="select")

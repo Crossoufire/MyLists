@@ -32,19 +32,19 @@
     ],
     "genres_data": [
         {
-            "genre": "Role-playing (RPG)"
+            "name": "Role-playing (RPG)"
         },
         {
-            "genre": "Adventure"
+            "name": "Adventure"
         },
         {
-            "genre": "Action"
+            "name": "Action"
         },
         {
-            "genre": "Fantasy"
+            "name": "Fantasy"
         },
         {
-            "genre": "Open world"
+            "name": "Open world"
         }
     ],
     "platforms_data": [

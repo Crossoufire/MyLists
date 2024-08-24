@@ -468,7 +468,6 @@ class MediaTests(BaseTest):
             })
             self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            print(query.redo)
             self.assertEqual(query.redo, 4)
 
             rv = self.client.post("/api/update_status", headers=headers, json={

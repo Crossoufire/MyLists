@@ -21,8 +21,8 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                             </div>
                         </div>
                         <MapDetails
-                            name="Developers"
                             job="creator"
+                            name="Developers"
                             mediaType={mediaType}
                             valueList={mediaData.developers}
                         />

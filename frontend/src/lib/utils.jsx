@@ -202,7 +202,7 @@ export const formatMinutes = (minutes, options = {}) => {
 
 export const formatDateTime = (dateInput, options = {}) => {
     if (!dateInput) {
-        return "Undefined";
+        return "--";
     }
 
     let date;
@@ -213,7 +213,7 @@ export const formatDateTime = (dateInput, options = {}) => {
     }
 
     if (isNaN(date.getTime())) {
-        return "Undefined";
+        return "--";
     }
 
     const formatOptions = {

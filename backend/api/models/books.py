@@ -213,7 +213,7 @@ class BooksGenre(Genres):
     @classmethod
     def replace_genres(cls, genres: List[Dict], media_id: int):
         cls.query.filter_by(media_id=media_id).delete()
-        db.session.add_all([cls(media_id=media_id, genre=genre["value"]) for genre in genres])
+        db.session.add_all([cls(media_id=media_id, name=genre["value"]) for genre in genres])
         db.session.commit()
 
     @staticmethod

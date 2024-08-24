@@ -34,12 +34,12 @@ export const MoviesDetails = ({ mediaType, mediaData }) => (
                     />
                     <GenericDetails
                         name="Budget"
-                        value={parseFloat(mediaData.budget) === 0 ? "--" :
+                        value={parseFloat(mediaData.budget) === 0 ? mediaData.budget :
                             `${parseFloat(mediaData.budget).toLocaleString("fr")} $`}
                     />
                     <GenericDetails
                         name="Revenue"
-                        value={parseFloat(mediaData.revenue) === 0 ? "--" :
+                        value={parseFloat(mediaData.revenue) === 0 ? mediaData.revenue :
                             `${parseFloat(mediaData.revenue).toLocaleString("fr")} $`}
                     />
                 </div>

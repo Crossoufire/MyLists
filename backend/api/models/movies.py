@@ -241,7 +241,6 @@ class MoviesGenre(Genres):
     GROUP = MediaType.MOVIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    genre_id = db.Column(db.Integer, nullable=False)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Movies", back_populates="genres", lazy="select")
