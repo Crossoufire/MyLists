@@ -271,28 +271,28 @@ class MediaTests(BaseTest):
             }
 
             rv = self.client.post("/api/update_status", headers=headers, json=json_data)
-            assert rv.status_code == 404
+            self.assertEqual(rv.status_code, 404)
 
             rv = self.client.post("/api/add_media", headers=headers, json=json_data)
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
             rv = self.client.post("/api/update_status", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": "toto",
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/update_status", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": "Completed",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             rv = self.client.get("/api/current_user", headers=headers)
-            assert rv.status_code == 200
-            assert rv.json[f"time_spent_{media_type.value}"] == time
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.json[f"time_spent_{media_type.value}"], time)
 
     def test_update_rating_score(self):
         headers = self.connexion()

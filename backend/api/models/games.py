@@ -8,7 +8,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 
 
 class Games(Media):
@@ -158,14 +158,6 @@ class GamesList(MediaList):
     user = db.relationship("User", back_populates="games_list", lazy="select")
     media = db.relationship("Games", back_populates="list_info", lazy="joined")
 
-    class Status(ExtendedEnum):
-        PLAYING = "Playing"
-        COMPLETED = "Completed"
-        MULTIPLAYER = "Multiplayer"
-        ENDLESS = "Endless"
-        DROPPED = "Dropped"
-        PLAN_TO_PLAY = "Plan to Play"
-
     def to_dict(self) -> Dict:
         is_feeling = self.user.add_feeling
 
@@ -178,7 +170,7 @@ class GamesList(MediaList):
 
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = self.Status.to_list()
+        media_dict["all_status"] = Status.by(self.GROUP)
 
         media_dict["rating"] = {
             "type": "feeling" if is_feeling else "score",

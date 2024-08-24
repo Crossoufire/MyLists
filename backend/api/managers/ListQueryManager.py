@@ -39,8 +39,8 @@ class ListQueryManager:
         if current_user and (current_user.id != self.user.id):
             self.common_ids = self._calculate_common_ids()
 
+        self.all_status = Status.by(self.media_type)
         self.all_genres = self.media_genre.get_available_genres()
-        self.all_status = self.media_list.Status.to_list()
         self.all_labels = self.media_label.get_user_labels(self.user.id)
         self.all_sorting = self.media_list.get_available_sorting(self.user.add_feeling)
 

@@ -273,23 +273,32 @@ class User(db.Model):
             ).subquery()
 
             # Query feelings for each model
-            user_feelings = union_all(*[db.session.query(model.feeling.label("feeling"))
-                                      .filter(model.user_id == self.id, model.feeling.isnot(None))
-                                        for model in models]).subquery()
+            user_feelings = union_all(
+                *[db.session.query(model.feeling.label("feeling"))
+                  .filter(model.user_id == self.id, model.feeling.isnot(None)) for model in models]
+            ).subquery()
 
             # Query results as list of tuple
-            results = (db.session.query(all_feelings.c.feeling, func.count(user_feelings.c.feeling))
-                       .outerjoin(user_feelings, all_feelings.c.feeling == user_feelings.c.feeling)
-                       .group_by(all_feelings.c.feeling).order_by(desc(all_feelings.c.feeling)).all())
+            results = (
+                db.session.query(all_feelings.c.feeling, func.count(user_feelings.c.feeling))
+                .outerjoin(user_feelings, all_feelings.c.feeling == user_feelings.c.feeling)
+                .group_by(all_feelings.c.feeling)
+                .order_by(desc(all_feelings.c.feeling))
+                .all()
+            )
 
             # Create List[int] always size 5 from highest to lowest
             count_per_feeling = [r[1] for r in results]
 
         # Combine queries for count total media, percentage rated, and average rating
         rating = "feeling" if self.add_feeling else "score"
-        subqueries = union_all(*[(db.session.query(func.count(model.media_id), func.count(getattr(model, rating)),
-                                                   func.coalesce(func.sum(getattr(model, rating)), 0))
-                                  .filter(model.user_id == self.id)) for model in models])
+        subqueries = union_all(
+            *[(db.session.query(
+                func.count(model.media_id), func.count(getattr(model, rating)),
+                func.coalesce(func.sum(getattr(model, rating)), 0)
+            ).filter(model.user_id == self.id)) for model in models]
+        )
+
         results = db.session.execute(subqueries).all()
 
         # Calculation for total media, percent scored, and mean score
@@ -347,8 +356,11 @@ class User(db.Model):
         return [update.to_dict() for update in self.last_updates.limit(limit).all()]
 
     def get_follows_updates(self, limit: int) -> List[Dict]:
-        follows_updates = (UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
-                           .order_by(desc(UserLastUpdate.date)).limit(limit))
+        follows_updates = (
+            UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
+            .order_by(desc(UserLastUpdate.date))
+            .limit(limit).all()
+        )
 
         return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 

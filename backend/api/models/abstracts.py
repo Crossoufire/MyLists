@@ -133,7 +133,7 @@ class MediaList(db.Model, SearchableMixin):
             .all()
         )
 
-        status_count = {status.value: {"count": 0, "percent": 0} for status in cls.Status}
+        status_count = {status.value: {"count": 0, "percent": 0} for status in Status.by(cls.GROUP)}
         total_media = sum(count for _, count in media_count)
         no_data = (total_media == 0)
 

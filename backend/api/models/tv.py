@@ -9,7 +9,7 @@ from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 from backend.api.utils.functions import reorder_seas_eps
 
 
@@ -250,14 +250,6 @@ class TVListModel(MediaList):
     redo = db.Column(db.Integer, nullable=False, default=0)
     total = db.Column(db.Integer)
 
-    class Status(ExtendedEnum):
-        WATCHING = "Watching"
-        COMPLETED = "Completed"
-        ON_HOLD = "On Hold"
-        RANDOM = "Random"
-        DROPPED = "Dropped"
-        PLAN_TO_WATCH = "Plan to Watch"
-
     def to_dict(self) -> Dict:
         is_feeling = self.user.add_feeling
 
@@ -271,7 +263,7 @@ class TVListModel(MediaList):
         media_dict.update({
             "media_cover": self.media.media_cover,
             "media_name": self.media.name,
-            "all_status": self.Status.to_list(),
+            "all_status": Status.by(self.GROUP),
             "eps_per_season": self.media.eps_per_season_list,
             "rating": {
                 "type": "feeling" if is_feeling else "score",

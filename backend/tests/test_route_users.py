@@ -80,7 +80,7 @@ class UserTests(BaseTest):
 
     def test_get_profile(self):
         rv = self.client.get(f"/api/profile/test", headers=self.connexion())
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)
 
         data = rv.json["data"]
         assert "user_data" in data

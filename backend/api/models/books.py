@@ -6,7 +6,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ExtendedEnum, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 
 
 class Books(Media):
@@ -119,14 +119,6 @@ class BooksList(MediaList):
     user = db.relationship("User", back_populates="books_list", lazy="select")
     media = db.relationship("Books", back_populates="list_info", lazy="joined")
 
-    class Status(ExtendedEnum):
-        """ New status class for easiness """
-        READING = "Reading"
-        COMPLETED = "Completed"
-        ON_HOLD = "On Hold"
-        DROPPED = "Dropped"
-        PLAN_TO_READ = "Plan to Read"
-
     def to_dict(self) -> Dict:
         is_feeling = self.user.add_feeling
 
@@ -140,7 +132,7 @@ class BooksList(MediaList):
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["total_pages"] = self.media.pages
-        media_dict["all_status"] = self.Status.to_list()
+        media_dict["all_status"] = Status.by(self.GROUP)
         media_dict["rating"] = {
             "type": "feeling" if is_feeling else "score",
             "value": self.feeling if is_feeling else self.score

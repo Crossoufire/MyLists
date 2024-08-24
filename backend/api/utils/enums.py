@@ -42,6 +42,35 @@ class Status(str, ExtendedEnum):
     PLAN_TO_READ = "Plan to Read"
     PLAN_TO_PLAY = "Plan to Play"
 
+    @classmethod
+    def movies(cls):
+        return [cls.COMPLETED, cls.PLAN_TO_WATCH]
+
+    @classmethod
+    def tv(cls):
+        return [cls.WATCHING, cls.COMPLETED, cls.ON_HOLD, cls.RANDOM, cls.DROPPED, cls.PLAN_TO_WATCH]
+
+    @classmethod
+    def books(cls):
+        return [cls.READING, cls.COMPLETED, cls.ON_HOLD, cls.DROPPED, cls.PLAN_TO_READ]
+
+    @classmethod
+    def games(cls):
+        return [cls.PLAYING, cls.COMPLETED, cls.MULTIPLAYER, cls.ENDLESS, cls.DROPPED, cls.PLAN_TO_PLAY]
+
+    @classmethod
+    def by(cls, media_type: MediaType):
+        if media_type == MediaType.SERIES or media_type == MediaType.ANIME:
+            return cls.tv()
+        elif media_type == MediaType.MOVIES:
+            return cls.movies()
+        elif media_type == MediaType.BOOKS:
+            return cls.books()
+        elif media_type == MediaType.GAMES:
+            return cls.games()
+        else:
+            raise ValueError(f"Invalid media type: {media_type}")
+
 
 class RoleType(str, ExtendedEnum):
     ADMIN = "admin"      # Can access admin dashboard
