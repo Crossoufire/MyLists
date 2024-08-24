@@ -94,7 +94,7 @@ class ListQueryManager:
 
     @property
     def labels_filter(self) -> ColumnElement | bool:
-        return self._create_filter("labels", self.media_label.label)
+        return self._create_filter("labels", self.media_label.name)
 
     @property
     def favorite_filter(self) -> ColumnElement | bool:
@@ -185,7 +185,7 @@ class ListQueryManager:
             )
 
         paginate_results = (
-            base_query.distinct(self.media_label.label).group_by(self.media.id)
+            base_query.distinct(self.media_label.name).group_by(self.media.id)
             .order_by(self.sorting_filter, asc(self.media.name))
             .paginate(page=int(self.page), per_page=self.PER_PAGE, error_out=True)
         )

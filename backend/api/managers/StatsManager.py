@@ -70,7 +70,7 @@ class BaseStats(metaclass=StatsMeta):
 
     def compute_total_labels(self):
         data = (
-            db.session.query(func.count(self.media_label.label.distinct()))
+            db.session.query(func.count(self.media_label.name.distinct()))
             .filter(self.media_label.user_id == self.user.id)
             .scalar()
         )

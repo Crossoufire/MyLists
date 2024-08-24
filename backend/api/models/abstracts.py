@@ -274,17 +274,17 @@ class Labels(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    label = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
 
     @classmethod
     def get_user_labels(cls, user_id: int) -> List[str]:
-        q_all = db.session.query(cls.label.distinct()).filter_by(user_id=user_id).order_by(cls.label).all()
+        q_all = db.session.query(cls.name.distinct()).filter_by(user_id=user_id).order_by(cls.name).all()
         return [label[0] for label in q_all]
 
     @classmethod
     def get_user_media_labels(cls, user_id: int, media_id: int) -> Dict:
         all_labels = set(cls.get_user_labels(user_id))
-        q_in = db.session.query(cls.label).filter_by(user_id=user_id, media_id=media_id).order_by(cls.label).all()
+        q_in = db.session.query(cls.name).filter_by(user_id=user_id, media_id=media_id).order_by(cls.name).all()
         already_in = {label[0] for label in q_in}
         available = all_labels - already_in
         return dict(already_in=list(already_in), available=list(available))

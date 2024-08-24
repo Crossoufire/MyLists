@@ -19,7 +19,7 @@ class GlobalStats:
         models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model_list in models.values():
             query = (
-                db.session.query(model_list, func.count(model_list.media_id).label("count"))
+                db.session.query(model_list, func.count(model_list.media_id).name("count"))
                 .filter(model_list.status != Status.DROPPED)
                 .group_by(model_list.media_id).order_by(text("count desc"))
                 .limit(self.LIMIT).all()

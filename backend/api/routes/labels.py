@@ -28,11 +28,11 @@ def add_media_to_label(media_type: MediaType, media_id: int, payload: Any, model
     if media is None:
         return abort(404, "The media could not be found")
 
-    label = label_model.query.filter_by(user_id=current_user.id, media_id=media_id, label=payload).first()
+    label = label_model.query.filter_by(user_id=current_user.id, media_id=media_id, name=payload).first()
     if label:
         return abort(400, "This label is already associated with this media")
 
-    db.session.add(label_model(user_id=current_user.id, media_id=media_id, label=payload))
+    db.session.add(label_model(user_id=current_user.id, media_id=media_id, name=payload))
     db.session.commit()
 
     current_app.logger.info(f"User [{current_user.id}] added {media_type.value} [ID {media_id}] to label: {payload}.")
@@ -46,7 +46,7 @@ def add_media_to_label(media_type: MediaType, media_id: int, payload: Any, model
 def remove_label_from_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     list_model, label_model = models[ModelTypes.LIST], models[ModelTypes.LABELS]
 
-    label_model.query.filter_by(user_id=current_user.id, media_id=media_id, label=payload).delete()
+    label_model.query.filter_by(user_id=current_user.id, media_id=media_id, name=payload).delete()
     db.session.commit()
 
     current_app.logger.info(f"User [{current_user.id}] removed {media_type.value} ID [{media_id}] from its "
@@ -67,13 +67,13 @@ def rename_label():
         return abort(400)
 
     labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
-    label_name = labels_model.query.filter_by(user_id=current_user.id, label=new_label_name).first()
+    label_name = labels_model.query.filter_by(user_id=current_user.id, name=new_label_name).first()
     if label_name:
         return abort(400, "The new label name already exists.")
 
-    labels = labels_model.query.filter_by(user_id=current_user.id, label=old_label_name).all()
+    labels = labels_model.query.filter_by(user_id=current_user.id, name=old_label_name).all()
     for label in labels:
-        label.label = new_label_name
+        label.name = new_label_name
 
     db.session.commit()
 
@@ -94,7 +94,7 @@ def delete_label():
         return abort(400)
 
     labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
-    labels_model.query.filter_by(user_id=current_user.id, label=label).delete()
+    labels_model.query.filter_by(user_id=current_user.id, name=label).delete()
     db.session.commit()
 
     current_app.logger.info(f"User [{current_user.id}] deleted the label: {label} ({media_type.value})")

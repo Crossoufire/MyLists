@@ -64,7 +64,6 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
 
     db.session.commit()
 
-    # Return <current user> media info
     user_data = media.get_user_list_info(models[ModelTypes.LABELS])
 
     return jsonify(data=user_data), 200

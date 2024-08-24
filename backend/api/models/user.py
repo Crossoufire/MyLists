@@ -267,8 +267,10 @@ class User(db.Model):
         count_per_feeling = []
         if self.add_feeling:
             # Create temporary table subquery with all feelings [0 to 5]
-            all_feelings = union_all(select(literal(0).label("feeling")), select(literal(1)), select(literal(2)),
-                                     select(literal(3)), select(literal(4)), select(literal(5))).subquery()
+            all_feelings = union_all(
+                select(literal(0).label("feeling")), select(literal(1)), select(literal(2)),
+                select(literal(3)), select(literal(4)), select(literal(5))
+            ).subquery()
 
             # Query feelings for each model
             user_feelings = union_all(*[db.session.query(model.feeling.label("feeling"))
