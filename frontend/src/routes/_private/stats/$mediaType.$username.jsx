@@ -35,7 +35,7 @@ const tvData = (apiData) => {
                 dataList: [
                     {
                         title: "Total Watched",
-                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.rewatched} Rewatched`,
+                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.redo} Re-watched`,
                         value: apiData.values.total_media.total,
                     },
                     {
@@ -175,7 +175,7 @@ const moviesData = (apiData) => {
                 dataList: [
                     {
                         title: "Total Watched",
-                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.rewatched} Rewatched`,
+                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.redo} Re-watched`,
                         value: apiData.values.total_media.total,
                     },
                     {
@@ -315,7 +315,7 @@ const booksData = (apiData) => {
                 dataList: [
                     {
                         title: "Total Read",
-                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.rewatched} Re-read`,
+                        subtitle: `${apiData.values.total_media.unique} Unique - ${apiData.values.total_media.redo} Re-read`,
                         value: apiData.values.total_media.total,
                     },
                     {

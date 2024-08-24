@@ -6,7 +6,7 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
 export const MoviesUserDetails = ({ userData, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
+    const [redo, setRedo] = useState(userData.redo);
     const [status, setStatus] = useState(userData.status);
     const [rating, setRating] = useState(userData.rating);
 

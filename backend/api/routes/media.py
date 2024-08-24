@@ -198,16 +198,16 @@ def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict
     if media_list.status != Status.COMPLETED:
         return abort(400, "To update this value the media needs to be completed first")
 
-    old_redo = media_list.rewatched
+    old_redo = media_list.redo
     old_total = media_list.total
-    new_total = media_list.update_total_watched(new_redo)
+    new_total = media_list.update_total(new_redo)
 
     media_list.update_time_spent(old_value=old_total, new_value=new_total)
 
     UserLastUpdate.set_new_update(media_list.media, "redo", old_redo, new_redo)
 
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type.value}] rewatched {new_redo}x times")
+    current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type.value}] redo {new_redo}x times")
 
     return {}, 204
 
@@ -283,7 +283,7 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
     new_watched = sum(media_user.media.eps_per_season_list[:new_season - 1]) + 1
     media_user.current_season = new_season
     media_user.last_episode_watched = 1
-    new_total = new_watched + (media_user.rewatched * sum(media_user.media.eps_per_season_list))
+    new_total = new_watched + (media_user.redo * sum(media_user.media.eps_per_season_list))
     media_user.total = new_total
 
     UserLastUpdate.set_new_update(media_user.media, "season", old_season, new_season, old_episode=old_eps,
@@ -315,7 +315,7 @@ def update_episode(media_type: MediaType, media_id: int, payload: Any, models: D
     old_episode = media_user.last_episode_watched
     old_total = media_user.total
     new_watched = sum(media_user.media.eps_per_season_list[:old_season - 1]) + new_eps
-    new_total = new_watched + (media_user.rewatched * sum(media_user.media.eps_per_season_list))
+    new_total = new_watched + (media_user.redo * sum(media_user.media.eps_per_season_list))
 
     media_user.last_episode_watched = new_eps
     media_user.total = new_total
@@ -348,7 +348,7 @@ def update_page(media_type: MediaType, media_id: int, payload: Any, models: Dict
     old_total = media.total
 
     media.actual_page = new_page
-    new_total = new_page + (media.rewatched * media.media.pages)
+    new_total = new_page + (media.redo * media.media.pages)
     media.total = new_total
 
     UserLastUpdate.set_new_update(media.media, "page", old_page, new_page)

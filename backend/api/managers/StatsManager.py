@@ -46,14 +46,14 @@ class BaseStats(metaclass=StatsMeta):
         data = (
             db.session.query(
                 func.count(self.media_list.media_id),
-                func.coalesce(func.sum(self.media_list.rewatched), 0)
+                func.coalesce(func.sum(self.media_list.redo), 0)
             ).filter(self.media_list.user_id == self.user.id)
             .all()
         )
 
         self.data["values"]["total_media"] = {
             "unique": data[0][0],
-            "rewatched": data[0][1],
+            "redo": data[0][1],
             "total": data[0][0] + data[0][1]
         }
 
@@ -271,7 +271,7 @@ class TvStats(TMDBStats):
 
         avg_duration = (
             db.session.query(
-                func.avg((self.media.duration * (self.media_list.total / (self.media_list.rewatched + 1)))))
+                func.avg((self.media.duration * (self.media_list.total / (self.media_list.redo + 1)))))
             .join(*self.common_join)
             .filter(*self.common_filter, self.media_list.status != Status.RANDOM)
             .scalar()
@@ -451,7 +451,7 @@ class BooksStats(BaseStats):
         )
 
         avg_pages = (
-            db.session.query(func.avg((self.media_list.total / (self.media_list.rewatched + 1))))
+            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
             .filter(*self.common_filter)
             .scalar()
         )

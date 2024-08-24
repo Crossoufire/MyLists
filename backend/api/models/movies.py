@@ -168,7 +168,7 @@ class MoviesList(MediaList):
     GROUP = MediaType.MOVIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
-    rewatched = db.Column(db.Integer, nullable=False, default=0)
+    redo = db.Column(db.Integer, nullable=False, default=0)
     total = db.Column(db.Integer)
 
     # --- Relationships -----------------------------------------------------------
@@ -200,16 +200,16 @@ class MoviesList(MediaList):
 
         return media_dict
 
-    def update_total_watched(self, new_rewatch: int) -> int:
-        self.rewatched = new_rewatch
-        new_total = 1 + new_rewatch
+    def update_total(self, new_redo: int) -> int:
+        self.redo = new_redo
+        new_total = 1 + new_redo
         self.total = new_total
 
         return new_total
 
     def update_status(self, new_status: Status) -> int:
         self.status = new_status
-        self.rewatched = 0
+        self.redo = 0
         if new_status == Status.COMPLETED:
             self.total = 1
             new_total = 1

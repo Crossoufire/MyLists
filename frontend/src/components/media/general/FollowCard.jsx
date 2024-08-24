@@ -38,7 +38,7 @@ export const FollowCard = ({ follow, mediaType }) => {
                             </div>
                             {(follow.status === "Completed" && mediaType !== "games") &&
                                 <div className="flex items-center gap-x-2">
-                                    <LuRotateCw size={15}/> {follow.rewatched}
+                                    <LuRotateCw size={15}/> {follow.redo}
                                 </div>
                             }
                             <div className="flex items-center gap-x-2">

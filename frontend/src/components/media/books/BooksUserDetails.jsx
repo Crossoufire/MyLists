@@ -7,7 +7,7 @@ import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
 export const BooksUserDetails = ({ userData, totalPages, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
+    const [redo, setRedo] = useState(userData.redo);
     const [status, setStatus] = useState(userData.status);
     const [rating, setRating] = useState(userData.rating);
     const [page, setPage] = useState(userData.actual_page);

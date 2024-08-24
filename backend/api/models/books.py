@@ -111,7 +111,7 @@ class BooksList(MediaList):
     DEFAULT_STATUS = Status.READING
 
     media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
-    rewatched = db.Column(db.Integer, nullable=False, default=0)
+    redo = db.Column(db.Integer, nullable=False, default=0)
     actual_page = db.Column(db.Integer)
     total = db.Column(db.Integer)
 
@@ -148,9 +148,9 @@ class BooksList(MediaList):
 
         return media_dict
 
-    def update_total_watched(self, new_rewatch: int) -> int:
-        self.rewatched = new_rewatch
-        new_total = self.media.pages + (new_rewatch * self.media.pages)
+    def update_total(self, new_redo: int) -> int:
+        self.redo = new_redo
+        new_total = self.media.pages + (new_redo * self.media.pages)
         self.total = new_total
 
         return new_total
@@ -159,7 +159,7 @@ class BooksList(MediaList):
         new_total = self.total
 
         self.status = new_status
-        self.rewatched = 0
+        self.redo = 0
         if new_status == Status.COMPLETED:
             self.actual_page = self.media.pages
             self.total = self.media.pages
@@ -185,7 +185,7 @@ class BooksList(MediaList):
             "Comments": cls.comment.desc(),
             "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
-            "Re-read": cls.rewatched.desc(),
+            "Re-read": cls.redo.desc(),
         }
         return sorting_dict
 

@@ -84,7 +84,7 @@ class MediaTests(BaseTest):
         assert data["status"] == "Watching"
         assert data["media_cover"].startswith("/api/static/covers/series_covers/")
         assert data["total"] == 1
-        assert data["rewatched"] == 0
+        assert data["redo"] == 0
         assert data["current_season"] == 1
         assert data["eps_per_season"] == [7, 13, 13, 13, 16]
         assert data["last_episode_watched"] == 1
@@ -109,7 +109,7 @@ class MediaTests(BaseTest):
         assert data["status"] == "Watching"
         assert data["media_cover"].startswith("/api/static/covers/anime_covers/")
         assert data["total"] == 1
-        assert data["rewatched"] == 0
+        assert data["redo"] == 0
         assert data["current_season"] == 1
         assert data["eps_per_season"] == [25, 12, 22, 28]
         assert data["last_episode_watched"] == 1
@@ -134,7 +134,7 @@ class MediaTests(BaseTest):
         assert data["status"] == "Completed"
         assert data["media_cover"].startswith("/api/static/covers/movies_covers/")
         assert data["total"] == 1
-        assert data["rewatched"] == 0
+        assert data["redo"] == 0
         assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
         assert data["comment"] is None
@@ -159,7 +159,7 @@ class MediaTests(BaseTest):
         assert data["media_cover"].startswith("/api/static/covers/books_covers/")
         assert data["total"] == 322
         assert data["total_pages"] == 322
-        assert data["rewatched"] == 0
+        assert data["redo"] == 0
         assert data["rating"] == {"type": "score", "value": None}
         assert data["favorite"] is None
         assert data["comment"] is None
@@ -418,14 +418,14 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 3,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/add_media", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": "Completed",
             })
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
             if media_type == MediaType.GAMES:
                 rv = self.client.post("/api/update_redo", headers=headers, json={
@@ -442,14 +442,14 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 11,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/update_redo", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": -2,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             # Round to int
             rv = self.client.post("/api/update_redo", headers=headers, json={
@@ -457,25 +457,26 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 7.5,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.rewatched == 7
+            self.assertEqual(query.redo, 7)
 
             rv = self.client.post("/api/update_redo", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": 4,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.rewatched == 4
+            print(query.redo)
+            self.assertEqual(query.redo, 4)
 
             rv = self.client.post("/api/update_status", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": "Watching",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             # Media needs to be Completed
             rv = self.client.post("/api/update_redo", headers=headers, json={
@@ -483,7 +484,7 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 5,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
     def test_update_comment(self):
         headers = self.connexion()

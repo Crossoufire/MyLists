@@ -123,7 +123,7 @@ class TVModel(Media):
             last_episode, last_season, new_total = reorder_seas_eps(total_eps, new_seas_eps)
             user_list.current_season = last_season
             user_list.last_episode_watched = last_episode
-            user_list.total = new_total * (user_list.rewatched + 1)
+            user_list.total = new_total * (user_list.redo + 1)
 
         # Delete old seasons/episodes for this media
         eps_seas_model = eval(f"{cls.__name__}EpisodesPerSeason")
@@ -247,7 +247,7 @@ class TVListModel(MediaList):
 
     current_season = db.Column(db.Integer, nullable=False)
     last_episode_watched = db.Column(db.Integer, nullable=False)
-    rewatched = db.Column(db.Integer, nullable=False, default=0)
+    redo = db.Column(db.Integer, nullable=False, default=0)
     total = db.Column(db.Integer)
 
     class Status(ExtendedEnum):
@@ -281,11 +281,11 @@ class TVListModel(MediaList):
 
         return media_dict
 
-    def update_total_watched(self, new_rewatch: int) -> int:
-        self.rewatched = new_rewatch
+    def update_total(self, new_redo: int) -> int:
+        self.redo = new_redo
 
         sum_episodes = sum(self.media.eps_per_season_list)
-        new_total = sum_episodes + (new_rewatch * sum_episodes)
+        new_total = sum_episodes + (new_redo * sum_episodes)
         self.total = new_total
 
         return new_total

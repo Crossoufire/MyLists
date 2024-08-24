@@ -7,7 +7,7 @@ import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
 
 
 export const TvUserDetails = ({ userData, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
+    const [redo, setRedo] = useState(userData.redo);
     const [status, setStatus] = useState(userData.status);
     const [rating, setRating] = useState(userData.rating);
     const [season, setSeason] = useState(userData.current_season);

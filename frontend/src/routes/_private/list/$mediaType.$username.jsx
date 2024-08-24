@@ -369,7 +369,7 @@ const MediaItem = ({ isCurrent, media, filters, initCommon }) => {
                     {(status === "Completed" && mediaType !== "games") &&
                         <RedoListDrop
                             isCurrent={isCurrent}
-                            initRedo={media.rewatched}
+                            initRedo={media.redo}
                             updateRedo={updateUserAPI.redo}
                         />
                     }

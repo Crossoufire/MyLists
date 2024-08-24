@@ -110,7 +110,7 @@ class MediaList(db.Model, SearchableMixin):
         new_total = self.total
 
         self.status = new_status
-        self.rewatched = 0
+        self.redo = 0
         if new_status == Status.COMPLETED:
             total_eps = sum(self.media.eps_per_season_list)
             self.current_season = len(self.media.eps_per_season)
@@ -217,7 +217,7 @@ class MediaList(db.Model, SearchableMixin):
             "Comments": cls.comment.desc(),
             "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
-            "Re-watched": cls.rewatched.desc(),
+            "Re-watched": cls.redo.desc(),
         }
 
         return sorting_dict
