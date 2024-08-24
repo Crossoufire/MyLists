@@ -8,7 +8,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
 
 
 class Games(Media):
@@ -94,10 +94,14 @@ class Games(Media):
             GamesPlatforms.query.filter(GamesPlatforms.media_id.in_(games_ids)).delete()
             GamesCompanies.query.filter(GamesCompanies.media_id.in_(games_ids)).delete()
             GamesGenre.query.filter(GamesGenre.media_id.in_(games_ids)).delete()
-            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.GAMES,
-                                        UserLastUpdate.media_id.in_(games_ids)).delete()
-            Notifications.query.filter(Notifications.media_type == "gameslist",
-                                       Notifications.media_id.in_(games_ids)).delete()
+            UserLastUpdate.query.filter(
+                UserLastUpdate.media_type == cls.GROUP,
+                UserLastUpdate.media_id.in_(games_ids)
+            ).delete()
+            Notifications.query.filter(
+                Notifications.media_type == cls.GROUP,
+                Notifications.media_id.in_(games_ids)
+            ).delete()
             GamesLabels.query.filter(GamesLabels.media_id.in_(games_ids)).delete()
             cls.query.filter(cls.id.in_(games_ids)).delete()
 
@@ -110,33 +114,30 @@ class Games(Media):
 
     @classmethod
     def get_new_releasing_media(cls):
-        try:
-            query = (
-                db.session.query(cls.id, GamesList.user_id, cls.release_date, cls.name)
-                .join(GamesList, cls.id == GamesList.media_id)
-                .filter(
-                    cls.release_date.is_not(None),
-                    cls.release_date > datetime.utcnow(),
-                    cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                ).all()
-            )
+        query = (
+            db.session.query(cls.id, GamesList.user_id, cls.release_date, cls.name)
+            .join(GamesList, cls.id == GamesList.media_id)
+            .filter(
+                cls.release_date.is_not(None),
+                cls.release_date > datetime.utcnow(),
+                cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
+            ).all()
+        )
 
-            for media_id, user_id, release_date, name in query:
-                notif = Notifications.search(user_id, "gameslist", media_id)
+        for media_id, user_id, release_date, name in query:
+            notification = Notifications.search(user_id, cls.GROUP, media_id)
 
-                if notif is None:
-                    new_notification = Notifications(
-                        user_id=user_id,
-                        media_id=media_id,
-                        media_type="gameslist",
-                        payload_json=json.dumps({"name": name, "release_date": release_date})
-                    )
-                    db.session.add(new_notification)
+            if not notification:
+                new_notification = Notifications(
+                    user_id=user_id,
+                    media_id=media_id,
+                    media_type=cls.GROUP,
+                    notification_type=NotificationType.MEDIA,
+                    payload=json.dumps({"name": name, "release_date": release_date})
+                )
+                db.session.add(new_notification)
 
-            db.session.commit()
-        except Exception as e:
-            current_app.logger.error(f"Error occurred checking for new releasing game: {e}")
-            db.session.rollback()
+        db.session.commit()
 
     @classmethod
     def refresh_element_data(cls, api_id: int, new_data: Dict):

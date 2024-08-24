@@ -83,10 +83,14 @@ class Books(Media):
 
             BooksAuthors.query.filter(BooksAuthors.media_id.in_(books_ids)).delete()
             BooksGenre.query.filter(BooksGenre.media_id.in_(books_ids)).delete()
-            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.BOOKS,
-                                        UserLastUpdate.media_id.in_(books_ids)).delete()
-            Notifications.query.filter(Notifications.media_type == "bookslist",
-                                       Notifications.media_id.in_(books_ids)).delete()
+            UserLastUpdate.query.filter(
+                UserLastUpdate.media_type == cls.GROUP,
+                UserLastUpdate.media_id.in_(books_ids)
+            ).delete()
+            Notifications.query.filter(
+                Notifications.media_type == cls.GROUP,
+                Notifications.media_id.in_(books_ids)
+            ).delete()
             BooksLabels.query.filter(BooksLabels.media_id.in_(books_ids)).delete()
             cls.query.filter(cls.id.in_(books_ids)).delete()
 

@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import {api} from "@/api/MyApiClient";
+import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {Loading} from "@/components/app/base/Loading";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {formatDateTime} from "@/lib/utils.jsx";
 
 
 export const Notifications = ({ isMobile }) => {
@@ -99,7 +99,7 @@ export const Notifications = ({ isMobile }) => {
                         <i className="text-muted-foreground">No notifications to display</i>
                         :
                         notifications.map(data =>
-                            <MediaLink
+                            <NotificationItem
                                 data={data}
                                 key={data.timestamp}
                                 handlePopoverClose={handlePopoverClose}
@@ -112,18 +112,18 @@ export const Notifications = ({ isMobile }) => {
 };
 
 
-const MediaLink = ({ data, handlePopoverClose }) => {
-    const dest = data.media ? `/details/${data.media}/${data.media_id}` : `/profile/${data.payload.username}`;
+const NotificationItem = ({ data, handlePopoverClose }) => {
+    const to = data.media_type ? `/details/${data.media_type}/${data.media_id}` : `/profile/${data.payload.username}`;
 
     return (
-        <Link to={dest} onClick={handlePopoverClose}>
+        <Link to={to} onClick={handlePopoverClose}>
             <div className="py-2.5 px-3.5 hover:bg-neutral-600/20">
                 <div className="flex items-center gap-2">
-                    {data.media ?
+                    {data.media_type ?
                         <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-3">
-                            <MediaIcon mediaType={data.media} size={16}/>
+                            <MediaIcon mediaType={data.media_type} size={16}/>
                             <div className="truncate">{data.payload.name}</div>
-                            {((data.media === "anime" || data.media === "series") && data.payload?.finale) &&
+                            {((data.media_type === "anime" || data.media_type === "series") && data.payload?.finale) &&
                                 <Badge variant="passiveSmall">Finale</Badge>
                             }
                         </div>
@@ -134,14 +134,14 @@ const MediaLink = ({ data, handlePopoverClose }) => {
                         </>
                     }
                 </div>
-                {data.media &&
+                {data.media_type &&
                     <div className="flex items-center gap-2 text-neutral-400">
                         {data.payload?.new ?
                             <div className="line-clamp-1">{data.payload.message}</div>
                             :
                             <>
                                 <div>
-                                    {(data.media === "anime" || data.media === "series") ?
+                                    {(data.media_type === "anime" || data.media_type === "series") ?
                                         <div>{`S${data.payload.season}.E${data.payload.episode}`}</div>
                                         :
                                         <div>Release</div>

@@ -45,7 +45,7 @@ def create_cli_commands():
 
     @current_app.cli.command()
     def add_notifications():
-        """ Update the notifications """
+        """ Update notifications """
         add_media_related_notifications()
 
     @current_app.cli.command()

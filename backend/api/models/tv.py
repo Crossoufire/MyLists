@@ -9,7 +9,7 @@ from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
 from backend.api.utils.functions import reorder_seas_eps
 
 
@@ -140,59 +140,55 @@ class TVModel(Media):
     @classmethod
     def get_new_releasing_media(cls):
         media_list, eps_model = ModelsManager.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
-        media_list_str = f"{cls.GROUP.value}list"
 
-        try:
-            top_eps_sub = (
-                db.session.query(
-                    eps_model.media_id, eps_model.episodes.label("last_episode"),
-                    func.max(eps_model.season)
-                ).group_by(eps_model.media_id)
-                .subquery()
+        top_eps_sub = (
+            db.session.query(
+                eps_model.media_id, eps_model.episodes.label("last_episode"), func.max(eps_model.season)
+            ).group_by(eps_model.media_id)
+            .subquery()
+        )
+
+        query = (
+            db.session.query(
+                cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air, media_list.user_id,
+                top_eps_sub.c.last_episode
+            ).join(media_list, cls.id == media_list.media_id)
+            .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
+            .filter(
+                cls.next_episode_to_air.is_not(None),
+                cls.next_episode_to_air > datetime.utcnow(),
+                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
+                media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
+            ).all()
+        )
+
+        for media_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode in query:
+            notification = Notifications.search(user_id, cls.GROUP, media_id)
+
+            if notification:
+                payload = json.loads(notification.payload)
+                if (next_eps_to_air == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
+                        and int(seas_to_air) == int(payload["season"])):
+                    continue
+
+            payload = dict(
+                name=name,
+                season=f"{seas_to_air:02d}",
+                episode=f"{eps_to_air:02d}",
+                release_date=next_eps_to_air,
+                finale=(last_episode == eps_to_air),
             )
 
-            query = (
-                db.session.query(cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air,
-                                 media_list.user_id, top_eps_sub.c.last_episode)
-                .join(media_list, cls.id == media_list.media_id)
-                .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
-                .filter(
-                    cls.next_episode_to_air.is_not(None),
-                    cls.next_episode_to_air > datetime.utcnow(),
-                    cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                    media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
-                    ).all()
+            new_notification = Notifications(
+                user_id=user_id,
+                media_id=media_id,
+                media_type=cls.GROUP,
+                notification_type=NotificationType.TV,
+                payload=json.dumps(payload),
             )
+            db.session.add(new_notification)
 
-            for tv_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode in query:
-                notif = Notifications.search(user_id, media_list_str, tv_id)
-
-                if notif:
-                    payload = json.loads(notif.payload_json)
-                    if (next_eps_to_air == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
-                            and int(seas_to_air) == int(payload["season"])):
-                        continue
-
-                payload = dict(
-                    name=name,
-                    season=f"{seas_to_air:02d}",
-                    episode=f"{eps_to_air:02d}",
-                    release_date=next_eps_to_air,
-                    finale=(last_episode == eps_to_air),
-                )
-
-                new_notification = Notifications(
-                    media_id=tv_id,
-                    user_id=user_id,
-                    media_type=media_list_str,
-                    payload_json=json.dumps(payload)
-                )
-                db.session.add(new_notification)
-
-            db.session.commit()
-        except Exception as e:
-            current_app.logger.error(f"Error occurred while checking for new releasing {cls.GROUP.value}: {e}")
-            db.session.rollback()
+        db.session.commit()
 
     @classmethod
     def remove_non_list_media(cls):
@@ -204,7 +200,6 @@ class TVModel(Media):
         network_model = models[ModelTypes.NETWORK]
         eps_model = models[ModelTypes.EPS]
         label_model = models[ModelTypes.LABELS]
-        notifications_model = f"{cls.GROUP.value}list"
 
         try:
             media_to_delete = (
@@ -220,10 +215,14 @@ class TVModel(Media):
             genres_model.query.filter(genres_model.media_id.in_(media_ids)).delete()
             network_model.query.filter(network_model.media_id.in_(media_ids)).delete()
             eps_model.query.filter(eps_model.media_id.in_(media_ids)).delete()
-            UserLastUpdate.query.filter(UserLastUpdate.media_type == cls.GROUP,
-                                        UserLastUpdate.media_id.in_(media_ids)).delete()
-            Notifications.query.filter(Notifications.media_type == notifications_model,
-                                       Notifications.media_id.in_(media_ids)).delete()
+            UserLastUpdate.query.filter(
+                UserLastUpdate.media_type == cls.GROUP,
+                UserLastUpdate.media_id.in_(media_ids)
+            ).delete()
+            Notifications.query.filter(
+                Notifications.media_type == cls.GROUP,
+                Notifications.media_id.in_(media_ids)
+            ).delete()
             label_model.query.filter(label_model.media_id.in_(media_ids)).delete()
             media_model.query.filter(cls.id.in_(media_ids)).delete()
 

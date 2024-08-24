@@ -6,7 +6,7 @@ from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.models.user import (Notifications, UserLastUpdate, User, Token, followers)
-from backend.api.utils.enums import RoleType, ModelTypes
+from backend.api.utils.enums import RoleType, ModelTypes, NotificationType
 from backend.api.utils.functions import save_picture
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -181,12 +181,13 @@ def update_follow():
     if follow_status:
         current_user.add_follow(user)
 
-        payload = {
-            "username": current_user.username,
-            "message": f"{current_user.username} is following you"
-        }
-
-        db.session.add(Notifications(user_id=user.id, payload_json=json.dumps(payload)))
+        payload = dict(username=current_user.username, message=f"{current_user.username} is following you")
+        new_notification = Notifications(
+            user_id=user.id,
+            notification_type=NotificationType.FOLLOW,
+            payload=json.dumps(payload),
+        )
+        db.session.add(new_notification)
         db.session.commit()
         current_app.logger.info(f"[{current_user.id}] Follow the account with ID {follow_id}")
     else:
@@ -200,7 +201,7 @@ def update_follow():
 @users.route("/notifications", methods=["GET"])
 @token_auth.login_required
 def notifications():
-    return jsonify(data=current_user.get_last_notifications(8)), 200
+    return jsonify(data=current_user.get_last_notifications(limit=8)), 200
 
 
 @users.route("/notifications/count", methods=["GET"])

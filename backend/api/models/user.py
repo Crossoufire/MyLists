@@ -1,9 +1,9 @@
 from __future__ import annotations
 import json
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 import jwt
 from flask import url_for, current_app, abort
 from flask_bcrypt import check_password_hash
@@ -11,9 +11,9 @@ from sqlalchemy import desc, func, Integer, case, select, union_all, literal
 from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes
-from backend.api.utils.functions import compute_level, safe_div
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes, NotificationType
+from backend.api.utils.functions import compute_level, safe_div
 
 
 followers = db.Table(
@@ -239,19 +239,23 @@ class User(db.Model):
         follows = self.followed.all()
         return {"total":  len(follows), "follows": [follow.to_dict() for follow in follows[:limit_]]}
 
-    def get_last_notifications(self, limit_: int = 8) -> List[Dict]:
-        # Register read time
+    def get_last_notifications(self, limit: int = 8) -> List[Dict]:
         current_user.last_notif_read_time = datetime.utcnow()
         db.session.commit()
-
-        query = (Notifications.query.filter_by(user_id=self.id)
-                 .order_by(desc(Notifications.timestamp)).limit(limit_).all())
-
+        query = (
+            Notifications.query.filter_by(user_id=self.id).order_by(desc(Notifications.timestamp))
+            .limit(limit).all()
+        )
         return [notification.to_dict() for notification in query]
 
     def count_notifications(self) -> int:
         last_notif_time = self.last_notif_read_time or datetime(1900, 1, 1)
-        return Notifications.query.filter_by(user_id=self.id).filter(Notifications.timestamp > last_notif_time).count()
+        notification_count = (
+            db.session.query(func.count(Notifications.id))
+            .filter(Notifications.user_id == self.id, Notifications.timestamp > last_notif_time)
+            .scalar()
+        )
+        return notification_count
 
     def get_global_media_stats(self) -> Dict:
         models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
@@ -544,16 +548,17 @@ class UserLastUpdate(db.Model):
 class Notifications(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    media_type = db.Column(db.String(50))
     media_id = db.Column(db.Integer)
-    payload_json = db.Column(db.Text)
+    media_type = db.Column(db.Enum(MediaType))
+    notification_type = db.Column(db.Enum(NotificationType))
+    payload = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     # --- Relationships -----------------------------------------------------------
     user = db.relationship("User", back_populates="notifications", lazy="select")
 
     @classmethod
-    def search(cls, user_id: int, media_type: str, media_id: int):
+    def search(cls, user_id: int, media_type: MediaType, media_id: int) -> Optional[Notifications]:
         data = (
             cls.query.filter_by(user_id=user_id, media_type=media_type, media_id=media_id)
             .order_by(desc(cls.timestamp))
@@ -564,10 +569,11 @@ class Notifications(db.Model):
 
     def to_dict(self):
         data = dict(
+            user_id=self.user_id,
             media_id=self.media_id,
-            media=self.media_type.replace("list", "") if self.media_type else None,
-            timestamp=self.timestamp.replace(tzinfo=timezone.utc).isoformat(),
-            payload=json.loads(self.payload_json)
+            media_type=self.media_type.value if self.media_type else None,
+            notification_type=self.notification_type.value,
+            payload=json.loads(self.payload),
+            timestamp=self.timestamp,
         )
-
         return data

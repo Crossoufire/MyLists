@@ -1,14 +1,17 @@
 from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
+
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 from backend.api.models.user import UserLastUpdate, Notifications
-from backend.api.utils.enums import MediaType, Status, JobType
+from backend.api.utils.enums import MediaType, Status, JobType, NotificationType
 
 
 class Movies(Media):
@@ -95,10 +98,14 @@ class Movies(Media):
 
             MoviesActors.query.filter(MoviesActors.media_id.in_(movie_ids)).delete()
             MoviesGenre.query.filter(MoviesGenre.media_id.in_(movie_ids)).delete()
-            UserLastUpdate.query.filter(UserLastUpdate.media_type == MediaType.MOVIES,
-                                        UserLastUpdate.media_id.in_(movie_ids)).delete()
-            Notifications.query.filter(Notifications.media_type == "movieslist",
-                                       Notifications.media_id.in_(movie_ids)).delete()
+            UserLastUpdate.query.filter(
+                UserLastUpdate.media_type == cls.GROUP,
+                UserLastUpdate.media_id.in_(movie_ids)
+            ).delete()
+            Notifications.query.filter(
+                Notifications.media_type == cls.GROUP,
+                Notifications.media_id.in_(movie_ids)
+            ).delete()
             MoviesLabels.query.filter(MoviesLabels.media_id.in_(movie_ids)).delete()
             cls.query.filter(cls.id.in_(movie_ids)).delete()
 
@@ -111,33 +118,30 @@ class Movies(Media):
 
     @classmethod
     def get_new_releasing_media(cls):
-        try:
-            query = (
-                db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
-                .join(MoviesList, cls.id == MoviesList.media_id)
-                .filter(
-                    cls.release_date.is_not(None),
-                    cls.release_date > datetime.utcnow(),
-                    cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                    ).all()
-            )
+        query = (
+            db.session.query(cls.id, MoviesList.user_id, cls.release_date, cls.name)
+            .join(MoviesList, cls.id == MoviesList.media_id)
+            .filter(
+                cls.release_date.is_not(None),
+                cls.release_date > datetime.utcnow(),
+                cls.release_date <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
+            ).all()
+        )
 
-            for movie_id, user_id, release_date, name in query:
-                notif = Notifications.search(user_id, "movieslist", movie_id)
+        for media_id, user_id, release_date, name in query:
+            notification = Notifications.search(user_id, cls.GROUP, media_id)
 
-                if notif is None:
-                    new_notification = Notifications(
-                        user_id=user_id,
-                        media_id=movie_id,
-                        media_type="movieslist",
-                        payload_json=json.dumps({"name": name, "release_date": release_date})
-                    )
-                    db.session.add(new_notification)
+            if not notification:
+                new_notification = Notifications(
+                    user_id=user_id,
+                    media_id=media_id,
+                    media_type=cls.GROUP,
+                    notification_type=NotificationType.MEDIA,
+                    payload=json.dumps({"name": name, "release_date": release_date})
+                )
+                db.session.add(new_notification)
 
-            db.session.commit()
-        except Exception as e:
-            current_app.logger.error(f"Error occurred checking for new releasing movies: {e}")
-            db.session.rollback()
+        db.session.commit()
 
     @classmethod
     def automatic_locking(cls) -> Tuple[int, int]:

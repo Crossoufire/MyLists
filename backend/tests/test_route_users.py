@@ -2,6 +2,7 @@ import os
 from unittest import mock
 from flask import current_app
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import NotificationType
 from backend.tests.base_test import BaseTest, TEST_USER
 
 
@@ -162,9 +163,11 @@ class UserTests(BaseTest):
         # Check <bobby> notification from <test>
         rv = self.client.get(f"/api/notifications", headers=headers)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["data"][0]["media"], None)
+        self.assertEqual(rv.json["data"][0]["user_id"], 2)
         self.assertEqual(rv.json["data"][0]["media_id"], None)
-        self.assertEqual(rv.json["data"][0]["payload"], {"message": "test is following you", "username": "test"})
+        self.assertEqual(rv.json["data"][0]["media_type"], None)
+        self.assertEqual(rv.json["data"][0]["notification_type"], NotificationType.FOLLOW)
+        self.assertEqual(rv.json["data"][0]["payload"], {"username": "test", "message": "test is following you"})
         self.assertEqual("timestamp" in rv.json["data"][0], True)
 
         # Reconnect as <test>

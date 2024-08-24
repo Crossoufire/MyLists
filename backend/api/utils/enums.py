@@ -95,3 +95,9 @@ class JobType(str, Enum):
     ACTOR = "actor"
     CREATOR = "creator"
     PLATFORM = "platform"
+
+
+class NotificationType(str, Enum):
+    TV = "tv"
+    MEDIA = "media"
+    FOLLOW = "follow"
