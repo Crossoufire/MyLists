@@ -52,7 +52,6 @@ class GlobalStats:
             query = (
                 db.session.query(mt[ModelTypes.ACTORS].name, func.count(mt[ModelTypes.ACTORS].name).label("count"))
                 .join(mt[ModelTypes.LIST], mt[ModelTypes.ACTORS].media_id == mt[ModelTypes.LIST].media_id)
-                .filter(mt[ModelTypes.ACTORS].name != "Unknown")
                 .group_by(mt[ModelTypes.ACTORS].name)
                 .order_by(text("count desc"))
                 .limit(self.LIMIT).all()

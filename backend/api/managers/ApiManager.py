@@ -185,12 +185,8 @@ class TMDBApiManager(ApiManager):
     def _get_actors(self) -> List[Dict]:
         """ Get the <MAX_ACTORS> actors for series, anime and movies """
 
-        actors_list = []
         all_actors = get(self.api_data, "credits", "cast", default=[])
-        for actor in all_actors[:self.MAX_ACTORS]:
-            actors_list.append({"name": actor["name"]})
-        if not actors_list:
-            actors_list = [{"name": "Unknown"}]
+        actors_list = [dict(name=actor["name"]) for actor in all_actors[:self.MAX_ACTORS]]
 
         return actors_list
 

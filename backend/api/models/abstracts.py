@@ -45,7 +45,7 @@ class Media(db.Model, SearchableMixin):
         media_model = self.__class__
         media_genre = ModelsManager.get_unique_model(self.GROUP, ModelTypes.GENRE)
 
-        if not self.genres_list or self.genres_list[0] == "Unknown":
+        if not self.genres_list:
             return []
 
         similar_media = (
