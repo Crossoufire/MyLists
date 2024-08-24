@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict
-from backend.api.utils.enums import MediaType, ModelTypes
+from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.tests.base_test import BaseTest
 
@@ -76,120 +76,125 @@ class MediaTests(BaseTest):
     def test_add_series(self):
         data = self.add_media("series", 1, "Watching", 40)
 
-        assert data["user_id"] == 1
-        assert data["username"] == "test"
-        assert data["media_id"] == 1
-        assert data["media_name"] == "Breaking Bad"
-        assert data["all_status"] == ["Watching", "Completed", "On Hold", "Random", "Dropped", "Plan to Watch"]
-        assert data["status"] == "Watching"
-        assert data["media_cover"].startswith("/api/static/covers/series_covers/")
-        assert data["total"] == 1
-        assert data["redo"] == 0
-        assert data["current_season"] == 1
-        assert data["eps_per_season"] == [7, 13, 13, 13, 16]
-        assert data["last_episode_watched"] == 1
-        assert data["rating"] == {"type": "score", "value": None}
-        assert data["favorite"] is None
-        assert data["comment"] is None
-        assert data["labels"] == {"already_in": [], "available": []}
-        assert data["history"][0]["media_id"] == 1
-        assert data["history"][0]["media_name"] == "Breaking Bad"
-        assert data["history"][0]["media_type"] == "series"
-        assert data["history"][0]["update"][0] == "Watching"
-        assert "date" in data["history"][0]
+        self.assertEqual(data["user_id"], 1)
+        self.assertEqual(data["username"], "test")
+        self.assertEqual(data["media_id"], 1)
+        self.assertEqual(data["media_name"], "Breaking Bad")
+        self.assertEqual(data["all_status"], [status.value for status in Status.by(MediaType.SERIES)])
+        self.assertEqual(data["status"], "Watching")
+        self.assertEqual(data["media_cover"].startswith("/api/static/covers/series_covers/"), True)
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["redo"], 0)
+        self.assertEqual(data["current_season"], 1)
+        self.assertEqual(data["eps_per_season"], [7, 13, 13, 13, 16])
+        self.assertEqual(data["last_episode_watched"], 1)
+        self.assertEqual(data["rating"], {"type": "score", "value": None})
+        self.assertEqual(data["favorite"], None)
+        self.assertEqual(data["comment"], None)
+        self.assertEqual(data["labels"], {"already_in": [], "available": []})
+        self.assertEqual(data["history"][0]["media_id"], 1)
+        self.assertEqual(data["history"][0]["media_name"], "Breaking Bad")
+        self.assertEqual(data["history"][0]["media_type"], "series")
+        self.assertEqual(data["history"][0]["update_type"], "status")
+        self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Watching"})
+        self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_anime(self):
         data = self.add_media("anime", 1, "Watching", 24)
 
-        assert data["user_id"] == 1
-        assert data["username"] == "test"
-        assert data["media_id"] == 1
-        assert data["media_name"] == "Attack on Titan"
-        assert data["all_status"] == ["Watching", "Completed", "On Hold", "Random", "Dropped", "Plan to Watch"]
-        assert data["status"] == "Watching"
-        assert data["media_cover"].startswith("/api/static/covers/anime_covers/")
-        assert data["total"] == 1
-        assert data["redo"] == 0
-        assert data["current_season"] == 1
-        assert data["eps_per_season"] == [25, 12, 22, 28]
-        assert data["last_episode_watched"] == 1
-        assert data["rating"] == {"type": "score", "value": None}
-        assert data["favorite"] is None
-        assert data["comment"] is None
-        assert data["labels"] == {"already_in": [], "available": []}
-        assert data["history"][0]["media_id"] == 1
-        assert data["history"][0]["media_name"] == "Attack on Titan"
-        assert data["history"][0]["media_type"] == "anime"
-        assert data["history"][0]["update"][0] == "Watching"
-        assert "date" in data["history"][0]
+        self.assertEqual(data["user_id"], 1)
+        self.assertEqual(data["username"], "test")
+        self.assertEqual(data["media_id"], 1)
+        self.assertEqual(data["media_name"], "Attack on Titan")
+        self.assertEqual(data["all_status"], [status.value for status in Status.by(MediaType.ANIME)])
+        self.assertEqual(data["status"], "Watching")
+        self.assertEqual(data["media_cover"].startswith("/api/static/covers/anime_covers/"), True)
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["redo"], 0)
+        self.assertEqual(data["current_season"], 1)
+        self.assertEqual(data["eps_per_season"], [25, 12, 22, 28])
+        self.assertEqual(data["last_episode_watched"], 1)
+        self.assertEqual(data["rating"], {"type": "score", "value": None})
+        self.assertEqual(data["favorite"], None)
+        self.assertEqual(data["comment"], None)
+        self.assertEqual(data["labels"], {"already_in": [], "available": []})
+        self.assertEqual(data["history"][0]["media_id"], 1)
+        self.assertEqual(data["history"][0]["media_name"], "Attack on Titan")
+        self.assertEqual(data["history"][0]["media_type"], "anime")
+        self.assertEqual(data["history"][0]["update_type"], "status")
+        self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Watching"})
+        self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_movies(self):
         data = self.add_media("movies", 1, "Completed", 169)
 
-        assert data["user_id"] == 1
-        assert data["username"] == "test"
-        assert data["media_id"] == 1
-        assert data["media_name"] == "Interstellar"
-        assert data["all_status"] == ["Completed", "Plan to Watch"]
-        assert data["status"] == "Completed"
-        assert data["media_cover"].startswith("/api/static/covers/movies_covers/")
-        assert data["total"] == 1
-        assert data["redo"] == 0
-        assert data["rating"] == {"type": "score", "value": None}
-        assert data["favorite"] is None
-        assert data["comment"] is None
-        assert data["labels"] == {"already_in": [], "available": []}
-        assert data["history"][0]["media_id"] == 1
-        assert data["history"][0]["media_name"] == "Interstellar"
-        assert data["history"][0]["media_type"] == "movies"
-        assert data["history"][0]["update"] == ["Completed"]
-        assert "date" in data["history"][0]
+        self.assertEqual(data["user_id"], 1)
+        self.assertEqual(data["username"], "test")
+        self.assertEqual(data["media_id"], 1)
+        self.assertEqual(data["media_name"], "Interstellar")
+        self.assertEqual(data["all_status"], [status.value for status in Status.by(MediaType.MOVIES)])
+        self.assertEqual(data["status"], "Completed")
+        self.assertEqual(data["media_cover"].startswith("/api/static/covers/movies_covers/"), True)
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["redo"], 0)
+        self.assertEqual(data["rating"], {"type": "score", "value": None})
+        self.assertEqual(data["favorite"], None)
+        self.assertEqual(data["comment"], None)
+        self.assertEqual(data["labels"], {"already_in": [], "available": []})
+        self.assertEqual(data["history"][0]["media_id"], 1)
+        self.assertEqual(data["history"][0]["media_name"], "Interstellar")
+        self.assertEqual(data["history"][0]["media_type"], "movies")
+        self.assertEqual(data["history"][0]["update_type"], "status")
+        self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Completed"})
+        self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_books(self):
         from backend.api.models.books import BooksList
 
         data = self.add_media("books", 1, "Completed", 322 * BooksList.TIME_PER_PAGE)
 
-        assert data["user_id"] == 1
-        assert data["username"] == "test"
-        assert data["media_id"] == 1
-        assert data["media_name"] == "Harry Potter à L'école des Sorciers"
-        assert data["all_status"] == ["Reading", "Completed", "On Hold", "Dropped", "Plan to Read"]
-        assert data["status"] == "Completed"
-        assert data["media_cover"].startswith("/api/static/covers/books_covers/")
-        assert data["total"] == 322
-        assert data["total_pages"] == 322
-        assert data["redo"] == 0
-        assert data["rating"] == {"type": "score", "value": None}
-        assert data["favorite"] is None
-        assert data["comment"] is None
-        assert data["labels"] == {"already_in": [], "available": []}
-        assert data["history"][0]["media_id"] == 1
-        assert data["history"][0]["media_name"] == "Harry Potter à L'école des Sorciers"
-        assert data["history"][0]["media_type"] == "books"
-        assert data["history"][0]["update"] == ["Completed"]
-        assert "date" in data["history"][0]
+        self.assertEqual(data["user_id"], 1)
+        self.assertEqual(data["username"], "test")
+        self.assertEqual(data["media_id"], 1)
+        self.assertEqual(data["media_name"], "Harry Potter à L'école des Sorciers")
+        self.assertEqual(data["all_status"], [status.value for status in Status.by(MediaType.BOOKS)])
+        self.assertEqual(data["status"], "Completed")
+        self.assertEqual(data["media_cover"].startswith("/api/static/covers/books_covers/"), True)
+        self.assertEqual(data["total"], 322)
+        self.assertEqual(data["total_pages"], 322)
+        self.assertEqual(data["redo"], 0)
+        self.assertEqual(data["rating"], {"type": "score", "value": None})
+        self.assertEqual(data["favorite"], None)
+        self.assertEqual(data["comment"], None)
+        self.assertEqual(data["labels"], {"already_in": [], "available": []})
+        self.assertEqual(data["history"][0]["media_id"], 1)
+        self.assertEqual(data["history"][0]["media_name"], "Harry Potter à L'école des Sorciers")
+        self.assertEqual(data["history"][0]["media_type"], "books")
+        self.assertEqual(data["history"][0]["update_type"], "status")
+        self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Completed"})
+        self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_games(self):
         data = self.add_media("games", 1, "Playing", 0)
 
-        assert data["user_id"] == 1
-        assert data["username"] == "test"
-        assert data["media_id"] == 1
-        assert data["media_name"] == "Elden Ring"
-        assert data["all_status"] == ["Playing", "Completed", "Multiplayer", "Endless", "Dropped", "Plan to Play"]
-        assert data["status"] == "Playing"
-        assert data["media_cover"].startswith("/api/static/covers/games_covers/")
-        assert data["playtime"] == 0
-        assert data["rating"] == {"type": "score", "value": None}
-        assert data["favorite"] is None
-        assert data["comment"] is None
-        assert data["labels"] == {"already_in": [], "available": []}
-        assert data["history"][0]["media_id"] == 1
-        assert data["history"][0]["media_name"] == "Elden Ring"
-        assert data["history"][0]["media_type"] == "games"
-        assert data["history"][0]["update"] == ["Playing"]
-        assert "date" in data["history"][0]
+        self.assertEqual(data["user_id"], 1)
+        self.assertEqual(data["username"], "test")
+        self.assertEqual(data["media_id"], 1)
+        self.assertEqual(data["media_name"], "Elden Ring")
+        self.assertEqual(data["all_status"], [status.value for status in Status.by(MediaType.GAMES)])
+        self.assertEqual(data["status"], "Playing")
+        self.assertEqual(data["media_cover"].startswith("/api/static/covers/games_covers/"), True)
+        self.assertEqual(data["playtime"], 0)
+        self.assertEqual(data["rating"], {"type": "score", "value": None})
+        self.assertEqual(data["favorite"], None)
+        self.assertEqual(data["comment"], None)
+        self.assertEqual(data["labels"], {"already_in": [], "available": []})
+        self.assertEqual(data["history"][0]["media_id"], 1)
+        self.assertEqual(data["history"][0]["media_name"], "Elden Ring")
+        self.assertEqual(data["history"][0]["media_type"], "games")
+        self.assertEqual(data["history"][0]["update_type"], "status")
+        self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Playing"})
+        self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_delete_media(self):
         headers = self.connexion()

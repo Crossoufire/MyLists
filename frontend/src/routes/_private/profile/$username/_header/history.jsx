@@ -102,7 +102,7 @@ function AllUpdates() {
                     <Separator variant="large" className="mt-2 mb-3"/>
                     <div className="space-y-3">
                         {updates.data.map(item =>
-                            <Fragment key={`${item.media_id}-${item.date}`}>
+                            <Fragment key={`${item.media_id}-${item.timestamp}`}>
                                 <div className="grid grid-cols-12 gap-3">
                                     <div className="col-span-2 mx-auto">
                                         <MediaIcon mediaType={item.media_type} size={20}/>
@@ -112,9 +112,11 @@ function AllUpdates() {
                                             {item.media_name}
                                         </Link>
                                     </div>
-                                    <div className="col-span-3"><Payload payload={item.update}/></div>
                                     <div className="col-span-3">
-                                        {formatDateTime(item.date, { includeTime: true, useLocalTz: true })}
+                                        <Payload update={item}/>
+                                    </div>
+                                    <div className="col-span-3">
+                                        {formatDateTime(item.timestamp, { includeTime: true, useLocalTz: true })}
                                     </div>
                                 </div>
                                 <Separator/>

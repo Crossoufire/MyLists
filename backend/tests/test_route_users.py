@@ -2,6 +2,7 @@ import os
 from unittest import mock
 from flask import current_app
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.models import UserMediaUpdate
 from backend.api.utils.enums import NotificationType
 from backend.tests.base_test import BaseTest, TEST_USER
 
@@ -211,7 +212,7 @@ class UserTests(BaseTest):
         self.assertEqual(rv.status_code, 200)
 
     def test_settings_delete_account(self):
-        from backend.api.models.user import User, UserLastUpdate, Notifications, Token
+        from backend.api.models.user import User, Notifications, Token
         from backend.api.utils.enums import ModelTypes
 
         self.register_new_user(username="delete")
@@ -222,7 +223,7 @@ class UserTests(BaseTest):
 
         self.assertEqual(Token.query.filter_by(user_id=user_id).count(), 1)
         self.assertEqual(User.query.filter_by(id=user_id).count(), 1)
-        self.assertEqual(UserLastUpdate.query.filter_by(user_id=user_id).count(), 0)
+        self.assertEqual(UserMediaUpdate.query.filter_by(user_id=user_id).count(), 0)
         self.assertEqual(Notifications.query.filter_by(user_id=user_id).count(), 0)
 
         models = ModelsManager.get_dict_models("all", [ModelTypes.LIST, ModelTypes.LABELS])
@@ -236,7 +237,7 @@ class UserTests(BaseTest):
 
         self.assertEqual(Token.query.filter_by(user_id=user_id).count(), 0)
         self.assertEqual(User.query.filter_by(id=user_id).count(), 0)
-        self.assertEqual(UserLastUpdate.query.filter_by(user_id=user_id).count(), 0)
+        self.assertEqual(UserMediaUpdate.query.filter_by(user_id=user_id).count(), 0)
         self.assertEqual(Notifications.query.filter_by(user_id=user_id).count(), 0)
 
         for model_type in models.values():

@@ -3,9 +3,9 @@ from flask import current_app
 from flask import jsonify, Blueprint, abort
 from backend.api import db
 from backend.api.core import token_auth, current_user
-from backend.api.models.user import UserLastUpdate
+from backend.api.models.user import UserMediaUpdate
 from backend.api.utils.decorators import validate_json_data
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
 from backend.api.managers.ModelsManager import ModelsManager
 
 media_bp = Blueprint("api_media", __name__)
@@ -56,7 +56,7 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} added [ID {media_id}] with "
                             f"status: {new_status}")
 
-    UserLastUpdate.set_new_update(media=media, update_type="status", old_value=None, new_value=new_status)
+    UserMediaUpdate.set_new_update(media, UpdateType.STATUS, None, new_status)
 
     # Compute new time spent (re-query necessary!)
     in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
@@ -76,17 +76,17 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
 def delete_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Delete a media from the user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(400, "This media is not present in your list")
 
     # <Games> model do not have <total>
-    old_total = media.total if media_type != MediaType.GAMES else media.playtime
-    media.update_time_spent(old_value=old_total, new_value=0)
+    old_total = media_assoc.total if media_type != MediaType.GAMES else media_assoc.playtime
+    media_assoc.update_time_spent(old_value=old_total, new_value=0)
 
-    db.session.delete(media)
+    db.session.delete(media_assoc)
     models[ModelTypes.LABELS].query.filter_by(user_id=current_user.id, media_id=media_id).delete()
-    UserLastUpdate.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media.GROUP).delete()
+    UserMediaUpdate.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media_assoc.GROUP).delete()
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type} [ID {media_id}] successfully removed.")
@@ -122,16 +122,16 @@ def update_status(media_type: MediaType, media_id: int, payload: Any, models: Di
     except:
         return abort(400)
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(404, "The media could not be found")
 
-    old_total = media.total if media_type != MediaType.GAMES else media.playtime
-    old_status = media.status
-    new_total = media.update_status(new_status)
+    old_total = media_assoc.total if media_type != MediaType.GAMES else media_assoc.playtime
+    old_status = media_assoc.status
+    new_total = media_assoc.update_status(new_status)
 
-    UserLastUpdate.set_new_update(media.media, "status", old_status, new_status)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.STATUS, old_status, new_status)
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type}'s category [ID {media_id}] changed to {new_status}")
@@ -190,20 +190,19 @@ def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict
     if new_redo < 0 or new_redo > 10:
         return abort(400, "This value should to be between 0 and 10 included")
 
-    media_list = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media_list:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(400, "This media is not present in your list")
 
-    if media_list.status != Status.COMPLETED:
+    if media_assoc.status != Status.COMPLETED:
         return abort(400, "To update this value the media needs to be completed first")
 
-    old_redo = media_list.redo
-    old_total = media_list.total
-    new_total = media_list.update_total(new_redo)
+    old_redo = media_assoc.redo
+    old_total = media_assoc.total
+    new_total = media_assoc.update_total(new_redo)
 
-    media_list.update_time_spent(old_value=old_total, new_value=new_total)
-
-    UserLastUpdate.set_new_update(media_list.media, "redo", old_redo, new_redo)
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.REDO, old_redo, new_redo)
 
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type.value}] redo {new_redo}x times")
@@ -246,14 +245,14 @@ def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: 
     # From [hours] to [min]
     new_playtime = payload * 60
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(404, "The media could not be found")
 
-    UserLastUpdate.set_new_update(media.media, "playtime", media.playtime, new_playtime)
-    media.update_time_spent(old_value=media.playtime, new_value=new_playtime)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.PLAYTIME, media_assoc.playtime, new_playtime)
+    media_assoc.update_time_spent(old_value=media_assoc.playtime, new_value=new_playtime)
 
-    media.playtime = new_playtime
+    media_assoc.playtime = new_playtime
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] {media_type.value} ID {media_id} playtime updated to {new_playtime}")
 
@@ -268,26 +267,30 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
 
     new_season = payload
 
-    media_user = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media_user:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(404, "The media could not be found")
 
-    if 1 > new_season or new_season > media_user.media.eps_per_season[-1].season:
+    if 1 > new_season or new_season > media_assoc.media.eps_per_season[-1].season:
         return abort(400)
 
-    old_season = media_user.current_season
-    old_eps = media_user.last_episode_watched
-    old_total = media_user.total
+    old_season = media_assoc.current_season
+    old_eps = media_assoc.last_episode_watched
+    old_total = media_assoc.total
 
-    new_watched = sum(media_user.media.eps_per_season_list[:new_season - 1]) + 1
-    media_user.current_season = new_season
-    media_user.last_episode_watched = 1
-    new_total = new_watched + (media_user.redo * sum(media_user.media.eps_per_season_list))
-    media_user.total = new_total
+    new_watched = sum(media_assoc.media.eps_per_season_list[:new_season - 1]) + 1
+    media_assoc.current_season = new_season
+    media_assoc.last_episode_watched = 1
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_per_season_list))
+    media_assoc.total = new_total
 
-    UserLastUpdate.set_new_update(media_user.media, "season", old_season, new_season, old_episode=old_eps,
-                                  new_episode=1)
-    media_user.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(
+        media_assoc.media,
+        UpdateType.TV,
+        (old_season, old_eps),
+        (new_season, 1),
+    )
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new season = {new_season}")
@@ -303,24 +306,29 @@ def update_episode(media_type: MediaType, media_id: int, payload: Any, models: D
 
     new_eps = payload
 
-    media_user = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media_user:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(404, "The media could not be found")
 
-    if 1 > new_eps or new_eps > media_user.media.eps_per_season[media_user.current_season - 1].episodes:
+    if 1 > new_eps or new_eps > media_assoc.media.eps_per_season[media_assoc.current_season - 1].episodes:
         return abort(400)
 
-    old_season = media_user.current_season
-    old_episode = media_user.last_episode_watched
-    old_total = media_user.total
-    new_watched = sum(media_user.media.eps_per_season_list[:old_season - 1]) + new_eps
-    new_total = new_watched + (media_user.redo * sum(media_user.media.eps_per_season_list))
+    old_season = media_assoc.current_season
+    old_episode = media_assoc.last_episode_watched
+    old_total = media_assoc.total
+    new_watched = sum(media_assoc.media.eps_per_season_list[:old_season - 1]) + new_eps
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_per_season_list))
 
-    media_user.last_episode_watched = new_eps
-    media_user.total = new_total
+    media_assoc.last_episode_watched = new_eps
+    media_assoc.total = new_total
 
-    UserLastUpdate.set_new_update(media_user.media, "episode", old_episode, new_eps, old_season=old_season)
-    media_user.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(
+        media_assoc.media,
+        UpdateType.TV,
+        (old_season, old_episode),
+        (old_season, new_eps),
+    )
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new episode = {new_eps}")
@@ -350,7 +358,7 @@ def update_page(media_type: MediaType, media_id: int, payload: Any, models: Dict
     new_total = new_page + (media.redo * media.media.pages)
     media.total = new_total
 
-    UserLastUpdate.set_new_update(media.media, "page", old_page, new_page)
+    UserMediaUpdate.set_new_update(media.media, UpdateType.PAGE, old_page, new_page)
     media.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()

@@ -8,7 +8,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
-from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.user import Notifications, UserMediaUpdate
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
 from backend.api.utils.functions import reorder_seas_eps
 
@@ -215,9 +215,9 @@ class TVModel(Media):
             genres_model.query.filter(genres_model.media_id.in_(media_ids)).delete()
             network_model.query.filter(network_model.media_id.in_(media_ids)).delete()
             eps_model.query.filter(eps_model.media_id.in_(media_ids)).delete()
-            UserLastUpdate.query.filter(
-                UserLastUpdate.media_type == cls.GROUP,
-                UserLastUpdate.media_id.in_(media_ids)
+            UserMediaUpdate.query.filter(
+                UserMediaUpdate.media_type == cls.GROUP,
+                UserMediaUpdate.media_id.in_(media_ids)
             ).delete()
             Notifications.query.filter(
                 Notifications.media_type == cls.GROUP,

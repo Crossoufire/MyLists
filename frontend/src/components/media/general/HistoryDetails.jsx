@@ -1,5 +1,5 @@
 import {Fragment} from "react";
-import {UserUpdate} from "@/components/app/UserUpdate.jsx";
+import {UserUpdate} from "@/components/app/UserUpdate";
 
 
 export const HistoryDetails = ({ history }) => {
@@ -11,12 +11,8 @@ export const HistoryDetails = ({ history }) => {
         <>
             {history.map(data =>
                 <UserUpdate
-                    key={data.date}
-                    mediaId={data.media_id}
-                    mediaType={data.media_type}
-                    mediaName={data.media_name}
-                    payload={data.update}
-                    date_={data.date}
+                    update={data}
+                    key={data.timestamp}
                 />
             )}
         </>

@@ -29,9 +29,9 @@ function ProfileMain() {
                 />
                 <div className="mt-4"/>
                 <UserUpdates
+                    followers={false}
                     username={username}
                     updates={apiData.user_updates}
-                    followers={false}
                 />
                 <div className="mt-4"/>
                 <ProfileMiscInfo

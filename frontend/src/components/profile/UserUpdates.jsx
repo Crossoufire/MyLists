@@ -36,13 +36,9 @@ export const UserUpdates = ({ updates, followers = false }) => {
                             :
                             updates.map(update =>
                                 <UserUpdate
-                                    key={update.date}
+                                    update={update}
+                                    key={update.timestamp}
                                     username={followers && update.username}
-                                    mediaType={update.media_type}
-                                    mediaId={update.media_id}
-                                    mediaName={update.media_name}
-                                    payload={update.update}
-                                    date_={update.date}
                                 />
                             )}
                     </>

@@ -101,3 +101,11 @@ class NotificationType(str, Enum):
     TV = "tv"
     MEDIA = "media"
     FOLLOW = "follow"
+
+
+class UpdateType(str, Enum):
+    TV = "tv"
+    PAGE = "page"
+    REDO = "redo"
+    STATUS = "status"
+    PLAYTIME = "playtime"

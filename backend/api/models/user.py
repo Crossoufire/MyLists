@@ -3,7 +3,7 @@ import json
 import secrets
 from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import jwt
 from flask import url_for, current_app, abort
 from flask_bcrypt import check_password_hash
@@ -12,7 +12,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, Status, ModelTypes, NotificationType
+from backend.api.models import SearchableMixin
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
 from backend.api.utils.functions import compute_level, safe_div
 
 
@@ -107,11 +108,11 @@ class User(db.Model):
         order_by="desc(Notifications.timestamp)",
         lazy="dynamic",
     )
-    last_updates = db.relationship(
-        "UserLastUpdate",
-        primaryjoin="UserLastUpdate.user_id == User.id",
+    updates = db.relationship(
+        "UserMediaUpdate",
+        primaryjoin="UserMediaUpdate.user_id == User.id",
         back_populates="user",
-        order_by="desc(UserLastUpdate.date)",
+        order_by="desc(UserMediaUpdate.timestamp)",
         lazy="dynamic",
     )
     followed = db.relationship(
@@ -357,12 +358,12 @@ class User(db.Model):
         return level_per_ml
 
     def get_last_updates(self, limit: int) -> List[Dict]:
-        return [update.to_dict() for update in self.last_updates.limit(limit).all()]
+        return [update.to_dict() for update in self.updates.limit(limit).all()]
 
     def get_follows_updates(self, limit: int) -> List[Dict]:
         follows_updates = (
-            UserLastUpdate.query.filter(UserLastUpdate.user_id.in_([u.id for u in self.followed.all()]))
-            .order_by(desc(UserLastUpdate.date))
+            UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in self.followed.all()]))
+            .order_by(desc(UserMediaUpdate.timestamp))
             .limit(limit).all()
         )
 
@@ -427,121 +428,69 @@ class User(db.Model):
         return User.query.filter_by(id=user_id).first()
 
 
-class UserLastUpdate(db.Model):
-    THRESHOLD = 600
+class UserMediaUpdate(db.Model, SearchableMixin):
+    UPDATE_THRESHOLD = 600
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
-
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    media_id = db.Column(db.Integer, nullable=False, index=True)
     media_name = db.Column(db.String, nullable=False)
-    media_type = db.Column(db.Enum(MediaType), index=True, nullable=False)
-    date = db.Column(db.DateTime, index=True, nullable=False)
-    media_id = db.Column(db.Integer)
-    old_status = db.Column(db.Enum(Status))
-    new_status = db.Column(db.Enum(Status))
-    old_season = db.Column(db.Integer)
-    new_season = db.Column(db.Integer)
-    old_episode = db.Column(db.Integer)
-    new_episode = db.Column(db.Integer)
-    old_playtime = db.Column(db.Integer)
-    new_playtime = db.Column(db.Integer)
-    old_page = db.Column(db.Integer)
-    new_page = db.Column(db.Integer)
-    old_redo = db.Column(db.Integer)
-    new_redo = db.Column(db.Integer)
+    media_type = db.Column(db.Enum(MediaType), nullable=False, index=True)
+    update_type = db.Column(db.Enum(UpdateType), nullable=False)
+    payload = db.Column(db.TEXT, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
 
-    # --- Relationships -----------------------------------------------------------
-    user = db.relationship("User", back_populates="last_updates", lazy="select")
+    __searchable__ = ["media_name"]
+
+    # --- Relationships ----------------------------------------------------------------
+    user = db.relationship("User", back_populates="updates", lazy="joined")
 
     def to_dict(self) -> Dict:
-        update_dict = {}
-
-        # Page update
-        if self.old_page is not None and self.new_page is not None and self.old_page >= 0 and self.new_page >= 0:
-            update_dict["update"] = [f"p. {int(self.old_page)}", f"p. {int(self.new_page)}"]
-
-        # Playtime update
-        elif (self.old_playtime is not None and self.new_playtime is not None and self.old_playtime >= 0
-              and self.new_playtime >= 0):
-            update_dict["update"] = [f"{int(self.old_playtime / 60)} h", f"{int(self.new_playtime / 60)} h"]
-
-        # Redo update
-        elif self.old_redo is not None and self.new_redo is not None and self.old_redo >= 0 and self.new_redo >= 0:
-            value = "watched" if self.media_type != MediaType.BOOKS else "read"
-            update_dict["update"] = [f"Re-{value} {int(self.old_redo)}x", f"{int(self.new_redo)}x"]
-
-        # Status update
-        elif self.old_status is not None and self.new_status is not None:
-            update_dict["update"] = [f"{self.old_status.value}", f"{self.new_status.value}"]
-
-        # Newly added media
-        elif self.old_status is None and self.new_status is not None:
-            update_dict["update"] = [f"{self.new_status.value}"]
-
-        # Season and episode update
-        else:
-            try:
-                update_dict["update"] = [
-                    f"S{self.old_season:02d}.E{self.old_episode:02d}",
-                    f"S{self.new_season:02d}.E{self.new_episode:02d}",
-                ]
-            except:
-                update_dict["update"] = ["Watching"]
-                current_app.logger.error(
-                    f"[ERROR] - An error occurred updating the user last updates for: "
-                    f"({self.media_id}, {self.media_name}, {self.media_type})"
-                )
-
-        update_dict["date"] = self.date
-        update_dict["media_name"] = self.media_name
-        update_dict["media_id"] = self.media_id
-        update_dict["media_type"] = self.media_type.value
-
+        update_dict = dict(
+            user_id=self.user_id,
+            media_id=self.media_id,
+            media_name=self.media_name,
+            media_type=self.media_type.value,
+            update_type=self.update_type.value,
+            payload=json.loads(self.payload),
+            timestamp=self.timestamp,
+        )
         return update_dict
 
     @classmethod
-    def set_new_update(cls, media: db.Model, update_type: str, old_value, new_value, **kwargs):
-        previous_entry = (
-            cls.query.filter_by(user_id=current_user.id, media_type=media.GROUP, media_id=media.id)
-            .order_by(desc(cls.date))
-            .first()
+    def set_new_update(cls, media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any):
+        previous_db_entry = (
+            cls.query.filter_by(user_id=current_user.id, media_id=media.id, media_type=media.GROUP)
+            .order_by(cls.timestamp.desc()).first()
         )
 
         time_difference = float("inf")
-        if previous_entry:
-            time_difference = (datetime.utcnow() - previous_entry.date).total_seconds()
+        if previous_db_entry:
+            time_difference = (datetime.utcnow() - previous_db_entry.timestamp).total_seconds()
 
-        update_dict = {
-            "user_id": current_user.id,
-            "media_name": media.name,
-            "media_id": media.id,
-            "media_type": media.GROUP,
-            f"old_{update_type}": old_value,
-            f"new_{update_type}": new_value,
-            "date": datetime.utcnow(),
-        }
+        # noinspection PyArgumentList
+        new_update = cls(
+            user_id=current_user.id,
+            media_id=media.id,
+            media_name=media.name,
+            media_type=media.GROUP,
+            update_type=update_type,
+            payload=json.dumps({"old_value": old_value, "new_value": new_value}),
+        )
 
-        if kwargs.get("old_episode") and kwargs.get("new_episode"):
-            update_dict.update({"old_episode": kwargs["old_episode"], "new_episode": kwargs["new_episode"]})
-
-        if kwargs.get("old_season"):
-            update_dict.update({"old_season": kwargs["old_season"], "new_season": kwargs["old_season"]})
-
-        new_update = cls(**update_dict)
-
-        if time_difference > cls.THRESHOLD:
+        if time_difference > cls.UPDATE_THRESHOLD:
             db.session.add(new_update)
         else:
-            db.session.delete(previous_entry)
+            db.session.delete(previous_db_entry)
             db.session.add(new_update)
 
     @classmethod
-    def get_history(cls, media_type: MediaType, media_id: int) -> List[Dict]:
+    def get_history(cls, media_id: int, media_type: MediaType) -> List[Dict]:
         history = (
-            cls.query.filter(cls.user_id == current_user.id, cls.media_type == media_type, cls.media_id == media_id)
-            .order_by(desc(UserLastUpdate.date))
-            .all()
+            cls.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media_type)
+            .order_by(cls.timestamp.desc()).all()
         )
+
         return [update.to_dict() for update in history]
 
 

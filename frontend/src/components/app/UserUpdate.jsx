@@ -5,24 +5,20 @@ import {Payload} from "@/components/app/base/Payload";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 
 
-export const UserUpdate = ({ mediaId, username, mediaType, mediaName, payload, date_ }) => {
+export const UserUpdate = ({ update, username }) => {
     return (
         <>
             <div className="flex py-1 gap-3 pr-2">
-                <MediaIcon
-                    mediaType={mediaType}
-                    size={18}
-                    className="mt-1"
-                />
+                <MediaIcon size={18} className="mt-1" mediaType={update.media_type}/>
                 <div>
-                    <Link to={`/details/${mediaType}/${mediaId}`}>
-                        <div className="line-clamp-1" title={mediaName}>
-                            {mediaName}
+                    <Link to={`/details/${update.media_type}/${update.media_id}`}>
+                        <div className="line-clamp-1" title={update.media_name}>
+                            {update.media_name}
                         </div>
                     </Link>
-                    <Payload payload={payload}/>
+                    <Payload update={update}/>
                     <div className="text-sm text-neutral-400">
-                        {formatDateTime(date_, { includeTime: true, useLocalTz: true })}
+                        {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}
                         {username &&
                             <> by <Link to={`/profile/${username}`} className="text-blue-500">{username}</Link></>
                         }
@@ -32,4 +28,4 @@ export const UserUpdate = ({ mediaId, username, mediaType, mediaName, payload, d
             <Separator className="mt-1 mb-1"/>
         </>
     );
-}
+};

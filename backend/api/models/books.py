@@ -5,7 +5,7 @@ from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
-from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.user import Notifications, UserMediaUpdate
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
@@ -83,9 +83,9 @@ class Books(Media):
 
             BooksAuthors.query.filter(BooksAuthors.media_id.in_(books_ids)).delete()
             BooksGenre.query.filter(BooksGenre.media_id.in_(books_ids)).delete()
-            UserLastUpdate.query.filter(
-                UserLastUpdate.media_type == cls.GROUP,
-                UserLastUpdate.media_id.in_(books_ids)
+            UserMediaUpdate.query.filter(
+                UserMediaUpdate.media_type == cls.GROUP,
+                UserMediaUpdate.media_id.in_(books_ids)
             ).delete()
             Notifications.query.filter(
                 Notifications.media_type == cls.GROUP,

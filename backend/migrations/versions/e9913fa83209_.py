@@ -30,4 +30,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('personal_movies_list')
+    op.drop_table("personal_movies_list")

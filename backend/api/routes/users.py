@@ -5,7 +5,7 @@ from flask_bcrypt import generate_password_hash
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
-from backend.api.models.user import (Notifications, UserLastUpdate, User, Token, followers)
+from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate
 from backend.api.utils.enums import RoleType, ModelTypes, NotificationType
 from backend.api.utils.functions import save_picture
 from backend.api.managers.ModelsManager import ModelsManager
@@ -137,7 +137,7 @@ def history(username: str):
     page = request.args.get("page", 1, type=int)
 
     history_query = (
-        user.last_updates.filter(UserLastUpdate.media_name.ilike(f"%{search}%"))
+        user.updates.filter(UserMediaUpdate.media_name.ilike(f"%{search}%"))
         .paginate(page=page, per_page=25)
     )
 
@@ -306,7 +306,7 @@ def settings_delete():
             (followers.c.follower_id == current_user.id) | (followers.c.followed_id == current_user.id)
         ).delete()
 
-        UserLastUpdate.query.filter_by(user_id=current_user.id).delete()
+        UserMediaUpdate.query.filter_by(user_id=current_user.id).delete()
         Notifications.query.filter_by(user_id=current_user.id).delete()
 
         models = ModelsManager.get_dict_models("all", ModelTypes.LIST)

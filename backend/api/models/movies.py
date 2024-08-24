@@ -1,16 +1,13 @@
 from __future__ import annotations
-
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
-
 from flask import current_app, abort
 from sqlalchemy import func, ColumnElement
-
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
-from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.user import Notifications, UserMediaUpdate
 from backend.api.utils.enums import MediaType, Status, JobType, NotificationType
 
 
@@ -98,9 +95,9 @@ class Movies(Media):
 
             MoviesActors.query.filter(MoviesActors.media_id.in_(movie_ids)).delete()
             MoviesGenre.query.filter(MoviesGenre.media_id.in_(movie_ids)).delete()
-            UserLastUpdate.query.filter(
-                UserLastUpdate.media_type == cls.GROUP,
-                UserLastUpdate.media_id.in_(movie_ids)
+            UserMediaUpdate.query.filter(
+                UserMediaUpdate.media_type == cls.GROUP,
+                UserMediaUpdate.media_id.in_(movie_ids)
             ).delete()
             Notifications.query.filter(
                 Notifications.media_type == cls.GROUP,

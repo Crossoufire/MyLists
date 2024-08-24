@@ -2,8 +2,7 @@ from __future__ import annotations
 from typing import List
 from sqlalchemy import func, text, ColumnElement
 from backend.api import db
-from backend.api.models.user import User
-from backend.api.models.user import UserLastUpdate
+from backend.api.models.user import User, UserMediaUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money
 from backend.api.managers.ModelsManager import ModelsManager
@@ -100,11 +99,11 @@ class BaseStats(metaclass=StatsMeta):
     def compute_updates(self):
         cte_query = (
             db.session.query(
-                func.count(UserLastUpdate.media_id).label("updates"),
-                func.strftime("%m-%Y", UserLastUpdate.date).label("dates")
-            ).filter(UserLastUpdate.user_id == self.user.id, UserLastUpdate.media_type == self.GROUP)
-            .group_by(func.strftime("%m-%Y", UserLastUpdate.date))
-            .order_by(UserLastUpdate.date)
+                func.count(UserMediaUpdate.media_id).label("updates"),
+                func.strftime("%m-%Y", UserMediaUpdate.timestamp),
+            ).filter(UserMediaUpdate.user_id == self.user.id, UserMediaUpdate.media_type == self.GROUP)
+            .group_by(func.strftime("%m-%Y", UserMediaUpdate.timestamp))
+            .order_by(UserMediaUpdate.timestamp)
             .cte()
         )
 

@@ -7,7 +7,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.mixins import SearchableMixin
-from backend.api.models.user import User, followers, UserLastUpdate
+from backend.api.models.user import User, followers, UserMediaUpdate
 from backend.api.utils.enums import ModelTypes, Status, MediaType
 from backend.api.utils.functions import safe_div
 
@@ -85,7 +85,7 @@ class Media(db.Model, SearchableMixin):
             user_data.update(dict(
                 username=current_user.username,
                 labels=label_class.get_user_media_labels(user_id=current_user.id, media_id=self.id),
-                history=UserLastUpdate.get_history(self.GROUP, self.id))
+                history=UserMediaUpdate.get_history(self.id, self.GROUP)),
             )
 
         return user_data

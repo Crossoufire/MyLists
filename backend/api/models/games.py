@@ -7,7 +7,7 @@ from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
-from backend.api.models.user import UserLastUpdate, Notifications
+from backend.api.models.user import Notifications, UserMediaUpdate
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
 
 
@@ -94,9 +94,9 @@ class Games(Media):
             GamesPlatforms.query.filter(GamesPlatforms.media_id.in_(games_ids)).delete()
             GamesCompanies.query.filter(GamesCompanies.media_id.in_(games_ids)).delete()
             GamesGenre.query.filter(GamesGenre.media_id.in_(games_ids)).delete()
-            UserLastUpdate.query.filter(
-                UserLastUpdate.media_type == cls.GROUP,
-                UserLastUpdate.media_id.in_(games_ids)
+            UserMediaUpdate.query.filter(
+                UserMediaUpdate.media_type == cls.GROUP,
+                UserMediaUpdate.media_id.in_(games_ids)
             ).delete()
             Notifications.query.filter(
                 Notifications.media_type == cls.GROUP,
