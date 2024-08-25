@@ -776,7 +776,7 @@ const DisplayStats = ({ statsData, otherUserStatsData }) => {
 
 const StatsCard = ({ data, otherData }) => {
     return (
-        <Card className="flex flex-col lg:min-w-[250px]">
+        <Card className="flex flex-col lg:min-w-[220px]">
             <CardHeader>
                 <CardTitle className="justify-between max-sm:text-base">
                     <div>{data.title}</div>
