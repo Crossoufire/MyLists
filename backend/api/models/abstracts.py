@@ -78,10 +78,10 @@ class Media(db.Model, SearchableMixin):
         return data
 
     def get_user_list_info(self, label_class: Labels) -> Dict | bool:
-        media_list_q = self.list_info.filter_by(user_id=current_user.id).first()
-        user_data = media_list_q.to_dict() if media_list_q is not None else False
+        media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
+        user_data = media_assoc.to_dict() if media_assoc else None
 
-        if user_data is not False:
+        if user_data:
             user_data.update(dict(
                 username=current_user.username,
                 labels=label_class.get_user_media_labels(user_id=current_user.id, media_id=self.id),

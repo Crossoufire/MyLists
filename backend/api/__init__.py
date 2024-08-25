@@ -9,6 +9,7 @@ from flask_cors import CORS
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 from backend.api.utils.enums import RoleType
 from backend.config import Config, get_config
 
@@ -86,6 +87,10 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
     app.config.from_object(config_class)
     app.url_map.strict_slashes = False
+
+    # Add custom route converters
+    app.url_map.converters["mediatype"] = MediaTypeConverter
+    app.url_map.converters["jobtype"] = JobTypeConverter
 
     mail.init_app(app)
     db.init_app(app)

@@ -6,21 +6,6 @@ from backend.api.utils.enums import MediaType
 from backend.api.managers.ModelsManager import ModelsManager
 
 
-def validate_media_type(f: Callable):
-    """ Validate <media_type> string kwarg to MediaType enum before giving access to endpoint """
-
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            kwargs["media_type"] = MediaType(kwargs["media_type"])
-        except:
-            return abort(400)
-
-        return f(*args, **kwargs)
-
-    return wrapper
-
-
 def validate_json_data(type_: Any = None):
     """ Decorator which checks JSON data before accessing route. Add endpoint type before creating decorator """
 

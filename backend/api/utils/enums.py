@@ -73,7 +73,6 @@ class Status(str, ExtendedEnum):
 
 
 class RoleType(str, ExtendedEnum):
-    ADMIN = "admin"      # Can access admin dashboard
     MANAGER = "manager"  # Can lock and edit media
     USER = "user"        # Standard user
 

@@ -2,16 +2,15 @@ from typing import Any, Dict
 from flask import Blueprint, jsonify, abort, current_app, request
 from backend.api import db
 from backend.api.core import token_auth, current_user
-from backend.api.utils.decorators import validate_media_type, validate_json_data
+from backend.api.utils.decorators import validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 
 labels_bp = Blueprint("api_labels", __name__)
 
 
-@labels_bp.route("/labels_for_media/<media_type>/<media_id>", methods=["GET"])
+@labels_bp.route("/labels_for_media/<mediatype:media_type>/<media_id>", methods=["GET"])
 @token_auth.login_required
-@validate_media_type
 def media_in_label(media_type: MediaType, media_id: int):
     label_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
     data = label_model.get_user_media_labels(user_id=current_user.id, media_id=media_id)

@@ -2,7 +2,7 @@ from typing import Tuple, Dict
 from sqlalchemy import func, text
 from backend.api import db
 from backend.api.models.user import User, UserMediaSettings
-from backend.api.utils.enums import MediaType, Status, ModelTypes, RoleType
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 
 
@@ -130,7 +130,7 @@ class GlobalStats:
         query = (
             db.session.query(UserMediaSettings.media_type, func.sum(UserMediaSettings.time_spent))
             .join(User, User.id == UserMediaSettings.user_id)
-            .filter(User.role != RoleType.ADMIN, User.active.is_(True))
+            .filter(User.active.is_(True))
             .group_by(UserMediaSettings.media_type)
             .all()
         )

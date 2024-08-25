@@ -30,37 +30,17 @@
         }
     ],
     "genres_data": [
-        {
-            "name": "Role-playing (RPG)"
-        },
-        {
-            "name": "Adventure"
-        },
-        {
-            "name": "Action"
-        },
-        {
-            "name": "Fantasy"
-        },
-        {
-            "name": "Open world"
-        }
+        {"name": "Role-playing (RPG)"},
+        {"name": "Adventure"},
+        {"name": "Action"},
+        {"name": "Fantasy"},
+        {"name": "Open world"}
     ],
     "platforms_data": [
-        {
-            "name": "PC (Microsoft Windows)"
-        },
-        {
-            "name": "PlayStation 4"
-        },
-        {
-            "name": "Xbox One"
-        },
-        {
-            "name": "PlayStation 5"
-        },
-        {
-            "name": "Xbox Series X|S"
-        }
+        {"name": "PC (Microsoft Windows)"},
+        {"name": "PlayStation 4"},
+        {"name": "Xbox One"},
+        {"name": "PlayStation 5"},
+        {"name": "Xbox Series X|S"}
     ]
 }

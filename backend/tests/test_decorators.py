@@ -1,30 +1,11 @@
 from typing import Any, Dict
 from backend.api import db
-from backend.api.utils.decorators import validate_media_type, validate_json_data
+from backend.api.utils.decorators import validate_json_data
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.tests.base_test import BaseTest
 
 
 class DecoratorsTests(BaseTest):
-    def test_valid_media_type(self):
-        @self.app.route("/test/<media_type>", methods=["GET"])
-        @validate_media_type
-        def test_function(media_type: MediaType):
-            return {"media_type": media_type.value}, 200
-
-        # Bad - No <media_type>
-        rv = self.client.get("/test/")
-        self.assertEqual(rv.status_code, 404)
-
-        # Bad - <media_type> not in MediaType Enum
-        rv = self.client.get("/test/toto")
-        self.assertEqual(rv.status_code, 400)
-
-        # Good - <media_type> in MediaType Enum
-        rv = self.client.get("/test/series")
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["media_type"], "series")
-
     def test_validate_json_data_no_payload(self):
         @self.app.route("/test", methods=["POST"])
         @validate_json_data()

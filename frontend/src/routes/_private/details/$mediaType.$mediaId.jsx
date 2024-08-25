@@ -44,7 +44,7 @@ function MediaDetailsPage() {
 						<div className="flex items-center gap-4">
 							{apiData.media.name}
 						</div>
-						{currentUser.role !== "user" &&
+						{currentUser.role === "manager" &&
 							<RefreshMedia
 								updateRefresh={refresh}
 								mutateData={mutateData}
@@ -64,8 +64,8 @@ function MediaDetailsPage() {
 							/>
 							<UserListDetails
 								apiData={apiData}
-								setApiData={setApiData}
 								mediaType={mediaType}
+								setApiData={setApiData}
 							/>
 						</div>
 					</div>
@@ -105,7 +105,7 @@ function MediaDetailsPage() {
 						</Tabs>
 					</div>
 				</div>
-				{(mediaType === "books" || currentUser.role !== "user") &&
+				{(mediaType === "books" || currentUser.role === "manager") &&
 					<div className="flex justify-end mt-12">
 						<Link to={`/details/form/${mediaType}/${apiData.media.id}`}>
 							<Button variant="warning">Edit Media</Button>

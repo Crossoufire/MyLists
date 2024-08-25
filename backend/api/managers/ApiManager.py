@@ -7,14 +7,13 @@ from pathlib import Path
 from typing import Dict, List, Literal, Optional
 from urllib import request
 import requests
-from PIL import Image
 from flask import url_for, current_app, abort
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
 from requests import Response
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import clean_html_text, get, is_latin, format_datetime
+from backend.api.utils.functions import clean_html_text, get, is_latin, format_datetime, resize_and_save_image
 from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
@@ -40,7 +39,7 @@ class ApiManager(metaclass=ApiMeta):
 
     def __init__(self, api_id: Optional[int, str] = None):
         self.api_id = api_id
-        self.media: db.Model = None
+        self.media: Optional[db.Model] = None
         self.media_details = {}
         self.api_data = {}
         self.all_data = {}
@@ -49,7 +48,6 @@ class ApiManager(metaclass=ApiMeta):
         self._fetch_details_from_api()
         self._format_api_data()
         self._add_data_to_db()
-
         return self.media
 
     def get_refreshed_media_data(self) -> Dict:
@@ -63,7 +61,7 @@ class ApiManager(metaclass=ApiMeta):
 
         self.media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
         db.session.add(self.media)
-        db.session.commit()
+        db.session.flush()
 
         related_data = {
             models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
@@ -80,6 +78,8 @@ class ApiManager(metaclass=ApiMeta):
                 item["media_id"] = self.media.id
                 db.session.add(model(**item))
 
+        db.session.commit()
+
     def get_changed_api_ids(self) -> List[int]:
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -88,6 +88,13 @@ class ApiManager(metaclass=ApiMeta):
 
     def _format_api_data(self, updating: bool = False):
         raise NotImplementedError("Subclasses must implement this method.")
+
+    def _save_api_cover(self, cover_path: str, cover_name: str):
+        request.urlretrieve(f"{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
+        resize_and_save_image(
+            f"{self.LOCAL_COVER_PATH}/{cover_name}",
+            f"{self.LOCAL_COVER_PATH}/{cover_name}",
+        )
 
     @classmethod
     def get_subclass(cls, media_type: MediaType):
@@ -98,6 +105,7 @@ class ApiManager(metaclass=ApiMeta):
         try:
             response = getattr(requests, method)(url, **kwargs, timeout=10)
         except requests.exceptions.RequestException as error:
+            current_app.logger.error(f"Failed to fetch data from: {url}")
             if error.response is not None:
                 return abort(error.response.status_code, error.response.reason)
             else:
@@ -196,10 +204,7 @@ class TMDBApiManager(ApiManager):
         if cover_path:
             cover_name = f"{secrets.token_hex(16)}.jpg"
             try:
-                request.urlretrieve(f"{self.POSTER_BASE_URL}{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
-                with Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}") as img:
-                    img = img.resize((300, 450), Image.Resampling.LANCZOS)
-                    img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
+                self._save_api_cover(f"{self.POSTER_BASE_URL}{cover_path}", cover_name)
             except Exception as e:
                 current_app.logger.error(f"[ERROR] - Trying to recover the cover: {e}")
                 cover_name = "default.jpg"
@@ -317,7 +322,7 @@ class SeriesApiManager(TVApiManager):
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
 
-    def get_and_format_trending(self) -> List[Dict]:
+    def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
         api_data = response.json()
         results = get(api_data, "results", default=[])
@@ -384,7 +389,7 @@ class MoviesApiManager(TMDBApiManager):
     GROUP = MediaType.MOVIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/movies_covers")
 
-    def get_and_format_trending(self) -> List[Dict]:
+    def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
         api_data = response.json()
         results = get(api_data, "results", default=[])
@@ -613,9 +618,7 @@ class GamesApiManager(ApiManager):
         with request.urlopen(request_) as response:
             image_data = response.read()
 
-        with Image.open(BytesIO(image_data)) as img:
-            img_resized = img.resize((300, 450), resample=Image.Resampling.LANCZOS)
-            img_resized.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
+        resize_and_save_image(BytesIO(image_data), f"{self.LOCAL_COVER_PATH}/{cover_name}")
 
     def _get_media_cover(self) -> str:
         cover_name = "default.jpg"
@@ -742,21 +745,15 @@ class BooksApiManager(ApiManager):
             authors_data=authors_list
         )
 
-    def _save_api_cover(self, cover_path: str, cover_name: str):
-        request.urlretrieve(f"{cover_path}", f"{self.LOCAL_COVER_PATH}/{cover_name}")
-        img = Image.open(f"{self.LOCAL_COVER_PATH}/{cover_name}")
-        img = img.resize((300, 450), Image.Resampling.LANCZOS)
-        img.save(f"{self.LOCAL_COVER_PATH}/{cover_name}", quality=90)
-
     def _get_media_cover(self) -> str:
         cover_name = f"{secrets.token_hex(16)}.jpg"
         try:
-            cover_url = get(self.api_data, "imageLinks", "medium")
-            self._save_api_cover(cover_url, cover_name)
+            cover_path = get(self.api_data, "imageLinks", "medium")
+            self._save_api_cover(cover_path, cover_name)
         except:
             try:
-                cover_url = get(self.api_data, "imageLinks", "large")
-                self._save_api_cover(cover_url, cover_name)
+                cover_path = get(self.api_data, "imageLinks", "large")
+                self._save_api_cover(cover_path, cover_name)
             except:
                 cover_name = "default.jpg"
 

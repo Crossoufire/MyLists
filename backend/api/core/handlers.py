@@ -3,6 +3,7 @@ from http import HTTPStatus
 from typing import Tuple, Dict
 from flask import abort
 from werkzeug.exceptions import Forbidden, Unauthorized
+from backend.api import RoleType
 from backend.api.core import basic_auth, token_auth
 
 
@@ -27,6 +28,11 @@ def basic_auth_error(status: int = HTTPStatus.UNAUTHORIZED) -> Tuple[Dict, int, 
     )
 
     return response, error.code, {"WWW-Authenticate": "Form"}
+
+
+@token_auth.get_user_roles
+def get_user_roles(user: User) -> RoleType:
+    return user.role
 
 
 @token_auth.verify_token

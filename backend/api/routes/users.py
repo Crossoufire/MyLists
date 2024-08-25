@@ -4,8 +4,8 @@ from flask_bcrypt import generate_password_hash
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
-from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate
-from backend.api.utils.enums import RoleType, ModelTypes, NotificationType, MediaType
+from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
 from backend.api.utils.functions import save_picture
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -66,7 +66,7 @@ def profile(username: str):
     user = current_user.check_autorization(username)
     active_media_types = [setting.media_type for setting in user.settings if setting.active]
 
-    if current_user.role != RoleType.ADMIN and user.id != current_user.id:
+    if current_user.id != user.id:
         user.profile_views += 1
 
     user_updates = user.get_last_updates(limit=6)
@@ -303,6 +303,7 @@ def settings_delete():
 
         UserMediaUpdate.query.filter_by(user_id=current_user.id).delete()
         Notifications.query.filter_by(user_id=current_user.id).delete()
+        UserMediaSettings.query.filter_by(user_id=current_user.id).delete()
 
         models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model in models.values():

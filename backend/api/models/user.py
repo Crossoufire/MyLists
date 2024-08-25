@@ -180,15 +180,12 @@ class User(db.Model):
     def check_autorization(self, username: str) -> User:
         user = self.query.filter_by(username=username).first()
         if not user:
-            return abort(404)
-
-        if user.username == "admin" and self.role != RoleType.ADMIN:
-            return abort(403)
+            return abort(404, "User not found")
 
         return user
 
     def set_view_count(self, user: User, media_type: MediaType):
-        if self.role != RoleType.ADMIN and self.id != user.id:
+        if self.id != user.id:
             user.get_media_setting(media_type).views += 1
 
     def add_follow(self, user: User):
@@ -341,12 +338,8 @@ class User(db.Model):
     @classmethod
     def create_search_results(cls, search: str, page: int = 1) -> Dict:
         users = db.paginate(
-            db.select(cls).filter(
-                cls.username.like(f"%{search}%"),
-                cls.role != RoleType.ADMIN,
-                cls.active == True
-            ),
-            page=page, per_page=8, error_out=True
+            db.select(cls).filter(cls.username.like(f"%{search}%"), cls.active.is_(True)),
+            page=page, per_page=8, error_out=True,
         )
 
         users_list = [{

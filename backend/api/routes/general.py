@@ -6,7 +6,6 @@ from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User, UserMediaSettings
 from backend.api.core.handlers import token_auth
-from backend.api.utils.enums import RoleType
 
 
 general = Blueprint("api_general", __name__)
@@ -16,27 +15,16 @@ general = Blueprint("api_general", __name__)
 @cache.cached(timeout=3600)
 @token_auth.login_required
 def current_trends():
-    """ Fetch the current * WEEK * trends for TV and Movies using the TMDB API. Function cached for an hour. """
-
-    error = False
-    tv_trends, movies_trends = [], []
+    """ Fetch the current WEEK trends for TV and Movies using the TMDB API. Function cached for an hour. """
 
     try:
-        tv_trends = SeriesApiManager().get_and_format_trending()
-        movies_trends = MoviesApiManager().get_and_format_trending()
+        tv_trends = SeriesApiManager().fetch_and_format_trending()
+        movies_trends = MoviesApiManager().fetch_and_format_trending()
     except Exception as e:
-        error = True
         current_app.logger.error(f"[ERROR] - Fetching the trending data: {e}")
-
-    if error:
         return abort(400, "Can't fetch the trending data for now. Please try again later")
 
-    data = dict(
-        tv_trends=tv_trends,
-        movies_trends=movies_trends,
-    )
-
-    return jsonify(data=data), 200
+    return jsonify(data={"tv_trends": tv_trends, "movies_trends": movies_trends}), 200
 
 
 @general.route("/hall_of_fame", methods=["GET"])
@@ -75,7 +63,7 @@ def hall_of_fame():
     users_data = (
         User.query.with_entities(User, ranked_users.c.rank)
         .join(ranked_users, User.id == ranked_users.c.id)
-        .filter(User.username.ilike(f"%{search}%"), User.role != RoleType.ADMIN, User.active.is_(True))
+        .filter(User.username.ilike(f"%{search}%"), User.active.is_(True))
         .paginate(page=page, per_page=10, error_out=True)
     )
 
@@ -106,9 +94,6 @@ def profile_borders():
 
     for i in range(1, num_borders + 1):
         image_id = f"border_{i}.png"
-        data.append({
-            "level": i,
-            "image": url_for("static", filename=f"img/profile_borders/{image_id}")
-        })
+        data.append({"level": i, "image": url_for("static", filename=f"img/profile_borders/{image_id}")})
 
     return jsonify(data=data), 200

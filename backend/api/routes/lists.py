@@ -3,19 +3,16 @@ from backend.api import db, cache
 from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
 from backend.api.managers.ListQueryManager import ListQueryManager
-from backend.api.utils.decorators import validate_media_type
-from backend.api.utils.enums import MediaType, RoleType
+from backend.api.utils.enums import MediaType
 from backend.api.managers.StatsManager import BaseStats
 
 
 lists_bp = Blueprint("api_lists", __name__)
 
 
-@lists_bp.route("/list/<media_type>/<username>", methods=["GET"])
+@lists_bp.route("/list/<mediatype:media_type>/<username>", methods=["GET"])
 @token_auth.login_required
-@validate_media_type
 def media_list(media_type: MediaType, username: str):
-
     user = current_user.check_autorization(username)
 
     if not user.get_media_setting(media_type).active:
@@ -37,10 +34,9 @@ def media_list(media_type: MediaType, username: str):
     return jsonify(data=data), 200
 
 
-@lists_bp.route("/stats/<media_type>/<username>", methods=["GET"])
+@lists_bp.route("/stats/<mediatype:media_type>/<username>", methods=["GET"])
 @cache.cached(timeout=3600)
 @token_auth.login_required
-@validate_media_type
 def stats_page(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
@@ -53,7 +49,7 @@ def stats_page(media_type: MediaType, username: str):
         users=[{
             "label": user.username,
             "value": user.username,
-        } for user in User.query.filter(User.active == True, User.role != RoleType.ADMIN).all()]
+        } for user in User.query.filter(User.active.is_(True)).all()]
     )
 
     return jsonify(data=data), 200

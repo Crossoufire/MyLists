@@ -166,3 +166,9 @@ def format_datetime(date) -> datetime | None:
         return datetime.fromtimestamp(int(date))
     except:
         return None
+
+
+def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
+    with Image.open(input_path) as img:
+        img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
+        img_resized.save(output_path, quality=90)

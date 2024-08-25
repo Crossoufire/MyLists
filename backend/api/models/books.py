@@ -30,8 +30,8 @@ class Books(Media):
         media_dict.update(dict(
             media_cover=self.media_cover,
             authors=[author.name for author in self.authors],
-            genres=self.genres_list)
-        )
+            genres=self.genres_list
+        ))
 
         return media_dict
 
