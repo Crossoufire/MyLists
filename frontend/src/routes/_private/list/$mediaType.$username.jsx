@@ -86,10 +86,10 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                 </Button>
             </Sheet.SheetTrigger>
             <Sheet.SheetContent side="left">
-                <form onSubmit={handleOnSubmit}>
-                    <Sheet.SheetHeader>
-                        <Sheet.SheetTitle>Filtering</Sheet.SheetTitle>
-                    </Sheet.SheetHeader>
+                <Sheet.SheetHeader>
+                    <Sheet.SheetTitle>Filtering</Sheet.SheetTitle>
+                </Sheet.SheetHeader>
+                <form onSubmit={handleOnSubmit} className="overflow-auto max-h-[98%]">
                     <div className="mt-6 mb-6 space-y-4">
                         {!isCurrent &&
                             <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                         }
                         <div>
                             <h3 className="text-lg font-semibold">Status</h3>
-                            <ul className="max-h-[190px] overflow-hidden hover:overflow-auto">
+                            <ul className="overflow-hidden hover:overflow-auto">
                                 {allFilters.all_status.map(status =>
                                     <li key={status} className="flex items-center gap-3">
                                         <Checkbox
@@ -118,7 +118,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold">Genres</h3>
-                            <ul className="max-h-[190px] overflow-auto">
+                            <ul className="max-h-[190px] max-w-[300px] overflow-auto">
                                 {allFilters.all_genres.map(genre =>
                                     <li key={genre} className="flex items-center gap-3">
                                         <Checkbox
@@ -152,7 +152,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                         </div>
                         <div>
                             <h3 className="text-lg font-semibold">Labels</h3>
-                            <ul className="max-h-[190px] overflow-auto">
+                            <ul className="max-h-[190px] max-w-[300px] overflow-auto">
                                 {allFilters.all_labels.map(label =>
                                     <li key={label} className="flex items-center gap-3">
                                         <Checkbox
@@ -166,8 +166,8 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
                             </ul>
                         </div>
                     </div>
-                    <Sheet.SheetFooter>
-                        <Sheet.SheetClose asChild>
+                    <Sheet.SheetFooter className="pr-2">
+                        <Sheet.SheetClose asChild className="w-full">
                             <Button type="submit">Apply Filters</Button>
                         </Sheet.SheetClose>
                     </Sheet.SheetFooter>
@@ -178,7 +178,7 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
 };
 
 
-const SortComponent = ({ sorting, allSorting, applySorting }) => (
+const SortComponent = ({sorting, allSorting, applySorting}) => (
     <Drop.DropdownMenu>
         <Drop.DropdownMenuTrigger asChild>
             <Button variant="filters">
@@ -198,8 +198,8 @@ const SortComponent = ({ sorting, allSorting, applySorting }) => (
 );
 
 
-const DotsOthers = ({ isCurrent }) => {
-    const { mediaType, username } = Route.useParams();
+const DotsOthers = ({isCurrent}) => {
+    const {mediaType, username} = Route.useParams();
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -210,7 +210,8 @@ const DotsOthers = ({ isCurrent }) => {
                         <DotsVerticalIcon/>
                     </Button>
                 </Pop.PopoverTrigger>
-                <Pop.PopoverContent align="end" className={cn("w-48 pt-3 pb-3 px-1 space-y-2 text-sm", isCurrent && "pt-1")}>
+                <Pop.PopoverContent align="end"
+                                    className={cn("w-48 pt-3 pb-3 px-1 space-y-2 text-sm", isCurrent && "pt-1")}>
                     {isCurrent &&
                         <Button variant="list" onClick={() => setIsOpen(true)}>
                             Manage {capitalize(mediaType)} Labels
@@ -232,7 +233,8 @@ const DotsOthers = ({ isCurrent }) => {
                     isOpen={isOpen}
                     manageOnly={true}
                     labelsInList={[]}
-                    updateLabelsInList={() => {}}
+                    updateLabelsInList={() => {
+                    }}
                     onClose={() => setIsOpen(false)}
                 />
             }
@@ -268,7 +270,7 @@ const CurrentFilters = ({currentFilters, removeAllFilters, removeFilter}) => {
 };
 
 
-export const TopRightCornerTriangle = ({ isCommon }) => {
+export const TopRightCornerTriangle = ({isCommon}) => {
     return (
         <>
             <div className="absolute top-0 right-0 border-solid border-t-0 border-r-[55px] border-b-[55px] border-l-0
@@ -279,14 +281,14 @@ export const TopRightCornerTriangle = ({ isCommon }) => {
 };
 
 
-const ShowStatus = ({ allStatus, status }) => {
+const ShowStatus = ({allStatus, status}) => {
     if (allStatus.length === 1) return;
     return <Badge variant="outline">{status}</Badge>;
 };
 
 
-const MediaItem = ({ isCurrent, media, filters, initCommon }) => {
-    const { mediaType } = Route.useParams();
+const MediaItem = ({isCurrent, media, filters, initCommon}) => {
+    const {mediaType} = Route.useParams();
     const [isLoading, handleLoading] = useLoading();
     const [status, setStatus] = useState(media.status);
     const [isCommon, setIsCommon] = useState(initCommon);
