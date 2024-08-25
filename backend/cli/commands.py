@@ -6,6 +6,18 @@ def create_cli_commands():
     """ Register the commands to the Flask CLI """
 
     @current_app.cli.command()
+    def analyze_db():
+        """ Perform ANALYZE on SQLite db """
+        db.session.execute(text("ANALYZE"))
+        click.echo("ANALYZE operation completed successfully")
+
+    @current_app.cli.command()
+    def vacuum_db():
+        """ Perform VACUUM on SQLite db """
+        db.session.execute(text("ANALYZE"))
+        click.echo("VACUUM operation completed successfully")
+
+    @current_app.cli.command()
     @click.argument("days", type=int, default=180)
     def active_users(days: int):
         """ Count the number of active users """
@@ -73,3 +85,5 @@ def create_cli_commands():
         automatic_movies_locking()
         compute_media_time_spent()
         update_Mylists_stats()
+        vacuum_db()
+        analyze_db()
