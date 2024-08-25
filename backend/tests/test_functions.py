@@ -49,7 +49,7 @@ class UtilsFunctionTests(BaseTest):
 
     def test_clean_html_text(self):
         self.assertEqual(clean_html_text(" "), " ")
-        self.assertEqual(clean_html_text(""), "Unknown")
+        self.assertEqual(clean_html_text(""), "")
         self.assertEqual(clean_html_text("No tags here!"), "No tags here!")
         self.assertEqual(clean_html_text("<b>Bold</b> <i>Italic</i>"), "Bold Italic")
         self.assertEqual(clean_html_text("This is a test text."), "This is a test text.")

@@ -94,7 +94,6 @@ class GlobalStats:
             db.session.query(media_m.director_name, func.count(media_m.director_name).label("count"))
             .join(list_m, media_m.id == list_m.media_id)
             .group_by(media_m.director_name)
-            .filter(media_m.director_name != "Unknown")
             .order_by(text("count desc"))
             .limit(self.LIMIT).all()
         )
@@ -106,7 +105,7 @@ class GlobalStats:
         query = (
             db.session.query(comp_m.name, func.count(comp_m.name).label("count"))
             .join(list_m, comp_m.media_id == list_m.media_id)
-            .filter(comp_m.name != "Unknown", comp_m.developer == True)
+            .filter(comp_m.developer.is_(True))
             .group_by(comp_m.name)
             .order_by(text("count desc"))
             .limit(self.LIMIT).all()
@@ -119,7 +118,6 @@ class GlobalStats:
         query = (
             db.session.query(author_m.name, func.count(author_m.name).label("count"))
             .join(list_m, author_m.media_id == list_m.media_id)
-            .filter(author_m.name != "Unknown")
             .group_by(author_m.name)
             .order_by(text("count desc"))
             .limit(self.LIMIT).all()

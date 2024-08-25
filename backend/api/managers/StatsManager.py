@@ -150,7 +150,7 @@ class BaseStats(metaclass=StatsMeta):
         query = (
                     db.session.query(metric, func.count(metric).label("count"))
                     .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, metric != "Unknown", *filters)
+                    .filter(*self.common_filter, *filters)
                     .group_by(metric).order_by(text("count desc"))
                     .limit(self.LIMIT).all()
                 ) or [("-", 0)]
@@ -165,7 +165,7 @@ class BaseStats(metaclass=StatsMeta):
         query = (
                     db.session.query(metric, func.avg(self.rating).label("rating"))
                     .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, metric != "Unknown", self.rating.is_not(None), *filters)
+                    .filter(*self.common_filter, self.rating.is_not(None), *filters)
                     .group_by(metric).having((func.count(metric) >= min_))
                     .order_by(text("rating desc"))
                     .limit(self.LIMIT).all()
@@ -181,7 +181,7 @@ class BaseStats(metaclass=StatsMeta):
         query = (
                     db.session.query(metric, func.count(self.media_list.favorite).label("count"))
                     .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, metric != "Unknown", self.media_list.favorite.is_(True), *filters)
+                    .filter(*self.common_filter, self.media_list.favorite.is_(True), *filters)
                     .group_by(metric)
                     .order_by(text("count desc"))
                     .limit(self.LIMIT).all()
@@ -280,11 +280,11 @@ class TvStats(TMDBStats):
         self.data["lists"]["durations"] = [{"name": v / 60, "value": c} for (v, c) in duration_distrib]
 
     def compute_networks(self):
-        top_values = self._query_top_values(self.media_networks, self.media_networks.network,
+        top_values = self._query_top_values(self.media_networks, self.media_networks.name,
                                             [self.media_list.status != Status.RANDOM])
-        top_rated = self._query_top_rated(self.media_networks, self.media_networks.network, 3,
+        top_rated = self._query_top_rated(self.media_networks, self.media_networks.name, 3,
                                           [self.media_list.status != Status.RANDOM])
-        top_favorited = self._query_top_favorites(self.media_networks, self.media_networks.network,
+        top_favorited = self._query_top_favorites(self.media_networks, self.media_networks.name,
                                                   [self.media_list.status != Status.RANDOM])
 
         self.data["lists"]["networks"] = {
@@ -591,7 +591,7 @@ class GamesStats(BaseStats):
 
         data = (
             db.session.query(self.media.game_modes)
-            .join(*self.common_join).filter(*self.common_filter, self.media.game_modes != "Unknown")
+            .join(*self.common_join).filter(*self.common_filter)
             .all()
         )
         game_modes = [mode for row in data for mode in row[0].split(",")]

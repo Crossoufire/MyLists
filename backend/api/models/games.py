@@ -20,7 +20,6 @@ class Games(Media):
     player_perspective = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
-    storyline = db.Column(db.Text)
     IGDB_url = db.Column(db.String)
     hltb_main_time = db.Column(db.String)
     hltb_main_and_extra_time = db.Column(db.String)

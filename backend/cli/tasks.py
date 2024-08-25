@@ -35,7 +35,6 @@ def correct_medialist_duplicates():
     """ Some users have a media more than once in a medialist (example: 2 times breaking bad in its list) """
 
     media_lists = ["series_list", "anime_list", "movies_list", "games_list", "books_list"]
-
     for media_list in media_lists:
         raw_sql = text(f"""
             SELECT list_id, name, user_id, row_num

@@ -22,13 +22,12 @@ class TVModel(Media):
     season_to_air = db.Column(db.Integer)
     episode_to_air = db.Column(db.Integer)
     homepage = db.Column(db.String)
-    in_production = db.Column(db.Boolean)
     created_by = db.Column(db.String)
     duration = db.Column(db.Integer)
     total_seasons = db.Column(db.Integer)
     total_episodes = db.Column(db.Integer)
     origin_country = db.Column(db.String)
-    status = db.Column(db.String)
+    prod_status = db.Column(db.String)
     vote_average = db.Column(db.Float)
     vote_count = db.Column(db.Float)
     popularity = db.Column(db.Float)
@@ -45,7 +44,7 @@ class TVModel(Media):
         media_dict.update({
             "media_cover": self.media_cover,
             "eps_per_season": self.eps_per_season_list,
-            "networks": [r.network for r in self.networks],
+            "networks": [n.name for n in self.networks],
             "actors": self.actors_list,
             "genres": self.genres_list,
         })
@@ -88,7 +87,7 @@ class TVModel(Media):
             query = cls.query.join(tv_actors, tv_actors.media_id == cls.id).filter(tv_actors.name == name).all()
         elif job == JobType.PLATFORM:
             tv_net = eval(f"{cls.__name__}Network")
-            query = cls.query.join(tv_net, tv_net.media_id == cls.id).filter(tv_net.network == name).all()
+            query = cls.query.join(tv_net, tv_net.media_id == cls.id).filter(tv_net.name == name).all()
         else:
             return abort(400, "Invalid job type")
 
@@ -342,7 +341,7 @@ class SeriesList(TVListModel):
     @classmethod
     def additional_search_filters(cls, search: str) -> List[ColumnElement]:
         return [Series.name.ilike(f"%{search}%"), Series.original_name.ilike(f"%{search}%"),
-                SeriesNetwork.network.ilike(f"%{search}%"), SeriesActors.name.ilike(f"%{search}%")]
+                SeriesNetwork.name.ilike(f"%{search}%"), SeriesActors.name.ilike(f"%{search}%")]
 
 
 class SeriesGenre(Genres):
@@ -378,7 +377,7 @@ class SeriesNetwork(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
-    network = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Series", back_populates="networks", lazy="select")
@@ -434,7 +433,7 @@ class AnimeList(TVListModel):
     @classmethod
     def additional_search_filters(cls, search: str) -> List[ColumnElement]:
         return [Anime.name.ilike(f"%{search}%"), Anime.original_name.ilike(f"%{search}%"),
-                AnimeNetwork.network.ilike(f"%{search}%"), AnimeActors.name.ilike(f"%{search}%")]
+                AnimeNetwork.name.ilike(f"%{search}%"), AnimeActors.name.ilike(f"%{search}%")]
 
 
 class AnimeGenre(Genres):
@@ -473,7 +472,7 @@ class AnimeNetwork(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)
-    network = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Anime", back_populates="networks", lazy="select")

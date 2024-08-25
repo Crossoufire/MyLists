@@ -152,8 +152,6 @@ class TMDBApiManager(ApiManager):
         return dict(items=search_results, total=total, pages=pages)
 
     def get_changed_api_ids(self) -> List:
-        """ Fetch the IDs that changed in the last 24h from the TMDB API """
-
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
@@ -161,7 +159,7 @@ class TMDBApiManager(ApiManager):
         data = json.loads(response.text)
 
         changed_api_ids = {d.get("id") for d in data.get("results", {})}
-        api_ids_in_db = {m[0] for m in db.session.query(model.api_id).filter(model.lock_status != True)}
+        api_ids_in_db = {m[0] for m in db.session.query(model.api_id).filter(model.lock_status.is_not(True))}
         api_ids_to_refresh = list(api_ids_in_db.intersection(changed_api_ids))
 
         return api_ids_to_refresh
@@ -178,7 +176,7 @@ class TMDBApiManager(ApiManager):
         """ Fetch series, anime, or movies genres (fallback for anime if Jikan API bug) """
 
         all_genres = get(self.api_data, "genres", default=[])
-        genres_list = [dict(name=genre["name"]) for genre in all_genres]
+        genres_list = [{"name": genre["name"]} for genre in all_genres]
 
         return genres_list
 
@@ -186,7 +184,7 @@ class TMDBApiManager(ApiManager):
         """ Get the <MAX_ACTORS> actors for series, anime and movies """
 
         all_actors = get(self.api_data, "credits", "cast", default=[])
-        actors_list = [dict(name=actor["name"]) for actor in all_actors[:self.MAX_ACTORS]]
+        actors_list = [{"name": actor["name"]} for actor in all_actors[:self.MAX_ACTORS]]
 
         return actors_list
 
@@ -239,21 +237,20 @@ class TVApiManager(TMDBApiManager):
 
     def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.api_data, "name", default="Unknown"),
-            original_name=get(self.api_data, "original_name", default="Unknown"),
+            name=get(self.api_data, "name"),
+            original_name=get(self.api_data, "original_name"),
             release_date=format_datetime(get(self.api_data, "first_air_date")),
             last_air_date=format_datetime(get(self.api_data, "last_air_date")),
-            homepage=get(self.api_data, "homepage", default="Unknown"),
-            in_production=get(self.api_data, "in_production", default=False),
+            homepage=get(self.api_data, "homepage"),
             total_seasons=get(self.api_data, "number_of_seasons", default=1),
             total_episodes=get(self.api_data, "number_of_episodes", default=1),
-            status=get(self.api_data, "status", default="Unknown"),
+            prod_status=get(self.api_data, "status"),
             vote_average=get(self.api_data, "vote_average", default=0),
             vote_count=get(self.api_data, "vote_count", default=0),
-            synopsis=get(self.api_data, "overview", default="Undefined"),
+            synopsis=get(self.api_data, "overview"),
             popularity=get(self.api_data, "popularity", default=0),
             duration=get(self.api_data, "episode_run_time", 0, default=self.DURATION),
-            origin_country=get(self.api_data, "origin_country", 0, default="Unknown"),
+            origin_country=get(self.api_data, "origin_country", 0),
             created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self._get_writers())),
             api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
@@ -277,16 +274,16 @@ class TVApiManager(TMDBApiManager):
         if not seasons_list:
             seasons_list.append({"season": 1, "episodes": 1})
 
-        networks_list = []
         networks = get(self.api_data, "networks", default=[])
-        for network in networks[:self.MAX_NETWORK]:
-            networks_list.append({"network": network["name"]})
-        if not networks_list:
-            networks_list.append({"network": "Unknown"})
+        networks_list = [{"name": network["name"]} for network in networks[:self.MAX_NETWORK]]
 
-        genres_list, actors_list, anime_genres_list = (
-            self._get_genres(), self._get_actors(), self._get_anime_genres()
-        ) if not updating else ([], [], [])
+        genres_list = []
+        actors_list = []
+        anime_genres_list = []
+        if not updating:
+            genres_list = self._get_genres()
+            actors_list = self._get_actors()
+            anime_genres_list = self._get_anime_genres()
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -305,13 +302,10 @@ class TVApiManager(TMDBApiManager):
         """ Get top 2 writers (by popularity) for <created_by> field using the series/anime crew """
 
         tv_crew = get(self.api_data, "credits", "crew", default=[])
-
         creator_names = [member for member in tv_crew if member.get("department") == "Writing"
                          and member.get("known_for_department") == "Writing"]
-
         if not creator_names:
-            return [{"name": "Unknown"}]
-
+            return []
         return sorted(creator_names, key=lambda x: x.get("popularity", 0), reverse=True)[:2]
 
 
@@ -332,8 +326,8 @@ class SeriesApiManager(TVApiManager):
         for result in results[:self.MAX_TRENDING]:
             media_data = dict(
                 api_id=result.get("id"),
-                overview=get(result, "overview", default="Unknown"),
-                display_name=get(result, "name", default="Unknown"),
+                overview=get(result, "overview"),
+                display_name=get(result, "name"),
                 release_date=result.get("first_air_date"),
                 media_type=MediaType.SERIES.value,
             )
@@ -378,7 +372,7 @@ class AnimeApiManager(TVApiManager):
 
             for data_list in (anime_genres, anime_demographic, anime_themes):
                 for item in data_list:
-                    anime_genres_list.append({"genre": item["name"], "genre_id": int(item["mal_id"])})
+                    anime_genres_list.append({"name": item["name"]})
         except Exception as e:
             current_app.logger.error(f"[ERROR] - Requesting the Jikan API: {e}")
 
@@ -399,8 +393,8 @@ class MoviesApiManager(TMDBApiManager):
         for result in results[:self.MAX_TRENDING]:
             media_data = dict(
                 api_id=result.get("id"),
-                overview=get(result, "overview", default="Unknown"),
-                display_name=get(result, "title", default="Unknown"),
+                overview=get(result, "overview"),
+                display_name=get(result, "title"),
                 release_date=result.get("release_date"),
                 media_type=MediaType.MOVIES.value,
             )
@@ -417,21 +411,21 @@ class MoviesApiManager(TMDBApiManager):
 
     def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.api_data, "title", default="Unknown"),
-            original_name=get(self.api_data, "original_title", default="Unknown"),
+            name=get(self.api_data, "title"),
+            original_name=get(self.api_data, "original_title"),
             release_date=format_datetime(get(self.api_data, "release_date")),
-            homepage=get(self.api_data, "homepage", default="Unknown"),
+            homepage=get(self.api_data, "homepage"),
             vote_average=get(self.api_data, "vote_average", default=0),
             vote_count=get(self.api_data, "vote_count", default=0),
-            synopsis=get(self.api_data, "overview", default="Undefined"),
+            synopsis=get(self.api_data, "overview"),
             popularity=get(self.api_data, "popularity", default=0),
             budget=get(self.api_data, "budget", default=0),
             revenue=get(self.api_data, "revenue", default=0),
             duration=get(self.api_data, "runtime", default=self.DURATION),
-            original_language=get(self.api_data, "original_language", default="Unknown"),
+            original_language=get(self.api_data, "original_language"),
             tagline=self.api_data.get("tagline"),
             api_id=self.api_data.get("id"),
-            director_name="Unknown",
+            director_name=None,
             image_cover=self._get_media_cover(),
             last_api_update=datetime.utcnow(),
         )
@@ -439,10 +433,14 @@ class MoviesApiManager(TMDBApiManager):
         all_crew = get(self.api_data, "credits", "crew", default=[])
         for crew in all_crew:
             if crew.get("job") == "Director":
-                self.media_details["director_name"] = get(crew, "name", default="Unknown")
+                self.media_details["director_name"] = get(crew, "name")
                 break
 
-        actors_list, genres_list = (self._get_actors(), self._get_genres()) if not updating else ([], [])
+        actors_list = []
+        genres_list = []
+        if not updating:
+            actors_list = self._get_actors()
+            genres_list = self._get_genres()
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -467,23 +465,23 @@ class GamesApiManager(ApiManager):
 
         self.headers = {
             "Client-ID": self.CLIENT_IGDB,
-            "Authorization": f"Bearer {self.API_KEY}"
+            "Authorization": f"Bearer {self.API_KEY}",
         }
 
     @sleep_and_retry
     @limits(calls=4, period=1)
     def search(self, query: str, page: int = 1):
         data = (
-            f'fields id, name, cover.image_id, first_release_date, storyline; limit 10; '
+            f'fields id, name, cover.image_id, first_release_date; limit 10; '
             f'offset {(page - 1) * self.RESULTS_PER_PAGE}; search "{query}";'
         )
 
         response = self.call_api("https://api.igdb.com/v4/games", method="post", data=data, headers=self.headers)
 
-        self.api_data = {
-            "results": json.loads(response.text),
-            "total": int(response.headers.get("X-Count", 0))
-        }
+        self.api_data = dict(
+            results=json.loads(response.text),
+            total=int(response.headers.get("X-Count", 0))
+        )
 
     def create_search_results(self) -> Dict:
         search_results = []
@@ -494,7 +492,7 @@ class GamesApiManager(ApiManager):
 
             media_details = dict(
                 api_id=result.get("id"),
-                name=get(result, "name", default="Unknown"),
+                name=get(result, "name"),
                 image_cover=url_for("static", filename="covers/default.jpg"),
                 date=result.get("first_release_date"),
                 media_type=MediaType.GAMES.value,
@@ -504,7 +502,6 @@ class GamesApiManager(ApiManager):
             if cover:
                 media_details["image_cover"] = f"{self.POSTER_BASE_URL}{cover}.jpg"
 
-            # Append to media results
             search_results.append(media_details)
 
         data = dict(
@@ -520,27 +517,59 @@ class GamesApiManager(ApiManager):
             f"fields name, cover.image_id, collection.name, game_engines.name, game_modes.name, "
             f"platforms.name, genres.name, player_perspectives.name, total_rating, total_rating_count, "
             f"first_release_date, involved_companies.company.name, involved_companies.developer, "
-            f"involved_companies.publisher, storyline, summary, themes.name, url, external_games.uid, "
+            f"involved_companies.publisher, summary, themes.name, url, external_games.uid, "
             f"external_games.category; where id={self.api_id};"
         )
 
         response = self.call_api("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
         self.api_data = json.loads(response.text)[0]
 
+    def _format_platforms(self) -> List[Dict]:
+        platforms = get(self.api_data, "platforms", default=[])
+        return [{"name": platform["name"]} for platform in platforms]
+
+    def _format_companies(self) -> List[Dict]:
+        companies_list = []
+        for item in get(self.api_data, "involved_companies", default=[]):
+            if item["developer"] is False and item["publisher"] is False:
+                continue
+            companies_list.append(dict(
+                name=item["company"]["name"],
+                developer=item["developer"],
+                publisher=item["publisher"],
+            ))
+        return companies_list
+
+    def _format_genres(self) -> List[Dict]:
+        all_genres = get(self.api_data, "genres", default=[])
+        all_themes = get(self.api_data, "themes", default=[])
+        fusion_list = all_genres + all_themes
+
+        genres_list = [{"name": genre["name"]} for genre in fusion_list]
+        genre_mapping = {
+            "4X (explore, expand, exploit, and exterminate)": "4X",
+            "Hack and slash/Beat 'em up": "Hack and Slash",
+            "Card & Board Game": "Card Game",
+            "Quiz/Trivia": "Quiz",
+        }
+        for genre in genres_list:
+            genre["name"] = genre_mapping.get(genre["name"], genre["name"])
+
+        return genres_list
+
     def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
-            name=get(self.api_data, "name", default="Unknown"),
+            name=get(self.api_data, "name"),
             release_date=format_datetime(get(self.api_data, "first_release_date")),
-            IGDB_url=get(self.api_data, "url", default="Unknown"),
+            IGDB_url=get(self.api_data, "url"),
             vote_average=get(self.api_data, "total_rating", default=0),
             vote_count=get(self.api_data, "total_rating_count", default=0),
-            synopsis=get(self.api_data, "summary", default="Undefined"),
-            storyline=get(self.api_data, "storyline", default="Undefined"),
-            collection_name=get(self.api_data, "collection", "name", default="Unknown"),
-            game_engine=get(self.api_data, "game_engines", 0, "name", default="Unknown"),
-            player_perspective=get(self.api_data, "player_perspectives", 0, "name", default="Unknown"),
-            game_modes=",".join([g["name"] for g in get(self.api_data, "game_modes", default=[{"name": "Unknown"}])]),
-            api_id=self.api_data.get("id"),
+            synopsis=get(self.api_data, "summary"),
+            collection_name=get(self.api_data, "collection", "name"),
+            game_engine=get(self.api_data, "game_engines", 0, "name"),
+            player_perspective=get(self.api_data, "player_perspectives", 0, "name"),
+            game_modes=",".join([g.get("name") for g in get(self.api_data, "game_modes", default=[])]),
+            api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
             hltb_main_time=None,
@@ -553,41 +582,18 @@ class GamesApiManager(ApiManager):
         self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
         self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
 
-        companies_list, fusion_list, platforms_list = [], [], []
+        genres_list = []
+        platforms_list = []
+        companies_list = []
         if not updating:
-            platforms = get(self.api_data, "platforms", default=[{"name": "Unknown"}])
-            platforms_list = [{"name": pf["name"]} for pf in platforms]
-
-            companies = get(self.api_data, "involved_companies",
-                            default=[{"company": {"name": "Unknown"}, "publisher": True, "developer": True}])
-            companies_list = [{
-                "name": company["company"]["name"],
-                "publisher": company["publisher"],
-                "developer": company["developer"],
-            } for company in companies]
-
-            genres = get(self.api_data, "genres", default=[])
-            genres_list = [dict(name=genre["name"]) for genre in genres]
-
-            themes = get(self.api_data, "themes", default=[])
-            themes_list = [dict(name=theme["name"]) for theme in themes]
-
-            fusion_list = genres_list + themes_list or []
-
-            genre_mapping = {
-                "4X (explore, expand, exploit, and exterminate)": "4X",
-                "Hack and slash/Beat 'em up": "Hack and Slash",
-                "Card & Board Game": "Card Game",
-                "Quiz/Trivia": "Quiz",
-            }
-
-            for data in fusion_list:
-                data["name"] = genre_mapping.get(data["name"], data["name"])
+            genres_list = self._format_genres()
+            platforms_list = self._format_platforms()
+            companies_list = self._format_companies()
 
         self.all_data = dict(
             media_data=self.media_details,
             companies_data=companies_list,
-            genres_data=fusion_list,
+            genres_data=genres_list,
             platforms_data=platforms_list
         )
 
@@ -613,9 +619,9 @@ class GamesApiManager(ApiManager):
 
     def _get_media_cover(self) -> str:
         cover_name = "default.jpg"
-        cover_path = self.api_data.get("cover")["image_id"] or None
+        cover_path = get(self.api_data, "cover", "image_id")
         if cover_path:
-            cover_name = f"{secrets.token_hex(12)}.jpg"
+            cover_name = f"{secrets.token_hex(16)}.jpg"
             try:
                 self._save_api_cover(cover_path, cover_name)
             except Exception as e:
@@ -628,7 +634,6 @@ class GamesApiManager(ApiManager):
         """ Update IGDB API key every month. Backend needs to restart to update the env variable. """
 
         import dotenv
-
         try:
             response = self.call_api(
                 f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
@@ -647,19 +652,10 @@ class GamesApiManager(ApiManager):
         except Exception as ex:
             current_app.logger.error(f"[ERROR] - An error occurred obtaining the new IGDB API key: {ex}")
 
-    def get_changed_api_ids(self) -> List:
+    def get_changed_api_ids(self) -> List[int]:
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
-
-        all_games = model.query.all()
-        api_ids_to_refresh = []
-        for game in all_games:
-            try:
-                if datetime.utcfromtimestamp(int(game.release_date)) > datetime.now():
-                    api_ids_to_refresh.append(game.api_id)
-            except:
-                api_ids_to_refresh.append(game.api_id)
-
-        return api_ids_to_refresh
+        query = model.query.with_entities(model.api_id).filter(model.release_date > datetime.utcnow()).all()
+        return [result[0] for result in query]
 
     @staticmethod
     def _get_HLTB_time(game_name: str) -> Dict:
@@ -706,15 +702,16 @@ class BooksApiManager(ApiManager):
             info = result["volumeInfo"]
             media_details = dict(
                 api_id=result.get("id"),
-                name=get(info, "title", default="Unknown"),
-                author=get(info, "authors", 0, default="Unknown"),
-                image_cover=get(info, "imageLinks", "thumbnail",
-                                default=url_for("static", filename="/covers/default.jpg")),
+                name=get(info, "title"),
+                author=get(info, "authors", 0),
+                image_cover=get(
+                    info, "imageLinks", "thumbnail",
+                    default=url_for("static", filename="/covers/default.jpg")
+                ),
                 date=info.get("publishedDate"),
                 media_type=MediaType.BOOKS.value,
             )
 
-            # Append data
             media_results.append(media_details)
 
         total = get(self.api_data, "totalItems", default=0)
@@ -725,18 +722,18 @@ class BooksApiManager(ApiManager):
     def _format_api_data(self, updating: bool = False):
         self.media_details = dict(
             api_id=self.api_id,
-            name=get(self.api_data, "title", default="Unknown"),
+            name=get(self.api_data, "title"),
             pages=get(self.api_data, "pageCount", default=self.DEFAULT_PAGES),
-            publishers=get(self.api_data, "publisher", default="Unknown"),
-            synopsis=clean_html_text(get(self.api_data, "description", default="Unknown")),
-            language=get(self.api_data, "language", default="Unknown"),
+            publishers=get(self.api_data, "publisher"),
+            synopsis=clean_html_text(get(self.api_data, "description")),
+            language=get(self.api_data, "language"),
             release_date=format_datetime(self.api_data.get("publishedDate")),
             image_cover=self._get_media_cover(),
             last_api_update=datetime.utcnow(),
             lock_status=True,
         )
 
-        authors = get(self.api_data, "authors", default=["Unknown"])
+        authors = get(self.api_data, "authors", default=[])
         authors_list = [{"name": author} for author in authors]
 
         self.all_data = dict(

@@ -86,12 +86,14 @@ def is_latin(original_name: str) -> bool:
 
 def clean_html_text(raw_html: str) -> str:
     """ Mostly clean an HTML text (not perfect) """
-
-    cleaner = re.compile("<.*?>")
-    cleantext = re.sub(cleaner, "", raw_html)
-    if not cleantext:
-        cleantext = "Unknown"
-    return cleantext
+    try:
+        cleaner = re.compile("<.*?>")
+        cleantext = re.sub(cleaner, "", raw_html)
+        if not cleantext:
+            cleantext = ""
+        return cleantext
+    except:
+        return ""
 
 
 def int_to_money(value: int):

@@ -180,7 +180,7 @@ class MediaList(db.Model, SearchableMixin):
         favorites_list = [dict(
             media_name=favorite.media.name,
             media_id=favorite.media_id,
-            media_cover=favorite.media.media_cover
+            media_cover=favorite.media.media_cover,
         ) for favorite in favorites_query[:limit]]
 
         return dict(favorites=favorites_list, total_favorites=len(favorites_query))

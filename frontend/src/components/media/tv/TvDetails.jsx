@@ -32,7 +32,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Prod. Status"
-                            value={mediaData.status}
+                            value={mediaData.prod_status}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
