@@ -143,7 +143,6 @@ class BooksList(MediaList):
             "Title Z-A": Books.name.desc(),
             "Published date +": Books.release_date.desc(),
             "Published date -": Books.release_date.asc(),
-            "Comments": cls.comment.desc(),
             "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Re-read": cls.redo.desc(),

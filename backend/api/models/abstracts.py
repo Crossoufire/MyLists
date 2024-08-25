@@ -196,7 +196,6 @@ class MediaList(db.Model, SearchableMixin):
             "Release Date -": media.release_date.asc(),
             "Score TMDB +": media.vote_average.desc(),
             "Score TMDB -": media.vote_average.asc(),
-            "Comments": cls.comment.desc(),
             "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Re-watched": cls.redo.desc(),

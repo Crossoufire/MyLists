@@ -145,7 +145,6 @@ class GamesList(MediaList):
             "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
             "Playtime +": cls.playtime.desc(),
             "Playtime -": cls.playtime.asc(),
-            "Comments": cls.comment.desc(),
         }
         return sorting_dict
 
