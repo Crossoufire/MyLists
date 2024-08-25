@@ -20,8 +20,15 @@ contact: <contact.us.at.mylists@gmail.com>
 * Notifications system.
 * And more to come!
 
+# Support Me
+
+If you like this work, you can buy me a coffee! &nbsp;
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/crossoufire)
+
 
 ---
+
+
 # Backend Installation (Python - Flask)
 
 ## Prerequisites
@@ -101,4 +108,5 @@ VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
 VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
 3. Run the command`npm run dev` inside the `MyLists/frontend` folder. The frontend will be served by default at http://localhost:3000.
+
 
