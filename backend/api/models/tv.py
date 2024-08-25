@@ -272,6 +272,25 @@ class TVListModel(MediaList):
 
         return media_dict
 
+    def update_status(self, new_status: str) -> int:
+        new_total = self.total
+
+        self.status = new_status
+        self.redo = 0
+        if new_status == Status.COMPLETED:
+            total_eps = sum(self.media.eps_per_season_list)
+            self.current_season = len(self.media.eps_per_season)
+            self.last_episode_watched = self.media.eps_per_season[-1].episodes
+            self.total = total_eps
+            new_total = total_eps
+        elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
+            new_total = 0
+            self.total = 0
+            self.current_season = 1
+            self.last_episode_watched = 0
+
+        return new_total
+
     def update_total(self, new_redo: int) -> int:
         self.redo = new_redo
 
@@ -282,33 +301,13 @@ class TVListModel(MediaList):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        time_spent_attr = f"time_spent_{self.GROUP.value}"
-        old_time = getattr(current_user, time_spent_attr)
-        setattr(
-            current_user,
-            time_spent_attr,
-            old_time + ((new_value - old_value) * self.media.duration),
-            )
+        setting = current_user.get_media_setting(self.GROUP)
+        setting.time_spent += (new_value - old_value) * self.media.duration
 
     @classmethod
     def total_user_time_def(cls):
         media_model = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
         return func.sum(media_model.duration * cls.total)
-
-
-class TVLabelsModel(Labels):
-    __abstract__ = True
-
-    def to_dict(self) -> Dict:
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        # Add more info
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-
-        return media_dict
 
 
 # --- SERIES -----------------------------------------------------------------------------------------------
@@ -394,7 +393,7 @@ class SeriesActors(Actors):
     media = db.relationship("Series", back_populates="actors", lazy="select")
 
 
-class SeriesLabels(TVLabelsModel):
+class SeriesLabels(Labels):
     GROUP = MediaType.SERIES
 
     media_id = db.Column(db.Integer, db.ForeignKey("series.id"), nullable=False)
@@ -489,7 +488,7 @@ class AnimeActors(Actors):
     media = db.relationship("Anime", back_populates="actors", lazy="select")
 
 
-class AnimeLabels(TVLabelsModel):
+class AnimeLabels(Labels):
     GROUP = MediaType.ANIME
 
     media_id = db.Column(db.Integer, db.ForeignKey("anime.id"), nullable=False)

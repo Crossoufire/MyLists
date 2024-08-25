@@ -1,5 +1,5 @@
 from backend.api import db
-from backend.api.models.user import Token
+from backend.api.models.user import Token, User
 from backend.api.utils.enums import RoleType, MediaType
 from backend.api.utils.functions import compute_level
 from backend.tests.base_test import BaseTest
@@ -19,15 +19,14 @@ class UserModelTests(BaseTest):
         self.assertEqual(self.user.followers_count, 0)
 
     def test_profile_level(self):
-        total_time_spent = (
-            self.user.time_spent_series +
-            self.user.time_spent_movies +
-            self.user.time_spent_anime +
-            self.user.time_spent_books +
-            self.user.time_spent_games
-        )
+        total_time_spent = sum(settings.time_spent for settings in self.user.settings)
         expected_level = compute_level(total_time_spent)
         self.assertEqual(self.user.profile_level, expected_level)
+
+    def test_get_media_setting(self):
+        for media_type in MediaType:
+            setting = self.user.get_media_setting(media_type)
+            self.assertEqual(setting.media_type, media_type)
 
     def test_to_dict(self):
         user_dict = self.user.to_dict()
@@ -36,16 +35,6 @@ class UserModelTests(BaseTest):
         self.assertEqual(user_dict["username"], "test")
         self.assertEqual(user_dict["followers_count"], 0)
         self.assertEqual(user_dict["role"], RoleType.USER.value)
-
-    def test_activated_media_type(self):
-        self.user.add_anime = True
-        self.user.add_games = True
-        self.user.add_books = False
-        db.session.commit()
-        activated_types = self.user.activated_media_type()
-        self.assertIn(MediaType.ANIME, activated_types)
-        self.assertIn(MediaType.GAMES, activated_types)
-        self.assertNotIn(MediaType.BOOKS, activated_types)
 
     def test_verify_password(self):
         self.assertTrue(self.user.verify_password("good-password"))
@@ -70,3 +59,29 @@ class UserModelTests(BaseTest):
     def test_generate_auth_token(self):
         token = self.user.generate_auth_token()
         self.assertIsInstance(token, Token)
+
+    def test_follow(self):
+        self.register_new_user("bobby")
+        bobby = User.query.filter_by(username="bobby").first()
+
+        self.assertEqual(self.user.followers.count(), 0)
+        self.assertEqual(bobby.followers.count(), 0)
+
+        self.user.add_follow(bobby)
+        db.session.commit()
+        self.assertEqual(self.user.is_following(bobby), True)
+        self.assertEqual(self.user.is_following(self.user), False)
+        self.assertEqual(bobby.is_following(self.user), False)
+
+        self.assertEqual(self.user.followers.count(), 0)
+        self.assertEqual(bobby.followers.count(), 1)
+
+        follows = self.user.get_follows(limit=8)
+        self.assertEqual(follows["total"], 1)
+        self.assertEqual(follows["follows"][0]["username"], "bobby")
+
+        self.user.remove_follow(bobby)
+        db.session.commit()
+        self.assertEqual(self.user.is_following(bobby), False)
+        self.assertEqual(self.user.followers.count(), 0)
+        self.assertEqual(bobby.followers.count(), 0)

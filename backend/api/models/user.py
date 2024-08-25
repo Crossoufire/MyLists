@@ -6,9 +6,8 @@ from time import time
 from typing import List, Dict, Optional, Any
 import jwt
 from flask import url_for, current_app, abort
-from flask_bcrypt import check_password_hash
-from sqlalchemy import desc, func, Integer, case, select, union_all, literal
-from sqlalchemy.ext.hybrid import hybrid_property
+from flask_bcrypt import check_password_hash, generate_password_hash
+from sqlalchemy import desc, func, select, union_all, literal
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
@@ -75,23 +74,7 @@ class User(db.Model):
     last_notif_read_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     show_update_modal = db.Column(db.Boolean, default=True)
-
-    time_spent_series = db.Column(db.Integer, nullable=False, default=0)
-    time_spent_anime = db.Column(db.Integer, nullable=False, default=0)
-    time_spent_movies = db.Column(db.Integer, nullable=False, default=0)
-    time_spent_games = db.Column(db.Integer, nullable=False, default=0)
-    time_spent_books = db.Column(db.Integer, nullable=False, default=0)
-
     profile_views = db.Column(db.Integer, nullable=False, default=0)
-    series_views = db.Column(db.Integer, nullable=False, default=0)
-    anime_views = db.Column(db.Integer, nullable=False, default=0)
-    movies_views = db.Column(db.Integer, nullable=False, default=0)
-    games_views = db.Column(db.Integer, nullable=False, default=0)
-    books_views = db.Column(db.Integer, nullable=False, default=0)
-
-    add_anime = db.Column(db.Boolean, nullable=False, default=False)
-    add_books = db.Column(db.Boolean, nullable=False, default=False)
-    add_games = db.Column(db.Boolean, nullable=False, default=False)
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
 
     # --- Relationships ----------------------------------------------------------------
@@ -101,6 +84,7 @@ class User(db.Model):
     books_list = db.relationship("BooksList", back_populates="user", lazy="select")
     movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
     series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
+    settings = db.relationship("UserMediaSettings", back_populates="user", lazy="joined")
     notifications = db.relationship(
         "Notifications",
         primaryjoin="Notifications.user_id == User.id",
@@ -147,25 +131,13 @@ class User(db.Model):
         """ Return the number of followers of the user """
         return self.followers.count()
 
-    @hybrid_property
+    @property
     def profile_level(self) -> int:
-        """ Return the user's profile level """
-
         total_time = 0
-        for media_type in self.activated_media_type():
-            total_time += getattr(self, f"time_spent_{media_type.value}")
-
+        for setting in self.settings:
+            if setting.active:
+                total_time += setting.time_spent
         return int(compute_level(total_time))
-
-    # noinspection PyMethodParameters
-    @profile_level.expression
-    def profile_level(cls) -> int:
-        total_time = cls.time_spent_series + cls.time_spent_movies
-        total_time = case(*[(cls.add_anime, total_time + cls.time_spent_anime)], else_=total_time)
-        total_time = case(*[(cls.add_books, total_time + cls.time_spent_books)], else_=total_time)
-        total_time = case(*[(cls.add_games, total_time + cls.time_spent_games)], else_=total_time)
-
-        return func.cast(((func.power(400 + 80 * total_time, 0.5)) - 20) / 40, Integer)
 
     def to_dict(self) -> Dict:
         excluded_attrs = ("email", "password")
@@ -179,19 +151,13 @@ class User(db.Model):
             "profile_level": self.profile_level,
             "profile_border": self.profile_border,
             "followers_count": self.followers_count,
+            "settings": {setting.media_type.value: setting.to_dict() for setting in self.settings},
         })
 
         return user_dict
 
-    def activated_media_type(self) -> List[MediaType]:
-        activated_media_types = []
-        for mt in MediaType:
-            if hasattr(self, f"add_{mt.value.lower()}") and getattr(self, f"add_{mt.value.lower()}"):
-                activated_media_types.append(mt)
-
-        activated_media_types += MediaType.default()
-
-        return sorted(activated_media_types)
+    def get_media_setting(self, media_type: MediaType) -> UserMediaSettings:
+        return next(setting for setting in self.settings if setting.media_type == media_type)
 
     def verify_password(self, password: str) -> bool:
         if password == "" or password is None:
@@ -223,7 +189,7 @@ class User(db.Model):
 
     def set_view_count(self, user: User, media_type: MediaType):
         if self.role != RoleType.ADMIN and self.id != user.id:
-            setattr(user, f"{media_type.value}_views", getattr(user, f"{media_type.value}_views") + 1)
+            user.get_media_setting(media_type).views += 1
 
     def add_follow(self, user: User):
         if not self.is_following(user):
@@ -236,9 +202,9 @@ class User(db.Model):
         if self.is_following(user):
             self.followed.remove(user)
 
-    def get_follows(self, limit_: int = 8):
+    def get_follows(self, limit: int = 8):
         follows = self.followed.all()
-        return {"total":  len(follows), "follows": [follow.to_dict() for follow in follows[:limit_]]}
+        return {"total": len(follows), "follows": [follow.to_dict() for follow in follows[:limit]]}
 
     def get_last_notifications(self, limit: int = 8) -> List[Dict]:
         current_user.last_notif_read_time = datetime.utcnow()
@@ -259,11 +225,11 @@ class User(db.Model):
         return notification_count
 
     def get_global_media_stats(self) -> Dict:
-        models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
+        active_media_types = [setting.media_type for setting in self.settings if setting.active]
+        models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
 
         # Calculate time per media [hours]
-        query_attrs = [getattr(User, f"time_spent_{model.GROUP.value}") for model in models]
-        time_per_media = [t / 60 for t in db.session.query(*query_attrs).filter_by(id=self.id).first()]
+        time_per_media = [setting.time_spent / 60 for setting in self.settings if setting.active]
 
         # Total time [hours]
         total_hours = sum(time_per_media)
@@ -332,8 +298,8 @@ class User(db.Model):
             media_type=media_type.value,
             specific_total=media_list.get_specific_total(self.id),
             count_per_metric=media_list.get_media_count_per_rating(self),
-            time_hours=int(getattr(self, f"time_spent_{media_type.value}") / 60),
-            time_days=int(getattr(self, f"time_spent_{media_type.value}") / 1440),
+            time_hours=int(self.get_media_setting(media_type).time_spent / 60),
+            time_days=int(self.get_media_setting(media_type).time_spent / 1440),
             labels=media_label.get_total_and_labels_names(self.id, limit=10),
         )
 
@@ -344,17 +310,13 @@ class User(db.Model):
         return media_dict
 
     def get_list_levels(self) -> List[Dict]:
-        models = ModelsManager.get_lists_models(self.activated_media_type(), ModelTypes.LIST)
-
         level_per_ml = []
-        for ml in models:
-            time_in_min = getattr(self, f"time_spent_{ml.GROUP.value}")
-
-            level_per_ml.append(dict(
-                media_type=ml.GROUP.value,
-                level=compute_level(time_in_min),
-            ))
-
+        for setting in self.settings:
+            if setting.active:
+                level_per_ml.append(dict(
+                    media_type=setting.media_type.value,
+                    level=compute_level(setting.time_spent),
+                ))
         return level_per_ml
 
     def get_last_updates(self, limit: int) -> List[Dict]:
@@ -366,7 +328,6 @@ class User(db.Model):
             .order_by(desc(UserMediaUpdate.timestamp))
             .limit(limit).all()
         )
-
         return [{"username": update.user.username, **update.to_dict()} for update in follows_updates]
 
     def generate_jwt_token(self, expires_in: int = 600) -> str:
@@ -397,10 +358,33 @@ class User(db.Model):
 
         return {"items": users_list, "total": users.total, "pages": users.pages}
 
+    @classmethod
+    def register_new_user(cls, username: str, email: str, **kwargs) -> User:
+        new_user = cls(
+            username=username,
+            email=email,
+            password=None if not kwargs.get("password") else generate_password_hash(kwargs["password"]),
+            activated_on=kwargs.get("activated_on", None),
+            registered_on=datetime.utcnow(),
+            active=kwargs.get("active", current_app.config["USER_ACTIVE_PER_DEFAULT"]),
+        )
+        db.session.add(new_user)
+        db.session.flush()
+
+        for media_type in MediaType:
+            new_user_media_settings = UserMediaSettings(
+                user_id=new_user.id,
+                media_type=media_type,
+                active=True if media_type in MediaType.default() else False,
+            )
+            db.session.add(new_user_media_settings)
+        db.session.commit()
+
+        return new_user
+
     @staticmethod
     def verify_access_token(access_token: str) -> User:
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
-
         if token:
             if token.access_expiration > datetime.utcnow():
                 token.user.ping()
@@ -410,7 +394,6 @@ class User(db.Model):
     @staticmethod
     def verify_refresh_token(refresh_token: str, access_token: str) -> Token:
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
-
         if token:
             if token.refresh_expiration > datetime.utcnow():
                 return token
@@ -426,6 +409,30 @@ class User(db.Model):
         except:
             return None
         return User.query.filter_by(id=user_id).first()
+
+
+class UserMediaSettings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    media_type = db.Column(db.Enum(MediaType), nullable=False, index=True)
+    time_spent = db.Column(db.Integer, nullable=False, default=0)
+    views = db.Column(db.Integer, nullable=False, default=0)
+    active = db.Column(db.Boolean, nullable=False, default=False)
+
+    # --- Relationships ----------------------------------------------------------------
+    user = db.relationship("User", back_populates="settings", lazy="select")
+
+    @property
+    def level(self) -> float:
+        return compute_level(self.time_spent)
+
+    def to_dict(self) -> Dict:
+        return dict(
+            media_type=self.media_type.value,
+            time_spent=self.time_spent,
+            active=self.active,
+            level=self.level,
+        )
 
 
 class UserMediaUpdate(db.Model, SearchableMixin):

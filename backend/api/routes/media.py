@@ -14,7 +14,8 @@ media_bp = Blueprint("api_media", __name__)
 @media_bp.route("/coming_next", methods=["GET"])
 @token_auth.login_required
 def coming_next():
-    models_list = ModelsManager.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
+    active_media_types = [setting.media_type for setting in current_user.settings if setting.active]
+    models_list = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
     try:
         # Remove <BooksList> because no coming next possible
         from backend.api.models.books import BooksList
@@ -47,8 +48,8 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
     if not media:
         return abort(400, "The media does not exists")
 
-    in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if in_list:
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if media_assoc:
         return abort(400, "The media is already present in your list")
 
     total_watched = media.add_to_user(new_status, current_user.id)
@@ -59,8 +60,8 @@ def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[M
     UserMediaUpdate.set_new_update(media, UpdateType.STATUS, None, new_status)
 
     # Compute new time spent (re-query necessary!)
-    in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    in_list.update_time_spent(new_value=total_watched)
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    media_assoc.update_time_spent(new_value=total_watched)
 
     db.session.commit()
 

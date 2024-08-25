@@ -1,12 +1,11 @@
 import json
-from datetime import datetime
 from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate
-from backend.api.utils.enums import RoleType, ModelTypes, NotificationType
+from backend.api.utils.enums import RoleType, ModelTypes, NotificationType, MediaType
 from backend.api.utils.functions import save_picture
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -20,9 +19,9 @@ def register_user():
         required_fields = ("username", "email", "password", "callback")
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return abort(400)
+            return abort(400, "Missing fields")
     except:
-        return abort(400)
+        return abort(400, "Invalid JSON")
 
     if User.query.filter_by(username=data["username"]).first():
         return abort(401, {"username": "Invalid Username"})
@@ -33,15 +32,11 @@ def register_user():
     if not 3 <= len(data["username"]) <= 14:
         return abort(401, {"username": "The username must be between 3 and 14 characters long."})
 
-    new_user = User(
+    new_user = User.register_new_user(
         username=data["username"],
         email=data["email"],
-        password=generate_password_hash(data["password"]),
-        registered_on=datetime.utcnow(),
-        active=current_app.config["USER_ACTIVE_PER_DEFAULT"],
+        password=data["password"],
     )
-    db.session.add(new_user)
-    db.session.commit()
 
     try:
         send_email(
@@ -69,6 +64,7 @@ def get_current_user():
 @token_auth.login_required
 def profile(username: str):
     user = current_user.check_autorization(username)
+    active_media_types = [setting.media_type for setting in user.settings if setting.active]
 
     if current_user.role != RoleType.ADMIN and user.id != current_user.id:
         user.profile_views += 1
@@ -77,7 +73,7 @@ def profile(username: str):
     follows_updates = user.get_follows_updates(limit=10)
     list_levels = user.get_list_levels()
     media_global = user.get_global_media_stats()
-    models = ModelsManager.get_lists_models(user.activated_media_type(), ModelTypes.LIST)
+    models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
     media_data = [user.get_one_media_details(model.GROUP) for model in models]
 
     db.session.commit()
@@ -85,7 +81,7 @@ def profile(username: str):
     data = dict(
         user_data=user.to_dict(),
         user_updates=user_updates,
-        follows=user.get_follows(limit_=8),
+        follows=user.get_follows(limit=8),
         follows_updates=follows_updates,
         is_following=current_user.is_following(user),
         list_levels=list_levels,
@@ -257,15 +253,14 @@ def settings_medialist():
     data = request.get_json()
 
     current_user.add_feeling = data.get("add_feeling", current_user.add_feeling)
-    current_user.add_anime = data.get("add_anime", current_user.add_anime)
-    current_user.add_games = data.get("add_games", current_user.add_games)
-    current_user.add_books = data.get("add_books", current_user.add_books)
+
+    for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS]:
+        setting = current_user.get_media_setting(media_type)
+        setting.active = data.get(f"add_{media_type.value.lower()}", setting.active)
 
     db.session.commit()
 
-    data = dict(updated_user=current_user.to_dict())
-
-    return jsonify(data), 200
+    return jsonify(updated_user=current_user.to_dict()), 200
 
 
 @users.route("/settings/password", methods=["POST"])

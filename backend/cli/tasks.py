@@ -9,7 +9,7 @@ from backend.api import db, cache
 from backend.api.managers.ApiManager import ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.movies import Movies
-from backend.api.models.user import User
+from backend.api.models.user import User, UserMediaSettings
 from backend.api.utils.enums import ModelTypes, MediaType, Status
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -232,16 +232,18 @@ def compute_media_time_spent():
     for model in models.values():
         media, media_list = model[ModelTypes.MEDIA], model[ModelTypes.LIST]
         media_alias = aliased(media)
-        query = (
-            db.session.query(User, media, media_list, media_list.total_user_time_def())
-            .join(media_list, media.id == media_list.media_id)
-            .join(User, User.id == media_list.user_id)
-            .join(media_alias, media_alias.id == media_list.media_id)
-            .group_by(media_list.user_id).all()
+
+        subq = (
+            db.session.query(media_list.user_id, media_list.total_user_time_def().label("time_spent"))
+            .join(media, media.id == media_list.media_id)
+            .group_by(media_list.user_id)
+            .subquery()
         )
 
-        for user, _, _, time_spent in query:
-            setattr(user, f"time_spent_{media.GROUP.value}", time_spent)
+        db.session.query(UserMediaSettings).filter(
+            UserMediaSettings.user_id == subq.c.user_id,
+            UserMediaSettings.media_type == media_list.GROUP,
+        ).update({UserMediaSettings.time_spent: subq.c.time_spent}, synchronize_session=False)
 
     db.session.commit()
 

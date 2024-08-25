@@ -106,25 +106,6 @@ class MediaList(db.Model, SearchableMixin):
     favorite = db.Column(db.Boolean)
     comment = db.Column(db.Text)
 
-    def update_status(self, new_status: str) -> int:
-        new_total = self.total
-
-        self.status = new_status
-        self.redo = 0
-        if new_status == Status.COMPLETED:
-            total_eps = sum(self.media.eps_per_season_list)
-            self.current_season = len(self.media.eps_per_season)
-            self.last_episode_watched = self.media.eps_per_season[-1].episodes
-            self.total = total_eps
-            new_total = total_eps
-        elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
-            new_total = 0
-            self.total = 0
-            self.current_season = 1
-            self.last_episode_watched = 0
-
-        return new_total
-
     @classmethod
     def get_media_count_per_status(cls, user_id: int) -> Dict:
         media_count = (
@@ -140,12 +121,13 @@ class MediaList(db.Model, SearchableMixin):
         # Update <status_count> dict with actual values from <media_count> query
         if media_count:
             media_dict = {
-                status.value: dict(count=count, percent=safe_div(count, total_media, True))
+                status.value: {"count": count, "percent": safe_div(count, total_media, True)}
                 for status, count in media_count
             }
+
             status_count.update(media_dict)
 
-        status_list = [dict(status=key) for key, val in status_count.items()]
+        status_list = [{"status": key, **val} for key, val in status_count.items()]
 
         return dict(total_media=total_media, no_data=no_data, status_count=status_list)
 
@@ -267,6 +249,15 @@ class Actors(db.Model):
     name = db.Column(db.String, nullable=False)
 
 
+class Platforms(db.Model):
+    __abstract__ = True
+
+    TYPE: ModelTypes = ModelTypes.PLATFORMS
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+
+
 class Labels(db.Model):
     __abstract__ = True
 
@@ -275,6 +266,16 @@ class Labels(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     name = db.Column(db.String, nullable=False)
+
+    def to_dict(self) -> Dict:
+        media_dict = {}
+        if hasattr(self, "__table__"):
+            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+        media_dict["media_cover"] = self.media.media_cover
+        media_dict["media_name"] = self.media.name
+
+        return media_dict
 
     @classmethod
     def get_user_labels(cls, user_id: int) -> List[str]:
@@ -293,12 +294,3 @@ class Labels(db.Model):
     def get_total_and_labels_names(cls, user_id: int, limit: int = 10) -> Dict:
         all_labels = cls.get_user_labels(user_id)
         return {"count": len(all_labels), "names": all_labels[:limit]}
-
-
-class Platforms(db.Model):
-    __abstract__ = True
-
-    TYPE: ModelTypes = ModelTypes.PLATFORMS
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)

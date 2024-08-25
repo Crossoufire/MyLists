@@ -59,13 +59,10 @@ function HallOfFamePage() {
 
     const onSearchChange = (ev) => {
         const newValue = ev.target.value;
-
         setUsers({ ...users, page: INIT_PARAMS.page });
-
         if (newValue === "") {
             void resetSearch();
         }
-
         setSearch(newValue);
     };
 
@@ -111,8 +108,8 @@ function HallOfFamePage() {
                         </Select>
                     </div>
                 </div>
-                {users.data.map(item =>
-                    <HoFCard key={item.username} item={item}/>
+                {users.data.map(user =>
+                    <HoFCard key={user.username} user={user}/>
                 )}
                 <Pagination
                     currentPage={users.page}
@@ -125,47 +122,52 @@ function HallOfFamePage() {
 }
 
 
-const HoFCard = ({ item }) => {
+const HoFCard = ({ user }) => {
     const currentUser = userClient.currentUser;
+    const { series, anime, movies, books, games } = user.settings;
+    const settings = [series, anime, movies, books, games];
+
 
     return (
-        <Card key={item.username} className={cn("p-2 mb-5 bg-card", currentUser?.id === item.id && "bg-teal-950")}>
+        <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser?.id === user.id && "bg-teal-950")}>
             <CardContent className="max-sm:py-5 p-0">
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 md:col-span-1">
                         <div className="flex items-center justify-center text-lg h-full font-medium">
-                            #{item.rank}
+                            #{user.rank}
                         </div>
                     </div>
                     <div className="col-span-9 md:col-span-4">
                         <div className="relative">
                             <img
-                                src={item.profile_image}
+                                src={user.profile_image}
                                 className="z-10 absolute top-[53px] left-[46px] rounded-full h-[70px] w-[70px]"
                                 alt="profile-image"
                             />
                             <img
-                                src={item.profile_border}
+                                src={user.profile_border}
                                 className="w-[162px] h-[162px]"
                                 alt="frame-image"
                             />
                             <Badge variant="passive" className="z-20 absolute bottom-[17px] left-[59px]">
-                                {item.profile_level}
+                                {user.profile_level}
                             </Badge>
                             <h6 className="block absolute font-medium left-[165px] bottom-[58px] text-center">
-                                <Link to={`/profile/${item.username}`} className="hover:underline hover:underline-offset-2">
-                                    {item.username}
+                                <Link to={`/profile/${user.username}`} className="hover:underline hover:underline-offset-2">
+                                    {user.username}
                                 </Link>
                             </h6>
                         </div>
                     </div>
                     <div className="col-span-12 md:col-span-7">
                         <div className="grid grid-cols-5 text-center items-center font-medium h-full">
-                            <ListItem item={item} mediaType="series"/>
-                            <ListItem item={item} mediaType="anime"/>
-                            <ListItem item={item} mediaType="movies"/>
-                            <ListItem item={item} mediaType="books"/>
-                            <ListItem item={item} mediaType="games"/>
+                            {settings.map(setting =>
+                                <ListItem
+                                    setting={setting}
+                                    key={setting.media_type}
+                                    username={user.username}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -175,17 +177,15 @@ const HoFCard = ({ item }) => {
 };
 
 
-const ListItem = ({ item, mediaType }) => {
-    const checkDisabled = item.hasOwnProperty(`add_${mediaType}`) ? item[`add_${mediaType}`] === true : true;
-
+const ListItem = ({ setting, username }) => {
     return (
-        <div className="flex flex-col justify-evenly items-center gap-3">
-            <div>{capitalize(mediaType)}</div>
-            <Link to={`/list/${mediaType}/${item.username}`} disabled={!checkDisabled}>
+        <div className="flex flex-col justify-evenly items-center gap-2">
+            <div>{capitalize(setting.media_type)}</div>
+            <Link to={`/list/${setting.media_type}/${username}`} disabled={!setting.active}>
                 <MediaLevelCircle
-                    isActive={checkDisabled}
+                    isActive={setting.active}
                     className={"w-[40px] h-[40px]"}
-                    intLevel={item[`${mediaType}_level`]}
+                    intLevel={parseInt(setting.level)}
                 />
             </Link>
         </div>

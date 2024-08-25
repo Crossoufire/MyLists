@@ -243,15 +243,13 @@ def oauth2_new(provider: str):
 
     # Find or create new user in database depending on email
     user = User.query.filter_by(email=email).first()
-    if user is None:
-        user = User(
-            email=email,
+    if not user:
+        user = User.register_new_user(
             username=email.split("@")[0],
+            email=email,
             active=True,
             activated_on=datetime.utcnow(),
-            registered_on=datetime.utcnow(),
         )
-        db.session.add(user)
 
     token = user.generate_auth_token()
     db.session.add(token)

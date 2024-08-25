@@ -170,8 +170,8 @@ class BooksList(MediaList):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        old_time = current_user.time_spent_books
-        current_user.time_spent_books = old_time + ((new_value - old_value) * self.TIME_PER_PAGE)
+        setting = current_user.get_media_setting(self.GROUP)
+        setting.time_spent += (new_value - old_value) * self.TIME_PER_PAGE
 
     @classmethod
     def get_available_sorting(cls, is_feeling: bool) -> Dict:
@@ -241,13 +241,3 @@ class BooksLabels(Labels):
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Books", back_populates="labels", lazy="select")
-
-    def to_dict(self) -> Dict:
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-
-        return media_dict

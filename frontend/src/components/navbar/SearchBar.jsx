@@ -1,5 +1,4 @@
 import {toast} from "sonner";
-import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
@@ -7,6 +6,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {useDebounce} from "@/hooks/DebounceHook";
+import {api, userClient} from "@/api/MyApiClient";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
@@ -77,8 +77,8 @@ export const SearchBar = ({ currentUser }) => {
                     <SelectContent>
                         <SelectGroup>
                             {<SelectItem value="TMDB">Media</SelectItem>}
-                            {currentUser.add_books && <SelectItem value="BOOKS">Books</SelectItem>}
-                            {currentUser.add_games && <SelectItem value="IGDB">Games</SelectItem>}
+                            {currentUser.settings.books.active && <SelectItem value="BOOKS">Books</SelectItem>}
+                            {currentUser.settings.games.active && <SelectItem value="IGDB">Games</SelectItem>}
                             <SelectItem value="users">Users</SelectItem>
                         </SelectGroup>
                     </SelectContent>

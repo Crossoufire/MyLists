@@ -1,12 +1,13 @@
+from operator import and_
 from flask import Blueprint, jsonify, request, url_for, current_app, abort
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, case
 from backend.api import cache, db
 from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.api.models.user import User
+from backend.api.models.user import User, UserMediaSettings
 from backend.api.core.handlers import token_auth
 from backend.api.utils.enums import RoleType
-from backend.api.utils.functions import compute_level
+
 
 general = Blueprint("api_general", __name__)
 
@@ -45,31 +46,43 @@ def hall_of_fame():
     search = request.args.get("search", type=str)
     sorting = request.args.get("sorting", "profile", type=str)
 
-    ranking = User.profile_level.desc() if sorting == "profile" else desc(getattr(User, f"time_spent_{sorting}"))
+    if sorting == "profile":
+        ranking = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0))
+                .label("time_spent")
+            ).group_by(UserMediaSettings.user_id)
+            .order_by(desc("time_spent")).subquery()
+        )
+    else:
+        ranking = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                func.sum(case((
+                    and_(UserMediaSettings.media_type == sorting, UserMediaSettings.active),
+                    UserMediaSettings.time_spent
+                ), else_=0)).label("time_spent")
+            ).group_by(UserMediaSettings.user_id)
+            .order_by(desc("time_spent")).subquery()
+        )
 
-    ranked_users = db.session.query(User, func.rank().over(order_by=ranking).label("rank")).cte()
+    ranked_users = (
+        db.session.query(User.id, func.rank().over(order_by=ranking.c.time_spent.desc()).label("rank"))
+        .join(ranking, User.id == ranking.c.user_id, isouter=True).cte()
+    )
 
     users_data = (
-        db.session.query(User)
-        .with_entities(User, ranked_users.c.rank)
+        User.query.with_entities(User, ranked_users.c.rank)
         .join(ranked_users, User.id == ranked_users.c.id)
         .filter(User.username.ilike(f"%{search}%"), User.role != RoleType.ADMIN, User.active.is_(True))
         .paginate(page=page, per_page=10, error_out=True)
     )
 
-    users_serialized = []
-    for user, rank_value in users_data:
-        user_dict = user.to_dict()
-        user_dict["rank"] = rank_value
-        for media_type in user.activated_media_type():
-            time_in_minutes = getattr(user, f"time_spent_{media_type.value}")
-            media_level = int(f"{compute_level(time_in_minutes):.2f}".split(".")[0])
-            user_dict[f"{media_type.value}_level"] = media_level
-
-        users_serialized.append(user_dict)
+    users = [{**user.to_dict(), "rank": rank} for user, rank in users_data]
 
     data = dict(
-        users=users_serialized,
+        users=users,
         page=users_data.page,
         pages=users_data.pages,
         total=users_data.total,

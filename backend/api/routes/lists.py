@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, abort
 from backend.api import db, cache
 from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
@@ -17,6 +17,10 @@ lists_bp = Blueprint("api_lists", __name__)
 def media_list(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
+
+    if not user.get_media_setting(media_type).active:
+        return abort(404)
+
     current_user.set_view_count(user, media_type)
     media_data, filters, current_filters, pagination = ListQueryManager(user, media_type).return_results()
     db.session.commit()

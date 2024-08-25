@@ -220,8 +220,8 @@ class MoviesList(MediaList):
         return new_total
 
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        old_time = current_user.time_spent_movies
-        current_user.time_spent_movies = old_time + ((new_value - old_value) * self.media.duration)
+        setting = current_user.get_media_setting(self.GROUP)
+        setting.time_spent += (new_value - old_value) * self.media.duration
 
     @classmethod
     def total_user_time_def(cls):
@@ -268,14 +268,3 @@ class MoviesLabels(Labels):
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Movies", back_populates="labels", lazy="select")
-
-    def to_dict(self) -> Dict:
-        media_dict = {}
-        if hasattr(self, "__table__"):
-            media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        # Add more info
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-
-        return media_dict

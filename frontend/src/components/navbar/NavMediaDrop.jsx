@@ -1,5 +1,6 @@
 import {useRef} from "react";
 import {capitalize} from "@/lib/utils";
+import {userClient} from "@/api/MyApiClient";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
@@ -11,10 +12,10 @@ export const NavMediaDrop = ({ currentUser }) => {
 
     const menuItems = [
         {url: `/list/series`, media: "series"},
-        {url: `/list/anime`, media: "anime", cond: currentUser.add_anime},
+        {url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active},
         {url: `/list/movies`, media: "movies"},
-        {url: `/list/books`, media: "books", cond: currentUser.add_books},
-        {url: `/list/games`, media: "games", cond: currentUser.add_games}
+        {url: `/list/books`, media: "books", cond: currentUser.settings.books.active},
+        {url: `/list/games`, media: "games", cond: currentUser.settings.games.active}
     ];
 
     return (

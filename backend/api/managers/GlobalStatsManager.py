@@ -1,8 +1,8 @@
 from typing import Tuple, Dict
 from sqlalchemy import func, text
 from backend.api import db
-from backend.api.models.user import User
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.models.user import User, UserMediaSettings
+from backend.api.utils.enums import MediaType, Status, ModelTypes, RoleType
 from backend.api.managers.ModelsManager import ModelsManager
 
 
@@ -19,7 +19,7 @@ class GlobalStats:
         models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
         for model_list in models.values():
             query = (
-                db.session.query(model_list, func.count(model_list.media_id).name("count"))
+                db.session.query(model_list, func.count(model_list.media_id).label("count"))
                 .filter(model_list.status != Status.DROPPED)
                 .group_by(model_list.media_id).order_by(text("count desc"))
                 .limit(self.LIMIT).all()
@@ -130,22 +130,16 @@ class GlobalStats:
     @staticmethod
     def get_total_time_spent() -> Dict:
         query = (
-            db.session.query(func.sum(User.time_spent_series), func.sum(User.time_spent_anime),
-                             func.sum(User.time_spent_movies), func.sum(User.time_spent_books),
-                             func.sum(User.time_spent_games))
-            .filter(User.id != 1, User.active == True).first()
+            db.session.query(UserMediaSettings.media_type, func.sum(UserMediaSettings.time_spent))
+            .join(User, User.id == UserMediaSettings.user_id)
+            .filter(User.role != RoleType.ADMIN, User.active.is_(True))
+            .group_by(UserMediaSettings.media_type)
+            .all()
         )
 
-        total_time_spent = [0 if not total else total for total in query]
-
-        results = dict(
-            total=sum(total_time_spent),
-            series=total_time_spent[0] // 60,
-            anime=total_time_spent[1] // 60,
-            movies=total_time_spent[2] // 60,
-            books=total_time_spent[3] // 60,
-            games=total_time_spent[4] // 60,
-        )
+        results = {"total": sum(time_ for _, time_ in query)}
+        for media_type in MediaType:
+            results[media_type.value] = [query[i][1] // 60 for i in range(len(query)) if query[i][0] == media_type]
 
         return results
 

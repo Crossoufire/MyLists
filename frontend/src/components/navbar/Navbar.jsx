@@ -118,9 +118,9 @@ export const Navbar = () => {
                                                 to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
+                                                to="/settings"
+                                                text="Settings"
                                                 popRef={popRef}
-                                                to={"/settings"}
-                                                text={"Settings"}
                                                 icon={<FaCog className="text-grey"/>}
                                             />
                                             <li>

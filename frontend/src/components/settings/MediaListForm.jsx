@@ -49,7 +49,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_anime}
+                                        defaultChecked={userClient.currentUser.settings.anime.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -67,7 +67,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_games}
+                                        defaultChecked={userClient.currentUser.settings.games.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -85,7 +85,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_books}
+                                        defaultChecked={userClient.currentUser.settings.books.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">

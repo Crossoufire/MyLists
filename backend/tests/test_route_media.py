@@ -69,7 +69,7 @@ class MediaTests(BaseTest):
         # Check time spent
         rv = self.client.get("/api/current_user", headers=headers)
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json[f"time_spent_{media_type}"], time_spent)
+        self.assertEqual(rv.json["settings"][media_type]["time_spent"], time_spent)
 
         return rv_good.json["data"]
 
@@ -201,27 +201,23 @@ class MediaTests(BaseTest):
         self.create_all_media()
 
         for media_type in MediaType:
-            json_data = {
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": "Completed",
-            }
+            json_data = dict(media_id=1, media_type=media_type.value, payload="Completed")
 
             rv = self.client.post("/api/delete_media", headers=headers, json=json_data)
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/add_media", headers=headers, json=json_data)
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
             rv = self.client.post("/api/delete_media", headers=headers, json=json_data)
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             rv = self.client.get("/api/current_user", headers=headers)
-            assert rv.status_code == 200
-            assert rv.json[f"time_spent_{media_type.value}"] == 0
+            self.assertEqual(rv.status_code, 200)
+            self.assertEqual(rv.json["settings"][media_type.value]["time_spent"], 0)
 
             rv = self.client.post("/api/add_media", headers=headers, json=json_data)
-            assert rv.status_code == 200
+            self.assertEqual(rv.status_code, 200)
 
     def test_update_favorite(self):
         headers = self.connexion()
@@ -269,11 +265,7 @@ class MediaTests(BaseTest):
         times = [2480, 2088, 169, 547.4, 0]
 
         for media_type, status, time in zip(MediaType, statuses, times):
-            json_data = {
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": status,
-            }
+            json_data = dict(media_id=1, media_type=media_type.value, payload=status)
 
             rv = self.client.post("/api/update_status", headers=headers, json=json_data)
             self.assertEqual(rv.status_code, 404)
@@ -297,7 +289,7 @@ class MediaTests(BaseTest):
 
             rv = self.client.get("/api/current_user", headers=headers)
             self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv.json[f"time_spent_{media_type.value}"], time)
+            self.assertEqual(rv.json["settings"][media_type.value]["time_spent"], time)
 
     def test_update_rating_score(self):
         headers = self.connexion()
@@ -355,7 +347,7 @@ class MediaTests(BaseTest):
 
         # Change from score to feeling for user
         rv = self.client.post("/api/settings/medialist", headers=headers, json={"add_feeling": True})
-        assert rv.status_code == 200
+        self.assertEqual(rv.status_code, 200)
 
         self.create_all_media()
 
@@ -373,14 +365,14 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 6,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/update_rating", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": -2,
             })
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
             # Round to int
             rv = self.client.post("/api/update_rating", headers=headers, json={
@@ -388,27 +380,27 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 3.5,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.feeling == "3"
+            self.assertEqual(query.feeling, "3")
 
             rv = self.client.post("/api/update_rating", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": 4,
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.feeling == "4"
+            self.assertEqual(query.feeling, "4")
 
             rv = self.client.post("/api/update_rating", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
                 "payload": "--",
             })
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            assert query.feeling is None
+            self.assertEqual(query.feeling, None)
 
     def test_update_redo(self):
 

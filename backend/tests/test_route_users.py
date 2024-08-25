@@ -288,7 +288,7 @@ class UserTests(BaseTest):
 
     def test_settings_medialist(self):
         rv = self.client.post("/api/settings/medialist")
-        assert rv.status_code == 401
+        self.assertEqual(rv.status_code, 401)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": True,
@@ -296,11 +296,11 @@ class UserTests(BaseTest):
             "add_games": True,
             "add_books": True,
         })
-        assert rv.status_code == 200
-        assert rv.json["updated_user"]["add_feeling"] == True
-        assert rv.json["updated_user"]["add_anime"] == True
-        assert rv.json["updated_user"]["add_games"] == True
-        assert rv.json["updated_user"]["add_books"] == True
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["updated_user"]["add_feeling"], True)
+        self.assertEqual(rv.json["updated_user"]["settings"]["anime"]["active"], True)
+        self.assertEqual(rv.json["updated_user"]["settings"]["games"]["active"], True)
+        self.assertEqual(rv.json["updated_user"]["settings"]["books"]["active"], True)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": False,
@@ -308,11 +308,11 @@ class UserTests(BaseTest):
             "add_games": False,
             "add_books": False,
         })
-        assert rv.status_code == 200
-        assert rv.json["updated_user"]["add_feeling"] == False
-        assert rv.json["updated_user"]["add_anime"] == False
-        assert rv.json["updated_user"]["add_games"] == False
-        assert rv.json["updated_user"]["add_books"] == False
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.json["updated_user"]["add_feeling"], False)
+        self.assertEqual(rv.json["updated_user"]["settings"]["anime"]["active"], False)
+        self.assertEqual(rv.json["updated_user"]["settings"]["games"]["active"], False)
+        self.assertEqual(rv.json["updated_user"]["settings"]["books"]["active"], False)
 
     def test_settings_password(self):
         rv = self.client.post("/api/settings/password")

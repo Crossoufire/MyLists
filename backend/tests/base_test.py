@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Dict
 from flask_bcrypt import generate_password_hash
 from backend.api import create_app, db
-from backend.api.utils.enums import RoleType
+from backend.api.models import UserMediaSettings
+from backend.api.utils.enums import RoleType, MediaType
 from backend.config import TestConfig
 
 
@@ -50,6 +51,15 @@ class BaseTest(unittest.TestCase):
         )
 
         db.session.add(self.user)
+        db.session.flush()
+
+        for media_type in MediaType:
+            user_media_settings = UserMediaSettings(
+                user_id=self.user.id,
+                media_type=media_type,
+                active=True if media_type in MediaType.default() else False,
+            )
+            db.session.add(user_media_settings)
         db.session.commit()
 
         self.client = self.app.test_client()
