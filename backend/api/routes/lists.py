@@ -4,7 +4,7 @@ from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
 from backend.api.managers.ListQueryManager import ListQueryManager
 from backend.api.utils.enums import MediaType
-from backend.api.managers.StatsManager import BaseStats
+from backend.api.managers.StatsManager import StatsManager
 
 
 lists_bp = Blueprint("api_lists", __name__)
@@ -40,7 +40,7 @@ def media_list(media_type: MediaType, username: str):
 def stats_page(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
-    stats_manager = BaseStats.get_subclass(media_type)
+    stats_manager = StatsManager.get_subclass(media_type)
     stats = stats_manager(user).create_stats()
 
     data = dict(

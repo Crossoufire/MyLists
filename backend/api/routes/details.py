@@ -132,16 +132,14 @@ def job_details(media_type: MediaType, job: JobType, name: str):
 @token_auth.login_required(role=RoleType.MANAGER)
 @validate_json_data()
 def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    api_manager = ApiManager.get_subclass(media_type)
-
     media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
     if media is None:
         return abort(404, "Media not found")
 
     try:
-        refreshed_data = api_manager(api_id=media.api_id).get_refreshed_media_data()
-        media.refresh_element_data(media.api_id, refreshed_data)
-        current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID: [{media.api_id}]")
+        api_manager = ApiManager.get_subclass(media_type)
+        api_manager(api_id=media.api_id).update_media_to_db()
+        current_app.logger.info(f"[INFO] - Refreshed {media_type.value} with API ID: [{media.api_id}]")
     except Exception as e:
         current_app.logger.error(f"[ERROR] - While refreshing {media_type.value} with API ID: [{media.api_id}]: {e}")
         return abort(400, "An error occurred trying to refresh the media")

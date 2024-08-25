@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Type
 from urllib import request
 import requests
 from flask import url_for, current_app, abort
@@ -12,14 +12,15 @@ from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
 from requests import Response
 from backend.api import db
-from backend.api.utils.enums import MediaType, ModelTypes
-from backend.api.utils.functions import clean_html_text, get, is_latin, format_datetime, resize_and_save_image
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import MediaType, ModelTypes
+from backend.api.utils.functions import (clean_html_text, get, is_latin, format_datetime, resize_and_save_image,
+                                         reorder_seas_eps)
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
 
-class ApiMeta(type):
+class ApiManagerMeta(type):
     subclasses = {}
 
     def __new__(cls, name, bases, attrs):
@@ -29,7 +30,7 @@ class ApiMeta(type):
         return new_class
 
 
-class ApiManager(metaclass=ApiMeta):
+class ApiManager(metaclass=ApiManagerMeta):
     GROUP: MediaType
     POSTER_BASE_URL: str
     LOCAL_COVER_PATH: str
@@ -39,44 +40,72 @@ class ApiManager(metaclass=ApiMeta):
 
     def __init__(self, api_id: Optional[int, str] = None):
         self.api_id = api_id
-        self.media: Optional[db.Model] = None
         self.media_details = {}
         self.api_data = {}
         self.all_data = {}
 
+    @classmethod
+    def get_subclass(cls, media_type: MediaType) -> Type[ApiManager]:
+        return cls.subclasses.get(media_type, cls)
+
     def save_media_to_db(self) -> db.Model:
         self._fetch_details_from_api()
         self._format_api_data()
-        self._add_data_to_db()
-        return self.media
+        return self._add_data_to_db()
 
-    def get_refreshed_media_data(self) -> Dict:
+    def update_media_to_db(self):
         self._fetch_details_from_api()
-        self._format_api_data(updating=True)
+        self._format_api_data()
+        self._update_data_to_db()
 
-        return self.all_data
-
-    def _add_data_to_db(self):
+    def _add_data_to_db(self) -> db.Model:
         models = ModelsManager.get_dict_models(self.GROUP, "all")
 
-        self.media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
-        db.session.add(self.media)
+        media = models[ModelTypes.MEDIA](**self.all_data["media_data"])
+        db.session.add(media)
         db.session.flush()
 
         related_data = {
+            models.get(ModelTypes.EPS): self.all_data.get("seasons_data", []),
             models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
             models.get(ModelTypes.ACTORS): self.all_data.get("actors_data", []),
+            models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
             models.get(ModelTypes.NETWORK): self.all_data.get("networks_data", []),
-            models.get(ModelTypes.EPS): self.all_data.get("seasons_data", []),
             models.get(ModelTypes.COMPANIES): self.all_data.get("companies_data", []),
             models.get(ModelTypes.PLATFORMS): self.all_data.get("platforms_data", []),
-            models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
         }
 
         for model, data_list in related_data.items():
             for item in data_list:
-                item["media_id"] = self.media.id
+                item["media_id"] = media.id
                 db.session.add(model(**item))
+
+        db.session.commit()
+
+        return media
+
+    def _update_data_to_db(self):
+        models = ModelsManager.get_dict_models(self.GROUP, "all")
+
+        media = models[ModelTypes.MEDIA].query.filter_by(api_id=self.api_id).first()
+        media.update(self.all_data["media_data"])
+
+        related_data = {
+            models.get(ModelTypes.EPS): self.all_data.get("seasons_data", []),
+            models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
+            models.get(ModelTypes.ACTORS): self.all_data.get("actors_data", []),
+            models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
+            models.get(ModelTypes.NETWORK): self.all_data.get("networks_data", []),
+            models.get(ModelTypes.COMPANIES): self.all_data.get("companies_data", []),
+            models.get(ModelTypes.PLATFORMS): self.all_data.get("platforms_data", []),
+        }
+
+        for model, data_list in related_data.items():
+            if model == models.get(ModelTypes.EPS) and data_list:
+                self._update_episodes_and_seasons(model, media, data_list)
+            elif data_list:
+                model.query.filter_by(media_id=media.id).delete()
+                db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
 
         db.session.commit()
 
@@ -86,7 +115,7 @@ class ApiManager(metaclass=ApiMeta):
     def _fetch_details_from_api(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _format_api_data(self, updating: bool = False):
+    def _format_api_data(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def _save_api_cover(self, cover_path: str, cover_name: str):
@@ -96,9 +125,26 @@ class ApiManager(metaclass=ApiMeta):
             f"{self.LOCAL_COVER_PATH}/{cover_name}",
         )
 
-    @classmethod
-    def get_subclass(cls, media_type: MediaType):
-        return cls.subclasses.get(media_type, cls)
+    @staticmethod
+    def _update_episodes_and_seasons(model: db.Model, media: db.Model, data_list: List[Dict]):
+        old_data = [s.episodes for s in media.eps_per_season]
+        new_data = [s["episodes"] for s in data_list]
+
+        if new_data == old_data:
+            return
+
+        all_media_assoc = media.list_info.filter_by(media_id=media.id).all()
+        for media_assoc in all_media_assoc:
+            total_eps = (sum(media.eps_seasons_list[:media_assoc.current_season - 1])
+                         + media_assoc.last_episode_watched)
+            last_episode, last_season, new_total = reorder_seas_eps(total_eps, new_data)
+            media_assoc.current_season = last_season
+            media_assoc.last_episode_watched = last_episode
+            media_assoc.total = new_total * (media_assoc.redo + 1)
+
+        # Delete old add new
+        model.query.filter_by(media_id=media.id).delete()
+        db.session.add_all([model(media_id=media.id, season=s, episodes=e) for s, e in enumerate(new_data, start=1)])
 
     @staticmethod
     def call_api(url: str, method: Literal["get", "post"] = "get", **kwargs) -> Response:
@@ -180,15 +226,15 @@ class TMDBApiManager(ApiManager):
         )
         self.api_data = json.loads(response.text)
 
-    def _get_genres(self) -> List[Dict]:
+    def _format_genres(self) -> List[Dict]:
         """ Fetch series, anime, or movies genres (fallback for anime if Jikan API bug) """
 
         all_genres = get(self.api_data, "genres", default=[])
         genres_list = [{"name": genre["name"]} for genre in all_genres]
 
-        return genres_list
+        return genres_list[:5]
 
-    def _get_actors(self) -> List[Dict]:
+    def _format_actors(self) -> List[Dict]:
         """ Get the <MAX_ACTORS> actors for series, anime and movies """
 
         all_actors = get(self.api_data, "credits", "cast", default=[])
@@ -240,7 +286,7 @@ class TMDBApiManager(ApiManager):
 class TVApiManager(TMDBApiManager):
     MAX_NETWORK = 4
 
-    def _format_api_data(self, updating: bool = False):
+    def _format_api_data(self):
         self.media_details = dict(
             name=get(self.api_data, "name"),
             original_name=get(self.api_data, "original_name"),
@@ -256,7 +302,7 @@ class TVApiManager(TMDBApiManager):
             popularity=get(self.api_data, "popularity", default=0),
             duration=get(self.api_data, "episode_run_time", 0, default=self.DURATION),
             origin_country=get(self.api_data, "origin_country", 0),
-            created_by=", ".join(cr["name"] for cr in (self.api_data.get("created_by") or self._get_writers())),
+            created_by=self._format_creators(),
             api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
@@ -282,36 +328,34 @@ class TVApiManager(TMDBApiManager):
         networks = get(self.api_data, "networks", default=[])
         networks_list = [{"name": network["name"]} for network in networks[:self.MAX_NETWORK]]
 
-        genres_list = []
-        actors_list = []
-        anime_genres_list = []
-        if not updating:
-            genres_list = self._get_genres()
-            actors_list = self._get_actors()
-            anime_genres_list = self._get_anime_genres()
-
         self.all_data = dict(
             media_data=self.media_details,
             seasons_data=seasons_list,
-            genres_data=genres_list,
-            anime_genres_data=anime_genres_list,
-            actors_data=actors_list,
+            genres_data=self._format_genres(),
+            actors_data=self._format_actors(),
             networks_data=networks_list,
         )
 
-    def _get_anime_genres(self):
-        """ Method only for <Anime>, not <Series>. Overridden in <ApiAnime> class """
-        return []
+    def _format_creators(self) -> Optional[str]:
+        """ Select creators, if not creators then take top 2 writers (by popularity) """
 
-    def _get_writers(self) -> List[Dict]:
-        """ Get top 2 writers (by popularity) for <created_by> field using the series/anime crew """
+        creators = get(self.api_data, "created_by", default=[])
+        if creators:
+            return ", ".join([creator["name"] for creator in creators])
 
         tv_crew = get(self.api_data, "credits", "crew", default=[])
-        creator_names = [member for member in tv_crew if member.get("department") == "Writing"
-                         and member.get("known_for_department") == "Writing"]
-        if not creator_names:
-            return []
-        return sorted(creator_names, key=lambda x: x.get("popularity", 0), reverse=True)[:2]
+        writers_list = [member for member in tv_crew if member.get("department") == "Writing"
+                        and member.get("known_for_department") == "Writing"]
+        if not writers_list:
+            return None
+
+        top_writers = sorted(
+            set(writer["name"] for writer in writers_list),
+            key=lambda name: next(w.get("popularity", 0) for w in writers_list if w["name"] == name),
+            reverse=True,
+        )[:2]
+
+        return ", ".join(top_writers)
 
 
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
@@ -364,24 +408,24 @@ class AnimeApiManager(TVApiManager):
         response = self.call_api(f"https://api.jikan.moe/v4/anime?q={anime_name}")
         return json.loads(response.text)
 
-    def _get_anime_genres(self) -> List[Dict]:
-        """ Get anime genre from the Jikan API (fusion between genre, themes and demographic) """
+    def _format_genres(self) -> List[Dict]:
+        """ Get anime genre from the Jikan API (fusion between genre, themes and demographic).
+        Fallback on TMDB API genres if necessary """
+
+        tmdb_genres_list = super()._format_genres()
 
         anime_genres_list = []
         try:
             anime_search = self.api_anime_search(self.api_data["name"])
-
             anime_genres = anime_search["data"][0]["genres"]
             anime_demographic = anime_search["data"][0]["demographics"]
             anime_themes = anime_search["data"][0]["themes"]
-
-            for data_list in (anime_genres, anime_demographic, anime_themes):
-                for item in data_list:
-                    anime_genres_list.append({"name": item["name"]})
+            fusion_list = anime_genres + anime_demographic + anime_themes
+            anime_genres_list = [{"name": item["name"]} for item in fusion_list][:5]
         except Exception as e:
             current_app.logger.error(f"[ERROR] - Requesting the Jikan API: {e}")
 
-        return anime_genres_list
+        return anime_genres_list or tmdb_genres_list
 
 
 class MoviesApiManager(TMDBApiManager):
@@ -414,7 +458,7 @@ class MoviesApiManager(TMDBApiManager):
 
         return movies_results
 
-    def _format_api_data(self, updating: bool = False):
+    def _format_api_data(self):
         self.media_details = dict(
             name=get(self.api_data, "title"),
             original_name=get(self.api_data, "original_title"),
@@ -441,16 +485,10 @@ class MoviesApiManager(TMDBApiManager):
                 self.media_details["director_name"] = get(crew, "name")
                 break
 
-        actors_list = []
-        genres_list = []
-        if not updating:
-            actors_list = self._get_actors()
-            genres_list = self._get_genres()
-
         self.all_data = dict(
             media_data=self.media_details,
-            genres_data=genres_list,
-            actors_data=actors_list
+            genres_data=self._format_genres(),
+            actors_data=self._format_actors(),
         )
 
 
@@ -560,9 +598,9 @@ class GamesApiManager(ApiManager):
         for genre in genres_list:
             genre["name"] = genre_mapping.get(genre["name"], genre["name"])
 
-        return genres_list
+        return genres_list[:5]
 
-    def _format_api_data(self, updating: bool = False):
+    def _format_api_data(self):
         self.media_details = dict(
             name=get(self.api_data, "name"),
             release_date=format_datetime(get(self.api_data, "first_release_date")),
@@ -587,19 +625,11 @@ class GamesApiManager(ApiManager):
         self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
         self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
 
-        genres_list = []
-        platforms_list = []
-        companies_list = []
-        if not updating:
-            genres_list = self._format_genres()
-            platforms_list = self._format_platforms()
-            companies_list = self._format_companies()
-
         self.all_data = dict(
             media_data=self.media_details,
-            companies_data=companies_list,
-            genres_data=genres_list,
-            platforms_data=platforms_list
+            companies_data=self._format_companies(),
+            genres_data=self._format_genres(),
+            platforms_data=self._format_platforms(),
         )
 
     def _save_api_cover(self, cover_path: str, cover_name: str):
@@ -633,27 +663,26 @@ class GamesApiManager(ApiManager):
 
         return cover_name
 
-    def update_api_key(self):
-        """ Update IGDB API key every month. Backend needs to restart to update the env variable. """
+    def update_api_token(self) -> Optional[str]:
+        """ Update the IGDB API Token. Backend needs to restart to update the env variable. """
 
-        import dotenv
         try:
             response = self.call_api(
-                f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
-                f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials", method="post"
+                method="post",
+                url=f"https://id.twitch.tv/oauth2/token?client_id={self.CLIENT_IGDB}&"
+                    f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials",
             )
             data = json.loads(response.text)
-            new_IGDB_token = data.get("access_token")
+            new_igdb_token = data.get("access_token")
 
-            if not new_IGDB_token:
-                current_app.logger.error("[ERROR] - Failed to obtain the new IGDB token.")
-                return
+            if not new_igdb_token:
+                current_app.logger.error("[ERROR] - Failed to obtain the new IGDB Token.")
+                return None
 
-            # Write new IGDB API KEY to <.env> file
-            dotenv_file = dotenv.find_dotenv()
-            dotenv.set_key(dotenv_file, "IGDB_API_KEY", new_IGDB_token)
-        except Exception as ex:
-            current_app.logger.error(f"[ERROR] - An error occurred obtaining the new IGDB API key: {ex}")
+            return new_igdb_token
+
+        except Exception as e:
+            current_app.logger.error(f"[ERROR] - An error occurred trying to obtain the new IGDB Token: {e}")
 
     def get_changed_api_ids(self) -> List[int]:
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
@@ -722,7 +751,7 @@ class BooksApiManager(ApiManager):
 
         return dict(items=media_results, total=total, pages=pages)
 
-    def _format_api_data(self, updating: bool = False):
+    def _format_api_data(self):
         self.media_details = dict(
             api_id=self.api_id,
             name=get(self.api_data, "title"),
@@ -742,7 +771,7 @@ class BooksApiManager(ApiManager):
         self.all_data = dict(
             media_data=self.media_details,
             genres_data=[],
-            authors_data=authors_list
+            authors_data=authors_list,
         )
 
     def _get_media_cover(self) -> str:

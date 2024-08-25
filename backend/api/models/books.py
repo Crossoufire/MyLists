@@ -69,43 +69,6 @@ class Books(Media):
 
         return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
 
-    @classmethod
-    def remove_non_list_media(cls):
-        try:
-            books_to_delete = (
-                cls.query.outerjoin(BooksList, BooksList.media_id == cls.id)
-                .filter(BooksList.media_id.is_(None))
-                .all()
-            )
-
-            current_app.logger.info(f"Books to delete: {len(books_to_delete)}")
-            books_ids = [book.id for book in books_to_delete]
-
-            BooksAuthors.query.filter(BooksAuthors.media_id.in_(books_ids)).delete()
-            BooksGenre.query.filter(BooksGenre.media_id.in_(books_ids)).delete()
-            UserMediaUpdate.query.filter(
-                UserMediaUpdate.media_type == cls.GROUP,
-                UserMediaUpdate.media_id.in_(books_ids)
-            ).delete()
-            Notifications.query.filter(
-                Notifications.media_type == cls.GROUP,
-                Notifications.media_id.in_(books_ids)
-            ).delete()
-            BooksLabels.query.filter(BooksLabels.media_id.in_(books_ids)).delete()
-            cls.query.filter(cls.id.in_(books_ids)).delete()
-
-            db.session.commit()
-
-            current_app.logger.info(f"Books successfully deleted")
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error occurred while removing books and related records: {str(e)}")
-
-    @classmethod
-    def refresh_element_data(cls, api_id: str, new_data: Dict):
-        cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
-        db.session.commit()
-
     @staticmethod
     def form_only() -> List[str]:
         return ["name", "release_date", "pages", "language", "publishers", "synopsis"]

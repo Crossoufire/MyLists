@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Type
 from sqlalchemy import func, text, ColumnElement
 from backend.api import db
 from backend.api.models.user import User, UserMediaUpdate
@@ -10,7 +10,7 @@ from backend.api.managers.ModelsManager import ModelsManager
 """ --- GENERAL ----------------------------------------------------------------------------------------- """
 
 
-class StatsMeta(type):
+class StatsManagerMeta(type):
     subclasses = {}
 
     def __new__(cls, name, bases, attrs):
@@ -20,8 +20,8 @@ class StatsMeta(type):
         return new_class
 
 
-class BaseStats(metaclass=StatsMeta):
-    GROUP: MediaType = None
+class StatsManager(metaclass=StatsManagerMeta):
+    GROUP: MediaType
     LIMIT: int = 10
 
     def __init__(self, user: User):
@@ -34,6 +34,10 @@ class BaseStats(metaclass=StatsMeta):
         self.rating = self.media_list.feeling if self.user.add_feeling else self.media_list.score
         self.common_join = [self.media_list, self.media_list.media_id == self.media.id]
         self.common_filter = []
+
+    @classmethod
+    def get_subclass(cls, media_type: MediaType) -> Type[StatsManager]:
+        return cls.subclasses.get(media_type, cls)
 
     def _initialize_media_models(self):
         self.media = self.media_models[ModelTypes.MEDIA]
@@ -199,12 +203,8 @@ class BaseStats(metaclass=StatsMeta):
 
         self.data["values"][genre_name.lower().replace(" ", "_")] = misc_genre
 
-    @classmethod
-    def get_subclass(cls, media_type: MediaType):
-        return cls.subclasses.get(media_type, cls)
 
-
-class TMDBStats(BaseStats):
+class TMDBStatsManager(StatsManager):
     def __init__(self, user: User):
         super().__init__(user)
         self.common_filter = [self.media_list.user_id == self.user.id, self.media_list.status != Status.PLAN_TO_WATCH]
@@ -237,7 +237,7 @@ class TMDBStats(BaseStats):
         }
 
 
-class TvStats(TMDBStats):
+class TvStatsManager(TMDBStatsManager):
     def __init__(self, user: User):
         super().__init__(user)
 
@@ -323,21 +323,21 @@ class TvStats(TMDBStats):
 """ --- CLASS CALL -------------------------------------------------------------------------------------- """
 
 
-class SeriesStats(TvStats):
+class SeriesStatsManager(TvStatsManager):
     GROUP = MediaType.SERIES
 
     def __init__(self, user: User):
         super().__init__(user)
 
 
-class AnimeStats(TvStats):
+class AnimeStatsManager(TvStatsManager):
     GROUP = MediaType.ANIME
 
     def __init__(self, user: User):
         super().__init__(user)
 
 
-class MoviesStats(TMDBStats):
+class MoviesStatsManager(TMDBStatsManager):
     GROUP = MediaType.MOVIES
 
     def __init__(self, user: User):
@@ -417,7 +417,7 @@ class MoviesStats(TMDBStats):
         return self.data
 
 
-class BooksStats(BaseStats):
+class BooksStatsManager(StatsManager):
     GROUP = MediaType.BOOKS
 
     def __init__(self, user: User):
@@ -507,7 +507,7 @@ class BooksStats(BaseStats):
         return self.data
 
 
-class GamesStats(BaseStats):
+class GamesStatsManager(StatsManager):
     GROUP = MediaType.GAMES
 
     def __init__(self, user: User):

@@ -6,11 +6,6 @@ def create_cli_commands():
     """ Register the commands to the Flask CLI """
 
     @current_app.cli.command()
-    def dbml():
-        """ Create DBML file from Models """
-        generate_dbml()
-
-    @current_app.cli.command()
     @click.argument("days", type=int, default=180)
     def active_users(days: int):
         """ Count the number of active users """
@@ -65,8 +60,8 @@ def create_cli_commands():
 
     @current_app.cli.command()
     def update_igdb_key():
-        """ Update to a new IGDB API key - Server needs to restart to take effect. """
-        update_IGDB_API()
+        """ Update the IGDB API Token - Server needs to restart to take effect. """
+        update_igdb_api_token()
 
     @current_app.cli.command()
     def scheduled_tasks():

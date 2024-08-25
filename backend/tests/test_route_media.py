@@ -22,8 +22,6 @@ class MediaTests(BaseTest):
             api_manager = ApiManager.get_subclass(media_type)()
             api_manager.all_data = media_data
             api_manager.all_data["media_data"]["last_api_update"] = datetime.utcnow()
-            if media_type == MediaType.BOOKS:
-                del api_manager.all_data["media_data"]["last_api_update"]
             api_manager._add_data_to_db()
 
     def add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:

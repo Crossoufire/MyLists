@@ -1,18 +1,18 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 from flask import url_for
 from sqlalchemy import func, desc
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.mixins import SearchableMixin
+from backend.api.models.mixins import SearchableMixin, UpdateMixin
 from backend.api.models.user import User, followers, UserMediaUpdate
 from backend.api.utils.enums import ModelTypes, Status, MediaType
 from backend.api.utils.functions import safe_div
 
 
-class Media(db.Model, SearchableMixin):
+class Media(db.Model, SearchableMixin, UpdateMixin):
     __abstract__ = True
 
     TYPE: ModelTypes = ModelTypes.MEDIA
@@ -77,7 +77,7 @@ class Media(db.Model, SearchableMixin):
 
         return data
 
-    def get_user_list_info(self, label_class: Labels) -> Dict | bool:
+    def get_user_list_info(self, label_class: Labels) -> Optional[Dict]:
         media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
         user_data = media_assoc.to_dict() if media_assoc else None
 

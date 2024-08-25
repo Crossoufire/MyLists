@@ -1,16 +1,12 @@
 from __future__ import annotations
-import json
-from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Type
-from flask import current_app, abort
+from flask import abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
-from backend.api.models.user import Notifications, UserMediaUpdate
-from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
-from backend.api.utils.functions import reorder_seas_eps
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
 class TVModel(Media):
@@ -33,7 +29,7 @@ class TVModel(Media):
     popularity = db.Column(db.Float)
 
     @property
-    def eps_per_season_list(self):
+    def eps_seasons_list(self):
         return [s.episodes for s in self.eps_per_season]
 
     def to_dict(self):
@@ -43,7 +39,7 @@ class TVModel(Media):
 
         media_dict.update({
             "media_cover": self.media_cover,
-            "eps_per_season": self.eps_per_season_list,
+            "eps_per_season": self.eps_seasons_list,
             "networks": [n.name for n in self.networks],
             "actors": self.actors_list,
             "genres": self.genres_list,
@@ -56,8 +52,7 @@ class TVModel(Media):
         if new_status == Status.COMPLETED:
             new_season = len(self.eps_per_season)
             new_episode = self.eps_per_season[-1].episodes
-            # Better using <sum(eps_per_season)> than <total_episodes> (discrepancy happens between the two)
-            total_watched = sum(self.eps_per_season_list)
+            total_watched = sum(self.eps_seasons_list)
         elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
             new_episode = 0
             total_watched = 0
@@ -101,137 +96,6 @@ class TVModel(Media):
 
         return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
 
-    @classmethod
-    def refresh_element_data(cls, api_id: int, new_data: Dict):
-        cls.query.filter_by(api_id=api_id).update(new_data["media_data"])
-        media = cls.query.filter_by(api_id=api_id).first()
-
-        old_seas_eps = [season.episodes for season in media.eps_per_season]
-        new_seas_eps = [season["episodes"] for season in new_data["seasons_data"]]
-
-        # Check episodes/seasons compared to refreshed data
-        if new_seas_eps == old_seas_eps:
-            db.session.commit()
-            return
-
-        # Different lists of episodes
-        all_users_list = media.list_info.filter_by(media_id=media.id).all()
-        for user_list in all_users_list:
-            total_eps = (sum(user_list.media.eps_per_season_list[:user_list.current_season - 1])
-                         + user_list.last_episode_watched)
-            last_episode, last_season, new_total = reorder_seas_eps(total_eps, new_seas_eps)
-            user_list.current_season = last_season
-            user_list.last_episode_watched = last_episode
-            user_list.total = new_total * (user_list.redo + 1)
-
-        # Delete old seasons/episodes for this media
-        eps_seas_model = eval(f"{cls.__name__}EpisodesPerSeason")
-        eps_seas_model.query.filter_by(media_id=media.id).delete()
-        db.session.commit()
-
-        # Add new seasons/episodes
-        new_eps_seas_list = []
-        for season, episodes in enumerate(new_seas_eps, start=1):
-            new_eps_seas_list.append(eps_seas_model(media_id=media.id, season=season, episodes=episodes))
-        db.session.add_all(new_eps_seas_list)
-        db.session.commit()
-
-    @classmethod
-    def get_new_releasing_media(cls):
-        media_list, eps_model = ModelsManager.get_lists_models(cls.GROUP, [ModelTypes.LIST, ModelTypes.EPS])
-
-        top_eps_sub = (
-            db.session.query(
-                eps_model.media_id, eps_model.episodes.label("last_episode"), func.max(eps_model.season)
-            ).group_by(eps_model.media_id)
-            .subquery()
-        )
-
-        query = (
-            db.session.query(
-                cls.id, cls.episode_to_air, cls.season_to_air, cls.name, cls.next_episode_to_air, media_list.user_id,
-                top_eps_sub.c.last_episode
-            ).join(media_list, cls.id == media_list.media_id)
-            .join(top_eps_sub, cls.id == top_eps_sub.c.media_id)
-            .filter(
-                cls.next_episode_to_air.is_not(None),
-                cls.next_episode_to_air > datetime.utcnow(),
-                cls.next_episode_to_air <= datetime.utcnow() + timedelta(days=cls.RELEASE_WINDOW),
-                media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
-            ).all()
-        )
-
-        for media_id, eps_to_air, seas_to_air, name, next_eps_to_air, user_id, last_episode in query:
-            notification = Notifications.search(user_id, cls.GROUP, media_id)
-
-            if notification:
-                payload = json.loads(notification.payload)
-                if (next_eps_to_air == payload["release_date"] and int(eps_to_air) == int(payload["episode"])
-                        and int(seas_to_air) == int(payload["season"])):
-                    continue
-
-            payload = dict(
-                name=name,
-                season=f"{seas_to_air:02d}",
-                episode=f"{eps_to_air:02d}",
-                release_date=next_eps_to_air,
-                finale=(last_episode == eps_to_air),
-            )
-
-            new_notification = Notifications(
-                user_id=user_id,
-                media_id=media_id,
-                media_type=cls.GROUP,
-                notification_type=NotificationType.TV,
-                payload=json.dumps(payload),
-            )
-            db.session.add(new_notification)
-
-        db.session.commit()
-
-    @classmethod
-    def remove_non_list_media(cls):
-        models = ModelsManager.get_dict_models(cls.GROUP, "all")
-        media_model = models[ModelTypes.MEDIA]
-        media_list_model = models[ModelTypes.LIST]
-        actors_model = models[ModelTypes.ACTORS]
-        genres_model = models[ModelTypes.GENRE]
-        network_model = models[ModelTypes.NETWORK]
-        eps_model = models[ModelTypes.EPS]
-        label_model = models[ModelTypes.LABELS]
-
-        try:
-            media_to_delete = (
-                cls.query.outerjoin(media_list_model, media_list_model.media_id == cls.id)
-                .filter(media_list_model.media_id.is_(None))
-                .all()
-            )
-
-            current_app.logger.info(f"{cls.GROUP.value} to delete: {len(media_to_delete)}")
-            media_ids = [media.id for media in media_to_delete]
-
-            actors_model.query.filter(actors_model.media_id.in_(media_ids)).delete()
-            genres_model.query.filter(genres_model.media_id.in_(media_ids)).delete()
-            network_model.query.filter(network_model.media_id.in_(media_ids)).delete()
-            eps_model.query.filter(eps_model.media_id.in_(media_ids)).delete()
-            UserMediaUpdate.query.filter(
-                UserMediaUpdate.media_type == cls.GROUP,
-                UserMediaUpdate.media_id.in_(media_ids)
-            ).delete()
-            Notifications.query.filter(
-                Notifications.media_type == cls.GROUP,
-                Notifications.media_id.in_(media_ids)
-            ).delete()
-            label_model.query.filter(label_model.media_id.in_(media_ids)).delete()
-            media_model.query.filter(cls.id.in_(media_ids)).delete()
-
-            db.session.commit()
-
-            current_app.logger.info(f"{cls.GROUP.value} successfully deleted")
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error occurred while removing {cls.GROUP.value} and related records: {str(e)}")
-
     @staticmethod
     def form_only() -> List[str]:
         return ["name", "original_name", "release_date", "last_air_date", "homepage", "created_by", "duration",
@@ -262,10 +126,10 @@ class TVListModel(MediaList):
             "media_cover": self.media.media_cover,
             "media_name": self.media.name,
             "all_status": Status.by(self.GROUP),
-            "eps_per_season": self.media.eps_per_season_list,
+            "eps_per_season": self.media.eps_seasons_list,
             "rating": {
                 "type": "feeling" if is_feeling else "score",
-                "value": self.feeling if is_feeling else self.score
+                "value": self.feeling if is_feeling else self.score,
             }
         })
 
@@ -277,7 +141,7 @@ class TVListModel(MediaList):
         self.status = new_status
         self.redo = 0
         if new_status == Status.COMPLETED:
-            total_eps = sum(self.media.eps_per_season_list)
+            total_eps = sum(self.media.eps_seasons_list)
             self.current_season = len(self.media.eps_per_season)
             self.last_episode_watched = self.media.eps_per_season[-1].episodes
             self.total = total_eps
@@ -293,7 +157,7 @@ class TVListModel(MediaList):
     def update_total(self, new_redo: int) -> int:
         self.redo = new_redo
 
-        sum_episodes = sum(self.media.eps_per_season_list)
+        sum_episodes = sum(self.media.eps_seasons_list)
         new_total = sum_episodes + (new_redo * sum_episodes)
         self.total = new_total
 

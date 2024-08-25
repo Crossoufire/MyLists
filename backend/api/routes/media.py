@@ -279,10 +279,10 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
     old_eps = media_assoc.last_episode_watched
     old_total = media_assoc.total
 
-    new_watched = sum(media_assoc.media.eps_per_season_list[:new_season - 1]) + 1
+    new_watched = sum(media_assoc.media.eps_seasons_list[:new_season - 1]) + 1
     media_assoc.current_season = new_season
     media_assoc.last_episode_watched = 1
-    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_per_season_list))
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_seasons_list))
     media_assoc.total = new_total
 
     UserMediaUpdate.set_new_update(
@@ -317,8 +317,8 @@ def update_episode(media_type: MediaType, media_id: int, payload: Any, models: D
     old_season = media_assoc.current_season
     old_episode = media_assoc.last_episode_watched
     old_total = media_assoc.total
-    new_watched = sum(media_assoc.media.eps_per_season_list[:old_season - 1]) + new_eps
-    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_per_season_list))
+    new_watched = sum(media_assoc.media.eps_seasons_list[:old_season - 1]) + new_eps
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_seasons_list))
 
     media_assoc.last_episode_watched = new_eps
     media_assoc.total = new_total
