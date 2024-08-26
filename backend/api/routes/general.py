@@ -6,7 +6,7 @@ from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User, UserMediaSettings
 from backend.api.core.handlers import token_auth
-
+from backend.api.utils.enums import MediaType
 
 general = Blueprint("api_general", __name__)
 
@@ -31,7 +31,7 @@ def current_trends():
 @token_auth.login_required
 def hall_of_fame():
     page = request.args.get("page", 1, type=int)
-    search = request.args.get("search", type=str)
+    search = request.args.get("search", "", type=str)
     sorting = request.args.get("sorting", "profile", type=str)
 
     if sorting == "profile":
@@ -48,7 +48,7 @@ def hall_of_fame():
             db.session.query(
                 UserMediaSettings.user_id,
                 func.sum(case((
-                    and_(UserMediaSettings.media_type == sorting, UserMediaSettings.active),
+                    and_(UserMediaSettings.media_type == MediaType(sorting), UserMediaSettings.active),
                     UserMediaSettings.time_spent
                 ), else_=0)).label("time_spent")
             ).group_by(UserMediaSettings.user_id)
@@ -63,7 +63,8 @@ def hall_of_fame():
     users_data = (
         User.query.with_entities(User, ranked_users.c.rank)
         .join(ranked_users, User.id == ranked_users.c.id)
-        .filter(User.username.ilike(f"%{search}%"), User.active.is_(True))
+        .filter(User.active.is_(True), User.username.ilike(f"%{search}%"))
+        .order_by(ranked_users.c.rank)
         .paginate(page=page, per_page=10, error_out=True)
     )
 

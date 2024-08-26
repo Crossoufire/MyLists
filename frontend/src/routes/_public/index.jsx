@@ -1,8 +1,8 @@
 import {mail} from "@/lib/constants";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {LoginForm} from "@/components/homepage/LoginForm";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";

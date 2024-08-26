@@ -19,16 +19,20 @@ export const MediaListForm = () => {
     const onSubmit = async (data) => {
         setErrors("");
 
-        setPending(true);
-        const response = await api.post("/settings/medialist", data);
-        setPending(false);
+        try {
+            setPending(true);
+            const response = await api.post("/settings/medialist", data);
 
-        if (!response.ok) {
-            return setErrors(response.body.description);
+            if (!response.ok) {
+                return setErrors(response.body.description);
+            }
+
+            userClient.setCurrentUser(response.body.updated_user);
+            toast.success("Settings successfully updated");
         }
-
-        userClient.setCurrentUser(response.body.updated_user);
-        toast.success("Settings successfully updated");
+        finally {
+            setPending(false);
+        }
     };
 
     return (

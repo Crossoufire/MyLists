@@ -17,17 +17,17 @@ import { Route as UniversalImport } from './routes/_universal'
 import { Route as PublicImport } from './routes/_public'
 import { Route as PrivateImport } from './routes/_private'
 import { Route as PublicIndexImport } from './routes/_public/index'
-import { Route as UniversalPrivacypolicyImport } from './routes/_universal/privacy_policy'
+import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/privacy-policy'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
-import { Route as PublicResetpasswordImport } from './routes/_public/reset_password'
-import { Route as PublicRegistertokenImport } from './routes/_public/register_token'
-import { Route as PublicForgotpasswordImport } from './routes/_public/forgot_password'
+import { Route as PublicResetPasswordImport } from './routes/_public/reset-password'
+import { Route as PublicRegisterTokenImport } from './routes/_public/register-token'
+import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-password'
 import { Route as PrivateTrendsImport } from './routes/_private/trends'
 import { Route as PrivateSettingsImport } from './routes/_private/settings'
-import { Route as PrivateHalloffameImport } from './routes/_private/hall_of_fame'
+import { Route as PrivateHallOfFameImport } from './routes/_private/hall-of-fame'
 import { Route as PrivateGlobalstatsImport } from './routes/_private/global_stats'
 import { Route as PrivateComingnextImport } from './routes/_private/coming_next'
-import { Route as UniversalLevelsProfilelevelsImport } from './routes/_universal/levels.profile_levels'
+import { Route as UniversalLevelsProfileLevelsImport } from './routes/_universal/levels.profile-levels'
 import { Route as PublicOauth2ProviderCallbackImport } from './routes/_public/oauth2.$provider.callback'
 import { Route as PrivateStatsMediaTypeUsernameImport } from './routes/_private/stats/$mediaType.$username'
 import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
@@ -37,7 +37,7 @@ import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_priv
 import { Route as PrivateProfileUsernameHeaderHistoryImport } from './routes/_private/profile/$username/_header/history'
 import { Route as PrivateProfileUsernameHeaderFollowsImport } from './routes/_private/profile/$username/_header/follows'
 import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
-import { Route as PrivateDetailsFormMediaTypeMediaIdImport } from './routes/_private/details/form.$mediaType.$mediaId'
+import { Route as PrivateDetailsEditMediaTypeMediaIdImport } from './routes/_private/details/edit.$mediaType.$mediaId'
 import { Route as PrivateDetailsMediaTypeJobNameImport } from './routes/_private/details/$mediaType.$job.$name'
 
 // Create Virtual Routes
@@ -68,8 +68,8 @@ const PublicIndexRoute = PublicIndexImport.update({
   getParentRoute: () => PublicRoute,
 } as any)
 
-const UniversalPrivacypolicyRoute = UniversalPrivacypolicyImport.update({
-  path: '/privacy_policy',
+const UniversalPrivacyPolicyRoute = UniversalPrivacyPolicyImport.update({
+  path: '/privacy-policy',
   getParentRoute: () => UniversalRoute,
 } as any)
 
@@ -78,18 +78,18 @@ const UniversalAboutRoute = UniversalAboutImport.update({
   getParentRoute: () => UniversalRoute,
 } as any)
 
-const PublicResetpasswordRoute = PublicResetpasswordImport.update({
-  path: '/reset_password',
+const PublicResetPasswordRoute = PublicResetPasswordImport.update({
+  path: '/reset-password',
   getParentRoute: () => PublicRoute,
 } as any)
 
-const PublicRegistertokenRoute = PublicRegistertokenImport.update({
-  path: '/register_token',
+const PublicRegisterTokenRoute = PublicRegisterTokenImport.update({
+  path: '/register-token',
   getParentRoute: () => PublicRoute,
 } as any)
 
-const PublicForgotpasswordRoute = PublicForgotpasswordImport.update({
-  path: '/forgot_password',
+const PublicForgotPasswordRoute = PublicForgotPasswordImport.update({
+  path: '/forgot-password',
   getParentRoute: () => PublicRoute,
 } as any)
 
@@ -103,8 +103,8 @@ const PrivateSettingsRoute = PrivateSettingsImport.update({
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const PrivateHalloffameRoute = PrivateHalloffameImport.update({
-  path: '/hall_of_fame',
+const PrivateHallOfFameRoute = PrivateHallOfFameImport.update({
+  path: '/hall-of-fame',
   getParentRoute: () => PrivateRoute,
 } as any)
 
@@ -123,9 +123,9 @@ const PrivateProfileUsernameRoute = PrivateProfileUsernameImport.update({
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const UniversalLevelsProfilelevelsRoute =
-  UniversalLevelsProfilelevelsImport.update({
-    path: '/levels/profile_levels',
+const UniversalLevelsProfileLevelsRoute =
+  UniversalLevelsProfileLevelsImport.update({
+    path: '/levels/profile-levels',
     getParentRoute: () => UniversalRoute,
   } as any)
 
@@ -183,9 +183,9 @@ const PrivateProfileUsernameHeaderFollowersRoute =
     getParentRoute: () => PrivateProfileUsernameHeaderRoute,
   } as any)
 
-const PrivateDetailsFormMediaTypeMediaIdRoute =
-  PrivateDetailsFormMediaTypeMediaIdImport.update({
-    path: '/details/form/$mediaType/$mediaId',
+const PrivateDetailsEditMediaTypeMediaIdRoute =
+  PrivateDetailsEditMediaTypeMediaIdImport.update({
+    path: '/details/edit/$mediaType/$mediaId',
     getParentRoute: () => PrivateRoute,
   } as any)
 
@@ -234,11 +234,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateGlobalstatsImport
       parentRoute: typeof PrivateImport
     }
-    '/_private/hall_of_fame': {
-      id: '/_private/hall_of_fame'
-      path: '/hall_of_fame'
-      fullPath: '/hall_of_fame'
-      preLoaderRoute: typeof PrivateHalloffameImport
+    '/_private/hall-of-fame': {
+      id: '/_private/hall-of-fame'
+      path: '/hall-of-fame'
+      fullPath: '/hall-of-fame'
+      preLoaderRoute: typeof PrivateHallOfFameImport
       parentRoute: typeof PrivateImport
     }
     '/_private/settings': {
@@ -255,25 +255,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTrendsImport
       parentRoute: typeof PrivateImport
     }
-    '/_public/forgot_password': {
-      id: '/_public/forgot_password'
-      path: '/forgot_password'
-      fullPath: '/forgot_password'
-      preLoaderRoute: typeof PublicForgotpasswordImport
+    '/_public/forgot-password': {
+      id: '/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicForgotPasswordImport
       parentRoute: typeof PublicImport
     }
-    '/_public/register_token': {
-      id: '/_public/register_token'
-      path: '/register_token'
-      fullPath: '/register_token'
-      preLoaderRoute: typeof PublicRegistertokenImport
+    '/_public/register-token': {
+      id: '/_public/register-token'
+      path: '/register-token'
+      fullPath: '/register-token'
+      preLoaderRoute: typeof PublicRegisterTokenImport
       parentRoute: typeof PublicImport
     }
-    '/_public/reset_password': {
-      id: '/_public/reset_password'
-      path: '/reset_password'
-      fullPath: '/reset_password'
-      preLoaderRoute: typeof PublicResetpasswordImport
+    '/_public/reset-password': {
+      id: '/_public/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof PublicResetPasswordImport
       parentRoute: typeof PublicImport
     }
     '/_universal/about': {
@@ -283,11 +283,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UniversalAboutImport
       parentRoute: typeof UniversalImport
     }
-    '/_universal/privacy_policy': {
-      id: '/_universal/privacy_policy'
-      path: '/privacy_policy'
-      fullPath: '/privacy_policy'
-      preLoaderRoute: typeof UniversalPrivacypolicyImport
+    '/_universal/privacy-policy': {
+      id: '/_universal/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof UniversalPrivacyPolicyImport
       parentRoute: typeof UniversalImport
     }
     '/_public/': {
@@ -297,11 +297,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexImport
       parentRoute: typeof PublicImport
     }
-    '/_universal/levels/profile_levels': {
-      id: '/_universal/levels/profile_levels'
-      path: '/levels/profile_levels'
-      fullPath: '/levels/profile_levels'
-      preLoaderRoute: typeof UniversalLevelsProfilelevelsImport
+    '/_universal/levels/profile-levels': {
+      id: '/_universal/levels/profile-levels'
+      path: '/levels/profile-levels'
+      fullPath: '/levels/profile-levels'
+      preLoaderRoute: typeof UniversalLevelsProfileLevelsImport
       parentRoute: typeof UniversalImport
     }
     '/_private/details/$mediaType/$mediaId': {
@@ -353,11 +353,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateDetailsMediaTypeJobNameImport
       parentRoute: typeof PrivateImport
     }
-    '/_private/details/form/$mediaType/$mediaId': {
-      id: '/_private/details/form/$mediaType/$mediaId'
-      path: '/details/form/$mediaType/$mediaId'
-      fullPath: '/details/form/$mediaType/$mediaId'
-      preLoaderRoute: typeof PrivateDetailsFormMediaTypeMediaIdImport
+    '/_private/details/edit/$mediaType/$mediaId': {
+      id: '/_private/details/edit/$mediaType/$mediaId'
+      path: '/details/edit/$mediaType/$mediaId'
+      fullPath: '/details/edit/$mediaType/$mediaId'
+      preLoaderRoute: typeof PrivateDetailsEditMediaTypeMediaIdImport
       parentRoute: typeof PrivateImport
     }
     '/_private/profile/$username/_header/followers': {
@@ -397,7 +397,7 @@ export const routeTree = rootRoute.addChildren({
   PrivateRoute: PrivateRoute.addChildren({
     PrivateComingnextRoute,
     PrivateGlobalstatsRoute,
-    PrivateHalloffameRoute,
+    PrivateHallOfFameRoute,
     PrivateSettingsRoute,
     PrivateTrendsRoute,
     PrivateDetailsMediaTypeMediaIdRoute,
@@ -413,19 +413,19 @@ export const routeTree = rootRoute.addChildren({
     }),
     PrivateStatsMediaTypeUsernameRoute,
     PrivateDetailsMediaTypeJobNameRoute,
-    PrivateDetailsFormMediaTypeMediaIdRoute,
+    PrivateDetailsEditMediaTypeMediaIdRoute,
   }),
   PublicRoute: PublicRoute.addChildren({
-    PublicForgotpasswordRoute,
-    PublicRegistertokenRoute,
-    PublicResetpasswordRoute,
+    PublicForgotPasswordRoute,
+    PublicRegisterTokenRoute,
+    PublicResetPasswordRoute,
     PublicIndexRoute,
     PublicOauth2ProviderCallbackRoute,
   }),
   UniversalRoute: UniversalRoute.addChildren({
     UniversalAboutRoute,
-    UniversalPrivacypolicyRoute,
-    UniversalLevelsProfilelevelsRoute,
+    UniversalPrivacyPolicyRoute,
+    UniversalLevelsProfileLevelsRoute,
   }),
 })
 
@@ -447,7 +447,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/_private/coming_next",
         "/_private/global_stats",
-        "/_private/hall_of_fame",
+        "/_private/hall-of-fame",
         "/_private/settings",
         "/_private/trends",
         "/_private/details/$mediaType/$mediaId",
@@ -455,15 +455,15 @@ export const routeTree = rootRoute.addChildren({
         "/_private/profile/$username",
         "/_private/stats/$mediaType/$username",
         "/_private/details/$mediaType/$job/$name",
-        "/_private/details/form/$mediaType/$mediaId"
+        "/_private/details/edit/$mediaType/$mediaId"
       ]
     },
     "/_public": {
       "filePath": "_public.jsx",
       "children": [
-        "/_public/forgot_password",
-        "/_public/register_token",
-        "/_public/reset_password",
+        "/_public/forgot-password",
+        "/_public/register-token",
+        "/_public/reset-password",
         "/_public/",
         "/_public/oauth2/$provider/callback"
       ]
@@ -472,8 +472,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_universal.jsx",
       "children": [
         "/_universal/about",
-        "/_universal/privacy_policy",
-        "/_universal/levels/profile_levels"
+        "/_universal/privacy-policy",
+        "/_universal/levels/profile-levels"
       ]
     },
     "/_private/coming_next": {
@@ -484,8 +484,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_private/global_stats.jsx",
       "parent": "/_private"
     },
-    "/_private/hall_of_fame": {
-      "filePath": "_private/hall_of_fame.jsx",
+    "/_private/hall-of-fame": {
+      "filePath": "_private/hall-of-fame.jsx",
       "parent": "/_private"
     },
     "/_private/settings": {
@@ -496,32 +496,32 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_private/trends.jsx",
       "parent": "/_private"
     },
-    "/_public/forgot_password": {
-      "filePath": "_public/forgot_password.jsx",
+    "/_public/forgot-password": {
+      "filePath": "_public/forgot-password.jsx",
       "parent": "/_public"
     },
-    "/_public/register_token": {
-      "filePath": "_public/register_token.jsx",
+    "/_public/register-token": {
+      "filePath": "_public/register-token.jsx",
       "parent": "/_public"
     },
-    "/_public/reset_password": {
-      "filePath": "_public/reset_password.jsx",
+    "/_public/reset-password": {
+      "filePath": "_public/reset-password.jsx",
       "parent": "/_public"
     },
     "/_universal/about": {
       "filePath": "_universal/about.jsx",
       "parent": "/_universal"
     },
-    "/_universal/privacy_policy": {
-      "filePath": "_universal/privacy_policy.jsx",
+    "/_universal/privacy-policy": {
+      "filePath": "_universal/privacy-policy.jsx",
       "parent": "/_universal"
     },
     "/_public/": {
       "filePath": "_public/index.jsx",
       "parent": "/_public"
     },
-    "/_universal/levels/profile_levels": {
-      "filePath": "_universal/levels.profile_levels.jsx",
+    "/_universal/levels/profile-levels": {
+      "filePath": "_universal/levels.profile-levels.jsx",
       "parent": "/_universal"
     },
     "/_private/details/$mediaType/$mediaId": {
@@ -561,8 +561,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_private/details/$mediaType.$job.$name.jsx",
       "parent": "/_private"
     },
-    "/_private/details/form/$mediaType/$mediaId": {
-      "filePath": "_private/details/form.$mediaType.$mediaId.jsx",
+    "/_private/details/edit/$mediaType/$mediaId": {
+      "filePath": "_private/details/edit.$mediaType.$mediaId.jsx",
       "parent": "/_private"
     },
     "/_private/profile/$username/_header/followers": {

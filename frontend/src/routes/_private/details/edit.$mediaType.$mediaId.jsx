@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormButton} from "@/components/app/base/FormButton";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -14,9 +14,9 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/details/form/$mediaType/$mediaId")({
+export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId")({
     component: MediaEditPage,
-    loader: async ({ params }) => fetcher(`/details/form/${params.mediaType}/${params.mediaId}`),
+    loader: async ({ params }) => fetcher(`/details/edit/${params.mediaType}/${params.mediaId}`),
 });
 
 
@@ -35,7 +35,7 @@ function MediaEditPage() {
     const onSubmit = async (data) => {
         try {
             setIsPending(true);
-            const response = await api.post(`/details/form`, {
+            const response = await api.post(`/details/edit`, {
                 media_id: mediaId,
                 media_type: mediaType,
                 payload: data,

@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useHashTab} from "@/hooks/HashTabHook";
 import {Sidebar} from "@/components/app/Sidebar";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
@@ -23,9 +23,7 @@ const tabConfig = [
 
 
 function SettingsPage() {
-    const [selectedTab, setSelectedTab] = useState("General");
-
-    const handleTabChange = (tab) => setSelectedTab(tab);
+    const [selectedTab, handleTabChange] = useHashTab("General");
 
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">

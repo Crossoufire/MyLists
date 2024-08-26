@@ -33,7 +33,7 @@ export const DangerForm = () => {
 
     return (
         <div className="space-y-6">
-            <div>
+            <div className="max-w-[500px]">
                 WARNING: Deleting your account is irreversible and will permanently remove all your data and access. Are
                 you sure you want to proceed?
             </div>

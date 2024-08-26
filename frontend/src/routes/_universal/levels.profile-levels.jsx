@@ -1,17 +1,17 @@
 import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
-import {createFileRoute, Link, useLoaderData} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
+import {createFileRoute, Link} from "@tanstack/react-router";
 
 
-// noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createFileRoute("/_universal/levels/profile_levels")({
+// noinspection JSCheckFunctionSignatures
+export const Route = createFileRoute("/_universal/levels/profile-levels")({
     component: ProfileLevelsPage,
     loader: async () => fetcher("/levels/profile_borders"),
 });
 
 
 function ProfileLevelsPage() {
-    const apiData = useLoaderData({ strict: false });
+    const apiData = Route.useLoaderData();
 
     return (
         <PageTitle title="Profile borders" subtitle="Understanding the Profile Levels Borders System">

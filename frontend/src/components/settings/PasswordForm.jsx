@@ -16,16 +16,20 @@ export const PasswordForm = () => {
     const onSubmit = async (data) => {
         setErrors("");
 
-        setPending(true);
-        const response = await api.post("/settings/password", data);
-        setPending(false);
+        try {
+            setPending(true);
+            const response = await api.post("/settings/password", data);
 
-        if (!response.ok) {
-            return setErrors(response.body.description);
+            if (!response.ok) {
+                return setErrors(response.body.description);
+            }
+
+            userClient.setCurrentUser(response.body.updated_user);
+            toast.success("Password successfully updated");
         }
-
-        userClient.setCurrentUser(response.body.updated_user);
-        toast.success("Password successfully updated");
+        finally {
+            setPending(false);
+        }
     };
 
     return (

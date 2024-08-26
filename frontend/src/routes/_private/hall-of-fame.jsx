@@ -16,7 +16,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/hall_of_fame")({
+export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
     loader: async () => fetcher("/hall_of_fame", INIT_PARAMS),
 });

@@ -33,9 +33,10 @@ export const Footer = () => (
                 <div className="font-bold text-xl">Information</div>
                 <ul>
                     <li><a href="https://github.com/Crossoufire/MyLists" rel="noreferrer" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/Crossoufire/MyLists/releases" rel="noreferrer" target="_blank">Changelog</a></li>
                     <li><Link to="/about">About</Link></li>
-                    <li><Link to="/privacy_policy">Privacy Policy</Link></li>
-                    <li><Link to="/levels/profile_levels">Profile borders data</Link></li>
+                    <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+                    <li><Link to="/levels/profile-levels">Profile borders data</Link></li>
                 </ul>
             </div>
         </div>

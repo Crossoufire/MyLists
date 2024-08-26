@@ -138,9 +138,8 @@ class MyApiClient {
 
 class UserClient {
     constructor() {
-        this.currentUser = null;
         this.subscribers = [];
-        this.wasInitialized = false;
+        this.currentUser = null;
     }
 
     async initialize() {
@@ -151,7 +150,6 @@ class UserClient {
             currentUser = response.ok ? response.body : null;
         }
 
-        this.wasInitialized = true;
         this.setCurrentUser(currentUser);
     }
 

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createFileRoute("/_public/forgot_password")({
+export const Route = createFileRoute("/_public/forgot-password")({
     component: ForgotPasswordPage,
 });
 

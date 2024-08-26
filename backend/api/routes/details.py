@@ -43,9 +43,9 @@ def media_details(media_type: MediaType, media_id: int | str):
     return jsonify(data=data), 200
 
 
-@details_bp.route("/details/form/<mediatype:media_type>/<media_id>", methods=["GET"])
+@details_bp.route("/details/edit/<mediatype:media_type>/<media_id>", methods=["GET"])
 @token_auth.login_required(role=RoleType.MANAGER)
-def get_details_form(media_type: MediaType, media_id: int):
+def get_details_edit(media_type: MediaType, media_id: int):
     media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
     media = media_model.query.filter_by(id=media_id).first()
@@ -61,10 +61,31 @@ def get_details_form(media_type: MediaType, media_id: int):
     return jsonify(data=data), 200
 
 
-@details_bp.route("/details/form", methods=["POST"])
+@details_bp.route("/details/<mediatype:media_type>/<jobtype:job>/<name>", methods=["GET"])
+@token_auth.login_required
+def job_details(media_type: MediaType, job: JobType, name: str):
+    """
+    Load associated media with <job> and <name>
+    Available jobs:
+        - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
+        - `actor`: actors (series/anime/movies)
+        - `platform`: tv network (series/anime)
+    """
+
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
+    all_media = media_model.get_associated_media(job, name)
+
+    # Rename <id> and <name> keys to <media_id> and <media_name> for consistency in frontend
+    for media in all_media:
+        media.update(media_id=media.pop("id"), media_name=media.pop("name"))
+
+    return jsonify(data=dict(data=all_media, total=len(all_media))), 200
+
+
+@details_bp.route("/details/edit", methods=["POST"])
 @token_auth.login_required(role=RoleType.MANAGER)
 @validate_json_data()
-def post_details_form(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+def post_details_edit(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Post new media details after edition """
 
     payload = {} if payload is None else payload
@@ -104,27 +125,6 @@ def post_details_form(media_type: MediaType, media_id: int, payload: Any, models
     db.session.commit()
 
     return {}, 204
-
-
-@details_bp.route("/details/<mediatype:media_type>/<jobtype:job>/<name>", methods=["GET"])
-@token_auth.login_required
-def job_details(media_type: MediaType, job: JobType, name: str):
-    """
-    Load associated media with <job> and <name>
-    Available jobs:
-        - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
-        - `actor`: actors (series/anime/movies)
-        - `platform`: tv network (series/anime)
-    """
-
-    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
-    all_media = media_model.get_associated_media(job, name)
-
-    # Rename <id> and <name> keys to <media_id> and <media_name> for consistency in frontend
-    for media in all_media:
-        media.update(media_id=media.pop("id"), media_name=media.pop("name"))
-
-    return jsonify(data=dict(data=all_media, total=len(all_media))), 200
 
 
 # noinspection PyUnusedLocal

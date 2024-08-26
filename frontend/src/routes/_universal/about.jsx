@@ -1,6 +1,6 @@
 import {mail} from "@/lib/constants";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {createFileRoute} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -71,7 +71,7 @@ function AboutPage() {
 				The Logo was taken on FreePik and created by&nbsp;
 				<a className="text-blue-600" href="https://fr.freepik.com/vecteurs-libre/logo-degrade-colore-initial-vecteur-m_28762027.htm#query=blue%20M%20logo%20png&position=3&from_view=search&track=ais&uuid=911d0224-be46-42ed-8f5d-bce057504422">
 					logturnal
-				</a>
+				</a>.
 			</p>
 		</PageTitle>
 	);

@@ -1,11 +1,11 @@
 import {useState} from "react";
+import {fetcher} from "@/lib/fetcherLoader";
 import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {createFileRoute, Link} from "@tanstack/react-router";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
 import {RefreshMedia} from "@/components/media/general/RefreshMedia";
@@ -105,9 +105,9 @@ function MediaDetailsPage() {
 						</Tabs>
 					</div>
 				</div>
-				{(mediaType === "books" || currentUser.role === "manager") &&
+				{currentUser.role === "manager" &&
 					<div className="flex justify-end mt-12">
-						<Link to={`/details/form/${mediaType}/${apiData.media.id}`}>
+						<Link to={`/details/edit/${mediaType}/${apiData.media.id}`} className="ml-4">
 							<Button variant="warning">Edit Media</Button>
 						</Link>
 					</div>

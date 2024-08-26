@@ -17,28 +17,32 @@ export const GeneralForm = () => {
 
     const onSubmit = async (data) => {
         setErrors("");
-        setPending(true);
 
-        const formData = new FormData();
-        Object.keys(data).forEach(key => {
-            if (data[key] === undefined) return;
+        try {
+            setPending(true);
 
-            if (key === "profile_image" || key === "background_image") {
-                formData.append(key, data[key][0]);
-            } else {
-                formData.append(key, data[key]);
+            const formData = new FormData();
+            Object.keys(data).forEach(key => {
+                if (data[key] === undefined) return;
+                if (key === "profile_image" || key === "background_image") {
+                    formData.append(key, data[key][0]);
+                }
+                else {
+                    formData.append(key, data[key]);
+                }
+            });
+
+            const response = await api.post("/settings/general", formData, { removeContentType: true });
+            if (!response.ok) {
+                return setErrors(response.body.description);
             }
-        });
 
-        const response = await api.post("/settings/general", formData, { removeContentType: true });
-        setPending(false);
-
-        if (!response.ok) {
-            return setErrors(response.body.description);
+            userClient.setCurrentUser(response.body.updated_user);
+            toast.success("Settings successfully updated");
         }
-
-        userClient.setCurrentUser(response.body.updated_user);
-        toast.success("Settings successfully updated");
+        finally {
+            setPending(false);
+        }
     };
 
     return (
