@@ -557,11 +557,10 @@ class GamesApiManager(ApiManager):
 
     def _fetch_details_from_api(self):
         body = (
-            f"fields name, cover.image_id, collection.name, game_engines.name, game_modes.name, "
-            f"platforms.name, genres.name, player_perspectives.name, total_rating, total_rating_count, "
-            f"first_release_date, involved_companies.company.name, involved_companies.developer, "
-            f"involved_companies.publisher, summary, themes.name, url, external_games.uid, "
-            f"external_games.category; where id={self.api_id};"
+            f"fields name, cover.image_id, game_engines.name, game_modes.name, platforms.name, genres.name, "
+            f"player_perspectives.name, total_rating, total_rating_count, first_release_date, "
+            f"involved_companies.company.name, involved_companies.developer, involved_companies.publisher, "
+            f"summary, themes.name, url; where id={self.api_id};"
         )
 
         response = self.call_api("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
@@ -608,7 +607,6 @@ class GamesApiManager(ApiManager):
             vote_average=get(self.api_data, "total_rating", default=0),
             vote_count=get(self.api_data, "total_rating_count", default=0),
             synopsis=get(self.api_data, "summary"),
-            collection_name=get(self.api_data, "collection", "name"),
             game_engine=get(self.api_data, "game_engines", 0, "name"),
             player_perspective=get(self.api_data, "player_perspectives", 0, "name"),
             game_modes=",".join([g.get("name") for g in get(self.api_data, "game_modes", default=[])]),

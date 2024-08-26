@@ -25,8 +25,8 @@ import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-pas
 import { Route as PrivateTrendsImport } from './routes/_private/trends'
 import { Route as PrivateSettingsImport } from './routes/_private/settings'
 import { Route as PrivateHallOfFameImport } from './routes/_private/hall-of-fame'
-import { Route as PrivateGlobalstatsImport } from './routes/_private/global_stats'
-import { Route as PrivateComingnextImport } from './routes/_private/coming_next'
+import { Route as PrivateGlobalStatsImport } from './routes/_private/global-stats'
+import { Route as PrivateComingNextImport } from './routes/_private/coming-next'
 import { Route as UniversalLevelsProfileLevelsImport } from './routes/_universal/levels.profile-levels'
 import { Route as PublicOauth2ProviderCallbackImport } from './routes/_public/oauth2.$provider.callback'
 import { Route as PrivateStatsMediaTypeUsernameImport } from './routes/_private/stats/$mediaType.$username'
@@ -108,13 +108,13 @@ const PrivateHallOfFameRoute = PrivateHallOfFameImport.update({
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const PrivateGlobalstatsRoute = PrivateGlobalstatsImport.update({
-  path: '/global_stats',
+const PrivateGlobalStatsRoute = PrivateGlobalStatsImport.update({
+  path: '/global-stats',
   getParentRoute: () => PrivateRoute,
 } as any)
 
-const PrivateComingnextRoute = PrivateComingnextImport.update({
-  path: '/coming_next',
+const PrivateComingNextRoute = PrivateComingNextImport.update({
+  path: '/coming-next',
   getParentRoute: () => PrivateRoute,
 } as any)
 
@@ -220,18 +220,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UniversalImport
       parentRoute: typeof rootRoute
     }
-    '/_private/coming_next': {
-      id: '/_private/coming_next'
-      path: '/coming_next'
-      fullPath: '/coming_next'
-      preLoaderRoute: typeof PrivateComingnextImport
+    '/_private/coming-next': {
+      id: '/_private/coming-next'
+      path: '/coming-next'
+      fullPath: '/coming-next'
+      preLoaderRoute: typeof PrivateComingNextImport
       parentRoute: typeof PrivateImport
     }
-    '/_private/global_stats': {
-      id: '/_private/global_stats'
-      path: '/global_stats'
-      fullPath: '/global_stats'
-      preLoaderRoute: typeof PrivateGlobalstatsImport
+    '/_private/global-stats': {
+      id: '/_private/global-stats'
+      path: '/global-stats'
+      fullPath: '/global-stats'
+      preLoaderRoute: typeof PrivateGlobalStatsImport
       parentRoute: typeof PrivateImport
     }
     '/_private/hall-of-fame': {
@@ -395,8 +395,8 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   PrivateRoute: PrivateRoute.addChildren({
-    PrivateComingnextRoute,
-    PrivateGlobalstatsRoute,
+    PrivateComingNextRoute,
+    PrivateGlobalStatsRoute,
     PrivateHallOfFameRoute,
     PrivateSettingsRoute,
     PrivateTrendsRoute,
@@ -445,8 +445,8 @@ export const routeTree = rootRoute.addChildren({
     "/_private": {
       "filePath": "_private.jsx",
       "children": [
-        "/_private/coming_next",
-        "/_private/global_stats",
+        "/_private/coming-next",
+        "/_private/global-stats",
         "/_private/hall-of-fame",
         "/_private/settings",
         "/_private/trends",
@@ -476,12 +476,12 @@ export const routeTree = rootRoute.addChildren({
         "/_universal/levels/profile-levels"
       ]
     },
-    "/_private/coming_next": {
-      "filePath": "_private/coming_next.jsx",
+    "/_private/coming-next": {
+      "filePath": "_private/coming-next.jsx",
       "parent": "/_private"
     },
-    "/_private/global_stats": {
-      "filePath": "_private/global_stats.jsx",
+    "/_private/global-stats": {
+      "filePath": "_private/global-stats.jsx",
       "parent": "/_private"
     },
     "/_private/hall-of-fame": {

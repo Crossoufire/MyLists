@@ -94,6 +94,7 @@ class JobType(str, Enum):
     ACTOR = "actor"
     CREATOR = "creator"
     PLATFORM = "platform"
+    COLLECTION = "collection"
 
 
 class NotificationType(str, Enum):

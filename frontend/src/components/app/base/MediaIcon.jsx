@@ -13,14 +13,14 @@ const iconMappings = {
 
 
 export const MediaIcon = ({ mediaType, size, className }) => {
-    const IconComp = iconMappings[mediaType];
+    const IconComponent = iconMappings[mediaType];
 
-    if (!IconComp) {
+    if (!IconComponent) {
         return <img alt="not-found"/>;
     }
 
     return (
-        <IconComp
+        <IconComponent
             size={size}
             className={cn(`text-${mediaType}`, className)}
         />);

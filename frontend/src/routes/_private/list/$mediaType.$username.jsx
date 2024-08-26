@@ -11,11 +11,11 @@ import * as Pop from "@/components/ui/popover";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Checkbox} from "@/components/ui/checkbox";
 import {MediaCard} from "@/components/app/MediaCard";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {Pagination} from "@/components/app/Pagination";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
@@ -178,24 +178,26 @@ const FilterComponent = ({ isCurrent, initFilters, allFilters, applyFilters }) =
 };
 
 
-const SortComponent = ({sorting, allSorting, applySorting}) => (
-    <Drop.DropdownMenu>
-        <Drop.DropdownMenuTrigger asChild>
-            <Button variant="filters">
-                <LuArrowUpDown className="w-4 h-4"/> Sort
-            </Button>
-        </Drop.DropdownMenuTrigger>
-        <Drop.DropdownMenuContent align="end">
-            <Drop.DropdownMenuRadioGroup value={sorting} onValueChange={applySorting}>
-                {allSorting.map(sort =>
-                    <Drop.DropdownMenuRadioItem key={sort} value={sort}>
-                        {sort}
-                    </Drop.DropdownMenuRadioItem>
-                )}
-            </Drop.DropdownMenuRadioGroup>
-        </Drop.DropdownMenuContent>
-    </Drop.DropdownMenu>
-);
+const SortComponent = ({ sorting, allSorting, applySorting }) => {
+    return (
+        <Drop.DropdownMenu>
+            <Drop.DropdownMenuTrigger asChild>
+                <Button variant="filters">
+                    <LuArrowUpDown className="w-4 h-4"/> Sort
+                </Button>
+            </Drop.DropdownMenuTrigger>
+            <Drop.DropdownMenuContent align="end">
+                <Drop.DropdownMenuRadioGroup value={sorting} onValueChange={applySorting}>
+                    {allSorting.map(sort =>
+                        <Drop.DropdownMenuRadioItem key={sort} value={sort}>
+                            {sort}
+                        </Drop.DropdownMenuRadioItem>
+                    )}
+                </Drop.DropdownMenuRadioGroup>
+            </Drop.DropdownMenuContent>
+        </Drop.DropdownMenu>
+    );
+};
 
 
 const DotsOthers = ({isCurrent}) => {

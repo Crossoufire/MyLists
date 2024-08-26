@@ -12,7 +12,6 @@ from backend.api.core import basic_auth, current_user
 from backend.api.core.email import send_email
 from backend.api.models.user import Token, User
 
-
 tokens = Blueprint("api_tokens", __name__)
 
 
@@ -241,11 +240,12 @@ def oauth2_new(provider: str):
     # Get email from provider
     email = provider_data["get_user"]["email"](response.json())
 
-    # Find or create new user in database depending on email
+    # Find or create new user in db
     user = User.query.filter_by(email=email).first()
     if not user:
+        unique_username = User.generate_unique_username(email)
         user = User.register_new_user(
-            username=email.split("@")[0],
+            username=unique_username,
             email=email,
             active=True,
             activated_on=datetime.utcnow(),

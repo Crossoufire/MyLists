@@ -31,7 +31,7 @@ export const ProfileMiscInfo = ({ user, mediaData }) => {
                             {mediaData.map(data =>
                                 <div key={data.media_type} className="flex justify-between">
                                     <div>{`${capitalize(data.media_type)}List`} views</div>
-                                    <div>{user[`${data.media_type}_views`]}</div>
+                                    <div>{user.settings[`${data.media_type}`].views}</div>
                                 </div>
                             )}
                         </div>

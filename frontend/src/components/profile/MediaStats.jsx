@@ -41,10 +41,6 @@ export const MediaStats = ({ user, media }) => (
                     </div>
                 }
                 <div>
-                    <div className="text-neutral-500">Time</div>
-                    <div>{parseInt(media.time_days)} days</div>
-                </div>
-                <div>
                     <div className="text-neutral-500">Scored</div>
                     <div>{media.media_metric}/{media.total_media}</div>
                 </div>

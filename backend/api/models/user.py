@@ -15,7 +15,6 @@ from backend.api.models import SearchableMixin
 from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
 from backend.api.utils.functions import compute_level, safe_div
 
-
 followers = db.Table(
     "followers",
     db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
@@ -336,6 +335,16 @@ class User(db.Model):
         return token
 
     @classmethod
+    def generate_unique_username(cls, email: str):
+        """ Generate a unique username for OAuth2 registration """
+        base_username = email.split("@")[0]
+        username = base_username
+        while cls.query.filter_by(username=username).first():
+            suffix = secrets.token_hex(2)
+            username = f"{base_username}_{suffix}"
+        return username
+
+    @classmethod
     def create_search_results(cls, search: str, page: int = 1) -> Dict:
         users = db.paginate(
             db.select(cls).filter(cls.username.like(f"%{search}%"), cls.active.is_(True)),
@@ -425,6 +434,7 @@ class UserMediaSettings(db.Model):
             time_spent=self.time_spent,
             active=self.active,
             level=self.level,
+            views=self.views,
         )
 
 

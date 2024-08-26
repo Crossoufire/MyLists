@@ -1,7 +1,7 @@
 from typing import Tuple, Dict, List, Any
 from flask import abort, request
 from flask_sqlalchemy.query import Query
-from sqlalchemy import asc, or_, ColumnElement
+from sqlalchemy import or_, ColumnElement
 from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User
@@ -186,7 +186,7 @@ class ListQueryManager:
 
         paginate_results = (
             base_query.distinct(self.media_label.name).group_by(self.media.id)
-            .order_by(self.sorting_filter, asc(self.media.name))
+            .order_by(self.sorting_filter, self.media.name)
             .paginate(page=int(self.page), per_page=self.PER_PAGE, error_out=True)
         )
 

@@ -13,6 +13,7 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
+import {LuSearch} from "react-icons/lu";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -57,17 +58,23 @@ function HallOfFamePage() {
             <div className="mt-2 md:w-[900px] mx-auto w-full">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start mt-2 mb-4">
-                        <Input
-                            value={currentSearch}
-                            className="rounded-md w-56"
-                            placeholder="Search by username"
-                            onChange={(ev) => setCurrentSearch(ev.target.value)}
-                        />
-                        {search && <Button className="ml-3" size="sm" onClick={resetSearch}>Cancel</Button>}
+                        <div className="relative w-60">
+                            <Input
+                                value={currentSearch}
+                                placeholder="Search by username"
+                                className="pl-10 rounded-md w-56"
+                                onChange={(ev) => setCurrentSearch(ev.target.value)}
+                            />
+                            <LuSearch
+                                size={18}
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300"
+                            />
+                        </div>
+                        {search && <Button size="sm" onClick={resetSearch}>Cancel</Button>}
                     </div>
                     <div>
                         <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
-                            <SelectTrigger className="w-[130px]">
+                            <SelectTrigger className="w-40 pr-0">
                                 <div className="font-medium">Rank by &nbsp;&#8226;&nbsp; {capitalize(sorting)}</div>
                             </SelectTrigger>
                             <SelectContent>
@@ -85,11 +92,11 @@ function HallOfFamePage() {
                     <MutedText>No users found</MutedText>
                     :
                     apiData.items.map(user =>
-                    <HoFCard
-                        user={user}
-                        key={user.username}
-                    />
-                )}
+                        <HoFCard
+                            user={user}
+                            key={user.username}
+                        />
+                    )}
                 <Pagination
                     currentPage={page}
                     totalPages={apiData.pages}

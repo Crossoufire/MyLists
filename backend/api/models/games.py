@@ -1,20 +1,16 @@
 from __future__ import annotations
-import json
-from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
-from flask import abort, current_app
+from flask import abort
 from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
-from backend.api.models.user import Notifications, UserMediaUpdate
-from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, NotificationType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
 class Games(Media):
     GROUP: MediaType = MediaType.GAMES
 
-    collection_name = db.Column(db.String)
     game_engine = db.Column(db.String)
     game_modes = db.Column(db.String)
     player_perspective = db.Column(db.String)
@@ -80,8 +76,8 @@ class Games(Media):
 
     @staticmethod
     def form_only() -> List[str]:
-        return ["name", "collection_name", "game_engine", "game_modes", "player_perspective", "release_date",
-                "synopsis", "hltb_main_time", "hltb_main_and_extra_time", "hltb_total_complete_time"]
+        return ["name", "game_engine", "game_modes", "player_perspective", "release_date", "synopsis",
+                "hltb_main_time", "hltb_main_and_extra_time", "hltb_total_complete_time"]
 
 
 class GamesList(MediaList):

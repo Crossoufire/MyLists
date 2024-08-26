@@ -1,17 +1,17 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {FaPen} from "react-icons/fa";
+import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {api, userClient} from "@/api/MyApiClient";
-import {formatDateTime} from "@/lib/utils.jsx";
 
 
 export const ProfileHeader = ({ user, initFollow, followId }) => {
-    const isCurrent = userClient.currentUser?.id === user.id;
+    const isCurrent = (userClient.currentUser?.id === user.id);
 
     return (
         <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_image})`}}>

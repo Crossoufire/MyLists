@@ -18,8 +18,8 @@ export const MediaDetails = ({ mediaData, userData }) => (
                 {mediaData.map(mt =>
                     <TabsContent key={mt.media_type} value={mt.media_type}>
                         <MediaStats
-                            user={userData}
                             media={mt}
+                            user={userData}
                         />
                     </TabsContent>
                 )}

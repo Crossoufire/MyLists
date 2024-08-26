@@ -15,9 +15,19 @@ export const Footer = () => (
                     Create your media lists, see how much time you spent, follow your friends and compare with them.
                     Add favorites, comments, re-watch and gain levels to get to the top of the Hall of Fame.
                 </p>
-                <a href={`mailto:${mail}`} className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
-                    <FaEnvelope/> Contact us
-                </a>
+                <div className="flex gap-4 mt-2">
+                    <a href={`mailto:${mail}`}
+                       className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
+                        <FaEnvelope/> Contact us
+                    </a>
+                    <a href="https://www.buymeacoffee.com/crossoufire" rel="noreferrer" target="_blank">
+                        <img
+                            alt="Buy Me A Coffee"
+                            src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
+                        />
+                    </a>
+                </div>
+
             </div>
             <div className="md:col-span-3 flex flex-col gap-y-1">
                 <div className="font-bold text-xl">Powered by</div>

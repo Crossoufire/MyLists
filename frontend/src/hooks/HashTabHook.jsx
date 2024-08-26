@@ -9,7 +9,7 @@ export const useHashTab = (defaultTab) => {
 
     useEffect(() => {
         if (location.hash === "") return;
-        setSelectedTab(location.hash.replace("#", ""));
+        setSelectedTab(decodeURIComponent(location.hash.replace("#", "")));
     }, [location.hash, defaultTab]);
 
     const handleTabChange = (value) => {

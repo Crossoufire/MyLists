@@ -72,7 +72,7 @@ export const Navbar = () => {
                                 </NavLink>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/global_stats" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}>
                                     Stats
                                 </NavLink>
                             </Nav.NavigationMenuItem>
@@ -88,7 +88,7 @@ export const Navbar = () => {
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/coming_next" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}>
                                     Coming Next
                                 </NavLink>
                             </Nav.NavigationMenuItem>
@@ -164,7 +164,7 @@ export const Navbar = () => {
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/global_stats" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
                                             Stats
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
@@ -174,7 +174,7 @@ export const Navbar = () => {
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/coming_next" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
                                             Coming Next
                                         </NavLink>
                                     </Nav.NavigationMenuItem>

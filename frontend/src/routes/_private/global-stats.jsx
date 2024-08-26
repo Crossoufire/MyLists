@@ -9,11 +9,11 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {capitalize, changeValueFormat, globalStatsTimeFormat} from "@/lib/utils";
+import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/lib/utils";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/global_stats")({
+export const Route = createFileRoute("/_private/global-stats")({
     component: GlobalStatsPage,
     loader: async () => fetcher("/mylists_stats"),
 });
@@ -23,20 +23,20 @@ function GlobalStatsPage() {
     const apiData = Route.useLoaderData();
 
     const graphData = [
-        { id: "Series", value: apiData.total_time.series, color: "#216e7d" },
-        { id: "Anime", value: apiData.total_time.anime, color: "#945141" },
-        { id: "Movies", value: apiData.total_time.movies, color: "#8c7821" },
-        { id: "Books", value: apiData.total_time.books, color: "#584c6e" },
-        { id: "Games", value: apiData.total_time.games, color: "#196219" },
+        {id: "Series", value: apiData.total_time.series, color: getMediaColor("series")},
+        {id: "Anime", value: apiData.total_time.anime, color: getMediaColor("anime")},
+        {id: "Movies", value: apiData.total_time.movies, color: getMediaColor("movies")},
+        {id: "Books", value: apiData.total_time.books, color: getMediaColor("books")},
+        {id: "Games", value: apiData.total_time.games, color: getMediaColor("games")},
     ];
 
     const mediaData = [
-        {name: "series", count: apiData.nb_media.series},
-        {name: "anime", count: apiData.nb_media.anime},
-        {name: "movies", count: apiData.nb_media.movies},
-        {name: "books", count: apiData.nb_media.books},
-        {name: "games", count: apiData.nb_media.games},
-        {name: "user", count: apiData.nb_users}
+        {name: "Series",mediaType: "series", count: apiData.nb_media.series},
+        {name: "Anime", mediaType: "anime", count: apiData.nb_media.anime},
+        {name: "Movies",mediaType: "movies", count: apiData.nb_media.movies},
+        {name: "Books", mediaType: "books", count: apiData.nb_media.books},
+        {name: "Games", mediaType: "games", count: apiData.nb_media.games},
+        {name: "Users", mediaType: "user", count: apiData.nb_users}
     ];
 
     return (
@@ -46,12 +46,12 @@ function GlobalStatsPage() {
                     {globalStatsTimeFormat(apiData.total_time.total)}
                 </div>
                 <div className="grid grid-cols-12 justify-center items-center gap-4">
-                    {mediaData.map((media, idx) =>
-                        <div key={idx} className="col-span-6 md:col-span-4 lg:col-span-2">
+                    {mediaData.map(media =>
+                        <div key={media.mediaType} className="col-span-6 md:col-span-4 lg:col-span-2">
                             <div className="flex flex-col justify-center items-center rounded-md p-2 bg-card">
-                                <MediaIcon mediaType={media.name} size={25}/>
+                                <MediaIcon mediaType={media.mediaType} size={25}/>
                                 <div className="text-lg font-medium mt-2">
-                                    {media.count} {capitalize(media.name)}
+                                    {media.count} {media.name}
                                 </div>
                             </div>
                         </div>
@@ -63,19 +63,19 @@ function GlobalStatsPage() {
                             <div className="text-center rounded-md p-2 font-medium bg-card">
                                 <div className="text-base">SERIES</div>
                                 <Separator className="mt-1 mb-1"/>
-                                <div>{changeValueFormat(apiData.total_seasons.series[0].seasons)} seasons</div>
-                                <div>{changeValueFormat(apiData.total_seasons.series[0].episodes)} episodes</div>
+                                <div>{formatNumberWithSpaces(apiData.total_seasons.series[0].seasons)} seasons</div>
+                                <div>{formatNumberWithSpaces(apiData.total_seasons.series[0].episodes)} episodes</div>
                             </div>
                             <div className="text-center rounded-md p-2 font-medium bg-card">
                                 <div className="text-base">ANIME</div>
                                 <Separator className="mt-1 mb-1"/>
-                                <div>{changeValueFormat(apiData.total_seasons.anime[0].seasons)} seasons</div>
-                                <div>{changeValueFormat(apiData.total_seasons.anime[0].episodes)} episodes</div>
+                                <div>{formatNumberWithSpaces(apiData.total_seasons.anime[0].seasons)} seasons</div>
+                                <div>{formatNumberWithSpaces(apiData.total_seasons.anime[0].episodes)} episodes</div>
                             </div>
                             <div className="text-center rounded-md p-2 font-medium bg-card">
                                 <div className="text-base">BOOKS</div>
                                 <Separator className="mt-1 mb-1"/>
-                                <div>{changeValueFormat(apiData.total_pages)} pages</div>
+                                <div>{formatNumberWithSpaces(apiData.total_pages)} pages</div>
                             </div>
                         </div>
                     </div>
@@ -93,7 +93,7 @@ function GlobalStatsPage() {
                                     colors={{ datum: "data.color" }}
                                     axisLeft={{ format: (value) => value / 1000 + "k" }}
                                     margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
-                                    valueFormat={(data) => changeValueFormat(data) + " h"}
+                                    valueFormat={(data) => formatNumberWithSpaces(data) + " h"}
                                 />
                             </div>
                         </div>

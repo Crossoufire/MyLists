@@ -1,13 +1,15 @@
 import {fetcher} from "@/lib/fetcherLoader";
-import {capitalize, formatDateTime, zeroPad} from "@/lib/utils";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {useHashTab} from "@/hooks/HashTabHook";
 import {MediaCard} from "@/components/app/MediaCard";
 import {createFileRoute} from "@tanstack/react-router";
+import {MutedText} from "@/components/app/base/MutedText";
+import {PageTitle} from "@/components/app/base/PageTitle";
+import {capitalize, formatDateTime, zeroPad} from "@/lib/utils";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createFileRoute("/_private/coming_next")({
+export const Route = createFileRoute("/_private/coming-next")({
     component: ComingNextPage,
     loader: async () => fetcher("/coming_next"),
 });
@@ -15,10 +17,11 @@ export const Route = createFileRoute("/_private/coming_next")({
 
 function ComingNextPage() {
     const apiData = Route.useLoaderData();
+    const [selectedTab, handleTabChange] = useHashTab("series");
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">
-            <Tabs defaultValue="series" className="mt-5">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-5">
                 <TabsList className="mb-5 max-sm:flex max-sm:justify-around">
                     {apiData.map(next =>
                         <TabsTrigger key={next.media_type} value={next.media_type} className="md:px-8">
@@ -30,9 +33,7 @@ function ComingNextPage() {
                     <TabsContent key={next.media_type} value={next.media_type}>
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
                             {next.items.length === 0 ?
-                                <div className="px-2 text-muted-foreground italic col-span-12">
-                                    No new coming next for {next.media_type} found
-                                </div>
+                                <MutedText className="px-2 col-span-12">No upcoming {next.media_type} found</MutedText>
                                 :
                                 next.items.map(media =>
                                     <div key={media.media_id}>

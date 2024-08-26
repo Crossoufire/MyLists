@@ -3,20 +3,6 @@ import {twMerge} from "tailwind-merge";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
-export const cn = (...inputs) => {
-    return twMerge(clsx(inputs));
-};
-
-export const zeroPad = (value) => {
-    if (value) return String(value).padStart(2, "0");
-    return "00";
-};
-
-export const capitalize = (str) => {
-    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
-    return str;
-};
-
 export const getScoreValues = () => {
     return [null, 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 };
@@ -41,14 +27,6 @@ export const getRedoValues = () => {
     return [...Array(11).keys()];
 };
 
-export const changeValueFormat = (value, label = "") => {
-    if (value > 10000) {
-        return `${value.toLocaleString().replace(/,/g, " ")} ${label}`;
-    } else {
-        return `${value} ${label}`;
-    }
-};
-
 export const getStatusColor = (status) => {
     const colors = {
         "Playing": "#334d5c",
@@ -65,17 +43,6 @@ export const getStatusColor = (status) => {
         "Plan to Play": "#962d3e",
     };
     return colors[status];
-};
-
-export const getMediaColor = (media) => {
-    const colors = {
-        "series": "#216e7d",
-        "anime": "#945141",
-        "movies": "#8c7821",
-        "books": "#584c6e",
-        "games": "#196219",
-    };
-    return colors[media];
 };
 
 export const genreListsToListsOfDict = (stringList) => {
@@ -109,6 +76,39 @@ export const sliceIntoParts = (arr, n) => {
     }
 
     return result;
+};
+
+
+// --- New -------------------------------------------------------------------------------------
+
+export const cn = (...inputs) => {
+    return twMerge(clsx(inputs));
+};
+
+export const zeroPad = (value) => {
+    if (value) return String(value).padStart(2, "0");
+    return "00";
+};
+
+export const capitalize = (str) => {
+    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
+    return str;
+};
+
+export const getMediaColor = (media) => {
+    const colors = {
+        "series": "#216e7d",
+        "anime": "#945141",
+        "movies": "#8c7821",
+        "books": "#584c6e",
+        "games": "#196219",
+    };
+    return colors[media];
+};
+
+export const formatNumberWithSpaces = (value) => {
+    if (value < 10000) return value;
+    return value.toLocaleString().replace(/,/g, " ");
 };
 
 export const getLevelColor = (intLevel) => {
@@ -165,10 +165,6 @@ export const globalStatsTimeFormat = (minutes) => {
     const lastPart = parts.pop();
     return parts.join(", ") + ", and " + lastPart;
 };
-
-
-// --- Time Formatting -------------------------------------------------------------------------------------
-
 
 export const formatMinutes = (minutes, options = {}) => {
     if (isNaN(minutes) || !minutes) {

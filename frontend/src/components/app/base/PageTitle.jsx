@@ -1,5 +1,6 @@
 import {Helmet} from "react-helmet";
-import {Separator} from "@/components/ui/separator.jsx";
+import {Separator} from "@/components/ui/separator";
+import {MutedText} from "@/components/app/base/MutedText";
 
 
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => {
@@ -11,7 +12,7 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => 
                 :
                 <div className="mt-8 mb-5 flex flex-col mx-auto">
                     <div className="text-2xl font-medium">{title}</div>
-                    <div className="text-base text-muted-foreground">{subtitle}</div>
+                    <MutedText className="text-muted-foreground not-italic">{subtitle}</MutedText>
                     <Separator/>
                     {children}
                 </div>
