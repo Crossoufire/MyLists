@@ -71,7 +71,7 @@ def hall_of_fame():
     users = [{**user.to_dict(), "rank": rank} for user, rank in users_data]
 
     data = dict(
-        users=users,
+        items=users,
         page=users_data.page,
         pages=users_data.pages,
         total=users_data.total,

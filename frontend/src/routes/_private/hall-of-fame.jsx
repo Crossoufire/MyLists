@@ -1,83 +1,56 @@
-import {toast} from "sonner";
 import {useState} from "react";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {fetcher} from "@/lib/fetcherLoader";
+import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
-import {api, userClient} from "@/api/MyApiClient";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
+import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {createFileRoute, Link} from "@tanstack/react-router";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
+import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
-    loader: async () => fetcher("/hall_of_fame", INIT_PARAMS),
+    loaderDeps: ({ search }) => ({ search }),
+    loader: async ({ deps }) => fetcher("/hall_of_fame", deps.search),
 });
 
 
-const INIT_PARAMS = { search: "", page: 1, sorting: "profile" };
+const DEFAULT = { page: 1, search: "", sorting: "profile" };
 
 
 function HallOfFamePage() {
-    const data = Route.useLoaderData();
-    const [loading, setLoading] = useState(false);
-    const [search, setSearch] = useState(INIT_PARAMS.search);
-    const [sorting, setSorting] = useState(INIT_PARAMS.sorting);
-    const [users, setUsers] = useState({
-        data: data.users,
-        page: INIT_PARAMS.page,
-        totalPages: data.pages,
-    });
+    const navigate = useNavigate();
+    const apiData = Route.useLoaderData();
+    const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = Route.useSearch();
+    const [currentSearch, setCurrentSearch] = useState(search);
 
     const fetchData = async (params) => {
-        setLoading(true);
-        const response = await api.get("/hall_of_fame", params);
-        setLoading(false);
-
-        if (!response.ok) {
-            return toast.error(response.body.description);
-        }
-
-        setUsers({
-            data: response.body.data.users,
-            page: response.body.data.page,
-            totalPages: response.body.data.pages,
-        });
+        // noinspection JSCheckFunctionSignatures
+        await navigate({ search: params });
     };
 
     const resetSearch = async () => {
-        setSearch("");
-        await fetchData({ ...INIT_PARAMS, sorting });
+        setCurrentSearch(DEFAULT.search);
+        await fetchData((prev) => ({ ...prev, search: DEFAULT.search }));
     };
 
-    const onSearchChange = (ev) => {
-        const newValue = ev.target.value;
-        setUsers({ ...users, page: INIT_PARAMS.page });
-        if (newValue === "") {
-            void resetSearch();
-        }
-        setSearch(newValue);
+    const onPageChange = async(newPage) => {
+        await fetchData({ search, page: newPage, sorting });
     };
 
-    const onChangePage = (newPage) => {
-        void fetchData({ search, page: newPage, sorting });
-        window.scrollTo({top: 0, behavior: "smooth"});
+    const onSortChanged = async (sorting) => {
+        await fetchData({ search,  page: 1, sorting });
     };
 
-    const onSortClicked = (sorting) => {
-        setSorting(sorting);
-        setSearch("");
-        void fetchData({ ...INIT_PARAMS, sorting: sorting });
-    };
-
-    useDebounce(search, 300, fetchData, { search, page: users.page, sorting });
+    useDebounce(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
 
     return (
         <PageTitle title="Hall of Fame" subtitle="This is the showcase of profiles ranked by profile level">
@@ -85,15 +58,15 @@ function HallOfFamePage() {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center justify-start mt-2 mb-4">
                         <Input
-                            value={search}
-                            onChange={onSearchChange}
+                            value={currentSearch}
                             className="rounded-md w-56"
                             placeholder="Search by username"
+                            onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
                         {search && <Button className="ml-3" size="sm" onClick={resetSearch}>Cancel</Button>}
                     </div>
                     <div>
-                        <Select value={sorting} onValueChange={onSortClicked} disabled={loading}>
+                        <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
                             <SelectTrigger className="w-[130px]">
                                 <div className="font-medium">Rank by &nbsp;&#8226;&nbsp; {capitalize(sorting)}</div>
                             </SelectTrigger>
@@ -108,13 +81,19 @@ function HallOfFamePage() {
                         </Select>
                     </div>
                 </div>
-                {users.data.map(user =>
-                    <HoFCard key={user.username} user={user}/>
+                {apiData.items.length === 0 ?
+                    <MutedText>No users found</MutedText>
+                    :
+                    apiData.items.map(user =>
+                    <HoFCard
+                        user={user}
+                        key={user.username}
+                    />
                 )}
                 <Pagination
-                    currentPage={users.page}
-                    totalPages={users.totalPages}
-                    onChangePage={onChangePage}
+                    currentPage={page}
+                    totalPages={apiData.pages}
+                    onChangePage={onPageChange}
                 />
             </div>
         </PageTitle>
@@ -126,7 +105,6 @@ const HoFCard = ({ user }) => {
     const currentUser = userClient.currentUser;
     const { series, anime, movies, books, games } = user.settings;
     const settings = [series, anime, movies, books, games];
-
 
     return (
         <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser?.id === user.id && "bg-teal-950")}>
