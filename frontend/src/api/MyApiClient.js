@@ -1,5 +1,4 @@
 
-
 // Base API url from flask backend
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -135,62 +134,6 @@ class MyApiClient {
     };
 }
 
-
-class UserClient {
-    constructor() {
-        this.subscribers = [];
-        this.currentUser = null;
-    }
-
-    async initialize() {
-        let currentUser = null;
-
-        if (api.isAuthenticated()) {
-            const response = await api.get("/current_user");
-            currentUser = response.ok ? response.body : null;
-        }
-
-        this.setCurrentUser(currentUser);
-    }
-
-    setCurrentUser(newData) {
-        this.currentUser = newData;
-        this.notifySubscribers();
-    }
-
-    notifySubscribers() {
-        this.subscribers.forEach(sub => sub(this.currentUser));
-    }
-
-    subscribe(callbackFunction) {
-        this.subscribers.push(callbackFunction);
-    }
-
-    unsubscribe(callbackFunction) {
-        this.subscribers = this.subscribers.filter(sub => sub !== callbackFunction);
-    }
-
-    async login(usernameOrProvider, passwordOrProviderData, oAuth2 = false) {
-        const logging = await api.login(usernameOrProvider, passwordOrProviderData, oAuth2);
-
-        if (logging.ok) {
-            const response = await api.get("/current_user");
-            this.setCurrentUser(response.ok ? response.body : null);
-        }
-
-        return logging;
-    }
-
-    async logout() {
-        await api.logout();
-        this.setCurrentUser(null);
-    }
-}
-
-
 const api = new MyApiClient();
 
-const userClient = new UserClient();
-
-
-export { api, userClient };
+export { api };

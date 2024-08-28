@@ -6,11 +6,11 @@ import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
 import {SheetProvider} from "@/providers/SheetProvider";
 import {GlobalLoading} from "@/components/app/base/GlobalLoading";
-import {createRootRoute, Outlet, ScrollRestoration} from "@tanstack/react-router";
+import {createRootRouteWithContext, Outlet, ScrollRestoration} from "@tanstack/react-router";
 
 
 // noinspection JSUnusedGlobalSymbols
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext()({
     component: () => (
         <Suspense fallback={<LoadingFallback/>}>
             <MainLayout/>
@@ -50,7 +50,7 @@ function MainLayout() {
                 <Outlet/>
             </main>
             <Footer/>
-            {import.meta.env.DEV && <TanStackRouterDevtools/>}
+            {import.meta.env.DEV && <TanStackRouterDevtools />}
         </>
     );
 }

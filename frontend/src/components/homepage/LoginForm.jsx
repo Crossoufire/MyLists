@@ -1,35 +1,47 @@
 import {toast} from "sonner";
-import {useState} from "react";
+import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
+import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
-import {api, userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {Link, useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const LoginForm = () => {
+	const router = useRouter();
+	const { login } = useUser();
 	const navigate = useNavigate();
+	const { currentUser } = useUser();
 	const [error, setError] = useState("");
 	const form = useForm({ shouldFocusError: false });
 	const [pending, setIsPending] = useState(false);
+
+	useEffect(() => {
+		if (currentUser) {
+            (async () => {
+                await router.invalidate();
+                await navigate({ to: `/profile/${currentUser.username}` });
+            })();
+        }
+	}, [currentUser]);
 
 	const onSubmit = async (data) => {
 		setError("");
 
 		try {
 			setIsPending(true);
-			const response = await userClient.login(data.username, data.password);
+			const response = await login(data.username, data.password);
 			if (response.status === 401) {
 				return setError("Username or password incorrect");
 			}
 			if (!response.ok) {
 				return toast.error(response.body.description);
 			}
-			await navigate({ to: `/profile/${data.username}` });
 		}
 		finally {
 			setIsPending(false);
@@ -46,7 +58,8 @@ export const LoginForm = () => {
 			if (!response.ok) {
 				return toast.error(response.body.description);
 			}
-			window.location.href = response.body.redirect_url;
+
+			window.location.replace(response.body.redirect_url);
 		}
 		finally {
 			setIsPending(false);

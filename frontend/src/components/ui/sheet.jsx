@@ -42,13 +42,13 @@ const sheetVariants = cva("fixed z-50 gap-4 bg-background p-6 shadow-lg transiti
             },
         },
         defaultVariants: {
-            side: "right",
+            side: "left",
         },
     }
 );
 
 
-const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => (
+const SheetContent = React.forwardRef(({ side, className, children, ...props }, ref) => (
     <SheetPortal>
         <SheetOverlay/>
         <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>

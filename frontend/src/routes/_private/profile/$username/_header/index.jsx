@@ -1,4 +1,4 @@
-import {userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {createFileRoute} from "@tanstack/react-router";
 import {UpdatesModal} from "@/components/app/UpdatesModal";
 import {MediaLevels} from "@/components/profile/MediaLevels";
@@ -17,8 +17,10 @@ export const Route = createFileRoute("/_private/profile/$username/_header/")({
 
 
 function ProfileMain() {
+    const { currentUser } = useUser();
     const { username } = Route.useParams();
     const apiData = profileHeaderRoute.useLoaderData();
+    const isCurrent = currentUser.id === apiData.user_data.id;
 
     return (
         <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
@@ -64,7 +66,7 @@ function ProfileMain() {
                     followers={true}
                 />
             </div>
-            {(userClient.currentUser.id === apiData.user_data.id) &&
+            {isCurrent &&
                 <UpdatesModal userData={apiData.user_data}/>
             }
         </div>

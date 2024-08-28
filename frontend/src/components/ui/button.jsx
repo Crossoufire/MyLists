@@ -21,7 +21,7 @@ const buttonVariants = cva("inline-flex items-center justify-center whitespace-n
                 invisible: "",
                 list: "flex justify-start items-center w-full rounded-md font-normal hover:bg-accent " +
                     "hover:text-accent-foreground",
-                filters: "flex items-center gap-2 border-gray-700 hover:bg-gray-800 border border-input bg-background " +
+                filters: "flex items-center gap-2 border-gray-700 hover:bg-gray-800 border border-input " +
                     "shadow-sm hover:bg-accent hover:text-accent-foreground"
             },
             size: {
@@ -37,7 +37,7 @@ const buttonVariants = cva("inline-flex items-center justify-center whitespace-n
             size: "default",
         },
     }
-)
+);
 
 
 const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
@@ -49,7 +49,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
             {...props}
         />
     );
-})
+});
 Button.displayName = "Button";
 
 

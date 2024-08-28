@@ -1,8 +1,9 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {api, userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -10,6 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const GeneralForm = () => {
     const form = useForm();
+    const { currentUser, setCurrentUser } = useUser();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
     const [backImage, setBackImage] = useState("");
@@ -37,7 +39,7 @@ export const GeneralForm = () => {
                 return setErrors(response.body.description);
             }
 
-            userClient.setCurrentUser(response.body.updated_user);
+            setCurrentUser(response.body.updated_user);
             toast.success("Settings successfully updated");
         }
         finally {
@@ -63,7 +65,7 @@ export const GeneralForm = () => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        defaultValue={userClient.currentUser.username}
+                                        defaultValue={currentUser.username}
                                     />
                                 </FormControl>
                                 <FormMessage/>

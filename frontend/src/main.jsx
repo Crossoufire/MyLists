@@ -1,12 +1,15 @@
-import {useEffect, useState} from "react";
 import {routeTree} from "./routeTree.gen";
 import {createRoot} from "react-dom/client";
-import {userClient} from "@/api/MyApiClient";
 import {Loading} from "@/components/app/base/Loading";
 import {ThemeProvider} from "@/providers/ThemeProvider";
+import {UserProvider, useUser} from "@/providers/UserProvider";
 import {ErrorComponent} from "@/components/app/base/ErrorComponent";
 import {createRouter, RouterProvider} from "@tanstack/react-router";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import "./index.css";
+
+
+const queryClient = new QueryClient();
 
 
 const rootElement = document.getElementById("root");
@@ -19,33 +22,28 @@ if (!rootElement.innerHTML) {
 function App() {
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <AuthWrapper>
-                <RouterProvider router={router}/>
-            </AuthWrapper>
+            <UserProvider>
+                <QueryClientProvider client={queryClient}>
+                    <InnerApp/>
+                </QueryClientProvider>
+            </UserProvider>
         </ThemeProvider>
     );
 }
 
 
-function AuthWrapper({ children }) {
-    const [isInitialized, setIsInitialized] = useState(false);
-
-    useEffect(() => {
-        userClient.initialize().then(() => setIsInitialized(true));
-    }, []);
-
-    if (!isInitialized) {
-        return <Loading/>;
-    }
-
-    return children;
-}
+const InnerApp = () => {
+    const auth = useUser();
+    if (auth.currentUser === undefined) return <Loading/>;
+    return <RouterProvider router={router} context={{ auth }}/>
+};
 
 
 const router = createRouter({
     defaultGcTime: 0,
     routeTree: routeTree,
     defaultPreload: false,
+    context: { auth: undefined },
     defaultNotFoundComponent: ErrorComponent,
     defaultErrorComponent: DefaultErrorComponent,
 });

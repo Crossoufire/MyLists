@@ -1,9 +1,10 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Switch} from "@/components/ui/switch";
+import {useUser} from "@/providers/UserProvider";
 import {FaQuestionCircle} from "react-icons/fa";
-import {api, userClient} from "@/api/MyApiClient";
 import {Separator} from "@/components/ui/separator";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
@@ -13,6 +14,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui
 
 export const MediaListForm = () => {
     const form = useForm();
+    const { currentUser, setCurrentUser } = useUser();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
 
@@ -27,7 +29,7 @@ export const MediaListForm = () => {
                 return setErrors(response.body.description);
             }
 
-            userClient.setCurrentUser(response.body.updated_user);
+            setCurrentUser(response.body.updated_user);
             toast.success("Settings successfully updated");
         }
         finally {
@@ -53,7 +55,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.settings.anime.active}
+                                        defaultChecked={currentUser.settings.anime.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -71,7 +73,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.settings.games.active}
+                                        defaultChecked={currentUser.settings.games.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -89,7 +91,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.settings.books.active}
+                                        defaultChecked={currentUser.settings.books.active}
                                     />
                                 </FormControl>
                                 <div className="leading-none">
@@ -124,7 +126,7 @@ export const MediaListForm = () => {
                                     <Switch
                                         checked={field.value}
                                         onCheckedChange={field.onChange}
-                                        defaultChecked={userClient.currentUser.add_feeling}
+                                        defaultChecked={currentUser.add_feeling}
                                     />
                                 </FormControl>
                                 <div className="leading-none">

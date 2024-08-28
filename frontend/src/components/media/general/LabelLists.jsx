@@ -1,14 +1,14 @@
 import {Fragment, useState} from "react";
 import {Badge} from "@/components/ui/badge";
-import {userClient} from "@/api/MyApiClient";
 import {Tooltip} from "@/components/ui/tooltip";
+import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
 import {Link, useParams} from "@tanstack/react-router";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
 
 
 export const LabelLists = ({ mediaId, alreadyIn }) => {
-    const username = userClient.currentUser.username;
+    const { currentUser : { username } } = useUser();
     const [isOpen, setIsOpen] = useState(false);
     const { mediaType } = useParams({strict: false });
     const [labelsInList, setLabelsInList] = useState(alreadyIn);

@@ -2,7 +2,6 @@ import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {LuMessageSquare} from "react-icons/lu";
-import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";

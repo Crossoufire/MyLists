@@ -1,12 +1,14 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {api} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
-import {api, userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 
 
 export const DangerForm = () => {
+    const { logout } = useUser();
     const navigate = useNavigate();
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
@@ -27,7 +29,7 @@ export const DangerForm = () => {
         }
 
         toast.success("Your account has been successfully deleted");
-        await userClient.logout();
+        await logout();
         return navigate({ to: "/" });
     };
 

@@ -12,8 +12,8 @@ general = Blueprint("api_general", __name__)
 
 
 @general.route("/current_trends", methods=["GET"])
-@cache.cached(timeout=3600)
 @token_auth.login_required
+@cache.cached(timeout=3600)
 def current_trends():
     """ Fetch the current WEEK trends for TV and Movies using the TMDB API. Function cached for an hour. """
 

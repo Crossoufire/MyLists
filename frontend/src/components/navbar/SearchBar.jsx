@@ -1,4 +1,5 @@
 import {toast} from "sonner";
+import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
@@ -6,7 +7,7 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useLoading} from "@/hooks/LoadingHook";
 import {useDebounce} from "@/hooks/DebounceHook";
-import {api, userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
@@ -15,8 +16,9 @@ import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const SearchBar = ({ currentUser }) => {
+export const SearchBar = () => {
     const searchRef = useRef();
+    const { currentUser } = useUser();
     const [results, setResults] = useState();
     const [query, setQuery] = useState("");
     const [activePage, setActivePage] = useState(1);

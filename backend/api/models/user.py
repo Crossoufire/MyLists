@@ -180,7 +180,6 @@ class User(db.Model):
         user = self.query.filter_by(username=username).first()
         if not user:
             return abort(404, "User not found")
-
         return user
 
     def set_view_count(self, user: User, media_type: MediaType):
@@ -394,7 +393,7 @@ class User(db.Model):
                 return token.user
 
     @staticmethod
-    def verify_refresh_token(refresh_token: str, access_token: str) -> Token:
+    def verify_refresh_token(refresh_token: str, access_token: str) -> Optional[Token]:
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
             if token.refresh_expiration > datetime.utcnow():

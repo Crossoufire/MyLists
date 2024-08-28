@@ -1,7 +1,7 @@
-import {userClient} from "@/api/MyApiClient";
+import {useRef} from "react";
 import {LuAlignJustify} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
-import {useEffect, useRef, useState} from "react";
+import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
@@ -16,24 +16,20 @@ import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
+export async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+
 export const Navbar = () => {
     const popRef = useRef();
     const navigate = useNavigate();
+    const { currentUser, logout } = useUser();
     const { sheetOpen, setSheetOpen } = useSheet();
-    const [currentUser, setCurrentUser] = useState(userClient.currentUser);
-
-    useEffect(() => {
-        const navbarCurrentUserChange = (newData) => {
-            setCurrentUser(newData);
-        };
-        userClient.subscribe(navbarCurrentUserChange);
-        return () => {
-            userClient.unsubscribe(navbarCurrentUserChange);
-        }
-    }, []);
 
     const logoutUser = async () => {
-        await userClient.logout();
+        await logout();
+        await sleep(5);
         await navigate({ to: "/" });
     };
 
@@ -61,10 +57,10 @@ export const Navbar = () => {
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
                             <Nav.NavigationMenuItem>
-                                <NavMediaDrop currentUser={currentUser}/>
+                                <NavMediaDrop/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <SearchBar currentUser={currentUser}/>
+                                <SearchBar/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
                                 <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}>
@@ -197,7 +193,7 @@ export const Navbar = () => {
                                         />
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
-                                                <NavLink to="#" onClick={userClient.logout} className="block select-none
+                                                <NavLink to="#" onClick={logoutUser} className="block select-none
                                             space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                             transition-colors hover:bg-accent hover:text-accent-foreground
                                             focus:bg-accent focus:text-accent-foreground">

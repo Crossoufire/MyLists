@@ -1,6 +1,18 @@
 import {formatNumberWithSpaces} from "@/lib/utils";
 
 
+export const dataToLoad = (mediaType, apiData) => {
+    const mediaData = {
+        series: tvData,
+        anime: tvData,
+        movies: moviesData,
+        books: booksData,
+        games: gamesData,
+    };
+
+    return mediaData[mediaType](apiData) || undefined;
+};
+
 const tvData = (apiData) => {
     return [
         {
@@ -586,16 +598,4 @@ const getListsData = (data, suffix = "Watched") => {
         {title: "Top Ratings", data: data.top_rated},
         {title: "Top Favorited", data: data.top_favorited},
     ];
-};
-
-export const dataToLoad = (mediaType, apiData) => {
-    const mediaData = {
-        series: tvData,
-        anime: tvData,
-        movies: moviesData,
-        books: booksData,
-        games: gamesData,
-    };
-
-    return mediaData[mediaType](apiData) || undefined;
 };

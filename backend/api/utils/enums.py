@@ -109,3 +109,44 @@ class UpdateType(str, Enum):
     REDO = "redo"
     STATUS = "status"
     PLAYTIME = "playtime"
+
+
+class GamesPlatformsEnum(ExtendedEnum):
+    PC = "PC"
+    ANDROID = "Android"
+    IPHONE = "Iphone"
+
+    PLAYSTATION_5 = "Playstation 5"
+    PLAYSTATION_4 = "Playstation 4"
+    PLAYSTATION_3 = "Playstation 3"
+    PLAYSTATION_2 = "Playstation 2"
+    PLAYSTATION = "Playstation"
+
+    PSP = "PSP"
+    PS_VITA = "PS Vita"
+
+    XBOX_SERIES = "Xbox Series S|X"
+    XBOX_ONE = "Xbox One"
+    XBOX_360 = "Xbox 360"
+    XBOX = "Xbox"
+
+    NINTENDO_SWITCH = "Nintendo Switch"
+    WII_U = "Wii U"
+    WII = "Wii"
+    GAMECUBE = "Gamecube"
+    NINTENDO_64 = "Nintendo 64"
+    SNES = "SNES"
+    NES = "NES"
+
+    NINTENDO_3DS = "Nintendo 3DS"
+    NINTENDO_DS = "Nintendo DS"
+    GAME_BOY_ADVANCE = "Game Boy Advance"
+    GAME_BOY_COLOR = "Game Boy Color"
+    GAME_BOY = "Game Boy"
+
+    ARCADE = "Arcade"
+
+    OLD_SEGA_CONSOLE = "Old Sega Console"
+    OLD_ATARI_CONSOLE = "Old Atari Console"
+    OLD_PC_CONSOLE = "Old PC Console"
+    OTHER = "Other"

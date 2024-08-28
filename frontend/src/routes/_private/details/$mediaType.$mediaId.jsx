@@ -1,11 +1,11 @@
 import {useState} from "react";
 import {fetcher} from "@/lib/fetcherLoader";
-import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
+import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
 import {useApiUpdater} from "@/hooks/UserUpdaterHook";
-import {createFileRoute, Link} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
 import {RefreshMedia} from "@/components/media/general/RefreshMedia";
@@ -25,9 +25,9 @@ export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
 
 
 function MediaDetailsPage() {
+	const { currentUser } = useUser();
 	const data = Route.useLoaderData();
 	const { mediaType } = Route.useParams();
-	const currentUser = userClient.currentUser;
 	const [apiData, setApiData] = useState(data);
 	const { refresh } = useApiUpdater(apiData.media.id, mediaType);
 

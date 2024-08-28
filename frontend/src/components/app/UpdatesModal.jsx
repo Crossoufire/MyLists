@@ -1,8 +1,9 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {api} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import * as Dia from "@/components/ui/dialog";
-import {api, userClient} from "@/api/MyApiClient";
+import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
 
 
@@ -28,7 +29,8 @@ const newUpdateData = [
 
 
 export const UpdatesModal = () => {
-    const [isOpen, setIsOpen] = useState(userClient.currentUser.show_update_modal);
+    const { currentUser, setCurrentUser } = useUser();
+    const [isOpen, setIsOpen] = useState(currentUser.show_update_modal);
 
     const doNotShowModalAgain = async () => {
         setIsOpen(false);
@@ -38,7 +40,7 @@ export const UpdatesModal = () => {
             return toast.error("An error occurred. Please try again later.");
         }
 
-        userClient.currentUser.show_update_modal = false;
+        setCurrentUser((prev) => ({ ...prev, show_update_modal: false }));
     };
 
     return (

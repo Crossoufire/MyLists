@@ -16,8 +16,6 @@ tokens = Blueprint("api_tokens", __name__)
 
 
 def token_response(token: Token) -> Tuple[Dict, int, Dict]:
-    """ Generate the token response and send it to the user """
-
     headers = {
         "Set-Cookie": dump_cookie(
             key="refresh_token",
@@ -29,7 +27,6 @@ def token_response(token: Token) -> Tuple[Dict, int, Dict]:
             max_age=current_app.config["REFRESH_TOKEN_DAYS"] * 24 * 60 * 60,
         ),
     }
-
     return {"access_token": token.access_token}, 200, headers
 
 
@@ -61,6 +58,7 @@ def refresh():
         return abort(401)
 
     token = User.verify_refresh_token(refresh_token, access_token)
+
     if token is None:
         return abort(401)
 

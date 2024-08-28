@@ -1,10 +1,10 @@
 import {useState} from "react";
-import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {fetcher} from "@/lib/fetcherLoader";
 import {MediaCard} from "@/components/app/MediaCard";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute} from "@tanstack/react-router";
-import {TopRightCornerTriangle} from "@/routes/_private/list/$mediaType.$username";
+import {PageTitle} from "@/components/app/base/PageTitle";
+import {TopRightCorner} from "@/components/app/TopRightCorner";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -36,7 +36,7 @@ function InfoPage() {
                 {currentItems.map(media =>
                     <div key={media.media_id} className="col-span-1">
                         <MediaCard media={media} mediaType={mediaType}>
-                            {media.in_list && <TopRightCornerTriangle isCommon={media.in_list}/>}
+                            {media.in_list && <TopRightCorner isCommon={media.in_list}/>}
                         </MediaCard>
                     </div>
                 )}

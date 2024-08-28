@@ -21,7 +21,7 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {
     const inputRef = useRef();
     const [_, handlePending] = useLoading();
-    const { mediaType } = useParams({strict: false });
+    const { mediaType } = useParams({ strict: false });
     const [loading, setLoading] = useState(false);
     const [labelsToAdd, setLabelsToAdd] = useState([]);
     const [isRenaming, setIsRenaming] = useState(false);

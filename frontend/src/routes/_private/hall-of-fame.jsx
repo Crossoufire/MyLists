@@ -1,11 +1,12 @@
 import {useState} from "react";
+import {LuSearch} from "react-icons/lu";
 import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {fetcher} from "@/lib/fetcherLoader";
-import {userClient} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
+import {useUser} from "@/providers/UserProvider";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {MutedText} from "@/components/app/base/MutedText";
@@ -13,7 +14,6 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
-import {LuSearch} from "react-icons/lu";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -109,12 +109,12 @@ function HallOfFamePage() {
 
 
 const HoFCard = ({ user }) => {
-    const currentUser = userClient.currentUser;
+    const { currentUser } = useUser();
     const { series, anime, movies, books, games } = user.settings;
     const settings = [series, anime, movies, books, games];
 
     return (
-        <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser?.id === user.id && "bg-teal-950")}>
+        <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser.id === user.id && "bg-teal-950")}>
             <CardContent className="max-sm:py-5 p-0">
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 md:col-span-1">
