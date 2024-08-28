@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {LuMessageSquare} from "react-icons/lu";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
@@ -8,7 +8,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [isEdit, setIsEdit] = useState(false);
     const [contentsState, setContentsState] = useState(initContent || "");
     const [initContentState, setInitContentState] = useState(initContent || "");

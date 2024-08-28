@@ -3,7 +3,7 @@ import {Link} from "@tanstack/react-router";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
-export const MediaCard = ({ children, media, mediaType, isLoading = false }) => {
+export const MediaCard = ({ children, media, mediaType, isPending = false }) => {
     return (
         <Card className="border border-black rounded-lg">
             <div className="relative aspect-[2/3]">
@@ -14,7 +14,7 @@ export const MediaCard = ({ children, media, mediaType, isLoading = false }) => 
                         alt={media.media_name}
                     />
                 </Link>
-                {isLoading &&
+                {isPending &&
                     <div className="absolute h-full w-full top-[50%] left-[50%] transform -translate-x-1/2
                         -translate-y-1/2 flex justify-center items-center bg-black opacity-95">
                         <LoadingIcon size={10}/>

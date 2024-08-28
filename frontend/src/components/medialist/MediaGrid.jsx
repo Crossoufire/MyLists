@@ -1,9 +1,9 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {Badge} from "@/components/ui/badge";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {MediaCard} from "@/components/app/MediaCard";
-import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {TopRightCorner} from "@/components/app/TopRightCorner";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
@@ -14,15 +14,14 @@ import {Route} from "@/routes/_private/list/$mediaType.$username.jsx";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 
 
-export const MediaGrid = ({ isCurrent, mediaList, onMediaUpdate }) => {
+export const MediaGrid = ({ isCurrent, mediaList }) => {
     return (
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:gap-4 lg:grid-cols-5 sm:gap-5">
-            {mediaList.map(media =>
+            {mediaList.map(mediaAssoc =>
                 <MediaItem
-                    media={media}
-                    key={media.media_id}
                     isCurrent={isCurrent}
-                    onMediaUpdate={onMediaUpdate}
+                    media={mediaAssoc}
+                    key={mediaAssoc.media_id}
                 />
             )}
         </div>
@@ -32,24 +31,22 @@ export const MediaGrid = ({ isCurrent, mediaList, onMediaUpdate }) => {
 
 const MediaItem = ({ isCurrent, media }) => {
     const search = Route.useSearch();
-    const { mediaType } = Route.useParams();
-    const [isLoading, handleLoading] = useLoading();
+    const {mediaType} = Route.useParams();
+    const [isPending, mutate] = useMutation();
     const [status, setStatus] = useState(media.status);
     const [isCommon, setIsCommon] = useState(media.common);
     const [isHidden, setIsHidden] = useState(false);
-    const updateUserAPI = useApiUpdater(media.media_id, mediaType);
+    const postFunctions = usePostMediaCreator(media.media_id, mediaType);
 
     const handleRemoveMedia = async () => {
-        const response = await handleLoading(updateUserAPI.deleteMedia);
-        if (response) {
+        if (await mutate(postFunctions.deleteMedia)) {
             setIsHidden(true);
             toast.success("Media successfully deleted");
         }
     };
 
     const handleStatus = async (status) => {
-        const response = await handleLoading(updateUserAPI.status, status);
-        if (response) {
+        if (await mutate(postFunctions.status, status)) {
             if (search.status?.length === 1) {
                 setIsHidden(true);
             }
@@ -58,9 +55,8 @@ const MediaItem = ({ isCurrent, media }) => {
         }
     };
 
-    const handleAddOtherList = async (value) => {
-        const response = await handleLoading(updateUserAPI.addMedia, value);
-        if (response) {
+    const handleAddOtherList = async (status) => {
+        if (await mutate(postFunctions.addMedia, status)) {
             setIsCommon(true);
             toast.success("Media added to your list");
         }
@@ -69,7 +65,7 @@ const MediaItem = ({ isCurrent, media }) => {
     if (isHidden) return;
 
     return (
-        <MediaCard media={media} mediaType={mediaType} isLoading={isLoading}>
+        <MediaCard media={media} mediaType={mediaType} isPending={isPending}>
             <div className="absolute top-2 right-1 z-10">
                 {(isCurrent || (!isCurrent && !isCommon)) &&
                     <EditMediaList
@@ -87,7 +83,7 @@ const MediaItem = ({ isCurrent, media }) => {
                     media={media}
                     status={status}
                     isCurrent={isCurrent}
-                    updateUserAPI={updateUserAPI}
+                    postFunctions={postFunctions}
                 />
             </div>
             <TopRightCorner
@@ -102,24 +98,24 @@ const MediaItem = ({ isCurrent, media }) => {
                     <ManageFavorite
                         isCurrent={isCurrent}
                         initFav={media.favorite}
-                        updateFavorite={updateUserAPI.favorite}
+                        updateFavorite={postFunctions.favorite}
                     />
                     <RatingListDrop
                         isCurrent={isCurrent}
                         initRating={media.rating}
-                        updateRating={updateUserAPI.rating}
+                        updateRating={postFunctions.rating}
                     />
                     {(status === "Completed" && mediaType !== "games") &&
                         <RedoListDrop
                             isCurrent={isCurrent}
                             initRedo={media.redo}
-                            updateRedo={updateUserAPI.redo}
+                            updateRedo={postFunctions.redo}
                         />
                     }
                     <CommentPopover
                         isCurrent={isCurrent}
                         initContent={media.comment}
-                        updateComment={updateUserAPI.comment}
+                        updateComment={postFunctions.comment}
                     />
                 </div>
             </div>

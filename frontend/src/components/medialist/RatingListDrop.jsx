@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {LuStar} from "react-icons/lu";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {getFeelingValues, getScoreValues} from "@/lib/utils";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -20,7 +20,7 @@ const SelectDrop = ({ isLoading, rating, handleSelectChange, items }) => {
 
 
 export const RatingListDrop = ({ isCurrent, initRating, updateRating }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [rating, setRating] = useState(initRating);
 
     let ratingValues, selectItems;

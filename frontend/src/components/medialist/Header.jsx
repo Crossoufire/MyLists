@@ -14,7 +14,7 @@ import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 
 
 export const Header = (props) => {
-    const { mediaType } = Route.useParams();
+    const {mediaType} = Route.useParams();
     const sorting = props.pagination.sorting;
     const allStatus = props.pagination.all_status;
     const allSorting = props.pagination.all_sorting;

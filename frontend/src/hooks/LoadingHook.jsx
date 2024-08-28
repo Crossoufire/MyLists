@@ -1,12 +1,12 @@
 import {useState} from "react";
 
 
-export const useLoading = (timeout = 200) => {
-    const [isLoading, setLoading] = useState(false);
+export const useMutation = (timeout = 200) => {
+    const [isPending, setIsPending] = useState(false);
 
-    const handleLoading = async (asyncFunction, ...args) => {
+    const mutate = async (asyncFunction, ...args) => {
         let loadingTimer = setTimeout(() => {
-            setLoading(true);
+            setIsPending(true);
         }, timeout);
 
         let response = false;
@@ -15,11 +15,11 @@ export const useLoading = (timeout = 200) => {
         }
         finally {
             clearTimeout(loadingTimer);
-            setLoading(false);
+            setIsPending(false);
         }
 
         return response;
     };
 
-    return [isLoading, handleLoading];
+    return [isPending, mutate];
 };

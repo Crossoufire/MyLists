@@ -33,6 +33,7 @@ const router = createRouter({
     routeTree: routeTree,
     defaultNotFoundComponent: ErrorComponent,
     defaultErrorComponent: DefaultErrorComponent,
+    defaultStaleTime: 0,
 });
 
 

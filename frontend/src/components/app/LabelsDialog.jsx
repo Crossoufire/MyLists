@@ -3,13 +3,13 @@ import {api} from "@/api/MyApiClient";
 import {LuTrash, LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {FaQuestionCircle} from "react-icons/fa";
 import {useParams} from "@tanstack/react-router";
 import {useEffect, useRef, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
-import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Dialog, DialogContent} from "@/components/ui/dialog";
 import {CheckIcon, ExclamationTriangleIcon} from "@radix-ui/react-icons";
@@ -20,14 +20,14 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {
     const inputRef = useRef();
-    const [_, handlePending] = useLoading();
+    const [_, handlePending] = useMutation();
     const { mediaType } = useParams({ strict: false });
     const [loading, setLoading] = useState(false);
     const [labelsToAdd, setLabelsToAdd] = useState([]);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
-    const { addMediaToLabel, removeLabelFromMedia } = useApiUpdater(mediaId, mediaType);
+    const { addMediaToLabel, removeLabelFromMedia } = usePostMediaCreator(mediaId, mediaType);
     const [listMessage, setListMessage] = useState({type: "error", value: ""});
     const [messageTab2, setMessageTab2] = useState({type: "error", value: ""});
 
@@ -282,7 +282,7 @@ const LabelRow = (props) => {
 
 
 const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLabel }) => {
-    const [isPending, handlePending] = useLoading();
+    const [isPending, handlePending] = useMutation();
     const [newLabel, setNewLabel] = useState("");
     const [message, setMessage] = useState({ type: "error", value: "" });
 

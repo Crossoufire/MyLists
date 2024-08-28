@@ -4,7 +4,7 @@ import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";
 import {PlaytimeListDrop} from "@/components/medialist/PlaytimeListDrop";
 
 
-export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
+export const SuppMediaInfo = ({ isCurrent, media, status, postFunctions }) => {
     const { mediaType } = useParams({ strict: false });
 
     if (["series", "anime"].includes(mediaType) && !["Plan to Watch", "Random"].includes(status)) {
@@ -13,8 +13,8 @@ export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
                 status={status}
                 isCurrent={isCurrent}
                 initSeas={media.current_season}
-                updateSeas={updateUserAPI.season}
-                updateEps={updateUserAPI.episode}
+                updateSeas={postFunctions.season}
+                updateEps={postFunctions.episode}
                 epsPerSeason={media.eps_per_season}
                 initEps={media.last_episode_watched}
             />
@@ -26,7 +26,7 @@ export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
             <PlaytimeListDrop
                 isCurrent={isCurrent}
                 initPlaytime={media.playtime}
-                updatePlaytime={updateUserAPI.playtime}
+                updatePlaytime={postFunctions.playtime}
             />
         );
     }
@@ -37,7 +37,7 @@ export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
                 isCurrent={isCurrent}
                 initPage={media.actual_page}
                 totalPages={media.total_pages}
-                updatePage={updateUserAPI.page}
+                updatePage={postFunctions.page}
             />
         );
     }

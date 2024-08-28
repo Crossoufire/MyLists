@@ -21,18 +21,19 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
 
 function MediaList() {
     const navigate = useNavigate();
-    const { currentUser } = useUser();
+    const {currentUser} = useUser();
     const apiData = Route.useLoaderData();
     const {username, mediaType} = Route.useParams();
     const isCurrent = (currentUser.id === apiData.user_data.id);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
 
     const handleFilterChange = async (newFilters) => {
-        const page = newFilters.page ? newFilters.page : 1;
+        const page = newFilters.page || 1;
 
         await navigate({
             search: (prev) => {
                 const updatedSearch = { ...prev };
+
                 Object.entries(newFilters).forEach(([key, valueOrArray]) => {
                     if (valueOrArray === false || valueOrArray === null ||
                         Array.isArray(valueOrArray) && valueOrArray.length === 0) {
@@ -46,6 +47,7 @@ function MediaList() {
                         const toAdd = valueOrArray.filter(item => !oldSet.has(item));
                         const toKeep = prev[key].filter(item => !newSet.has(item));
                         updatedSearch[key] = [...toKeep, ...toAdd];
+
                         if (updatedSearch[key].length === 0) {
                             delete updatedSearch[key];
                         }
@@ -54,6 +56,7 @@ function MediaList() {
                         updatedSearch[key] = valueOrArray;
                     }
                 });
+
                 return { ...updatedSearch, page };
             },
         });

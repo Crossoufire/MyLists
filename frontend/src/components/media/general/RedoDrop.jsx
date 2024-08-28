@@ -1,11 +1,11 @@
 import {useState} from "react";
 import {getRedoValues} from "@/lib/utils";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const RedoDrop = ({ name, initRedo, updateRedo }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [redo, setRedo] = useState(initRedo || 0);
 
     const handleRedo = async (value) => {

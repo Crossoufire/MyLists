@@ -1,9 +1,9 @@
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const StatusDrop = ({ status, allStatus, updateStatus, callbackStatus }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
 
     const handleStatus = async (value) => {
         const response = await handleLoading(updateStatus, value);

@@ -2,11 +2,11 @@
 
 import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 
 
 export const PagesInput = ({ isCurrent, status, initPage, totalPages, updatePage }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [page, setPage] = useState(initPage || 0);
     const [backupPage, setBackupPage] = useState(initPage || 0);
 

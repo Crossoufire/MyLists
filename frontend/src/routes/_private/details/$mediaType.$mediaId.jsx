@@ -3,7 +3,7 @@ import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
-import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";
@@ -29,7 +29,7 @@ function MediaDetailsPage() {
 	const data = Route.useLoaderData();
 	const { mediaType } = Route.useParams();
 	const [apiData, setApiData] = useState(data);
-	const { refresh } = useApiUpdater(apiData.media.id, mediaType);
+	const { refresh } = usePostMediaCreator(apiData.media.id, mediaType);
 
 	const mutateData = async () => {
 		const data = await fetcher(`/details/${mediaType}/${apiData.media.id}`);

@@ -4,8 +4,8 @@ import * as T from "@/components/ui/table";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {LuCheckCircle} from "react-icons/lu";
-import {useLoading} from "@/hooks/LoadingHook";
-import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {useMutation} from "@/hooks/LoadingHook";
+import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
@@ -47,11 +47,11 @@ const MediaItemsAsTable = ({ apiData, isCurrent }) => {
 
 const MediaItemRow = ({ isCurrent, media, filters, initCommon }) => {
     const { mediaType } = Route.useParams();
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [status, setStatus] = useState(media.status);
     const [isCommon, setIsCommon] = useState(initCommon);
     const [isHidden, setIsHidden] = useState(false);
-    const updateUserAPI = useApiUpdater(media.media_id, mediaType);
+    const updateUserAPI = usePostMediaCreator(media.media_id, mediaType);
 
     const handleRemoveMedia = async () => {
         const response = await handleLoading(updateUserAPI.deleteMedia);
@@ -121,7 +121,7 @@ const MediaItemRow = ({ isCurrent, media, filters, initCommon }) => {
                     media={media}
                     status={status}
                     isCurrent={isCurrent}
-                    updateUserAPI={updateUserAPI}
+                    mutationFunctions={updateUserAPI}
                 />
             </T.TableCell>
             <T.TableCell className="text-center">

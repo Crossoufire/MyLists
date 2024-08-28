@@ -2,8 +2,9 @@ import {toast} from "sonner";
 import {api} from "@/api/MyApiClient";
 
 
-export const useApiUpdater = (mediaId, mediaType) => {
-    const makeUpdateFunction = (url) => async (payload = null, errorAsToast = true) => {
+export const usePostMediaCreator = (mediaId, mediaType) => {
+
+    const mutationFunctionMaker = (url) => async (payload = null, errorAsToast = true) => {
         const response = await api.post(url, {
             media_id: mediaId,
             media_type: mediaType,
@@ -11,7 +12,7 @@ export const useApiUpdater = (mediaId, mediaType) => {
         });
 
         if (!response.ok) {
-            errorAsToast && toast.error(response.body?.description || "Sorry, an unexpected error occurred");
+            errorAsToast && toast.error(response.body?.description || "An unexpected error occurred");
             return false;
         }
 
@@ -36,10 +37,10 @@ export const useApiUpdater = (mediaId, mediaType) => {
         addMediaToLabel: "/add_media_to_label",
     };
 
-    const updateFunctions = {};
+    const mutationFunctions = {};
     for (const [action, url] of Object.entries(actions)) {
-        updateFunctions[action] = makeUpdateFunction(url);
+        mutationFunctions[action] = mutationFunctionMaker(url);
     }
 
-    return updateFunctions;
+    return mutationFunctions;
 };

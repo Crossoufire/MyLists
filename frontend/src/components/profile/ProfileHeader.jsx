@@ -6,7 +6,7 @@ import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useUser} from "@/providers/UserProvider";
 
@@ -78,7 +78,7 @@ export const ProfileHeader = ({ user, initFollow, followId }) => {
 
 
 const FollowButton = ({ initFollow, followId }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [isFollowing, setFollowing] = useState(initFollow);
 
     const content = isFollowing ? "Unfollow" : "Follow";

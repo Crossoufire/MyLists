@@ -5,7 +5,7 @@ import {LuSearch} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
@@ -99,7 +99,7 @@ export const SearchBar = () => {
 
 
 const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) => {
-    const [isLoading, handleLoading] = useLoading(0);
+    const [isLoading, handleLoading] = useMutation(0);
 
     if (query.length > 1 && results === undefined) {
         return (

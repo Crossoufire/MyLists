@@ -1,13 +1,13 @@
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
 
 
 export const Commentary = ({ initContent, updateComment }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [commentInput, setCommentInput] = useState(false);
     const [contents, setContents] = useState(initContent || "");
     const [initContents, setInitContents] = useState(initContent || "");

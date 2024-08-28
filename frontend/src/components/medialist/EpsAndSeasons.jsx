@@ -1,11 +1,11 @@
 import {zeroPad} from "@/lib/utils";
 import {useEffect, useState} from "react";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const EpsAndSeasons = ({ isCurrent, status, initSeas, initEps, epsPerSeason, updateSeas, updateEps }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [currentEps, setCurrentEps] = useState(initEps || 1);
     const seasons = [...Array(epsPerSeason.length).keys()].map(v => v + 1);
     const [currentSeas, setCurrentSeas] = useState(initSeas || 1);

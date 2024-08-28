@@ -18,8 +18,11 @@ export const LoginForm = () => {
 	const navigate = useNavigate();
 	const { currentUser } = useUser();
 	const [error, setError] = useState("");
-	const form = useForm({ shouldFocusError: false });
 	const [pending, setIsPending] = useState(false);
+	const form = useForm({
+        defaultValues: { username: "", password: "" },
+        shouldFocusError: false,
+    });
 
 	const onSubmit = async (data) => {
 		setError("");
@@ -39,7 +42,7 @@ export const LoginForm = () => {
 		}
 
 		await router.invalidate();
-		await navigate({ to: `/profile/${currentUser.username}` });
+		await navigate({ to: `/profile/${data.username}` });
 	};
 
 	const withProvider = async (provider) => {

@@ -1,7 +1,7 @@
 import {toast} from "sonner";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {FaMinus, FaPlus} from "react-icons/fa";
-import {useApiUpdater} from "@/hooks/UserUpdaterHook";
+import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
@@ -27,9 +27,9 @@ const mediaComponentMap = (value) => {
 
 
 export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
-	const [isLoading, handleLoading] = useLoading();
+	const [isLoading, handleLoading] = useMutation();
 	const MediaUserDetails = mediaComponentMap(mediaType);
-	const updatesAPI = useApiUpdater(apiData.media.id, mediaType);
+	const updatesAPI = usePostMediaCreator(apiData.media.id, mediaType);
 
 	const handleAddMediaUser = async () => {
 		const response = await handleLoading(updatesAPI.addMedia);

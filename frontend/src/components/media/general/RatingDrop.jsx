@@ -1,10 +1,10 @@
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {getFeelingValues, getScoreValues} from "@/lib/utils";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const RatingDrop = ({ rating, updateRating, callbackRating }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
 
     let selectItems;
     if (rating.type === "feeling") {

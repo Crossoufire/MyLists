@@ -1,12 +1,12 @@
 import {useEffect, useState} from "react";
 import {getPlaytimeValues} from "@/lib/utils";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const PlaytimeListDrop = ({ isCurrent, initPlaytime, updatePlaytime }) => {
     const playValues = getPlaytimeValues();
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [playtime, setPlaytime] = useState(initPlaytime / 60);
 
     const handlePlaytime = async (value) => {

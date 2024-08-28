@@ -1,13 +1,13 @@
 import {useState} from "react";
 import {LuRotateCw} from "react-icons/lu";
 import {getRedoValues} from "@/lib/utils";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const RedoListDrop = ({ isCurrent, initRedo, updateRedo, isDisabled = false }) => {
     const redoValues = getRedoValues();
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [redo, setRedo] = useState(initRedo || 0);
 
     const selectChange = async (value) => {

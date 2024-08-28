@@ -1,11 +1,11 @@
 import {useState} from "react";
 import {LuHeart} from "react-icons/lu";
-import {useLoading} from "@/hooks/LoadingHook";
+import {useMutation} from "@/hooks/LoadingHook";
 import {LoadingIcon} from "@/components/app/base/LoadingIcon";
 
 
 export const ManageFavorite = ({ initFav, updateFavorite, isCurrent = true }) => {
-    const [isLoading, handleLoading] = useLoading();
+    const [isLoading, handleLoading] = useMutation();
     const [favorite, setFavorite] = useState(initFav);
 
     const handleFavorite = async () => {
