@@ -1,8 +1,6 @@
 import {routeTree} from "./routeTree.gen";
 import {createRoot} from "react-dom/client";
-import {Loading} from "@/components/app/base/Loading";
 import {ThemeProvider} from "@/providers/ThemeProvider";
-import {UserProvider, useUser} from "@/providers/UserProvider";
 import {ErrorComponent} from "@/components/app/base/ErrorComponent";
 import {createRouter, RouterProvider} from "@tanstack/react-router";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
@@ -19,31 +17,20 @@ if (!rootElement.innerHTML) {
 }
 
 
-function App() {
+export default function App() {
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <UserProvider>
-                <QueryClientProvider client={queryClient}>
-                    <InnerApp/>
-                </QueryClientProvider>
-            </UserProvider>
+            <QueryClientProvider client={queryClient}>
+                <RouterProvider router={router}/>
+            </QueryClientProvider>
         </ThemeProvider>
     );
 }
 
 
-const InnerApp = () => {
-    const auth = useUser();
-    if (auth.currentUser === undefined) return <Loading/>;
-    return <RouterProvider router={router} context={{ auth }}/>
-};
-
-
 const router = createRouter({
     defaultGcTime: 0,
     routeTree: routeTree,
-    defaultPreload: false,
-    context: { auth: undefined },
     defaultNotFoundComponent: ErrorComponent,
     defaultErrorComponent: DefaultErrorComponent,
 });

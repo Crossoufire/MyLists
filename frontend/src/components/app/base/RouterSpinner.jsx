@@ -1,38 +1,16 @@
-import {useEffect, useState} from "react";
+import {cn} from "@/lib/utils";
 import {useRouterState} from "@tanstack/react-router";
 
 
-export const GlobalLoading = () => {
-    const routerState = useRouterState();
-    const [showLoading, setShowLoading] = useState(false);
-
-    useEffect(() => {
-        let timeoutId;
-
-        if (routerState.isLoading) {
-            timeoutId = setTimeout(() => {
-                setShowLoading(true)
-            }, 400)
-        }
-        else {
-            // noinspection JSUnusedAssignment
-            clearTimeout(timeoutId);
-            if (showLoading) {
-                timeoutId = setTimeout(() => {
-                    setShowLoading(false)
-                }, 500)
-            }
-        }
-        return () => clearTimeout(timeoutId);
-    }, [routerState.isLoading]);
-
-    if (!showLoading) return null;
-
+export const RouterSpinner = () => {
+    const isLoading = useRouterState({ select: (s) => s.status === "pending" });
     return (
-        <div className="fixed z-50 w-full top-[18%] h-[200px] rounded-[100%] bg-teal-500/10 opacity-100 duration-300
-        transition-all -translate-y-full">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[25px] p-2">
-                <svg className="w-12 h-12 animate-spin dark:text-gray-400 fill-cyan-700" viewBox="0 0 100 101"
+        <div className={cn("z-30 fixed top-0 w-full transition-all duration-500 pointer-events-none h-[200px] " +
+            "!bg-white/10 rounded-[100%] delay-0 opacity-0 -translate-y-full",
+            isLoading && "-translate-y-[18%] opacity-1 duration-500 delay-300")}
+             style={{background: "radial-gradient(closest-side, rgba(0, 10, 40, 0.2) 0%, rgba(0, 0, 0, 0) 100%)"}}>
+            <div className="absolute left-1/2 -translate-x-1/2 translate-y-[127px]">
+                <svg className="w-10 h-10 animate-spin dark:text-gray-400 fill-cyan-700" viewBox="0 0 100 101"
                      xmlns="http://www.w3.org/2000/svg" fill="none">
                     <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0
                     50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144

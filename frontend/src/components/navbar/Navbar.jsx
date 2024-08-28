@@ -5,46 +5,30 @@ import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
+import {Loading} from "@/components/app/base/Loading";
+import {Link as NavLink} from "@tanstack/react-router";
 import * as Nav from "@/components/ui/navigation-menu";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
-import {Link as NavLink, useNavigate} from "@tanstack/react-router";
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
-export async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-
 export const Navbar = () => {
     const popRef = useRef();
-    const navigate = useNavigate();
     const { currentUser, logout } = useUser();
     const { sheetOpen, setSheetOpen } = useSheet();
 
-    const logoutUser = async () => {
-        await logout();
-        await sleep(5);
-        await navigate({ to: "/" });
-    };
-
     // Login page and public pages when not logged
-    if (currentUser === null) {
+    if (!currentUser) {
         return (
             <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
-                                <p className="text-lg font-semibold mr-2">MyLists</p>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+                    <p className="text-lg font-semibold">MyLists</p>
+                    <div>{currentUser === undefined && <Loading/>}</div>
                 </div>
             </nav>
         );
@@ -121,7 +105,7 @@ export const Navbar = () => {
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
-                                                    <NavLink to="#" onClick={logoutUser} className="block select-none
+                                                    <NavLink to="#" onClick={logout} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
@@ -193,7 +177,7 @@ export const Navbar = () => {
                                         />
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
-                                                <NavLink to="#" onClick={logoutUser} className="block select-none
+                                                <NavLink to="#" onClick={logout} className="block select-none
                                             space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                             transition-colors hover:bg-accent hover:text-accent-foreground
                                             focus:bg-accent focus:text-accent-foreground">

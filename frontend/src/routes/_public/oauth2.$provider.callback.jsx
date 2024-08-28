@@ -30,17 +30,11 @@ function OAuth2CallbackPage() {
                 toast.error(response.body.description);
                 return navigate({ to: "/" });
             }
+
+            await router.invalidate();
+            await navigate({ to: `/profile/${currentUser.username}` });
         })();
     }, []);
-
-    useEffect(() => {
-        if (currentUser) {
-            (async () => {
-                await router.invalidate();
-                await navigate({ to: `/profile/${currentUser.username}` });
-            })();
-        }
-    }, [currentUser]);
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">

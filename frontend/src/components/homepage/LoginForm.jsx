@@ -1,7 +1,7 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
-import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {useUser} from "@/providers/UserProvider";
 import {FaGithub, FaGoogle} from "react-icons/fa";
@@ -21,15 +21,6 @@ export const LoginForm = () => {
 	const form = useForm({ shouldFocusError: false });
 	const [pending, setIsPending] = useState(false);
 
-	useEffect(() => {
-		if (currentUser) {
-            (async () => {
-                await router.invalidate();
-                await navigate({ to: `/profile/${currentUser.username}` });
-            })();
-        }
-	}, [currentUser]);
-
 	const onSubmit = async (data) => {
 		setError("");
 
@@ -46,6 +37,9 @@ export const LoginForm = () => {
 		finally {
 			setIsPending(false);
 		}
+
+		await router.invalidate();
+		await navigate({ to: `/profile/${currentUser.username}` });
 	};
 
 	const withProvider = async (provider) => {
