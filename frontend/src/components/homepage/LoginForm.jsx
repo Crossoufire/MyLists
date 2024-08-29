@@ -16,13 +16,12 @@ export const LoginForm = () => {
 	const router = useRouter();
 	const { login } = useUser();
 	const navigate = useNavigate();
-	const { currentUser } = useUser();
 	const [error, setError] = useState("");
 	const [pending, setIsPending] = useState(false);
 	const form = useForm({
-        defaultValues: { username: "", password: "" },
-        shouldFocusError: false,
-    });
+		defaultValues: { username: "", password: "" },
+		shouldFocusError: false,
+	});
 
 	const onSubmit = async (data) => {
 		setError("");
@@ -53,12 +52,13 @@ export const LoginForm = () => {
 				callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
 			});
 			if (!response.ok) {
+				setIsPending(false);
 				return toast.error(response.body.description);
 			}
-
 			window.location.replace(response.body.redirect_url);
 		}
-		finally {
+		catch {
+			toast.error("An unexpected error occurred");
 			setIsPending(false);
 		}
 	};

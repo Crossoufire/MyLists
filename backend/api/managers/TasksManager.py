@@ -2,7 +2,6 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime, timedelta
-from math import ceil
 from pathlib import Path
 from typing import List, Type, Tuple
 import dotenv
@@ -64,11 +63,26 @@ class TasksManager(metaclass=TasksManagerMeta):
         if days < 30:
             period_repr = f"< {days} days"
         else:
-            months = ceil(days / 30)
+            months = days // 30
             period_repr = f"< {months} months"
 
         active_user_count = User.query.filter(User.last_seen >= delta_time).count()
         print(f"### Active users ({period_repr}) = {active_user_count}")
+
+    @staticmethod
+    def delete_non_activated_users(days: int = 7):
+        delta_time = datetime.now() - timedelta(days=days)
+
+        if days < 30:
+            period_repr = f"> {days} days"
+        else:
+            months = days // 30
+            period_repr = f"> {months} months"
+
+        non_activated_user_count = User.query.filter(User.active.is_(False), User.registered_on <= delta_time).count()
+        User.query.filter(User.active.is_(False), User.registered_on <= delta_time).delete()
+        print(f"### Deleted {non_activated_user_count} non-activated users ({period_repr})")
+        db.session.commit()
 
     @staticmethod
     def update_Mylists_stats(global_stats_manager: Type[GlobalStats]):

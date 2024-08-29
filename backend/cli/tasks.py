@@ -1,66 +1,9 @@
 from __future__ import annotations
 from flask import current_app
-from sqlalchemy import text
-from backend.api import db
 from backend.api.managers.ApiManager import ApiManager, GamesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.TasksManager import TasksManager
-from backend.api.utils.enums import ModelTypes, MediaType, Status
-from backend.api.managers.ModelsManager import ModelsManager
-
-
-""" --- CORRECTIONS ------------------------------------------------------------------------------------ """
-
-
-def correct_random_and_ptw_data():
-    """ The <last_episode_watched>, <current_season>, and <total> should be zero when in <PLAN_TO_WATCH> or <RANDOM>
-    status for Series and Anime """
-
-    models = ModelsManager.get_lists_models([MediaType.SERIES, MediaType.ANIME], ModelTypes.LIST)
-    for model in models:
-        query = model.query.filter(model.status.in_([Status.PLAN_TO_WATCH, Status.RANDOM])).all()
-        for data in query:
-            data.total = 0
-            data.last_episode_watched = 0
-            data.current_season = 1
-        db.session.commit()
-
-
-def correct_medialist_duplicates():
-    """ Some users have a media more than once in a medialist (example: 2 times breaking bad in its list) """
-
-    media_lists = ["series_list", "anime_list", "movies_list", "games_list", "books_list"]
-    for media_list in media_lists:
-        raw_sql = text(f"""
-            SELECT list_id, name, user_id, row_num
-            FROM (
-                SELECT
-                    B.id AS list_id,
-                    A.name,
-                    B.user_id,
-                    ROW_NUMBER() OVER (PARTITION BY A.id, A.name, B.user_id ORDER BY B.id) AS row_num
-                FROM {media_list.replace("_list", "")} AS A
-                JOIN {media_list} AS B ON A.id = B.media_id
-            )
-            WHERE row_num > 1
-            ORDER BY 2;
-        """)
-
-        data = db.session.execute(raw_sql).fetchall()
-        ids_to_delete = [data[0] for data in data]
-        print(f"{media_list} IDs to delete: {len(ids_to_delete)}")
-
-        placeholders = ", ".join([":id_" + str(i) for i in range(len(ids_to_delete))])
-        delete_sql = text(f"""
-            DELETE FROM {media_list} 
-            WHERE id IN ({placeholders})
-        """)
-
-        db.session.execute(delete_sql, {"id_" + str(i): id_ for (i, id_) in enumerate(ids_to_delete)})
-        db.session.commit()
-
-
-""" --- MANAGEMENT ------------------------------------------------------------------------------------- """
+from backend.api.utils.enums import MediaType
 
 
 def reactivate_update_modal(value: bool = True):
@@ -190,4 +133,14 @@ def get_active_users(days: int = 180):
     TasksManager.get_active_users(days)
 
     current_app.logger.info("[SYSTEM] - Finished Getting Active Users -")
+    current_app.logger.info("###############################################################################")
+
+
+def delete_non_activated_users(days: int = 7):
+    current_app.logger.info("###############################################################################")
+    current_app.logger.info("[SYSTEM] - Starting Deleting Inactive Users -")
+
+    TasksManager.delete_non_activated_users(days)
+
+    current_app.logger.info("[SYSTEM] - Finished Deleting Inactive Users -")
     current_app.logger.info("###############################################################################")
