@@ -2,30 +2,47 @@ import {toast} from "sonner";
 import {LuX} from "react-icons/lu";
 import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
-import {capitalize} from "@/lib/utils";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
 import * as Sheet from "@/components/ui/sheet";
+import * as Pop from "@/components/ui/popover";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Loading} from "@/components/app/base/Loading";
+import {capitalize, getLangCountryName} from "@/lib/utils";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
+import {FaArrowRightLong, FaCircleQuestion} from "react-icons/fa6";
 import {Route} from "@/routes/_private/list/$mediaType.$username.jsx";
 
 
-export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply}) => {
+function getListSearchFilters(mediaType) {
+    const mapping = {
+        "series": ["actors", "creators", "networks"],
+        "anime": ["actors", "creators", "networks"],
+        "movies": ["actors", "directors"],
+        "books": ["authors"],
+        "games": ["platforms", "companies"],
+    };
+    return mapping[mediaType];
+}
+
+
+export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
     let localFilters = {};
     const search = Route.useSearch();
     const {username, mediaType} = Route.useParams();
-    const {data: additionalFilters, isLoading} = useQuery({
-        queryKey: ["additionalFilters"],
+    const searchFiltersList = getListSearchFilters(mediaType);
+    const {data: smallFilters, isLoading} = useQuery({
+        queryKey: ["smallFilters", mediaType, username],
         queryFn: () => fetcher(`/list/filters/${mediaType}/${username}`),
+        staleTime: Infinity,
+        retry: false,
     });
 
-    const checkboxChange = (filterType, value) => {
+    const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
             const updatedSearch = {...localFilters};
             if (Array.isArray(localFilters[filterType])) {
@@ -39,7 +56,8 @@ export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply})
                         updatedSearch[filterType] = [...localFilters[filterType], val];
                     }
                 });
-            } else {
+            }
+            else {
                 updatedSearch[filterType] = value;
             }
             localFilters = {...updatedSearch,};
@@ -55,10 +73,13 @@ export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply})
 
     return (
         <Sheet.Sheet defaultOpen={true} onOpenChange={onClose}>
-            <Sheet.SheetContent>
+            <Sheet.SheetContent className="max-sm:w-full">
                 <Sheet.SheetHeader>
                     <Sheet.SheetTitle>Additional Filters</Sheet.SheetTitle>
-                    <Sheet.SheetDescription/>
+                    <Sheet.SheetDescription>
+                        How filters works &nbsp;
+                        <FilterInfoPopover/>
+                    </Sheet.SheetDescription>
                 </Sheet.SheetHeader>
                 <form onSubmit={handleOnSubmit} className="overflow-auto max-h-[98%]">
                     {isLoading ?
@@ -72,60 +93,61 @@ export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply})
                                     <Checkbox
                                         id="commonCheck"
                                         defaultChecked={search.common}
-                                        onCheckedChange={() => checkboxChange("common", !search.common)}
+                                        onCheckedChange={() => registerChange("common", !search.common)}
                                     />
                                     <label htmlFor="commonCheck" className="cursor-pointer">Hide Common</label>
                                 </div>
                             }
-                            <div>
-                                <h3 className="text-lg font-semibold">Status</h3>
-                                <ul className="overflow-hidden hover:overflow-auto">
-                                    {allStatus.map(status =>
-                                        <li key={status} className="flex items-center gap-3">
-                                            <Checkbox
-                                                id={`${status}-id`}
-                                                defaultChecked={search.status?.includes(status)}
-                                                onCheckedChange={() => checkboxChange("status", [status])}
-                                            />
-                                            <label htmlFor={`${status}-id`} className="cursor-pointer">{status}</label>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-                            <AdditionalFilter
-                                job="actors"
-                                dataList={search.actors}
-                                checkboxChange={checkboxChange}
+                            <CheckboxGroup
+                                title="Status"
+                                items={allStatus}
+                                onChange={(status) => registerChange("status", [status])}
+                                defaultChecked={(status) => search.status?.includes(status)}
                             />
-                            <AdditionalFilter
-                                job="directors"
-                                dataList={search.directors}
-                                checkboxChange={checkboxChange}
+                            {searchFiltersList.map(job =>
+                                <SearchFilter
+                                    key={job}
+                                    job={job}
+                                    dataList={search[job]}
+                                    registerChange={registerChange}
+                                />
+                            )}
+                            <CheckboxGroup
+                                title="Genres"
+                                items={smallFilters.genres ?? []}
+                                onChange={(genre) => registerChange("genres", [genre])}
+                                defaultChecked={(genre) => search.genres?.includes(genre)}
                             />
-                            <div>
-                                <h3 className="text-lg font-semibold">Genres</h3>
-                                <div className="grid grid-cols-2 max-h-[190px] max-w-[310px] overflow-auto">
-                                    {additionalFilters.genres?.map(genre =>
-                                        <div key={genre} className="col-span-1 flex items-center gap-3">
-                                            <Checkbox
-                                                id={`${genre}-id`}
-                                                defaultChecked={search.genres?.includes(genre)}
-                                                onCheckedChange={() => checkboxChange("genres", [genre])}
-                                            />
-                                            <label htmlFor={`${genre}-id`} className="cursor-pointer line-clamp-1">
-                                                {genre}
-                                            </label>
-                                        </div>
-                                    )}
+                            {smallFilters.langs &&
+                                <div>
+                                    <h3 className="text-lg font-semibold">Languages/Countries</h3>
+                                    <div className="grid grid-cols-2 max-h-[190px] max-w-[310px] overflow-auto">
+                                        {smallFilters.langs?.map(lang =>
+                                            <div key={lang} className="col-span-1 flex items-center gap-3">
+                                                <Checkbox
+                                                    id={`${lang}-id`}
+                                                    defaultChecked={search.langs?.includes(lang)}
+                                                    onCheckedChange={() => registerChange("langs", [lang])}
+                                                />
+                                                <label htmlFor={`${lang}-id`} className="cursor-pointer line-clamp-1">
+                                                    {(mediaType === "series" || mediaType === "anime") ?
+                                                        getLangCountryName(lang, "region")
+                                                        :
+                                                        getLangCountryName(lang, "language")
+                                                    }
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            }
                             <div>
                                 <h3 className="text-lg font-semibold">Miscellaneous</h3>
                                 <div className="flex items-center gap-3">
                                     <Checkbox
                                         id="favoriteCheck"
                                         defaultChecked={search.favorite}
-                                        onCheckedChange={() => checkboxChange("favorite", !search.favorite)}
+                                        onCheckedChange={() => registerChange("favorite", !search.favorite)}
                                     />
                                     <label htmlFor="favoriteCheck" className="cursor-pointer">Favorites</label>
                                 </div>
@@ -133,26 +155,17 @@ export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply})
                                     <Checkbox
                                         id="commentCheck"
                                         defaultChecked={search.comment}
-                                        onCheckedChange={() => checkboxChange("comment", !search.comment)}
+                                        onCheckedChange={() => registerChange("comment", !search.comment)}
                                     />
                                     <label htmlFor="commentCheck" className="cursor-pointer">Comments</label>
                                 </div>
                             </div>
-                            <div>
-                                <h3 className="text-lg font-semibold">Labels</h3>
-                                <ul className="max-h-[190px] max-w-[300px] overflow-auto">
-                                    {additionalFilters.labels?.map(label =>
-                                        <li key={label} className="flex items-center gap-3">
-                                            <Checkbox
-                                                id={`${label}-id`}
-                                                defaultChecked={search.labels?.includes(label)}
-                                                onCheckedChange={() => checkboxChange("labels", [label])}
-                                            />
-                                            <label htmlFor={`${label}-id`} className="cursor-pointer">{label}</label>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
+                            <CheckboxGroup
+                                title="Labels"
+                                items={smallFilters.labels ?? []}
+                                onChange={(label) => registerChange("labels", [label])}
+                                defaultChecked={(label) => search.labels?.includes(label)}
+                            />
                             <Sheet.SheetFooter className="pr-2">
                                 <Sheet.SheetClose asChild className="w-full">
                                     <Button type="submit">Apply Filters</Button>
@@ -167,12 +180,33 @@ export const FiltersSideSheet = ({isCurrent, onClose, allStatus, onFilterApply})
 };
 
 
-const AdditionalFilter = ({ job, dataList, checkboxChange }) => {
+const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
+    return (
+        <div>
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <div className="grid grid-cols-2 max-h-[190px] max-w-[310px] overflow-auto">
+                {items.map(item => (
+                    <div key={item} className="col-span-1 flex items-center gap-3">
+                        <Checkbox
+                            id={`${item}-id`}
+                            defaultChecked={defaultChecked?.(item)}
+                            onCheckedChange={() => onChange(item)}
+                        />
+                        <label htmlFor={`${item}-id`} className="cursor-pointer line-clamp-1">{item}</label>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+
+const SearchFilter = ({ job, dataList, registerChange }) => {
     const searchRef = useRef();
     const [results, setResults] = useState();
     const {mediaType, username} = Route.useParams();
     const [query, setQuery] = useState("");
-    const [selectedData, setSelectedData] = useState(dataList ? dataList : []);
+    const [selectedData, setSelectedData] = useState(dataList ?? []);
 
     const handleSearchChange = (ev) => {
         if (query.length >= 2) {
@@ -203,16 +237,19 @@ const AdditionalFilter = ({ job, dataList, checkboxChange }) => {
 
     const handleAddClicked = (data) => {
         resetSearch();
-        checkboxChange(job, [data]);
+        if (selectedData.includes(data)) {
+            return;
+        }
+        registerChange(job, [data]);
         setSelectedData([...selectedData, data]);
     };
 
     const handleRemoveData = (data) => {
-        checkboxChange(job, [data]);
+        registerChange(job, [data]);
         setSelectedData(selectedData.filter(d => d !== data));
     };
 
-    useOnClickOutside(searchRef, () => resetSearch());
+    useOnClickOutside(searchRef, resetSearch);
     useDebounce(query, 250, searchDB);
 
     return (
@@ -221,8 +258,8 @@ const AdditionalFilter = ({ job, dataList, checkboxChange }) => {
             <div ref={searchRef} className="mt-1 w-56 relative">
                 <Input
                     value={query}
-                    placeholder={`Search ${job}`}
                     onChange={handleSearchChange}
+                    placeholder={`Search in this collection`}
                 />
                 <ShowSearch
                     query={query}
@@ -248,19 +285,19 @@ const AdditionalFilter = ({ job, dataList, checkboxChange }) => {
 const ShowSearch = ({ query, results, handleAddClicked }) => {
     if (query.length > 1 && results === undefined) {
         return (
-            <div className="absolute h-[52px] w-56 top-11 bg-background border rounded-md font-medium">
+            <div className="z-10 absolute h-[52px] w-56 top-11 bg-neutral-950 border rounded-md font-medium">
                 <div className="ml-2 mt-2">
                     <Loading/>
                 </div>
             </div>
         );
     }
-    if (results === undefined) {
+    if (!results) {
         return;
     }
     if (results.length === 0) {
         return (
-            <div className="absolute h-[40px] w-56 top-11 bg-background border rounded-md font-medium">
+            <div className="z-10 absolute h-[40px] w-56 top-11 bg-neutral-950 border rounded-md font-medium">
                 <div className="ml-2 mt-2">
                     Sorry, no matches found
                 </div>
@@ -269,7 +306,7 @@ const ShowSearch = ({ query, results, handleAddClicked }) => {
     }
 
     return (
-        <div className="absolute max-h-[200px] w-56 top-11 bg-background border rounded-md font-medium overflow-y-auto">
+        <div className="z-10 absolute max-h-[200px] w-56 top-11 bg-neutral-950 border rounded-md font-medium overflow-y-auto">
             {results.map(item =>
                 <div key={item} role="button" className="flex p-1 items-center w-full hover:bg-neutral-900"
                      onClick={() => handleAddClicked(item)}>
@@ -279,3 +316,33 @@ const ShowSearch = ({ query, results, handleAddClicked }) => {
         </div>
     );
 };
+
+
+const FilterInfoPopover = () => (
+    <Pop.Popover>
+        <Pop.PopoverTrigger>
+            <FaCircleQuestion/>
+        </Pop.PopoverTrigger>
+        <Pop.PopoverContent className="w-full space-y-3">
+            <div className="-mt-2 text-lg font-semibold underline underline-offset-2">
+                Examples
+            </div>
+            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
+                <Badge>Drama</Badge> + <Badge>Crime</Badge> <FaArrowRightLong/>
+                <Badge>Drama</Badge> OR <Badge>Crime</Badge>
+            </div>
+            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
+                <Badge>Drama</Badge> + <Badge>Crime</Badge> + <Badge
+                variant="destructive">France</Badge> <FaArrowRightLong/>
+                <Badge>Drama</Badge> OR <Badge>Crime</Badge> from <Badge
+                variant="destructive">France</Badge>
+            </div>
+            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
+                <Badge>Drama</Badge> + <Badge>Crime</Badge> + <Badge
+                variant="destructive">France</Badge> + <Badge className="bg-green-900 text-white">Watching</Badge>
+                <FaArrowRightLong/> <Badge>Drama</Badge> OR <Badge>Crime</Badge> from <Badge
+                variant="destructive">France</Badge> AND <Badge className="bg-green-900 text-white">Watching</Badge>
+            </div>
+        </Pop.PopoverContent>
+    </Pop.Popover>
+);

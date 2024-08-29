@@ -1,4 +1,4 @@
-import {useRef} from "react";
+import React, {useRef} from "react";
 import {LuAlignJustify} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {useUser} from "@/providers/UserProvider";
@@ -13,8 +13,8 @@ import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
-import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 
 
 export const Navbar = () => {
@@ -129,6 +129,10 @@ export const Navbar = () => {
                             <LuAlignJustify size={28}/>
                         </SheetTrigger>
                         <SheetContent side="left" className="max-sm:w-full overflow-y-auto">
+                            <SheetHeader>
+                                <SheetTitle></SheetTitle>
+                                <SheetDescription></SheetDescription>
+                            </SheetHeader>
                             <Nav.NavigationMenu className="mt-4">
                                 <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
                                     <Nav.NavigationMenuItem className="mt-4">
@@ -139,22 +143,26 @@ export const Navbar = () => {
                                     </Nav.NavigationMenuItem>
                                     <Separator/>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             HoF
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Stats
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Trends
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Coming Next
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
@@ -178,13 +186,11 @@ export const Navbar = () => {
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
                                                 <NavLink to="#" onClick={logout} className="block select-none
-                                            space-y-1 rounded-md p-3 leading-none no-underline outline-none
-                                            transition-colors hover:bg-accent hover:text-accent-foreground
-                                            focus:bg-accent focus:text-accent-foreground">
-                                                    <div
-                                                        className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
-                                                        <div>{<FaSignOutAlt
-                                                            className="text-grey"/>}</div>
+                                                space-y-1 rounded-md p-3 leading-none no-underline outline-none
+                                                transition-colors hover:bg-accent hover:text-accent-foreground
+                                                focus:bg-accent focus:text-accent-foreground">
+                                                    <div className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
+                                                        <div>{<FaSignOutAlt className="text-grey"/>}</div>
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>

@@ -1,10 +1,9 @@
-from flask import jsonify, Blueprint, abort, request
+from flask import jsonify, Blueprint, abort
 from backend.api import db, cache
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
-from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager
-from backend.api.utils.enums import MediaType, ModelTypes
+from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
+from backend.api.utils.enums import MediaType
 from backend.api.managers.StatsManager import StatsManager
 
 
@@ -36,39 +35,19 @@ def media_list(media_type: MediaType, username: str):
 @lists_bp.route("/list/filters/<mediatype:media_type>/<username>", methods=["GET"])
 @token_auth.login_required
 def media_list_filters(media_type: MediaType, username: str):
+    """ Return small filters: genres, labels, and languages/country """
     user = current_user.check_autorization(username)
-    filters = ListFiltersManager(user, media_type).return_filters()
+    filters = SmallListFiltersManager(user, media_type).return_filters()
     return jsonify(data=filters), 200
 
 
 @lists_bp.route("/list/search/filters/<mediatype:media_type>/<username>", methods=["GET"])
 @token_auth.login_required
-def search_filters(media_type: MediaType, username: str):
+def media_list_search_filters(media_type: MediaType, username: str):
+    """ Return search filters: actors, authors, director, creator, companies, platforms, networks """
     user = current_user.check_autorization(username)
-
-    search = request.args.get("q")
-    job = request.args.get("job")
-
-    media_model, media_list, media_actors = ModelsManager.get_lists_models(
-        media_type,
-        [ModelTypes.MEDIA, ModelTypes.LIST, ModelTypes.ACTORS]
-    )
-
-    query = (
-        db.session.query(media_model.director_name)
-        .join(media_list).filter(media_list.user_id == user.id)
-        .group_by(media_model.director_name).filter(media_model.director_name.ilike(f"%{search}%"))
-        .all()
-    )
-
-    # query = (
-    #     db.session.query(media_actors.name).join(media_model.actors)
-    #     .join(media_list).filter(media_list.user_id == user.id)
-    #     .group_by(media_actors.name).filter(media_actors.name.ilike(f"%{search}%"))
-    #     .all()
-    # )
-
-    return jsonify(data=[data[0] for data in query]), 200
+    filters = ListFiltersManager(user, media_type).return_filters()
+    return jsonify(data=filters), 200
 
 
 @lists_bp.route("/stats/<mediatype:media_type>/<username>", methods=["GET"])

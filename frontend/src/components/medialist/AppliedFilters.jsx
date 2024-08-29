@@ -53,8 +53,12 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
                             </Badge>
                         )
                         :
-                        <Badge key={key} className="border-gray-700 h-8 px-4 text-sm gap-2" variant="outline">
-                            {typeof value === "boolean" ? `Only ${key}` : value}
+                        <Badge key={key} className="h-8 px-4 text-sm gap-2" variant="secondary">
+                            {(key === "common" && value === true) ? `No common` :
+                                (key === "favorite" && value === true) ? `Favorites` :
+                                    (key === "comment" && value === true) ? `Commented` :
+                                        value
+                            }
                             <div role="button" className="hover:opacity-80 -mr-1"
                                  onClick={() => handleRemoveAFilter(key, value)}>
                                 <LuX/>

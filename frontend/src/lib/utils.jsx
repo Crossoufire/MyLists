@@ -81,6 +81,12 @@ export const sliceIntoParts = (arr, n) => {
 
 // --- New -------------------------------------------------------------------------------------
 
+export const getLangCountryName = (name, type) => {
+    let languageNames = new Intl.DisplayNames(["en"], { type });
+    if (name === "cn") return "Chinese";
+    return languageNames.of(name);
+};
+
 export const cn = (...inputs) => {
     return twMerge(clsx(inputs));
 };
