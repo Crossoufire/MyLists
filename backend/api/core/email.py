@@ -9,7 +9,7 @@ def _send_async_email(app: Flask, to: str, username: str, subject: str, template
         email_html = render_template(
             template + ".html",
             username=username,
-            link=f"<a href='{callback}/?token={token}'>click here</a>",
+            link=f"{callback}/?token={token}",
         )
         msg = Message(
             subject=f"MyLists - {subject}",
