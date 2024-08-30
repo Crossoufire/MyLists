@@ -16,18 +16,19 @@ class SearchTests(BaseTest):
     def test_autocomplete_users(self):
         rv = self.client.get("/api/autocomplete?q=test&selector=users", headers=self.connexion())
         self.assertEqual(rv.status_code, 200)
-        assert rv.json["data"]["items"][0]["name"] == "test"
-        assert rv.json["data"]["items"][0]["media_type"] == "User"
-        assert rv.json["data"]["items"][0]["image_cover"] == "/api/static/profile_pics/default.jpg"
-        assert "date" in rv.json["data"]["items"][0]
-        assert rv.json["data"]["total"] == 1
-        assert rv.json["data"]["pages"] == 1
+        self.assertEqual(len(rv.json["data"]["items"]), 1)
+        self.assertEqual(rv.json["data"]["items"][0]["name"], "test")
+        self.assertEqual(rv.json["data"]["items"][0]["media_type"], "User")
+        self.assertEqual(rv.json["data"]["items"][0]["image_cover"], "/api/static/profile_pics/default.jpg")
+        self.assertIn("date", rv.json["data"]["items"][0])
+        self.assertEqual(rv.json["data"]["total"], 1)
+        self.assertEqual(rv.json["data"]["pages"], 1)
 
         rv = self.client.get("/api/autocomplete?q=bobby&selector=users", headers=self.connexion())
         self.assertEqual(rv.status_code, 200)
-        assert len(rv.json["data"]["items"]) == 0
-        assert rv.json["data"]["total"] == 0
-        assert rv.json["data"]["pages"] == 0
+        self.assertEqual(len(rv.json["data"]["items"]), 0)
+        self.assertEqual(rv.json["data"]["total"], 0)
+        self.assertEqual(rv.json["data"]["pages"], 0)
 
         with mock.patch("backend.api.routes.search.User.create_search_results") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
@@ -51,22 +52,23 @@ class SearchTests(BaseTest):
 
             rv = self.client.get("/api/autocomplete?q=friends&selector=TMDB", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 1
-            assert rv.json["data"]["items"][0]["api_id"] == 154
-            assert rv.json["data"]["items"][0]["name"] == "Friends"
-            assert rv.json["data"]["items"][0]["media_type"] == "series"
-            assert rv.json["data"]["items"][0]["date"] == "1994-09-22"
-            assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/friends.jpg"
-            assert rv.json["data"]["total"] == 1
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 1)
+            self.assertEqual(rv.json["data"]["items"][0]["api_id"], 154)
+            self.assertEqual(rv.json["data"]["items"][0]["name"], "Friends")
+            self.assertEqual(rv.json["data"]["items"][0]["media_type"], "series")
+            self.assertEqual(rv.json["data"]["items"][0]["date"], "1994-09-22")
+            self.assertEqual(rv.json["data"]["items"][0]["image_cover"], "https://example.com/friends.jpg")
+            self.assertEqual(rv.json["data"]["total"], 1)
+            self.assertEqual(rv.json["data"]["pages"], 1)
+
         with mock.patch("backend.api.routes.search.TMDBApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=TMDB", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 0
-            assert rv.json["data"]["total"] == 0
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 0)
+            self.assertEqual(rv.json["data"]["total"], 0)
+            self.assertEqual(rv.json["data"]["pages"], 1)
         with mock.patch("backend.api.routes.search.TMDBApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
@@ -89,22 +91,22 @@ class SearchTests(BaseTest):
 
             rv = self.client.get("/api/autocomplete?q=halo&selector=IGDB", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 1
-            assert rv.json["data"]["items"][0]["api_id"] == 12
-            assert rv.json["data"]["items"][0]["name"] == "Halo"
-            assert rv.json["data"]["items"][0]["media_type"] == "games"
-            assert rv.json["data"]["items"][0]["date"] == "2001-11-15"
-            assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/halo.jpg"
-            assert rv.json["data"]["total"] == 1
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 1)
+            self.assertEqual(rv.json["data"]["items"][0]["api_id"], 12)
+            self.assertEqual(rv.json["data"]["items"][0]["name"], "Halo")
+            self.assertEqual(rv.json["data"]["items"][0]["media_type"], "games")
+            self.assertEqual(rv.json["data"]["items"][0]["date"], "2001-11-15")
+            self.assertEqual(rv.json["data"]["items"][0]["image_cover"], "https://example.com/halo.jpg")
+            self.assertEqual(rv.json["data"]["total"], 1)
+            self.assertEqual(rv.json["data"]["pages"], 1)
         with mock.patch("backend.api.routes.search.GamesApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=IGDB", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 0
-            assert rv.json["data"]["total"] == 0
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 0)
+            self.assertEqual(rv.json["data"]["total"], 0)
+            self.assertEqual(rv.json["data"]["pages"], 1)
         with mock.patch("backend.api.routes.search.GamesApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
@@ -127,22 +129,24 @@ class SearchTests(BaseTest):
 
             rv = self.client.get("/api/autocomplete?q=harry%20potter&selector=BOOKS", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 1
-            assert rv.json["data"]["items"][0]["api_id"] == "zfv467z7f"
-            assert rv.json["data"]["items"][0]["name"] == "Harry Potter"
-            assert rv.json["data"]["items"][0]["media_type"] == "books"
-            assert rv.json["data"]["items"][0]["date"] == "1997-07-15"
-            assert rv.json["data"]["items"][0]["image_cover"] == "https://example.com/harry_potter.jpg"
-            assert rv.json["data"]["total"] == 1
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 1)
+            self.assertEqual(rv.json["data"]["items"][0]["api_id"], "zfv467z7f")
+            self.assertEqual(rv.json["data"]["items"][0]["name"], "Harry Potter")
+            self.assertEqual(rv.json["data"]["items"][0]["media_type"], "books")
+            self.assertEqual(rv.json["data"]["items"][0]["date"], "1997-07-15")
+            self.assertEqual(rv.json["data"]["items"][0]["image_cover"], "https://example.com/harry_potter.jpg")
+            self.assertEqual(rv.json["data"]["total"], 1)
+            self.assertEqual(rv.json["data"]["pages"], 1)
+
         with mock.patch("backend.api.routes.search.BooksApiManager.create_search_results") as mock_search:
             mock_search.return_value = {"items": [], "total": 0, "pages": 1}
 
             rv = self.client.get("/api/autocomplete?q=toto&selector=BOOKS", headers=self.connexion())
             self.assertEqual(rv.status_code, 200)
-            assert len(rv.json["data"]["items"]) == 0
-            assert rv.json["data"]["total"] == 0
-            assert rv.json["data"]["pages"] == 1
+            self.assertEqual(len(rv.json["data"]["items"]), 0)
+            self.assertEqual(rv.json["data"]["total"], 0)
+            self.assertEqual(rv.json["data"]["pages"], 1)
+
         with mock.patch("backend.api.routes.search.BooksApiManager.search") as mock_search:
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 

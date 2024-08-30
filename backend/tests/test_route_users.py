@@ -26,11 +26,11 @@ class UserTests(BaseTest):
             self.assertEqual(rv.status_code, 204)
 
             send_email.assert_called_once()
-            assert send_email.call_args[1]["to"] == "user@example.com"
-            assert send_email.call_args[1]["username"] == "user"
-            assert send_email.call_args[1]["subject"] == "Register account"
-            assert send_email.call_args[1]["template"] == "register"
-            assert send_email.call_args[1]["callback"] == "http://localhost:3000/register_token"
+            self.assertEqual(send_email.call_args[1]["to"], "user@example.com")
+            self.assertEqual(send_email.call_args[1]["username"], "user")
+            self.assertEqual(send_email.call_args[1]["subject"], "Register account")
+            self.assertEqual(send_email.call_args[1]["template"], "register")
+            self.assertEqual(send_email.call_args[1]["callback"], "http://localhost:3000/register_token")
 
             token = send_email.call_args[1]["token"]
 
@@ -41,7 +41,7 @@ class UserTests(BaseTest):
                 "password": "pipou",
                 "callback": "http://localhost:3000/register_token",
             })
-            assert rv.status_code == 401
+            self.assertEqual(rv.status_code, 401)
 
             # Email should be unique
             rv = self.client.post("/api/register_user", json={
@@ -50,13 +50,13 @@ class UserTests(BaseTest):
                 "password": "pipou",
                 "callback": "http://localhost:3000/register_token",
             })
-            assert rv.status_code == 401
+            self.assertEqual(rv.status_code, 401)
 
             rv = self.client.post("/api/tokens/register_token", json={"token": token})
-            assert rv.status_code == 204
+            self.assertEqual(rv.status_code, 204)
 
             rv = self.client.post("/api/tokens/register_token", json={"token": token + "x"})
-            assert rv.status_code == 400
+            self.assertEqual(rv.status_code, 400)
 
     def test_create_invalid_user(self):
         rv = self.client.post("/api/register_user", json={
@@ -65,7 +65,7 @@ class UserTests(BaseTest):
             "password": "pipou",
             "callback": "http://localhost:3000/register_token",
         })
-        assert rv.status_code == 401
+        self.assertEqual(rv.status_code, 401)
 
         rv = self.client.post("/api/register_user", json={
             "username": "",
@@ -73,26 +73,29 @@ class UserTests(BaseTest):
             "password": "pipou",
             "callback": "http://localhost:3000/register_token",
         })
-        assert rv.status_code == 401
+        self.assertEqual(rv.status_code, 401)
 
     def test_get_current_user(self):
         rv = self.client.get("/api/current_user", headers=self.connexion())
-        assert rv.json["username"] == "test"
-        assert "password" not in rv.json and "email" not in rv.json
+        self.assertEqual(rv.json["username"], "test")
+        self.assertNotIn("password", rv.json)
+        self.assertNotIn("email", rv.json)
 
     def test_get_profile(self):
+        # TODO: Better test lol
+
         rv = self.client.get(f"/api/profile/test", headers=self.connexion())
         self.assertEqual(rv.status_code, 200)
 
         data = rv.json["data"]
-        assert "user_data" in data
-        assert "user_updates" in data
-        assert "follows" in data
-        assert "follows_updates" in data
-        assert "is_following" in data
-        assert "list_levels" in data
-        assert "media_global" in data
-        assert "media_data" in data
+        self.assertIn("user_data", data)
+        self.assertIn("user_updates", data)
+        self.assertIn("follows", data)
+        self.assertIn("follows_updates", data)
+        self.assertIn("is_following", data)
+        self.assertIn("list_levels", data)
+        self.assertIn("media_global", data)
+        self.assertIn("media_data", data)
 
     def test_follows_followers_notifications(self):
         headers = self.connexion()
@@ -196,10 +199,10 @@ class UserTests(BaseTest):
         rv = self.client.get(f"/api/profile/test/history", headers=self.connexion())
 
         self.assertEqual(rv.status_code, 200)
-        assert "history" in rv.json["data"]
-        assert "active_page" in rv.json["data"]
-        assert "pages" in rv.json["data"]
-        assert "total" in rv.json["data"]
+        self.assertIn("history", rv.json["data"])
+        self.assertIn("active_page", rv.json["data"])
+        self.assertIn("pages", rv.json["data"])
+        self.assertIn("total", rv.json["data"])
 
         rv = self.client.get(f"/api/profile/janine/history", headers=self.connexion())
         self.assertEqual(rv.status_code, 404)
@@ -279,12 +282,12 @@ class UserTests(BaseTest):
         with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 200)
-            assert rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pics/")
+            self.assertEqual(rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pics/"), True)
 
         with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 200)
-            assert rv.json["updated_user"]["back_image"].startswith("/api/static/background_pics/")
+            self.assertEqual(rv.json["updated_user"]["back_image"].startswith("/api/static/background_pics/"), True)
 
     def test_settings_medialist(self):
         rv = self.client.post("/api/settings/medialist")

@@ -12,8 +12,6 @@
     },
     "genres_data": [],
     "authors_data": [
-        {
-            "name": "J.K. Rowling"
-        }
+        {"name": "J.K. Rowling"}
     ]
 }

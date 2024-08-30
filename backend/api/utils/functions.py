@@ -1,7 +1,7 @@
 import os
 import re
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Any, Iterable, Tuple
 from PIL import Image
 from flask import current_app, abort
@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 
 def get(state: Iterable, *path: Any, default: Any = None):
     """ Take an iterable and check if the path exists """
+
     try:
         for step in path:
             state = state[step]
@@ -75,7 +76,7 @@ def safe_div(a: float, b: float, percentage: bool = False):
 
 
 def is_latin(original_name: str) -> bool:
-    """ Check if name is Latin using iso-8859-1, if so return <True> else <False> """
+    """ Check if name is Latin using ISO-8859-1 """
 
     try:
         original_name.encode("iso-8859-1")
@@ -108,34 +109,6 @@ def int_to_money(value: int):
         exp += 1
 
     return f"{int(value)} {suffixes[exp]}$"
-
-
-def display_time(minutes: int) -> str:
-    """ Display time in the MyLists <Stats> page """
-
-    dt = datetime.fromtimestamp(minutes * 60, timezone.utc)
-    years = dt.year - 1970
-    months = dt.month - 1
-    days = dt.day - 1
-    hours = dt.hour
-
-    time_components = []
-    if years > 0:
-        time_components.append(f"{years} years")
-    if months > 0:
-        time_components.append(f"{months} months")
-    if days > 0:
-        time_components.append(f"{days} days")
-    # noinspection PyChainedComparisons
-    if years <= 0 and months <= 0 and days <= 0 and hours > 0:
-        time_components.append(f"{hours} hours")
-    elif hours > 0:
-        time_components.append(f"and {hours} hours")
-
-    if not time_components:
-        return "0 hours"
-
-    return ", ".join(time_components)
 
 
 def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int, int, int]:

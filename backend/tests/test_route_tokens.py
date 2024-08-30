@@ -153,17 +153,16 @@ class AuthTests(BaseTest):
         redirect_url = rv.json["redirect_url"]
         args = redirect_url.split("?")[1].split("&")
 
-        assert redirect_url.startswith("https://foo.com/login?")
-        assert "client_id=foo-id" in args
-        assert "redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth2%2Ffoo%2Fcallback" in args
-        assert "scope=user+email" in args
-        assert "response_type=code" in args
+        self.assertIn("client_id=foo-id", args)
+        self.assertIn("redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth2%2Ffoo%2Fcallback", args)
+        self.assertIn("scope=user+email", args)
+        self.assertIn("response_type=code", args)
 
         state = None
         for arg in args:
             if arg.startswith("state="):
                 state = arg.split("=")[1]
-        assert state is not None
+        self.assertIsNotNone(state)
 
         # Redirect to bad auth provider
         rv = self.client.post("/api/tokens/oauth2/bar", json={

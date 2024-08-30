@@ -161,14 +161,14 @@ def update_rating(media_type: MediaType, media_id: int, payload: Any, models: Di
             if payload > 10 or payload < 0:
                 return abort(400, "Score needs to be between 0 and 10")
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
         return abort(404, "The media could not be found")
 
     if current_user.add_feeling:
-        media.feeling = payload
+        media_assoc.feeling = payload
     else:
-        media.score = payload
+        media_assoc.score = payload
 
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] [{media_type.value}] ID {media_id} "
@@ -186,7 +186,7 @@ def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict
     new_redo = payload
 
     if media_type == MediaType.GAMES:
-        return abort(400, "This value cannot be set for games")
+        return abort(400, "Games are not supported")
 
     if new_redo < 0 or new_redo > 10:
         return abort(400, "This value should to be between 0 and 10 included")
@@ -217,14 +217,14 @@ def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict
 def update_comment(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
     """ Update the media comment for a user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if media is None:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if media_assoc is None:
         return abort(404, "The media could not be found")
 
     if len(payload) > 2000:
         return abort(400, "This comment is too large. The limit is 2000 characters.")
 
-    media.comment = payload
+    media_assoc.comment = payload
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] updated a comment on {media_type} with ID [{media_id}]")
 
@@ -238,7 +238,7 @@ def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: 
     """ Update playtime of an updated game from a user """
 
     if media_type != MediaType.GAMES:
-        return abort(400, "This value can only be set for games")
+        return abort(400, "Only games are supported")
 
     if payload < 0 or payload > 10000:
         return abort(400, "Playtime needs to be comprise between 0 and 10000 hours.")
@@ -297,6 +297,9 @@ def update_season(media_type: MediaType, media_id: int, payload: Any, models: Di
 
     new_season = payload
 
+    if media_type not in (MediaType.ANIME, MediaType.SERIES):
+        return abort(400, "Only anime and series are supported")
+
     media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media_assoc:
         return abort(404, "The media could not be found")
@@ -336,6 +339,9 @@ def update_episode(media_type: MediaType, media_id: int, payload: Any, models: D
 
     new_eps = payload
 
+    if media_type not in (MediaType.ANIME, MediaType.SERIES):
+        return abort(400, "Only anime and series are supported")
+
     media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media_assoc:
         return abort(404, "The media could not be found")
@@ -374,22 +380,25 @@ def update_page(media_type: MediaType, media_id: int, payload: Any, models: Dict
 
     new_page = payload
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    if media_type != MediaType.BOOKS:
+        return abort(400, "Only books are supported")
 
-    if new_page > int(media.media.pages) or new_page < 0:
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
+        return abort(404, "Media not found")
+
+    if new_page > int(media_assoc.media.pages) or new_page < 0:
         return abort(400, "Invalid page value. Please provide a valid page number.")
 
-    old_page = media.actual_page
-    old_total = media.total
+    old_page = media_assoc.actual_page
+    old_total = media_assoc.total
 
-    media.actual_page = new_page
-    new_total = new_page + (media.redo * media.media.pages)
-    media.total = new_total
+    media_assoc.actual_page = new_page
+    new_total = new_page + (media_assoc.redo * media_assoc.media.pages)
+    media_assoc.total = new_total
 
-    UserMediaUpdate.set_new_update(media.media, UpdateType.PAGE, old_page, new_page)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.PAGE, old_page, new_page)
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] page updated to {new_page}")
