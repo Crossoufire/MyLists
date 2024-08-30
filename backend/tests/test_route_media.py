@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from typing import Dict
-from backend.api.utils.enums import MediaType, ModelTypes, Status
+from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.tests.base_test import BaseTest
 
@@ -540,6 +540,60 @@ class MediaTests(BaseTest):
             assert rv.status_code == 204
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
             assert query.comment == "This is a comment"
+
+    def test_update_platform(self):
+        headers = self.connexion()
+        self.create_all_media()
+
+        model_list = ModelsManager.get_unique_model(MediaType.GAMES, ModelTypes.LIST)
+
+        rv = self.client.post("/api/update_platform", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.GAMES.value,
+            "payload": GamesPlatformsEnum.XBOX.value,
+        })
+        self.assertEqual(rv.status_code, 404)
+
+        rv = self.client.post("/api/add_media", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.GAMES.value,
+            "payload": "Playing",
+        })
+        self.assertEqual(rv.status_code, 200)
+
+        # Bad MediaType
+        rv = self.client.post("/api/update_platform", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.SERIES.value,
+            "payload": GamesPlatformsEnum.XBOX.value,
+        })
+        self.assertEqual(rv.status_code, 400)
+
+        # Bad payload
+        rv = self.client.post("/api/update_platform", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.GAMES.value,
+            "payload": "toto",
+        })
+        self.assertEqual(rv.status_code, 400)
+
+        # Reset platform
+        rv = self.client.post("/api/update_platform", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.GAMES.value,
+            "payload": None,
+        })
+        self.assertEqual(rv.status_code, 204)
+
+        # Update platform
+        rv = self.client.post("/api/update_platform", headers=headers, json={
+            "media_id": 1,
+            "media_type": MediaType.GAMES.value,
+            "payload": GamesPlatformsEnum.GAME_BOY_ADVANCE.value,
+        })
+        self.assertEqual(rv.status_code, 204)
+        query = model_list.query.filter_by(user_id=1, media_id=1).first()
+        self.assertEqual(query.platform, GamesPlatformsEnum.GAME_BOY_ADVANCE)
 
     def test_update_playtime(self):
         headers = self.connexion()

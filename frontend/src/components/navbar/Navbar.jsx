@@ -128,12 +128,12 @@ export const Navbar = () => {
                         <SheetTrigger className="flex items-center">
                             <LuAlignJustify size={28}/>
                         </SheetTrigger>
-                        <SheetContent side="left" className="max-sm:w-full overflow-y-auto">
+                        <SheetContent side="left" className="max-sm:w-full">
                             <SheetHeader>
                                 <SheetTitle></SheetTitle>
                                 <SheetDescription></SheetDescription>
                             </SheetHeader>
-                            <Nav.NavigationMenu className="mt-4">
+                            <Nav.NavigationMenu className="mt-3">
                                 <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
                                     <Nav.NavigationMenuItem className="mt-4">
                                         <SearchBar currentUser={currentUser}/>

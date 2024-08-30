@@ -23,7 +23,7 @@ const tabConfig = [
 
 
 function SettingsPage() {
-    const [selectedTab, handleTabChange] = useHashTab("General");
+    const [selectedTab, handleTabChange] = useHashTab("General", "settings_tab");
 
     return (
         <PageTitle title="Settings" subtitle="Customize Your Profile: Manage Your Preferences and Account Settings">

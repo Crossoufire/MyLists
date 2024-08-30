@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_private/coming-next")({
 
 function ComingNextPage() {
     const apiData = Route.useLoaderData();
-    const [selectedTab, handleTabChange] = useHashTab("series");
+    const [selectedTab, handleTabChange] = useHashTab("series", "coming_next_tab");
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">

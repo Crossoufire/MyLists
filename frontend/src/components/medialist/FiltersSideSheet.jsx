@@ -7,16 +7,16 @@ import {Input} from "@/components/ui/input";
 import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
-import * as Sheet from "@/components/ui/sheet";
 import * as Pop from "@/components/ui/popover";
+import * as Sheet from "@/components/ui/sheet";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
+import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
 import {capitalize, getLangCountryName} from "@/lib/utils";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
-import {FaArrowRightLong, FaCircleQuestion} from "react-icons/fa6";
 import {Route} from "@/routes/_private/list/$mediaType.$username.jsx";
-
+import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
 
 function getListSearchFilters(mediaType) {
     const mapping = {
@@ -24,7 +24,7 @@ function getListSearchFilters(mediaType) {
         "anime": ["actors", "creators", "networks"],
         "movies": ["actors", "directors"],
         "books": ["authors"],
-        "games": ["platforms", "companies"],
+        "games": ["companies"],
     };
     return mapping[mediaType];
 }
@@ -77,33 +77,38 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                 <Sheet.SheetHeader>
                     <Sheet.SheetTitle>Additional Filters</Sheet.SheetTitle>
                     <Sheet.SheetDescription>
-                        How filters works &nbsp;
-                        <FilterInfoPopover/>
+                        <div className="flex items-center space-x-2">
+                            How filters works &nbsp;
+                            <FilterInfoPopover/>
+                        </div>
                     </Sheet.SheetDescription>
                 </Sheet.SheetHeader>
-                <form onSubmit={handleOnSubmit} className="overflow-auto max-h-[98%]">
+                <Separator/>
+                <form onSubmit={handleOnSubmit}>
                     {isLoading ?
                         <div className="flex items-center justify-center h-[85vh]">
                             <Loading/>
                         </div>
                         :
                         <div className="mt-3 mb-6 space-y-4">
-                            {!isCurrent &&
-                                <div className="flex items-center gap-3">
-                                    <Checkbox
-                                        id="commonCheck"
-                                        defaultChecked={search.common}
-                                        onCheckedChange={() => registerChange("common", !search.common)}
-                                    />
-                                    <label htmlFor="commonCheck" className="cursor-pointer">Hide Common</label>
-                                </div>
-                            }
                             <CheckboxGroup
                                 title="Status"
                                 items={allStatus}
                                 onChange={(status) => registerChange("status", [status])}
                                 defaultChecked={(status) => search.status?.includes(status)}
                             />
+                            {smallFilters.platforms.length > 0 &&
+                                <>
+                                    <Separator/>
+                                    <CheckboxGroup
+                                        title="Platforms"
+                                        items={smallFilters.platforms}
+                                        onChange={(plat) => registerChange("platforms", [plat])}
+                                        defaultChecked={(plat) => search.platforms?.includes(plat)}
+                                    />
+                                </>
+                            }
+                            <Separator/>
                             {searchFiltersList.map(job =>
                                 <SearchFilter
                                     key={job}
@@ -112,60 +117,86 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                     registerChange={registerChange}
                                 />
                             )}
+                            <Separator/>
                             <CheckboxGroup
                                 title="Genres"
                                 items={smallFilters.genres ?? []}
                                 onChange={(genre) => registerChange("genres", [genre])}
                                 defaultChecked={(genre) => search.genres?.includes(genre)}
                             />
-                            {smallFilters.langs &&
-                                <div>
-                                    <h3 className="text-lg font-semibold">Languages/Countries</h3>
-                                    <div className="grid grid-cols-2 max-h-[190px] max-w-[310px] overflow-auto">
-                                        {smallFilters.langs?.map(lang =>
-                                            <div key={lang} className="col-span-1 flex items-center gap-3">
-                                                <Checkbox
-                                                    id={`${lang}-id`}
-                                                    defaultChecked={search.langs?.includes(lang)}
-                                                    onCheckedChange={() => registerChange("langs", [lang])}
-                                                />
-                                                <label htmlFor={`${lang}-id`} className="cursor-pointer line-clamp-1">
-                                                    {(mediaType === "series" || mediaType === "anime") ?
-                                                        getLangCountryName(lang, "region")
-                                                        :
-                                                        getLangCountryName(lang, "language")
-                                                    }
-                                                </label>
-                                            </div>
-                                        )}
+                            <Separator/>
+                            {smallFilters.langs.length > 0 &&
+                                <>
+                                    <div className="space-y-2">
+                                        <h3 className="font-medium">Languages/Countries</h3>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {smallFilters.langs?.map(lang =>
+                                                <div key={lang} className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`${lang}-id`}
+                                                        defaultChecked={search.langs?.includes(lang)}
+                                                        onCheckedChange={() => registerChange("langs", [lang])}
+                                                    />
+                                                    <label htmlFor={`${lang}-id`}
+                                                           className="text-sm cursor-pointer line-clamp-1">
+                                                        {(mediaType === "series" || mediaType === "anime") ?
+                                                            getLangCountryName(lang, "region")
+                                                            :
+                                                            getLangCountryName(lang, "language")
+                                                        }
+                                                    </label>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                    <Separator/>
+                                </>
                             }
-                            <div>
-                                <h3 className="text-lg font-semibold">Miscellaneous</h3>
-                                <div className="flex items-center gap-3">
-                                    <Checkbox
-                                        id="favoriteCheck"
-                                        defaultChecked={search.favorite}
-                                        onCheckedChange={() => registerChange("favorite", !search.favorite)}
-                                    />
-                                    <label htmlFor="favoriteCheck" className="cursor-pointer">Favorites</label>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Checkbox
-                                        id="commentCheck"
-                                        defaultChecked={search.comment}
-                                        onCheckedChange={() => registerChange("comment", !search.comment)}
-                                    />
-                                    <label htmlFor="commentCheck" className="cursor-pointer">Comments</label>
+                            <div className="space-y-2">
+                                <h3 className="font-medium">Miscellaneous</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="favoriteCheck"
+                                            defaultChecked={search.favorite}
+                                            onCheckedChange={() => registerChange("favorite", !search.favorite)}
+                                        />
+                                        <label htmlFor="favoriteCheck"
+                                               className="text-sm cursor-pointer">Favorites</label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="commentCheck"
+                                            defaultChecked={search.comment}
+                                            onCheckedChange={() => registerChange("comment", !search.comment)}
+                                        />
+                                        <label htmlFor="commentCheck"
+                                               className="text-sm cursor-pointer">Comments</label>
+                                    </div>
+                                    {!isCurrent &&
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="commonCheck"
+                                                defaultChecked={search.common}
+                                                onCheckedChange={() => registerChange("common", !search.common)}
+                                            />
+                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
+                                        </div>
+                                    }
                                 </div>
                             </div>
-                            <CheckboxGroup
-                                title="Labels"
-                                items={smallFilters.labels ?? []}
-                                onChange={(label) => registerChange("labels", [label])}
-                                defaultChecked={(label) => search.labels?.includes(label)}
-                            />
+                            <Separator/>
+                            {smallFilters.labels.length > 0 &&
+                                <>
+                                    <CheckboxGroup
+                                        title="Labels"
+                                        items={smallFilters.labels ?? []}
+                                        onChange={(label) => registerChange("labels", [label])}
+                                        defaultChecked={(label) => search.labels?.includes(label)}
+                                    />
+                                    <Separator/>
+                                </>
+                            }
                             <Sheet.SheetFooter className="pr-2">
                                 <Sheet.SheetClose asChild className="w-full">
                                     <Button type="submit">Apply Filters</Button>
@@ -181,27 +212,42 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
 
 
 const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
+    const initVisibleItems = 14;
+    const [showAll, setShowAll] = useState(false);
+    const visibleItems = showAll ? items : items.slice(0, initVisibleItems);
+
+    const toggleShowAll = (ev) => {
+        ev.preventDefault();
+        setShowAll(!showAll);
+    };
+
     return (
-        <div>
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <div className="grid grid-cols-2 max-h-[190px] max-w-[310px] overflow-auto">
-                {items.map(item => (
-                    <div key={item} className="col-span-1 flex items-center gap-3">
+        <div className="space-y-2">
+            <h3 className="font-medium">{title}</h3>
+            <div className="grid grid-cols-2 gap-2">
+                {visibleItems.map(item => (
+                    <div key={item} className="flex items-center space-x-2">
                         <Checkbox
                             id={`${item}-id`}
                             defaultChecked={defaultChecked?.(item)}
                             onCheckedChange={() => onChange(item)}
                         />
-                        <label htmlFor={`${item}-id`} className="cursor-pointer line-clamp-1">{item}</label>
+                        <label htmlFor={`${item}-id`} className="text-sm cursor-pointer line-clamp-1">{item}</label>
                     </div>
                 ))}
             </div>
+            {items.length > initVisibleItems &&
+                <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
+                    {showAll ? <>Show Less <FaCaretUp className="h-4 w-4"/></> :
+                        <>Show More <FaCaretDown className="h-4 w-4"/></>}
+                </Button>
+            }
         </div>
     );
 };
 
 
-const SearchFilter = ({ job, dataList, registerChange }) => {
+const SearchFilter = ({job, dataList, registerChange}) => {
     const searchRef = useRef();
     const [results, setResults] = useState();
     const {mediaType, username} = Route.useParams();
@@ -254,7 +300,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 
     return (
         <div>
-            <h3 className="text-lg font-semibold">{capitalize(job)}</h3>
+            <h3 className="font-medium">{capitalize(job)}</h3>
             <div ref={searchRef} className="mt-1 w-56 relative">
                 <Input
                     value={query}
@@ -323,25 +369,23 @@ const FilterInfoPopover = () => (
         <Pop.PopoverTrigger>
             <FaCircleQuestion/>
         </Pop.PopoverTrigger>
-        <Pop.PopoverContent className="w-full space-y-3">
-            <div className="-mt-2 text-lg font-semibold underline underline-offset-2">
+        <Pop.PopoverContent className="w-full space-y-2" align="left">
+            <div className="-mt-2 font-medium underline underline-offset-2">
                 Examples
             </div>
-            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
-                <Badge>Drama</Badge> + <Badge>Crime</Badge> <FaArrowRightLong/>
-                <Badge>Drama</Badge> OR <Badge>Crime</Badge>
+            <div>
+                Drama + Crime
+                <br/>
+                <FaArrowRightLong className="inline-block"/>&nbsp;
+                <br/>
+                (Drama <b>OR</b> Crime)
             </div>
-            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
-                <Badge>Drama</Badge> + <Badge>Crime</Badge> + <Badge
-                variant="destructive">France</Badge> <FaArrowRightLong/>
-                <Badge>Drama</Badge> OR <Badge>Crime</Badge> from <Badge
-                variant="destructive">France</Badge>
-            </div>
-            <div className="p-2 bg-neutral-800 rounded-md space-y-1">
-                <Badge>Drama</Badge> + <Badge>Crime</Badge> + <Badge
-                variant="destructive">France</Badge> + <Badge className="bg-green-900 text-white">Watching</Badge>
-                <FaArrowRightLong/> <Badge>Drama</Badge> OR <Badge>Crime</Badge> from <Badge
-                variant="destructive">France</Badge> AND <Badge className="bg-green-900 text-white">Watching</Badge>
+            <div>
+                Drama + Crime + France
+                <br/>
+                <FaArrowRightLong className="inline-block"/>&nbsp;
+                <br/>
+                (Drama <b>OR</b> Crime) <b>AND</b> France
             </div>
         </Pop.PopoverContent>
     </Pop.Popover>

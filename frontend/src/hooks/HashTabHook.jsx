@@ -1,21 +1,19 @@
 import {useEffect, useState} from "react";
-import {useLocation, useNavigate} from "@tanstack/react-router";
 
 
-export const useHashTab = (defaultTab) => {
-    const location = useLocation();
-    const navigate = useNavigate();
+export const useHashTab = (defaultTab, storageKey) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab);
 
     useEffect(() => {
-        if (location.hash === "") return;
-        setSelectedTab(decodeURIComponent(location.hash.replace("#", "")));
-    }, [location.hash, defaultTab]);
+        const storedTab = localStorage.getItem(storageKey);
+        if (storedTab) {
+            setSelectedTab(storedTab);
+        }
+    }, [storageKey]);
 
-    const handleTabChange = (value) => {
-        setSelectedTab(value);
-        // noinspection JSCheckFunctionSignatures
-        void navigate( { hash: value });
+    const handleTabChange = (newTab) => {
+        setSelectedTab(newTab);
+        localStorage.setItem(storageKey, newTab);
     };
 
     return [selectedTab, handleTabChange];

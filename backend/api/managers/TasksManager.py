@@ -31,10 +31,6 @@ class TasksManager(metaclass=TasksManagerMeta):
     def __init__(self):
         self._initialize_media_models()
 
-    @classmethod
-    def get_subclass(cls, media_type: MediaType) -> Type[TasksManager]:
-        return cls.subclasses.get(media_type, cls)
-
     def _initialize_media_models(self):
         media_models = ModelsManager.get_dict_models(self.GROUP, "all")
 
@@ -52,13 +48,17 @@ class TasksManager(metaclass=TasksManagerMeta):
         self.media_platform = media_models.get(ModelTypes.PLATFORMS)
         self.media_companies = media_models.get(ModelTypes.COMPANIES)
 
+    @classmethod
+    def get_subclass(cls, media_type: MediaType) -> Type[TasksManager]:
+        return cls.subclasses.get(media_type, cls)
+
     @staticmethod
     def reactivate_update_modal(value: bool = True):
         db.session.execute(db.update(User).values(show_update_modal=value))
         db.session.commit()
 
     @staticmethod
-    def get_active_users(days: int = 180):
+    def get_active_users(days: int = 30):
         delta_time = datetime.now() - timedelta(days=days)
         if days < 30:
             period_repr = f"< {days} days"
@@ -66,8 +66,26 @@ class TasksManager(metaclass=TasksManagerMeta):
             months = days // 30
             period_repr = f"< {months} months"
 
-        active_user_count = User.query.filter(User.last_seen >= delta_time).count()
-        print(f"### Active users ({period_repr}) = {active_user_count}")
+        active_users = (
+            User.query.filter(User.last_seen >= delta_time)
+            .order_by(User.last_seen.desc())
+            .all()
+        )
+
+        headers = ["Username", "Last Seen"]
+        table_data = [[user.username, user.last_seen.strftime("%Y-%m-%d %H:%M:%S")] for user in active_users]
+        col_widths = [max(len(str(row[i])) for row in [headers] + table_data) for i in range(len(headers))]
+
+        separator = "+" + "+".join("-" * (width + 2) for width in col_widths) + "+"
+        row_format = "|" + "|".join(" {:%d} " % width for width in col_widths) + "|"
+
+        print(f"\n### Active users ({period_repr}) = {len(active_users)}")
+        print(separator)
+        print(row_format.format(*headers))
+        print(separator)
+        for row in table_data:
+            print(row_format.format(*row))
+        print(separator)
 
     @staticmethod
     def delete_non_activated_users(days: int = 7):

@@ -5,7 +5,7 @@ from sqlalchemy import func, ColumnElement
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
-from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, GamesPlatformsEnum
 
 
 class Games(Media):
@@ -86,6 +86,7 @@ class GamesList(MediaList):
     DEFAULT_STATUS = Status.PLAYING
 
     media_id = db.Column(db.Integer, db.ForeignKey("games.id"), nullable=False)
+    platform = db.Column(db.Enum(GamesPlatformsEnum))
     playtime = db.Column(db.Integer)
 
     # --- Relationships -----------------------------------------------------------
@@ -103,8 +104,10 @@ class GamesList(MediaList):
         del media_dict["score"]
 
         media_dict["media_cover"] = self.media.media_cover
+        media_dict["platform"] = self.platform.value if self.platform else None
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = Status.by(self.GROUP)
+        media_dict["all_platforms"] = GamesPlatformsEnum.to_list()
 
         media_dict["rating"] = {
             "type": "feeling" if is_feeling else "score",

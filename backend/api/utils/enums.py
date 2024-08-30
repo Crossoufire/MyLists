@@ -125,12 +125,12 @@ class GamesPlatformsEnum(ExtendedEnum):
     PSP = "PSP"
     PS_VITA = "PS Vita"
 
-    XBOX_SERIES = "Xbox Series S|X"
+    XBOX_SERIES = "Xbox Series"
     XBOX_ONE = "Xbox One"
     XBOX_360 = "Xbox 360"
     XBOX = "Xbox"
 
-    NINTENDO_SWITCH = "Nintendo Switch"
+    NINTENDO_SWITCH = "Switch"
     WII_U = "Wii U"
     WII = "Wii"
     GAMECUBE = "Gamecube"
@@ -140,13 +140,12 @@ class GamesPlatformsEnum(ExtendedEnum):
 
     NINTENDO_3DS = "Nintendo 3DS"
     NINTENDO_DS = "Nintendo DS"
-    GAME_BOY_ADVANCE = "Game Boy Advance"
-    GAME_BOY_COLOR = "Game Boy Color"
+    GAME_BOY_ADVANCE = "GB Advance"
+    GAME_BOY_COLOR = "GB Color"
     GAME_BOY = "Game Boy"
 
     ARCADE = "Arcade"
 
-    OLD_SEGA_CONSOLE = "Old Sega Console"
-    OLD_ATARI_CONSOLE = "Old Atari Console"
-    OLD_PC_CONSOLE = "Old PC Console"
+    OLD_SEGA_CONSOLE = "Old Sega"
+    OLD_ATARI_CONSOLE = "Old Atari"
     OTHER = "Other"

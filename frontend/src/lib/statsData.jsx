@@ -35,23 +35,23 @@ const tvData = (apiData) => {
                     {
                         title: "Average Rating",
                         subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating,
+                        value: apiData.values.avg_rating || "-",
                     },
                     {
                         title: "Average Duration",
                         subtitle: "Duration in hours",
-                        value: apiData.values.avg_duration,
+                        value: apiData.values.avg_duration || "-",
                     },
                     {
                         title: "Average Updates",
                         subtitle: "Updates per month",
-                        value: apiData.values.avg_updates,
+                        value: apiData.values.avg_updates || "-",
                     },
                     {
                         title: "Top Country",
                         subtitle: `With ${apiData.lists.countries[0].value} media`,
-                        value: apiData.lists.countries[0].name,
-                        data: apiData.lists.countries,
+                        value: apiData.lists.countries[0].name || "-",
+                        data: (apiData.lists.countries[0]?.name != null) ? apiData.lists.countries : null,
                     },
                     {
                         title: "Total Seasons",
@@ -175,23 +175,23 @@ const moviesData = (apiData) => {
                     {
                         title: "Average Rating",
                         subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating,
+                        value: apiData.values.avg_rating || "-",
                     },
                     {
                         title: "Average Duration",
                         subtitle: "Duration in minutes",
-                        value: apiData.values.avg_duration,
+                        value: apiData.values.avg_duration || "-",
                     },
                     {
                         title: "Average Updates",
                         subtitle: "Updates per month",
-                        value: apiData.values.avg_updates,
+                        value: apiData.values.avg_updates || "-",
                     },
                     {
                         title: "Top Language",
                         subtitle: `With ${apiData.lists.languages[0].value} movies`,
-                        value: apiData.lists.languages[0].name,
-                        data: apiData.lists.languages,
+                        value: apiData.lists.languages[0].name || "-",
+                        data: (apiData.lists.languages[0]?.name != null) ? apiData.lists.languages : null,
                     },
                     {
                         title: "Total Budgets",
@@ -315,28 +315,28 @@ const booksData = (apiData) => {
                     {
                         title: "Average Rating",
                         subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating,
+                        value: apiData.values.avg_rating || "-",
                     },
                     {
                         title: "Average Pages",
                         subtitle: "Pages read",
-                        value: apiData.values.avg_pages,
+                        value: apiData.values.avg_pages || "-",
                     },
                     {
                         title: "Average Updates",
                         subtitle: "Updates per month",
-                        value: apiData.values.avg_updates,
+                        value: apiData.values.avg_updates || "-",
                     },
                     {
                         title: "Top Language",
                         subtitle: `With ${apiData.lists.languages[0].value} books`,
-                        value: apiData.lists.languages[0].name,
-                        data: apiData.lists.languages,
+                        value: apiData.lists.languages[0].name || "-",
+                        data: (apiData.lists.languages[0]?.name != null) ? apiData.lists.languages : null,
                     },
                     {
                         title: "Total Pages",
                         subtitle: "Cumulated pages",
-                        value: formatNumberWithSpaces(apiData.values.total_pages),
+                        value: formatNumberWithSpaces(apiData.values.total_pages) || "-",
                     },
                     {
                         title: "Total Favorites",
@@ -450,35 +450,35 @@ const gamesData = (apiData) => {
                     {
                         title: "Average Playtime",
                         subtitle: `Playtime in hours`,
-                        value: apiData.values.avg_playtime,
+                        value: apiData.values.avg_playtime || "-",
                     },
                     {
                         title: "Average Rating",
                         subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating,
+                        value: apiData.values.avg_rating || "-",
                     },
                     {
                         title: "Average Updates",
                         subtitle: "Updates per month",
-                        value: apiData.values.avg_updates,
+                        value: apiData.values.avg_updates || "-",
                     },
                     {
                         title: "Top Engine",
                         subtitle: `With ${apiData.lists.engines[0].value} games`,
-                        value: apiData.lists.engines[0].name,
-                        data: apiData.lists.engines,
+                        value: apiData.lists.engines[0].name || "-",
+                        data: (apiData.lists.engines[0]?.name != null) ? apiData.lists.engines : null,
                     },
                     {
                         title: "Top Perspective",
                         subtitle: `With ${apiData.lists.perspectives[0].value} games`,
-                        value: apiData.lists.perspectives[0].name,
-                        data: apiData.lists.perspectives,
+                        value: apiData.lists.perspectives[0].name || "-",
+                        data: (apiData.lists.perspectives[0]?.name != null) ? apiData.lists.perspectives : null,
                     },
                     {
                         title: "Top Mode",
                         subtitle: `With ${apiData.lists.modes[0].value} games`,
-                        value: apiData.lists.modes[0].name,
-                        data: apiData.lists.modes,
+                        value: apiData.lists.modes[0].name || "-",
+                        data: (apiData.lists.modes[0]?.name != null) ? apiData.lists.modes : null,
                     },
                     {
                         title: "Total Favorites",
@@ -526,6 +526,20 @@ const gamesData = (apiData) => {
             }
         },
         {
+            sidebarTitle: "Platforms Statistics",
+            cards: {
+                cardsPerRow: 3,
+                cardsPerPage: 3,
+                isCarouselActive: false,
+                dataList: getCardsData(apiData.lists.platforms, "Played"),
+            },
+            lists: {
+                listsPerRow: 3,
+                asGraph: false,
+                dataList: getListsData(apiData.lists.platforms, "Played"),
+            }
+        },
+        {
             sidebarTitle: "Developers Statistics",
             cards: {
                 cardsPerRow: 3,
@@ -554,31 +568,17 @@ const gamesData = (apiData) => {
             }
         },
         {
-            sidebarTitle: "Platforms Statistics",
-            cards: {
-                cardsPerRow: 3,
-                cardsPerPage: 3,
-                isCarouselActive: false,
-                dataList: getCardsData(apiData.lists.platforms, "Played"),
-            },
-            lists: {
-                listsPerRow: 3,
-                asGraph: false,
-                dataList: getListsData(apiData.lists.platforms, "Played"),
-            }
-        },
-        {
             sidebarTitle: "Genres Statistics",
             cards: {
                 cardsPerRow: 3,
                 cardsPerPage: 3,
                 isCarouselActive: false,
-                dataList: getCardsData(apiData.lists.genres, "Read"),
+                dataList: getCardsData(apiData.lists.genres, "Played"),
             },
             lists: {
                 listsPerRow: 3,
                 asGraph: false,
-                dataList: getListsData(apiData.lists.genres, "Read"),
+                dataList: getListsData(apiData.lists.genres, "Played"),
             }
         },
     ];

@@ -31,7 +31,7 @@ function StatsPage() {
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);
-    const [selectedTab, handleTabChange] = useHashTab("Main Statistics");
+    const [selectedTab, handleTabChange] = useHashTab("Main Statistics", "stats_tab");
     const statsData = dataToLoad(mediaType, apiData.stats);
 
     const addComparison = async (user) => {
@@ -66,6 +66,7 @@ function StatsPage() {
                             resetValue={otherUser}
                             dataList={apiData.users}
                             callback={addComparison}
+                            placeholder="Search user..."
                         />
                         {otherUser &&
                             <Tooltip text="Remove comparison" side="right">

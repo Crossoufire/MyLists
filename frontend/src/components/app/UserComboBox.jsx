@@ -6,7 +6,7 @@ import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
-export const UserComboBox = ({ resetValue = "", dataList, callback }) => {
+export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback }) => {
     const [value, setValue] = useState(resetValue);
     const [open, setOpen] = useState(false);
 
@@ -24,7 +24,7 @@ export const UserComboBox = ({ resetValue = "", dataList, callback }) => {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button role="combobox" variant="outline" className="w-[200px] justify-between" aria-expanded={open}>
-                    {value ? dataList.find(user => user.value === value)?.label : "Search user..."}
+                    {value ? dataList.find(user => user.value === value)?.label : placeholder}
                     <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                 </Button>
             </PopoverTrigger>

@@ -6,7 +6,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User
-from backend.api.utils.enums import Status, MediaType, ModelTypes
+from backend.api.utils.enums import Status, MediaType, ModelTypes, GamesPlatformsEnum
 from backend.api.utils.functions import get
 
 
@@ -53,18 +53,14 @@ class ListQueryManager:
 
     def _initialize_media_models(self):
         media_models = ModelsManager.get_dict_models(self.media_type, "all")
-
-        # Always exists
         self.media = media_models[ModelTypes.MEDIA]
         self.media_list = media_models[ModelTypes.LIST]
         self.media_genre = media_models[ModelTypes.GENRE]
         self.media_label = media_models[ModelTypes.LABELS]
 
-        # Media type dependent
         self.media_actors = media_models.get(ModelTypes.ACTORS)
         self.media_network = media_models.get(ModelTypes.NETWORK)
         self.media_authors = media_models.get(ModelTypes.AUTHORS)
-        self.media_platform = media_models.get(ModelTypes.PLATFORMS)
         self.media_companies = media_models.get(ModelTypes.COMPANIES)
 
     def _create_filter(self, attr: str, model_attr: Any) -> ColumnElement | bool:
@@ -127,13 +123,13 @@ class ListQueryManager:
         if self.media_type not in (MediaType.SERIES, MediaType.ANIME):
             return True
         if self.ALL_VALUE in self.creators:
-            self.creators = []
             return True
         return self.media.created_by.ilike(f"%{' '.join(self.creators)}%")
 
     @property
     def directors_filter(self) -> ColumnElement | bool:
         if self.media_type != MediaType.MOVIES:
+            self.directors = []
             return True
         return self._create_filter("directors", self.media.director_name)
 
@@ -155,7 +151,13 @@ class ListQueryManager:
 
     @property
     def platforms_filter(self) -> ColumnElement | bool:
-        return True if not self.media_platform else self._create_filter("platforms", self.media_platform.name)
+        if self.media_type != MediaType.GAMES or self.platforms[0] == self.ALL_VALUE:
+            return True
+        platforms = [GamesPlatformsEnum(plat) for plat in self.platforms]
+        print(platforms)
+        if not platforms:
+            return True
+        return self.media_list.platform.in_(platforms)
 
     def _calculate_common_ids(self) -> List[int]:
         subq = (
@@ -175,9 +177,8 @@ class ListQueryManager:
             (self.media_label, "labels"),
             (self.media_actors, "actors"),
             (self.media_authors, "authors"),
-            (self.media_platform, "platforms"),
-            (self.media_companies, "companies"),
             (self.media_network, "networks"),
+            (self.media_companies, "companies"),
         ]
 
         for model, value in joins:
@@ -253,6 +254,7 @@ class SmallListFiltersManager:
         self.media_list = media_models[ModelTypes.LIST]
         self.media_genre = media_models[ModelTypes.GENRE]
         self.media_label = media_models[ModelTypes.LABELS]
+        self.media_platform = media_models.get(ModelTypes.PLATFORMS)
 
     def _get_language_attribute(self) -> Optional[ColumnElement]:
         if self.media_type == MediaType.MOVIES:
@@ -272,8 +274,7 @@ class SmallListFiltersManager:
 
         results = (
             db.session.query(*attrs).select_from(self.media_list).join(self.media)
-            .outerjoin(self.media.genres).outerjoin(self.media.labels)
-            .filter(self.media_list.user_id == self.user.id)
+            .outerjoin(self.media.genres).filter(self.media_list.user_id == self.user.id)
             .first()
         )
 
@@ -283,10 +284,20 @@ class SmallListFiltersManager:
             .all()
         )
 
+        platforms_results = []
+        if self.media_type == MediaType.GAMES:
+            platforms_results = (
+                self.media_list.query.with_entities(self.media_list.platform.distinct())
+                .filter(self.media_list.user_id == self.user.id, self.media_list.platform.is_not(None))
+                .all()
+            )
+            platforms_results = [plat[0].value for plat in platforms_results] if platforms_results else []
+
         data = dict(
             labels=[label[0] for label in labels_results] or [],
             genres=results.genres.split(",") if results.genres else [],
             langs=results.langs.split(",") if getattr(results, "langs", None) else [],
+            platforms=platforms_results,
         )
 
         return data
@@ -348,15 +359,6 @@ class ListFiltersManager:
         )
         return [company[0] for company in query]
 
-    def _platforms_filters(self) -> List[str]:
-        query = (
-            db.session.query(self.media_platform.name).join(self.media.platforms_rl)
-            .join(self.media_list).filter(self.media_list.user_id == self.user.id)
-            .group_by(self.media_platform.name).filter(self.media_platform.name.ilike(f"%{self.search}%"))
-            .all()
-        )
-        return [platform[0] for platform in query]
-
     def _creators_filters(self) -> List[str]:
         query = (
             db.session.query(self.media.created_by).join(self.media_list)
@@ -385,7 +387,6 @@ class ListFiltersManager:
             "actors": self._actors_filters,
             "authors": self._authors_filters,
             "companies": self._companies_filters,
-            "platforms": self._platforms_filters,
             "creators": self._creators_filters,
             "networks": self._networks_filters,
             "directors": self._directors_filters,

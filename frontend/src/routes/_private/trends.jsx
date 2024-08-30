@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_private/trends")({
 
 function TrendsPage() {
     const apiData = Route.useLoaderData();
-    const [selectedTab, handleTabChange] = useHashTab("series");
+    const [selectedTab, handleTabChange] = useHashTab("series", "trends_tab");
 
     return (
         <PageTitle title="Week Trends" subtitle="The Series and Movies trending this week according to TMDB">

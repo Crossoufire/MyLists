@@ -5,7 +5,7 @@ from backend.api import db
 from backend.api.core import token_auth, current_user
 from backend.api.models.user import UserMediaUpdate
 from backend.api.utils.decorators import validate_json_data
-from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType, GamesPlatformsEnum
 from backend.api.managers.ModelsManager import ModelsManager
 
 media_bp = Blueprint("api_media", __name__)
@@ -256,6 +256,35 @@ def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: 
     media_assoc.playtime = new_playtime
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] {media_type.value} ID {media_id} playtime updated to {new_playtime}")
+
+    return {}, 204
+
+
+@media_bp.route("/update_platform", methods=["POST"])
+@token_auth.login_required
+@validate_json_data()
+def update_platform(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+    """ Update platform the user played on """
+
+    platform = payload
+
+    if media_type != MediaType.GAMES:
+        return abort(400, "Only games are supported")
+
+    if platform is not None:
+        try:
+            platform = GamesPlatformsEnum(platform)
+        except:
+            return abort(400, "Invalid platform")
+
+    media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    if not media_assoc:
+        return abort(404, "Media not found")
+
+    media_assoc.platform = platform
+    db.session.commit()
+    current_app.logger.info(f"[{current_user.id}] Games ID {media_id} "
+                            f"Platform updated to {platform.value if platform else None}")
 
     return {}, 204
 

@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 from typing import List, Type
+
 from sqlalchemy import func, text, ColumnElement
+
 from backend.api import db
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User, UserMediaUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money
-from backend.api.managers.ModelsManager import ModelsManager
 
 """ --- GENERAL ----------------------------------------------------------------------------------------- """
 
@@ -77,7 +80,7 @@ class StatsManager(metaclass=StatsManagerMeta):
             .filter(self.media_label.user_id == self.user.id)
             .scalar()
         )
-        self.data["values"]["total_labels"] = data
+        self.data["values"]["total_labels"] = data or 0
 
     def compute_ratings(self):
         range_ = list(range(6)) if self.user.add_feeling else [i * 0.5 for i in range(21)]
@@ -97,7 +100,7 @@ class StatsManager(metaclass=StatsManagerMeta):
         )
 
         rating_distrib.update({str(val): count for (val, count) in query})
-        self.data["values"]["avg_rating"] = round(avg_rating, 2) if isinstance(avg_rating, float) else "-"
+        self.data["values"]["avg_rating"] = round(avg_rating, 2) if isinstance(avg_rating, float) else None
         self.data["lists"]["rating"] = [{"name": v, "value": c} for (v, c) in rating_distrib.items()]
 
     def compute_updates(self):
@@ -114,7 +117,7 @@ class StatsManager(metaclass=StatsManagerMeta):
         updates_distrib = db.session.query(cte_query).all()
         avg_updates = db.session.query(func.avg(cte_query.c.updates)).scalar()
 
-        self.data["values"]["avg_updates"] = round(avg_updates, 2) if isinstance(avg_updates, float) else "-"
+        self.data["values"]["avg_updates"] = round(avg_updates, 2) if isinstance(avg_updates, float) else None
         self.data["lists"]["updates"] = [{"name": c, "value": v} for (v, c) in updates_distrib]
 
     def compute_release_dates(self):
@@ -151,47 +154,53 @@ class StatsManager(metaclass=StatsManagerMeta):
             filters = []
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
-        query = (
-                    db.session.query(metric, func.count(metric).label("count"))
-                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, *filters)
-                    .group_by(metric).order_by(text("count desc"))
-                    .limit(self.LIMIT).all()
-                ) or [("-", 0)]
+        query = db.session.query(metric, func.count(metric).label("count"))
+        if model.TYPE != ModelTypes.LIST:
+            query = query.join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
 
-        return query
+        query = (
+            query.filter(*self.common_filter, *filters, metric.is_not(None))
+            .group_by(metric).order_by(text("count desc"))
+            .limit(self.LIMIT).all()
+        )
+
+        return query or [(None, 0)]
 
     def _query_top_rated(self, model: db.Model, metric: ColumnElement, min_: int = 3, filters: List = None):
         if filters is None:
             filters = []
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
-        query = (
-                    db.session.query(metric, func.avg(self.rating).label("rating"))
-                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, self.rating.is_not(None), *filters)
-                    .group_by(metric).having((func.count(metric) >= min_))
-                    .order_by(text("rating desc"))
-                    .limit(self.LIMIT).all()
-                ) or [("-", 0)]
+        query = db.session.query(metric, func.avg(self.rating).label("rating"))
+        if model.TYPE != ModelTypes.LIST:
+            query = query.join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
 
-        return query
+        query = (
+            query.filter(*self.common_filter, self.rating.is_not(None), *filters)
+            .group_by(metric)
+            .having((func.count(metric) >= min_))
+            .order_by(text("rating desc"))
+            .limit(self.LIMIT).all()
+        )
+
+        return query or [(None, 0)]
 
     def _query_top_favorites(self, model: db.Model, metric: ColumnElement, filters: List = None):
         if filters is None:
             filters = []
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
-        query = (
-                    db.session.query(metric, func.count(self.media_list.favorite).label("count"))
-                    .join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
-                    .filter(*self.common_filter, self.media_list.favorite.is_(True), *filters)
-                    .group_by(metric)
-                    .order_by(text("count desc"))
-                    .limit(self.LIMIT).all()
-                ) or [("-", 0)]
+        query = db.session.query(metric, func.count(self.media_list.favorite).label("count"))
+        if model.TYPE != ModelTypes.LIST:
+            query = query.join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
 
-        return query
+        query = (
+            query.filter(*self.common_filter, self.media_list.favorite.is_(True), *filters)
+            .group_by(metric).order_by(text("count desc"))
+            .limit(self.LIMIT).all()
+        )
+
+        return query or [(None, 0)]
 
     def _query_misc_genres(self, genre_name: str):
         misc_genre = (
@@ -276,7 +285,7 @@ class TvStatsManager(TMDBStatsManager):
             .scalar()
         )
 
-        self.data["values"]["avg_duration"] = round(avg_duration / 60, 1) if isinstance(avg_duration, float) else "-"
+        self.data["values"]["avg_duration"] = round(avg_duration / 60, 1) if isinstance(avg_duration, float) else None
         self.data["lists"]["durations"] = [{"name": v / 60, "value": c} for (v, c) in duration_distrib]
 
     def compute_networks(self):
@@ -300,7 +309,7 @@ class TvStatsManager(TMDBStatsManager):
 
     def compute_countries(self):
         top_values = self._query_top_values(self.media, self.media.origin_country)
-        self.data["lists"]["countries"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
+        self.data["lists"]["countries"] = [{"name": d.capitalize() if d else None, "value": c} for (d, c) in top_values]
 
     def create_stats(self):
         self.compute_total_hours()
@@ -371,7 +380,7 @@ class MoviesStatsManager(TMDBStatsManager):
             .scalar()
         )
 
-        self.data["values"]["avg_duration"] = round(avg_duration, 2) if isinstance(avg_duration, float) else "-"
+        self.data["values"]["avg_duration"] = round(avg_duration, 2) if isinstance(avg_duration, float) else None
         self.data["lists"]["durations"] = [{"name": v, "value": c} for (v, c) in duration_distrib]
 
     def compute_directors(self):
@@ -397,7 +406,7 @@ class MoviesStatsManager(TMDBStatsManager):
 
     def compute_languages(self):
         top_values = self._query_top_values(self.media, self.media.original_language)
-        self.data["lists"]["languages"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
+        self.data["lists"]["languages"] = [{"name": d.capitalize() if d else None, "value": c} for (d, c) in top_values]
 
     def create_stats(self):
         self.compute_total_hours()
@@ -455,7 +464,7 @@ class BooksStatsManager(StatsManager):
             .scalar()
         )
 
-        self.data["values"]["avg_pages"] = round(avg_pages, 0) if isinstance(avg_pages, float) else "-"
+        self.data["values"]["avg_pages"] = round(avg_pages, 0) if isinstance(avg_pages, float) else None
         self.data["lists"]["pages"] = [{"name": v, "value": c} for (v, c) in pages_distrib]
 
     def compute_genres(self):
@@ -487,7 +496,7 @@ class BooksStatsManager(StatsManager):
 
     def compute_languages(self):
         top_values = self._query_top_values(self.media, self.media.language)
-        self.data["lists"]["languages"] = [{"name": d.capitalize(), "value": c} for (d, c) in top_values]
+        self.data["lists"]["languages"] = [{"name": d.capitalize() if d else None, "value": c} for (d, c) in top_values]
 
     def create_stats(self):
         self.compute_total_media()
@@ -539,7 +548,7 @@ class GamesStatsManager(StatsManager):
                         for i in range(len(play_bins) - 1)]
         avg_play = db.session.query(func.avg(self.media_list.playtime)).filter(*self.common_filter).scalar()
 
-        self.data["values"]["avg_playtime"] = round(avg_play / 60, 1) if isinstance(avg_play, float) else "-"
+        self.data["values"]["avg_playtime"] = round(avg_play / 60, 1) if isinstance(avg_play, float) else None
         self.data["lists"]["playtime"] = [{"name": v / 60, "value": c} for (v, c) in zip(play_bins, play_distrib)]
 
     def compute_genres(self):
@@ -576,14 +585,14 @@ class GamesStatsManager(StatsManager):
         }
 
     def compute_platforms(self):
-        top_values = self._query_top_values(self.media_platforms, self.media_platforms.name)
-        top_rated = self._query_top_rated(self.media_platforms, self.media_platforms.name)
-        top_favorited = self._query_top_favorites(self.media_platforms, self.media_platforms.name)
+        top_values = self._query_top_values(self.media_list, self.media_list.platform)
+        top_rated = self._query_top_rated(self.media_list, self.media_list.platform, min_=4)
+        top_favorited = self._query_top_favorites(self.media_list, self.media_list.platform)
 
         self.data["lists"]["platforms"] = {
-            "top_values": [{"name": d, "value": c} for (d, c) in top_values],
-            "top_rated": [{"name": d, "value": round(c, 2)} for (d, c) in top_rated],
-            "top_favorited": [{"name": d, "value": c} for (d, c) in top_favorited],
+            "top_values": [{"name": d.value if d else d, "value": c} for (d, c) in top_values],
+            "top_rated": [{"name": d.value if d else d, "value": round(c, 2)} for (d, c) in top_rated],
+            "top_favorited": [{"name": d.value if d else d, "value": c} for (d, c) in top_favorited],
         }
 
     def compute_modes(self):
@@ -591,11 +600,12 @@ class GamesStatsManager(StatsManager):
 
         data = (
             db.session.query(self.media.game_modes)
-            .join(*self.common_join).filter(*self.common_filter)
+            .join(*self.common_join).filter(*self.common_filter, self.media.game_modes.is_not(None))
             .all()
         )
-        game_modes = [mode for row in data for mode in row[0].split(",")]
-        mode_counts = Counter(game_modes)
+
+        game_modes = [mode for (row,) in data for mode in row.split(",")]
+        mode_counts = Counter(game_modes) or Counter({None: 0})
         self.data["lists"]["modes"] = [{"name": d, "value": c} for (d, c) in mode_counts.items()]
 
     def compute_engines(self):

@@ -31,6 +31,7 @@ export const usePostMediaCreator = (mediaId, mediaType) => {
         page: "/update_page",
         playtime: "/update_playtime",
         comment: "/update_comment",
+        platform: "/update_platform",
         refresh: "/details/refresh",
         addBookCover: "/details/add_book_cover",
         removeLabelFromMedia: "/remove_label_from_media",

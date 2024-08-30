@@ -126,7 +126,7 @@ def update_igdb_api_token():
     current_app.logger.info("###############################################################################")
 
 
-def get_active_users(days: int = 180):
+def get_active_users(days: int = 30):
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Getting Active Users -")
 

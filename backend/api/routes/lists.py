@@ -35,7 +35,6 @@ def media_list(media_type: MediaType, username: str):
 @lists_bp.route("/list/filters/<mediatype:media_type>/<username>", methods=["GET"])
 @token_auth.login_required
 def media_list_filters(media_type: MediaType, username: str):
-    """ Return small filters: genres, labels, and languages/country """
     user = current_user.check_autorization(username)
     filters = SmallListFiltersManager(user, media_type).return_filters()
     return jsonify(data=filters), 200
@@ -44,15 +43,14 @@ def media_list_filters(media_type: MediaType, username: str):
 @lists_bp.route("/list/search/filters/<mediatype:media_type>/<username>", methods=["GET"])
 @token_auth.login_required
 def media_list_search_filters(media_type: MediaType, username: str):
-    """ Return search filters: actors, authors, director, creator, companies, platforms, networks """
     user = current_user.check_autorization(username)
     filters = ListFiltersManager(user, media_type).return_filters()
     return jsonify(data=filters), 200
 
 
 @lists_bp.route("/stats/<mediatype:media_type>/<username>", methods=["GET"])
-@cache.cached(timeout=3600)
 @token_auth.login_required
+@cache.cached(timeout=3600)
 def stats_page(media_type: MediaType, username: str):
 
     user = current_user.check_autorization(username)
