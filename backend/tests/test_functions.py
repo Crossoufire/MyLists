@@ -5,7 +5,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import BadRequest
 from backend.api import db
 from backend.api.utils.functions import save_picture, compute_level, clean_html_text, is_latin, safe_div, get, \
-    int_to_money, reorder_seas_eps, format_datetime, resize_and_save_image
+    int_to_money, reorder_seas_eps, format_datetime, resize_and_save_image, format_to_download_as_csv
 from backend.tests.base_test import BaseTest
 
 
@@ -228,3 +228,36 @@ class UtilsFunctionTests(BaseTest):
 
         os.remove(temp_input_path)
         os.remove(temp_output_path)
+
+    def test_format_to_download_as_csv(self):
+        # "Normal case"
+        media_dict = {
+            "title": "Movie Title",
+            "rating": {"value": 8.5, "type": "score"},
+            "media_cover": "default.jpg",
+            "all_status": ["Watching", "Completed"],
+            "all_platforms": ["Netflix", "Hulu"],
+            "year": 2023,
+        }
+        expected_output = {
+            "title": "Movie Title",
+            "rating_value": 8.5,
+            "rating_type": "score",
+            "year": 2023,
+        }
+        self.assertEqual(format_to_download_as_csv(media_dict), expected_output)
+
+        # Empty media_dict
+        media_dict = {}
+        expected_output = {}
+        self.assertEqual(format_to_download_as_csv(media_dict), expected_output)
+
+        # Media_dict only attributes to remove
+        media_dict = {
+            "media_cover": "default.jpg",
+            "all_status": ["Watching", "Completed"],
+            "all_platforms": ["Xbox", "Playstation"],
+            "eps_per_season": [10, 10, 30],
+        }
+        expected_output = {}
+        self.assertEqual(format_to_download_as_csv(media_dict), expected_output)

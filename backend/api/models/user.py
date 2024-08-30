@@ -11,7 +11,6 @@ from sqlalchemy import desc, func, select, union_all, literal
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models import SearchableMixin
 from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
 from backend.api.utils.functions import compute_level, safe_div
 
@@ -437,7 +436,7 @@ class UserMediaSettings(db.Model):
         )
 
 
-class UserMediaUpdate(db.Model, SearchableMixin):
+class UserMediaUpdate(db.Model):
     UPDATE_THRESHOLD = 600
 
     id = db.Column(db.Integer, primary_key=True)
@@ -448,8 +447,6 @@ class UserMediaUpdate(db.Model, SearchableMixin):
     update_type = db.Column(db.Enum(UpdateType), nullable=False)
     payload = db.Column(db.TEXT, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
-
-    __searchable__ = ["media_name"]
 
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="updates", lazy="joined")

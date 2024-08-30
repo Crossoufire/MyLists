@@ -2,7 +2,7 @@ import os
 import re
 import secrets
 from datetime import datetime
-from typing import List, Any, Iterable, Tuple
+from typing import List, Any, Iterable, Tuple, Dict
 from PIL import Image
 from flask import current_app, abort
 from werkzeug.datastructures import FileStorage
@@ -30,7 +30,7 @@ def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = Tr
     """ Save an account picture """
 
     try:
-        image = Image.open(form_picture)
+        image = Image.open(form_picture.stream)
         if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
             return abort(400, "Invalid picture format")
 
@@ -43,7 +43,7 @@ def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = Tr
         else:
             save_path = os.path.join(current_app.root_path, "static/background_pics", picture_fn)
 
-        image.save(save_path)
+        image.save(save_path, save_all=True if image.format.lower() == "gif" else False)
         image.close()
 
         if old_picture and old_picture != "default.jpg":
@@ -147,4 +147,21 @@ def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, in
         img_resized.save(output_path, quality=90)
 
 
+def format_to_download_as_csv(media_dict: Dict) -> Dict:
+    """ Format the media assoc data to be downloaded as CSV """
 
+    # Flatten `rating` dict
+    if "rating" in media_dict:
+        rating = media_dict["rating"]
+        media_dict["rating_value"] = rating["value"]
+        media_dict["rating_type"] = rating["type"]
+        del media_dict["rating"]
+
+    # List of attributes to remove
+    attributes_to_remove = ["media_cover", "all_status", "all_platforms", "eps_per_season"]
+
+    # Remove unnecessary attributes
+    for attr in attributes_to_remove:
+        media_dict.pop(attr, None)
+
+    return media_dict

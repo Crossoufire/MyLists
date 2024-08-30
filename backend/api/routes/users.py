@@ -6,7 +6,7 @@ from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
-from backend.api.utils.functions import save_picture
+from backend.api.utils.functions import save_picture, format_to_download_as_csv
 from backend.api.managers.ModelsManager import ModelsManager
 
 users = Blueprint("api_users", __name__)
@@ -261,6 +261,15 @@ def settings_medialist():
     db.session.commit()
 
     return jsonify(updated_user=current_user.to_dict()), 200
+
+
+@users.route("/settings/download/<mediatype:media_type>", methods=["GET"])
+@token_auth.login_required
+def download_medialist(media_type: MediaType):
+    """ Download the selected medialist data """
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
+    media_data = list_model.query.filter_by(user_id=current_user.id).all()
+    return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200
 
 
 @users.route("/settings/password", methods=["POST"])

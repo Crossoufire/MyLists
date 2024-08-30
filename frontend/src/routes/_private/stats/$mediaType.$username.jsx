@@ -4,7 +4,6 @@ import {barTheme} from "@/lib/constants";
 import {dataToLoad} from "@/lib/statsData";
 import {capitalize, cn} from "@/lib/utils";
 import {fetcher} from "@/lib/fetcherLoader";
-import {useHashTab} from "@/hooks/HashTabHook";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Sidebar} from "@/components/app/Sidebar";
 import {Separator} from "@/components/ui/separator";
@@ -31,7 +30,7 @@ function StatsPage() {
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);
-    const [selectedTab, handleTabChange] = useHashTab("Main Statistics", "stats_tab");
+    const [selectedTab, handleTabChange] = useState("Main Statistics");
     const statsData = dataToLoad(mediaType, apiData.stats);
 
     const addComparison = async (user) => {
