@@ -1,7 +1,7 @@
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {MapDetails} from "@/components/media/general/MapDetails";
-import {capitalize, formatDateTime, formatMinutes} from "@/lib/utils";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
+import {capitalize, formatDateTime, formatMinutes} from "@/utils/functions";
 
 
 export const BooksDetails = ({ mediaData, mediaType }) => {

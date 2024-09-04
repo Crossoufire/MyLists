@@ -1,8 +1,9 @@
 import {useState} from "react";
-import {capitalize} from "@/lib/utils";
-import {fetcher} from "@/lib/fetcherLoader";
+import {capitalize} from "@/utils/functions";
 import {useUser} from "@/providers/UserProvider";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Header} from "@/components/medialist/Header";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaGrid} from "@/components/medialist/MediaGrid";
@@ -15,21 +16,23 @@ import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({
     component: MediaList,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ params, deps }) => fetcher(`/list/${params.mediaType}/${params.username}`, deps.search),
+    loader: ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.list(mediaType, username, search))
+    },
 });
 
 
 function MediaList() {
     const navigate = useNavigate();
     const {currentUser} = useUser();
-    const apiData = Route.useLoaderData();
+    const search = Route.useSearch();
     const {username, mediaType} = Route.useParams();
-    const isCurrent = (currentUser.id === apiData.user_data.id);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
+    const apiData = useSuspenseQuery(queryOptionsMap.list(mediaType, username, search)).data;
+    const isCurrent = (currentUser.id === apiData.user_data.id);
 
     const handleFilterChange = async (newFilters) => {
         const page = newFilters.page || 1;
-
         await navigate({
             search: (prev) => {
                 const updatedSearch = { ...prev };
@@ -62,9 +65,12 @@ function MediaList() {
         });
     };
 
+    console.log(apiData);
+
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
+                isCurrent={isCurrent}
                 userData={apiData.user_data}
                 pagination={apiData.pagination}
                 onFilterClick={() => setFiltersPanelOpen(true)}

@@ -1,26 +1,20 @@
-import {useEffect, useState} from "react";
-import {getPlaytimeValues} from "@/lib/utils";
-import {useMutation} from "@/hooks/LoadingHook";
+import {getPlaytimeValues} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const PlaytimeListDrop = ({ isCurrent, initPlaytime, updatePlaytime }) => {
+export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime }) => {
     const playValues = getPlaytimeValues();
-    const [isLoading, handleLoading] = useMutation();
-    const [playtime, setPlaytime] = useState(initPlaytime / 60);
+    const hoursPlaytime = playtime / 60;
 
-    const handlePlaytime = async (value) => {
-        const response = await handleLoading(updatePlaytime, value);
-        if (response) {
-            setPlaytime(value);
-        }
+    const handlePlaytime = async (playtimeInHours) => {
+        updatePlaytime.mutate({ payload: playtimeInHours * 60 });
     };
 
     return (
         <>
             {isCurrent ?
                 <div className="h-[28px]">
-                    <Select value={playtime} onValueChange={handlePlaytime} disabled={isLoading}>
+                    <Select value={hoursPlaytime} onValueChange={handlePlaytime} disabled={updatePlaytime.isPending}>
                         <SelectTrigger size="list" variant="noIcon">
                             <SelectValue/>
                         </SelectTrigger>
@@ -31,7 +25,7 @@ export const PlaytimeListDrop = ({ isCurrent, initPlaytime, updatePlaytime }) =>
                 </div>
                 :
                 <div className="h-[28px]">
-                    <div>{playtime} hours</div>
+                    <div>{hoursPlaytime} hours</div>
                 </div>
             }
         </>

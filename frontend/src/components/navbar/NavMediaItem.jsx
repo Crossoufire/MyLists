@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {Link} from "@tanstack/react-router";
 import {useSheet} from "@/providers/SheetProvider";
 import {NavigationMenuLink} from "@/components/ui/navigation-menu";

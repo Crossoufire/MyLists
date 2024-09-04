@@ -6,18 +6,17 @@ import {Input} from "@/components/ui/input";
 import {useUser} from "@/providers/UserProvider";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
+import {Link, useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
-import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const LoginForm = () => {
-	const router = useRouter();
-	const { login } = useUser();
+	const {login} = useUser();
 	const navigate = useNavigate();
 	const [error, setError] = useState("");
-	const [pending, setIsPending] = useState(false);
+	const [isPending, setIsIsPending] = useState(false);
 	const form = useForm({
 		defaultValues: { username: "", password: "" },
 		shouldFocusError: false,
@@ -25,9 +24,8 @@ export const LoginForm = () => {
 
 	const onSubmit = async (data) => {
 		setError("");
-
 		try {
-			setIsPending(true);
+			setIsIsPending(true);
 			const response = await login(data.username, data.password);
 			if (response.status === 401) {
 				return setError("Username or password incorrect");
@@ -37,29 +35,28 @@ export const LoginForm = () => {
 			}
 		}
 		finally {
-			setIsPending(false);
+			setIsIsPending(false);
 		}
 
-		await router.invalidate();
 		await navigate({ to: `/profile/${data.username}` });
 	};
 
 	const withProvider = async (provider) => {
 		setError("");
 		try {
-			setIsPending(true);
+			setIsIsPending(true);
 			const response = await api.get(`/tokens/oauth2/${provider}`, {
 				callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
 			});
 			if (!response.ok) {
-				setIsPending(false);
+				setIsIsPending(false);
 				return toast.error(response.body.description);
 			}
 			window.location.replace(response.body.redirect_url);
 		}
 		catch {
 			toast.error("An unexpected error occurred");
-			setIsPending(false);
+			setIsIsPending(false);
 		}
 	};
 
@@ -105,17 +102,17 @@ export const LoginForm = () => {
 						/>
 					</div>
 					{error && <FormError message={error}/>}
-					<FormButton pending={pending}>
+					<FormButton disabled={isPending}>
 						Login
 					</FormButton>
 				</form>
 			</Form>
 			<Separator className="mt-3" variant="large"/>
 			<div className="mt-3 flex-col space-y-2">
-				<FormButton variant="secondary" onClick={() => withProvider("google")} pending={pending}>
+				<FormButton variant="secondary" onClick={() => withProvider("google")} disabled={isPending}>
 					<FaGoogle size={20}/>&nbsp;&nbsp;Connexion via Google
 				</FormButton>
-				<FormButton variant="secondary" onClick={() => withProvider("github")} pending={pending}>
+				<FormButton variant="secondary" onClick={() => withProvider("github")} disabled={isPending}>
 					<FaGithub size={20}/>&nbsp;&nbsp;Connexion via Github
 				</FormButton>
 			</div>

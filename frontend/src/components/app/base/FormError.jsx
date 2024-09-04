@@ -1,6 +1,6 @@
-import {cn} from "@/lib/utils";
 import {useState} from "react";
 import {LuX} from "react-icons/lu";
+import {cn} from "@/utils/functions";
 import {ExclamationTriangleIcon} from "@radix-ui/react-icons";
 
 
@@ -11,9 +11,7 @@ export const FormError = ({ message, className }) => {
         setIsVisible(false);
     };
 
-    if (!isVisible) {
-        return null;
-    }
+    if (!isVisible) return null;
 
     return (
         <div

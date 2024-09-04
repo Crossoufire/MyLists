@@ -1,60 +1,59 @@
-import {cn} from "@/lib/utils";
-import {api} from "@/api/MyApiClient";
+import {cn} from "@/utils/functions";
 import {LuTrash, LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
-import {useMutation} from "@/hooks/LoadingHook";
+import {useQuery} from "@tanstack/react-query";
 import {FaQuestionCircle} from "react-icons/fa";
 import {useParams} from "@tanstack/react-router";
 import {useEffect, useRef, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
-import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
+import {MutedText} from "@/components/app/base/MutedText";
 import {FormButton} from "@/components/app/base/FormButton";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
 import {CheckIcon, ExclamationTriangleIcon} from "@radix-ui/react-icons";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Dialog, DialogContent, DialogDescription, DialogTitle} from "@/components/ui/dialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {
+    queryOptionsMap,
+    useAddLabelMutation,
+    useDeleteLabelMutation,
+    useRemoveLabelMutation,
+    useRenameLabelMutation
+} from "@/utils/mutations";
 
 
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {
     const inputRef = useRef();
-    const [_, handlePending] = useMutation();
-    const { mediaType } = useParams({ strict: false });
-    const [loading, setLoading] = useState(false);
+    const {mediaType} = useParams({ strict: false });
     const [labelsToAdd, setLabelsToAdd] = useState([]);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
-    const { addMediaToLabel, removeLabelFromMedia } = usePostMediaCreator(mediaId, mediaType);
-    const [listMessage, setListMessage] = useState({type: "error", value: ""});
+    const [messageTab1, setMessageTab1] = useState({type: "error", value: ""});
     const [messageTab2, setMessageTab2] = useState({type: "error", value: ""});
+
+    const renameLabelMutation = useRenameLabelMutation(mediaType);
+    const deleteLabelMutation = useDeleteLabelMutation(mediaType);
+    const addLabelMutation = useAddLabelMutation("add_media_to_label", mediaType, mediaId);
+    const {data, error, isLoading} = useQuery(queryOptionsMap.mediaLabels(mediaType, mediaId, isOpen));
+    const removeLabelMutation = useRemoveLabelMutation("remove_label_from_media", mediaType, mediaId);
 
     useEffect(() => {
         if (isOpen) {
-            (async () => {
-                try {
-                    setLoading(true);
-                    const response = await api.get(`/labels_for_media/${mediaType}/${mediaId}`);
-                    if (!response.ok) {
-                        return setListMessage({
-                            type: "error",
-                            value: "Sorry, an error occurred while fetching the labels",
-                        })
-                    }
-                    updateLabelsInList(response.body.data.already_in);
-                    setLabelsToAdd(response.body.data.available);
-                }
-                finally {
-                    setLoading(false);
-                }
-            })();
+            if (error) {
+                setMessageTab1({ type: "error", value: error.message });
+            }
+            else if (data) {
+                updateLabelsInList(data.already_in);
+                setLabelsToAdd(data.available);
+            }
         }
         else {
             resetRenaming();
         }
-    }, [isOpen, mediaId]);
+    }, [isOpen, data, error]);
 
     useEffect(() => {
         if (isRenaming && inputRef.current) {
@@ -63,29 +62,22 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     }, [isRenaming]);
 
     const handleMoveLabel = async (label, fromList) => {
-        setListMessage({ type: "error", value: "" });
+        setMessageTab1({ type: "error", value: "" });
+        const isBeingAdded = (fromList === "toAdd");
+        const mutation = isBeingAdded ? addLabelMutation : removeLabelMutation;
+        const updatedLabelsInList = isBeingAdded ? [...labelsInList, label] : labelsInList.filter(l => l !== label);
+        const updatedLabelsToAdd = isBeingAdded ? labelsToAdd.filter(l => l !== label) : [...labelsToAdd, label];
 
-        if (fromList === "inList") {
-            updateLabelsInList(labelsInList.filter(lab => lab !== label));
-            setLabelsToAdd([...labelsToAdd, label]);
-            const response = await handlePending(removeLabelFromMedia, label, false);
-            if (!response) {
-                updateLabelsInList(labelsInList);
-                setLabelsToAdd(labelsToAdd);
-                setListMessage({ type: "error", value: "An unexpected error occurred" });
-            }
-        }
+        updateLabelsInList(updatedLabelsInList);
+        setLabelsToAdd(updatedLabelsToAdd);
 
-        if (fromList === "toAdd") {
-            setLabelsToAdd(labelsToAdd.filter(lab => lab !== label));
-            updateLabelsInList([...labelsInList, label]);
-            const response = await handlePending(addMediaToLabel, label, false);
-            if (!response) {
+        mutation.mutate({ payload: label }, {
+            onError: () => {
                 setLabelsToAdd(labelsToAdd);
                 updateLabelsInList(labelsInList);
-                setListMessage({ type: "error", value: "An unexpected error occurred" });
-            }
-        }
+                setMessageTab1({ type: "error", value: "An unexpected error occurred" });
+            },
+        });
     };
 
     const handleOnRename = async () => {
@@ -99,52 +91,36 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
             });
         }
 
-        const response = await api.post("/rename_label", {
-            media_type: mediaType,
-            old_label_name: selectedLabel,
-            new_label_name: newLabelName,
+        renameLabelMutation.mutate({ oldName: selectedLabel, newName: newLabelName }, {
+            onSuccess: () => {
+                updateLabelsInList(labelsInList.map(x => (x === selectedLabel ? newLabelName : x)));
+                setLabelsToAdd(labelsToAdd.map(x => (x === selectedLabel ? newLabelName : x)));
+                setMessageTab2({ type: "success", value: "Label name successfully updated" });
+            },
+            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
+            onSettled: resetRenaming,
         });
-
-        if (!response.ok) {
-            resetRenaming();
-            return setMessageTab2({ type: "error", value: response.body.description });
-        }
-
-        setMessageTab2({ type: "success", value: "Label name successfully updated" });
-        updateLabelsInList(labelsInList.map(x => (x === selectedLabel ? newLabelName : x)));
-        setLabelsToAdd(labelsToAdd.map(x => (x === selectedLabel ? newLabelName : x)));
-        resetRenaming();
     };
 
-    const handleOnDelete = async (label) => {
+    const handleOnDelete = async (name) => {
         setMessageTab2({ ...messageTab2, value: "" });
 
         if (!window.confirm("Do you really want to delete this label?")) return;
 
-        const response = await api.post("/delete_label", {
-            media_type: mediaType,
-            label: label
+        await deleteLabelMutation.mutate({ name }, {
+            onSuccess: () => {
+                setMessageTab2({ type: "success", value: "Label successfully deleted" });
+                updateLabelsInList(labelsInList.filter(x => x !== name));
+                setLabelsToAdd(labelsToAdd.filter(x => x !== name));
+            },
+            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
         });
-
-        if (!response.ok) {
-            return setMessageTab2({ type: "error", value: response.body.description });
-        }
-
-        setMessageTab2({ type: "success", value: "Label successfully deleted" });
-        updateLabelsInList(labelsInList.filter(x => x !== label));
-        setLabelsToAdd(labelsToAdd.filter(x => x !== label));
     };
 
     const resetRenaming = () => {
         setIsRenaming(false);
         setSelectedLabel("");
         setNewLabelName("");
-    };
-
-    const validateRenaming = async (ev) => {
-        if (ev.key === "Enter") {
-            await handleOnRename();
-        }
     };
 
     const isLabelDuplicate = (label) => {
@@ -160,6 +136,10 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-sm:w-[95%] w-[450px] h-[500px] rounded-lg">
+                <div className="hidden">
+                    <DialogTitle></DialogTitle>
+                    <DialogDescription></DialogDescription>
+                </div>
                 <Tabs defaultValue={manageOnly ? "manage" : "edit"} className="mt-6">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="edit" disabled={manageOnly}>Edit Labels</TabsTrigger>
@@ -167,7 +147,7 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                     </TabsList>
                     <TabsContent value="edit">
                         <div className="space-y-8 mt-6">
-                            {listMessage.value && <FormMessage {...listMessage} setMessage={setListMessage}/>}
+                            {messageTab1.value && <FormMessage {...messageTab1} updateMessage={setMessageTab1}/>}
                             <LabelsList
                                 title="Already In"
                                 labelVariant="label"
@@ -177,22 +157,22 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                             />
                             <LabelsList
                                 title="Add To"
-                                loading={loading}
+                                isLoading={isLoading}
                                 labelsList={labelsToAdd}
                                 labelVariant="labelToAdd"
                                 noLabelsMessage="No more labels available"
                                 moveCallback={(label) => handleMoveLabel(label, "toAdd")}
                             />
                             <LabelCreator
-                                addLabel={addMediaToLabel}
                                 labelsInList={labelsInList}
+                                addLabel={addLabelMutation}
                                 isLabelDuplicate={isLabelDuplicate}
                                 updateLabelsList={updateLabelsInList}
                             />
                         </div>
                     </TabsContent>
                     <TabsContent value="manage" className="overflow-y-auto max-h-[385px]">
-                        {messageTab2.value && <FormMessage {...messageTab2} setMessage={setMessageTab2} className="mt-4"/>}
+                        {messageTab2.value && <FormMessage {...messageTab2} updateMessage={setMessageTab2} className="mt-4"/>}
                         <Table className="mt-3">
                             <TableHeader>
                                 <TableRow>
@@ -213,8 +193,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {labelsInList.map(label =>
+                                {[...labelsInList, ...labelsToAdd].map(label => (
                                     <LabelRow
+                                        key={label}
                                         label={label}
                                         inputRef={inputRef}
                                         labelClick={labelClick}
@@ -223,22 +204,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                                         setIsRenaming={setIsRenaming}
                                         handleOnDelete={handleOnDelete}
                                         setNewLabelName={setNewLabelName}
-                                        validateRenaming={validateRenaming}
+                                        validateRenaming={(ev) => ev.key === "Enter" && handleOnRename()}
                                     />
-                                )}
-                                {labelsToAdd.map(label =>
-                                    <LabelRow
-                                        label={label}
-                                        inputRef={inputRef}
-                                        labelClick={labelClick}
-                                        isRenaming={isRenaming}
-                                        selectedLabel={selectedLabel}
-                                        setIsRenaming={setIsRenaming}
-                                        handleOnDelete={handleOnDelete}
-                                        setNewLabelName={setNewLabelName}
-                                        validateRenaming={validateRenaming}
-                                    />
-                                )}
+                                ))}
                             </TableBody>
                         </Table>
                     </TabsContent>
@@ -282,29 +250,19 @@ const LabelRow = (props) => {
 
 
 const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLabel }) => {
-    const [isPending, handlePending] = useMutation();
     const [newLabel, setNewLabel] = useState("");
     const [message, setMessage] = useState({ type: "error", value: "" });
 
     const createLabel = async () => {
         setMessage({ type: "error", value: "" });
-
-        try {
-            if (isLabelDuplicate(newLabel)) {
-                return setMessage({ type: "error", value: "This label already exists" });
-            }
-
-            const response = await handlePending(addLabel, newLabel, false);
-            if (response) {
-                updateLabelsList([...labelsInList, newLabel]);
-            }
-            else {
-                setMessage({ type: "error", value: "An unexpected error occurred" });
-            }
+        if (isLabelDuplicate(newLabel)) {
+            return setMessage({ type: "error", value: "This label already exists" });
         }
-        finally {
-            setNewLabel("");
-        }
+        await addLabel.mutateAsync({ payload: newLabel }, {
+            onSuccess: () => updateLabelsList([...labelsInList, newLabel]),
+            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onSettled: () => setNewLabel(""),
+        });
     };
 
     const onKeyPress = async (ev) => {
@@ -317,16 +275,16 @@ const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLab
         <div>
             <h5 className="text-lg font-semibold">Create New Label</h5>
             <Separator className="mt-1"/>
-            {message.value && <FormMessage {...message} setMessage={setMessage}/>}
+            {message.value && <FormMessage {...message} updateMessage={setMessage}/>}
             <div className="flex gap-4 mt-4">
                 <Input
                     value={newLabel}
-                    disabled={isPending}
                     onKeyPress={onKeyPress}
-                    placeholder="Create a new Label"
+                    disabled={addLabel.isPending}
+                    placeholder={"Create a new Label"}
                     onChange={(ev) => setNewLabel(ev.target.value)}
                 />
-                <FormButton className="w-auto" onClick={createLabel} pending={isPending || newLabel.trim() === ""}>
+                <FormButton className="w-auto" onClick={createLabel} disabled={addLabel.isPending || newLabel.trim() === ""}>
                     Create
                 </FormButton>
             </div>
@@ -335,17 +293,17 @@ const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLab
 };
 
 
-const LabelsList = ({ title, loading, labelsList, noLabelsMessage, labelVariant, moveCallback }) => {
+const LabelsList = ({ title, isLoading, labelsList, noLabelsMessage, labelVariant, moveCallback }) => {
     return (
         <div>
             <h5 className="text-lg font-semibold">{title}</h5>
             <Separator className="mt-1"/>
             <div className="flex flex-wrap gap-3 justify-start overflow-y-auto max-h-[75px]">
-                {loading ?
+                {isLoading ?
                     <Loading/>
                     :
                     labelsList.length === 0 ?
-                        <i className="text-muted-foreground">{noLabelsMessage}</i>
+                        <MutedText>{noLabelsMessage}</MutedText>
                         :
                         labelsList.map(label =>
                             <Badge key={label} variant={labelVariant} onClick={() => moveCallback(label)}>
@@ -359,22 +317,19 @@ const LabelsList = ({ title, loading, labelsList, noLabelsMessage, labelVariant,
 };
 
 
-const FormMessage = ({ type, value, setMessage }) => {
+const FormMessage = ({ type, value, updateMessage }) => {
     const [isVisible, setIsVisible] = useState(true);
     const bgColor = type === "error" ? "bg-rose-500/10" : "bg-green-500/10";
 
-    if (!isVisible) {
-        setMessage({type: "error", value: ""});
-        return null;
-    }
+    useEffect(() => {
+        if (!isVisible) {
+            updateMessage({type: "error", value: ""});
+        }
+    }, [isVisible]);
 
     return (
         <div className={cn("p-3 rounded-md flex items-center gap-x-2 text-sm text-neutral-200", bgColor)}>
-            {type === "error" ?
-                <ExclamationTriangleIcon className="h-4 w-4"/>
-                :
-                <CheckIcon className="h-4 w-4"/>
-            }
+            {type === "error" ? <ExclamationTriangleIcon className="h-4 w-4"/> : <CheckIcon className="h-4 w-4"/>}
             <p>{value}</p>
             <div role="button" onClick={() => setIsVisible(false)} className="ml-auto">
                 <LuX className="h-4 w-4"/>

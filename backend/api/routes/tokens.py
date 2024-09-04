@@ -90,15 +90,12 @@ def revoke_token():
 def reset_password_token():
     try:
         data = request.get_json()
+        email = data["email"]
+        callback = data["callback"]
     except:
-        return abort(400)
+        return abort(400, "Missing fields")
 
-    # Necessary fields
-    fields = ("email", "callback")
-    if not all(f in data for f in fields):
-        return abort(400)
-
-    user = User.query.filter_by(email=data["email"]).first()
+    user = User.query.filter_by(email=email).first()
     if not user:
         return abort(400, "This email is invalid")
     if not user.active:
@@ -110,7 +107,7 @@ def reset_password_token():
             username=user.username,
             subject="Password Reset Request",
             template="password_reset",
-            callback=data["callback"],
+            callback=callback,
             token=user.generate_jwt_token(),
         )
     except Exception as e:
@@ -126,14 +123,16 @@ def reset_password():
 
     try:
         data = request.get_json()
+        token = data["token"]
+        new_password = data["new_password"]
     except:
         return abort(400)
 
-    user = User.verify_jwt_token(data["token"])
+    user = User.verify_jwt_token(token)
     if not user or not user.active:
         return abort(400, "This is an invalid or an expired token.")
 
-    user.password = generate_password_hash(data.get("new_password"))
+    user.password = generate_password_hash(new_password)
     db.session.commit()
     current_app.logger.info(f"[INFO] - [{user.id}] Password changed.")
 

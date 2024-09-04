@@ -1,10 +1,10 @@
 import {useRef} from "react";
-import {capitalize} from "@/lib/utils";
 import {useUser} from "@/providers/UserProvider";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {capitalize} from "@/utils/functions";
 
 
 export const NavMediaDrop = () => {

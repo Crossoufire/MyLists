@@ -1,9 +1,9 @@
 import {FaStar} from "react-icons/fa";
-import {formatDateTime, formatMinutes} from "@/lib/utils";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
+import {formatDateTime, formatMinutes} from "@/utils/functions";
 
 
 export const TvDetails = ({ mediaData, mediaType }) => {

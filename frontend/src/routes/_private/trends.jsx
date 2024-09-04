@@ -1,7 +1,8 @@
-import {formatDateTime} from "@/lib/utils";
-import {fetcher} from "@/lib/fetcherLoader";
 import {useHashTab} from "@/hooks/HashTabHook";
+import {formatDateTime} from "@/utils/functions";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
@@ -11,12 +12,12 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/trends")({
     component: TrendsPage,
-    loader: async () => fetcher("/current_trends"),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.trends()),
 });
 
 
 function TrendsPage() {
-    const apiData = Route.useLoaderData();
+    const apiData = useSuspenseQuery(queryOptionsMap.trends()).data;
     const [selectedTab, handleTabChange] = useHashTab("series", "trends_tab");
 
     return (
@@ -55,7 +56,7 @@ const TrendItem = ({ media }) => {
         <Card className="h-full">
             <div className="grid grid-cols-12">
                 <div className="col-span-5">
-                    <Link to={`/details/${media.media_type}/${media.api_id}?external=True`}>
+                    <Link to={`/details/${media.media_type}/${media.api_id}`} search={{ external: true }}>
                         <img
                             className="rounded-md"
                             src={media.poster_path}
@@ -65,7 +66,7 @@ const TrendItem = ({ media }) => {
                 </div>
                 <div className="col-span-7">
                     <CardContent className="pt-3">
-                        <Link to={`/details/${media.media_type}/${media.api_id}?external=True`}>
+                        <Link to={`/details/${media.media_type}/${media.api_id}`} search={{ external: true }}>
                             <CardTitle className="flex flex-col items-start">
                                 <div className="text-lg line-clamp-2">{media.display_name}</div>
                                 <div className="text-muted-foreground text-sm text-grey italic">

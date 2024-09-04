@@ -1,8 +1,7 @@
 import * as React from "react";
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import {Cross2Icon} from "@radix-ui/react-icons";
-import {ScrollArea} from "@/components/ui/scroll-area";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 
 

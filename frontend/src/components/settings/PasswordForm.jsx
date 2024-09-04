@@ -100,7 +100,7 @@ export const PasswordForm = () => {
                         )}
                     />
                 </div>
-                <FormButton className="mt-5" pending={pending}>
+                <FormButton className="mt-5" disabled={pending}>
                     Update
                 </FormButton>
             </form>

@@ -1,4 +1,4 @@
-import {mail} from "@/lib/constants";
+import {mail} from "@/utils/constants";
 import {FaEnvelope} from "react-icons/fa";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";

@@ -4,30 +4,19 @@ import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
-import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
-import {useQuery} from "@tanstack/react-query";
 import * as Pop from "@/components/ui/popover";
+import {useQuery} from "@tanstack/react-query";
 import * as Sheet from "@/components/ui/sheet";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
-import {capitalize, getLangCountryName} from "@/lib/utils";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
-import {Route} from "@/routes/_private/list/$mediaType.$username.jsx";
+import {capitalize, getLangCountryName} from "@/utils/functions";
+import {Route} from "@/routes/_private/list/$mediaType.$username";
 import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
-
-function getListSearchFilters(mediaType) {
-    const mapping = {
-        "series": ["actors", "creators", "networks"],
-        "anime": ["actors", "creators", "networks"],
-        "movies": ["actors", "directors"],
-        "books": ["authors"],
-        "games": ["companies"],
-    };
-    return mapping[mediaType];
-}
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
@@ -35,12 +24,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     const search = Route.useSearch();
     const {username, mediaType} = Route.useParams();
     const searchFiltersList = getListSearchFilters(mediaType);
-    const {data: smallFilters, isLoading} = useQuery({
-        queryKey: ["smallFilters", mediaType, username],
-        queryFn: () => fetcher(`/list/filters/${mediaType}/${username}`),
-        staleTime: Infinity,
-        retry: false,
-    });
+    const {data: smallFilters, isLoading} = useQuery(queryOptionsMap.smallFilters(mediaType, username));
 
     const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
@@ -130,7 +114,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                     <div className="space-y-2">
                                         <h3 className="font-medium">Languages/Countries</h3>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {smallFilters.langs?.map(lang =>
+                                            {smallFilters.langs.map(lang =>
                                                 <div key={lang} className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id={`${lang}-id`}
@@ -209,6 +193,18 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
         </Sheet.Sheet>
     );
 };
+
+
+function getListSearchFilters(mediaType) {
+    const mapping = {
+        "series": ["actors", "creators", "networks"],
+        "anime": ["actors", "creators", "networks"],
+        "movies": ["actors", "directors"],
+        "books": ["authors"],
+        "games": ["companies"],
+    };
+    return mapping[mediaType];
+}
 
 
 const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {

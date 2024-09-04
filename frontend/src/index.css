@@ -78,9 +78,9 @@ main {
     }
 
     .dark {
-        --background: 0 0% 3.9%;
+        --background: 0 0% 6%;
         --foreground: 0 0% 98%;
-        --card: 206 18% 8%;
+        --card: 206 18% 10%;
         --card-foreground: 0 0% 89%;
         /*--card: 0 0% 3.9%;*/
         /*--card-foreground: 0 0% 98%;*/

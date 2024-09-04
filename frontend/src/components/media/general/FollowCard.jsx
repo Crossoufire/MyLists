@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, zeroPad} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
+import {getFeelingValues, zeroPad} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 
@@ -21,9 +21,9 @@ export const FollowCard = ({ follow, mediaType }) => {
                     <div className="col-span-3">
                         <Link to={`/profile/${follow.username}`}>
                             <img
+                                alt={follow.username}
                                 src={follow.profile_image}
                                 className="bg-neutral-600 h-[52px] w-[52px] rounded-full"
-                                alt={follow.username}
                             />
                         </Link>
                     </div>
@@ -65,8 +65,8 @@ export const FollowCard = ({ follow, mediaType }) => {
                         <LuAlignJustify className="mt-1"/> {follow.status}
                     </div>
                     <MoreFollowDetails
-                        mediaType={mediaType}
                         follow={follow}
+                        mediaType={mediaType}
                     />
                 </div>
             </CardContent>

@@ -1,14 +1,15 @@
 import {useState} from "react";
 import {LuSearch} from "react-icons/lu";
-import {capitalize, cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
-import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {useUser} from "@/providers/UserProvider";
+import {cn, capitalize} from "@/utils/functions";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
@@ -20,7 +21,9 @@ import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/
 export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ deps }) => fetcher("/hall_of_fame", deps.search),
+    loader: ({ context: { queryClient }, deps: { search } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.hallOfFame(search))
+    },
 });
 
 
@@ -29,12 +32,12 @@ const DEFAULT = { page: 1, search: "", sorting: "profile" };
 
 function HallOfFamePage() {
     const navigate = useNavigate();
-    const apiData = Route.useLoaderData();
-    const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = Route.useSearch();
-    const [currentSearch, setCurrentSearch] = useState(search);
+    const filters = Route.useSearch();
+    const apiData = useSuspenseQuery(queryOptionsMap.hallOfFame(filters)).data;
+    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
+    const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = filters;
 
     const fetchData = async (params) => {
-        // noinspection JSCheckFunctionSignatures
         await navigate({ search: params });
     };
 

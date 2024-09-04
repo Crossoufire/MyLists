@@ -1,10 +1,10 @@
 import {Link} from "@tanstack/react-router";
-import {zeroPad, capitalize} from "@/lib/utils";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
+import {capitalize, zeroPad} from "@/utils/functions";
 
 
 export const MediaLevels = ({ username, mediaLevels }) => {

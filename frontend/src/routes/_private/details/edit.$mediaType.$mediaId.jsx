@@ -2,30 +2,34 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
-import {fetcher} from "@/lib/fetcherLoader";
 import {Input} from "@/components/ui/input";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Textarea} from "@/components/ui/textarea";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormButton} from "@/components/app/base/FormButton";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/lib/utils";
+import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId")({
     component: MediaEditPage,
-    loader: async ({ params }) => fetcher(`/details/edit/${params.mediaType}/${params.mediaId}`),
+    loader: ({ context: { queryClient }, params: { mediaType, mediaId } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.editMedia(mediaType, mediaId))
+    },
 });
 
 
 function MediaEditPage() {
     const navigate = useNavigate();
-    const apiData = Route.useLoaderData();
-    const { mediaId, mediaType } = Route.useParams();
-    const parts = sliceIntoParts(apiData.fields, 3);
+    const { mediaType, mediaId } = Route.useParams();
+    const apiData = useSuspenseQuery(queryOptionsMap.editMedia(mediaType, mediaId)).data;
     const [isPending, setIsPending] = useState(false);
+
+    const parts = sliceIntoParts(apiData.fields, 3);
     const form = useForm({
         defaultValues: {
             genres: genreListsToListsOfDict(apiData.genres),
@@ -132,7 +136,7 @@ function MediaEditPage() {
                         </div>
                     </div>
                     <div className="flex justify-end">
-                        <FormButton className="mt-5" pending={isPending}>
+                        <FormButton className="mt-5" disabled={isPending}>
                             Save Changes
                         </FormButton>
                     </div>

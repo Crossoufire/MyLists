@@ -1,67 +1,65 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useMutation} from "@/hooks/LoadingHook";
-import {Tooltip} from "@/components/ui/tooltip";
 import {Textarea} from "@/components/ui/textarea";
+import {useUpdateUserMedia} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
+import {MutedText} from "@/components/app/base/MutedText";
 
 
-export const Commentary = ({ initContent, updateComment }) => {
-    const [isLoading, handleLoading] = useMutation();
+export const Commentary = ({ content, mediaType, mediaId }) => {
+    const [updatedContent, setUpdatedContent] = useState(content);
     const [commentInput, setCommentInput] = useState(false);
-    const [contents, setContents] = useState(initContent || "");
-    const [initContents, setInitContents] = useState(initContent || "");
 
-    const buttonText = contents ? "Edit" : "Add";
-    const commentText = contents ? "Edit comment" : "Add comment";
-    const isContentsEmpty = contents === "" || contents === null;
+    useEffect(() => {
+        setUpdatedContent(content);
+    }, [content]);
 
     const handleComment = () => {
         setCommentInput(!commentInput);
-        setContents(initContents);
+        setUpdatedContent(content);
     };
 
-    const handleSave = async () => {
-        if (initContent === contents) return;
+    const onSuccessComment = (oldData, variables) => {
+        return { ...oldData, user_data: { ...oldData.user_data, comment: variables.payload } };
+    };
 
-        await handleLoading(updateComment, contents);
-        setInitContents(contents);
+    const handleSave = () => {
+        if (content === updatedContent) return;
+        updateComment.mutate({ payload: updatedContent });
         setCommentInput(false);
     };
+
+    const updateComment = useUpdateUserMedia("update_comment", mediaType, mediaId, onSuccessComment);
 
     return (
         <>
             <h4 className="text-lg flex justify-between items-center mt-5 font-semibold">
                 Comment
-                <Tooltip text={commentText}>
-                    <span role="button" onClick={handleComment} className="text-muted-foreground text-sm mt-1 italic">
-                        {buttonText}
-                    </span>
-                </Tooltip>
+                <MutedText className="text-sm mt-1">
+                    <span role="button" onClick={handleComment}>{content ? "Edit" : "Add"}</span>
+                </MutedText>
             </h4>
             <Separator variant="large"/>
             {commentInput ?
                 <>
                     <Textarea
-                        value={contents}
-                        onChange={(ev) => setContents(ev.target.value)}
-                        placeholder="Enter your comment..."
+                        value={updatedContent}
                         className="w-full h-20"
-                        disabled={isLoading}
+                        disabled={updateComment.isPending}
+                        placeholder="Enter your comment..."
+                        onChange={(ev) => setUpdatedContent(ev.target.value)}
                     />
                     <div className="flex justify-end gap-2 mt-2">
-                        <Button variant="outline" size="sm" onClick={handleComment} disabled={isLoading}>
+                        <Button variant="outline" size="sm" onClick={handleComment} disabled={updateComment.isPending}>
                             Cancel
                         </Button>
-                        <Button size="sm" onClick={handleSave} disabled={(contents === initContents) || isLoading}>
+                        <Button size="sm" onClick={handleSave} disabled={(content === updatedContent) || updateComment.isPending}>
                             Save
                         </Button>
                     </div>
                 </>
                 :
-                <p className="text-muted-foreground italic">
-                    {isContentsEmpty ? "No comments added yet" : `${contents}`}
-                </p>
+                <MutedText>{!updatedContent ? "No comments added yet" : `${updatedContent}`}</MutedText>
             }
         </>
     )

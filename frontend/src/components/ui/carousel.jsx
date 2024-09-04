@@ -1,5 +1,5 @@
-import {cn} from "@/lib/utils";
 import * as React from "react";
+import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import useEmblaCarousel from "embla-carousel-react";
 import {ArrowLeftIcon, ArrowRightIcon} from "@radix-ui/react-icons";

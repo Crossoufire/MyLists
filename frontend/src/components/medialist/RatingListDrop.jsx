@@ -1,7 +1,5 @@
-import {useState} from "react";
 import {LuStar} from "react-icons/lu";
-import {useMutation} from "@/hooks/LoadingHook";
-import {getFeelingValues, getScoreValues} from "@/lib/utils";
+import {getFeelingValues, getScoreValues} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -19,10 +17,7 @@ const SelectDrop = ({ isLoading, rating, handleSelectChange, items }) => {
 };
 
 
-export const RatingListDrop = ({ isCurrent, initRating, updateRating }) => {
-    const [isLoading, handleLoading] = useMutation();
-    const [rating, setRating] = useState(initRating);
-
+export const RatingListDrop = ({ isCurrent, rating, updateRating }) => {
     let ratingValues, selectItems;
     if (rating.type === "feeling") {
         ratingValues = getFeelingValues(16);
@@ -41,12 +36,8 @@ export const RatingListDrop = ({ isCurrent, initRating, updateRating }) => {
         );
     }
 
-    const handleSelectChange = async (value) => {
-        const newVal = value;
-        const response = await handleLoading(updateRating, newVal);
-        if (response) {
-            setRating({ ...rating, value: newVal });
-        }
+    const handleSelectChange = (value) => {
+        updateRating.mutate({ payload: value });
     };
 
     return (
@@ -56,7 +47,7 @@ export const RatingListDrop = ({ isCurrent, initRating, updateRating }) => {
                 <SelectDrop
                     items={selectItems}
                     rating={rating.value}
-                    isLoading={isLoading}
+                    isLoading={updateRating.isPending}
                     handleSelectChange={handleSelectChange}
                 />
                 :

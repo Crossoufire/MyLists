@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import {CaretSortIcon, CheckIcon, ChevronDownIcon, ChevronUpIcon,} from "@radix-ui/react-icons";

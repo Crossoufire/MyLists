@@ -1,27 +1,19 @@
-import {useState} from "react";
-import {getPlaytimeValues} from "@/lib/utils";
-import {useMutation} from "@/hooks/LoadingHook";
+import {getPlaytimeValues} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const PlaytimeDrop = ({ initPlaytime, updatePlaytime }) => {
+export const PlaytimeDrop = ({ playtime, updatePlaytime }) => {
     const playValues = getPlaytimeValues();
-    const [isLoading, handleLoading] = useMutation();
-    const [playtime, setPlaytime] = useState(initPlaytime || "0");
+    const hoursPlaytime = playtime / 60;
 
-    const handleSelect = async (value) => {
-        const newVal = value;
-        const response = await handleLoading(updatePlaytime, newVal);
-        if (response) {
-            setPlaytime(newVal);
-        }
+    const handleSelect = async (playtimeInHours) => {
+        updatePlaytime.mutate({ payload: playtimeInHours * 60 });
     };
-
 
     return (
         <div className="flex justify-between items-center">
             <div>Playtime</div>
-            <Select value={playtime} onValueChange={handleSelect} disabled={isLoading}>
+            <Select value={hoursPlaytime} onValueChange={handleSelect} disabled={updatePlaytime.isPending}>
                 <SelectTrigger className="w-[130px]" size="details">
                     <SelectValue/>
                 </SelectTrigger>

@@ -3,6 +3,10 @@ import {twMerge} from "tailwind-merge";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
+export const cn = (...inputs) => {
+    return twMerge(clsx(inputs));
+};
+
 export const getScoreValues = () => {
     return [null, 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 };
@@ -54,7 +58,7 @@ export const genreListsToListsOfDict = (stringList) => {
 
     stringList.forEach((str) => {
         if (str === "All") return;
-        const dict = { value: str,  label: str };
+        const dict = {value: str, label: str};
         listDict.push(dict);
     });
 
@@ -78,17 +82,10 @@ export const sliceIntoParts = (arr, n) => {
     return result;
 };
 
-
-// --- New -------------------------------------------------------------------------------------
-
 export const getLangCountryName = (name, type) => {
-    let languageNames = new Intl.DisplayNames(["en"], { type });
+    let languageNames = new Intl.DisplayNames(["en"], {type});
     if (name === "cn") return "Chinese";
     return languageNames.of(name);
-};
-
-export const cn = (...inputs) => {
-    return twMerge(clsx(inputs));
 };
 
 export const zeroPad = (value) => {
@@ -123,17 +120,13 @@ export const getLevelColor = (intLevel) => {
 
     if (normalizedLevel <= 0.2) {
         return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.4) {
+    } else if (normalizedLevel <= 0.4) {
         return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
-    }
-    else if (normalizedLevel <= 0.6) {
+    } else if (normalizedLevel <= 0.6) {
         return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.8) {
+    } else if (normalizedLevel <= 0.8) {
         return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
-    }
-    else {
+    } else {
         return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
     }
 };
@@ -229,7 +222,7 @@ export const formatDateTime = (dateInput, options = {}) => {
     };
 
     if (options.onlyYear) {
-        return date.toLocaleString("en-En", { timeZone: formatOptions.timeZone, year: "numeric" });
+        return date.toLocaleString("en-En", {timeZone: formatOptions.timeZone, year: "numeric"});
     }
 
     return new Intl.DateTimeFormat("en-En", formatOptions).format(date);

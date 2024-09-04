@@ -1,4 +1,4 @@
-import {formatNumberWithSpaces} from "@/lib/utils";
+import {formatNumberWithSpaces} from "@/utils/functions";
 
 
 export const dataToLoad = (mediaType, apiData) => {

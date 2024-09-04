@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
 import {useUser} from "@/providers/UserProvider";
-import {createFileRoute, useNavigate, useRouter} from "@tanstack/react-router";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -11,7 +11,6 @@ export const Route = createFileRoute("/_public/oauth2/$provider/callback")({
 
 
 function OAuth2CallbackPage() {
-    const router = useRouter();
     const navigate = useNavigate();
     const { provider } = Route.useParams();
     const searchParams = Route.useSearch();
@@ -36,7 +35,6 @@ function OAuth2CallbackPage() {
     useEffect(() => {
         (async () => {
             if (!currentUser) return;
-            await router.invalidate();
             await navigate({ to: `/profile/${currentUser.username}` });
         })();
     }, [currentUser]);

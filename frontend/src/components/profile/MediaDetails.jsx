@@ -1,7 +1,7 @@
-import {capitalize} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
 import {MediaStats} from "@/components/profile/MediaStats";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {capitalize} from "@/utils/functions";
 
 
 export const MediaDetails = ({ mediaData, userData }) => (

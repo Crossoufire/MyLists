@@ -1,23 +1,26 @@
 import {useState} from "react";
-import {fetcher} from "@/lib/fetcherLoader";
+import {queryOptionsMap} from "@/utils/mutations";
 import {MediaCard} from "@/components/app/MediaCard";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {TopRightCorner} from "@/components/app/TopRightCorner";
+import {CommonCorner} from "@/components/app/base/CommonCorner.jsx";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
     component: InfoPage,
-    loader: async ({ params }) => fetcher(`/details/${params.mediaType}/${params.job}/${params.name}`),
+    loader: ({ context: { queryClient }, params: { mediaType, job, name } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.jobDetails(mediaType, job, name))
+    },
 });
 
 
 function InfoPage() {
-    const apiData = Route.useLoaderData();
-    const { mediaType, name } = Route.useParams();
+    const { mediaType, job, name } = Route.useParams();
     const [currentPage, setCurrentPage] = useState(1);
+    const apiData = useSuspenseQuery(queryOptionsMap.jobDetails(mediaType, job, name)).data;
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
@@ -36,7 +39,7 @@ function InfoPage() {
                 {currentItems.map(media =>
                     <div key={media.media_id} className="col-span-1">
                         <MediaCard media={media} mediaType={mediaType}>
-                            {media.in_list && <TopRightCorner isCommon={media.in_list}/>}
+                            {media.in_list && <CommonCorner isCommon={media.in_list}/>}
                         </MediaCard>
                     </div>
                 )}

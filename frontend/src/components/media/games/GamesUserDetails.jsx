@@ -1,9 +1,9 @@
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import * as Com from "@/components/ui/command";
-import {useMutation} from "@/hooks/LoadingHook";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
+import {useUpdateUserMedia} from "@/utils/mutations";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
@@ -11,46 +11,59 @@ import {PlaytimeDrop} from "@/components/media/games/PlaytimeDrop";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
-export const GamesUserDetails = ({ userData, updatesAPI }) => {
-    const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(userData.rating);
-    const [playtime, setPlaytime] = useState(userData.playtime / 60);
-
-    const callbackStatus = (value) => {
-        setStatus(value);
-        if (value === "Plan to Play") {
-            setPlaytime(0);
-        }
+export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
+    const onStatusSuccess = (oldData, variables) => {
+        const newData = { ...oldData };
+        newData.user_data.status = variables.payload;
+        if (variables.payload === "Plan to Play") newData.user_data.playtime = 0;
+        return newData;
+    };
+    const onRatingSuccess = (oldData, variables) => {
+        return {
+            ...oldData,
+            user_data: {
+                ...oldData.user_data,
+                rating: {
+                    ...oldData.user_data.rating,
+                    value: variables.payload,
+                }
+            },
+        };
+    };
+    const onPlaytimeSuccess = (oldData, variables) => {
+        return {...oldData, user_data: { ...oldData.user_data, playtime: variables.payload } };
+    };
+    const onPlatformSuccess = (oldData, variables) => {
+        return { ...oldData, user_data: { ...oldData.user_data, platform: variables.payload } };
     };
 
-    const callbackRating = (value) => {
-        setRating({ ...rating, value });
-    };
+    const statusMutation = useUpdateUserMedia("update_status", mediaType, mediaId, onStatusSuccess);
+    const ratingMutation = useUpdateUserMedia("update_rating", mediaType, mediaId, onRatingSuccess);
+    const playtimeMutation = useUpdateUserMedia("update_playtime", mediaType, mediaId, onPlaytimeSuccess);
+    const platformMutation = useUpdateUserMedia("update_platform", mediaType, mediaId, onPlatformSuccess);
 
     return (
         <>
             <StatusDrop
-                status={status}
+                status={userData.status}
+                updateStatus={statusMutation}
                 allStatus={userData.all_status}
-                updateStatus={updatesAPI.status}
-                callbackStatus={callbackStatus}
             />
             <PlatformDrop
-                initPlatform={userData.platform}
-                updatePlatform={updatesAPI.platform}
+                platform={userData.platform}
+                updatePlatform={platformMutation}
                 allPlatforms={userData.all_platforms}
             />
-            {status !== "Plan to Play" &&
+            {userData.status !== "Plan to Play" &&
                 <>
                     <Separator/>
                     <PlaytimeDrop
-                        initPlaytime={playtime}
-                        updatePlaytime={updatesAPI.playtime}
+                        playtime={userData.playtime}
+                        updatePlaytime={playtimeMutation}
                     />
                     <RatingDrop
-                        rating={rating}
-                        updateRating={updatesAPI.rating}
-                        callbackRating={callbackRating}
+                        rating={userData.rating}
+                        updateRating={ratingMutation}
                     />
                 </>
             }
@@ -59,24 +72,18 @@ export const GamesUserDetails = ({ userData, updatesAPI }) => {
 };
 
 
-function PlatformDrop({ initPlatform, allPlatforms, updatePlatform }) {
-    const [isPending, mutate] = useMutation();
-    const [platform, setPlatform] = useState(initPlatform);
-
-    const handleSelect = async (value) => {
-        const response = await mutate(updatePlatform, value);
-        if (response) {
-            setPlatform(value);
-        }
+function PlatformDrop({ platform, allPlatforms, updatePlatform }) {
+    const handleSelect = async (platform) => {
+        updatePlatform.mutate({ payload: platform });
     };
 
     return (
         <div className="flex justify-between items-center">
             <div>Platform</div>
             <PlatformComboBox
-                isPending={isPending}
                 resetValue={platform}
                 callback={handleSelect}
+                isPending={updatePlatform.isPending}
                 dataList={allPlatforms.map(p => ({ value: p, label: p }))}
             />
         </div>
@@ -104,7 +111,7 @@ const PlatformComboBox = ({ resetValue = "", dataList, callback, isPending }) =>
                 whitespace-nowrap rounded-md focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground
                 focus:outline-none focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
                 bg-transparent border-none font-normal pr-0 hover:bg-transparent"
-                aria-expanded={open} disabled={isPending}>
+                        aria-expanded={open} disabled={isPending}>
                     {value ? dataList.find(user => user.value === value)?.label : "--"}
                     <CaretSortIcon className="ml-2 h-4 w-4 shrink-0"/>
                 </Button>

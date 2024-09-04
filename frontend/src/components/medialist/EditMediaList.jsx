@@ -2,17 +2,12 @@ import * as Menu from "@/components/ui/menubar";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 
 
-export const EditMediaList = (props) => {
-    const {isCurrent, status, allStatus, handleStatus, removeMedia, addOtherList} = props;
-
+export const EditMediaList = ({ isCurrent, status, allStatus, updateStatus, removeMedia, addOtherList }) => {
     const handleMenuRemove = () => {
-        const confirm = window.confirm("Are you sure you want to delete this media?");
-        if (!confirm) return;
+        if (!window.confirm("Are you sure you want to delete this media?")) return;
         removeMedia();
     };
-
-    const handleMenuStatus = (ev) => handleStatus(ev.target.textContent);
-
+    const handleMenuStatus = (ev) => updateStatus(ev.target.textContent);
     const handleMenuAdd = (ev) => addOtherList(ev.target.textContent);
 
     return (

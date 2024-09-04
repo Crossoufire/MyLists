@@ -1,23 +1,24 @@
-import {fetcher} from "@/lib/fetcherLoader";
 import {useHashTab} from "@/hooks/HashTabHook";
+import {queryOptionsMap} from "@/utils/mutations";
 import {MediaCard} from "@/components/app/MediaCard";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {capitalize, formatDateTime, zeroPad} from "@/lib/utils";
+import {capitalize, formatDateTime, zeroPad} from "@/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/coming-next")({
     component: ComingNextPage,
-    loader: async () => fetcher("/coming_next"),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.upcoming()),
 });
 
 
 function ComingNextPage() {
-    const apiData = Route.useLoaderData();
-    const [selectedTab, handleTabChange] = useHashTab("series", "coming_next_tab");
+    const apiData = useSuspenseQuery(queryOptionsMap.upcoming()).data;
+    const [selectedTab, handleTabChange] = useHashTab("series", "upcoming_tab");
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">
@@ -56,7 +57,7 @@ function ComingNextPage() {
 const NextMedia = ({ media, mediaType }) => {
     return (
         <MediaCard media={media} mediaType={mediaType}>
-            <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-950 w-full rounded-b-sm text-center">
+            <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-900 w-full rounded-b-sm text-center">
                 {(mediaType === "anime" || mediaType === "series") &&
                     <div>S{zeroPad(media.season_to_air)}&nbsp;-&nbsp;E{zeroPad(media.episode_to_air)}</div>
                 }

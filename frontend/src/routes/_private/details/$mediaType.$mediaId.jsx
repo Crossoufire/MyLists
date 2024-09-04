@@ -1,14 +1,13 @@
-import {useState} from "react";
-import {fetcher} from "@/lib/fetcherLoader";
 import {Button} from "@/components/ui/button";
 import {useUser} from "@/providers/UserProvider";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
-import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {createFileRoute, Link} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
 import {RefreshMedia} from "@/components/media/general/RefreshMedia";
+import {createFileRoute, Link, redirect} from "@tanstack/react-router";
 import {UserListDetails} from "@/components/media/general/UserListDetails";
 import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
@@ -16,25 +15,28 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
-	component: MediaDetailsWrapper,
-	loaderDeps: ({ search: { external } }) => ({ external }),
-	loader: async ({ params, deps }) => {
-		return await fetcher(`/details/${params.mediaType}/${params.mediaId}`, { external: deps.external });
+	component: MediaDetailsPage,
+	loaderDeps: ({ search }) => ({ search }),
+	loader: async ({ context: { queryClient }, params: { mediaType, mediaId }, deps: { search } }) => {
+        if (!search.external) {
+            const cacheData = queryClient.getQueryData(["details", mediaType, mediaId.toString()]);
+            if (cacheData) return cacheData;
+        }
+		const data = await queryClient.ensureQueryData(queryOptionsMap.details(mediaType, mediaId, search.external));
+		queryClient.setQueryData(["details", mediaType, data.media.id.toString()], data);
+		if (search.external) {
+			throw redirect({ to: `/details/${mediaType}/${data.media.id}`, replace: true });
+		}
+		return data;
 	},
 });
 
 
 function MediaDetailsPage() {
 	const { currentUser } = useUser();
-	const data = Route.useLoaderData();
-	const { mediaType } = Route.useParams();
-	const [apiData, setApiData] = useState(data);
-	const { refresh } = usePostMediaCreator(apiData.media.id, mediaType);
-
-	const mutateData = async () => {
-		const data = await fetcher(`/details/${mediaType}/${apiData.media.id}`);
-		setApiData(data);
-	};
+	const { external } = Route.useSearch();
+	const { mediaType, mediaId } = Route.useParams();
+	const apiData = useSuspenseQuery(queryOptionsMap.details(mediaType, mediaId, external)).data;
 
 	return (
 		<PageTitle title={apiData.media.name} onlyHelmet>
@@ -46,9 +48,9 @@ function MediaDetailsPage() {
 						</div>
 						{currentUser.role === "manager" &&
 							<RefreshMedia
-								updateRefresh={refresh}
-								mutateData={mutateData}
-								lastApiUpdate={apiData.media.last_api_update}
+								mediaType={mediaType}
+								mediaId={apiData.media.id}
+								lastUpdate={apiData.media.last_api_update}
 							/>
 						}
 					</h3>
@@ -58,14 +60,14 @@ function MediaDetailsPage() {
 					<div className="col-span-12 md:col-span-5 lg:col-span-4">
 						<div className="flex flex-col items-center sm:items-start gap-4">
 							<img
+								alt="media-cover"
 								src={apiData.media.media_cover}
 								className="w-[300px] h-[450px] rounded-md"
-								alt="media-cover"
 							/>
 							<UserListDetails
 								apiData={apiData}
 								mediaType={mediaType}
-								setApiData={setApiData}
+								mediaId={apiData.media.id}
 							/>
 						</div>
 					</div>
@@ -73,12 +75,14 @@ function MediaDetailsPage() {
 						<Tabs defaultValue="mediaDetails">
 							<TabsList className="grid grid-cols-2">
 								<TabsTrigger value="mediaDetails">Media Details</TabsTrigger>
-								<TabsTrigger value="follows">Your Follows ({apiData.follows_data.length})</TabsTrigger>
+								<TabsTrigger value="follows" disabled={apiData.follows_data.length === 0}>
+									Your Follows ({apiData.follows_data.length})
+								</TabsTrigger>
 							</TabsList>
 							<TabsContent value="mediaDetails">
 								<MediaDataDetails
-									mediaData={apiData.media}
 									mediaType={mediaType}
+									mediaData={apiData.media}
 								/>
 								<SimilarMedia
 									mediaType={mediaType}
@@ -92,8 +96,8 @@ function MediaDetailsPage() {
 											{apiData.follows_data.map(follow =>
 												<div key={follow.id} className="col-span-12 md:col-span-6 lg:col-span-6">
 													<FollowCard
-														key={follow.username}
 														follow={follow}
+														key={follow.username}
 														mediaType={mediaType}
 													/>
 												</div>
@@ -115,10 +119,4 @@ function MediaDetailsPage() {
 			</div>
 		</PageTitle>
 	);
-}
-
-
-function MediaDetailsWrapper() {
-	const { mediaType, mediaId } = Route.useParams();
-	return <MediaDetailsPage key={`${mediaType}-${mediaId}`}/>;
 }

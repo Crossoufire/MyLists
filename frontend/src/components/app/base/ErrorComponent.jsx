@@ -1,4 +1,3 @@
-import React from "react";
 import errorImage from "@/images/error.jpg";
 
 
@@ -15,10 +14,9 @@ export const ErrorComponent = ({ status, message, description }) => {
             <h4 className="text-xl mt-4">{description}</h4>
             <div className="flex items-center justify-center mt-14">
                 <img
-                    src={errorImage || ""}
-                    height={300}
-                    width={300}
                     alt="error"
+                    src={errorImage || ""}
+                    className="w-[300px] h-[300px]"
                 />
             </div>
         </div>

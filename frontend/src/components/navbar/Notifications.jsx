@@ -1,14 +1,14 @@
 import {toast} from "sonner";
 import {api} from "@/api/MyApiClient";
-import {formatDateTime} from "@/lib/utils";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {POLL_NOTIF_INTER} from "@/lib/constants";
+import {formatDateTime} from "@/utils/functions";
 import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
+import {NOTIFICATION_INTERVAL} from "@/utils/constants";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -30,7 +30,7 @@ export const Notifications = ({ isMobile }) => {
 
         const setNextPoll = () => {
             const currentTime = Date.now();
-            const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + POLL_NOTIF_INTER) : currentTime;
+            const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + NOTIFICATION_INTERVAL) : currentTime;
             const delay = Math.max(nextPollTime - currentTime, 0);
             timeoutId = setTimeout(pollCountNotifications, delay);
         };

@@ -1,26 +1,24 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {Return} from "@/components/app/base/Return";
-import {PageTitle} from "@/components/app/base/PageTitle.jsx";
+import {queryOptionsMap} from "@/utils/mutations";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/follows")({
     component: ProfileFollows,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}/follows`),
+    loader: ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.follows(username))
+    },
 });
 
 
 function ProfileFollows() {
-    const apiData = Route.useLoaderData();
     const { username } = Route.useParams();
+    const apiData = useSuspenseQuery(queryOptionsMap.follows(username)).data;
 
     return (
         <PageTitle title="Follows">
-            <Return className="mb-6"
-                to={`/profile/${username}`}
-                value="to profile"
-            />
             <div className="flex justify-start flex-wrap gap-11">
                 {apiData.follows.map(user =>
                     <Link key={user.id} to={`/profile/${user.username}`}>

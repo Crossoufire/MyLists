@@ -1,44 +1,52 @@
-import {useState} from "react";
+import {useUpdateUserMedia} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 
 
-export const MoviesUserDetails = ({ userData, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.redo);
-    const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(userData.rating);
-
-    const callbackStatus = (value) => {
-        setStatus(value);
-        setRedo(0);
+export const MoviesUserDetails = ({ userData, mediaType, mediaId }) => {
+    const onRedoSuccess = (oldData, variables) => {
+        return { ...oldData, user_data: { ...oldData.user_data, redo: variables.payload } };
+    };
+    const onStatusSuccess = (oldData, variables) => {
+        return { ...oldData, user_data: { ...oldData.user_data, status: variables.payload, redo: 0 } };
+    };
+    const onRatingSuccess = (oldData, variables) => {
+        return {
+            ...oldData,
+            user_data: {
+                ...oldData.user_data,
+                rating: {
+                    ...oldData.user_data.rating,
+                    value: variables.payload,
+                }
+            },
+        };
     };
 
-    const callbackRating = (value) => {
-        setRating({ ...rating, value });
-    };
+    const redoMutation = useUpdateUserMedia("update_redo", mediaType, mediaId, onRedoSuccess);
+    const statusMutation = useUpdateUserMedia("update_status", mediaType, mediaId, onStatusSuccess);
+    const ratingMutation = useUpdateUserMedia("update_rating", mediaType, mediaId, onRatingSuccess);
 
     return (
         <>
             <StatusDrop
-                status={status}
+                status={userData.status}
+                updateStatus={statusMutation}
                 allStatus={userData.all_status}
-                updateStatus={updatesAPI.status}
-                callbackStatus={callbackStatus}
             />
-            {status !== "Plan to Watch" &&
+            {userData.status !== "Plan to Watch" &&
                 <>
                     <Separator/>
                     <RatingDrop
-                        rating={rating}
-                        updateRating={updatesAPI.rating}
-                        callbackRating={callbackRating}
+                        rating={userData.rating}
+                        updateRating={ratingMutation}
                     />
                     <RedoDrop
-                        name="Re-watched"
-                        initRedo={redo}
-                        updateRedo={updatesAPI.redo}
+                        name={"Re-watched"}
+                        redo={userData.redo}
+                        updateRedo={redoMutation}
                     />
                 </>
             }

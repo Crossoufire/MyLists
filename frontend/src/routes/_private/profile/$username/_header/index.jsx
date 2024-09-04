@@ -1,4 +1,6 @@
 import {useUser} from "@/providers/UserProvider";
+import {queryOptionsMap} from "@/utils/mutations";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {UpdatesModal} from "@/components/app/UpdatesModal";
 import {MediaLevels} from "@/components/profile/MediaLevels";
@@ -7,7 +9,6 @@ import {GlobalStats} from "@/components/profile/GlobalStats";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
-import {profileHeaderRoute} from "@/routes/_private/profile/$username/_header.jsx";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -19,8 +20,8 @@ export const Route = createFileRoute("/_private/profile/$username/_header/")({
 function ProfileMain() {
     const { currentUser } = useUser();
     const { username } = Route.useParams();
-    const apiData = profileHeaderRoute.useLoaderData();
-    const isCurrent = currentUser.id === apiData.user_data.id;
+    const apiData = useSuspenseQuery(queryOptionsMap.profile(username)).data;
+    const isCurrent = (currentUser.id === apiData.user_data.id);
 
     return (
         <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
@@ -61,9 +62,9 @@ function ProfileMain() {
                 />
                 <div className="mt-4"/>
                 <UserUpdates
+                    followers={true}
                     username={username}
                     updates={apiData.follows_updates}
-                    followers={true}
                 />
             </div>
             {isCurrent &&

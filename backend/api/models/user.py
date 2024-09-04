@@ -453,6 +453,7 @@ class UserMediaUpdate(db.Model):
 
     def to_dict(self) -> Dict:
         update_dict = dict(
+            id=self.id,
             user_id=self.user_id,
             media_id=self.media_id,
             media_name=self.media_name,

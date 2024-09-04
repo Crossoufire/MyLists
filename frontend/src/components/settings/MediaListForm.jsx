@@ -172,7 +172,7 @@ export const MediaListForm = () => {
                             )}
                         />
                     </div>
-                    <FormButton className="mt-5" pending={isPending}>
+                    <FormButton className="mt-5" disabled={isPending}>
                         Update
                     </FormButton>
                 </form>

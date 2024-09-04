@@ -1,9 +1,9 @@
 // noinspection JSDeprecatedSymbols
 
 import * as React from "react";
-import {cn} from "@/lib/utils";
 import {useEffect} from "react";
 import {LuX} from "react-icons/lu";
+import {cn} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Command as CommandPrimitive} from "cmdk";
 import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList,} from "@/components/ui/command";

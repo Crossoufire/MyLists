@@ -1,17 +1,14 @@
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
-import {useMutation} from "@/hooks/LoadingHook";
 import {LuMessageSquare} from "react-icons/lu";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
-export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
-    const [isLoading, handleLoading] = useMutation();
+export const CommentPopover = ({ isCurrent, content, updateComment }) => {
     const [isEdit, setIsEdit] = useState(false);
-    const [contentsState, setContentsState] = useState(initContent || "");
-    const [initContentState, setInitContentState] = useState(initContent || "");
+    const [contentsState, setContentsState] = useState(content || "");
 
     const checkInitContent = () => {
         if (isCurrent && contentsState === "") {
@@ -20,17 +17,13 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
     };
 
     const handleSave = async () => {
-        if (initContentState === contentsState) {
-            return;
-        }
-
-        await handleLoading(updateComment, contentsState);
-        setInitContentState(contentsState);
+        if (content === contentsState) return;
+        updateComment.mutate({ payload: contentsState });
         setIsEdit(false);
     };
 
     const onEditCancel = () => {
-        setContentsState(initContentState);
+        setContentsState(content);
         setIsEdit(false);
     };
 
@@ -62,17 +55,17 @@ export const CommentPopover = ({ isCurrent, initContent, updateComment }) => {
                     <>
                         <Textarea
                             value={contentsState}
-                            onChange={(ev) => setContentsState(ev.target.value)}
-                            placeholder="Enter your comment..."
                             className="w-full h-[100px]"
-                            disabled={isLoading}
+                            disabled={updateComment.isPending}
+                            placeholder="Enter your comment..."
+                            onChange={(ev) => setContentsState(ev.target.value)}
                         />
                         <Button className="mt-3" size="sm" onClick={handleSave}
-                        disabled={initContentState === contentsState || isLoading}>
+                        disabled={content === contentsState || updateComment.isPending}>
                             Save
                         </Button>
                         <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={onEditCancel}
-                        disabled={initContentState === contentsState || isLoading}>
+                        disabled={content === contentsState || updateComment.isPending}>
                             Cancel
                         </Button>
                     </>

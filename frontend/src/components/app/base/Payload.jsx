@@ -1,4 +1,4 @@
-import {cn, zeroPad} from "@/lib/utils";
+import {zeroPad, cn} from "@/utils/functions";
 import {FaLongArrowAltRight} from "react-icons/fa";
 
 
@@ -6,31 +6,24 @@ export const Payload = ({ update, className }) => {
     const FormattedPayload = getUpdatePayload(update.update_type);
     return (
         <div className={cn("flex flex-row gap-2 items-center", className)}>
-            <FormattedPayload payload={update.payload} mediaType={update.media_type}/>
+            <FormattedPayload
+                payload={update.payload}
+                mediaType={update.media_type}
+            />
         </div>
     );
 };
 
 
 const getUpdatePayload = (updateType) => {
-    if (updateType === "status") {
-        return StatusPayload;
-    }
-    else if (updateType === "tv") {
-        return TVPayload;
-    }
-    else if (updateType === "redo") {
-        return RedoPayload;
-    }
-    else if (updateType === "playtime") {
-        return PlaytimePayload;
-    }
-    else if (updateType === "page") {
-        return PagePayload;
-    }
-    else {
-        return StatusPayload;
-    }
+    const choosePayload = {
+        status: StatusPayload,
+        tv: TVPayload,
+        redo: RedoPayload,
+        playtime: PlaytimePayload,
+        page: PagePayload,
+    };
+    return choosePayload[updateType];
 };
 
 const StatusPayload = ({ payload }) => {
@@ -55,7 +48,6 @@ const TVPayload = ({ payload }) => {
 
 const RedoPayload = ({ payload, mediaType }) => {
     const name = (mediaType === "books") ? "Re-read" : "Re-watched";
-
     return <>{name} {payload.old_value}x <FaLongArrowAltRight size={16}/> {payload.new_value}x</>;
 };
 

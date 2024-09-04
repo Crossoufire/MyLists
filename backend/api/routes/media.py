@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from flask import current_app
+from flask import current_app, request
 from flask import jsonify, Blueprint, abort
 from backend.api import db
 from backend.api.core import token_auth, current_user
@@ -240,11 +240,10 @@ def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: 
     if media_type != MediaType.GAMES:
         return abort(400, "Only games are supported")
 
-    if payload < 0 or payload > 10000:
+    if payload < 0 or payload > 10000 * 60:
         return abort(400, "Playtime needs to be comprise between 0 and 10000 hours.")
 
-    # From [hours] to [min]
-    new_playtime = payload * 60
+    new_playtime = payload
 
     media_assoc = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
     if not media_assoc:
@@ -255,7 +254,7 @@ def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: 
 
     media_assoc.playtime = new_playtime
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] {media_type.value} ID {media_id} playtime updated to {new_playtime}")
+    current_app.logger.info(f"[{current_user.id}] {media_type.value} {media_id} playtime updated to {new_playtime} min")
 
     return {}, 204
 
@@ -404,3 +403,37 @@ def update_page(media_type: MediaType, media_id: int, payload: Any, models: Dict
     current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] page updated to {new_page}")
 
     return {}, 204
+
+
+@media_bp.route("/delete_updates", methods=["POST"])
+@token_auth.login_required
+def delete_updates():
+    """ Delete updates from the user """
+
+    try:
+        json_data = request.get_json()
+        update_ids = json_data["update_ids"]
+        if not isinstance(update_ids, list):
+            update_ids = [update_ids]
+        return_data = bool(json_data["return_data"])
+    except:
+        return abort(400, "Invalid data")
+
+    UserMediaUpdate.query.filter(
+        UserMediaUpdate.id.in_(update_ids),
+        UserMediaUpdate.user_id == current_user.id
+    ).delete()
+
+    data = {}
+    if return_data:
+        new_update_to_return = (
+            UserMediaUpdate.query.filter_by(user_id=current_user.id)
+            .order_by(UserMediaUpdate.timestamp.desc())
+            .limit(7).all()
+        )
+        data = new_update_to_return[-1].to_dict() if new_update_to_return else None
+
+    db.session.commit()
+    current_app.logger.info(f"[User {current_user.id}] {len(update_ids)} updates successfully deleted")
+
+    return jsonify(data=data), 200

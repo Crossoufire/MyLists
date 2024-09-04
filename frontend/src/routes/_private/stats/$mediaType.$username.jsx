@@ -1,15 +1,17 @@
 import {useState} from "react";
+import {cn} from "@/utils/functions";
 import {ResponsiveBar} from "@nivo/bar";
-import {barTheme} from "@/lib/constants";
-import {dataToLoad} from "@/lib/statsData";
-import {capitalize, cn} from "@/lib/utils";
-import {fetcher} from "@/lib/fetcherLoader";
+import {barTheme} from "@/utils/constants";
+import {dataToLoad} from "@/utils/statsData";
+import {capitalize} from "@/utils/functions";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Sidebar} from "@/components/app/Sidebar";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {UserComboBox} from "@/components/app/UserComboBox";
+import {fetcher, queryOptionsMap} from "@/utils/mutations";
 import {FaList, FaQuestionCircle, FaTimes} from "react-icons/fa";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
@@ -20,17 +22,19 @@ import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious}
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
     component: StatsPage,
-    loader: async ({ params }) => fetcher(`/stats/${params.mediaType}/${params.username}`),
+    loader: ({ context: { queryClient }, params: { mediaType, username } }) => {
+        return queryClient.ensureQueryData(queryOptionsMap.stats(mediaType, username))
+    },
 });
 
 
 function StatsPage() {
-    const apiData = Route.useLoaderData();
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);
     const [selectedTab, handleTabChange] = useState("Main Statistics");
+    const apiData = useSuspenseQuery(queryOptionsMap.stats(mediaType, username)).data;
     const statsData = dataToLoad(mediaType, apiData.stats);
 
     const addComparison = async (user) => {

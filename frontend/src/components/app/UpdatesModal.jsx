@@ -1,9 +1,8 @@
-import {toast} from "sonner";
 import {useState} from "react";
-import {api} from "@/api/MyApiClient";
 import {Button} from "@/components/ui/button";
 import * as Dia from "@/components/ui/dialog";
 import {useUser} from "@/providers/UserProvider";
+import {useModalMutation} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 
 
@@ -29,18 +28,13 @@ const newUpdateData = [
 
 
 export const UpdatesModal = () => {
-    const { currentUser, setCurrentUser } = useUser();
+    const {currentUser} = useUser();
+    const modalUpdate = useModalMutation();
     const [isOpen, setIsOpen] = useState(currentUser.show_update_modal);
 
-    const doNotShowModalAgain = async () => {
+    const doNotShowModalAgain = () => {
+        modalUpdate.mutate();
         setIsOpen(false);
-
-        const response = await api.post("/update_modal");
-        if (!response.ok) {
-            return toast.error("An error occurred. Please try again later.");
-        }
-
-        setCurrentUser((prev) => ({ ...prev, show_update_modal: false }));
     };
 
     return (
@@ -79,7 +73,7 @@ export const UpdatesModal = () => {
 };
 
 
-function CheckIcon(props) {
+const CheckIcon = (props) => {
     return (
         <svg
             width="24"
@@ -96,4 +90,4 @@ function CheckIcon(props) {
             <path d="M20 6 9 17l-5-5"/>
         </svg>
     )
-}
+};

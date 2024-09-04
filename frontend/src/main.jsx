@@ -1,25 +1,28 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
 import {routeTree} from "./routeTree.gen";
-import {createRoot} from "react-dom/client";
+import {queryClient} from "@/utils/mutations";
 import {ThemeProvider} from "@/providers/ThemeProvider";
+import {QueryClientProvider} from "@tanstack/react-query";
 import {ErrorComponent} from "@/components/app/base/ErrorComponent";
 import {createRouter, RouterProvider} from "@tanstack/react-router";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import "./index.css";
 
 
-const queryClient = new QueryClient();
+const router = createRouter({
+    routeTree,
+    context: { queryClient: queryClient },
+    defaultPreloadStaleTime: 0,
+    defaultNotFoundComponent: ErrorComponent,
+    defaultErrorComponent: DefaultErrorComponent,
+});
 
 
 const rootElement = document.getElementById("root");
 if (!rootElement.innerHTML) {
-    const root = createRoot(rootElement);
-    root.render(<App/>);
-}
-
-
-export default function App() {
-    return (
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+        <ThemeProvider>
             <QueryClientProvider client={queryClient}>
                 <RouterProvider router={router}/>
             </QueryClientProvider>
@@ -28,18 +31,11 @@ export default function App() {
 }
 
 
-const router = createRouter({
-    defaultGcTime: 0,
-    routeTree: routeTree,
-    defaultNotFoundComponent: ErrorComponent,
-    defaultErrorComponent: DefaultErrorComponent,
-});
-
-
-function DefaultErrorComponent({ error }) {
+export function DefaultErrorComponent({ error }) {
     try {
         return <ErrorComponent { ...JSON.parse(error.message) }/>;
-    } catch {
+    }
+    catch {
         return <ErrorComponent/>;
     }
 }

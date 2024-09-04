@@ -1,5 +1,5 @@
-import {getFeelingValues} from "@/lib/utils";
 import {Tooltip} from "@/components/ui/tooltip";
+import {getFeelingValues} from "@/utils/functions";
 
 
 export const RatingDistribution = ({ isFeeling, ratingCount, mediaType }) => {

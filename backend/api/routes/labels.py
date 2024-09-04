@@ -88,14 +88,14 @@ def delete_label():
     try:
         json_data = request.get_json()
         media_type = MediaType(json_data["media_type"])
-        label = json_data["label"]
+        name = json_data["name"]
     except:
         return abort(400)
 
     labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
-    labels_model.query.filter_by(user_id=current_user.id, name=label).delete()
+    labels_model.query.filter_by(user_id=current_user.id, name=name).delete()
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] deleted the label: {label} ({media_type.value})")
+    current_app.logger.info(f"User [{current_user.id}] deleted the label: {name} ({media_type.value})")
 
     return {}, 204

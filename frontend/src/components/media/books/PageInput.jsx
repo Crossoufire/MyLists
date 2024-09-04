@@ -1,44 +1,33 @@
 import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
-import {useMutation} from "@/hooks/LoadingHook";
 
 
 export const PageInput = ({ initPage, totalPages, updatePage }) => {
-    const [page, setPage] = useState(initPage || 0);
-    const [isLoading, handleLoading] = useMutation();
-    const [backupPage, setBackupPage] = useState(initPage || 0);
+    const [currentPage, setCurrentPage] = useState(initPage || 0);
 
     useEffect(() => {
-        setPage(initPage);
+        setCurrentPage(initPage);
     }, [initPage]);
 
-    const handlePageOnBlur = async () => {
-        if (parseInt(page) === backupPage) {
-            return;
+    const handlePageOnBlur = (ev) => {
+        ev.preventDefault();
+        if (currentPage === initPage) return;
+        if (currentPage > totalPages || currentPage < 0) {
+            return setCurrentPage(initPage);
         }
-
-        const response = await handleLoading(updatePage, page);
-        if (response) {
-            setBackupPage(parseInt(page));
-        } else {
-            setPage(backupPage);
-        }
-    }
-
-    const onPageChange = (ev) => {
-        setPage(ev.target.value);
-    }
+        updatePage.mutate({ payload: currentPage });
+    };
 
     return (
         <div className="flex justify-between items-center">
             <div>Pages</div>
             <div className="w-[140px]">
                 <Input
-                    value={isLoading ? "..." : page}
+                    value={currentPage}
+                    disabled={updatePage.isPending}
                     onBlur={(ev) => handlePageOnBlur(ev)}
-                    onChange={onPageChange}
-                    className="w-[60px] text-base border-none bg-transparent cursor-pointer inline-block"
-                    disabled={isLoading}
+                    onChange={(ev) => setCurrentPage(ev.target.value)}
+                    className={"w-[60px] text-base border-none bg-transparent cursor-pointer inline-block"}
                 />
                 <span> / </span>
                 <span>{totalPages}</span>

@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const RegisterForm = () => {
 	const [errors, setErrors] = useState({});
-	const [pending, setPending] = useState(false);
+	const [isPending, setIsPending] = useState(false);
 	const form = useForm({
 		defaultValues: {
 			username: "",
@@ -27,7 +27,7 @@ export const RegisterForm = () => {
 		setErrors({});
 
 		try {
-			setPending(true);
+			setIsPending(true);
 			const response = await api.post("/register_user", {
 				username: data.username,
 				email: data.email,
@@ -44,7 +44,7 @@ export const RegisterForm = () => {
 			}
 		}
 		finally {
-			setPending(false);
+			setIsPending(false);
 		}
 
 		toast.success("Your account has been created. Check your email to activate your account");
@@ -150,7 +150,7 @@ export const RegisterForm = () => {
 								)}
 							/>
 						</div>
-						<FormButton pending={pending}>
+						<FormButton disabled={isPending}>
 							Create an account
 						</FormButton>
 					</form>

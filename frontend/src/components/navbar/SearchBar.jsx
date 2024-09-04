@@ -11,9 +11,9 @@ import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
-import {capitalize, formatDateTime} from "@/lib/utils";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {capitalize, formatDateTime} from "@/utils/functions";
 
 
 export const SearchBar = () => {

@@ -1,10 +1,9 @@
-import {toast} from "sonner";
-import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
+import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {useResetPasswordMutation} from "@/utils/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -16,21 +15,11 @@ export const Route = createFileRoute("/_public/reset-password")({
 
 function ResetPasswordPage() {
     const form = useForm();
-    const navigate = useNavigate();
     const { token } = Route.useSearch();
+    const mutateResetPassword = useResetPasswordMutation(token);
 
     const onSubmit = async (data) => {
-        const response = await api.post("/tokens/reset_password", {
-            token: token,
-            new_password: data.password,
-        });
-
-        if (!response.ok) {
-            return toast.error(response.body.description);
-        }
-
-        toast.success("Your password was successfully modified");
-        return navigate({ to: "/" });
+        mutateResetPassword.mutate({ newPassword: data.password });
     };
 
     return (

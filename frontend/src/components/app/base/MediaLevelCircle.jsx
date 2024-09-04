@@ -1,4 +1,5 @@
-import {cn, getLevelColor} from "@/lib/utils";
+import {cn} from "@/utils/functions";
+import {getLevelColor} from "@/utils/functions";
 
 
 export const MediaLevelCircle = ({ intLevel, className, isActive = true }) => {

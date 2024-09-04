@@ -1,46 +1,35 @@
-// noinspection JSCheckFunctionSignatures
-
 import {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input";
-import {useMutation} from "@/hooks/LoadingHook";
 
 
-export const PagesInput = ({ isCurrent, status, initPage, totalPages, updatePage }) => {
-    const [isLoading, handleLoading] = useMutation();
-    const [page, setPage] = useState(initPage || 0);
-    const [backupPage, setBackupPage] = useState(initPage || 0);
+export const PagesInput = ({ isCurrent, initPage, totalPages, updatePage }) => {
+    const [currentPage, setCurrentPage] = useState(initPage || 0);
 
     useEffect(() => {
-        if (status === "Completed") {
-            setPage(totalPages);
-        }
-    }, [status]);
+        setCurrentPage(initPage);
+    }, [initPage]);
 
-    const handlePageOnBlur = async () => {
-        if (parseInt(page) === backupPage) {
-            return;
+    const handlePageOnBlur = (ev) => {
+        ev.preventDefault();
+        if (currentPage === initPage) return;
+        if (currentPage > totalPages || currentPage < 0) {
+            return setCurrentPage(initPage);
         }
-
-        const response = await handleLoading(updatePage, page);
-        if (response) {
-            setBackupPage(parseInt(page));
-        } else {
-            setPage(backupPage);
-        }
+        updatePage.mutate({ payload: currentPage });
     };
 
     return (
         <div className="flex justify-center items-center h-[28px]">
             {isCurrent ?
                 <Input
-                    value={page}
-                    disabled={isLoading}
+                    value={currentPage}
+                    disabled={updatePage.isPending}
                     onBlur={(ev) => handlePageOnBlur(ev)}
-                    onChange={(ev) => setPage(ev.target.value)}
+                    onChange={(ev) => setCurrentPage(ev.target.value)}
                     className="w-[40px] border-none cursor-pointer text-base p-0"
                 />
                 :
-                <>{page} </>
+                <>{initPage} </>
             }
             / {totalPages}
         </div>

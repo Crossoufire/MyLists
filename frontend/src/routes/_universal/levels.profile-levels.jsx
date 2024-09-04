@@ -1,4 +1,5 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
+import {queryOptionsMap} from "@/utils/mutations";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 
@@ -6,12 +7,12 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_universal/levels/profile-levels")({
     component: ProfileLevelsPage,
-    loader: async () => fetcher("/levels/profile_borders"),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.borders()),
 });
 
 
 function ProfileLevelsPage() {
-    const apiData = Route.useLoaderData();
+    const apiData = useSuspenseQuery(queryOptionsMap.borders()).data;
 
     return (
         <PageTitle title="Profile borders" subtitle="Understanding the Profile Levels Borders System">

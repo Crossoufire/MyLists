@@ -1,11 +1,11 @@
 import {ResponsivePie} from "@nivo/pie";
-import {pieTheme} from "@/lib/constants";
+import {pieTheme} from "@/utils/constants";
 import {useEffect, useState} from "react";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, getMediaColor} from "@/lib/utils";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {getFeelingValues, getMediaColor} from "@/utils/functions";
 
 
 export const GlobalStats = ({ userData, global }) => {

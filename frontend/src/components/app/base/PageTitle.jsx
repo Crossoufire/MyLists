@@ -6,7 +6,9 @@ import {MutedText} from "@/components/app/base/MutedText";
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => {
     return (
         <>
-            <Helmet defer={false}><title>{title} - MyLists</title></Helmet>
+            <Helmet defer={false}>
+                <title>{title} - MyLists</title>
+            </Helmet>
             {onlyHelmet ?
                 children
                 :

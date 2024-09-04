@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import {ChevronDownIcon} from "@radix-ui/react-icons";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";

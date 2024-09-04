@@ -1,6 +1,6 @@
 
 
-export const POLL_NOTIF_INTER = 20 * 60 * 1000;
+export const NOTIFICATION_INTERVAL = 20 * 60 * 1000;
 
 export const mail = "contact.us.at.mylists@gmail.com";
 

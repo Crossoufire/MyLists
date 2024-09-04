@@ -1,7 +1,3 @@
-import {toast} from "sonner";
-import {useMutation} from "@/hooks/LoadingHook";
-import {FaMinus, FaPlus} from "react-icons/fa";
-import {usePostMediaCreator} from "@/hooks/UserUpdaterHook";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
@@ -12,6 +8,7 @@ import {GamesUserDetails} from "@/components/media/games/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media/books/BooksUserDetails";
 import {MoviesUserDetails} from "@/components/media/movies/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {useAddMediaToUser, useRemoveMediaFromUser, useUpdateUserMedia} from "@/utils/mutations";
 
 
 const mediaComponentMap = (value) => {
@@ -26,34 +23,31 @@ const mediaComponentMap = (value) => {
 };
 
 
-export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
-	const [isLoading, handleLoading] = useMutation();
+export const UserListDetails = ({ apiData, mediaId, mediaType }) => {
 	const MediaUserDetails = mediaComponentMap(mediaType);
-	const updatesAPI = usePostMediaCreator(apiData.media.id, mediaType);
+	const addMediaToUser = useAddMediaToUser(mediaType, mediaId);
+	const removeMediaFromUser = useRemoveMediaFromUser(mediaType, mediaId);
 
 	const handleAddMediaUser = async () => {
-		const response = await handleLoading(updatesAPI.addMedia);
-		if (response) {
-			setApiData({ ...apiData, user_data: response });
-			toast.success("Media added to your list");
-		}
+		await addMediaToUser.mutateAsync(undefined, undefined);
 	};
 
 	const handleDeleteMedia = async () => {
-		const confirm = window.confirm("Do you want to remove this media from your list?");
-		if (!confirm) return;
-		const response = await handleLoading(updatesAPI.deleteMedia);
-		if (response) {
-			setApiData({ ...apiData, user_data: false });
-			toast.warning("Media deleted from your list");
-		}
+		if (!window.confirm("Do you want to remove this media from your list?")) return;
+		await removeMediaFromUser.mutateAsync(undefined, undefined);
 	};
+
+	const onSuccessFavorite = (oldData, variables) => {
+		return { ...oldData, user_data: { ...oldData.user_data, favorite: variables.payload } };
+	};
+
+	const updateFavorite = useUpdateUserMedia("update_favorite", mediaType, mediaId, onSuccessFavorite);
 
 	if (!apiData.user_data) {
 		return (
 			<div className="w-[300px]">
-				<FormButton onClick={handleAddMediaUser} pending={isLoading}>
-					<FaPlus size={13}/> &nbsp; Add to your list
+				<FormButton onClick={handleAddMediaUser} disabled={addMediaToUser.isPending}>
+					Add to your list
 				</FormButton>
 			</div>
 		);
@@ -64,38 +58,45 @@ export const UserListDetails = ({ apiData, setApiData, mediaType }) => {
 			<Tabs defaultValue="yourInfo">
 				<TabsList className="w-full items-center justify-start">
 					<TabsTrigger value="yourInfo" className="w-full">Your Info</TabsTrigger>
-					<TabsTrigger value="history" className="w-full">History ({apiData.user_data.history.length})</TabsTrigger>
+					<TabsTrigger value="history" className="w-full" disabled={apiData.user_data.history.length === 0}>
+						History ({apiData.user_data.history.length})
+					</TabsTrigger>
 					<div className="flex items-center justify-end w-full mr-3 text-primary text-xl">
 						<ManageFavorite
-							initFav={apiData.user_data.favorite}
-							updateFavorite={updatesAPI.favorite}
+							updateFavorite={updateFavorite}
+							isFavorite={apiData.user_data.favorite}
 						/>
 					</div>
 				</TabsList>
 				<TabsContent value="yourInfo" className="w-[300px] p-5 pt-3 bg-card rounded-md">
 					<MediaUserDetails
+						mediaType={mediaType}
+						mediaId={apiData.media.id}
 						userData={apiData.user_data}
-						totalPages={apiData.media.pages}
-						updatesAPI={updatesAPI}
+						totalPages={apiData.media?.pages}
 					/>
 					<Commentary
-						updateComment={updatesAPI.comment}
-						initContent={apiData.user_data.comment}
+						mediaType={mediaType}
+						mediaId={apiData.media.id}
+						content={apiData.user_data.comment}
 					/>
 					<LabelLists
+						mediaType={mediaType}
 						mediaId={apiData.media.id}
-						alreadyIn={apiData.user_data.labels.already_in}
+						labelsInList={apiData.user_data.labels.already_in}
 					/>
 				</TabsContent>
 				<TabsContent value="history" className="w-[300px] p-5 pt-3 bg-card rounded-md overflow-y-hidden
 					hover:overflow-y-auto max-h-[355px]">
 					<HistoryDetails
+						mediaType={mediaType}
+						mediaId={apiData.media.id}
 						history={apiData.user_data.history}
 					/>
 				</TabsContent>
 			</Tabs>
-			<FormButton variant="destructive" pending={isLoading} onClick={handleDeleteMedia}>
-				<FaMinus/>&nbsp; Remove from your list
+			<FormButton variant="destructive" disabled={removeMediaFromUser.isPending} onClick={handleDeleteMedia}>
+				Remove from your list
 			</FormButton>
 		</div>
 	)

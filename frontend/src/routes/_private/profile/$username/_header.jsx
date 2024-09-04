@@ -1,28 +1,27 @@
-import {fetcher} from "@/lib/fetcherLoader";
+import {queryOptionsMap} from "@/utils/mutations";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
+import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
-import {createFileRoute, getRouteApi, Outlet} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header")({
     component: ProfileTop,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}`),
+    loader: ({ context, params }) => context.queryClient.ensureQueryData(queryOptionsMap.profile(params.username)),
 });
-
-export const profileHeaderRoute = getRouteApi("/_private/profile/$username/_header");
 
 
 function ProfileTop() {
-    const apiData = Route.useLoaderData();
     const { username } = Route.useParams();
+    const apiData = useSuspenseQuery(queryOptionsMap.profile(username)).data;
 
     return (
         <PageTitle title={`${username} Profile`} onlyHelmet>
             <ProfileHeader
                 user={apiData.user_data}
-                initFollow={apiData.is_following}
                 followId={apiData.user_data.id}
+                followStatus={apiData.is_following}
             />
             <Outlet/>
         </PageTitle>

@@ -1,31 +1,17 @@
-import {toast} from "sonner";
 import {FaRedo} from "react-icons/fa";
-import {formatDateTime} from "@/lib/utils";
-import {useMutation} from "@/hooks/LoadingHook";
 import {Tooltip} from "@/components/ui/tooltip";
-import {LoadingIcon} from "@/components/app/base/LoadingIcon";
+import {cn, formatDateTime} from "@/utils/functions";
+import {useRefreshMutation} from "@/utils/mutations";
 
 
-export const RefreshMedia = ({ updateRefresh, mutateData, lastApiUpdate }) => {
-    const [isLoading, handleLoading] = useMutation();
-    const lastRefresh = lastApiUpdate ? formatDateTime(lastApiUpdate, { includeTime: true }) : "Never";
-
-    const handleRefresh = async () => {
-        const response = await handleLoading(updateRefresh);
-        if (response) {
-            await mutateData();
-            toast.success("Media data successfully updated!");
-        }
-    };
-
-    if (isLoading) {
-        return <LoadingIcon size={6} cssOverride={{marginTop: 12}}/>;
-    }
+export const RefreshMedia = ({ mediaType, mediaId, lastUpdate }) => {
+    const refreshMutation = useRefreshMutation(mediaType, mediaId);
+    const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, {includeTime: true, useLocalTz: true}) : "Never";
 
     return (
         <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
-            <div role="button" onClick={handleRefresh}>
-                <FaRedo size={18} className="mt-2"/>
+            <div role="button" onClick={() => refreshMutation.mutate()}>
+                <FaRedo size={18} className={cn("mt-2", refreshMutation.isPending && "animate-spin opacity-30")}/>
             </div>
         </Tooltip>
     );

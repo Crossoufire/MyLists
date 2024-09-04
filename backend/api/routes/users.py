@@ -138,8 +138,8 @@ def history(username: str):
     )
 
     data = dict(
-        history=[hist_item.to_dict() for hist_item in history_query.items],
-        active_page=history_query.page,
+        items=[item.to_dict() for item in history_query.items],
+        page=history_query.page,
         pages=history_query.pages,
         total=history_query.total,
     )

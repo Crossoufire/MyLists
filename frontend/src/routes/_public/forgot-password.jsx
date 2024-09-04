@@ -1,12 +1,11 @@
-import {toast} from "sonner";
 import {useState} from "react";
-import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
+import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormError} from "@/components/app/base/FormError";
+import {useForgotPasswordMutation} from "@/utils/mutations";
 import {FormButton} from "@/components/app/base/FormButton";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -17,28 +16,19 @@ export const Route = createFileRoute("/_public/forgot-password")({
 
 
 function ForgotPasswordPage() {
-    const form = useForm();
-    const navigate = useNavigate();
     const [errors, setErrors] = useState("");
-    const [pending, setPending] = useState(false);
+    const form = useForm({ defaultValues: { email: "" } });
+
+    const errorCallback = (error) => {
+        setErrors(error);
+    };
 
     const onSubmit = async (data) => {
         setErrors("");
-
-        setPending(true);
-        const response = await api.post("/tokens/reset_password_token", {
-            email: data.email,
-            callback: import.meta.env.VITE_RESET_PASSWORD_CALLBACK,
-        });
-        setPending(false);
-
-        if (response.status !== 204) {
-            return setErrors(response.body.description);
-        }
-
-        toast.success("A reset email has been sent to change your password");
-        return navigate({ to :"/" });
+        forgotPasswordMutation.mutate({ email: data.email });
     };
+
+    const forgotPasswordMutation = useForgotPasswordMutation(errorCallback);
 
     return (
         <PageTitle title="Forgot Password" subtitle="Enter the email associated with your account to reset your password">
@@ -64,7 +54,7 @@ function ForgotPasswordPage() {
                             )}
                         />
                         {errors && <FormError message={errors}/>}
-                        <FormButton pending={pending}>
+                        <FormButton disabled={forgotPasswordMutation.isPending}>
                             Submit
                         </FormButton>
                     </form>

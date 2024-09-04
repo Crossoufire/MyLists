@@ -1,4 +1,4 @@
-import {mail} from "@/lib/constants";
+import {mail} from "@/utils/constants";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";

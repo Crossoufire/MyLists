@@ -1,4 +1,4 @@
-import {mail} from "@/lib/constants";
+import {mail} from "@/utils/constants";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
 

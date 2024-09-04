@@ -127,11 +127,12 @@ def post_details_edit(media_type: MediaType, media_id: int, payload: Any, models
     return {}, 204
 
 
-# noinspection PyUnusedLocal
 @details_bp.route("/details/refresh", methods=["POST"])
 @token_auth.login_required(role=RoleType.MANAGER)
 @validate_json_data()
 def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+    """ Refresh metadata of a media """
+
     media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
     if media is None:
         return abort(404, "Media not found")

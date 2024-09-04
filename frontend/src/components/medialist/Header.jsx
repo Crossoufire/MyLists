@@ -1,6 +1,7 @@
 import {useState} from "react";
-import {capitalize, cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {Link} from "@tanstack/react-router";
+import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import * as Pop from "@/components/ui/popover";
 import * as Drop from "@/components/ui/dropdown-menu";

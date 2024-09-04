@@ -1,26 +1,27 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
-import {barTheme} from "@/lib/constants";
-import {fetcher} from "@/lib/fetcherLoader";
+import {barTheme} from "@/utils/constants";
 import {FaQuestionCircle} from "react-icons/fa";
+import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/lib/utils";
+import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/global-stats")({
     component: GlobalStatsPage,
-    loader: async () => fetcher("/mylists_stats"),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.globalStats()),
 });
 
 
 function GlobalStatsPage() {
-    const apiData = Route.useLoaderData();
+    const apiData = useSuspenseQuery(queryOptionsMap.globalStats()).data;
 
     const graphData = [
         {id: "Series", value: apiData.total_time.series, color: getMediaColor("series")},
