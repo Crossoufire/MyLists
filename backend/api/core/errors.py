@@ -2,6 +2,7 @@ import traceback
 from flask import Blueprint, current_app
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.exceptions import HTTPException, InternalServerError
+from backend.api.schemas.core import ApiValidationError
 
 errors = Blueprint("errors_api", __name__)
 
@@ -56,6 +57,17 @@ def sqlalchemy_error(error):
     )
 
     return data, 500
+
+
+@errors.app_errorhandler(ApiValidationError)
+def validation_error(error):
+    data = dict(
+        code=error.status_code,
+        message="Validation Error",
+        description="The server found one or more errors in the information that you sent",
+        errors=error.messages)
+
+    return data, error.status_code
 
 
 # noinspection PyUnusedLocal

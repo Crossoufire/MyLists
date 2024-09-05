@@ -1,6 +1,6 @@
 from __future__ import annotations
 from http import HTTPStatus
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 from flask import abort
 from werkzeug.exceptions import Forbidden, Unauthorized
 from backend.api import RoleType
@@ -36,7 +36,7 @@ def get_user_roles(user: User) -> RoleType:
 
 
 @token_auth.verify_token
-def verify_token(access_token: str) -> str | None:
+def verify_token(access_token: str) -> Optional[str]:
     return User.verify_access_token(access_token) if access_token else None
 
 

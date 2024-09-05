@@ -12,14 +12,15 @@ export const Route = createFileRoute("/_public/oauth2/$provider/callback")({
 
 function OAuth2CallbackPage() {
     const navigate = useNavigate();
+    const search = Route.useSearch();
     const { provider } = Route.useParams();
-    const searchParams = Route.useSearch();
     const { currentUser, login } = useUser();
 
     useEffect(() => {
         (async () => {
             const oauth2Data = {
-                ...searchParams,
+                code: search?.code,
+                state: search?.state,
                 callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
             };
 

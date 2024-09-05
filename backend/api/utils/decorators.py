@@ -2,8 +2,12 @@ import time
 from functools import wraps
 from typing import Callable, Any
 from flask import abort, request
-from backend.api.utils.enums import MediaType
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.schemas.core import FlaskParser
+from backend.api.utils.enums import MediaType
+
+
+use_args = FlaskParser().use_args
 
 
 def validate_json_data(type_: Any = None):
@@ -52,3 +56,35 @@ def timer(f: Callable):
         return result
 
     return wrapper
+
+
+def arguments(schema, location="query", **kwargs):
+    if isinstance(schema, type):
+        schema = schema()
+
+    def decorator(f):
+        arg_name = f"{location}_{schema.__class__.__name__}_args"
+
+        @wraps(f)
+        def _f(*args, **kwargs):
+            location_args = kwargs.pop(arg_name, {})
+            return f(*args, location_args, **kwargs)
+
+        return use_args(schema, location=location, arg_name=arg_name, **kwargs)(_f)
+    return decorator
+
+
+def body(schema, location="json", media_type=None, **kwargs):
+    if isinstance(schema, type):
+        schema = schema()
+
+    def decorator(f):
+        arg_name = f'{location}_{schema.__class__.__name__}_args'
+
+        @wraps(f)
+        def _f(*args, **kwargs):
+            location_args = kwargs.pop(arg_name, {})
+            return f(*args, location_args, **kwargs)
+
+        return use_args(schema, location=location, arg_name=arg_name, **kwargs)(_f)
+    return decorator

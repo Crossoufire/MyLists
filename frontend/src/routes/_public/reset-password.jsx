@@ -19,7 +19,7 @@ function ResetPasswordPage() {
     const mutateResetPassword = useResetPasswordMutation(token);
 
     const onSubmit = async (data) => {
-        mutateResetPassword.mutate({ newPassword: data.password });
+        await mutateResetPassword.mutateAsync({ newPassword: data.password });
     };
 
     return (
@@ -75,7 +75,7 @@ function ResetPasswordPage() {
                                 )}
                             />
                         </div>
-                        <Button type="submit" className="w-full">
+                        <Button type="submit" className="w-full" disabled={mutateResetPassword.isPending}>
                             Reset password
                         </Button>
                     </form>

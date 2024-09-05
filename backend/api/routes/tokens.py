@@ -8,9 +8,11 @@ from flask import Blueprint, request, abort, url_for, current_app, session
 from flask_bcrypt import generate_password_hash
 from werkzeug.http import dump_cookie
 from backend.api import db
-from backend.api.core import basic_auth, current_user
+from backend.api.core import basic_auth, current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.models.user import Token, User
+from backend.api.schemas.tokens import *
+from backend.api.utils.decorators import body, arguments
 
 tokens = Blueprint("api_tokens", __name__)
 
@@ -47,19 +49,20 @@ def new_token():
 
 
 @tokens.route("/tokens", methods=["PUT"])
-def refresh():
-    """ Refresh an <access token>. The client needs to pass the <refresh token> in a <refresh_token> cookie.
-    The <access token> must be passed in the request body """
-
-    access_token = request.get_json().get("access_token")
+@body(TokenSchema)
+def refresh(data):
+    """
+    Refresh an `access token`.
+    The client needs to pass the `refresh token` in a cookie.
+    The `access token` must be passed in the request body.
+    """
+    access_token = data["access_token"]
     refresh_token = request.cookies.get("refresh_token")
-
     if not access_token or not refresh_token:
         return abort(401)
 
     token = User.verify_refresh_token(refresh_token, access_token)
-
-    if token is None:
+    if not token:
         return abort(401)
 
     token.expire()
@@ -71,6 +74,7 @@ def refresh():
 
 
 @tokens.route("/tokens", methods=["DELETE"])
+@token_auth.login_required
 def revoke_token():
     """ Revoke an access token = logout """
 
@@ -87,15 +91,9 @@ def revoke_token():
 
 
 @tokens.route("/tokens/reset_password_token", methods=["POST"])
-def reset_password_token():
-    try:
-        data = request.get_json()
-        email = data["email"]
-        callback = data["callback"]
-    except:
-        return abort(400, "Missing fields")
-
-    user = User.query.filter_by(email=email).first()
+@body(PasswordResetRequestSchema)
+def reset_password_token(data):
+    user = User.query.filter_by(email=data["email"]).first()
     if not user:
         return abort(400, "This email is invalid")
     if not user.active:
@@ -107,7 +105,7 @@ def reset_password_token():
             username=user.username,
             subject="Password Reset Request",
             template="password_reset",
-            callback=callback,
+            callback=data["callback"],
             token=user.generate_jwt_token(),
         )
     except Exception as e:
@@ -118,21 +116,15 @@ def reset_password_token():
 
 
 @tokens.route("/tokens/reset_password", methods=["POST"])
-def reset_password():
+@body(PasswordResetSchema)
+def reset_password(data):
     """ Check password token and change user password """
 
-    try:
-        data = request.get_json()
-        token = data["token"]
-        new_password = data["new_password"]
-    except:
-        return abort(400)
-
-    user = User.verify_jwt_token(token)
+    user = User.verify_jwt_token(data["token"])
     if not user or not user.active:
-        return abort(400, "This is an invalid or an expired token.")
+        return abort(400, "Invalid or expired token")
 
-    user.password = generate_password_hash(new_password)
+    user.password = generate_password_hash(data["new_password"])
     db.session.commit()
     current_app.logger.info(f"[INFO] - [{user.id}] Password changed.")
 
@@ -162,12 +154,9 @@ def register_token():
 
 
 @tokens.route("/tokens/oauth2/<provider>", methods=["GET"])
-def oauth2_authorize(provider: str):
+@arguments(OAuth2SchemaProvider)
+def oauth2_authorize(args, provider: str):
     """ Initiate the OAuth2 authentication with a third-party provider """
-
-    callback = request.args.get("callback")
-    if not callback:
-        return abort(400)
 
     provider_data = current_app.config["OAUTH2_PROVIDERS"].get(provider)
     if provider_data is None:
@@ -177,29 +166,24 @@ def oauth2_authorize(provider: str):
     session["oauth2_state"] = secrets.token_urlsafe(32)
 
     # Create query string with all OAuth2 parameters
-    qs = urlencode({
-        "client_id": provider_data["client_id"],
-        "redirect_uri": callback,
-        "scope": " ".join(provider_data["scopes"]),
-        "state": session["oauth2_state"],
-        "response_type": "code",
-    })
+    qs = urlencode(dict(
+        client_id=provider_data["client_id"],
+        redirect_uri=args["callback"],
+        scope=" ".join(provider_data["scopes"]),
+        state=session["oauth2_state"],
+        response_type="code",
+    ))
 
     return {"redirect_url": f"{provider_data['authorize_url']}?{qs}"}, 200
 
 
 @tokens.route("/tokens/oauth2/<provider>", methods=["POST"])
-def oauth2_new(provider: str):
-    """ Create a new <access_token> and <refresh_token> with OAuth2 authentication. The <refresh_token> is returned in
-    the body of the request or as a hardened cookie, depending on configuration. A cookie should be used when the
-    client is running in an insecure environment such as a web browser, and cannot adequately protect the refresh
-    token against unauthorized access.
+@body(OAuth2Schema)
+def oauth2_new(data, provider: str):
     """
-
-    try:
-        data = request.get_json()
-    except:
-        return abort(400)
+    Create a new `access_token` and `refresh_token` with OAuth2 authentication.
+    The `refresh_token` is returned as a hardened cookie.
+    """
 
     provider_data = current_app.config["OAUTH2_PROVIDERS"].get(provider)
     if provider_data is None:

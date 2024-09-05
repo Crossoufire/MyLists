@@ -5,6 +5,8 @@ from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
+from backend.api.schemas.users import HistorySchema, UpdateFollowSchema, PasswordSchema
+from backend.api.utils.decorators import arguments, body
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
 from backend.api.utils.functions import save_picture, format_to_download_as_csv
 from backend.api.managers.ModelsManager import ModelsManager
@@ -124,17 +126,15 @@ def profile_follows(username: str):
 
 @users.route("/profile/<username>/history", methods=["GET"])
 @token_auth.login_required
-def history(username: str):
+@arguments(HistorySchema)
+def history(args, username: str):
     """ Fetch all history for each media for the user """
 
     user = current_user.check_autorization(username)
 
-    search = request.args.get("search", "")
-    page = request.args.get("page", 1, type=int)
-
     history_query = (
-        user.updates.filter(UserMediaUpdate.media_name.ilike(f"%{search}%"))
-        .paginate(page=page, per_page=25)
+        user.updates.filter(UserMediaUpdate.media_name.ilike(f"%{args['search']}%"))
+        .paginate(page=args["page"], per_page=25)
     )
 
     data = dict(
@@ -151,30 +151,22 @@ def history(username: str):
 @token_auth.login_required
 def update_modal():
     """ Hide the Update Modal in /profile """
-
     current_user.show_update_modal = False
     db.session.commit()
-
     return {}, 204
 
 
 @users.route("/update_follow", methods=["POST"])
 @token_auth.login_required
-def update_follow():
+@body(UpdateFollowSchema)
+def update_follow(data):
     """ Update the follow status of a user """
 
-    try:
-        json_data = request.get_json()
-        follow_id = int(json_data["follow_id"])
-        follow_status = bool(json_data["follow_status"])
-    except:
-        return abort(400)
-
-    user = User.query.filter_by(id=follow_id).first()
+    user = User.query.filter_by(id=data["follow_id"]).first()
     if not user or user.id == current_user.id:
         return abort(400)
 
-    if follow_status:
+    if data["follow_status"]:
         current_user.add_follow(user)
 
         payload = dict(username=current_user.username, message=f"{current_user.username} is following you")
@@ -185,11 +177,11 @@ def update_follow():
         )
         db.session.add(new_notification)
         db.session.commit()
-        current_app.logger.info(f"[{current_user.id}] Follow the account with ID {follow_id}")
+        current_app.logger.info(f"[{current_user.id}] Follow the account with ID {data['follow_id']}")
     else:
         current_user.remove_follow(user)
         db.session.commit()
-        current_app.logger.info(f"[{current_user.id}] Unfollowed the account with ID {follow_id}")
+        current_app.logger.info(f"[{current_user.id}] Unfollowed the account with ID {data['follow_id']}")
 
     return {}, 204
 
@@ -274,27 +266,12 @@ def download_medialist(media_type: MediaType):
 
 @users.route("/settings/password", methods=["POST"])
 @token_auth.login_required
-def settings_password():
+@body(PasswordSchema)
+def settings_password(data):
     """ Edit the password of the current user """
-
-    data = request.get_json()
-
-    new_password = data.get("new_password")
-    current_password = data.get("current_password")
-    if new_password:
-        if new_password and (not current_password or not current_user.verify_password(current_password)):
-            return abort(400, "Your current password is incorrect")
-        if len(new_password) < 8:
-            return abort(400, "Your new password is too short (8 min)")
-
-        # Change password
-        current_user.password = generate_password_hash(new_password)
-
+    current_user.password = generate_password_hash(data["new_password"])
     db.session.commit()
-
-    data = dict(updated_user=current_user.to_dict())
-
-    return jsonify(data), 200
+    return jsonify(updated_user=current_user.to_dict()), 200
 
 
 @users.route("/settings/delete_account", methods=["POST"])

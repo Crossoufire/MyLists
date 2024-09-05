@@ -160,7 +160,6 @@ class User(db.Model):
     def verify_password(self, password: str) -> bool:
         if password == "" or password is None:
             return False
-
         return check_password_hash(self.password, password)
 
     def ping(self):

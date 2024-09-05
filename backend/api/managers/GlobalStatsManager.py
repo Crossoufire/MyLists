@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 from sqlalchemy import func, text
 from backend.api import db
 from backend.api.models.user import User, UserMediaSettings
@@ -163,7 +163,7 @@ class GlobalStats:
         model = ModelsManager.get_unique_model(MediaType.BOOKS, ModelTypes.LIST)
         return db.session.query(func.sum(model.actual_page)).first()[0] or 0
 
-    def compute_global_stats(self) -> Dict[str, Dict | int]:
+    def compute_global_stats(self) -> Dict[str, Union[Dict, int]]:
         nb_users, nb_media = self.get_nb_media_and_users()
         media_eps_seas = self.get_total_eps_seasons()
 

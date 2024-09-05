@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask_caching import Cache
 from flask_cors import CORS
 from flask_mail import Mail
+from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
@@ -21,6 +22,7 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 cache = Cache()
 cors = CORS()
+ma = Marshmallow()
 
 
 def import_blueprints(app: Flask):
@@ -96,6 +98,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     db.init_app(app)
     bcrypt.init_app(app)
     cache.init_app(app)
+    ma.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000",
                                                            "http://localhost:4173", "http://127.0.0.1:4173"])

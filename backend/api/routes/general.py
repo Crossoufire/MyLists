@@ -1,11 +1,13 @@
 from operator import and_
-from flask import Blueprint, jsonify, request, url_for, current_app, abort
+from flask import Blueprint, jsonify, url_for, current_app, abort
 from sqlalchemy import desc, func, case
 from backend.api import cache, db
 from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User, UserMediaSettings
 from backend.api.core.handlers import token_auth
+from backend.api.schemas.general import HallOfFameSchema
+from backend.api.utils.decorators import arguments
 from backend.api.utils.enums import MediaType
 
 general = Blueprint("api_general", __name__)
@@ -29,12 +31,11 @@ def current_trends():
 
 @general.route("/hall_of_fame", methods=["GET"])
 @token_auth.login_required
-def hall_of_fame():
-    page = request.args.get("page", 1, type=int)
-    search = request.args.get("search", "", type=str)
-    sorting = request.args.get("sorting", "profile", type=str)
+@arguments(HallOfFameSchema)
+def hall_of_fame(args):
+    """ Hall of fame """
 
-    if sorting == "profile":
+    if args["sorting"] == "profile":
         ranking = (
             db.session.query(
                 UserMediaSettings.user_id,
@@ -48,7 +49,7 @@ def hall_of_fame():
             db.session.query(
                 UserMediaSettings.user_id,
                 func.sum(case((
-                    and_(UserMediaSettings.media_type == MediaType(sorting), UserMediaSettings.active),
+                    and_(UserMediaSettings.media_type == MediaType(args["sorting"]), UserMediaSettings.active),
                     UserMediaSettings.time_spent
                 ), else_=0)).label("time_spent")
             ).group_by(UserMediaSettings.user_id)
@@ -63,9 +64,9 @@ def hall_of_fame():
     users_data = (
         User.query.with_entities(User, ranked_users.c.rank)
         .join(ranked_users, User.id == ranked_users.c.id)
-        .filter(User.active.is_(True), User.username.ilike(f"%{search}%"))
+        .filter(User.active.is_(True), User.username.ilike(f"%{args['search']}%"))
         .order_by(ranked_users.c.rank)
-        .paginate(page=page, per_page=10, error_out=True)
+        .paginate(page=args["page"], per_page=10, error_out=True)
     )
 
     users = [{**user.to_dict(), "rank": rank} for user, rank in users_data]

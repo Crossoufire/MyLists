@@ -2,7 +2,7 @@ import os
 import re
 import secrets
 from datetime import datetime
-from typing import List, Any, Iterable, Tuple, Dict
+from typing import List, Any, Iterable, Tuple, Dict, Optional
 from PIL import Image
 from flask import current_app, abort
 from werkzeug.datastructures import FileStorage
@@ -125,7 +125,7 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
             return last_episode, seas, eps_watched
 
 
-def format_datetime(date) -> datetime | None:
+def format_datetime(date) -> Optional[datetime]:
     """ Format to a universal datetime format or None if datetime not valid before saving to db """
 
     date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d", "%Y"]

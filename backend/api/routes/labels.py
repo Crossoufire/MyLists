@@ -1,8 +1,8 @@
-from typing import Any, Dict
-from flask import Blueprint, jsonify, abort, current_app, request
+from flask import Blueprint, jsonify, abort, current_app
 from backend.api import db
 from backend.api.core import token_auth, current_user
-from backend.api.utils.decorators import validate_json_data
+from backend.api.schemas.labels import *
+from backend.api.utils.decorators import body
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 
@@ -19,83 +19,68 @@ def media_in_label(media_type: MediaType, media_id: int):
 
 @labels_bp.route("/add_media_to_label", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(str)
-def add_media_to_label(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    list_model, label_model = models[ModelTypes.LIST], models[ModelTypes.LABELS]
+@body(AddLabelToMediaSchema)
+def add_media_to_label(data):
+    list_model, label_model = data["models"]
 
-    media = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
+    media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if media is None:
         return abort(404, "The media could not be found")
 
-    label = label_model.query.filter_by(user_id=current_user.id, media_id=media_id, name=payload).first()
+    label = label_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"],
+                                        name=data["payload"]).first()
     if label:
         return abort(400, "This label is already associated with this media")
 
-    db.session.add(label_model(user_id=current_user.id, media_id=media_id, name=payload))
+    db.session.add(label_model(user_id=current_user.id, media_id=data["media_id"], name=data["payload"]))
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] added {media_type.value} [ID {media_id}] to label: {payload}.")
+    current_app.logger.info(f"User [{current_user.id}] added {data['media_type']} [ID {data['media_id']}] to "
+                            f"label: {data['payload']}.")
 
     return {}, 204
 
 
 @labels_bp.route("/remove_label_from_media", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(str)
-def remove_label_from_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    list_model, label_model = models[ModelTypes.LIST], models[ModelTypes.LABELS]
-
-    label_model.query.filter_by(user_id=current_user.id, media_id=media_id, name=payload).delete()
+@body(RemoveLabelFromMediaSchema)
+def remove_label_from_media(data):
+    data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"], name=data["payload"]).delete()
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] removed {media_type.value} ID [{media_id}] from its "
-                            f"label list: {payload}.")
+    current_app.logger.info(f"User [{current_user.id}] removed {data['media_type']} ID [{data['media_id']}] from its "
+                            f"label list: {data['payload']}.")
 
     return {}, 204
 
 
 @labels_bp.route("/rename_label", methods=["POST"])
 @token_auth.login_required
-def rename_label():
-    try:
-        json_data = request.get_json()
-        media_type = MediaType(json_data["media_type"])
-        old_label_name = json_data["old_label_name"]
-        new_label_name = json_data["new_label_name"]
-    except:
-        return abort(400)
-
-    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
-    label_name = labels_model.query.filter_by(user_id=current_user.id, name=new_label_name).first()
+@body(RenameLabelSchema)
+def rename_label(data):
+    label_name = data["models"].query.filter_by(user_id=current_user.id, name=data["new_label_name"]).first()
     if label_name:
-        return abort(400, "The new label name already exists.")
+        return abort(400, "This label name already exists")
 
-    labels = labels_model.query.filter_by(user_id=current_user.id, name=old_label_name).all()
+    labels = data["models"].query.filter_by(user_id=current_user.id, name=data["old_label_name"]).all()
     for label in labels:
-        label.name = new_label_name
+        label.name = data["new_label_name"]
 
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] rename the label: {old_label_name} ({media_type.value}) "
-                            f"to {new_label_name}")
+    current_app.logger.info(f"User [{current_user.id}] rename the label: {data['old_label_name']} "
+                            f"({data['media_type']}) to {data['new_label_name']}")
 
     return {}, 204
 
 
 @labels_bp.route("/delete_label", methods=["POST"])
 @token_auth.login_required
-def delete_label():
-    try:
-        json_data = request.get_json()
-        media_type = MediaType(json_data["media_type"])
-        name = json_data["name"]
-    except:
-        return abort(400)
-
-    labels_model = ModelsManager.get_unique_model(media_type, ModelTypes.LABELS)
-    labels_model.query.filter_by(user_id=current_user.id, name=name).delete()
+@body(DeleteLabelSchema)
+def delete_label(data):
+    data["models"].query.filter_by(user_id=current_user.id, name=data["name"]).delete()
     db.session.commit()
 
-    current_app.logger.info(f"User [{current_user.id}] deleted the label: {name} ({media_type.value})")
+    current_app.logger.info(f"User [{current_user.id}] deleted the label: {data['name']} ({data['media_type']})")
 
     return {}, 204

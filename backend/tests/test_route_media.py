@@ -43,7 +43,6 @@ class MediaTests(BaseTest):
             (media_id, media_type, "toto"),
             (2, media_type, status),
         ]
-
         for payload in invalid_payloads:
             rv = self.client.post("/api/add_media", headers=headers, json={
                 "media_id": payload[0],
@@ -205,7 +204,7 @@ class MediaTests(BaseTest):
             json_data = dict(media_id=1, media_type=media_type.value, payload="Completed")
 
             rv = self.client.post("/api/delete_media", headers=headers, json=json_data)
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 404)
 
             rv = self.client.post("/api/add_media", headers=headers, json=json_data)
             self.assertEqual(rv.status_code, 200)
@@ -343,7 +342,7 @@ class MediaTests(BaseTest):
             rv = self.client.post("/api/update_rating", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
-                "payload": "--",
+                "payload": None,
             })
             self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
@@ -403,7 +402,7 @@ class MediaTests(BaseTest):
             rv = self.client.post("/api/update_rating", headers=headers, json={
                 "media_id": 1,
                 "media_type": media_type.value,
-                "payload": "--",
+                "payload": None,
             })
             self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
@@ -602,14 +601,14 @@ class MediaTests(BaseTest):
         rv = self.client.post("/api/update_playtime", headers=headers, json={
             "media_id": 1,
             "media_type": MediaType.SERIES.value,
-            "payload": 11000,
+            "payload": 5000,
         })
         self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/update_playtime", headers=headers, json={
             "media_id": 1,
             "media_type": MediaType.GAMES.value,
-            "payload": 11000,
+            "payload": 660000,
         })
         self.assertEqual(rv.status_code, 400)
 
@@ -623,20 +622,11 @@ class MediaTests(BaseTest):
         rv = self.client.post("/api/update_playtime", headers=headers, json={
             "media_id": 1,
             "media_type": MediaType.GAMES.value,
-            "payload": 123.27,
-        })
-        self.assertEqual(rv.status_code, 204)
-        query = model_list.query.filter_by(user_id=1, media_id=1).first()
-        self.assertEqual(query.playtime, 123 * 60)  # playtime converted in [min]
-
-        rv = self.client.post("/api/update_playtime", headers=headers, json={
-            "media_id": 1,
-            "media_type": MediaType.GAMES.value,
             "payload": 5000,
         })
         self.assertEqual(rv.status_code, 204)
         query = model_list.query.filter_by(user_id=1, media_id=1).first()
-        self.assertEqual(query.playtime, 5000 * 60)  # playtime converted in [min]
+        self.assertEqual(query.playtime, 5000)
 
     def test_update_season(self):
         headers = self.connexion()

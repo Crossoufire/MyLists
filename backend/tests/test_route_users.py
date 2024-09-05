@@ -199,8 +199,8 @@ class UserTests(BaseTest):
         rv = self.client.get(f"/api/profile/test/history", headers=self.connexion())
 
         self.assertEqual(rv.status_code, 200)
-        self.assertIn("history", rv.json["data"])
-        self.assertIn("active_page", rv.json["data"])
+        self.assertIn("items", rv.json["data"])
+        self.assertIn("page", rv.json["data"])
         self.assertIn("pages", rv.json["data"])
         self.assertIn("total", rv.json["data"])
 
@@ -210,9 +210,8 @@ class UserTests(BaseTest):
         rv = self.client.get(f"/api/profile/test/history?search=toto&page=1", headers=self.connexion())
         self.assertEqual(rv.status_code, 200)
 
-        # Put page as 1
         rv = self.client.get(f"/api/profile/test/history?search=toto&page=lol", headers=self.connexion())
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 400)
 
     def test_settings_delete_account(self):
         from backend.api.models.user import User, Notifications, Token

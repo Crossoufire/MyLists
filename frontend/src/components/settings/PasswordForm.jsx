@@ -10,16 +10,25 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 
 export const PasswordForm = () => {
-    const form = useForm();
     const { setCurrentUser } = useUser();
     const [errors, setErrors] = useState("");
     const [pending, setPending] = useState(false);
+    const form = useForm({
+        defaultValues: {
+            current_password: "",
+            new_password: "",
+            confirm_new_password: "",
+        },
+    });
 
     const onSubmit = async (data) => {
         setErrors("");
 
         try {
             setPending(true);
+
+            delete data.confirm_new_password;
+
             const response = await api.post("/settings/password", data);
 
             if (!response.ok) {
@@ -30,6 +39,7 @@ export const PasswordForm = () => {
             toast.success("Password successfully updated");
         }
         finally {
+            form.reset();
             setPending(false);
         }
     };
