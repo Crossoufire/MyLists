@@ -1,11 +1,10 @@
 import * as Menu from "@/components/ui/menubar";
-import {DotsVerticalIcon} from "@radix-ui/react-icons";
 
 
-export const EditMediaList = ({ isCurrent, status, allStatus, updateStatus, removeMedia, addOtherList }) => {
-    const handleMenuRemove = () => {
+export const EditMediaList = ({ children, isCurrent, status, allStatus, updateStatus, removeMedia, addOtherList }) => {
+    const handleMenuRemove = async () => {
         if (!window.confirm("Are you sure you want to delete this media?")) return;
-        removeMedia();
+        await removeMedia();
     };
     const handleMenuStatus = (ev) => updateStatus(ev.target.textContent);
     const handleMenuAdd = (ev) => addOtherList(ev.target.textContent);
@@ -14,7 +13,7 @@ export const EditMediaList = ({ isCurrent, status, allStatus, updateStatus, remo
         <Menu.Menubar>
             <Menu.MenubarMenu>
                 <Menu.MenubarTrigger>
-                    <DotsVerticalIcon className="h-5 w-5 hover:opacity-70"/>
+                    {children}
                 </Menu.MenubarTrigger>
                 <Menu.MenubarContent align="end" >
                     <div className="text-center mt-1 mb-2 text-neutral-400 text-sm">Edit media</div>

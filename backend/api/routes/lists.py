@@ -1,9 +1,9 @@
-from flask import jsonify, Blueprint, abort, request
+from flask import jsonify, Blueprint, abort
 from backend.api import db, cache
 from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
 from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
-from backend.api.schemas.lists import MediaListSchema, MediaListSearchSchema
+from backend.api.schemas.lists import *
 from backend.api.utils.decorators import arguments
 from backend.api.utils.enums import MediaType
 from backend.api.managers.StatsManager import StatsManager
@@ -17,9 +17,6 @@ lists_bp = Blueprint("api_lists", __name__)
 @arguments(MediaListSchema)
 def media_list(args, media_type: MediaType, username: str):
     user = current_user.check_autorization(username)
-
-    print(request.args)
-    print(args)
 
     if not user.get_media_setting(media_type).active:
         return abort(404)

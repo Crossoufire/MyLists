@@ -7,6 +7,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaGrid} from "@/components/medialist/MediaGrid";
+import {MediaTable} from "@/components/medialist/MediaTable.jsx";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/components/medialist/AppliedFilters";
 import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
@@ -27,6 +28,7 @@ function MediaList() {
     const {currentUser} = useUser();
     const search = Route.useSearch();
     const {username, mediaType} = Route.useParams();
+    const [isGrid, setIsGrid] = useState(currentUser.grid_list_view);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(queryOptionsMap.list(mediaType, username, search)).data;
     const isCurrent = (currentUser.id === apiData.user_data.id);
@@ -65,17 +67,20 @@ function MediaList() {
         });
     };
 
+    const handleGridChange = () => setIsGrid(!isGrid);
+
     console.log(apiData);
 
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
+                isGrid={isGrid}
                 isCurrent={isCurrent}
                 userData={apiData.user_data}
                 pagination={apiData.pagination}
+                handleGridChange={handleGridChange}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onStatusChange={(status) => handleFilterChange(status)}
-                listName={`${username} ${capitalize(mediaType)} Collection`}
                 onSortChange={(sort) => handleFilterChange({ sort: sort })}
                 onSearchEnter={(search) => handleFilterChange({ search: search })}
             />
@@ -83,16 +88,27 @@ function MediaList() {
                 total={apiData.pagination.total}
                 onFilterRemove={(filters) => handleFilterChange(filters)}
             />
-            <MediaGrid
-                isCurrent={isCurrent}
-                mediaList={apiData.media_data}
-                key={`${username}-${mediaType}`}
-            />
-            <Pagination
-                currentPage={apiData.pagination.page}
-                totalPages={apiData.pagination.pages}
-                onChangePage={(page) => handleFilterChange({ page })}
-            />
+            {isGrid ?
+                <MediaGrid
+                    isCurrent={isCurrent}
+                    mediaList={apiData.media_data}
+                    key={`${username}-${mediaType}`}
+                />
+                :
+                <MediaTable
+                    apiData={apiData}
+                    isCurrent={isCurrent}
+                    key={`${username}-${mediaType}`}
+                    onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}
+                />
+            }
+            {isGrid &&
+                <Pagination
+                    currentPage={apiData.pagination.page}
+                    totalPages={apiData.pagination.pages}
+                    onChangePage={(page) => handleFilterChange({ page })}
+                />
+            }
             {filtersPanelOpen &&
                 <FiltersSideSheet
                     isCurrent={isCurrent}

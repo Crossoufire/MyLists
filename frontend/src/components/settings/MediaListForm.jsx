@@ -172,6 +172,32 @@ export const MediaListForm = () => {
                             )}
                         />
                     </div>
+                    <div className="space-y-4">
+                        <h3 className="text-base font-medium">
+                            <div className="flex items-center gap-3">
+                                <div>Lists View Mode</div>
+                            </div>
+                            <Separator/>
+                        </h3>
+                        <FormField
+                            control={form.control}
+                            name="grid_list_view"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            defaultChecked={currentUser.grid_list_view}
+                                        />
+                                    </FormControl>
+                                    <div className="leading-none">
+                                        <FormLabel>Grid Mode (checked) or Table mode (unchecked)</FormLabel>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <FormButton className="mt-5" disabled={isPending}>
                         Update
                     </FormButton>
@@ -194,7 +220,7 @@ export const MediaListForm = () => {
                         </SelectContent>
                     </Select>
                     <Button onClick={handleDownloadCSV} disabled={!selectedList || isPending}>
-                        {isPending?
+                        {isPending ?
                             <LuLoader2 className="mr-2 h-4 w-4 animate-spin"/>
                             :
                             <LuDownload className="mr-2 h-4 w-4"/>
@@ -209,7 +235,7 @@ export const MediaListForm = () => {
 
 
 function downloadFile(data, filename, mimeType) {
-    const blob = new Blob([data], { type: mimeType });
+    const blob = new Blob([data], {type: mimeType});
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

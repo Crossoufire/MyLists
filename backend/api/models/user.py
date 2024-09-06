@@ -72,6 +72,7 @@ class User(db.Model):
     last_notif_read_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     show_update_modal = db.Column(db.Boolean, default=True)
+    grid_list_view = db.Column(db.Boolean, nullable=False, default=True)
     profile_views = db.Column(db.Integer, nullable=False, default=0)
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
 

@@ -1,5 +1,9 @@
+from marshmallow import post_load
+
 from backend.api import ma
-from backend.api.schemas.core import SplitStringList
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.schemas.core import SplitStringList, EnumField
+from backend.api.utils.enums import MediaType, ModelTypes
 
 
 class MediaListSchema(ma.Schema):
@@ -25,3 +29,13 @@ class MediaListSchema(ma.Schema):
 class MediaListSearchSchema(ma.Schema):
     q = ma.String(load_default="")
     job = ma.String(load_default="")
+
+
+class DeleteMultiListSchema(ma.Schema):
+    media_ids = ma.List(ma.Integer())
+    media_type = EnumField(MediaType, required=True)
+
+    @post_load
+    def add_models(self, data, **kwargs):
+        data["models"] = ModelsManager.get_lists_models(data["media_type"], [ModelTypes.LIST, ModelTypes.LABELS])
+        return data

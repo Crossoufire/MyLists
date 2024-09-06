@@ -245,6 +245,7 @@ def settings_medialist():
     data = request.get_json()
 
     current_user.add_feeling = data.get("add_feeling", current_user.add_feeling)
+    current_user.grid_list_view = data.get("grid_list_view", current_user.grid_list_view)
 
     for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS]:
         setting = current_user.get_media_setting(media_type)

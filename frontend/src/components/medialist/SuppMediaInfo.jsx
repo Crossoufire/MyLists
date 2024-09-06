@@ -70,6 +70,7 @@ export const SuppMediaInfo = ({ isCurrent, media }) => {
     if (mediaType === "games" && media.status !== "Plan to Play") {
         return (
             <PlaytimeListDrop
+                className="h-[26px]"
                 isCurrent={isCurrent}
                 playtime={media.playtime}
                 updatePlaytime={playtimeMutation}

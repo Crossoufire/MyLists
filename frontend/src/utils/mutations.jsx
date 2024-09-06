@@ -130,10 +130,7 @@ const postFunctions = {
 
 export const useDeleteMultiUpdateMutation = (username, filters) => {
     return useMutation({
-        mutationFn: ({ updateIds }) => {
-            console.log(updateIds);
-            return postFunctions.deleteUserUpdates({ updateIds });
-        },
+        mutationFn: ({ updateIds }) => postFunctions.deleteUserUpdates({ updateIds }),
         onError: () => toast.error("The update(s) could not be deleted"),
         onSuccess: async () => {
             toast.success("Update(s) deleted");

@@ -1,30 +1,29 @@
 import {useState} from "react";
-import {cn} from "@/utils/functions";
 import {Link} from "@tanstack/react-router";
-import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import * as Pop from "@/components/ui/popover";
+import {capitalize, cn} from "@/utils/functions";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {FaArrowUpRightFromSquare} from "react-icons/fa6";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
-import {LuArrowUpDown, LuFilter, LuList} from "react-icons/lu";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
+import {LuArrowUpDown, LuFilter, LuGrid, LuList} from "react-icons/lu";
 import {SearchComponent} from "@/components/medialist/SearchComponent";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 
 
 export const Header = (props) => {
-    const {mediaType} = Route.useParams();
     const sorting = props.pagination.sorting;
     const allStatus = props.pagination.all_status;
     const allSorting = props.pagination.all_sorting;
+    const { username, mediaType } = Route.useParams();
 
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
             <h3 className="flex items-center gap-3 text-3xl font-medium line-clamp-1">
                 <MediaLevelCircle intLevel={parseInt(props.userData.settings[mediaType].level)}/>
-                {props.listName}
+                {`${username} ${capitalize(mediaType)} Collection`}
             </h3>
             <div className="flex flex-wrap gap-3">
                 <SearchComponent
@@ -42,6 +41,12 @@ export const Header = (props) => {
                     allSorting={allSorting}
                     applySorting={props.onSortChange}
                 />
+                <div className="flex items-center gap-3">
+                    <Button variant="filters" onClick={props.handleGridChange}>
+                        {props.isGrid ? <LuList className="w-4 h-4"/> : <LuGrid className="w-4 h-4"/>}
+                    </Button>
+                </div>
+
                 <DotsOthers
                     isCurrent={props.isCurrent}
                 />

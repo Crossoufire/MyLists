@@ -11,7 +11,7 @@ export const CommentPopover = ({ isCurrent, content, updateComment }) => {
     const [contentsState, setContentsState] = useState(content || "");
 
     const checkInitContent = () => {
-        if (isCurrent && contentsState === "") {
+        if (isCurrent && (contentsState === "" || contentsState === undefined || contentsState === null)) {
             setIsEdit(true);
         }
     };

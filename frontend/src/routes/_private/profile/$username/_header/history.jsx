@@ -45,8 +45,8 @@ function AllUpdates() {
         setCurrentSearch("");
     };
 
-    const onPaginationChange = (paginateFunction) => {
-        setFilters(paginateFunction(paginationState));
+    const onPaginationChange = (paginateFunc) => {
+        setFilters(paginateFunc(paginationState));
     };
 
     const historyColumns = useMemo(() => [

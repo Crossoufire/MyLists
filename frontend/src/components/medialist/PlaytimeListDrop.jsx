@@ -2,7 +2,7 @@ import {getPlaytimeValues} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime }) => {
+export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime, className = "" }) => {
     const playValues = getPlaytimeValues();
     const hoursPlaytime = playtime / 60;
 
@@ -13,7 +13,7 @@ export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime }) => {
     return (
         <>
             {isCurrent ?
-                <div className="h-[28px]">
+                <div className={className}>
                     <Select value={hoursPlaytime} onValueChange={handlePlaytime} disabled={updatePlaytime.isPending}>
                         <SelectTrigger size="list" variant="noIcon">
                             <SelectValue/>
