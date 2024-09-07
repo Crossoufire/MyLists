@@ -22,10 +22,8 @@ export const RegisterForm = () => {
 		shouldFocusError: false,
 	});
 
-
 	const onSubmit = async (data) => {
 		setErrors({});
-
 		try {
 			setIsPending(true);
 			const response = await api.post("/register_user", {
@@ -34,11 +32,9 @@ export const RegisterForm = () => {
 				password: data.password,
 				callback: import.meta.env.VITE_REGISTER_CALLBACK,
 			});
-
 			if (response.status === 401) {
 				return setErrors(response.body.description);
 			}
-
 			if (!response.ok) {
 				return toast.error(response.body.description);
 			}
@@ -46,7 +42,6 @@ export const RegisterForm = () => {
 		finally {
 			setIsPending(false);
 		}
-
 		toast.success("Your account has been created. Check your email to activate your account");
 	};
 

@@ -1,4 +1,4 @@
-from marshmallow import post_load, validates, ValidationError, pre_load
+from marshmallow import post_load, validates, ValidationError
 from backend.api import ma
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
@@ -173,10 +173,3 @@ class UpdatePageSchema(BaseMediaSchema):
 class DeleteUpdatesSchema(ma.Schema):
     update_ids = ma.List(ma.Integer(), required=True)
     return_data = ma.Boolean(load_default=False)
-
-    @pre_load
-    def process_update_ids(self, data, **kwargs):
-        if "update_ids" in data:
-            if not isinstance(data["update_ids"], list):
-                data["update_ids"] = [data["update_ids"]]
-        return data

@@ -1,5 +1,7 @@
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
+import {userMediaMutations} from "@/utils/mutations";
+import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {CommonCorner} from "@/components/app/base/CommonCorner";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
@@ -8,8 +10,6 @@ import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {RatingListDrop} from "@/components/medialist/RatingListDrop";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
-import {useAddMediaToUserList, useRemoveMediaFromList, useUpdateUserMediaList} from "@/utils/mutations";
-import {DotsVerticalIcon} from "@radix-ui/react-icons";
 
 
 export const MediaGrid = ({ isCurrent, mediaList }) => {
@@ -28,20 +28,11 @@ export const MediaGrid = ({ isCurrent, mediaList }) => {
 
 
 const MediaItem = ({ isCurrent, media }) => {
-    const mediaId = media.media_id;
     const search = Route.useSearch();
-    const {username, mediaType} = Route.useParams();
+    const { username, mediaType } = Route.useParams();
+    const mediaMutations = userMediaMutations(mediaType, media.media_id, ["userList", mediaType, username, search]);
 
-    const handleRemoveMedia = () => {
-        removeMediaFromList.mutate();
-    };
-    const handleStatus = (status) => {
-        updateStatus.mutate({ payload: status });
-    };
-    const handleAddOtherList = (status) => {
-        addOtherList.mutate({ payload: status });
-    };
-    const onStatusChange = (oldData, variables) => {
+    const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
         const status = variables.payload;
         const searchStatuses = search?.status;
@@ -52,7 +43,6 @@ const MediaItem = ({ isCurrent, media }) => {
                 return newData;
             }
         }
-
         if (status === "Completed" && (mediaType === "series" || mediaType === "anime")) {
             newData.media_data = newData.media_data.map(m => {
                 if (m.media_id === media.media_id) {
@@ -73,64 +63,24 @@ const MediaItem = ({ isCurrent, media }) => {
                 return m;
             });
         }
+
         newData.media_data = newData.media_data.map(m => {
             if (m.media_id === media.media_id) {
                 return { ...m, status: status, redo: 0 };
             }
             return m;
         });
-        return newData;
-    };
-    const onFavoriteChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, favorite: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onRatingChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, rating: { ...newData.rating, value: variables.payload } };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onRedoChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, redo: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onCommentChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, comment: variables.payload };
-            }
-            return m;
-        });
+
         return newData;
     };
 
-    const addOtherList = useAddMediaToUserList(mediaType, mediaId, username, search);
-    const removeMediaFromList = useRemoveMediaFromList(mediaType, mediaId, username, search);
-    const updateRedo = useUpdateUserMediaList("update_redo", mediaType, mediaId, username, search, onRedoChange);
-    const updateRating = useUpdateUserMediaList("update_rating", mediaType, mediaId, username, search, onRatingChange);
-    const updateStatus = useUpdateUserMediaList("update_status", mediaType, mediaId, username, search, onStatusChange);
-    const updateComment = useUpdateUserMediaList("update_comment", mediaType, mediaId, username, search, onCommentChange);
-    const updateFavorite = useUpdateUserMediaList("update_favorite", mediaType, mediaId, username, search, onFavoriteChange);
+    const updateStatus = mediaMutations.updateStatusFunc(onStatusSuccess);
 
-    const cardPending = addOtherList.isPending || updateStatus.isPending || removeMediaFromList.isPending;
+    const cardPending = (
+        updateStatus.isPending ||
+        mediaMutations.addToList.isPending ||
+        mediaMutations.removeFromList.isPending
+    );
 
     return (
         <MediaCard media={media} mediaType={mediaType} isPending={cardPending}>
@@ -139,10 +89,10 @@ const MediaItem = ({ isCurrent, media }) => {
                     <EditMediaList
                         status={media.status}
                         isCurrent={isCurrent}
-                        updateStatus={handleStatus}
+                        updateStatus={updateStatus}
                         allStatus={media.all_status}
-                        removeMedia={handleRemoveMedia}
-                        addOtherList={handleAddOtherList}
+                        addOtherList={mediaMutations.addToList}
+                        removeMedia={mediaMutations.removeFromList}
                     >
                         <DotsVerticalIcon className="h-5 w-5 hover:opacity-70"/>
                     </EditMediaList>
@@ -164,24 +114,24 @@ const MediaItem = ({ isCurrent, media }) => {
                     <ManageFavorite
                         isCurrent={isCurrent}
                         isFavorite={media.favorite}
-                        updateFavorite={updateFavorite}
+                        updateFavorite={mediaMutations.updateFavorite}
                     />
                     <RatingListDrop
                         rating={media.rating}
                         isCurrent={isCurrent}
-                        updateRating={updateRating}
+                        updateRating={mediaMutations.updateRating}
                     />
                     {(media.status === "Completed" && mediaType !== "games") &&
                         <RedoListDrop
                             redo={media.redo}
                             isCurrent={isCurrent}
-                            updateRedo={updateRedo}
+                            updateRedo={mediaMutations.updateRedo}
                         />
                     }
                     <CommentPopover
                         isCurrent={isCurrent}
                         content={media.comment}
-                        updateComment={updateComment}
+                        updateComment={mediaMutations.updateComment}
                     />
                 </div>
             </div>

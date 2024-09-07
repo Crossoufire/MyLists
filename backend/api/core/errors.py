@@ -61,11 +61,14 @@ def sqlalchemy_error(error):
 
 @errors.app_errorhandler(ApiValidationError)
 def validation_error(error):
+    current_app.logger.error(traceback.format_exc())
+
     data = dict(
         code=error.status_code,
         message="Validation Error",
         description="The server found one or more errors in the information that you sent",
-        errors=error.messages)
+        errors=error.messages,
+    )
 
     return data, error.status_code
 

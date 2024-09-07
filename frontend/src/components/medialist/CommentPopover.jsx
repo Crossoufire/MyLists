@@ -18,7 +18,7 @@ export const CommentPopover = ({ isCurrent, content, updateComment }) => {
 
     const handleSave = async () => {
         if (content === contentsState) return;
-        updateComment.mutate({ payload: contentsState });
+        await updateComment.mutateAsync({ payload: contentsState });
         setIsEdit(false);
     };
 

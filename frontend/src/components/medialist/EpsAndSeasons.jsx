@@ -7,11 +7,11 @@ export const EpsAndSeasons = ({ isCurrent, currentSeason, currentEpisode, epsPer
     const episodes = [...Array(epsPerSeason[currentSeason - 1]).keys()].map(v => v + 1);
 
     const handleSeason = async (season) => {
-        updateSeason.mutate({ payload: parseInt(season) });
+        await updateSeason.mutateAsync({ payload: parseInt(season) });
     };
 
     const handleEpisode = async (episode) => {
-        updateEps.mutate({ payload: parseInt(episode) });
+        await updateEps.mutateAsync({ payload: parseInt(episode) });
     };
 
     return (

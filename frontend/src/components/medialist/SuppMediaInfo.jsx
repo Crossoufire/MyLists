@@ -1,4 +1,4 @@
-import {useUpdateUserMediaList} from "@/utils/mutations";
+import {userMediaMutations} from "@/utils/mutations";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {PagesInput} from "@/components/medialist/PagesInput";
 import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";
@@ -8,59 +8,16 @@ import {PlaytimeListDrop} from "@/components/medialist/PlaytimeListDrop";
 export const SuppMediaInfo = ({ isCurrent, media }) => {
     const search = useSearch({ strict: false });
     const { mediaType, username } = useParams({ strict: false });
-
-    const onSeasonSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, current_season: variables.payload, last_episode_watched: 1 };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onEpisodeSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, last_episode_watched: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onPageSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, actual_page: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-    const onPlaytimeSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
-                return { ...m, playtime: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-
-    const pageMutation = useUpdateUserMediaList("update_page", mediaType, media.media_id, username, search, onPageSuccess);
-    const seasonMutation = useUpdateUserMediaList("update_season", mediaType, media.media_id, username, search, onSeasonSuccess);
-    const episodeMutation = useUpdateUserMediaList("update_episode", mediaType, media.media_id, username, search, onEpisodeSuccess);
-    const playtimeMutation = useUpdateUserMediaList("update_playtime", mediaType, media.media_id, username, search, onPlaytimeSuccess);
+    const { updateSeason, updateEpisode, updatePage, updatePlaytime } = userMediaMutations(
+        mediaType, media.media_id, ["userList", mediaType, username, search]
+    );
 
     if (["series", "anime"].includes(mediaType) && !["Plan to Watch", "Random"].includes(media.status)) {
         return (
             <EpsAndSeasons
                 isCurrent={isCurrent}
-                updateEps={episodeMutation}
-                updateSeason={seasonMutation}
+                updateEps={updateEpisode}
+                updateSeason={updateSeason}
                 epsPerSeason={media.eps_per_season}
                 currentSeason={media.current_season}
                 currentEpisode={media.last_episode_watched}
@@ -73,7 +30,7 @@ export const SuppMediaInfo = ({ isCurrent, media }) => {
                 className="h-[26px]"
                 isCurrent={isCurrent}
                 playtime={media.playtime}
-                updatePlaytime={playtimeMutation}
+                updatePlaytime={updatePlaytime}
             />
         );
     }
@@ -81,7 +38,7 @@ export const SuppMediaInfo = ({ isCurrent, media }) => {
         return (
             <PagesInput
                 isCurrent={isCurrent}
-                updatePage={pageMutation}
+                updatePage={updatePage}
                 initPage={media.actual_page}
                 totalPages={media.total_pages}
             />

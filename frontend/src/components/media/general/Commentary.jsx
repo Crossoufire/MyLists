@@ -1,12 +1,11 @@
 import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
-import {useUpdateUserMedia} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/base/MutedText";
 
 
-export const Commentary = ({ content, mediaType, mediaId }) => {
+export const Commentary = ({ content, updateComment }) => {
     const [updatedContent, setUpdatedContent] = useState(content);
     const [commentInput, setCommentInput] = useState(false);
 
@@ -19,17 +18,11 @@ export const Commentary = ({ content, mediaType, mediaId }) => {
         setUpdatedContent(content);
     };
 
-    const onSuccessComment = (oldData, variables) => {
-        return { ...oldData, user_data: { ...oldData.user_data, comment: variables.payload } };
-    };
-
-    const handleSave = () => {
+    const handleSave = async () => {
         if (content === updatedContent) return;
-        updateComment.mutate({ payload: updatedContent });
+        await updateComment.mutateAsync({ payload: updatedContent });
         setCommentInput(false);
     };
-
-    const updateComment = useUpdateUserMedia("update_comment", mediaType, mediaId, onSuccessComment);
 
     return (
         <>

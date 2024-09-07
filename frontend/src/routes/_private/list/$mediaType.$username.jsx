@@ -7,7 +7,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaGrid} from "@/components/medialist/MediaGrid";
-import {MediaTable} from "@/components/medialist/MediaTable.jsx";
+import {MediaTable} from "@/components/medialist/MediaTable";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/components/medialist/AppliedFilters";
 import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";

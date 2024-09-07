@@ -4,10 +4,16 @@ import * as Menu from "@/components/ui/menubar";
 export const EditMediaList = ({ children, isCurrent, status, allStatus, updateStatus, removeMedia, addOtherList }) => {
     const handleMenuRemove = async () => {
         if (!window.confirm("Are you sure you want to delete this media?")) return;
-        await removeMedia();
+        await removeMedia.mutateAsync();
     };
-    const handleMenuStatus = (ev) => updateStatus(ev.target.textContent);
-    const handleMenuAdd = (ev) => addOtherList(ev.target.textContent);
+
+    const handleMenuAdd = async (ev) => {
+        await addOtherList.mutateAsync({ payload: ev.target.textContent });
+    };
+
+    const handleMenuStatus = async (ev) => {
+        await updateStatus.mutateAsync({ payload: ev.target.textContent });
+    };
 
     return (
         <Menu.Menubar>

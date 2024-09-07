@@ -19,8 +19,8 @@ export const RatingDrop = ({ rating, updateRating }) => {
         );
     }
 
-    const handleSelectChange = (rating) => {
-        updateRating.mutate({ payload: rating });
+    const handleSelectChange = async (rating) => {
+        await updateRating.mutateAsync({ payload: rating });
     };
 
     return (

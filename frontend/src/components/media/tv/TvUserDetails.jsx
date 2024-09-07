@@ -1,5 +1,5 @@
 import {Separator} from "@/components/ui/separator";
-import {useUpdateUserMedia} from "@/utils/mutations";
+import {userMediaMutations} from "@/utils/mutations";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
@@ -7,9 +7,10 @@ import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
 
 
 export const TvUserDetails = ({ userData, mediaType, mediaId }) => {
-    const onRedoSuccess = (oldData, variables) => {
-        return { ...oldData, user_data: { ...oldData.user_data, redo: variables.payload } };
-    };
+    const { updateRedo, updateRating, updateSeason, updateEpisode, updateStatusFunc } = userMediaMutations(
+        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
+    );
+
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
         const status = variables.payload;
@@ -30,49 +31,18 @@ export const TvUserDetails = ({ userData, mediaType, mediaId }) => {
 
         return newData;
     };
-    const onRatingSuccess = (oldData, variables) => {
-        return {
-            ...oldData,
-            user_data: {
-                ...oldData.user_data,
-                rating: {
-                    ...oldData.user_data.rating,
-                    value: variables.payload,
-                }
-            },
-        };
-    };
-    const onSeasonSuccess = (oldData, variables) => {
-        return {
-            ...oldData,
-            user_data: {
-                ...oldData.user_data,
-                current_season: variables.payload,
-                last_episode_watched: 1,
-            },
-        };
-    };
-    const onEpisodeSuccess = (oldData, variables) => {
-        return { ...oldData, user_data: { ...oldData.user_data, last_episode_watched: variables.payload } };
-    };
-
-    const redoMutation = useUpdateUserMedia("update_redo", mediaType, mediaId, onRedoSuccess);
-    const statusMutation = useUpdateUserMedia("update_status", mediaType, mediaId, onStatusSuccess);
-    const ratingMutation = useUpdateUserMedia("update_rating", mediaType, mediaId, onRatingSuccess);
-    const seasonMutation = useUpdateUserMedia("update_season", mediaType, mediaId, onSeasonSuccess);
-    const episodeMutation = useUpdateUserMedia("update_episode", mediaType, mediaId, onEpisodeSuccess);
 
     return (
         <>
             <StatusDrop
                 status={userData.status}
-                updateStatus={statusMutation}
+                updateStatus={updateStatusFunc(onStatusSuccess)}
                 allStatus={userData.all_status}
             />
             {(userData.status !== "Plan to Watch" && userData.status !== "Random") &&
                 <EpsSeasonsDrop
-                    updateSeason={seasonMutation}
-                    updateEpisode={episodeMutation}
+                    updateSeason={updateSeason}
+                    updateEpisode={updateEpisode}
                     epsPerSeason={userData.eps_per_season}
                     currentSeason={userData.current_season}
                     currentEpisode={userData.last_episode_watched}
@@ -84,14 +54,14 @@ export const TvUserDetails = ({ userData, mediaType, mediaId }) => {
             {userData.status !== "Plan to Watch" &&
                 <RatingDrop
                     rating={userData.rating}
-                    updateRating={ratingMutation}
+                    updateRating={updateRating}
                 />
             }
             {userData.status === "Completed" &&
                 <RedoDrop
                     name={"Re-watched"}
                     redo={userData.redo}
-                    updateRedo={redoMutation}
+                    updateRedo={updateRedo}
                 />
             }
         </>

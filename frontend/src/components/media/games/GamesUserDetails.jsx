@@ -3,7 +3,7 @@ import {Button} from "@/components/ui/button";
 import * as Com from "@/components/ui/command";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
-import {useUpdateUserMedia} from "@/utils/mutations";
+import {userMediaMutations} from "@/utils/mutations";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
@@ -12,46 +12,27 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
+    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(
+        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
+    );
+
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
         newData.user_data.status = variables.payload;
         if (variables.payload === "Plan to Play") newData.user_data.playtime = 0;
         return newData;
     };
-    const onRatingSuccess = (oldData, variables) => {
-        return {
-            ...oldData,
-            user_data: {
-                ...oldData.user_data,
-                rating: {
-                    ...oldData.user_data.rating,
-                    value: variables.payload,
-                }
-            },
-        };
-    };
-    const onPlaytimeSuccess = (oldData, variables) => {
-        return {...oldData, user_data: { ...oldData.user_data, playtime: variables.payload } };
-    };
-    const onPlatformSuccess = (oldData, variables) => {
-        return { ...oldData, user_data: { ...oldData.user_data, platform: variables.payload } };
-    };
-
-    const statusMutation = useUpdateUserMedia("update_status", mediaType, mediaId, onStatusSuccess);
-    const ratingMutation = useUpdateUserMedia("update_rating", mediaType, mediaId, onRatingSuccess);
-    const playtimeMutation = useUpdateUserMedia("update_playtime", mediaType, mediaId, onPlaytimeSuccess);
-    const platformMutation = useUpdateUserMedia("update_platform", mediaType, mediaId, onPlatformSuccess);
 
     return (
         <>
             <StatusDrop
                 status={userData.status}
-                updateStatus={statusMutation}
                 allStatus={userData.all_status}
+                updateStatus={updateStatusFunc(onStatusSuccess)}
             />
             <PlatformDrop
                 platform={userData.platform}
-                updatePlatform={platformMutation}
+                updatePlatform={updatePlatform}
                 allPlatforms={userData.all_platforms}
             />
             {userData.status !== "Plan to Play" &&
@@ -59,11 +40,11 @@ export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
                     <Separator/>
                     <PlaytimeDrop
                         playtime={userData.playtime}
-                        updatePlaytime={playtimeMutation}
+                        updatePlaytime={updatePlaytime}
                     />
                     <RatingDrop
                         rating={userData.rating}
-                        updateRating={ratingMutation}
+                        updateRating={updateRating}
                     />
                 </>
             }
@@ -74,7 +55,7 @@ export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
 
 function PlatformDrop({ platform, allPlatforms, updatePlatform }) {
     const handleSelect = async (platform) => {
-        updatePlatform.mutate({ payload: platform });
+        await updatePlatform.mutateAsync({ payload: platform });
     };
 
     return (

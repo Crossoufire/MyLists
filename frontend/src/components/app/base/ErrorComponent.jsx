@@ -1,7 +1,8 @@
 import errorImage from "@/images/error.jpg";
 
 
-export const ErrorComponent = ({ status, message, description }) => {
+export const ErrorComponent = ({ error }) => {
+    let { status, message, description } = error;
     if (status === undefined) {
         status = 404;
         message = "Page not found";

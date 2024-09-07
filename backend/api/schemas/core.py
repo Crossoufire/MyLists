@@ -9,6 +9,17 @@ class ApiValidationError(Exception):
         self.messages = messages
 
 
+class FlaskParser(BaseFlaskParser):
+    USE_ARGS_POSITIONAL = False
+    DEFAULT_VALIDATION_STATUS = 400
+
+    def load_form(self, req, schema):
+        return {**self.load_files(req, schema), **super().load_form(req, schema)}
+
+    def handle_error(self, error, req, schema, *, error_status_code, error_headers):
+        raise ApiValidationError(error_status_code or self.DEFAULT_VALIDATION_STATUS, error.messages)
+
+
 class EnumField(ma.Field):
     def __init__(self, enum_class, *args, **kwargs):
         self.enum_class = enum_class
@@ -33,17 +44,6 @@ class SplitStringList(ma.List):
         if isinstance(value, list) and len(value) == 1 and isinstance(value[0], str):
             value = value[0].split(",")
         return super()._deserialize(value, attr, data, **kwargs)
-
-
-class FlaskParser(BaseFlaskParser):
-    USE_ARGS_POSITIONAL = False
-    DEFAULT_VALIDATION_STATUS = 400
-
-    def load_form(self, req, schema):
-        return {**self.load_files(req, schema), **super().load_form(req, schema)}
-
-    def handle_error(self, error, req, schema, *, error_status_code, error_headers):
-        raise ApiValidationError(error_status_code or self.DEFAULT_VALIDATION_STATUS, error.messages)
 
 
 class EmptySchema(ma.Schema):

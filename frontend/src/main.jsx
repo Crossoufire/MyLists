@@ -31,9 +31,9 @@ if (!rootElement.innerHTML) {
 }
 
 
-export function DefaultErrorComponent({ error }) {
+export function DefaultErrorComponent(error) {
     try {
-        return <ErrorComponent { ...JSON.parse(error.message) }/>;
+        return <ErrorComponent { ...error }/>;
     }
     catch {
         return <ErrorComponent/>;

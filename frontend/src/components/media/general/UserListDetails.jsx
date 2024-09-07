@@ -1,3 +1,4 @@
+import {userMediaMutations} from "@/utils/mutations";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
@@ -8,7 +9,6 @@ import {GamesUserDetails} from "@/components/media/games/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media/books/BooksUserDetails";
 import {MoviesUserDetails} from "@/components/media/movies/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {useAddMediaToUser, useRemoveMediaFromUser, useUpdateUserMedia} from "@/utils/mutations";
 
 
 const mediaComponentMap = (value) => {
@@ -25,28 +25,23 @@ const mediaComponentMap = (value) => {
 
 export const UserListDetails = ({ apiData, mediaId, mediaType }) => {
 	const MediaUserDetails = mediaComponentMap(mediaType);
-	const addMediaToUser = useAddMediaToUser(mediaType, mediaId);
-	const removeMediaFromUser = useRemoveMediaFromUser(mediaType, mediaId);
+	const { addToList, removeFromList, updateFavorite, updateComment } = userMediaMutations(
+		mediaType, mediaId, ["details", mediaType, mediaId.toString()]
+	);
 
 	const handleAddMediaUser = async () => {
-		await addMediaToUser.mutateAsync(undefined, undefined);
+		await addToList.mutateAsync();
 	};
 
 	const handleDeleteMedia = async () => {
 		if (!window.confirm("Do you want to remove this media from your list?")) return;
-		await removeMediaFromUser.mutateAsync(undefined, undefined);
+		await removeFromList.mutateAsync();
 	};
-
-	const onSuccessFavorite = (oldData, variables) => {
-		return { ...oldData, user_data: { ...oldData.user_data, favorite: variables.payload } };
-	};
-
-	const updateFavorite = useUpdateUserMedia("update_favorite", mediaType, mediaId, onSuccessFavorite);
 
 	if (!apiData.user_data) {
 		return (
 			<div className="w-[300px]">
-				<FormButton onClick={handleAddMediaUser} disabled={addMediaToUser.isPending}>
+				<FormButton onClick={handleAddMediaUser} disabled={addToList.isPending}>
 					Add to your list
 				</FormButton>
 			</div>
@@ -76,8 +71,7 @@ export const UserListDetails = ({ apiData, mediaId, mediaType }) => {
 						totalPages={apiData.media?.pages}
 					/>
 					<Commentary
-						mediaType={mediaType}
-						mediaId={apiData.media.id}
+						updateComment={updateComment}
 						content={apiData.user_data.comment}
 					/>
 					<LabelLists
@@ -95,7 +89,7 @@ export const UserListDetails = ({ apiData, mediaId, mediaType }) => {
 					/>
 				</TabsContent>
 			</Tabs>
-			<FormButton variant="destructive" disabled={removeMediaFromUser.isPending} onClick={handleDeleteMedia}>
+			<FormButton variant="destructive" disabled={removeFromList.isPending} onClick={handleDeleteMedia}>
 				Remove from your list
 			</FormButton>
 		</div>

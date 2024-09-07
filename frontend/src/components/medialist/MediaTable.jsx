@@ -1,4 +1,5 @@
 import {useMemo} from "react";
+import {userMediaMutations} from "@/utils/mutations";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
@@ -11,7 +12,6 @@ import {RatingListDrop} from "@/components/medialist/RatingListDrop";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {useAddMediaToUserList, useRemoveMediaFromList, useUpdateUserMediaList} from "@/utils/mutations";
 
 
 export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
@@ -47,6 +47,7 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                         row={row}
                         filters={filters}
                         username={username}
+                        isCurrent={isCurrent}
                         mediaType={mediaType}
                     />
                 );
@@ -214,11 +215,16 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
 
 
 const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
+    const { updateStatusFunc } = userMediaMutations(
+        mediaType, row.original.media_id, ["userList", mediaType, username, filters]
+    );
+    const updateStatus = updateStatusFunc(onStatusSuccess);
+
     const handleStatus = async (status) => {
-        await updateStatus.mutateAsync({payload: status});
+        await updateStatus.mutateAsync({ payload: status });
     };
 
-    const onStatusChange = (oldData, variables) => {
+    function onStatusSuccess(oldData, variables) {
         const newData = {...oldData};
         const status = variables.payload;
         const searchStatuses = filters?.status;
@@ -256,9 +262,7 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
             return m;
         });
         return newData;
-    };
-
-    const updateStatus = useUpdateUserMediaList("update_status", mediaType, row.original.media_id, username, filters, onStatusChange);
+    }
 
     return (
         <>
@@ -269,8 +273,8 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
                     </Drop.DropdownMenuTrigger>
                     <Drop.DropdownMenuContent align="end">
                         {row.original.all_status.map(status =>
-                            <Drop.DropdownMenuItem key={status} value={status} onClick={(ev) => handleStatus(ev.target.textContent)}
-                                                   disabled={row.original.status === status}>
+                            <Drop.DropdownMenuItem key={status} value={status} disabled={row.original.status === status}
+                            onClick={(ev) => handleStatus(ev.target.textContent)}>
                                 {status}
                             </Drop.DropdownMenuItem>
                         )}
@@ -284,18 +288,7 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
 };
 
 const RatingCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const onRatingChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, rating: { ...m.rating, value: variables.payload } };
-            }
-            return m;
-        });
-        return newData;
-    };
-
-    const updateRating = useUpdateUserMediaList("update_rating", mediaType, row.original.media_id, username, filters, onRatingChange);
+    const { updateRating } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
     return (
         <RatingListDrop
@@ -307,18 +300,7 @@ const RatingCell = ({ row, isCurrent, username, mediaType, filters }) => {
 };
 
 const FavoriteCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const onFavoriteChange = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, favorite: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-
-    const updateFavorite = useUpdateUserMediaList("update_favorite", mediaType, row.original.media_id, username, filters, onFavoriteChange);
+    const { updateFavorite } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
     return (
         <div className="text-center">
@@ -332,20 +314,9 @@ const FavoriteCell = ({ row, isCurrent, username, mediaType, filters }) => {
 };
 
 const RedoCell = ({ row, isCurrent, username, mediaType, filters }) => {
+    const { updateRedo } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
+
     if (row.original.status !== "Completed") return;
-
-    const onRedoChange = (oldData, variables) => {
-        const newData = {...oldData};
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, redo: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-
-    const updateRedo = useUpdateUserMediaList("update_redo", mediaType, row.original.media_id, username, filters, onRedoChange);
 
     return (
         <RedoListDrop
@@ -357,18 +328,7 @@ const RedoCell = ({ row, isCurrent, username, mediaType, filters }) => {
 };
 
 const CommentCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const onCommentChange = (oldData, variables) => {
-        const newData = {...oldData};
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, comment: variables.payload };
-            }
-            return m;
-        });
-        return newData;
-    };
-
-    const updateComment = useUpdateUserMediaList("update_comment", mediaType, row.original.media_id, username, filters, onCommentChange);
+    const { updateComment } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
     return (
         <CommentPopover
@@ -392,9 +352,13 @@ const SuppMediaInfoCell = ({ row, isCurrent }) => {
 };
 
 const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
+    const { removeFromList, addOtherList, updateStatusFunc } = userMediaMutations(
+        mediaType, row.original.media_id, ["userList", mediaType, username, filters]
+    );
+
     if (!isCurrent && (isCurrent || row.original.common)) return;
 
-    const onStatusChange = (oldData, variables) => {
+    const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
         const status = variables.payload;
         const searchStatuses = filters?.status;
@@ -435,28 +399,14 @@ const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
         return newData;
     };
 
-    const updateStatus = useUpdateUserMediaList("update_status", mediaType, row.original.media_id, username, filters, onStatusChange);
-    const handleRemoveMedia = async () => {
-        await removeMediaFromList.mutateAsync();
-    };
-    const handleStatus = async (status) => {
-        await updateStatus.mutateAsync({ payload: status });
-    };
-    const handleAddOtherList = async (status) => {
-        await addOtherList.mutate({ payload: status });
-    };
-
-    const addOtherList = useAddMediaToUserList(mediaType, row.original.media_id, username, filters);
-    const removeMediaFromList = useRemoveMediaFromList(mediaType, row.original.media_id, username, filters);
-
     return (
         <EditMediaList
             isCurrent={isCurrent}
-            updateStatus={handleStatus}
+            addOtherList={addOtherList}
             status={row.original.status}
-            removeMedia={handleRemoveMedia}
-            addOtherList={handleAddOtherList}
+            removeMedia={removeFromList}
             allStatus={row.original.all_status}
+            updateStatus={updateStatusFunc(onStatusSuccess)}
         >
             <LuMoreHorizontal className="h-4 w-4"/>
         </EditMediaList>

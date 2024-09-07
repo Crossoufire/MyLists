@@ -14,7 +14,7 @@ function OAuth2CallbackPage() {
     const navigate = useNavigate();
     const search = Route.useSearch();
     const { provider } = Route.useParams();
-    const { currentUser, login } = useUser();
+    const { currentUser, oAuth2Login } = useUser();
 
     useEffect(() => {
         (async () => {
@@ -23,12 +23,10 @@ function OAuth2CallbackPage() {
                 state: search?.state,
                 callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
             };
-
-            const response = await login(provider, oauth2Data, true);
-
+            const response = await oAuth2Login(provider, oauth2Data);
             if (!response.ok) {
                 toast.error(response.body.description);
-                return navigate({ to: "/" });
+                await navigate({ to: "/" });
             }
         })();
     }, []);

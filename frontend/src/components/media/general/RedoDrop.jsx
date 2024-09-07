@@ -1,10 +1,10 @@
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {getRedoValues} from "@/utils/functions";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const RedoDrop = ({ name, redo, updateRedo }) => {
-    const handleRedoChange = (redo) => {
-        updateRedo.mutate({ payload: redo });
+    const handleRedoChange = async (redo) => {
+        await updateRedo.mutateAsync({ payload: redo });
     };
 
     return (

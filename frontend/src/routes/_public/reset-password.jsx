@@ -1,9 +1,12 @@
+import {toast} from "sonner";
+import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {createFileRoute} from "@tanstack/react-router";
+import {authMutations} from "@/utils/mutations";
+import {FormError} from "@/components/app/base/FormError";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {useResetPasswordMutation} from "@/utils/mutations";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -15,11 +18,26 @@ export const Route = createFileRoute("/_public/reset-password")({
 
 function ResetPasswordPage() {
     const form = useForm();
+    const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const mutateResetPassword = useResetPasswordMutation(token);
+    const { resetPassword } = authMutations(onSuccess, onError);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    function onError(error) {
+        if (error.errors) {
+            return setErrorMessage(error.errors.json.token);
+        }
+        setErrorMessage(error.description);
+    }
+
+    async function onSuccess() {
+        toast.success("Your password was successfully modified");
+        await navigate({ to: "/" });
+    }
 
     const onSubmit = async (data) => {
-        await mutateResetPassword.mutateAsync({ newPassword: data.password });
+        setErrorMessage("");
+        await resetPassword.mutateAsync({ token, newPassword: data.password });
     };
 
     return (
@@ -54,7 +72,6 @@ function ResetPasswordPage() {
                                 name="confirmPassword"
                                 rules={{
                                     validate: (val) => {
-                                        // noinspection JSCheckFunctionSignatures
                                         if (form.watch("password") !== val) {
                                             return "The passwords do not match";
                                         }
@@ -75,7 +92,8 @@ function ResetPasswordPage() {
                                 )}
                             />
                         </div>
-                        <Button type="submit" className="w-full" disabled={mutateResetPassword.isPending}>
+                        {errorMessage && <FormError message={errorMessage}/>}
+                        <Button type="submit" className="w-full" disabled={resetPassword.isPending}>
                             Reset password
                         </Button>
                     </form>

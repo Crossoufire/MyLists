@@ -13,7 +13,19 @@ class MyApiClient {
     }
 
     isAuthenticated() {
-        return localStorage.getItem("accessToken") !== null;
+        return this.getAccessToken() !== null;
+    }
+
+    setAccessToken(token) {
+        localStorage.setItem("accessToken", token);
+    }
+
+    getAccessToken() {
+        return localStorage.getItem("accessToken");
+    }
+
+    removeAccessToken() {
+        localStorage.removeItem("accessToken");
     }
 
     filterParams(queryData) {
@@ -33,18 +45,18 @@ class MyApiClient {
         let response = await this.requestInternal(data);
 
         if (response.status === 401 && data.url !== "/tokens") {
-            let beforeRenewAccessToken = localStorage.getItem("accessToken");
+            let beforeRenewAccessToken = this.getAccessToken();
             const refreshResponse = await this.put("/tokens", {
-                access_token: localStorage.getItem("accessToken"),
+                access_token: this.getAccessToken(),
             });
 
             if (refreshResponse.ok) {
-                localStorage.setItem("accessToken", refreshResponse.body.access_token);
+                this.setAccessToken(refreshResponse.body.access_token);
                 response = await this.requestInternal(data);
             }
 
             // Check no another call was made just before that changed the access and refresh tokens
-            if (!refreshResponse.ok && (beforeRenewAccessToken !== localStorage.getItem("accessToken"))) {
+            if (!refreshResponse.ok && (beforeRenewAccessToken !== this.getAccessToken())) {
                 response = await this.requestInternal(data);
             }
         }
@@ -60,7 +72,7 @@ class MyApiClient {
             let body = {
                 method: data.method,
                 headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+                    "Authorization": `Bearer ${this.getAccessToken()}`,
                     ...(data.removeContentType ? {} : { "Content-Type": "application/json" }),
                     ...data.headers,
                 },
@@ -90,31 +102,29 @@ class MyApiClient {
         }
     };
 
-    async login(usernameOrProvider, passwordOrProviderData, oAuth2) {
-        let response;
-
-        if (oAuth2) {
-            response = await this.post(`/tokens/oauth2/${usernameOrProvider}`, passwordOrProviderData);
-        }
-        else {
-            const utf8Bytes = new TextEncoder().encode(`${usernameOrProvider}:${passwordOrProviderData}`);
-            const base64Encoded = btoa(String.fromCharCode(...utf8Bytes));
-            response = await this.post("/tokens",
-                JSON.stringify({ usernameOrProvider, passwordOrProviderData }), {
-                headers: { Authorization:  `Basic ${base64Encoded}` }
-            });
-        }
-
+    async login(username, password) {
+        const utf8Bytes = new TextEncoder().encode(`${username}:${password}`);
+        const base64Encoded = btoa(String.fromCharCode(...utf8Bytes));
+        const response = await this.post("/tokens", JSON.stringify({ username, password }), {
+            headers: { Authorization:  `Basic ${base64Encoded}` }
+        });
         if (response.ok) {
-            localStorage.setItem("accessToken", response.body.access_token);
+            this.setAccessToken(response.body.access_token);
         }
+        return response;
+    };
 
+    async oAuth2Login(provider, data) {
+        const response = await this.post(`/tokens/oauth2/${provider}`, data);
+        if (response.ok) {
+            this.setAccessToken(response.body.access_token);
+        }
         return response;
     };
 
     async logout() {
         await this.delete("/tokens");
-        localStorage.removeItem("accessToken");
+        this.removeAccessToken();
     };
 
     async get(url, query, obj) {
@@ -134,6 +144,8 @@ class MyApiClient {
     };
 }
 
+
 const api = new MyApiClient();
+
 
 export { api };

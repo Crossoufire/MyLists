@@ -10,7 +10,7 @@ import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {TablePagination} from "@/components/app/TablePagination";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
-import {queryOptionsMap, useDeleteMultiUpdateMutation} from "@/utils/mutations";
+import {queryOptionsMap, useDeleteUpdateMutation} from "@/utils/mutations";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
@@ -32,8 +32,8 @@ function AllUpdates() {
     const [rowSelected, setRowSelected] = useState({});
     const apiData = useSuspenseQuery(queryOptionsMap.history(username, filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
+    const deleteMutation = useDeleteUpdateMutation(["history", username, filters]);
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
-    const deleteMutation = useDeleteMultiUpdateMutation(username, filters);
 
     const setFilters = ({ pageIndex, pageSize, ...otherFilters }) => {
         const updatedFilters = { ...otherFilters, page: pageIndex + 1 };

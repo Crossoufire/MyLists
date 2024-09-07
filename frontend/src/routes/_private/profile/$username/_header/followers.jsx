@@ -36,5 +36,5 @@ function ProfileFollowers() {
                 )}
             </div>
         </PageTitle>
-    )
+    );
 }

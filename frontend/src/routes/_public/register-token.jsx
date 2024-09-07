@@ -1,6 +1,7 @@
+import {toast} from "sonner";
 import {useEffect} from "react";
-import {createFileRoute} from "@tanstack/react-router";
-import {useRegisterTokenMutation} from "@/utils/mutations";
+import {authMutations} from "@/utils/mutations";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -10,15 +11,29 @@ export const Route = createFileRoute("/_public/register-token")({
 
 
 function RegisterTokenPage() {
+    const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const registerTokenMutation = useRegisterTokenMutation();
+    const { registerToken } = authMutations(onSuccess, onError);
+
+    function onError(_error) {
+        toast.error("An error occurred during registration");
+    }
+
+    async function onSuccess() {
+        toast.success("Your account has been successfully activated. Feel free to log in now.");
+        await navigate({to: "/"});
+    }
+
+    const registerHandler = async () => {
+        await registerToken.mutateAsync({ token });
+    };
 
     useEffect(() => {
-        const registrationTimeout = setTimeout(() => {
-            registerTokenMutation.mutate({ token: token });
+        const registrationTimeout = setTimeout(async () => {
+            await registerHandler();
         }, 700);
         return () => clearTimeout(registrationTimeout);
-    }, [token, registerTokenMutation]);
+    }, [token, registerHandler]);
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">

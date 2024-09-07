@@ -7,7 +7,7 @@ export const PlaytimeDrop = ({ playtime, updatePlaytime }) => {
     const hoursPlaytime = playtime / 60;
 
     const handleSelect = async (playtimeInHours) => {
-        updatePlaytime.mutate({ payload: playtimeInHours * 60 });
+        await updatePlaytime.mutateAsync({ payload: playtimeInHours * 60 });
     };
 
     return (

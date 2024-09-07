@@ -1,6 +1,5 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {useUser} from "@/providers/UserProvider";
@@ -10,22 +9,20 @@ import {Link, useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {api} from "@/api/MyApiClient.js";
 
 
 export const LoginForm = () => {
-	const {login} = useUser();
+	const { login } = useUser();
 	const navigate = useNavigate();
 	const [error, setError] = useState("");
-	const [isPending, setIsIsPending] = useState(false);
-	const form = useForm({
-		defaultValues: { username: "", password: "" },
-		shouldFocusError: false,
-	});
+	const [isPending, setIsPending] = useState(false);
+	const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
 	const onSubmit = async (data) => {
 		setError("");
 		try {
-			setIsIsPending(true);
+			setIsPending(true);
 			const response = await login(data.username, data.password);
 			if (response.status === 401) {
 				return setError("Username or password incorrect");
@@ -35,7 +32,7 @@ export const LoginForm = () => {
 			}
 		}
 		finally {
-			setIsIsPending(false);
+			setIsPending(false);
 		}
 
 		await navigate({ to: `/profile/${data.username}` });
@@ -44,19 +41,19 @@ export const LoginForm = () => {
 	const withProvider = async (provider) => {
 		setError("");
 		try {
-			setIsIsPending(true);
+			setIsPending(true);
 			const response = await api.get(`/tokens/oauth2/${provider}`, {
 				callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
 			});
 			if (!response.ok) {
-				setIsIsPending(false);
+				setIsPending(false);
 				return toast.error(response.body.description);
 			}
 			window.location.replace(response.body.redirect_url);
 		}
 		catch {
 			toast.error("An unexpected error occurred");
-			setIsIsPending(false);
+			setIsPending(false);
 		}
 	};
 

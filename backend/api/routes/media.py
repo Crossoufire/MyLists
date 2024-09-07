@@ -368,7 +368,7 @@ def delete_updates(data):
 
     UserMediaUpdate.query.filter(
         UserMediaUpdate.id.in_(data["update_ids"]),
-        UserMediaUpdate.user_id == current_user.id
+        UserMediaUpdate.user_id == current_user.id,
     ).delete()
 
     db.session.commit()
@@ -382,4 +382,5 @@ def delete_updates(data):
         return jsonify(data=new_update_to_return[-1].to_dict() if new_update_to_return else None), 200
 
     current_app.logger.info(f"[User {current_user.id}] {len(data['update_ids'])} updates successfully deleted")
+
     return {}, 204

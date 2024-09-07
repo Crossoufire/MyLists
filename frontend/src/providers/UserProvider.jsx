@@ -20,13 +20,22 @@ export function UserProvider({ children }) {
         })();
     }, []);
 
-    const login = async (usernameOrProvider, passwordOrProviderData, oAuth2 = false) => {
-        const logging = await api.login(usernameOrProvider, passwordOrProviderData, oAuth2);
-        if (logging.ok) {
+    const login = async (username, password) => {
+        const response = await api.login(username, password);
+        if (response.ok) {
             const response = await api.get("/current_user");
             setCurrentUser(response.ok ? response.body : null);
         }
-        return logging;
+        return response;
+    };
+
+    const oAuth2Login = async (provider, data) => {
+        const response = await api.oAuth2Login(provider, data);
+        if (response.ok) {
+            const response = await api.get("/current_user");
+            setCurrentUser(response.ok ? response.body : null);
+        }
+        return response;
     };
 
     const logout = async () => {
@@ -35,7 +44,7 @@ export function UserProvider({ children }) {
     };
 
     return (
-        <UserContext.Provider value={{ currentUser, setCurrentUser, login, logout }}>
+        <UserContext.Provider value={{ currentUser, setCurrentUser, login, oAuth2Login, logout }}>
             {children}
         </UserContext.Provider>
     );

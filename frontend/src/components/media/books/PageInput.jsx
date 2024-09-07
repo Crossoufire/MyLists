@@ -9,13 +9,13 @@ export const PageInput = ({ initPage, totalPages, updatePage }) => {
         setCurrentPage(initPage);
     }, [initPage]);
 
-    const handlePageOnBlur = (ev) => {
+    const handlePageOnBlur = async (ev) => {
         ev.preventDefault();
         if (currentPage === initPage) return;
         if (currentPage > totalPages || currentPage < 0) {
             return setCurrentPage(initPage);
         }
-        updatePage.mutate({ payload: currentPage });
+        await updatePage.mutateAsync({ payload: currentPage });
     };
 
     return (

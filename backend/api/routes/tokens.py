@@ -97,7 +97,7 @@ def reset_password_token(data):
     if not user:
         return abort(400, "This email is invalid")
     if not user.active:
-        return abort(403, "This account is not activated. Please check your email address.")
+        return abort(400, "This account is not activated. Please check your email address.")
 
     try:
         send_email(
@@ -118,8 +118,6 @@ def reset_password_token(data):
 @tokens.route("/tokens/reset_password", methods=["POST"])
 @body(PasswordResetSchema)
 def reset_password(data):
-    """ Check password token and change user password """
-
     user = User.verify_jwt_token(data["token"])
     if not user or not user.active:
         return abort(400, "Invalid or expired token")

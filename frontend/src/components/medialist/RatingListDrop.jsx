@@ -36,8 +36,8 @@ export const RatingListDrop = ({ isCurrent, rating, updateRating }) => {
         );
     }
 
-    const handleSelectChange = (value) => {
-        updateRating.mutate({ payload: value });
+    const handleSelectChange = async (rating) => {
+        await updateRating.mutateAsync({ payload: rating });
     };
 
     return (

@@ -1,16 +1,16 @@
 import {useState} from "react";
 import {UserUpdate} from "@/components/app/UserUpdate";
 import {MutedText} from "@/components/app/base/MutedText";
-import {useDeleteHistoryMutation} from "@/utils/mutations";
+import {useDeleteUpdateMutation} from "@/utils/mutations";
 
 
 export const HistoryDetails = ({ history, mediaType, mediaId }) => {
-    const deleteHistory = useDeleteHistoryMutation(mediaType, mediaId);
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
+    const deleteHistory = useDeleteUpdateMutation(["details", mediaType, mediaId.toString()]);
 
     const handleDelete = async (updateId) => {
         setMediaIdBeingDeleted(updateId);
-        await deleteHistory.mutate({ updateIds: updateId });
+        await deleteHistory.mutateAsync({ updateIds: [updateId] });
     };
 
     return (

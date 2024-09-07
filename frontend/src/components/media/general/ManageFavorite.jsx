@@ -4,7 +4,7 @@ import {LuHeart} from "react-icons/lu";
 
 export const ManageFavorite = ({ updateFavorite, isFavorite, isCurrent = true }) => {
     const handleFavorite = async () => {
-        updateFavorite.mutate({ payload: !isFavorite });
+        await updateFavorite.mutateAsync({ payload: !isFavorite });
     };
 
     return (

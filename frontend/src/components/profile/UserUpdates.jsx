@@ -4,8 +4,8 @@ import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {Link, useParams} from "@tanstack/react-router";
 import {UserUpdate} from "@/components/app/UserUpdate";
-import {useDeleteUpdateMutation} from "@/utils/mutations";
 import {MutedText} from "@/components/app/base/MutedText";
+import {useDeleteUpdateMutation} from "@/utils/mutations";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
@@ -14,11 +14,11 @@ export const UserUpdates = ({ updates, followers = false }) => {
     const { username } = useParams({ strict: false });
     const { isOpen, caret, toggleCollapse } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
-    const deleteUserUpdates = useDeleteUpdateMutation(currentUser.username);
+    const deleteUserUpdates = useDeleteUpdateMutation(["profile", username]);
 
     const deleteUpdate = async (updateId) => {
         setMediaIdBeingDeleted(updateId);
-        await deleteUserUpdates.mutateAsync({ updateIds: updateId, returnData: true });
+        await deleteUserUpdates.mutateAsync({ updateIds: [updateId], returnData: true });
     };
 
     return (
