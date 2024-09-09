@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const PasswordForm = () => {
     const { setCurrentUser } = useAuth();
-    const {passwordSettings} = genericMutations;
+    const { passwordSettings } = genericMutations();
     const [errors, setErrors] = useState("");
     const form = useForm({
         defaultValues: {
@@ -42,7 +42,7 @@ export const PasswordForm = () => {
                     <FormField
                         control={form.control}
                         name="current_password"
-                        render={({field}) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Current Password</FormLabel>
                                 <FormControl>
@@ -59,8 +59,8 @@ export const PasswordForm = () => {
                     <FormField
                         control={form.control}
                         name="new_password"
-                        rules={{ minLength: { value: 8, message: "The new password must have at least 8 characters"} }}
-                        render={({field}) => (
+                        rules={{ minLength: { value: 8, message: "The new password must have at least 8 characters" } }}
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>New Password</FormLabel>
                                 <FormControl>

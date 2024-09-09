@@ -19,7 +19,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 export const MediaListForm = () => {
     const form = useForm();
     const { currentUser, setCurrentUser } = useAuth();
-    const { listSettings, downloadListAsCSV } = genericMutations;
+    const { listSettings, downloadListAsCSV } = genericMutations();
     const [errorMessage, setErrorMessage] = useState("");
     const [selectedList, setSelectedList] = useState("");
 

@@ -20,7 +20,7 @@ function ResetPasswordPage() {
     const form = useForm();
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { resetPassword } = genericMutations;
+    const { resetPassword } = genericMutations();
     const [errorMessage, setErrorMessage] = useState("");
 
     const onSubmit = (data) => {

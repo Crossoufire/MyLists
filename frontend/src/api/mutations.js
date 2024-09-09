@@ -122,7 +122,7 @@ export const genericMutations = () => {
         deleteAccount: useMutation({ mutationFn: mutationFunctionsMap.deleteAccount }),
         passwordSettings: useMutation({ mutationFn: mutationFunctionsMap.passwordSettings }),
         downloadListAsCSV: useMutation({ mutationFn: mutationFunctionsMap.downloadListAsCSV }),
-        oAuth2Mutation: useMutation({ mutationFn: mutationFunctionsMap.oAuth2Provider }),
+        oAuth2Provider: useMutation({ mutationFn: mutationFunctionsMap.oAuth2Provider }),
         otherUserStats: useMutation({ mutationFn: mutationFunctionsMap.otherUserStats }),
         editMediaMutation: useMutation({ mutationFn: mutationFunctionsMap.editMediaDetails }),
         generalSettings: useMutation({ mutationFn: mutationFunctionsMap.generalSettings }),

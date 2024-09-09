@@ -10,7 +10,7 @@ import {FormError} from "@/components/app/base/FormError";
 export const DangerForm = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const { deleteAccount } = genericMutations;
+    const { deleteAccount } = genericMutations();
     const [errors, setErrors] = useState("");
 
     const onSubmit = async () => {

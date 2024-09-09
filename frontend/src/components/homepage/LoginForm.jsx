@@ -13,15 +13,15 @@ import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const LoginForm = () => {
-    const {login} = useAuth();
+    const { login } = useAuth();
     const navigate = useNavigate();
-    const {oAuth2Mutation} = genericMutations;
+    const { oAuth2Provider } = genericMutations();
     const [errorMessage, setErrorMessage] = useState("");
-    const form = useForm({defaultValues: {username: "", password: ""}, shouldFocusError: false});
+    const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
     const onSubmit = (data) => {
         setErrorMessage("");
-        login.mutate({username: data.username, password: data.password}, {
+        login.mutate({ username: data.username, password: data.password }, {
             onError: (error) => {
                 if (error.status === 401) {
                     return setErrorMessage("Username or password incorrect");
@@ -29,7 +29,7 @@ export const LoginForm = () => {
                 return toast.error(error.message);
             },
             onSuccess: async () => {
-                await navigate({to: `/profile/${data.username}`});
+                await navigate({ to: `/profile/${data.username}` });
             },
         });
     };
@@ -37,7 +37,7 @@ export const LoginForm = () => {
     const withProvider = async (provider) => {
         setErrorMessage("");
 
-        oAuth2Mutation.mutate({provider: provider}, {
+        oAuth2Provider.mutate({ provider: provider }, {
             onError: (error) => setErrorMessage(error.description),
             onSuccess: async (data) => {
                 return window.location.replace(data.redirect_url);
@@ -53,8 +53,8 @@ export const LoginForm = () => {
                         <FormField
                             control={form.control}
                             name="username"
-                            rules={{required: "Please enter a valid username"}}
-                            render={({field}) => (
+                            rules={{ required: "Please enter a valid username" }}
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Username</FormLabel>
                                     <FormControl>
@@ -70,8 +70,8 @@ export const LoginForm = () => {
                         <FormField
                             control={form.control}
                             name="password"
-                            rules={{required: "This field is required"}}
-                            render={({field}) => (
+                            rules={{ required: "This field is required" }}
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
@@ -87,7 +87,7 @@ export const LoginForm = () => {
                         />
                     </div>
                     {errorMessage && <FormError message={errorMessage}/>}
-                    <FormButton disabled={login.isPending || oAuth2Mutation.isPending}>
+                    <FormButton disabled={login.isPending || oAuth2Provider.isPending}>
                         Login
                     </FormButton>
                 </form>
@@ -95,11 +95,11 @@ export const LoginForm = () => {
             <Separator className="mt-3" variant="large"/>
             <div className="mt-3 flex-col space-y-2">
                 <FormButton variant="secondary" onClick={() => withProvider("google")}
-                            disabled={login.isPending || oAuth2Mutation.isPending}>
+                            disabled={login.isPending || oAuth2Provider.isPending}>
                     <FaGoogle size={20}/>&nbsp;&nbsp;Connexion via Google
                 </FormButton>
                 <FormButton variant="secondary" onClick={() => withProvider("github")}
-                            disabled={login.isPending || oAuth2Mutation.isPending}>
+                            disabled={login.isPending || oAuth2Provider.isPending}>
                     <FaGithub size={20}/>&nbsp;&nbsp;Connexion via Github
                 </FormButton>
             </div>

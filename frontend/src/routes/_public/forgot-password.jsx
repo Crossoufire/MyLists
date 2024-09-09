@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_public/forgot-password")({
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
-    const {forgotPassword} = genericMutations;
+    const { forgotPassword } = genericMutations();
     const form = useForm({ defaultValues: { email: "" } });
     const [errorMessage, setErrorMessage] = useState("");
 

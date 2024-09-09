@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_public/register-token")({
 function RegisterTokenPage() {
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { registerToken } = genericMutations;
+    const { registerToken } = genericMutations();
 
     const registerHandler = () => {
         registerToken.mutate({ token }, {

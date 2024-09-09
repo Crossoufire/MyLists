@@ -1,13 +1,7 @@
 {
     "autoCodeSplitting": true,
     "quoteStyle": "double",
-    "disableTypes": true,
+    "disableTypes": false,
     "disableManifestGeneration": true,
-    "semicolons": true,
-    "routeTreeFileHeader": [
-        "/* prettier-ignore-start */",
-        "/* eslint-disable */",
-        "// @ts-nocheck",
-        "// noinspection JSUnusedGlobalSymbols"
-    ]
+    "semicolons": true
 }

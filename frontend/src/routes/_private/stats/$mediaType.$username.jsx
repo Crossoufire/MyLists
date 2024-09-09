@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
 
 
 function StatsPage() {
-    const { otherUserStats } = genericMutations;
+    const { otherUserStats } = genericMutations();
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
