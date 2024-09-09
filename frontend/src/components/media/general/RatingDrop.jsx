@@ -1,4 +1,4 @@
-import {getFeelingValues, getScoreValues} from "@/utils/functions";
+import {getFeelingValues, getScoreValues} from "@/utils/functions.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 

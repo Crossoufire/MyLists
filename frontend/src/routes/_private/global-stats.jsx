@@ -1,8 +1,6 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
-import {barTheme} from "@/utils/constants";
 import {FaQuestionCircle} from "react-icons/fa";
-import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -10,7 +8,9 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions";
+import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions.jsx";
+import {queryOptionsMap} from "@/api/queryOptions.js";
+import {barTheme} from "@/utils/nivoThemes.js";
 
 
 // noinspection JSCheckFunctionSignatures

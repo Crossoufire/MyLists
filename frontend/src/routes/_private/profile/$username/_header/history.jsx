@@ -1,8 +1,8 @@
 import {useMemo, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {useDebounce} from "@/hooks/DebounceHook";
-import {formatDateTime} from "@/utils/functions";
+import {useDebounceCallback} from "@/hooks/DebounceHook";
+import {formatDateTime} from "@/utils/functions.jsx";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Payload} from "@/components/app/base/Payload";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -10,9 +10,10 @@ import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {TablePagination} from "@/components/app/TablePagination";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
-import {queryOptionsMap, useDeleteUpdateMutation} from "@/utils/mutations";
+import {useDeleteUpdateMutation} from "@/api/mutations.js";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -115,7 +116,7 @@ function AllUpdates() {
         setRowSelected({});
     };
 
-    useDebounce(currentSearch, 300, setFilters, { search: currentSearch, pageIndex: 0 });
+    useDebounceCallback(currentSearch, 300, setFilters, { search: currentSearch, pageIndex: 0 });
 
     return (
         <PageTitle title="History" subtitle="History of all my media updates">

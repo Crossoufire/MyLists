@@ -1,14 +1,17 @@
 from operator import and_
-from flask import Blueprint, jsonify, url_for, current_app, abort
-from sqlalchemy import desc, func, case
+
+from flask import abort, Blueprint, current_app, jsonify, url_for
+from sqlalchemy import case, desc, func
+
 from backend.api import cache, db
-from backend.api.managers.ApiManager import SeriesApiManager, MoviesApiManager
+from backend.api.core.handlers import token_auth
+from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User, UserMediaSettings
-from backend.api.core.handlers import token_auth
 from backend.api.schemas.general import HallOfFameSchema
 from backend.api.utils.decorators import arguments
 from backend.api.utils.enums import MediaType
+
 
 general = Blueprint("api_general", __name__)
 

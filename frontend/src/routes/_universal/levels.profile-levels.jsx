@@ -1,4 +1,4 @@
-import {queryOptionsMap} from "@/utils/mutations";
+import {queryOptionsMap} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
@@ -7,7 +7,7 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_universal/levels/profile-levels")({
     component: ProfileLevelsPage,
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.borders()),
+    loader: ({context: {queryClient}}) => queryClient.ensureQueryData(queryOptionsMap.borders()),
 });
 
 
@@ -49,8 +49,8 @@ const BorderCalculus = ({border}) => {
             <div className="text-center text-lg">
                 Lvl {8 * (-1 + border.level)} - Lvl {-1 + 8 * (border.level)}
             </div>
-        )
+        );
     }
 
-    return <div className="text-center text-lg">Lvl {8 * (-1 + border.level)} +</div>
+    return <div className="text-center text-lg">Lvl {8 * (-1 + border.level)} +</div>;
 };

@@ -1,9 +1,9 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {Button} from "@/components/ui/button";
 import * as Com from "@/components/ui/command";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
-import {userMediaMutations} from "@/utils/mutations";
+import {userMediaMutations} from "@/api/mutations.js";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";

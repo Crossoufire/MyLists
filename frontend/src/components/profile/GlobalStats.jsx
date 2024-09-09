@@ -1,11 +1,11 @@
 import {ResponsivePie} from "@nivo/pie";
-import {pieTheme} from "@/utils/constants";
 import {useEffect, useState} from "react";
+import {pieTheme} from "@/utils/nivoThemes";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {getFeelingValues, getMediaColor} from "@/utils/functions";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
 export const GlobalStats = ({ userData, global }) => {
@@ -13,28 +13,31 @@ export const GlobalStats = ({ userData, global }) => {
     const { isOpen, caret, toggleCollapse } = useCollapse();
 
     useEffect(() => {
-        setPieData(transformToPieData(global))
+        setPieData(transformToPieData(global));
     }, [global]);
 
     const transformToPieData = (global) => {
         const timeSum = global.time_per_media.reduce((acc, curr) => acc + curr, 0);
         if (timeSum === 0) return [];
 
+        // noinspection JSValidateTypes
         return global.time_per_media.map((time, idx) => ({
             id: idx + 1,
             value: time,
             label: global.media_types[idx],
             color: getMediaColor(global.media_types[idx]),
-            total: ((time/timeSum) * 100).toFixed(0) + "%",
+            total: ((time / timeSum) * 100).toFixed(0) + "%",
         }));
     };
 
+    // noinspection JSValidateTypes
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
                     <div className="py-1 flex gap-2 items-center">
-                        {caret} <div role="button" onClick={toggleCollapse}>Statistics</div>
+                        {caret}
+                        <div role="button" onClick={toggleCollapse}>Statistics</div>
                     </div>
                 </CardTitle>
                 <Separator/>

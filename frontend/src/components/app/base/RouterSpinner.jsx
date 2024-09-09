@@ -1,9 +1,10 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {useRouterState} from "@tanstack/react-router";
 
 
 export const RouterSpinner = () => {
     const isLoading = useRouterState({ select: (s) => s.status === "pending" });
+
     return (
         <div className={cn("z-30 fixed top-0 w-full transition-all duration-500 pointer-events-none h-[200px] " +
             "!bg-white/10 rounded-[100%] delay-0 opacity-0 -translate-y-full",

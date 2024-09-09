@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {LuX} from "react-icons/lu";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {ExclamationTriangleIcon} from "@radix-ui/react-icons";
 
 

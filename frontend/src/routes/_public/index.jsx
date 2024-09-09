@@ -1,4 +1,5 @@
-import {mail} from "@/utils/constants";
+import {useState} from "react";
+import {mail} from "@/utils/constants.js";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
@@ -17,12 +18,18 @@ export const Route = createFileRoute("/_public/")({
 
 
 function HomePage() {
+    const [activeTab, setActiveTab] = useState("login");
+
+    const onTabChange = (newTab) => {
+        setActiveTab(newTab);
+    };
+
     return (
         <PageTitle title="HomePage" onlyHelmet>
             <div className="relative bg-cover h-[800px] w-[99.7vw] left-[calc(-50vw+50%)]" style={{backgroundImage: `url(${homeImage})`}}/>
             <div className="absolute w-1/2 top-32 left-1/4 flex flex-col items-center">
                 <div className="text-4xl md:text-7xl text-center font-semibold mb-14">Welcome to MyLists</div>
-                <Tabs defaultValue="login" className="w-[320px]">
+                <Tabs value={activeTab} onValueChange={onTabChange} className="w-[320px]">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="login">Login</TabsTrigger>
                         <TabsTrigger value="register">Register</TabsTrigger>
@@ -31,7 +38,7 @@ function HomePage() {
                         <LoginForm/>
                     </TabsContent>
                     <TabsContent value="register">
-                        <RegisterForm/>
+                        <RegisterForm onTabChange={onTabChange}/>
                     </TabsContent>
                 </Tabs>
             </div>

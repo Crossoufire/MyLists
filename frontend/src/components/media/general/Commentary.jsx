@@ -52,8 +52,8 @@ export const Commentary = ({ content, updateComment }) => {
                     </div>
                 </>
                 :
-                <MutedText>{!updatedContent ? "No comments added yet" : `${updatedContent}`}</MutedText>
+                <MutedText>{updatedContent ? `${updatedContent}` : "No comments added yet"}</MutedText>
             }
         </>
-    )
+    );
 };

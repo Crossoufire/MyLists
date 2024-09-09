@@ -3,5 +3,11 @@
     "quoteStyle": "double",
     "disableTypes": true,
     "disableManifestGeneration": true,
-    "semicolons": true
+    "semicolons": true,
+    "routeTreeFileHeader": [
+        "/* prettier-ignore-start */",
+        "/* eslint-disable */",
+        "// @ts-nocheck",
+        "// noinspection JSUnusedGlobalSymbols"
+    ]
 }

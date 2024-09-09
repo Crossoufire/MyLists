@@ -1,4 +1,4 @@
-import {zeroPad} from "@/utils/functions";
+import {zeroPad} from "@/utils/functions.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -18,7 +18,8 @@ export const EpsAndSeasons = ({ isCurrent, currentSeason, currentEpisode, epsPer
         <>
             {isCurrent ?
                 <div className="flex justify-center items-center h-[28px]">
-                    <Select value={currentSeason} onValueChange={handleSeason} disabled={updateSeason.isPending || updateEps.isPending}>
+                    <Select value={currentSeason} onValueChange={handleSeason}
+                            disabled={updateSeason.isPending || updateEps.isPending}>
                         <SelectTrigger variant="noIcon" size="list">
                             <SelectValue/>
                         </SelectTrigger>
@@ -26,7 +27,8 @@ export const EpsAndSeasons = ({ isCurrent, currentSeason, currentEpisode, epsPer
                             {seasons.map(s => <SelectItem key={s.toString()} value={s}>S{zeroPad(s)}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                    &nbsp;<> | </>&nbsp;
+                    &nbsp;<> |</>
+                    &nbsp;
                     <Select value={currentEpisode} onValueChange={handleEpisode}
                             disabled={updateSeason.isPending || updateEps.isPending}>
                         <SelectTrigger size="list" variant="noIcon">
@@ -40,10 +42,11 @@ export const EpsAndSeasons = ({ isCurrent, currentSeason, currentEpisode, epsPer
                 :
                 <div className="flex justify-center items-center h-[28px]">
                     <div>S{zeroPad(currentSeason)}</div>
-                    &nbsp;<> | </>&nbsp;
+                    &nbsp;<> |</>
+                    &nbsp;
                     <div>E{zeroPad(currentEpisode)}</div>
                 </div>
             }
         </>
-    )
+    );
 };

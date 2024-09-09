@@ -1,4 +1,4 @@
-import {userMediaMutations} from "@/utils/mutations";
+import {userMediaMutations} from "@/api/mutations.js";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {PagesInput} from "@/components/medialist/PagesInput";
 import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";

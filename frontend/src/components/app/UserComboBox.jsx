@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
 import * as Com from "@/components/ui/command";

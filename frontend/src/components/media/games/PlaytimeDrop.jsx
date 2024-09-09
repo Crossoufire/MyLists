@@ -1,4 +1,4 @@
-import {getPlaytimeValues} from "@/utils/functions";
+import {getPlaytimeValues} from "@/utils/functions.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -13,12 +13,12 @@ export const PlaytimeDrop = ({ playtime, updatePlaytime }) => {
     return (
         <div className="flex justify-between items-center">
             <div>Playtime</div>
-            <Select value={hoursPlaytime} onValueChange={handleSelect} disabled={updatePlaytime.isPending}>
+            <Select value={`${hoursPlaytime}`} onValueChange={handleSelect} disabled={updatePlaytime.isPending}>
                 <SelectTrigger className="w-[130px]" size="details">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {playValues.map(p => <SelectItem key={p} value={p}>{p} hours</SelectItem>)}
+                    {playValues.map(play => <SelectItem key={play} value={`${play}`}>{play} hours</SelectItem>)}
                 </SelectContent>
             </Select>
         </div>

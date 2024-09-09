@@ -1,11 +1,12 @@
-from flask import current_app
-from flask import jsonify, Blueprint, abort
+from flask import current_app, jsonify, Blueprint, abort
+
 from backend.api import db
 from backend.api.core import token_auth, current_user
 from backend.api.models.user import UserMediaUpdate
 from backend.api.schemas.media import *
 from backend.api.utils.decorators import body
 from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
+
 
 media_bp = Blueprint("api_media", __name__)
 

@@ -1,7 +1,7 @@
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {capitalize} from "@/utils/functions";
+import {capitalize} from "@/utils/functions.jsx";
 
 
 export const ProfileMiscInfo = ({ user, mediaData }) => {

@@ -1,15 +1,16 @@
+import {toast} from "sonner";
 import {FaPen} from "react-icons/fa";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
-import {useUser} from "@/providers/UserProvider";
-import {useFollowMutation} from "@/utils/mutations";
+import {formatDateTime} from "@/utils/functions.jsx";
+import {useFollowMutation} from "@/api/mutations.js";
 import {Link, useParams} from "@tanstack/react-router";
-import {formatDateTime} from "@/utils/functions";
+import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const ProfileHeader = ({ user, followStatus, followId }) => {
-    const { currentUser } = useUser();
+    const {currentUser} = useAuth();
     const isCurrent = (currentUser.id === user.id);
 
     return (
@@ -76,14 +77,16 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
 
 
 const FollowButton = ({ followStatus, followId }) => {
-    const { username } = useParams({ strict: false });
-    const updateFollowStatus = useFollowMutation(followId, username);
+    const {username} = useParams({strict: false});
+    const updateFollowStatus = useFollowMutation(["profile", username]);
 
     const content = followStatus ? "Unfollow" : "Follow";
     const buttonColor = followStatus ? "destructive" : "secondary";
 
-    const handleFollow = async () => {
-        updateFollowStatus.mutate({ followId, followStatus: !followStatus });
+    const handleFollow = () => {
+        updateFollowStatus.mutate({ followId, followStatus: !followStatus }, {
+            onError: () => toast.error("An error occurred while updating the follow status"),
+        });
     };
 
     return (
@@ -92,41 +95,3 @@ const FollowButton = ({ followStatus, followId }) => {
         </Button>
     )
 };
-
-
-// const FollowButton = ({ followStatus, followId }) => {
-//     const updateFollowStatus = useFollowMutation(followId);
-//
-//     const [isLoading, handleLoading] = useMutation();
-//     const [isFollowing, setFollowing] = useState(initFollow);
-//
-//     const content = isFollowing ? "Unfollow" : "Follow";
-//     const buttonColor = isFollowing ? "destructive" : "secondary";
-//
-//     const updateFollow = async (followId, followValue) => {
-//         const response = await api.post("/update_follow", {
-//             follow_id: followId,
-//             follow_status: followValue,
-//         });
-//
-//         if (!response.ok) {
-//             toast.error("The following status could not be processed");
-//             return false;
-//         }
-//
-//         return true;
-//     };
-//
-//     const handleFollow = async () => {
-//         const response = await handleLoading(updateFollow, followId, !isFollowing);
-//         if (response) {
-//             setFollowing(!isFollowing);
-//         }
-//     };
-//
-//     return (
-//         <Button variant={buttonColor} size="xs" onClick={handleFollow} disabled={isLoading}>
-//             <div className="font-semibold">{content}</div>
-//         </Button>
-//     )
-// };

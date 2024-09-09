@@ -38,4 +38,6 @@ def autocomplete(args):
         current_app.logger.error(f"[ERROR] - Requesting the API ({Api_data.__class__.__name__}): {e}")
         return abort(400)
 
+    results["page"] = args["page"]
+
     return jsonify(data=results), 200

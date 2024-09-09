@@ -1,22 +1,21 @@
-import {toast} from "sonner";
-import {LuX} from "react-icons/lu";
-import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
+import * as Com from "@/components/ui/command";
 import * as Pop from "@/components/ui/popover";
 import {useQuery} from "@tanstack/react-query";
 import * as Sheet from "@/components/ui/sheet";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
-import {queryOptionsMap} from "@/utils/mutations";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
+import {LuLoader2, LuSearch, LuX} from "react-icons/lu";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
-import {capitalize, getLangCountryName} from "@/utils/functions";
+import {capitalize, getLangCountryName} from "@/utils/functions.jsx";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
 import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
@@ -243,45 +242,30 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
 };
 
 
-const SearchFilter = ({job, dataList, registerChange}) => {
-    const searchRef = useRef();
-    const [results, setResults] = useState();
+const SearchFilter = ({ job, dataList, registerChange }) => {
+    const commandRef = useRef(null);
     const {mediaType, username} = Route.useParams();
-    const [query, setQuery] = useState("");
+    const [search, setSearch] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const [debouncedSearch] = useDebounce(search, 300);
     const [selectedData, setSelectedData] = useState(dataList ?? []);
+    const {data, isLoading, error} = useQuery(queryOptionsMap.filterSearch(mediaType, username, debouncedSearch, job));
 
-    const handleSearchChange = (ev) => {
-        if (query.length >= 2) {
-            resetSearch();
-        }
-        setQuery(ev.target.value);
+    const handleInputChange = (ev) => {
+        setIsOpen(true);
+        setSearch(ev.target.value);
     };
 
     const resetSearch = () => {
-        setQuery("");
-        setResults(undefined);
+        setSearch("");
+        setIsOpen(false);
     };
 
-    const searchDB = async () => {
-        if (!query || query.trim() === "" || query.length < 2) {
-            return;
-        }
-        const response = await api.get(`/list/search/filters/${mediaType}/${username}`, {
-            q: query,
-            job: job,
-        });
-        if (!response.ok) {
-            resetSearch();
-            return toast.error(response.body.description);
-        }
-        setResults(response.body.data);
-    };
+    useOnClickOutside(commandRef, resetSearch);
 
     const handleAddClicked = (data) => {
         resetSearch();
-        if (selectedData.includes(data)) {
-            return;
-        }
+        if (selectedData.includes(data)) return;
         registerChange(job, [data]);
         setSelectedData([...selectedData, data]);
     };
@@ -291,23 +275,45 @@ const SearchFilter = ({job, dataList, registerChange}) => {
         setSelectedData(selectedData.filter(d => d !== data));
     };
 
-    useOnClickOutside(searchRef, resetSearch);
-    useDebounce(query, 250, searchDB);
-
     return (
         <div>
             <h3 className="font-medium">{capitalize(job)}</h3>
-            <div ref={searchRef} className="mt-1 w-56 relative">
-                <Input
-                    value={query}
-                    onChange={handleSearchChange}
-                    placeholder={`Search in this collection`}
-                />
-                <ShowSearch
-                    query={query}
-                    results={results}
-                    handleAddClicked={handleAddClicked}
-                />
+            <div ref={commandRef} className="mt-1 w-56 relative">
+                <div className="relative">
+                    <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                    <Input
+                        value={search}
+                        className="w-[280px] pl-8"
+                        onChange={handleInputChange}
+                        placeholder={`Search ${job} in this collection`}
+                    />
+                </div>
+                {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
+                    <div className="z-50 absolute w-[280px] rounded-lg border shadow-md mt-1">
+                        <Com.Command>
+                            <Com.CommandList className="max-h-[300px] overflow-y-auto">
+                                {isLoading &&
+                                    <div className="flex items-center justify-center p-4">
+                                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                    </div>
+                                }
+                                {error &&
+                                    <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
+                                }
+                                {data && data.length === 0 &&
+                                    <Com.CommandEmpty>No results found.</Com.CommandEmpty>
+                                }
+                                {data && data.length > 0 &&
+                                    data.map((result, idx) =>
+                                        <div key={idx} role="button" onClick={() => handleAddClicked(result)}>
+                                            <Com.CommandItem>{result}</Com.CommandItem>
+                                        </div>
+                                    )
+                                }
+                            </Com.CommandList>
+                        </Com.Command>
+                    </div>
+                }
             </div>
             <div className="flex flex-wrap gap-2">
                 {selectedData.map(item =>
@@ -319,42 +325,6 @@ const SearchFilter = ({job, dataList, registerChange}) => {
                     </Badge>
                 )}
             </div>
-        </div>
-    );
-};
-
-
-const ShowSearch = ({ query, results, handleAddClicked }) => {
-    if (query.length > 1 && results === undefined) {
-        return (
-            <div className="z-10 absolute h-[52px] w-56 top-11 bg-neutral-950 border rounded-md font-medium">
-                <div className="ml-2 mt-2">
-                    <Loading/>
-                </div>
-            </div>
-        );
-    }
-    if (!results) {
-        return;
-    }
-    if (results.length === 0) {
-        return (
-            <div className="z-10 absolute h-[40px] w-56 top-11 bg-neutral-950 border rounded-md font-medium">
-                <div className="ml-2 mt-2">
-                    Sorry, no matches found
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="z-10 absolute max-h-[200px] w-56 top-11 bg-neutral-950 border rounded-md font-medium overflow-y-auto">
-            {results.map(item =>
-                <div key={item} role="button" className="flex p-1 items-center w-full hover:bg-neutral-900"
-                     onClick={() => handleAddClicked(item)}>
-                    <div>{item}</div>
-                </div>
-            )}
         </div>
     );
 };

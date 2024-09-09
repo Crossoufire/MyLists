@@ -1,5 +1,5 @@
 import {Separator} from "@/components/ui/separator";
-import {userMediaMutations} from "@/utils/mutations";
+import {userMediaMutations} from "@/api/mutations.js";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";

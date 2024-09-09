@@ -2,8 +2,7 @@ import {LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {MutedText} from "@/components/app/base/MutedText";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
-import {capitalize} from "@/utils/functions";
-
+import {capitalize} from "@/utils/functions.jsx";
 
 
 export const AppliedFilters = ({ total, onFilterRemove }) => {
@@ -13,7 +12,7 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
     delete localFilters.page;
     delete localFilters.sort;
 
-    const handleRemoveAFilter = (filterKey, filterValue) => {
+    const removeFilter = (filterKey, filterValue) => {
         if (Array.isArray(localFilters[filterKey])) {
             onFilterRemove({ [filterKey]: [filterValue] });
         }
@@ -22,7 +21,7 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
         }
     };
 
-    const handleRemoveAllFilters = () => {
+    const removeAllFilters = () => {
         const resetFilters = Object.keys(localFilters).reduce((acc, key) => {
             if (Array.isArray(localFilters[key])) {
                 acc[key] = [];
@@ -47,7 +46,7 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
                         value.map(val =>
                             <Badge key={`${key}-${val}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
                                 {val}
-                                <div role="button" className="hover:opacity-80 -mr-1" onClick={() => handleRemoveAFilter(key, val)}>
+                                <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key, val)}>
                                     <LuX/>
                                 </div>
                             </Badge>
@@ -60,13 +59,13 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
                                         value
                             }
                             <div role="button" className="hover:opacity-80 -mr-1"
-                                 onClick={() => handleRemoveAFilter(key, value)}>
+                                 onClick={() => removeFilter(key, value)}>
                                 <LuX/>
                             </div>
                         </Badge>
                 )}
                 {Object.keys(localFilters).length > 0 &&
-                    <div role="button" className="ml-2" onClick={() => handleRemoveAllFilters(localFilters)}>
+                    <div role="button" className="ml-2" onClick={() => removeAllFilters(localFilters)}>
                         <MutedText className="not-italic">Clear All</MutedText>
                     </div>
                 }

@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {Card, CardContent} from "@/components/ui/card";
-import {getFeelingValues, zeroPad} from "@/utils/functions";
+import {getFeelingValues, zeroPad} from "@/utils/functions.jsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 

@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {authMutations} from "@/utils/mutations";
+import {genericMutations} from "@/api/mutations.js";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
@@ -18,25 +18,24 @@ export const Route = createFileRoute("/_public/forgot-password")({
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
-    const { forgotPassword } = authMutations(OnSuccess, onError);
+    const {forgotPassword} = genericMutations;
     const form = useForm({ defaultValues: { email: "" } });
     const [errorMessage, setErrorMessage] = useState("");
 
-    function onError(error) {
-        if (error.errors) {
-            return setErrorMessage(error.errors.json.email);
-        }
-        setErrorMessage(error.description);
-    }
-
-    async function OnSuccess() {
-        toast.success("A reset email has been sent to change your password");
-        await navigate({ to :"/" });
-    }
-
-    const onSubmit = async (data) => {
+    const onSubmit = (data) => {
         setErrorMessage("");
-        await forgotPassword.mutateAsync({ email: data.email });
+        forgotPassword.mutate({ email: data.email }, {
+            onError: (error) => {
+                if (error.errors) {
+                    return setErrorMessage(error.errors.json.email);
+                }
+                setErrorMessage(error.description);
+            },
+            onSuccess: async () => {
+                toast.success("A reset email has been sent to change your password");
+                await navigate({ to: "/" });
+            }
+        });
     };
 
     return (

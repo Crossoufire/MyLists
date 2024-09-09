@@ -1,4 +1,5 @@
 from flask import jsonify, Blueprint, abort
+
 from backend.api import db, cache
 from backend.api.models.user import User
 from backend.api.core import token_auth, current_user
@@ -56,7 +57,6 @@ def media_list_search_filters(args, media_type: MediaType, username: str):
 @token_auth.login_required
 @cache.cached(timeout=3600)
 def stats_page(media_type: MediaType, username: str):
-
     user = current_user.check_autorization(username)
     stats_manager = StatsManager.get_subclass(media_type)
     stats = stats_manager(user).create_stats()

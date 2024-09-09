@@ -35,6 +35,7 @@ class DeleteMultiListSchema(ma.Schema):
     media_ids = ma.List(ma.Integer())
     media_type = EnumField(MediaType, required=True)
 
+    # noinspection PyUnusedLocal
     @post_load
     def add_models(self, data, **kwargs):
         data["models"] = ModelsManager.get_lists_models(data["media_type"], [ModelTypes.LIST, ModelTypes.LABELS])

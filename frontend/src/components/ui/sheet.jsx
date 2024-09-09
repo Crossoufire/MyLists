@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {cva} from "class-variance-authority";
 import {Cross2Icon} from "@radix-ui/react-icons";
 import * as SheetPrimitive from "@radix-ui/react-dialog";

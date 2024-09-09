@@ -1,15 +1,15 @@
 import {Fragment, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Link} from "@tanstack/react-router";
-import {queryClient} from "@/utils/mutations";
-import {useUser} from "@/providers/UserProvider";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/base/MutedText";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
+import {useAuth} from "@/hooks/AuthHook.jsx";
+import {queryClient} from "@/api/queryClient.js";
 
 
 export const LabelLists = ({ mediaType, mediaId, labelsInList }) => {
-    const { currentUser : { username } } = useUser();
+    const { currentUser: { username } } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
     const updateLabelsInList = (labels) => {

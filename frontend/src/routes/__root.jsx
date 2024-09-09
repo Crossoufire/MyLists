@@ -1,8 +1,7 @@
-import React from "react";
+import {lazy} from "react";
 import {Toaster} from "@/components/ui/sonner";
 import {Footer} from "@/components/app/Footer";
 import {Navbar} from "@/components/navbar/Navbar";
-import {UserProvider} from "@/providers/UserProvider";
 import {SheetProvider} from "@/providers/SheetProvider";
 import {RouterSpinner} from "@/components/app/base/RouterSpinner";
 import {createRootRouteWithContext, Outlet, ScrollRestoration} from "@tanstack/react-router";
@@ -16,7 +15,7 @@ export const Route = createRootRouteWithContext()({
 
 function RootComponent() {
     return (
-        <UserProvider>
+        <>
             <RouterSpinner/>
             <Toaster/>
             <SheetProvider><Navbar/></SheetProvider>
@@ -27,15 +26,15 @@ function RootComponent() {
             <Footer/>
             {import.meta.env.DEV && <TanStackRouterDevtools/>}
             {import.meta.env.DEV && <ReactQueryDevtools/>}
-        </UserProvider>
+        </>
     );
 }
 
 
-const TanStackRouterDevtools = React.lazy(() =>
+const TanStackRouterDevtools = lazy(() =>
     import("@tanstack/router-devtools").then((res) => ({default: res.TanStackRouterDevtools}))
 );
 
-const ReactQueryDevtools = React.lazy(() =>
+const ReactQueryDevtools = lazy(() =>
     import("@tanstack/react-query-devtools").then((res) => ({default: res.ReactQueryDevtools}))
 );

@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {useUser} from "@/providers/UserProvider";
+import {useAuth} from "@/hooks/AuthHook";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
@@ -14,21 +14,25 @@ function OAuth2CallbackPage() {
     const navigate = useNavigate();
     const search = Route.useSearch();
     const { provider } = Route.useParams();
-    const { currentUser, oAuth2Login } = useUser();
+    const { currentUser, oAuth2Login } = useAuth();
+
+    const authUsingOAuth2 = async () => {
+        const oAuth2Data = {
+            code: search?.code,
+            state: search?.state,
+            callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
+        };
+
+        oAuth2Login.mutate({ provider, data: oAuth2Data }, {
+            onError: async () => {
+                toast.error("Failed to authenticate with the provider");
+                await navigate({ to: "/" });
+            },
+        });
+    };
 
     useEffect(() => {
-        (async () => {
-            const oauth2Data = {
-                code: search?.code,
-                state: search?.state,
-                callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
-            };
-            const response = await oAuth2Login(provider, oauth2Data);
-            if (!response.ok) {
-                toast.error(response.body.description);
-                await navigate({ to: "/" });
-            }
-        })();
+        void authUsingOAuth2();
     }, []);
 
     useEffect(() => {
@@ -42,5 +46,5 @@ function OAuth2CallbackPage() {
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
             <div className="text-xl mb-2 font-semibold">Authentication in progress...</div>
         </div>
-    )
+    );
 }

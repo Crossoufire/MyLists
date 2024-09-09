@@ -1,9 +1,8 @@
+import {toast} from "sonner";
 import {useState} from "react";
-import {cn} from "@/utils/functions";
+import {capitalize, cn} from "@/utils/functions.jsx";
 import {ResponsiveBar} from "@nivo/bar";
-import {barTheme} from "@/utils/constants";
-import {dataToLoad} from "@/utils/statsData";
-import {capitalize} from "@/utils/functions";
+import {dataToLoad} from "@/components/mediaStats/statsData.jsx";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Sidebar} from "@/components/app/Sidebar";
 import {Separator} from "@/components/ui/separator";
@@ -11,24 +10,27 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {UserComboBox} from "@/components/app/UserComboBox";
-import {fetcher, queryOptionsMap} from "@/utils/mutations";
 import {FaList, FaQuestionCircle, FaTimes} from "react-icons/fa";
+import {genericMutations} from "@/api/mutations.js";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
+import {queryOptionsMap} from "@/api/queryOptions.js";
+import {barTheme} from "@/utils/nivoThemes.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
     component: StatsPage,
     loader: ({ context: { queryClient }, params: { mediaType, username } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.stats(mediaType, username))
+        return queryClient.ensureQueryData(queryOptionsMap.stats(mediaType, username));
     },
 });
 
 
 function StatsPage() {
+    const { otherUserStats } = genericMutations;
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
@@ -37,10 +39,14 @@ function StatsPage() {
     const apiData = useSuspenseQuery(queryOptionsMap.stats(mediaType, username)).data;
     const statsData = dataToLoad(mediaType, apiData.stats);
 
-    const addComparison = async (user) => {
-        const otherData = await fetcher(`/stats/${mediaType}/${user}`);
-        setStatsDataOtherUser(dataToLoad(mediaType, otherData.stats));
-        setOtherUser(user);
+    const addComparison = async (username) => {
+        otherUserStats.mutate({ mediaType, username }, {
+            onError: () => toast.error("An error occurred while fetching the other user stats"),
+            onSuccess: async (data) => {
+                setStatsDataOtherUser(dataToLoad(mediaType, data.stats));
+                setOtherUser(username);
+            },
+        });
     };
 
     const resetComparison = () => {
@@ -209,7 +215,8 @@ const StatsCard = ({ data, otherData }) => {
                     <>
                         <Separator variant="vertical" className="mx-3 h-full bg-neutral-600"/>
                         <div className="text-2xl font-bold max-sm:text-xl text-center" title={otherData.value}>
-                            {typeof otherData.value === "number" || otherData.title === "Total Budgets" || otherData.title === "Total Revenue" ?
+                            {typeof otherData.value === "number" || otherData.title === "Total Budgets" ||
+                            otherData.title === "Total Revenue" ?
                                 <span className={otherData.value > data.value ? "text-green-400" : "text-red-400"}>
                                     {otherData.value}
                                 </span>

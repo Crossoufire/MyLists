@@ -1,6 +1,8 @@
 import os
 from unittest import mock
+
 from flask import current_app
+
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models import UserMediaUpdate
 from backend.api.utils.enums import NotificationType
@@ -82,8 +84,6 @@ class UserTests(BaseTest):
         self.assertNotIn("email", rv.json)
 
     def test_get_profile(self):
-        # TODO: Better test lol
-
         rv = self.client.get(f"/api/profile/test", headers=self.connexion())
         self.assertEqual(rv.status_code, 200)
 

@@ -1,5 +1,6 @@
 from marshmallow import ValidationError
 from webargs.flaskparser import FlaskParser as BaseFlaskParser
+
 from backend.api import ma
 
 
@@ -20,6 +21,7 @@ class FlaskParser(BaseFlaskParser):
         raise ApiValidationError(error_status_code or self.DEFAULT_VALIDATION_STATUS, error.messages)
 
 
+# noinspection PyUnusedLocal
 class EnumField(ma.Field):
     def __init__(self, enum_class, *args, **kwargs):
         self.enum_class = enum_class

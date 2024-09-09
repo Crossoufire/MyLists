@@ -3,7 +3,7 @@ import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
-import {formatDateTime, formatMinutes} from "@/utils/functions";
+import {formatDateTime, formatMinutes} from "@/utils/functions.jsx";
 
 
 export const TvDetails = ({ mediaData, mediaType }) => {

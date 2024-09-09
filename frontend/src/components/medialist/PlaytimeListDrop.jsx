@@ -1,4 +1,4 @@
-import {getPlaytimeValues} from "@/utils/functions";
+import {getPlaytimeValues} from "@/utils/functions.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -14,12 +14,12 @@ export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime, classNam
         <>
             {isCurrent ?
                 <div className={className}>
-                    <Select value={hoursPlaytime} onValueChange={handlePlaytime} disabled={updatePlaytime.isPending}>
+                    <Select value={`${hoursPlaytime}`} onValueChange={handlePlaytime} disabled={updatePlaytime.isPending}>
                         <SelectTrigger size="list" variant="noIcon">
                             <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>
-                            {playValues.map(p => <SelectItem key={p} value={p}>{p} hours</SelectItem>)}
+                            {playValues.map(play => <SelectItem key={play} value={`${play}`}>{play} hours</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -29,5 +29,5 @@ export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime, classNam
                 </div>
             }
         </>
-    )
+    );
 };

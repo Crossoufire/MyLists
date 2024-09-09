@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {LuLoader2} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 

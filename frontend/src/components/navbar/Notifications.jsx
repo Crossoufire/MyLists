@@ -1,14 +1,16 @@
-import {toast} from "sonner";
-import {api} from "@/api/MyApiClient";
+import {LuLoader2} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import {queryClient} from "@/api/queryClient";
+import {useQuery} from "@tanstack/react-query";
 import {formatDateTime} from "@/utils/functions";
 import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
+import {queryOptionsMap} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
-import {Loading} from "@/components/app/base/Loading";
-import {NOTIFICATION_INTERVAL} from "@/utils/constants";
+import {notifPollingInterval} from "@/utils/constants";
+import {MutedText} from "@/components/app/base/MutedText";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -16,60 +18,15 @@ import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/component
 
 export const Notifications = ({ isMobile }) => {
     const popRef = useRef();
-    const { setSheetOpen } = useSheet();
-    const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState([]);
-    const [numberUnreadNotif, setNumberUnreadNotif] = useState(0);
-    const [lastNotifPollTime, setLastNotifPollTime] = useState(() => {
-        const savedTime = localStorage.getItem("lastNotifPollTime");
-        return savedTime ? parseInt(savedTime, 10) : null;
-    });
+    const {setSheetOpen} = useSheet();
+    const [isOpen, setIsOpen] = useState(false);
+    const { data: notifCount = 0 } = useQuery(queryOptionsMap.notificationsCount());
+    const { data: notifs = [], isLoading, refetch } = useQuery(queryOptionsMap.notifications());
 
-    useEffect(() => {
-        let timeoutId;
-
-        const setNextPoll = () => {
-            const currentTime = Date.now();
-            const nextPollTime = lastNotifPollTime ? (lastNotifPollTime + NOTIFICATION_INTERVAL) : currentTime;
-            const delay = Math.max(nextPollTime - currentTime, 0);
-            timeoutId = setTimeout(pollCountNotifications, delay);
-        };
-
-        const pollCountNotifications = async () => {
-            const response = await api.get("/notifications/count");
-            if (response.ok) {
-                setNumberUnreadNotif(response.body.data);
-            } else {
-                toast.error("An error occurred trying to fetch the notifications.");
-            }
-
-            const currentTime = Date.now();
-            localStorage.setItem("lastNotifPollTime", currentTime.toString());
-            setLastNotifPollTime(currentTime);
-        };
-
-        if (api.isAuthenticated()) {
-            setNextPoll();
-        }
-
-        return () => clearTimeout(timeoutId);
-    }, [lastNotifPollTime]);
-
-    const fetchNotifications = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get("/notifications");
-
-            if (!response.ok) {
-                return toast.error("Failed to retrieve the notifications");
-            }
-
-            setNotifications(response.body.data);
-            setNumberUnreadNotif(0);
-        }
-        finally {
-            setLoading(false);
-        }
+    const handleOnClickOpen = async () => {
+        await refetch();
+        setIsOpen(true);
+        queryClient.setQueryData(["notificationCount"], 0);
     };
 
     const handlePopoverClose = () => {
@@ -77,28 +34,37 @@ export const Notifications = ({ isMobile }) => {
         setSheetOpen(false);
     };
 
+    useEffect(() => {
+        const intervalId = setInterval(async () => {
+            await queryClient.invalidateQueries({ queryKey: ["notificationCount"] })
+        }, notifPollingInterval);
+        return () => clearInterval(intervalId);
+    }, [queryClient]);
+
     return (
-        <Popover modal={isMobile}>
+        <Popover modal={isMobile} open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <div className="flex items-center">
-                    <Button variant="ghost" size="sm" className="mr-3" onClick={fetchNotifications}>
+                    <Button variant="ghost" size="sm" className="mr-3" onClick={handleOnClickOpen}>
                         <FaBell className="w-5 h-5 mr-1"/>
                         {isMobile && <div className="text-lg ml-2 mr-3">Notifications</div>}
-                        <Badge variant="notif" className={numberUnreadNotif > 0 && "bg-destructive"}>
-                            {numberUnreadNotif}
+                        <Badge variant="notif" className={notifCount > 0 && "bg-destructive"}>
+                            {notifCount}
                         </Badge>
                     </Button>
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
             <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto" align={isMobile ? "start" : "end"}>
-                {loading ?
-                    <div className="p-3"><Loading/></div>
+                {isLoading ?
+                    <div className="flex items-center justify-center p-4">
+                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                    </div>
                     :
-                    notifications.length === 0 ?
-                        <i className="text-muted-foreground">No notifications to display</i>
+                    notifs.length === 0 ?
+                        <MutedText className="p-3 text-center">No notifications to display</MutedText>
                         :
-                        notifications.map(data =>
+                        notifs.map(data =>
                             <NotificationItem
                                 data={data}
                                 key={data.timestamp}

@@ -1,7 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import {useAuth} from "@/hooks/AuthHook";
 import {routeTree} from "./routeTree.gen";
-import {queryClient} from "@/utils/mutations";
+import {queryClient} from "@/api/queryClient";
 import {ThemeProvider} from "@/providers/ThemeProvider";
 import {QueryClientProvider} from "@tanstack/react-query";
 import {ErrorComponent} from "@/components/app/base/ErrorComponent";
@@ -11,31 +12,32 @@ import "./index.css";
 
 const router = createRouter({
     routeTree,
-    context: { queryClient: queryClient },
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: ErrorComponent,
-    defaultErrorComponent: DefaultErrorComponent,
+    context: { queryClient: queryClient, auth: undefined },
+    defaultErrorComponent: (error) => <ErrorComponent { ...error }/>,
 });
 
 
-const rootElement = document.getElementById("root");
-if (!rootElement.innerHTML) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(
+function App() {
+    return (
         <ThemeProvider>
             <QueryClientProvider client={queryClient}>
-                <RouterProvider router={router}/>
+                <InnerApp/>
             </QueryClientProvider>
         </ThemeProvider>
     );
 }
 
 
-export function DefaultErrorComponent(error) {
-    try {
-        return <ErrorComponent { ...error }/>;
-    }
-    catch {
-        return <ErrorComponent/>;
-    }
+function InnerApp() {
+    const auth = useAuth();
+    return <RouterProvider router={router} context={{ auth, queryClient }}/>;
+}
+
+
+const rootElement = document.getElementById("root");
+if (!rootElement.innerHTML) {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App/>);
 }

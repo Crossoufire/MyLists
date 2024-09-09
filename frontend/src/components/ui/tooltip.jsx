@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 
@@ -22,7 +22,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
             "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2", className)}
         {...props}
     />
-))
+));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 
@@ -34,7 +34,7 @@ const Tooltip = React.forwardRef(({ children, text, subText, side, className, of
                     {children}
                 </TooltipTrigger>
                 <TooltipContent ref={ref} sideOffset={offset} side={side} {...props} className={cn("text-sm " +
-                "text-primary bg-primary-foreground", className)}>
+                    "text-primary bg-primary-foreground", className)}>
                     <TooltipArrow className="fill-primary-foreground"/>
                     <p>{text}</p>
                     <p>{subText}</p>
@@ -45,4 +45,4 @@ const Tooltip = React.forwardRef(({ children, text, subText, side, className, of
 });
 
 
-export { Tooltip };
+export {Tooltip};

@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 
 
 export const MutedText = ({ children, className }) => {

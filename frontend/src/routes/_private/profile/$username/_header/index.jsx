@@ -1,5 +1,3 @@
-import {useUser} from "@/providers/UserProvider";
-import {queryOptionsMap} from "@/utils/mutations";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {UpdatesModal} from "@/components/app/UpdatesModal";
@@ -9,6 +7,8 @@ import {GlobalStats} from "@/components/profile/GlobalStats";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
+import {useAuth} from "@/hooks/AuthHook.jsx";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_private/profile/$username/_header/")({
 
 
 function ProfileMain() {
-    const { currentUser } = useUser();
+    const { currentUser } = useAuth();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(queryOptionsMap.profile(username)).data;
     const isCurrent = (currentUser.id === apiData.user_data.id);

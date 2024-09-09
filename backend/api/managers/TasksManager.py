@@ -1,12 +1,15 @@
 from __future__ import annotations
+
 import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Type, Tuple
+
 import dotenv
 from flask import current_app, jsonify
 from sqlalchemy import func
+
 from backend.api import db, cache
 from backend.api.managers.ApiManager import GamesApiManager, ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
@@ -104,7 +107,7 @@ class TasksManager(metaclass=TasksManagerMeta):
 
     @staticmethod
     def update_Mylists_stats(global_stats_manager: Type[GlobalStats]):
-        stats = GlobalStats().compute_global_stats()
+        stats = global_stats_manager().compute_global_stats()
         cache.set("mylists-stats", jsonify(data=stats), timeout=86400)
 
     @staticmethod
@@ -125,7 +128,7 @@ class TasksManager(metaclass=TasksManagerMeta):
         db.session.query(UserMediaSettings).filter(
             UserMediaSettings.user_id == subq.c.user_id,
             UserMediaSettings.media_type == self.GROUP,
-            ).update({UserMediaSettings.time_spent: subq.c.time_spent}, synchronize_session=False)
+        ).update({UserMediaSettings.time_spent: subq.c.time_spent}, synchronize_session=False)
 
         db.session.commit()
 
@@ -180,7 +183,7 @@ class TasksManager(metaclass=TasksManagerMeta):
                 self.media.release_date.is_not(None),
                 self.media.release_date > datetime.utcnow(),
                 self.media.release_date <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
-                ).all()
+            ).all()
         )
 
         for media, media_list in query:
@@ -235,7 +238,7 @@ class TvTasksManager(TasksManager):
                 self.media.next_episode_to_air > datetime.utcnow(),
                 self.media.next_episode_to_air <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
                 self.media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
-                ).all()
+            ).all()
         )
 
         for media, media_list, last_episode in query:
@@ -292,7 +295,7 @@ class MoviesTasksManager(TasksManager):
                 self.media.lock_status.is_not(True),
                 self.media.image_cover != "default.jpg",
                 self.media.release_date < locking_threshold,
-                ).update({"lock_status": True}, synchronize_session="fetch")
+            ).update({"lock_status": True}, synchronize_session="fetch")
         )
         db.session.commit()
         unlocked_movies = self.media.query.filter(self.media.lock_status.is_(False)).count()

@@ -3,10 +3,8 @@ import {LuSearch} from "react-icons/lu";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useDebounce} from "@/hooks/DebounceHook";
-import {useUser} from "@/providers/UserProvider";
-import {cn, capitalize} from "@/utils/functions";
-import {queryOptionsMap} from "@/utils/mutations";
+import {useDebounceCallback} from "@/hooks/DebounceHook";
+import {capitalize, cn} from "@/utils/functions.jsx";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -16,13 +14,16 @@ import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 
+import {useAuth} from "@/hooks/AuthHook.jsx";
+import {queryOptionsMap} from "@/api/queryOptions.js";
+
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, deps: { search } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.hallOfFame(search))
+        return queryClient.ensureQueryData(queryOptionsMap.hallOfFame(search));
     },
 });
 
@@ -38,7 +39,7 @@ function HallOfFamePage() {
     const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = filters;
 
     const fetchData = async (params) => {
-        await navigate({ search: params });
+        await navigate({ search: { params } });
     };
 
     const resetSearch = async () => {
@@ -46,15 +47,15 @@ function HallOfFamePage() {
         await fetchData((prev) => ({ ...prev, search: DEFAULT.search }));
     };
 
-    const onPageChange = async(newPage) => {
+    const onPageChange = async (newPage) => {
         await fetchData({ search, page: newPage, sorting });
     };
 
     const onSortChanged = async (sorting) => {
-        await fetchData({ search,  page: 1, sorting });
+        await fetchData({ search, page: 1, sorting });
     };
 
-    useDebounce(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
+    useDebounceCallback(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
 
     return (
         <PageTitle title="Hall of Fame" subtitle="This is the showcase of profiles ranked by profile level">
@@ -107,12 +108,12 @@ function HallOfFamePage() {
                 />
             </div>
         </PageTitle>
-    )
+    );
 }
 
 
 const HoFCard = ({ user }) => {
-    const { currentUser } = useUser();
+    const { currentUser } = useAuth();
     const { series, anime, movies, books, games } = user.settings;
     const settings = [series, anime, movies, books, games];
 
@@ -161,7 +162,7 @@ const HoFCard = ({ user }) => {
                 </div>
             </CardContent>
         </Card>
-    )
+    );
 };
 
 

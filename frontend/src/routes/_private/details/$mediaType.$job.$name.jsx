@@ -1,30 +1,30 @@
 import {useState} from "react";
-import {queryOptionsMap} from "@/utils/mutations";
+import {queryOptionsMap} from "@/api/queryOptions";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {CommonCorner} from "@/components/app/base/CommonCorner.jsx";
+import {CommonCorner} from "@/components/app/base/CommonCorner";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
     component: InfoPage,
-    loader: ({ context: { queryClient }, params: { mediaType, job, name } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.jobDetails(mediaType, job, name))
+    loader: ({context: {queryClient}, params: {mediaType, job, name}}) => {
+        return queryClient.ensureQueryData(queryOptionsMap.jobDetails(mediaType, job, name));
     },
 });
 
 
 function InfoPage() {
-    const { mediaType, job, name } = Route.useParams();
+    const {mediaType, job, name} = Route.useParams();
     const [currentPage, setCurrentPage] = useState(1);
     const apiData = useSuspenseQuery(queryOptionsMap.jobDetails(mediaType, job, name)).data;
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
-        window.scrollTo({ top: 0 });
+        window.scrollTo({top: 0});
     };
 
     const mediaPerPage = 25;

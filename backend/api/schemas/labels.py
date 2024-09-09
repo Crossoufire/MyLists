@@ -1,4 +1,5 @@
 from marshmallow import post_load
+
 from backend.api import ma
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
@@ -8,6 +9,7 @@ from backend.api.utils.enums import MediaType, ModelTypes
 class BaseLabelSchema(ma.Schema):
     media_type = EnumField(MediaType, required=True)
 
+    # noinspection PyUnusedLocal
     @post_load
     def add_models(self, data, **kwargs):
         data["models"] = self.get_models(data["media_type"])

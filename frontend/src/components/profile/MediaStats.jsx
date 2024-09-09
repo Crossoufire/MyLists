@@ -4,7 +4,7 @@ import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {BulletIcon} from "@/components/app/base/BulletIcon";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
-import {capitalize, getStatusColor} from "@/utils/functions";
+import {capitalize, getStatusColor} from "@/utils/functions.jsx";
 
 
 export const MediaStats = ({ user, media }) => (

@@ -1,4 +1,5 @@
 from marshmallow import post_load, validates, ValidationError
+
 from backend.api import ma
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
@@ -10,6 +11,7 @@ class BaseMediaSchema(ma.Schema):
     media_type = EnumField(MediaType, required=True)
     payload = ma.Raw(required=False)
 
+    # noinspection PyUnusedLocal
     @post_load
     def add_models(self, data, **kwargs):
         model_types = self.get_model_types()

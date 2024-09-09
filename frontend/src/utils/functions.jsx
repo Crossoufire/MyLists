@@ -13,14 +13,14 @@ export const getScoreValues = () => {
 
 export const getFeelingValues = (size = 20) => {
     return [
-        {value: null, icon: "--"},
-        {value: 0, icon: <FaPoop color="saddlebrown" size={size}/>},
-        {value: 1, icon: <FaAngry color="indianred" size={size}/>},
-        {value: 2, icon: <FaFrown color="#d0a141" size={size}/>},
-        {value: 3, icon: <FaSmile color="darkseagreen" size={size}/>},
-        {value: 4, icon: <FaGrinAlt color="#59a643" size={size}/>},
-        {value: 5, icon: <FaGrinStars color="#019101" size={size}/>},
-    ]
+        { value: null, icon: "--" },
+        { value: 0, icon: <FaPoop color="saddlebrown" size={size}/> },
+        { value: 1, icon: <FaAngry color="indianred" size={size}/> },
+        { value: 2, icon: <FaFrown color="#d0a141" size={size}/> },
+        { value: 3, icon: <FaSmile color="darkseagreen" size={size}/> },
+        { value: 4, icon: <FaGrinAlt color="#59a643" size={size}/> },
+        { value: 5, icon: <FaGrinStars color="#019101" size={size}/> },
+    ];
 };
 
 export const getPlaytimeValues = () => [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150,
@@ -58,7 +58,7 @@ export const genreListsToListsOfDict = (stringList) => {
 
     stringList.forEach((str) => {
         if (str === "All") return;
-        const dict = {value: str, label: str};
+        const dict = { value: str, label: str };
         listDict.push(dict);
     });
 
@@ -83,7 +83,7 @@ export const sliceIntoParts = (arr, n) => {
 };
 
 export const getLangCountryName = (name, type) => {
-    let languageNames = new Intl.DisplayNames(["en"], {type});
+    let languageNames = new Intl.DisplayNames(["en"], { type });
     if (name === "cn") return "Chinese";
     return languageNames.of(name);
 };
@@ -120,13 +120,17 @@ export const getLevelColor = (intLevel) => {
 
     if (normalizedLevel <= 0.2) {
         return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
-    } else if (normalizedLevel <= 0.4) {
+    }
+    else if (normalizedLevel <= 0.4) {
         return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
-    } else if (normalizedLevel <= 0.6) {
+    }
+    else if (normalizedLevel <= 0.6) {
         return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
-    } else if (normalizedLevel <= 0.8) {
+    }
+    else if (normalizedLevel <= 0.8) {
         return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
-    } else {
+    }
+    else {
         return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
     }
 };
@@ -203,7 +207,8 @@ export const formatDateTime = (dateInput, options = {}) => {
     let date;
     if (typeof dateInput === "number" && dateInput.toString().length === 10) {
         date = new Date(dateInput * 1000);
-    } else {
+    }
+    else {
         date = new Date(dateInput);
     }
 
@@ -222,8 +227,31 @@ export const formatDateTime = (dateInput, options = {}) => {
     };
 
     if (options.onlyYear) {
-        return date.toLocaleString("en-En", {timeZone: formatOptions.timeZone, year: "numeric"});
+        return date.toLocaleString("en-En", { timeZone: formatOptions.timeZone, year: "numeric" });
     }
 
     return new Intl.DateTimeFormat("en-En", formatOptions).format(date);
 };
+
+export function downloadFile(data, filename, mimeType) {
+    const blob = new Blob([data], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+export function jsonToCsv(items) {
+    if (!items || !items.length) return "";
+    const header = Object.keys(items[0]);
+    const headerString = header.join(",");
+    const replacer = (key, value) => value ?? "";
+    const rowItems = items.map(row =>
+        header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(",")
+    );
+    return [headerString, ...rowItems].join("\r\n");
+}

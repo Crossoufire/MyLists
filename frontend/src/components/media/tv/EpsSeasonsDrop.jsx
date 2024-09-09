@@ -18,28 +18,28 @@ export const EpsSeasonsDrop = ({ currentSeason, currentEpisode, epsPerSeason, up
             <div className="flex justify-between items-center">
                 <div>Season</div>
                 <Select value={currentSeason} onValueChange={handleSeasonUpdate}
-                disabled={updateSeason.isPending || updateEpisode.isPending}>
+                        disabled={updateSeason.isPending || updateEpisode.isPending}>
                     <SelectTrigger className="w-[130px]" size="details">
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                        {seasons.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {seasons.map(seas => <SelectItem key={`${seas}`} value={seas}>{seas}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
             <div className="flex justify-between items-center">
                 <div>Episode</div>
                 <Select value={currentEpisode} onValueChange={handleEpisodeUpdate}
-                disabled={updateEpisode.isPending || updateSeason.isPending}>
+                        disabled={updateEpisode.isPending || updateSeason.isPending}>
                     <SelectTrigger className="w-[130px]" size="details">
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                        {episodes.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                        {episodes.map(ep => <SelectItem key={`${ep}`} value={ep}>{ep}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
         </>
-    )
+    );
 };
 

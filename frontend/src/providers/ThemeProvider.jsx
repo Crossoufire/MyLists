@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {createContext, useContext, useEffect, useState} from "react";
 
 
@@ -6,7 +8,7 @@ const initialState = { theme: "system", setTheme: () => null };
 const ThemeProviderContext = createContext(initialState);
 
 
-export function ThemeProvider({ children, defaultTheme = "system", storageKey = "vite-ui-theme", ...props}) {
+export function ThemeProvider({ children, defaultTheme = "system", storageKey = "vite-ui-theme", ...props }) {
     const [theme, setTheme] = useState(() => (localStorage.getItem(storageKey) || defaultTheme));
 
     useEffect(() => {
@@ -19,6 +21,7 @@ export function ThemeProvider({ children, defaultTheme = "system", storageKey = 
             return;
         }
 
+        // noinspection JSCheckFunctionSignatures
         root.classList.add(theme);
     }, [theme]);
 
@@ -30,11 +33,12 @@ export function ThemeProvider({ children, defaultTheme = "system", storageKey = 
         },
     };
 
+    // noinspection JSValidateTypes
     return (
         <ThemeProviderContext.Provider {...props} value={value}>
             {children}
         </ThemeProviderContext.Provider>
-    )
+    );
 }
 
 

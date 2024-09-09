@@ -1,5 +1,5 @@
 import {useMemo} from "react";
-import {userMediaMutations} from "@/utils/mutations";
+import {userMediaMutations} from "@/api/mutations.js";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";

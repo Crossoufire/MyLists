@@ -1,4 +1,4 @@
-import {zeroPad, cn} from "@/utils/functions";
+import {zeroPad, cn} from "@/utils/functions.jsx";
 import {FaLongArrowAltRight} from "react-icons/fa";
 
 

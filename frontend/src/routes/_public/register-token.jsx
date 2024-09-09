@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {authMutations} from "@/utils/mutations";
+import {genericMutations} from "@/api/mutations.js";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
@@ -13,19 +13,16 @@ export const Route = createFileRoute("/_public/register-token")({
 function RegisterTokenPage() {
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { registerToken } = authMutations(onSuccess, onError);
+    const { registerToken } = genericMutations;
 
-    function onError(_error) {
-        toast.error("An error occurred during registration");
-    }
-
-    async function onSuccess() {
-        toast.success("Your account has been successfully activated. Feel free to log in now.");
-        await navigate({to: "/"});
-    }
-
-    const registerHandler = async () => {
-        await registerToken.mutateAsync({ token });
+    const registerHandler = () => {
+        registerToken.mutate({ token }, {
+            onError: () => toast.error("An error occurred during registration"),
+            onSuccess: async () => {
+                toast.success("Your account has been successfully activated. Feel free to log in now.");
+                await navigate({ to: "/" });
+            }
+        });
     };
 
     useEffect(() => {

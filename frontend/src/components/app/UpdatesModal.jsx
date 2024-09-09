@@ -1,9 +1,10 @@
+import {toast} from "sonner";
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import * as Dia from "@/components/ui/dialog";
-import {useUser} from "@/providers/UserProvider";
-import {useModalMutation} from "@/utils/mutations";
+import {useModalMutation} from "@/api/mutations.js";
 import {Separator} from "@/components/ui/separator";
+import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 const newUpdateData = [
@@ -28,13 +29,18 @@ const newUpdateData = [
 
 
 export const UpdatesModal = () => {
-    const {currentUser} = useUser();
+    const { currentUser } = useAuth();
     const modalUpdate = useModalMutation();
     const [isOpen, setIsOpen] = useState(currentUser.show_update_modal);
 
     const doNotShowModalAgain = () => {
-        modalUpdate.mutate();
-        setIsOpen(false);
+        modalUpdate.mutate(undefined, {
+            onError: () => toast.error("An error occurred while updating your preference"),
+            onSuccess: () => {
+                setIsOpen(false);
+                toast.success("Preference successfully updated");
+            }
+        });
     };
 
     return (
@@ -89,5 +95,5 @@ const CheckIcon = (props) => {
         >
             <path d="M20 6 9 17l-5-5"/>
         </svg>
-    )
+    );
 };

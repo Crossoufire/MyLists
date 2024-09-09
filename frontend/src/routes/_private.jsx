@@ -1,5 +1,5 @@
-import {api} from "@/api/MyApiClient";
-import {useUser} from "@/providers/UserProvider";
+import {api} from "@/api/apiClient";
+import {useAuth} from "@/hooks/AuthHook";
 import {createFileRoute, Navigate, Outlet} from "@tanstack/react-router";
 
 
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_private")({
 
 
 function PrivateRoute() {
-    const { currentUser } = useUser();
+    const { currentUser } = useAuth();
 
     if (currentUser === undefined) {
         return null;

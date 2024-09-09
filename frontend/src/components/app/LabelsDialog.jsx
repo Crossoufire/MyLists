@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {LuTrash, LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
@@ -10,18 +10,13 @@ import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
 import {MutedText} from "@/components/app/base/MutedText";
 import {FormButton} from "@/components/app/base/FormButton";
+import {userLabelsMutations} from "@/api/mutations.js";
 import {CheckIcon, ExclamationTriangleIcon} from "@radix-ui/react-icons";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Dialog, DialogContent, DialogDescription, DialogTitle} from "@/components/ui/dialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {
-    queryOptionsMap,
-    useAddLabelMutation,
-    useDeleteLabelMutation,
-    useRemoveLabelMutation,
-    useRenameLabelMutation
-} from "@/utils/mutations";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {
@@ -33,12 +28,8 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     const [selectedLabel, setSelectedLabel] = useState("");
     const [messageTab1, setMessageTab1] = useState({type: "error", value: ""});
     const [messageTab2, setMessageTab2] = useState({type: "error", value: ""});
-
-    const renameLabelMutation = useRenameLabelMutation(mediaType);
-    const deleteLabelMutation = useDeleteLabelMutation(mediaType);
-    const addLabelMutation = useAddLabelMutation("add_media_to_label", mediaType, mediaId);
+    const {addLabel, removeLabel, renameLabel, deleteLabel} = userLabelsMutations(mediaType, mediaId);
     const {data, error, isLoading} = useQuery(queryOptionsMap.mediaLabels(mediaType, mediaId, isOpen));
-    const removeLabelMutation = useRemoveLabelMutation("remove_label_from_media", mediaType, mediaId);
 
     useEffect(() => {
         if (isOpen) {
@@ -64,7 +55,7 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     const handleMoveLabel = async (label, fromList) => {
         setMessageTab1({ type: "error", value: "" });
         const isBeingAdded = (fromList === "toAdd");
-        const mutation = isBeingAdded ? addLabelMutation : removeLabelMutation;
+        const mutation = isBeingAdded ? addLabel : removeLabel;
         const updatedLabelsInList = isBeingAdded ? [...labelsInList, label] : labelsInList.filter(l => l !== label);
         const updatedLabelsToAdd = isBeingAdded ? labelsToAdd.filter(l => l !== label) : [...labelsToAdd, label];
 
@@ -87,11 +78,12 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
             resetRenaming();
             return setMessageTab2( {
                 type: "error",
-                value: (newLabelName < 1 || selectedLabel === newLabelName) ? "" : "This Label name already exists",
+                value: (newLabelName < 1 || selectedLabel === newLabelName) ?
+                    "" : "This Label name already exists",
             });
         }
 
-        renameLabelMutation.mutate({ oldName: selectedLabel, newName: newLabelName }, {
+        renameLabel.mutate({ oldName: selectedLabel, newName: newLabelName }, {
             onSuccess: () => {
                 updateLabelsInList(labelsInList.map(x => (x === selectedLabel ? newLabelName : x)));
                 setLabelsToAdd(labelsToAdd.map(x => (x === selectedLabel ? newLabelName : x)));
@@ -107,7 +99,7 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
 
         if (!window.confirm("Do you really want to delete this label?")) return;
 
-        await deleteLabelMutation.mutate({ name }, {
+        await deleteLabel.mutate({ name }, {
             onSuccess: () => {
                 setMessageTab2({ type: "success", value: "Label successfully deleted" });
                 updateLabelsInList(labelsInList.filter(x => x !== name));
@@ -164,8 +156,8 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
                                 moveCallback={(label) => handleMoveLabel(label, "toAdd")}
                             />
                             <LabelCreator
+                                addLabel={addLabel}
                                 labelsInList={labelsInList}
-                                addLabel={addLabelMutation}
                                 isLabelDuplicate={isLabelDuplicate}
                                 updateLabelsList={updateLabelsInList}
                             />

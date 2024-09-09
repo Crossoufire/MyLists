@@ -1,6 +1,6 @@
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
-import {userMediaMutations} from "@/utils/mutations";
+import {userMediaMutations} from "@/api/mutations.js";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {CommonCorner} from "@/components/app/base/CommonCorner";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";

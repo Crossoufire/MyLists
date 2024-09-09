@@ -1,8 +1,8 @@
-import {queryOptionsMap} from "@/utils/mutations";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures

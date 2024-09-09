@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
 

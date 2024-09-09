@@ -1,16 +1,16 @@
 import {useState} from "react";
-import {useUser} from "@/providers/UserProvider";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {Link, useParams} from "@tanstack/react-router";
 import {UserUpdate} from "@/components/app/UserUpdate";
 import {MutedText} from "@/components/app/base/MutedText";
-import {useDeleteUpdateMutation} from "@/utils/mutations";
+import {useDeleteUpdateMutation} from "@/api/mutations.js";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const UserUpdates = ({ updates, followers = false }) => {
-    const { currentUser } = useUser();
+    const { currentUser } = useAuth();
     const { username } = useParams({ strict: false });
     const { isOpen, caret, toggleCollapse } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();

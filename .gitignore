@@ -122,4 +122,4 @@ backend/api/static/covers/books_covers/*
 
 # -------------------------------------------------------------------------------------
 backend/.flaskenv
-frontend/src/routeTree.gen.js
+frontend/src/routeTree.gen.*

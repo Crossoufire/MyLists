@@ -2,7 +2,7 @@ import {useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import * as Pop from "@/components/ui/popover";
-import {capitalize, cn} from "@/utils/functions";
+import {capitalize, cn} from "@/utils/functions.jsx";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {FaArrowUpRightFromSquare} from "react-icons/fa6";

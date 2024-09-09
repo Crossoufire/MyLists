@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {authMutations} from "@/utils/mutations";
+import {genericMutations} from "@/api/mutations.js";
 import {FormError} from "@/components/app/base/FormError";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
@@ -20,24 +20,23 @@ function ResetPasswordPage() {
     const form = useForm();
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { resetPassword } = authMutations(onSuccess, onError);
+    const { resetPassword } = genericMutations;
     const [errorMessage, setErrorMessage] = useState("");
 
-    function onError(error) {
-        if (error.errors) {
-            return setErrorMessage(error.errors.json.token);
-        }
-        setErrorMessage(error.description);
-    }
-
-    async function onSuccess() {
-        toast.success("Your password was successfully modified");
-        await navigate({ to: "/" });
-    }
-
-    const onSubmit = async (data) => {
+    const onSubmit = (data) => {
         setErrorMessage("");
-        await resetPassword.mutateAsync({ token, newPassword: data.password });
+        resetPassword.mutate({ token, newPassword: data.password }, {
+            onError: (error) => {
+                if (error.errors) {
+                    return setErrorMessage(error.errors.json.token);
+                }
+                setErrorMessage(error.description);
+            },
+            onSuccess: async () => {
+                toast.success("Your password was successfully modified");
+                await navigate({ to: "/" });
+            }
+        });
     };
 
     return (
@@ -51,7 +50,7 @@ function ResetPasswordPage() {
                                 name="password"
                                 rules={{
                                     required: "Password is required",
-                                    minLength: {value: 8, message: "The password must have at least 8 characters"},
+                                    minLength: { value: 8, message: "The password must have at least 8 characters" },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
@@ -72,6 +71,7 @@ function ResetPasswordPage() {
                                 name="confirmPassword"
                                 rules={{
                                     validate: (val) => {
+                                        // noinspection JSCheckFunctionSignatures
                                         if (form.watch("password") !== val) {
                                             return "The passwords do not match";
                                         }

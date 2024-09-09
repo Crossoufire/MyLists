@@ -1,13 +1,12 @@
 import React, {useRef} from "react";
 import {LuAlignJustify} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
-import {useUser} from "@/providers/UserProvider";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {Loading} from "@/components/app/base/Loading";
-import {Link as NavLink} from "@tanstack/react-router";
 import * as Nav from "@/components/ui/navigation-menu";
+import {Link as NavLink} from "@tanstack/react-router";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
@@ -15,28 +14,29 @@ import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const Navbar = () => {
     const popRef = useRef();
-    const { currentUser, logout } = useUser();
-    const { sheetOpen, setSheetOpen } = useSheet();
+    const {sheetOpen, setSheetOpen} = useSheet();
+    const {currentUser, logout, isLoading} = useAuth();
 
     // Login page and public pages when not logged
     if (!currentUser) {
         return (
-            <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
-                <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
-                    <p className="text-lg font-semibold">MyLists</p>
-                    <div>{currentUser === undefined && <Loading/>}</div>
+            <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
+                <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
+                    <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
+                    <div>{isLoading && <Loading/>}</div>
                 </div>
             </nav>
         );
     }
 
     return (
-        <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
-            <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
+        <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
+            <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
@@ -105,7 +105,7 @@ export const Navbar = () => {
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
-                                                    <NavLink to="#" onClick={logout} className="block select-none
+                                                    <NavLink to="#" onClick={() => logout.mutate()} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
@@ -185,7 +185,7 @@ export const Navbar = () => {
                                         />
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
-                                                <NavLink to="#" onClick={logout} className="block select-none
+                                                <NavLink to="#" onClick={() => logout.mutate()} className="block select-none
                                                 space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">

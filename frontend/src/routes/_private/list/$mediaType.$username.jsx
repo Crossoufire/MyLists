@@ -1,7 +1,5 @@
 import {useState} from "react";
-import {capitalize} from "@/utils/functions";
-import {useUser} from "@/providers/UserProvider";
-import {queryOptionsMap} from "@/utils/mutations";
+import {capitalize} from "@/utils/functions.jsx";
 import {Header} from "@/components/medialist/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
@@ -11,6 +9,8 @@ import {MediaTable} from "@/components/medialist/MediaTable";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/components/medialist/AppliedFilters";
 import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
+import {useAuth} from "@/hooks/AuthHook.jsx";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
 
 function MediaList() {
     const navigate = useNavigate();
-    const {currentUser} = useUser();
+    const {currentUser} = useAuth();
     const search = Route.useSearch();
     const {username, mediaType} = Route.useParams();
     const [isGrid, setIsGrid] = useState(currentUser.grid_list_view);

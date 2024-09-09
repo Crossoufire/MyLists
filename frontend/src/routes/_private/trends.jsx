@@ -1,12 +1,12 @@
 import {useHashTab} from "@/hooks/HashTabHook";
-import {formatDateTime} from "@/utils/functions";
-import {queryOptionsMap} from "@/utils/mutations";
+import {formatDateTime} from "@/utils/functions.jsx";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures

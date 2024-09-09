@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {FaBookOpen, FaFilm, FaGamepad, FaToriiGate, FaTv, FaUser} from "react-icons/fa";
 
 

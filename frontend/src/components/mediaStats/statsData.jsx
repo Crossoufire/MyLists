@@ -51,7 +51,7 @@ const tvData = (apiData) => {
                         title: "Top Country",
                         subtitle: `With ${apiData.lists.countries[0].value} media`,
                         value: apiData.lists.countries[0].name || "-",
-                        data: (apiData.lists.countries[0]?.name != null) ? apiData.lists.countries : null,
+                        data: (apiData.lists.countries[0]?.name == null) ? null : apiData.lists.countries,
                     },
                     {
                         title: "Total Seasons",
@@ -191,7 +191,7 @@ const moviesData = (apiData) => {
                         title: "Top Language",
                         subtitle: `With ${apiData.lists.languages[0].value} movies`,
                         value: apiData.lists.languages[0].name || "-",
-                        data: (apiData.lists.languages[0]?.name != null) ? apiData.lists.languages : null,
+                        data: (apiData.lists.languages[0]?.name == null) ? null : apiData.lists.languages,
                     },
                     {
                         title: "Total Budgets",
@@ -331,7 +331,7 @@ const booksData = (apiData) => {
                         title: "Top Language",
                         subtitle: `With ${apiData.lists.languages[0].value} books`,
                         value: apiData.lists.languages[0].name || "-",
-                        data: (apiData.lists.languages[0]?.name != null) ? apiData.lists.languages : null,
+                        data: (apiData.lists.languages[0]?.name == null) ? null : apiData.lists.languages,
                     },
                     {
                         title: "Total Pages",
@@ -466,19 +466,19 @@ const gamesData = (apiData) => {
                         title: "Top Engine",
                         subtitle: `With ${apiData.lists.engines[0].value} games`,
                         value: apiData.lists.engines[0].name || "-",
-                        data: (apiData.lists.engines[0]?.name != null) ? apiData.lists.engines : null,
+                        data: (apiData.lists.engines[0]?.name == null) ? null : apiData.lists.engines,
                     },
                     {
                         title: "Top Perspective",
                         subtitle: `With ${apiData.lists.perspectives[0].value} games`,
                         value: apiData.lists.perspectives[0].name || "-",
-                        data: (apiData.lists.perspectives[0]?.name != null) ? apiData.lists.perspectives : null,
+                        data: (apiData.lists.perspectives[0]?.name == null) ? null : apiData.lists.perspectives,
                     },
                     {
                         title: "Top Mode",
                         subtitle: `With ${apiData.lists.modes[0].value} games`,
                         value: apiData.lists.modes[0].name || "-",
-                        data: (apiData.lists.modes[0]?.name != null) ? apiData.lists.modes : null,
+                        data: (apiData.lists.modes[0]?.name == null) ? null : apiData.lists.modes,
                     },
                     {
                         title: "Total Favorites",
@@ -586,16 +586,16 @@ const gamesData = (apiData) => {
 
 const getCardsData = (data, suffix = "Watched") => {
     return [
-        {title: `Top ${suffix}`, subtitle: `With ${data.top_values[0].value} media`, value: data.top_values[0].name},
-        {title: "Top Rated", subtitle: `With a Rating of ${data.top_rated[0].value}`, value: data.top_rated[0].name},
-        {title: "Top Favorited", subtitle: `With ${data.top_favorited[0].value} favorites`, value: data.top_favorited[0].name},
+        { title: `Top ${suffix}`, subtitle: `With ${data.top_values[0].value} media`, value: data.top_values[0].name },
+        { title: "Top Rated", subtitle: `With a Rating of ${data.top_rated[0].value}`, value: data.top_rated[0].name },
+        { title: "Top Favorited", subtitle: `With ${data.top_favorited[0].value} favorites`, value: data.top_favorited[0].name },
     ];
 };
 
 const getListsData = (data, suffix = "Watched") => {
     return [
-        {title: `Top ${suffix}`, data: data.top_values},
-        {title: "Top Ratings", data: data.top_rated},
-        {title: "Top Favorited", data: data.top_favorited},
+        { title: `Top ${suffix}`, data: data.top_values },
+        { title: "Top Ratings", data: data.top_rated },
+        { title: "Top Favorited", data: data.top_favorited },
     ];
 };

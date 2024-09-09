@@ -1,178 +1,121 @@
-import {toast} from "sonner";
-import {api} from "@/api/MyApiClient";
 import {useRef, useState} from "react";
-import {LuSearch} from "react-icons/lu";
-import {Link} from "@tanstack/react-router";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
+import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
-import {useMutation} from "@/hooks/LoadingHook";
+import {useQuery} from "@tanstack/react-query";
+import * as Com from "@/components/ui/command";
 import {useDebounce} from "@/hooks/DebounceHook";
-import {useUser} from "@/providers/UserProvider";
+import {LuLoader2, LuSearch} from "react-icons/lu";
 import {useSheet} from "@/providers/SheetProvider";
+import {queryOptionsMap} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
-import {Loading} from "@/components/app/base/Loading";
+import {capitalize, formatDateTime} from "@/utils/functions";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {capitalize, formatDateTime} from "@/utils/functions";
 
 
 export const SearchBar = () => {
-    const searchRef = useRef();
-    const { currentUser } = useUser();
-    const [results, setResults] = useState();
-    const [query, setQuery] = useState("");
-    const [activePage, setActivePage] = useState(1);
+    const {currentUser} = useAuth();
+    const commandRef = useRef(null);
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const [debouncedSearch] = useDebounce(search, 350);
     const [selectDrop, setSelectDrop] = useState("TMDB");
+    const { data, isLoading, error } = useQuery(queryOptionsMap.navSearch(debouncedSearch, page, selectDrop));
 
-    const changeSelect = (value) => setSelectDrop(value);
-
-    const handleSearchChange = (ev) => {
-        if (query.length >= 2) {
-            resetSearch();
-        }
-
-        setQuery(ev.target.value);
+    const handleInputChange = (ev) => {
+        setPage(1);
+        setIsOpen(true);
+        setSearch(ev.target.value);
     };
 
     const resetSearch = () => {
-        setQuery("");
-        setResults(undefined);
+        setPage(1);
+        setSearch("");
+        setIsOpen(false);
     };
 
-    const searchMedia = async (page = 1) => {
-        if (!query || query.trim() === "" || query.length < 2) {
-            return;
-        }
-
-        const response = await api.get("/autocomplete", {
-            q: query,
-            page: page,
-            selector: selectDrop,
-        });
-
-        if (!response.ok) {
-            resetSearch();
-            return toast.error(response.body.description);
-        }
-
-        setResults(response.body.data);
-        setActivePage(page);
-    };
-
-    useOnClickOutside(searchRef, () => resetSearch());
-    useDebounce(query, 300, searchMedia);
+    useOnClickOutside(commandRef, resetSearch);
 
     return (
-        <div ref={searchRef} className="flex flex-col relative bg-transparent w-80 rounded-md border border-neutral-500 mx-2">
-            <div className="flex items-center min-h-2 pl-2.5">
-                <LuSearch size={26}/>
+        <div ref={commandRef}>
+            <div className="relative">
+                <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
-                    value={query}
-                    onChange={handleSearchChange}
-                    placeholder="Search media/users"
-                    className="border-none focus-visible:ring-0"
+                    value={search}
+                    onChange={handleInputChange}
+                    className="w-[310px] pl-8 pr-[110px]"
+                    placeholder="Search for media/users..."
                 />
-                <Select defaultValue={selectDrop} onValueChange={changeSelect}>
-                    <SelectTrigger className="w-[160px]">
-                        <SelectValue/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {<SelectItem value="TMDB">Media</SelectItem>}
-                            {currentUser.settings.books.active && <SelectItem value="BOOKS">Books</SelectItem>}
-                            {currentUser.settings.games.active && <SelectItem value="IGDB">Games</SelectItem>}
-                            <SelectItem value="users">Users</SelectItem>
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            </div>
-            <ShowSearch
-                query={query}
-                results={results}
-                activePage={activePage}
-                resetSearch={resetSearch}
-                searchMedia={searchMedia}
-            />
-        </div>
-    );
-};
-
-
-const ShowSearch = ({ query, activePage, results, resetSearch, searchMedia }) => {
-    const [isLoading, handleLoading] = useMutation(0);
-
-    if (query.length > 1 && results === undefined) {
-        return (
-            <div className="z-20 absolute h-[52px] w-80 top-11 bg-background border rounded-md font-medium">
-                <div className="ml-2 mt-2">
-                    <Loading/>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[100px]">
+                    <Select defaultValue={selectDrop} onValueChange={setSelectDrop} >
+                        <SelectTrigger>
+                            <SelectValue/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {<SelectItem value="TMDB">Media</SelectItem>}
+                                {currentUser.settings.books.active && <SelectItem value="BOOKS">Books</SelectItem>}
+                                {currentUser.settings.games.active && <SelectItem value="IGDB">Games</SelectItem>}
+                                <SelectItem value="users">Users</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
-        );
-    }
-
-    if (results === undefined) {
-        return;
-    }
-
-    if (results.items.length === 0) {
-        return (
-            <div className="z-20 absolute h-[40px] w-80 top-11 bg-background border rounded-md font-medium">
-                <div className="ml-2 mt-2">
-                    Sorry, no matches found
+            {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
+                <div className="z-50 absolute w-[310px] rounded-lg border shadow-md mt-1">
+                    <Com.Command>
+                        <Com.CommandList className="max-h-[350px] overflow-y-auto">
+                            {isLoading &&
+                                <div className="flex items-center justify-center p-4">
+                                    <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                </div>
+                            }
+                            {error &&
+                                <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
+                            }
+                            {data && data.items.length === 0 &&
+                                <Com.CommandEmpty>No results found.</Com.CommandEmpty>
+                            }
+                            {data && data.items.length > 0 &&
+                                data.items.map(media =>
+                                    <SearchComponent
+                                        media={media}
+                                        resetSearch={resetSearch}
+                                    />
+                                )}
+                        </Com.CommandList>
+                        {data && data.pages > 1 &&
+                            <div className="flex justify-between items-center p-4">
+                                <Button size="sm" variant="outline" disabled={page === 1}
+                                        onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                                    Previous
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                    Page {page} of {data.pages}
+                                </span>
+                                <Button size="sm" variant="outline" disabled={page === data.pages}
+                                        onClick={() => setPage((p) => Math.min(data.pages, p + 1))}>
+                                    Next
+                                </Button>
+                            </div>
+                        }
+                    </Com.Command>
                 </div>
-            </div>
-        );
-    }
-
-    const handleClickNext = async () => {
-        await handleLoading(searchMedia, activePage + 1);
-    };
-
-    const handleClickPrev = async () => {
-        await handleLoading(searchMedia, activePage - 1);
-    };
-
-    return (
-        <div className="z-20 absolute max-h-[600px] w-80 top-11 bg-background border rounded-md font-medium overflow-y-auto">
-            <div className="flex justify-between items-center mt-3 px-3">
-                <div>
-                    <Button variant="secondary" size="sm" className="mr-2" onClick={handleClickPrev} disabled={activePage === 1}>
-                        Previous
-                    </Button>
-                    <Button variant="secondary" size="sm" onClick={handleClickNext} disabled={results.pages === 1}>
-                        Next
-                    </Button>
-                </div>
-                <div>Page: {activePage} / {results.pages}</div>
-            </div>
-            <Separator className="mt-3"/>
-            {isLoading ?
-                <div className="ml-2 mt-2 mb-3">
-                    <Loading/>
-                </div>
-                :
-                results.items.map(media =>
-                    <MediaSearch
-                        date={media.date}
-                        name={media.name}
-                        key={media.api_id}
-                        apiId={media.api_id}
-                        resetSearch={resetSearch}
-                        mediaType={media.media_type}
-                        thumbnail={media.image_cover}
-                    />
-                )
             }
         </div>
     );
 };
 
 
-const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) => {
-    const { setSheetOpen } = useSheet();
-    const imageHeight = mediaType === "User" ? 64 : 96;
-    const url = mediaType === "User" ? `/profile/${name}` : `/details/${mediaType}/${apiId}?external=True`;
+const SearchComponent = ({ media, resetSearch }) => {
+    const {setSheetOpen} = useSheet();
+    const imageHeight = media.media_type === "User" ? 64 : 96;
+    const url = media.media_type === "User" ?
+        `/profile/${media.name}` : `/details/${media.media_type}/${media.api_id}?external=True`;
 
     const handleLinkClick = () => {
         resetSearch();
@@ -181,19 +124,22 @@ const MediaSearch = ({ apiId, name, mediaType, thumbnail, date, resetSearch }) =
 
     return (
         <Link to={url} onClick={handleLinkClick}>
-            <div className="flex border-b gap-x-4 p-3 items-center w-full min-h-6 hover:bg-neutral-900">
-                <img
-                    alt={name}
-                    src={thumbnail}
-                    height={imageHeight}
-                    className={"w-16 rounded-sm"}
-                />
-                <div>
-                    <div className="font-semibold mb-2">{name}</div>
-                    <div className="text-neutral-300">{capitalize(mediaType)}</div>
-                    <div className="text-muted-foreground text-sm">{formatDateTime(date)}</div>
+            <Com.CommandItem key={media.api_id} className="cursor-pointer py-2">
+                <div className="flex gap-4 items-center">
+                    <img
+                        alt={media.name}
+                        height={imageHeight}
+                        src={media.image_cover}
+                        className="w-16 rounded-sm"
+                    />
+                    <div>
+                        <div className="font-semibold mb-2 line-clamp-2">{media.name}</div>
+                        <div className="text-neutral-300">{capitalize(media.media_type)}</div>
+                        <div className="text-muted-foreground text-sm">{formatDateTime(media.date)}</div>
+                    </div>
                 </div>
-            </div>
+            </Com.CommandItem>
+            <Separator className="m-0"/>
         </Link>
     );
 };

@@ -1,18 +1,18 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {api} from "@/api/MyApiClient";
 import {useForm} from "react-hook-form";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {useUser} from "@/providers/UserProvider";
+import {genericMutations} from "@/api/mutations.js";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const PasswordForm = () => {
-    const { setCurrentUser } = useUser();
+    const { setCurrentUser } = useAuth();
+    const {passwordSettings} = genericMutations;
     const [errors, setErrors] = useState("");
-    const [pending, setPending] = useState(false);
     const form = useForm({
         defaultValues: {
             current_password: "",
@@ -23,25 +23,15 @@ export const PasswordForm = () => {
 
     const onSubmit = async (data) => {
         setErrors("");
+        delete data.confirm_new_password;
 
-        try {
-            setPending(true);
-
-            delete data.confirm_new_password;
-
-            const response = await api.post("/settings/password", data);
-
-            if (!response.ok) {
-                return setErrors(response.body.description);
+        passwordSettings.mutate(data, {
+            onError: (error) => setErrors(error.description),
+            onSuccess: (data) => {
+                setCurrentUser(data.updated_user);
+                toast.success("Settings successfully updated");
             }
-
-            setCurrentUser(response.body.updated_user);
-            toast.success("Password successfully updated");
-        }
-        finally {
-            form.reset();
-            setPending(false);
-        }
+        });
     };
 
     return (
@@ -110,7 +100,7 @@ export const PasswordForm = () => {
                         )}
                     />
                 </div>
-                <FormButton className="mt-5" disabled={pending}>
+                <FormButton className="mt-5" disabled={passwordSettings.isPending}>
                     Update
                 </FormButton>
             </form>

@@ -1,6 +1,24 @@
 from marshmallow import validates, ValidationError, validate
 from backend.api import ma
 from backend.api.core import current_user
+from backend.api.models import User
+
+
+class RegisterUserSchema(ma.Schema):
+    username = ma.String(required=True, validate=validate.Length(min=3, max=14))
+    email = ma.String(required=True, validate=validate.Email())
+    password = ma.String(required=True, validate=validate.Length(min=8))
+    callback = ma.String(required=True)
+
+    @validates("username")
+    def validate_username(self, value):
+        if User.query.filter_by(username=value).first():
+            raise ValidationError("Invalid Username")
+
+    @validates("email")
+    def validate_email(self, value):
+        if User.query.filter_by(email=value).first():
+            raise ValidationError("Invalid Email")
 
 
 class HistorySchema(ma.Schema):
@@ -21,3 +39,11 @@ class PasswordSchema(ma.Schema):
     def validate_current_password(self, value):
         if not current_user.verify_password(value):
             raise ValidationError("Password is incorrect")
+
+
+class ListSettingsSchema(ma.Schema):
+    add_feeling = ma.Bool(load_default=None)
+    add_anime = ma.Bool(load_default=None)
+    add_games = ma.Bool(load_default=None)
+    add_books = ma.Bool(load_default=None)
+    grid_list_view = ma.Bool(load_default=None)

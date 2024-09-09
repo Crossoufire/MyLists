@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 import {Slot} from "@radix-ui/react-slot";
 import {cva} from "class-variance-authority";
 

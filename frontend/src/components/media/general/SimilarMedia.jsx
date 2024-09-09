@@ -2,7 +2,7 @@ import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {MutedText} from "@/components/app/base/MutedText";
 import {MediaTitle} from "@/components/media/general/MediaTitle";
-import {capitalize} from "@/utils/functions";
+import {capitalize} from "@/utils/functions.jsx";
 
 
 export const SimilarMedia = ({ mediaType, similarMedia }) => {

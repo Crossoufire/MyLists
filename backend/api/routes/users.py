@@ -4,36 +4,20 @@ from flask_bcrypt import generate_password_hash
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
-from backend.api.schemas.users import HistorySchema, UpdateFollowSchema, PasswordSchema
+from backend.api.schemas.users import HistorySchema, UpdateFollowSchema, PasswordSchema, RegisterUserSchema, \
+    ListSettingsSchema
 from backend.api.utils.decorators import arguments, body
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
 from backend.api.utils.functions import save_picture, format_to_download_as_csv
-from backend.api.managers.ModelsManager import ModelsManager
 
 users = Blueprint("api_users", __name__)
 
 
 @users.route("/register_user", methods=["POST"])
-def register_user():
-    try:
-        data = request.get_json()
-        required_fields = ("username", "email", "password", "callback")
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return abort(400, "Missing fields")
-    except:
-        return abort(400, "Invalid JSON")
-
-    if User.query.filter_by(username=data["username"]).first():
-        return abort(401, {"username": "Invalid Username"})
-
-    if User.query.filter_by(email=data["email"]).first():
-        return abort(401, {"email": "Invalid email"})
-
-    if not 3 <= len(data["username"]) <= 14:
-        return abort(401, {"username": "The username must be between 3 and 14 characters long."})
-
+@body(RegisterUserSchema)
+def register_user(data):
     new_user = User.register_new_user(
         username=data["username"],
         email=data["email"],
@@ -239,10 +223,9 @@ def settings_general():
 
 @users.route("/settings/medialist", methods=["POST"])
 @token_auth.login_required
-def settings_medialist():
+@body(ListSettingsSchema)
+def settings_medialist(data):
     """ Edit the medialist current user information """
-
-    data = request.get_json()
 
     current_user.add_feeling = data.get("add_feeling", current_user.add_feeling)
     current_user.grid_list_view = data.get("grid_list_view", current_user.grid_list_view)
@@ -253,7 +236,7 @@ def settings_medialist():
 
     db.session.commit()
 
-    return jsonify(updated_user=current_user.to_dict()), 200
+    return jsonify(data=current_user.to_dict()), 200
 
 
 @users.route("/settings/download/<mediatype:media_type>", methods=["GET"])

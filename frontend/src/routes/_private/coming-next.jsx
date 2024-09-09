@@ -1,12 +1,12 @@
 import {useHashTab} from "@/hooks/HashTabHook";
-import {queryOptionsMap} from "@/utils/mutations";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {capitalize, formatDateTime, zeroPad} from "@/utils/functions";
+import {capitalize, formatDateTime, zeroPad} from "@/utils/functions.jsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures

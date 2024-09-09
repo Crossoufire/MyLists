@@ -4,7 +4,7 @@ import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card";
-import {capitalize, zeroPad} from "@/utils/functions";
+import {capitalize, zeroPad} from "@/utils/functions.jsx";
 
 
 export const MediaLevels = ({ username, mediaLevels }) => {

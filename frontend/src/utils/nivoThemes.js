@@ -1,9 +1,3 @@
-
-
-export const NOTIFICATION_INTERVAL = 20 * 60 * 1000;
-
-export const mail = "contact.us.at.mylists@gmail.com";
-
 export const barTheme = {
     text: {
         fontSize: 14,
@@ -13,7 +7,9 @@ export const barTheme = {
         container: {
             background: "black",
         },
-        color: "white",
+        basic: {
+            color: "white",
+        },
     },
     axis: {
         domain: {
@@ -31,7 +27,7 @@ export const barTheme = {
     labels: {
         text: {
             fill: "black",
-        } ,
+        },
     },
 };
 

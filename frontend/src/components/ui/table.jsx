@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions";
+import {cn} from "@/utils/functions.jsx";
 
 
 const Table = React.forwardRef(({ className, ...props }, ref) => (

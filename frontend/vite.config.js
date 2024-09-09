@@ -30,16 +30,16 @@ export default defineConfig({
             }
         }
     },
-    // build: {
-    //     rollupOptions: {
-    //         output: {
-    //             manualChunks: {
-    //                 react: ["react", "react-dom"],
-    //                 nivoCore: ["@nivo/core"],
-    //                 nivoBar: ["@nivo/bar"],
-    //                 nivoPie: ["@nivo/pie"],
-    //             },
-    //         },
-    //     },
-    // },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    react: ["react", "react-dom"],
+                    nivoCore: ["@nivo/core"],
+                    nivoBar: ["@nivo/bar"],
+                    nivoPie: ["@nivo/pie"],
+                },
+            },
+        },
+    },
 });

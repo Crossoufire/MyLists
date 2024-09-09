@@ -2,7 +2,7 @@ import {LuTrash2} from "react-icons/lu";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
-import {cn, formatDateTime} from "@/utils/functions";
+import {cn, formatDateTime} from "@/utils/functions.jsx";
 import {Payload} from "@/components/app/base/Payload";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 
