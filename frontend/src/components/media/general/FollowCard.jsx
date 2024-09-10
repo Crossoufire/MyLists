@@ -89,7 +89,7 @@ const MoreFollowDetails = ({ mediaType, follow }) => {
     else if (mediaType === "books" && follow.status !== "Plan to Read") {
         return (
             <div className="flex gap-x-3 items-center">
-                <LuPlay size={16} className="mt-1"/> Page {follow.actual_page}/{follow.total_pages}
+                <LuPlay size={16} className="mt-1"/> Pages {follow.actual_page}/{follow.total_pages}
             </div>
         );
     }

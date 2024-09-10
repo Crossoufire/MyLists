@@ -1,5 +1,6 @@
 import click
 from sqlalchemy import text
+
 from backend.api import db
 from backend.cli.tasks import *
 

@@ -1,21 +1,21 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
-import {genericMutations} from "@/api/mutations.js";
+import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {Separator} from "@/components/ui/separator";
 import {Link, useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const LoginForm = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const { oAuth2Provider } = genericMutations();
+    const { oAuth2Provider } = simpleMutations();
     const [errorMessage, setErrorMessage] = useState("");
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
@@ -39,9 +39,7 @@ export const LoginForm = () => {
 
         oAuth2Provider.mutate({ provider: provider }, {
             onError: (error) => setErrorMessage(error.description),
-            onSuccess: async (data) => {
-                return window.location.replace(data.redirect_url);
-            },
+            onSuccess: async (data) => window.location.replace(data.redirect_url),
         });
     };
 

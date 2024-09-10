@@ -5,7 +5,7 @@ import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {FaQuestionCircle} from "react-icons/fa";
-import {genericMutations} from "@/api/mutations.js";
+import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {Separator} from "@/components/ui/separator";
 import {LuDownload, LuLoader2} from "react-icons/lu";
 import {FormError} from "@/components/app/base/FormError";
@@ -19,7 +19,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 export const MediaListForm = () => {
     const form = useForm();
     const { currentUser, setCurrentUser } = useAuth();
-    const { listSettings, downloadListAsCSV } = genericMutations();
+    const { listSettings, downloadListAsCSV } = simpleMutations();
     const [errorMessage, setErrorMessage] = useState("");
     const [selectedList, setSelectedList] = useState("");
 

@@ -1,9 +1,10 @@
-import {userMediaMutations} from "@/api/mutations";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {RatingComponent} from "@/components/app/RatingComponent";
+import React from "react";
 
 
 export const TvUserDetails = ({ userData, mediaType, mediaId }) => {
@@ -52,10 +53,13 @@ export const TvUserDetails = ({ userData, mediaType, mediaId }) => {
                 <Separator/>
             }
             {userData.status !== "Plan to Watch" &&
-                <RatingDrop
-                    rating={userData.rating}
-                    updateRating={updateRating}
-                />
+                <div className="flex justify-between items-center">
+                    <div>Rating</div>
+                    <RatingComponent
+                        onUpdate={updateRating}
+                        rating={userData.rating}
+                    />
+                </div>
             }
             {userData.status === "Completed" &&
                 <RedoDrop

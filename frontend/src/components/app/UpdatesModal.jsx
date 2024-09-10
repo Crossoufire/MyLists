@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import * as Dia from "@/components/ui/dialog";
-import {useModalMutation} from "@/api/mutations.js";
+import {useModalMutation} from "@/api/mutations/simpleMutations.js";
 import {Separator} from "@/components/ui/separator";
 import {useAuth} from "@/hooks/AuthHook.jsx";
 

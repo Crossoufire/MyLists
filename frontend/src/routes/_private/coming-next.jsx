@@ -1,23 +1,23 @@
 import {useHashTab} from "@/hooks/HashTabHook";
+import {upcomingOptions} from "@/api/queryOptions";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {capitalize, formatDateTime, zeroPad} from "@/utils/functions.jsx";
+import {capitalize, formatDateTime, zeroPad} from "@/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/coming-next")({
     component: ComingNextPage,
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.upcoming()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(upcomingOptions()),
 });
 
 
 function ComingNextPage() {
-    const apiData = useSuspenseQuery(queryOptionsMap.upcoming()).data;
+    const apiData = useSuspenseQuery(upcomingOptions()).data;
     const [selectedTab, handleTabChange] = useHashTab("series", "upcoming_tab");
 
     return (

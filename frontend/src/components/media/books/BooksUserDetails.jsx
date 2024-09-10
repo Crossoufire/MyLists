@@ -1,9 +1,10 @@
 import {Separator} from "@/components/ui/separator";
-import {userMediaMutations} from "@/api/mutations.js";
+import {InputComponent} from "@/components/app/InputComponent";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {PageInput} from "@/components/media/books/PageInput";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {RatingComponent} from "@/components/app/RatingComponent";
+import React from "react";
 
 
 export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) => {
@@ -30,16 +31,24 @@ export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) =
             />
             {userData.status !== "Plan to Read" &&
                 <>
-                    <PageInput
-                        totalPages={totalPages}
-                        updatePage={updatePage}
-                        initPage={userData.actual_page}
-                    />
+                    <div className="flex justify-between items-center">
+                        <div>Pages</div>
+                        <InputComponent
+                            total={totalPages}
+                            onUpdate={updatePage}
+                            inputClassName={"w-[60px]"}
+                            initValue={userData.actual_page}
+                            containerClassName={"w-[135px]"}
+                        />
+                    </div>
                     <Separator/>
-                    <RatingDrop
-                        rating={userData.rating}
-                        updateRating={updateRating}
-                    />
+                    <div className="flex justify-between items-center">
+                        <div>Rating</div>
+                        <RatingComponent
+                            onUpdate={updateRating}
+                            rating={userData.rating}
+                        />
+                    </div>
                 </>
             }
             {userData.status === "Completed" &&
@@ -50,5 +59,5 @@ export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) =
                 />
             }
         </>
-    )
+    );
 };

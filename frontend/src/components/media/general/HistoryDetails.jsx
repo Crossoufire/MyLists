@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {UserUpdate} from "@/components/app/UserUpdate";
 import {MutedText} from "@/components/app/base/MutedText";
-import {useDeleteUpdateMutation} from "@/api/mutations.js";
+import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations.js";
 
 
 export const HistoryDetails = ({ history, mediaType, mediaId }) => {

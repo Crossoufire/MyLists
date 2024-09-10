@@ -1,21 +1,20 @@
 import {useState} from "react";
 import {LuSearch} from "react-icons/lu";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {useDebounceCallback} from "@/hooks/DebounceHook";
-import {capitalize, cn} from "@/utils/functions.jsx";
+import {capitalize, cn} from "@/utils/functions";
+import {hallOfFameOptions} from "@/api/queryOptions";
 import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {useDebounceCallback} from "@/hooks/DebounceHook";
 import {MutedText} from "@/components/app/base/MutedText";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
-
-import {useAuth} from "@/hooks/AuthHook.jsx";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/_private/hall-of-fame")({
     component: HallOfFamePage,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, deps: { search } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.hallOfFame(search));
+        return queryClient.ensureQueryData(hallOfFameOptions(search));
     },
 });
 
@@ -34,7 +33,7 @@ const DEFAULT = { page: 1, search: "", sorting: "profile" };
 function HallOfFamePage() {
     const navigate = useNavigate();
     const filters = Route.useSearch();
-    const apiData = useSuspenseQuery(queryOptionsMap.hallOfFame(filters)).data;
+    const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = filters;
 

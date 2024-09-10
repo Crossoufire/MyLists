@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
-import {genericMutations} from "@/api/mutations";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {useNavigate} from "@tanstack/react-router";
 import {FormError} from "@/components/app/base/FormError";
 
@@ -10,7 +10,7 @@ import {FormError} from "@/components/app/base/FormError";
 export const DangerForm = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const { deleteAccount } = genericMutations();
+    const { deleteAccount } = simpleMutations();
     const [errors, setErrors] = useState("");
 
     const onSubmit = async () => {

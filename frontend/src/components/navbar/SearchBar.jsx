@@ -8,7 +8,7 @@ import * as Com from "@/components/ui/command";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {LuLoader2, LuSearch} from "react-icons/lu";
 import {useSheet} from "@/providers/SheetProvider";
-import {queryOptionsMap} from "@/api/queryOptions";
+import {navSearchOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {capitalize, formatDateTime} from "@/utils/functions";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
@@ -16,14 +16,14 @@ import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVal
 
 
 export const SearchBar = () => {
-    const {currentUser} = useAuth();
+    const { currentUser } = useAuth();
     const commandRef = useRef(null);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
     const [selectDrop, setSelectDrop] = useState("TMDB");
-    const { data, isLoading, error } = useQuery(queryOptionsMap.navSearch(debouncedSearch, page, selectDrop));
+    const { data, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     const handleInputChange = (ev) => {
         setPage(1);
@@ -50,7 +50,7 @@ export const SearchBar = () => {
                     placeholder="Search for media/users..."
                 />
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[100px]">
-                    <Select defaultValue={selectDrop} onValueChange={setSelectDrop} >
+                    <Select defaultValue={selectDrop} onValueChange={setSelectDrop}>
                         <SelectTrigger>
                             <SelectValue/>
                         </SelectTrigger>
@@ -112,7 +112,7 @@ export const SearchBar = () => {
 
 
 const SearchComponent = ({ media, resetSearch }) => {
-    const {setSheetOpen} = useSheet();
+    const { setSheetOpen } = useSheet();
     const imageHeight = media.media_type === "User" ? 64 : 96;
     const url = media.media_type === "User" ?
         `/profile/${media.name}` : `/details/${media.media_type}/${media.api_id}?external=True`;

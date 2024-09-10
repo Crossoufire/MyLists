@@ -1,21 +1,21 @@
+import {followersOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/followers")({
     component: ProfileFollowers,
     loader: ({ context: { queryClient }, params: { username } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.followers(username))
+        return queryClient.ensureQueryData(followersOptions(username));
     },
 });
 
 
 function ProfileFollowers() {
-    const {username} = Route.useParams();
-    const apiData = useSuspenseQuery(queryOptionsMap.followers(username)).data;
+    const { username } = Route.useParams();
+    const apiData = useSuspenseQuery(followersOptions(username)).data;
 
     return (
         <PageTitle title="Followers">

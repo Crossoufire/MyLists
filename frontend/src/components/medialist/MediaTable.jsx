@@ -1,5 +1,4 @@
 import {useMemo} from "react";
-import {userMediaMutations} from "@/api/mutations.js";
 import * as Drop from "@/components/ui/dropdown-menu";
 import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
@@ -8,10 +7,11 @@ import {Link, useParams, useSearch} from "@tanstack/react-router";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
-import {RatingListDrop} from "@/components/medialist/RatingListDrop";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {RatingComponent} from "@/components/app/RatingComponent";
 
 
 export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
@@ -194,7 +194,7 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                                             </TableCell>
                                         )}
                                     </TableRow>
-                                )
+                                );
                             })
                             :
                             <TableRow>
@@ -225,7 +225,7 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
     };
 
     function onStatusSuccess(oldData, variables) {
-        const newData = {...oldData};
+        const newData = { ...oldData };
         const status = variables.payload;
         const searchStatuses = filters?.status;
 
@@ -274,7 +274,7 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
                     <Drop.DropdownMenuContent align="end">
                         {row.original.all_status.map(status =>
                             <Drop.DropdownMenuItem key={status} value={status} disabled={row.original.status === status}
-                            onClick={(ev) => handleStatus(ev.target.textContent)}>
+                                                   onClick={(ev) => handleStatus(ev.target.textContent)}>
                                 {status}
                             </Drop.DropdownMenuItem>
                         )}
@@ -291,9 +291,10 @@ const RatingCell = ({ row, isCurrent, username, mediaType, filters }) => {
     const { updateRating } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
     return (
-        <RatingListDrop
-            isCurrent={isCurrent}
-            updateRating={updateRating}
+        <RatingComponent
+            inline={true}
+            isEditable={isCurrent}
+            onUpdate={updateRating}
             rating={row.original.rating}
         />
     );

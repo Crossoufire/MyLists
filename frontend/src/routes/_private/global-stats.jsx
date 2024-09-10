@@ -1,43 +1,43 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
+import {barTheme} from "@/utils/nivoThemes";
 import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
+import {globalStatsOptions} from "@/api/queryOptions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions.jsx";
-import {queryOptionsMap} from "@/api/queryOptions.js";
-import {barTheme} from "@/utils/nivoThemes.js";
+import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/global-stats")({
     component: GlobalStatsPage,
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.globalStats()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(globalStatsOptions()),
 });
 
 
 function GlobalStatsPage() {
-    const apiData = useSuspenseQuery(queryOptionsMap.globalStats()).data;
+    const apiData = useSuspenseQuery(globalStatsOptions()).data;
 
     const graphData = [
-        {id: "Series", value: apiData.total_time.series, color: getMediaColor("series")},
-        {id: "Anime", value: apiData.total_time.anime, color: getMediaColor("anime")},
-        {id: "Movies", value: apiData.total_time.movies, color: getMediaColor("movies")},
-        {id: "Books", value: apiData.total_time.books, color: getMediaColor("books")},
-        {id: "Games", value: apiData.total_time.games, color: getMediaColor("games")},
+        { id: "Series", value: apiData.total_time.series, color: getMediaColor("series") },
+        { id: "Anime", value: apiData.total_time.anime, color: getMediaColor("anime") },
+        { id: "Movies", value: apiData.total_time.movies, color: getMediaColor("movies") },
+        { id: "Books", value: apiData.total_time.books, color: getMediaColor("books") },
+        { id: "Games", value: apiData.total_time.games, color: getMediaColor("games") },
     ];
 
     const mediaData = [
-        {name: "Series",mediaType: "series", count: apiData.nb_media.series},
-        {name: "Anime", mediaType: "anime", count: apiData.nb_media.anime},
-        {name: "Movies",mediaType: "movies", count: apiData.nb_media.movies},
-        {name: "Books", mediaType: "books", count: apiData.nb_media.books},
-        {name: "Games", mediaType: "games", count: apiData.nb_media.games},
-        {name: "Users", mediaType: "user", count: apiData.nb_users}
+        { name: "Series", mediaType: "series", count: apiData.nb_media.series },
+        { name: "Anime", mediaType: "anime", count: apiData.nb_media.anime },
+        { name: "Movies", mediaType: "movies", count: apiData.nb_media.movies },
+        { name: "Books", mediaType: "books", count: apiData.nb_media.books },
+        { name: "Games", mediaType: "games", count: apiData.nb_media.games },
+        { name: "Users", mediaType: "user", count: apiData.nb_users }
     ];
 
     return (

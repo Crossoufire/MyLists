@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {genericMutations} from "@/api/mutations.js";
+import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_public/register-token")({
 function RegisterTokenPage() {
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { registerToken } = genericMutations();
+    const { registerToken } = simpleMutations();
 
     const registerHandler = () => {
         registerToken.mutate({ token }, {

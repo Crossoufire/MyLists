@@ -1,4 +1,4 @@
-import {queryOptionsMap} from "@/api/queryOptions";
+import {bordersOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
@@ -7,12 +7,12 @@ import {createFileRoute, Link} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_universal/levels/profile-levels")({
     component: ProfileLevelsPage,
-    loader: ({context: {queryClient}}) => queryClient.ensureQueryData(queryOptionsMap.borders()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(bordersOptions()),
 });
 
 
 function ProfileLevelsPage() {
-    const apiData = useSuspenseQuery(queryOptionsMap.borders()).data;
+    const apiData = useSuspenseQuery(bordersOptions()).data;
 
     return (
         <PageTitle title="Profile borders" subtitle="Understanding the Profile Levels Borders System">
@@ -43,7 +43,7 @@ function ProfileLevelsPage() {
 }
 
 
-const BorderCalculus = ({border}) => {
+const BorderCalculus = ({ border }) => {
     if (8 * border.level < 320) {
         return (
             <div className="text-center text-lg">

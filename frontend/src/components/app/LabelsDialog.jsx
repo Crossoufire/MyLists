@@ -1,4 +1,4 @@
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {LuTrash, LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
@@ -8,28 +8,28 @@ import {useParams} from "@tanstack/react-router";
 import {useEffect, useRef, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
+import {mediaLabelsOptions} from "@/api/queryOptions";
 import {MutedText} from "@/components/app/base/MutedText";
 import {FormButton} from "@/components/app/base/FormButton";
-import {userLabelsMutations} from "@/api/mutations.js";
 import {CheckIcon, ExclamationTriangleIcon} from "@radix-ui/react-icons";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Dialog, DialogContent, DialogDescription, DialogTitle} from "@/components/ui/dialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {queryOptionsMap} from "@/api/queryOptions.js";
+import {userLabelsMutations} from "@/api/mutations/labelsMutations";
 
 
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {
     const inputRef = useRef();
-    const {mediaType} = useParams({ strict: false });
+    const { mediaType } = useParams({ strict: false });
     const [labelsToAdd, setLabelsToAdd] = useState([]);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedLabel, setSelectedLabel] = useState("");
-    const [messageTab1, setMessageTab1] = useState({type: "error", value: ""});
-    const [messageTab2, setMessageTab2] = useState({type: "error", value: ""});
-    const {addLabel, removeLabel, renameLabel, deleteLabel} = userLabelsMutations(mediaType, mediaId);
-    const {data, error, isLoading} = useQuery(queryOptionsMap.mediaLabels(mediaType, mediaId, isOpen));
+    const [messageTab1, setMessageTab1] = useState({ type: "error", value: "" });
+    const [messageTab2, setMessageTab2] = useState({ type: "error", value: "" });
+    const { data, error, isLoading } = useQuery(mediaLabelsOptions(mediaType, mediaId, isOpen));
+    const { addLabel, removeLabel, renameLabel, deleteLabel } = userLabelsMutations(mediaType, mediaId);
 
     useEffect(() => {
         if (isOpen) {
@@ -74,9 +74,9 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
     const handleOnRename = async () => {
         setMessageTab2({ ...messageTab2, value: "" });
 
-        if (newLabelName < 1 || selectedLabel === newLabelName|| isLabelDuplicate(newLabelName)) {
+        if (newLabelName < 1 || selectedLabel === newLabelName || isLabelDuplicate(newLabelName)) {
             resetRenaming();
-            return setMessageTab2( {
+            return setMessageTab2({
                 type: "error",
                 value: (newLabelName < 1 || selectedLabel === newLabelName) ?
                     "" : "This Label name already exists",
@@ -210,8 +210,10 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
 
 
 const LabelRow = (props) => {
-    const { label, isRenaming, selectedLabel, inputRef, setIsRenaming, validateRenaming, setNewLabelName, labelClick,
-        handleOnDelete } = props;
+    const {
+        label, isRenaming, selectedLabel, inputRef, setIsRenaming, validateRenaming, setNewLabelName, labelClick,
+        handleOnDelete
+    } = props;
 
     return (
         <TableRow key={label}>
@@ -315,7 +317,7 @@ const FormMessage = ({ type, value, updateMessage }) => {
 
     useEffect(() => {
         if (!isVisible) {
-            updateMessage({type: "error", value: ""});
+            updateMessage({ type: "error", value: "" });
         }
     }, [isVisible]);
 

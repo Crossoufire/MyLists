@@ -1,42 +1,42 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {capitalize, cn} from "@/utils/functions.jsx";
 import {ResponsiveBar} from "@nivo/bar";
-import {dataToLoad} from "@/components/mediaStats/statsData.jsx";
+import {barTheme} from "@/utils/nivoThemes";
+import {statsOptions} from "@/api/queryOptions";
 import {Tooltip} from "@/components/ui/tooltip";
+import {capitalize, cn} from "@/utils/functions";
 import {Sidebar} from "@/components/app/Sidebar";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Separator} from "@/components/ui/separator";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {UserComboBox} from "@/components/app/UserComboBox";
+import {dataToLoad} from "@/components/mediaStats/statsData";
 import {FaList, FaQuestionCircle, FaTimes} from "react-icons/fa";
-import {genericMutations} from "@/api/mutations.js";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
-import {queryOptionsMap} from "@/api/queryOptions.js";
-import {barTheme} from "@/utils/nivoThemes.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/stats/$mediaType/$username")({
     component: StatsPage,
     loader: ({ context: { queryClient }, params: { mediaType, username } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.stats(mediaType, username));
+        return queryClient.ensureQueryData(statsOptions(mediaType, username));
     },
 });
 
 
 function StatsPage() {
-    const { otherUserStats } = genericMutations();
+    const { otherUserStats } = simpleMutations();
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
     const [feelingInfo, setFeelingInfo] = useState(true);
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);
     const [selectedTab, handleTabChange] = useState("Main Statistics");
-    const apiData = useSuspenseQuery(queryOptionsMap.stats(mediaType, username)).data;
+    const apiData = useSuspenseQuery(statsOptions(mediaType, username)).data;
     const statsData = dataToLoad(mediaType, apiData.stats);
 
     const addComparison = async (username) => {

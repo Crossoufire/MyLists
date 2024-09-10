@@ -1,32 +1,32 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Textarea} from "@/components/ui/textarea";
+import {editMediaOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormButton} from "@/components/app/base/FormButton";
 import MultipleSelector from "@/components/ui/multiple-selector";
-import {genericMutations} from "@/api/mutations.js";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions.jsx";
+import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId")({
     component: MediaEditPage,
     loader: ({ context: { queryClient }, params: { mediaType, mediaId } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.editMedia(mediaType, mediaId))
+        return queryClient.ensureQueryData(editMediaOptions(mediaType, mediaId));
     },
 });
 
 
 function MediaEditPage() {
     const navigate = useNavigate();
-    const {mediaType, mediaId} = Route.useParams();
-    const {editMediaMutation} = genericMutations();
-    const apiData = useSuspenseQuery(queryOptionsMap.editMedia(mediaType, mediaId)).data;
+    const { mediaType, mediaId } = Route.useParams();
+    const { editMediaMutation } = simpleMutations();
+    const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
     const form = useForm({ defaultValues: { genres: genreListsToListsOfDict(apiData.genres) } });
     const parts = sliceIntoParts(apiData.fields, 3);
 
@@ -60,7 +60,7 @@ function MediaEditPage() {
                     </FormItem>
                 )}
             />
-        )
+        );
     };
 
     return (
@@ -72,7 +72,7 @@ function MediaEditPage() {
                             <FormField
                                 name="image_cover"
                                 control={form.control}
-                                render={({field}) => (
+                                render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Image Cover URL</FormLabel>
                                         <FormControl>

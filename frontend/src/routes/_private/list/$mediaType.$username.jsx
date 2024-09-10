@@ -1,5 +1,7 @@
 import {useState} from "react";
-import {capitalize} from "@/utils/functions.jsx";
+import {useAuth} from "@/hooks/AuthHook";
+import {capitalize} from "@/utils/functions";
+import {listOptions} from "@/api/queryOptions";
 import {Header} from "@/components/medialist/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
@@ -9,8 +11,6 @@ import {MediaTable} from "@/components/medialist/MediaTable";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/components/medialist/AppliedFilters";
 import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
-import {useAuth} from "@/hooks/AuthHook.jsx";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -18,19 +18,19 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
     component: MediaList,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.list(mediaType, username, search))
+        return queryClient.ensureQueryData(listOptions(mediaType, username, search));
     },
 });
 
 
 function MediaList() {
     const navigate = useNavigate();
-    const {currentUser} = useAuth();
+    const { currentUser } = useAuth();
     const search = Route.useSearch();
-    const {username, mediaType} = Route.useParams();
+    const { username, mediaType } = Route.useParams();
     const [isGrid, setIsGrid] = useState(currentUser.grid_list_view);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const apiData = useSuspenseQuery(queryOptionsMap.list(mediaType, username, search)).data;
+    const apiData = useSuspenseQuery(listOptions(mediaType, username, search)).data;
     const isCurrent = (currentUser.id === apiData.user_data.id);
 
     const handleFilterChange = async (newFilters) => {

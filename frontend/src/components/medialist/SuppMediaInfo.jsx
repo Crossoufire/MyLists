@@ -1,6 +1,6 @@
-import {userMediaMutations} from "@/api/mutations.js";
+import {InputComponent} from "@/components/app/InputComponent";
 import {useParams, useSearch} from "@tanstack/react-router";
-import {PagesInput} from "@/components/medialist/PagesInput";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";
 import {PlaytimeListDrop} from "@/components/medialist/PlaytimeListDrop";
 
@@ -36,11 +36,13 @@ export const SuppMediaInfo = ({ isCurrent, media }) => {
     }
     if (mediaType === "books" && media.status !== "Plan to Read") {
         return (
-            <PagesInput
-                isCurrent={isCurrent}
-                updatePage={updatePage}
-                initPage={media.actual_page}
-                totalPages={media.total_pages}
+            <InputComponent
+                onUpdate={updatePage}
+                isEditable={isCurrent}
+                total={media.total_pages}
+                initValue={media.actual_page}
+                inputClassName={"w-[40px] p-0"}
+                containerClassName={"flex justify-center items-center h-[26px]"}
             />
         );
     }

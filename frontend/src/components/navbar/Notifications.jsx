@@ -7,21 +7,21 @@ import {useQuery} from "@tanstack/react-query";
 import {formatDateTime} from "@/utils/functions";
 import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
-import {queryOptionsMap} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {notifPollingInterval} from "@/utils/constants";
 import {MutedText} from "@/components/app/base/MutedText";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {FaBell, FaLongArrowAltRight} from "react-icons/fa";
+import {notificationsCountOptions, notificationsOptions} from "@/api/queryOptions";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const Notifications = ({ isMobile }) => {
     const popRef = useRef();
-    const {setSheetOpen} = useSheet();
+    const { setSheetOpen } = useSheet();
     const [isOpen, setIsOpen] = useState(false);
-    const { data: notifCount = 0 } = useQuery(queryOptionsMap.notificationsCount());
-    const { data: notifs = [], isLoading, refetch } = useQuery(queryOptionsMap.notifications());
+    const { data: notifCount = 0 } = useQuery(notificationsCountOptions());
+    const { data: notifs = [], isLoading, refetch } = useQuery(notificationsOptions());
 
     const handleOnClickOpen = async () => {
         await refetch();
@@ -36,7 +36,7 @@ export const Notifications = ({ isMobile }) => {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            await queryClient.invalidateQueries({ queryKey: ["notificationCount"] })
+            await queryClient.invalidateQueries({ queryKey: ["notificationCount"] });
         }, notifPollingInterval);
         return () => clearInterval(intervalId);
     }, [queryClient]);

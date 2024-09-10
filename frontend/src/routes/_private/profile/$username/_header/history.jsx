@@ -1,19 +1,19 @@
 import {useMemo, useState} from "react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {useDebounceCallback} from "@/hooks/DebounceHook";
-import {formatDateTime} from "@/utils/functions.jsx";
+import {formatDateTime} from "@/utils/functions";
 import {Checkbox} from "@/components/ui/checkbox";
+import {historyOptions} from "@/api/queryOptions";
 import {Payload} from "@/components/app/base/Payload";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
+import {useDebounceCallback} from "@/hooks/DebounceHook";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {TablePagination} from "@/components/app/TablePagination";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
-import {useDeleteUpdateMutation} from "@/api/mutations.js";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_private/profile/$username/_header/histor
     component: AllUpdates,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, params: { username }, deps }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.history(username, deps.search));
+        return queryClient.ensureQueryData(historyOptions(username, deps.search));
     },
 });
 
@@ -31,7 +31,7 @@ function AllUpdates() {
     const filters = Route.useSearch();
     const { username } = Route.useParams();
     const [rowSelected, setRowSelected] = useState({});
-    const apiData = useSuspenseQuery(queryOptionsMap.history(username, filters)).data;
+    const apiData = useSuspenseQuery(historyOptions(username, filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const deleteMutation = useDeleteUpdateMutation(["history", username, filters]);
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
@@ -137,7 +137,7 @@ function AllUpdates() {
                         }
                     </div>
                     <Button disabled={Object.keys(rowSelected).length === 0 || deleteMutation.isPending}
-                    onClick={deleteSelectedRows}>
+                            onClick={deleteSelectedRows}>
                         Delete Selected
                     </Button>
                 </div>
@@ -161,14 +161,14 @@ function AllUpdates() {
                                 table.getRowModel().rows.map(row => {
                                     return (
                                         <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}
-                                        className={(deleteMutation.isPending && row.getIsSelected()) ? "opacity-50" : ""}>
+                                                  className={(deleteMutation.isPending && row.getIsSelected()) ? "opacity-50" : ""}>
                                             {row.getVisibleCells().map(cell =>
                                                 <TableCell key={cell.id}>
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
                                             )}
                                         </TableRow>
-                                    )
+                                    );
                                 })
                                 :
                                 <TableRow>

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {genericMutations} from "@/api/mutations.js";
+import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -11,7 +11,7 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const PasswordForm = () => {
     const { setCurrentUser } = useAuth();
-    const { passwordSettings } = genericMutations();
+    const { passwordSettings } = simpleMutations();
     const [errors, setErrors] = useState("");
     const form = useForm({
         defaultValues: {

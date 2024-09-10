@@ -3,12 +3,12 @@ import {Button} from "@/components/ui/button";
 import * as Com from "@/components/ui/command";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
-import {userMediaMutations} from "@/api/mutations.js";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {PlaytimeDrop} from "@/components/media/games/PlaytimeDrop";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {RatingComponent} from "@/components/app/RatingComponent";
 
 
 export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
@@ -42,14 +42,17 @@ export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
                         playtime={userData.playtime}
                         updatePlaytime={updatePlaytime}
                     />
-                    <RatingDrop
-                        rating={userData.rating}
-                        updateRating={updateRating}
-                    />
+                    <div className="flex justify-between items-center">
+                        <div>Rating</div>
+                        <RatingComponent
+                            onUpdate={updateRating}
+                            rating={userData.rating}
+                        />
+                    </div>
                 </>
             }
         </>
-    )
+    );
 };
 
 
@@ -117,5 +120,5 @@ const PlatformComboBox = ({ resetValue = "", dataList, callback, isPending }) =>
                 </Com.Command>
             </PopoverContent>
         </Popover>
-    )
+    );
 };

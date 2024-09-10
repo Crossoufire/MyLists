@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {genericMutations} from "@/api/mutations";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -11,8 +11,8 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 
 export const GeneralForm = () => {
     const form = useForm();
-    const {generalSettings} = genericMutations();
-    const {currentUser, setCurrentUser} = useAuth();
+    const { generalSettings } = simpleMutations();
+    const { currentUser, setCurrentUser } = useAuth();
     const [errorMessage, setErrorMessage] = useState("");
     const [profileImage, setProfileImage] = useState("");
     const [backgroundImage, setBackgroundImage] = useState("");
@@ -49,10 +49,10 @@ export const GeneralForm = () => {
                         control={form.control}
                         name="username"
                         rules={{
-                            minLength: {value: 3, message: "The username is too short (3 min)"},
-                            maxLength: {value: 15, message: "The username is too long (15 max)"},
+                            minLength: { value: 3, message: "The username is too short (3 min)" },
+                            maxLength: { value: 15, message: "The username is too long (15 max)" },
                         }}
-                        render={({field}) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
@@ -68,7 +68,7 @@ export const GeneralForm = () => {
                     <FormField
                         control={form.control}
                         name="profile_image"
-                        render={({field}) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Profile image</FormLabel>
                                 <FormControl>
@@ -90,7 +90,7 @@ export const GeneralForm = () => {
                     <FormField
                         control={form.control}
                         name="background_image"
-                        render={({field}) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Background Image</FormLabel>
                                 <FormControl>

@@ -1,21 +1,21 @@
+import {followsOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/follows")({
     component: ProfileFollows,
     loader: ({ context: { queryClient }, params: { username } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.follows(username))
+        return queryClient.ensureQueryData(followsOptions(username));
     },
 });
 
 
 function ProfileFollows() {
     const { username } = Route.useParams();
-    const apiData = useSuspenseQuery(queryOptionsMap.follows(username)).data;
+    const apiData = useSuspenseQuery(followsOptions(username)).data;
 
     return (
         <PageTitle title="Follows">
@@ -36,5 +36,5 @@ function ProfileFollows() {
                 )}
             </div>
         </PageTitle>
-    )
+    );
 }

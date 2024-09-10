@@ -4,17 +4,18 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Tooltip} from "@/components/ui/tooltip";
 import {formatDateTime} from "@/utils/functions.jsx";
-import {useFollowMutation} from "@/api/mutations.js";
+import {useFollowMutation} from "@/api/mutations/simpleMutations.js";
 import {Link, useParams} from "@tanstack/react-router";
 import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const ProfileHeader = ({ user, followStatus, followId }) => {
-    const {currentUser} = useAuth();
+    const { currentUser } = useAuth();
     const isCurrent = (currentUser.id === user.id);
 
     return (
-        <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{backgroundImage: `url(${user.back_image})`}}>
+        <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat"
+             style={{ backgroundImage: `url(${user.back_image})` }}>
             {isCurrent &&
                 <Tooltip text="Change background image" side="bottom">
                     <Link to="/settings" className="absolute top-4 right-4 opacity-40 hover:opacity-70">
@@ -47,7 +48,8 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                     className="z-0 absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 h-56 w-56"
                     alt="profile-header-frame"
                 />
-                <Badge variant="passive" className="z-10 absolute bottom-[22px] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
+                <Badge variant="passive"
+                       className="z-10 absolute bottom-[22px] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
                     {user.profile_level}
                 </Badge>
             </div>
@@ -77,7 +79,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
 
 
 const FollowButton = ({ followStatus, followId }) => {
-    const {username} = useParams({strict: false});
+    const { username } = useParams({ strict: false });
     const updateFollowStatus = useFollowMutation(["profile", username]);
 
     const content = followStatus ? "Unfollow" : "Follow";
@@ -93,5 +95,5 @@ const FollowButton = ({ followStatus, followId }) => {
         <Button variant={buttonColor} size="xs" onClick={handleFollow} disabled={updateFollowStatus.status === "pending"}>
             <div className="font-semibold">{content}</div>
         </Button>
-    )
+    );
 };

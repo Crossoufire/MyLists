@@ -1,4 +1,3 @@
-import {userMediaMutations} from "@/api/mutations.js";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
@@ -9,6 +8,7 @@ import {GamesUserDetails} from "@/components/media/games/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media/books/BooksUserDetails";
 import {MoviesUserDetails} from "@/components/media/movies/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 
 
 const mediaComponentMap = (value) => {

@@ -123,3 +123,4 @@ backend/api/static/covers/books_covers/*
 # -------------------------------------------------------------------------------------
 backend/.flaskenv
 frontend/src/routeTree.gen.*
+backend/poetry.lock

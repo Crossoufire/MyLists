@@ -1,23 +1,23 @@
 import {useHashTab} from "@/hooks/HashTabHook";
-import {formatDateTime} from "@/utils/functions.jsx";
+import {formatDateTime} from "@/utils/functions";
+import {trendsOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/trends")({
     component: TrendsPage,
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queryOptionsMap.trends()),
+    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(trendsOptions()),
 });
 
 
 function TrendsPage() {
-    const apiData = useSuspenseQuery(queryOptionsMap.trends()).data;
+    const apiData = useSuspenseQuery(trendsOptions()).data;
     const [selectedTab, handleTabChange] = useHashTab("series", "trends_tab");
 
     return (

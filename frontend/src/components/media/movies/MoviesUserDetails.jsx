@@ -1,8 +1,8 @@
 import {Separator} from "@/components/ui/separator";
-import {userMediaMutations} from "@/api/mutations.js";
+import {RatingComponent} from "@/components/app/RatingComponent";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 
 
 export const MoviesUserDetails = ({ userData, mediaType, mediaId }) => {
@@ -21,20 +21,23 @@ export const MoviesUserDetails = ({ userData, mediaType, mediaId }) => {
                 allStatus={userData.all_status}
                 updateStatus={updateStatusFunc(onStatusSuccess)}
             />
-            {userData.status !== "Plan to Watch" &&
-                <>
-                    <Separator/>
-                    <RatingDrop
+        {userData.status !== "Plan to Watch" &&
+            <>
+                <Separator/>
+                <div className="flex justify-between items-center">
+                    <div>Rating</div>
+                    <RatingComponent
+                        onUpdate={updateRating}
                         rating={userData.rating}
-                        updateRating={updateRating}
                     />
-                    <RedoDrop
-                        name={"Re-watched"}
-                        redo={userData.redo}
-                        updateRedo={updateRedo}
-                    />
-                </>
-            }
+                </div>
+                <RedoDrop
+                    name={"Re-watched"}
+                    redo={userData.redo}
+                    updateRedo={updateRedo}
+                />
+            </>
+        }
         </>
-    )
+    );
 };

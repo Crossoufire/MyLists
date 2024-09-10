@@ -1,8 +1,8 @@
 import {FaStar} from "react-icons/fa";
 import {Synopsis} from "@/components/media/general/Synopsis";
+import {formatDateTime, formatMinutes} from "@/utils/functions";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
-import {formatDateTime, formatMinutes} from "@/utils/functions.jsx";
 
 
 export const MoviesDetails = ({ mediaType, mediaData }) => (

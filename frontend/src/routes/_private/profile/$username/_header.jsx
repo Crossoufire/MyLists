@@ -1,22 +1,22 @@
+import {profileOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Outlet} from "@tanstack/react-router";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header")({
     component: ProfileTop,
     loader: ({ context: { queryClient }, params: { username } }) => {
-        return queryClient.ensureQueryData(queryOptionsMap.profile(username));
+        return queryClient.ensureQueryData(profileOptions(username));
     },
 });
 
 
 function ProfileTop() {
     const { username } = Route.useParams();
-    const apiData = useSuspenseQuery(queryOptionsMap.profile(username)).data;
+    const apiData = useSuspenseQuery(profileOptions(username)).data;
 
     return (
         <PageTitle title={`${username} Profile`} onlyHelmet>

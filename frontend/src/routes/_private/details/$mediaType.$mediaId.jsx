@@ -1,6 +1,6 @@
 import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
-import {queryOptionsMap} from "@/api/queryOptions";
+import {detailsOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
             const cacheData = queryClient.getQueryData(["details", mediaType, mediaId.toString()]);
             if (cacheData) return cacheData;
         }
-        const data = await queryClient.ensureQueryData(queryOptionsMap.details(mediaType, mediaId, search.external));
+        const data = await queryClient.ensureQueryData(detailsOptions(mediaType, mediaId, search.external));
         queryClient.setQueryData(["details", mediaType, data.media.id.toString()], data);
         if (search.external) {
             throw redirect({ to: `/details/${mediaType}/${data.media.id}`, replace: true });
@@ -36,7 +36,7 @@ function MediaDetailsPage() {
     const { currentUser } = useAuth();
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
-    const apiData = useSuspenseQuery(queryOptionsMap.details(mediaType, mediaId, external)).data;
+    const apiData = useSuspenseQuery(detailsOptions(mediaType, mediaId, external)).data;
 
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>

@@ -1,13 +1,13 @@
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
-import {userMediaMutations} from "@/api/mutations.js";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {CommonCorner} from "@/components/app/base/CommonCorner";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
+import {RatingComponent} from "@/components/app/RatingComponent";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
-import {RatingListDrop} from "@/components/medialist/RatingListDrop";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 
@@ -116,10 +116,11 @@ const MediaItem = ({ isCurrent, media }) => {
                         isFavorite={media.favorite}
                         updateFavorite={mediaMutations.updateFavorite}
                     />
-                    <RatingListDrop
+                    <RatingComponent
+                        inline={true}
                         rating={media.rating}
-                        isCurrent={isCurrent}
-                        updateRating={mediaMutations.updateRating}
+                        isEditable={isCurrent}
+                        onUpdate={mediaMutations.updateRating}
                     />
                     {(media.status === "Completed" && mediaType !== "games") &&
                         <RedoListDrop

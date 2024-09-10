@@ -12,22 +12,22 @@ import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
 import {LuLoader2, LuSearch, LuX} from "react-icons/lu";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
-import {capitalize, getLangCountryName} from "@/utils/functions.jsx";
+import {capitalize, getLangCountryName} from "@/utils/functions";
 import {Route} from "@/routes/_private/list/$mediaType.$username";
+import {filterSearchOptions, smallFiltersOptions} from "@/api/queryOptions";
 import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
-import {queryOptionsMap} from "@/api/queryOptions.js";
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
     let localFilters = {};
     const search = Route.useSearch();
-    const {username, mediaType} = Route.useParams();
+    const { username, mediaType } = Route.useParams();
     const searchFiltersList = getListSearchFilters(mediaType);
-    const {data: smallFilters, isLoading} = useQuery(queryOptionsMap.smallFilters(mediaType, username));
+    const { data: smallFilters, isLoading } = useQuery(smallFiltersOptions(mediaType, username));
 
     const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
-            const updatedSearch = {...localFilters};
+            const updatedSearch = { ...localFilters };
             if (Array.isArray(localFilters[filterType])) {
                 value.forEach(val => {
                     if (localFilters[filterType].includes(val)) {
@@ -35,7 +35,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                         if (updatedSearch[filterType].length === 0) {
                             delete updatedSearch[filterType];
                         }
-                    } else {
+                    }
+                    else {
                         updatedSearch[filterType] = [...localFilters[filterType], val];
                     }
                 });
@@ -43,9 +44,10 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
             else {
                 updatedSearch[filterType] = value;
             }
-            localFilters = {...updatedSearch,};
-        } else {
-            localFilters = {...localFilters, [filterType]: value};
+            localFilters = { ...updatedSearch, };
+        }
+        else {
+            localFilters = { ...localFilters, [filterType]: value };
         }
     };
 
@@ -244,12 +246,12 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
 
 const SearchFilter = ({ job, dataList, registerChange }) => {
     const commandRef = useRef(null);
-    const {mediaType, username} = Route.useParams();
+    const { mediaType, username } = Route.useParams();
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 300);
     const [selectedData, setSelectedData] = useState(dataList ?? []);
-    const {data, isLoading, error} = useQuery(queryOptionsMap.filterSearch(mediaType, username, debouncedSearch, job));
+    const { data, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
 
     const handleInputChange = (ev) => {
         setIsOpen(true);
