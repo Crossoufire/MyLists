@@ -1,17 +1,14 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {useForm} from "react-hook-form";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const RegisterForm = ({ onTabChange }) => {
     const { register } = useAuth();
-    const [errors, setErrors] = useState({});
     const form = useForm({
         defaultValues: {
             username: "",
@@ -23,8 +20,6 @@ export const RegisterForm = ({ onTabChange }) => {
     });
 
     const onSubmit = async (data) => {
-        setErrors({});
-
         const dataToSend = {
             username: data.username,
             email: data.email,
@@ -32,15 +27,24 @@ export const RegisterForm = ({ onTabChange }) => {
             callback: import.meta.env.VITE_REGISTER_CALLBACK,
         };
 
-        register.mutate({ params: dataToSend }, {
+        register.mutate({ data: dataToSend }, {
             onError: (error) => {
-                if (error?.errors) {
-                    return setErrors(error.errors.json);
+                if (error?.errors?.json?.username) {
+                    form.setError("username", { type: "manual", message: error.errors.json.username[0] });
                 }
-                return toast.error(error.description);
+                if (error?.errors?.json?.email) {
+                    form.setError("email", { type: "manual", message: error.errors.json.email[0] });
+                }
+                if (error?.errors?.json?.password) {
+                    form.setError("password", { type: "manual", message: error.errors.json.password[0] });
+                }
+                if (!error.errors) {
+                    return toast.error("An error occurred while creating your account");
+                }
             },
-            onSuccess: async () => {
-                toast.success("Your account has been created. Check your email to activate your account");
+            onSuccess: () => {
+                form.reset();
+                toast.success("Your account has been created. Check your email to activate your account.");
                 onTabChange("login");
             },
         });
@@ -61,9 +65,9 @@ export const RegisterForm = ({ onTabChange }) => {
                                 control={form.control}
                                 name="username"
                                 rules={{
-                                    required: "Username is required",
-                                    minLength: { value: 3, message: "The username is too short (3 min)" },
-                                    maxLength: { value: 15, message: "The username is too long (15 max)" },
+                                    required: "Username is required.",
+                                    minLength: { value: 3, message: "The username is too short (3 min)." },
+                                    maxLength: { value: 15, message: "The username is too long (15 max)." },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
@@ -78,11 +82,10 @@ export const RegisterForm = ({ onTabChange }) => {
                                     </FormItem>
                                 )}
                             />
-                            {errors?.username && <FormError message={errors.username}/>}
                             <FormField
                                 control={form.control}
                                 name="email"
-                                rules={{ required: "Email is required" }}
+                                rules={{ required: "Email is required." }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
@@ -97,13 +100,12 @@ export const RegisterForm = ({ onTabChange }) => {
                                     </FormItem>
                                 )}
                             />
-                            {errors?.email && <FormError message={errors.email}/>}
                             <FormField
                                 control={form.control}
                                 name="password"
                                 rules={{
-                                    required: "Password is required",
-                                    minLength: { value: 8, message: "The password must have at least 8 characters" },
+                                    required: "Password is required.",
+                                    minLength: { value: 8, message: "The password must have at least 8 characters." },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
@@ -119,7 +121,6 @@ export const RegisterForm = ({ onTabChange }) => {
                                     </FormItem>
                                 )}
                             />
-                            {errors?.password && <FormError message={errors.password}/>}
                             <FormField
                                 control={form.control}
                                 name="confirmPassword"
@@ -127,7 +128,7 @@ export const RegisterForm = ({ onTabChange }) => {
                                     validate: (val) => {
                                         // noinspection JSCheckFunctionSignatures
                                         if (form.watch("password") !== val) {
-                                            return "The passwords do not match";
+                                            return "The passwords do not match.";
                                         }
                                     }
                                 }}

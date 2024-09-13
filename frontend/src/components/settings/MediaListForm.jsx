@@ -2,17 +2,16 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
+import {LuDownload} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {FaQuestionCircle} from "react-icons/fa";
-import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {Separator} from "@/components/ui/separator";
-import {LuDownload, LuLoader2} from "react-icons/lu";
-import {FormError} from "@/components/app/base/FormError";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
 import {FormButton} from "@/components/app/base/FormButton";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -20,14 +19,11 @@ export const MediaListForm = () => {
     const form = useForm();
     const { currentUser, setCurrentUser } = useAuth();
     const { listSettings, downloadListAsCSV } = simpleMutations();
-    const [errorMessage, setErrorMessage] = useState("");
     const [selectedList, setSelectedList] = useState("");
 
-    const onSubmit = (submitData) => {
-        setErrorMessage("");
-
-        listSettings.mutate(submitData, {
-            onError: (error) => setErrorMessage(error.description),
+    const onSubmit = (data) => {
+        listSettings.mutate({ ...data }, {
+            onError: () => toast.error("An error occurred while updating the data"),
             onSuccess: (data) => {
                 setCurrentUser(data);
                 toast.success("Settings successfully updated");
@@ -39,14 +35,14 @@ export const MediaListForm = () => {
         ev.preventDefault();
 
         downloadListAsCSV.mutate({ selectedList }, {
-            onError: (error) => setErrorMessage(error.description),
+            onError: () => toast.error("An error occurred querying the CSV data"),
             onSuccess: (data) => {
                 try {
                     const formattedData = jsonToCsv(data);
                     downloadFile(formattedData, selectedList, "text/csv");
                 }
                 catch {
-                    toast.error("An error occurred while downloading the CSV");
+                    toast.error("An error occurred while formatting the CSV");
                 }
             }
         });
@@ -64,7 +60,6 @@ export const MediaListForm = () => {
         <div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full space-y-8">
-                    {errorMessage && <FormError message={errorMessage}/>}
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">
                             Activate Lists Type
@@ -85,6 +80,7 @@ export const MediaListForm = () => {
                                     <div className="leading-none">
                                         <FormLabel>&nbsp; Activate anime list</FormLabel>
                                     </div>
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -103,6 +99,7 @@ export const MediaListForm = () => {
                                     <div className="leading-none">
                                         <FormLabel>&nbsp; Activate games list</FormLabel>
                                     </div>
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -121,6 +118,7 @@ export const MediaListForm = () => {
                                     <div className="leading-none">
                                         <FormLabel>&nbsp; Activate books list</FormLabel>
                                     </div>
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -157,6 +155,7 @@ export const MediaListForm = () => {
                                     <div className="leading-none">
                                         <FormLabel>Score (unchecked) or Feeling (checked)</FormLabel>
                                     </div>
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -183,6 +182,7 @@ export const MediaListForm = () => {
                                     <div className="leading-none">
                                         <FormLabel>Grid Mode (checked) or Table mode (unchecked)</FormLabel>
                                     </div>
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -192,6 +192,7 @@ export const MediaListForm = () => {
                     </FormButton>
                 </form>
             </Form>
+
             <div className="mt-8 space-y-4 w-[400px] max-sm:w-full bg-neutral-900 p-3 rounded-lg">
                 <h3 className="text-base font-medium">
                     Export Your Lists As CSV
@@ -204,17 +205,14 @@ export const MediaListForm = () => {
                         </SelectTrigger>
                         <SelectContent className="w-[140px]">
                             {userMediaLists.map(({ label, value }) =>
-                                <SelectItem key={value} value={value}>{label}</SelectItem>
+                                <SelectItem key={value} value={value}>
+                                    {label}
+                                </SelectItem>
                             )}
                         </SelectContent>
                     </Select>
-                    <Button onClick={handleDownloadCSV} disabled={!selectedList || listSettings.isPending}>
-                        {listSettings.isPending ?
-                            <LuLoader2 className="mr-2 h-4 w-4 animate-spin"/>
-                            :
-                            <LuDownload className="mr-2 h-4 w-4"/>
-                        }
-                        Download CSV
+                    <Button onClick={handleDownloadCSV} disabled={!selectedList || listSettings.isPending || downloadListAsCSV.isPending}>
+                        <LuDownload className="mr-2 h-4 w-4"/> Download CSV
                     </Button>
                 </div>
             </div>

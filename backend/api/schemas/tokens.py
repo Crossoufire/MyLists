@@ -1,4 +1,5 @@
-from marshmallow import validate
+from marshmallow import validate, validates, ValidationError
+
 from backend.api import ma
 
 
@@ -9,6 +10,18 @@ class TokenSchema(ma.Schema):
 class PasswordResetRequestSchema(ma.Schema):
     email = ma.String(required=True, validate=[validate.Length(max=120), validate.Email()])
     callback = ma.String(required=True)
+
+    @validates("email")
+    def validate_email(self, value):
+        from backend.api.models import User
+
+        user = User.query.filter_by(email=value).first()
+        if not user or not user.active:
+            raise ValidationError("Invalid email or account not activated.")
+
+
+class RegisterTokenSchema(ma.Schema):
+    token = ma.String(required=True)
 
 
 class PasswordResetSchema(ma.Schema):

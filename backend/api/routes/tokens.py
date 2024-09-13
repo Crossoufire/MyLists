@@ -1,12 +1,14 @@
 from __future__ import annotations
+
 import secrets
 from datetime import datetime
-from typing import Tuple, Dict
 from urllib.parse import urlencode
+
 import requests
-from flask import Blueprint, request, abort, url_for, current_app, session
+from flask import Blueprint, request, abort, url_for, current_app, session, jsonify
 from flask_bcrypt import generate_password_hash
 from werkzeug.http import dump_cookie
+
 from backend.api import db
 from backend.api.core import basic_auth, current_user, token_auth
 from backend.api.core.email import send_email
@@ -14,10 +16,11 @@ from backend.api.models.user import Token, User
 from backend.api.schemas.tokens import *
 from backend.api.utils.decorators import body, arguments
 
+
 tokens = Blueprint("api_tokens", __name__)
 
 
-def token_response(token: Token) -> Tuple[Dict, int, Dict]:
+def token_response(token: Token):
     headers = {
         "Set-Cookie": dump_cookie(
             key="refresh_token",
@@ -94,10 +97,6 @@ def revoke_token():
 @body(PasswordResetRequestSchema)
 def reset_password_token(data):
     user = User.query.filter_by(email=data["email"]).first()
-    if not user:
-        return abort(400, "This email is invalid")
-    if not user.active:
-        return abort(400, "This account is not activated. Please check your email address.")
 
     try:
         send_email(
@@ -109,8 +108,8 @@ def reset_password_token(data):
             token=user.generate_jwt_token(),
         )
     except Exception as e:
-        current_app.logger.error(f"ERROR sending an email to account [{user.id}]: {e}")
-        return abort(400, "An error occurred while sending the password reset email. Please try again later.")
+        current_app.logger.error(f"ERROR sending the password reset email to user ID [{data['user'].id}]: {e}")
+        return abort(500)
 
     return {}, 204
 
@@ -120,27 +119,23 @@ def reset_password_token(data):
 def reset_password(data):
     user = User.verify_jwt_token(data["token"])
     if not user or not user.active:
-        return abort(400, "Invalid or expired token")
+        return abort(400)
 
     user.password = generate_password_hash(data["new_password"])
     db.session.commit()
-    current_app.logger.info(f"[INFO] - [{user.id}] Password changed.")
+    current_app.logger.info(f"[INFO] - User ID [{user.id}] Password changed.")
 
     return {}, 204
 
 
 @tokens.route("/tokens/register_token", methods=["POST"])
-def register_token():
+@body(RegisterTokenSchema)
+def register_token(data):
     """ Check the register token to validate a new user account """
 
-    try:
-        token = request.get_json()["token"]
-    except:
-        return abort(400, "The provided token is invalid or expired")
-
-    user = User.verify_jwt_token(token)
+    user = User.verify_jwt_token(data["token"])
     if not user or user.active:
-        return abort(400, "The provided token is invalid or expired")
+        return abort(400)
 
     user.active = True
     user.activated_on = datetime.utcnow()
@@ -172,7 +167,9 @@ def oauth2_authorize(args, provider: str):
         response_type="code",
     ))
 
-    return {"redirect_url": f"{provider_data['authorize_url']}?{qs}"}, 200
+    data = {"redirect_url": f"{provider_data['authorize_url']}?{qs}"}
+
+    return jsonify(data=data), 200
 
 
 @tokens.route("/tokens/oauth2/<provider>", methods=["POST"])

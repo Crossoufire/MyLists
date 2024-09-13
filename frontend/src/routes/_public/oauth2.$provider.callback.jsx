@@ -17,13 +17,13 @@ function OAuth2CallbackPage() {
     const { currentUser, oAuth2Login } = useAuth();
 
     const authUsingOAuth2 = async () => {
-        const oAuth2Data = {
+        const data = {
             code: search?.code,
             state: search?.state,
             callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
         };
 
-        oAuth2Login.mutate({ provider, data: oAuth2Data }, {
+        oAuth2Login.mutate({ provider, data }, {
             onError: async () => {
                 toast.error("Failed to authenticate with the provider");
                 await navigate({ to: "/" });

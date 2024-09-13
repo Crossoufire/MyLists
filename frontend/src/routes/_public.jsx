@@ -1,5 +1,5 @@
+import {useAuth} from "@/hooks/AuthHook";
 import {createFileRoute, Navigate, Outlet} from "@tanstack/react-router";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -9,13 +9,14 @@ export const Route = createFileRoute("/_public")({
 
 
 function PublicRoute() {
-    const { currentUser } = useAuth();
+    const { currentUser, isLoading } = useAuth();
 
-    if (currentUser === undefined) {
+    if (isLoading) {
         return null;
     }
-    else if (currentUser) {
-        return <Navigate to={`/profile/${currentUser.username}`}/>
+    else if (currentUser !== null && currentUser !== undefined) {
+        return <Navigate to={`/profile/${currentUser.username}`}/>;
     }
+
     return <Outlet/>;
 }

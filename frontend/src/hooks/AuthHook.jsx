@@ -4,7 +4,7 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 
 
 export const useAuth = () => {
-    const { data: currentUser, isLoading } = useQuery({
+    const { data: currentUser, isLoading, isFetching } = useQuery({
         queryKey: ["currentUser"],
         queryFn: () => api.fetchCurrentUser(),
         staleTime: Infinity,
@@ -18,7 +18,7 @@ export const useAuth = () => {
         mutationFn: ({ username, password }) => api.login(username, password),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            return queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         },
     });
 
@@ -39,8 +39,8 @@ export const useAuth = () => {
     });
 
     const register = useMutation({
-        mutationFn: ({ params }) => api.register(params),
+        mutationFn: ({ data }) => api.register(data),
     });
 
-    return { currentUser, isLoading, login, oAuth2Login, logout, register, setCurrentUser };
+    return { currentUser, isLoading, isFetching, login, oAuth2Login, logout, register, setCurrentUser };
 };

@@ -3,22 +3,22 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
-import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const GeneralForm = () => {
-    const form = useForm();
     const { generalSettings } = simpleMutations();
     const { currentUser, setCurrentUser } = useAuth();
-    const [errorMessage, setErrorMessage] = useState("");
     const [profileImage, setProfileImage] = useState("");
     const [backgroundImage, setBackgroundImage] = useState("");
+    const form = useForm({ defaultValues: { username: currentUser.username } });
 
     const onSubmit = async (data) => {
-        setErrorMessage("");
+        if (data.username === currentUser.username) {
+            delete data.username;
+        }
 
         const formData = new FormData();
         Object.keys(data).forEach(key => {
@@ -32,11 +32,16 @@ export const GeneralForm = () => {
         });
 
         generalSettings.mutate({ data: formData }, {
-            onError: (error) => setErrorMessage(error.description),
+            onError: (error) => {
+                if (error?.errors?.form?.username) {
+                    return form.setError("username", { type: "manual", message: error.errors.form.username[0] });
+                }
+                toast.error(error.description);
+            },
             onSuccess: (data) => {
                 setCurrentUser(data);
                 toast.success("Settings successfully updated");
-            },
+            }
         });
     };
 
@@ -44,7 +49,6 @@ export const GeneralForm = () => {
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full">
                 <div className="space-y-5">
-                    {errorMessage && <FormError message={errorMessage}/>}
                     <FormField
                         control={form.control}
                         name="username"
@@ -58,7 +62,6 @@ export const GeneralForm = () => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        defaultValue={currentUser.username}
                                     />
                                 </FormControl>
                                 <FormMessage/>
@@ -110,7 +113,7 @@ export const GeneralForm = () => {
                         )}
                     />
                 </div>
-                <FormButton className="mt-5" disabled={generalSettings.isPending}>
+                <FormButton className="mt-5" disabled={generalSettings.isPending || !form.formState.isDirty}>
                     Update
                 </FormButton>
             </form>

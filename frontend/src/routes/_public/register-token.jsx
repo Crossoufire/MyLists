@@ -17,7 +17,7 @@ function RegisterTokenPage() {
 
     const registerHandler = () => {
         registerToken.mutate({ token }, {
-            onError: () => toast.error("An error occurred during registration"),
+            onError: () => toast.error("The provided token is invalid or expired"),
             onSuccess: async () => {
                 toast.success("Your account has been successfully activated. Feel free to log in now.");
                 await navigate({ to: "/" });

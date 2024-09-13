@@ -1,11 +1,9 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {simpleMutations} from "@/api/mutations/simpleMutations.js";
-import {FormError} from "@/components/app/base/FormError";
 import {PageTitle} from "@/components/app/base/PageTitle";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -17,25 +15,25 @@ export const Route = createFileRoute("/_public/reset-password")({
 
 
 function ResetPasswordPage() {
-    const form = useForm();
     const navigate = useNavigate();
     const { token } = Route.useSearch();
     const { resetPassword } = simpleMutations();
-    const [errorMessage, setErrorMessage] = useState("");
+    const form = useForm({ defaultValues: { new_password: "", confirm_password: "" } });
 
     const onSubmit = (data) => {
-        setErrorMessage("");
-        resetPassword.mutate({ token, newPassword: data.password }, {
+        resetPassword.mutate({ token, new_password: data.new_password }, {
             onError: (error) => {
-                if (error.errors) {
-                    return setErrorMessage(error.errors.json.token);
+                if (error?.errors?.json?.new_password) {
+                    const message = error.errors.json.new_password[0];
+                    return form.setError("new_password", { type: "manual", message: message });
                 }
-                setErrorMessage(error.description);
+                toast.error("The provided token is invalid or expired");
             },
             onSuccess: async () => {
                 toast.success("Your password was successfully modified");
                 await navigate({ to: "/" });
-            }
+            },
+            onSettled: () => form.reset(),
         });
     };
 
@@ -47,10 +45,10 @@ function ResetPasswordPage() {
                         <div className="space-y-4">
                             <FormField
                                 control={form.control}
-                                name="password"
+                                name="new_password"
                                 rules={{
-                                    required: "Password is required",
-                                    minLength: { value: 8, message: "The password must have at least 8 characters" },
+                                    required: "The password is required.",
+                                    minLength: { value: 8, message: "The password must have at least 8 characters." },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
@@ -68,12 +66,13 @@ function ResetPasswordPage() {
                             />
                             <FormField
                                 control={form.control}
-                                name="confirmPassword"
+                                name="confirm_password"
                                 rules={{
+                                    required: "The password confirmation is required.",
                                     validate: (val) => {
                                         // noinspection JSCheckFunctionSignatures
-                                        if (form.watch("password") !== val) {
-                                            return "The passwords do not match";
+                                        if (form.watch("new_password") !== val) {
+                                            return "The passwords do not match.";
                                         }
                                     }
                                 }}
@@ -92,7 +91,6 @@ function ResetPasswordPage() {
                                 )}
                             />
                         </div>
-                        {errorMessage && <FormError message={errorMessage}/>}
                         <Button type="submit" className="w-full" disabled={resetPassword.isPending}>
                             Reset password
                         </Button>

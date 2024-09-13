@@ -1,24 +1,20 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {useNavigate} from "@tanstack/react-router";
-import {FormError} from "@/components/app/base/FormError";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 
 
 export const DangerForm = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const { deleteAccount } = simpleMutations();
-    const [errors, setErrors] = useState("");
 
     const onSubmit = async () => {
-        setErrors("");
         if (!window.confirm("Are you really sure?")) return;
 
-        deleteAccount.mutate({}, {
-            onError: (error) => setErrors(error.description),
+        deleteAccount.mutate(undefined, {
+            onError: () => toast.error("An error occurred while deleting your account"),
             onSuccess: async () => {
                 logout.mutate();
                 toast.success("Your account has been successfully deleted");
@@ -36,7 +32,6 @@ export const DangerForm = () => {
             <Button variant="destructive" onClick={onSubmit} className="w-48" disabled={deleteAccount.isPending}>
                 DELETE MY ACCOUNT
             </Button>
-            {errors && <FormError message={errors}/>}
         </div>
     );
 };

@@ -24,17 +24,17 @@ function RootComponent() {
                 <Outlet/>
             </main>
             <Footer/>
-            {import.meta.env.DEV && <TanStackRouterDevtools/>}
             {import.meta.env.DEV && <ReactQueryDevtools/>}
+            {import.meta.env.DEV && <TanStackRouterDevtools/>}
         </>
     );
 }
 
 
 const TanStackRouterDevtools = lazy(() =>
-    import("@tanstack/router-devtools").then((res) => ({default: res.TanStackRouterDevtools}))
+    import("@tanstack/router-devtools").then((res) => ({ default: res.TanStackRouterDevtools }))
 );
 
 const ReactQueryDevtools = lazy(() =>
-    import("@tanstack/react-query-devtools").then((res) => ({default: res.ReactQueryDevtools}))
+    import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtools }))
 );

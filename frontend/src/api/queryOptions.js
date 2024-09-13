@@ -4,7 +4,7 @@ import {queryOptions} from "@tanstack/react-query";
 
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
     queryKey: ["details", mediaType, mediaId],
-    queryFn: () => fetcher({ url: `/details/${mediaType}/${mediaId}`, queryOrData: external }),
+    queryFn: () => fetcher({ url: `/details/${mediaType}/${mediaId}`, queryOrData: { external } }),
     staleTime: 2 * 1000,
 });
 

@@ -10,13 +10,14 @@ export const Route = createFileRoute("/_private")({
 
 
 function PrivateRoute() {
-    const { currentUser } = useAuth();
+    const { currentUser, isLoading } = useAuth();
 
-    if (currentUser === undefined) {
+    if (isLoading) {
         return null;
     }
     else if (!currentUser || !api.isAuthenticated()) {
-        return <Navigate to="/"/>
+        return <Navigate to="/"/>;
     }
+
     return <Outlet/>;
 }

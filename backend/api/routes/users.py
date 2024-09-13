@@ -1,16 +1,19 @@
 import json
+
 from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
+
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
-from backend.api.schemas.users import HistorySchema, UpdateFollowSchema, PasswordSchema, RegisterUserSchema, \
-    ListSettingsSchema
+from backend.api.schemas.users import HistorySchema, UpdateFollowSchema, RegisterUserSchema, \
+    PasswordSchema, ListSettingsSchema, GeneralSettingsSchema
 from backend.api.utils.decorators import arguments, body
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
-from backend.api.utils.functions import save_picture, format_to_download_as_csv
+from backend.api.utils.functions import format_to_download_as_csv, save_picture
+
 
 users = Blueprint("api_users", __name__)
 
@@ -34,8 +37,8 @@ def register_user(data):
             token=new_user.generate_jwt_token(),
         )
     except Exception as e:
-        current_app.logger.error(f"ERROR sending an email to account [{new_user.id}]: {e}")
-        return abort(400, "An error occurred while sending your register email. Please try again later")
+        current_app.logger.error(f"ERROR sending a registering email to user ID [{new_user.id}]: {e}")
+        return abort(400)
 
     return {}, 204
 
@@ -184,41 +187,26 @@ def count_notifs():
 
 @users.route("/settings/general", methods=["POST"])
 @token_auth.login_required
-def settings_general():
+@body(GeneralSettingsSchema, location="form")
+def settings_general(data):
     """ Edit the general current user information """
 
-    data = request.form
-
-    new_username = data.get("username")
-    if new_username:
-        if new_username != current_user.username:
-            if len(new_username) < 3:
-                return abort(400, "The username is too short (3 min)")
-            if len(new_username) > 15:
-                return abort(400, "The username is too long (15 max)")
-            if User.query.filter_by(username=new_username).first():
-                return abort(400, "This username is not available")
-
-            # Change username
-            current_user.username = new_username
+    if data.get("username"):
+        current_user.username = data["username"]
 
     profile_image = request.files.get("profile_image")
     if profile_image:
         old_pict = current_user.image_file
         current_user.image_file = save_picture(profile_image, old_pict)
-        current_app.logger.info(f"[{current_user.id}] Old = {old_pict}. New profile img = {current_user.image_file}")
 
     back_image = request.files.get("background_image")
     if back_image:
         old_pict = current_user.background_image
-        current_user.background_image = save_picture(back_image, old_pict, profile=False)
-        current_app.logger.info(f"[{current_user.id}] Old = {old_pict}. New back = {current_user.background_image}")
+        current_user.background_image = save_picture(profile_image, old_pict, profile=False)
 
     db.session.commit()
 
-    data = dict(updated_user=current_user.to_dict())
-
-    return jsonify(data), 200
+    return jsonify(data=current_user.to_dict()), 200
 
 
 @users.route("/settings/medialist", methods=["POST"])
@@ -227,25 +215,21 @@ def settings_general():
 def settings_medialist(data):
     """ Edit the medialist current user information """
 
-    current_user.add_feeling = data.get("add_feeling", current_user.add_feeling)
-    current_user.grid_list_view = data.get("grid_list_view", current_user.grid_list_view)
+    if data["add_feeling"] is not None:
+        current_user.add_feeling = data["add_feeling"]
+
+    if data["grid_list_view"] is not None:
+        current_user.grid_list_view = data["grid_list_view"]
 
     for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS]:
-        setting = current_user.get_media_setting(media_type)
-        setting.active = data.get(f"add_{media_type.value.lower()}", setting.active)
+        setting_key = f"add_{media_type.value.lower()}"
+        if data[setting_key] is not None:
+            setting = current_user.get_media_setting(media_type)
+            setting.active = data[setting_key]
 
     db.session.commit()
 
     return jsonify(data=current_user.to_dict()), 200
-
-
-@users.route("/settings/download/<mediatype:media_type>", methods=["GET"])
-@token_auth.login_required
-def download_medialist(media_type: MediaType):
-    """ Download the selected medialist data """
-    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
-    media_data = list_model.query.filter_by(user_id=current_user.id).all()
-    return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200
 
 
 @users.route("/settings/password", methods=["POST"])
@@ -255,7 +239,7 @@ def settings_password(data):
     """ Edit the password of the current user """
     current_user.password = generate_password_hash(data["new_password"])
     db.session.commit()
-    return jsonify(updated_user=current_user.to_dict()), 200
+    return {}, 204
 
 
 @users.route("/settings/delete_account", methods=["POST"])
@@ -289,4 +273,13 @@ def settings_delete():
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error trying to delete account [ID = {current_user.id}]: {e}")
-        return abort(500, "Sorry, an error occurred. Please try again later")
+        return abort(500)
+
+
+@users.route("/settings/download/<mediatype:media_type>", methods=["GET"])
+@token_auth.login_required
+def download_medialist(media_type: MediaType):
+    """ Download the selected medialist data """
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
+    media_data = list_model.query.filter_by(user_id=current_user.id).all()
+    return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200

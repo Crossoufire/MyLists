@@ -44,7 +44,7 @@ export const userMediaMutations = (mediaType, mediaId, queryKey) => {
 
     return {
         updateRating, updateComment, updateFavorite, updateRedo, updatePlaytime, updatePage, updatePlatform,
-        updateSeason, updateEpisode, addToList, removeFromList, updateStatusFunc
+        updateSeason, updateEpisode, addToList, removeFromList, updateStatusFunc,
     };
 };
 

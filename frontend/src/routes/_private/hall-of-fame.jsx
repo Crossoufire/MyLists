@@ -38,7 +38,8 @@ function HallOfFamePage() {
     const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = filters;
 
     const fetchData = async (params) => {
-        await navigate({ search: { params } });
+        // noinspection JSCheckFunctionSignatures
+        await navigate({ search: params });
     };
 
     const resetSearch = async () => {

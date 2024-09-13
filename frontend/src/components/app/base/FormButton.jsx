@@ -1,10 +1,10 @@
 import {useState} from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {LuLoader2} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 
 
-export const FormButton = ({ children, disabled = false, onClick, className, ...props}) => {
+export const FormButton = ({ children, disabled = false, onClick, className, ...props }) => {
     const [isPending, setIsPending] = useState(false);
 
     const handleClick = async (ev) => {
@@ -31,5 +31,5 @@ export const FormButton = ({ children, disabled = false, onClick, className, ...
             {isPending && <LuLoader2 className="mr-2 h-4 w-4 animate-spin"/>}
             {children}
         </Button>
-    )
+    );
 };

@@ -1,14 +1,12 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
-import {simpleMutations} from "@/api/mutations/simpleMutations.js";
 import {Separator} from "@/components/ui/separator";
 import {Link, useNavigate} from "@tanstack/react-router";
-import {FormError} from "@/components/app/base/FormError";
 import {FormButton} from "@/components/app/base/FormButton";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -16,42 +14,40 @@ export const LoginForm = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const { oAuth2Provider } = simpleMutations();
-    const [errorMessage, setErrorMessage] = useState("");
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
     const onSubmit = (data) => {
-        setErrorMessage("");
-        login.mutate({ username: data.username, password: data.password }, {
+        login.mutate(data, {
             onError: (error) => {
                 if (error.status === 401) {
-                    return setErrorMessage("Username or password incorrect");
+                    form.setError("username", { type: "manual", message: "Username or password incorrect." });
+                    form.setError("password", { type: "manual", message: "Username or password incorrect." });
+                    return;
                 }
-                return toast.error(error.message);
+                toast.error("An error occurred trying to login");
             },
             onSuccess: async () => {
-                await navigate({ to: `/profile/${data.username}` });
+                return navigate({ to: `/profile/${data.username}` });
             },
         });
     };
 
-    const withProvider = async (provider) => {
-        setErrorMessage("");
-
-        oAuth2Provider.mutate({ provider: provider }, {
-            onError: (error) => setErrorMessage(error.description),
+    const withProvider = (provider) => {
+        oAuth2Provider.mutate({ provider }, {
+            onError: () => toast.error("An error occurred with the provider"),
             onSuccess: async (data) => window.location.replace(data.redirect_url),
         });
     };
 
     return (
-        <div className="bg-card px-5 p-3 rounded-md">
+        <div className="bg-card px-5 py-3 pb-4 rounded-md">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                         <FormField
                             control={form.control}
                             name="username"
-                            rules={{ required: "Please enter a valid username" }}
+                            rules={{ required: "This field is required" }}
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Username</FormLabel>
@@ -71,7 +67,12 @@ export const LoginForm = () => {
                             rules={{ required: "This field is required" }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel>Password</FormLabel>
+                                        <Link to="/forgot-password" className="text-sm underline" tabIndex={-1}>
+                                            Forgot password?
+                                        </Link>
+                                    </div>
                                     <FormControl>
                                         <Input
                                             {...field}
@@ -84,8 +85,7 @@ export const LoginForm = () => {
                             )}
                         />
                     </div>
-                    {errorMessage && <FormError message={errorMessage}/>}
-                    <FormButton disabled={login.isPending || oAuth2Provider.isPending}>
+                    <FormButton disabled={login.isPending || oAuth2Provider.isSuccess}>
                         Login
                     </FormButton>
                 </form>
@@ -93,17 +93,14 @@ export const LoginForm = () => {
             <Separator className="mt-3" variant="large"/>
             <div className="mt-3 flex-col space-y-2">
                 <FormButton variant="secondary" onClick={() => withProvider("google")}
-                            disabled={login.isPending || oAuth2Provider.isPending}>
-                    <FaGoogle size={20}/>&nbsp;&nbsp;Connexion via Google
+                            disabled={login.isPending || oAuth2Provider.isSuccess}>
+                    <FaGoogle size={20} className="mr-2"/> Connexion via Google
                 </FormButton>
                 <FormButton variant="secondary" onClick={() => withProvider("github")}
-                            disabled={login.isPending || oAuth2Provider.isPending}>
-                    <FaGithub size={20}/>&nbsp;&nbsp;Connexion via Github
+                            disabled={login.isPending || oAuth2Provider.isSuccess}>
+                    <FaGithub size={20} className="mr-2"/> Connexion via Github
                 </FormButton>
             </div>
-            <Link to="/forgot-password" className="text-blue-500">
-                <div className="mt-4">Forgot password?</div>
-            </Link>
         </div>
     );
 };

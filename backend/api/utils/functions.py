@@ -1,8 +1,10 @@
 import os
+from plistlib import InvalidFileException
 import re
 import secrets
 from datetime import datetime
 from typing import List, Any, Iterable, Tuple, Dict, Optional
+
 from PIL import Image
 from flask import current_app, abort
 from werkzeug.datastructures import FileStorage
@@ -32,7 +34,7 @@ def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = Tr
     try:
         image = Image.open(form_picture.stream)
         if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
-            return abort(400, "Invalid picture format")
+            raise InvalidFileException
 
         random_hex = secrets.token_hex(16)
         _, f_ext = os.path.splitext(secure_filename(form_picture.filename))
@@ -58,9 +60,10 @@ def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = Tr
                 current_app.logger.error(f"Error trying to remove an old picture: {str(e)}")
 
         return picture_fn
-
-    except:
-        return abort(400, f"An error occurred saving the picture")
+    except (InvalidFileException, Exception) as e:
+        if isinstance(e, InvalidFileException):
+            return abort(400, "The image format is not supported")
+        return abort(400, "The image could not be processed")
 
 
 def safe_div(a: float, b: float, percentage: bool = False):

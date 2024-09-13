@@ -13,10 +13,10 @@ const mutationFunctionsMap = {
         url: "/delete_updates", data: { update_ids: updateIds, return_data: returnData },
     }),
     updateMediaDetails: ({ mediaType, mediaId }) => postFetcher({
-        url: "/details/refresh", data: { media_id: mediaId, media_type: mediaType },
+        url: "/details/refresh", data: { media_type: mediaType, media_id: mediaId },
     }),
-    resetPassword: ({ token, newPassword }) => postFetcher({
-        url: "/tokens/reset_password", data: { token, new_password: newPassword },
+    resetPassword: ({ token, new_password }) => postFetcher({
+        url: "/tokens/reset_password", data: { token, new_password },
     }),
     registerToken: ({ token }) => postFetcher({
         url: "/tokens/register_token", data: { token },
@@ -27,14 +27,14 @@ const mutationFunctionsMap = {
     updateModal: () => postFetcher({
         url: "/update_modal",
     }),
-    listSettings: ({ data }) => postFetcher({
-        url: "/settings/medialist", data: { data },
+    listSettings: (data) => postFetcher({
+        url: "/settings/medialist", data,
     }),
     deleteAccount: () => postFetcher({
         url: "/settings/delete_account",
     }),
-    passwordSettings: ({ data }) => postFetcher({
-        url: "/settings/password", data: { data },
+    passwordSettings: (data) => postFetcher({
+        url: "/settings/password", data,
     }),
     downloadListAsCSV: ({ selectedList }) => fetcher({
         url: `/settings/download/${selectedList}`,
@@ -49,12 +49,10 @@ const mutationFunctionsMap = {
     }),
     editMediaDetails: ({ mediaType, mediaId, payload }) => postFetcher({
         url: `/details/edit/${mediaType}/${mediaId}`,
-        queryOrData: { media_id: mediaId, media_type: mediaType, payload },
+        data: { media_id: mediaId, media_type: mediaType, payload },
     }),
     generalSettings: ({ data }) => postFetcher({
-        url: "/settings/general",
-        queryOrData: data,
-        options: { removeContentType: true },
+        url: "/settings/general", data, options: { removeContentType: true },
     }),
 };
 

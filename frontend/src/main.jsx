@@ -15,7 +15,7 @@ const router = createRouter({
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: ErrorComponent,
     context: { queryClient: queryClient, auth: undefined },
-    defaultErrorComponent: (error) => <ErrorComponent { ...error }/>,
+    defaultErrorComponent: (error) => <ErrorComponent {...error}/>,
 });
 
 
@@ -32,6 +32,7 @@ function App() {
 
 function InnerApp() {
     const auth = useAuth();
+    // noinspection JSValidateTypes
     return <RouterProvider router={router} context={{ auth, queryClient }}/>;
 }
 

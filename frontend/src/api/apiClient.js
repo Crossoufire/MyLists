@@ -29,7 +29,10 @@ class ApiClient {
     filterParams(queryData) {
         const filteredParams = Object.entries(queryData || {})
             .filter(([_, value]) => value !== undefined && value !== "null" && value !== null)
-            .reduce((obj, [key, value]) => { obj[key] = value; return obj; }, {});
+            .reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+            }, {});
 
         let queryArgs = new URLSearchParams(filteredParams).toString();
         if (queryArgs !== "") {
@@ -97,7 +100,7 @@ class ApiClient {
             ok: response.ok,
             status: response.status,
             body: response.status === 204 ? null : await response.json(),
-        }
+        };
     };
 
     async login(username, password) {
@@ -127,8 +130,8 @@ class ApiClient {
         await this.delete("/tokens");
     };
 
-    async register(params) {
-        const response = await this.post("/register_user", params);
+    async register(data) {
+        const response = await this.post("/register_user", data);
         if (!response.ok) {
             throw new APIError(
                 response.status,
@@ -140,7 +143,7 @@ class ApiClient {
         return response;
     };
 
-    async fetchCurrentUser () {
+    async fetchCurrentUser() {
         if (api.isAuthenticated()) {
             const response = await this.get("/current_user");
             return response.ok ? response.body : null;

@@ -1,4 +1,5 @@
 import React, {useRef} from "react";
+import {useAuth} from "@/hooks/AuthHook";
 import {LuAlignJustify} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
@@ -14,13 +15,16 @@ import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const Navbar = () => {
     const popRef = useRef();
-    const {sheetOpen, setSheetOpen} = useSheet();
-    const {currentUser, logout, isLoading} = useAuth();
+    const { sheetOpen, setSheetOpen } = useSheet();
+    const { currentUser, logout, isLoading } = useAuth();
+
+    const logoutUser = () => {
+        logout.mutate(undefined);
+    };
 
     // Login page and public pages when not logged
     if (!currentUser) {
@@ -105,7 +109,7 @@ export const Navbar = () => {
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
-                                                    <NavLink to="#" onClick={() => logout.mutate()} className="block select-none
+                                                    <NavLink to="#" onClick={logoutUser} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
@@ -185,7 +189,7 @@ export const Navbar = () => {
                                         />
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
-                                                <NavLink to="#" onClick={() => logout.mutate()} className="block select-none
+                                                <NavLink to="#" onClick={logoutUser} className="block select-none
                                                 space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">

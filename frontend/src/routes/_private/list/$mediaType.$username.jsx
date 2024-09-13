@@ -69,8 +69,6 @@ function MediaList() {
 
     const handleGridChange = () => setIsGrid(!isGrid);
 
-    console.log(apiData);
-
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
