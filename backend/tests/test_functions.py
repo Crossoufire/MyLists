@@ -1,8 +1,10 @@
 import os
 from datetime import datetime
+
 from PIL import Image
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import InternalServerError
+
 from backend.api import db
 from backend.api.utils.functions import save_picture, compute_level, clean_html_text, is_latin, safe_div, get, \
     int_to_money, reorder_seas_eps, format_datetime, resize_and_save_image, format_to_download_as_csv
@@ -73,7 +75,7 @@ class UtilsFunctionTests(BaseTest):
     def test_bad_new_profile_image(self):
         with open(self.bad_image_path, "rb") as fp:
             file = FileStorage(fp)
-            self.assertRaises(BadRequest, self._test_save_picture, file, "image_file", True)
+            self.assertRaises(InternalServerError, self._test_save_picture, file, "image_file", True)
 
     def test_save_new_background_image(self):
         with open(self.image_path, "rb") as fp:
@@ -88,7 +90,7 @@ class UtilsFunctionTests(BaseTest):
     def test_bad_new_background_image(self):
         with open(self.bad_image_path, "rb") as fp:
             file = FileStorage(fp)
-            self.assertRaises(BadRequest, self._test_save_picture, file, "background_image", False)
+            self.assertRaises(InternalServerError, self._test_save_picture, file, "background_image", False)
 
     def test_erase_old_user_profile(self):
         with open(self.image_path, "rb") as fp:

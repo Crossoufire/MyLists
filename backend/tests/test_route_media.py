@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from typing import Dict
+
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 from backend.api.managers.ModelsManager import ModelsManager
@@ -49,7 +50,7 @@ class MediaTests(BaseTest):
                 "media_type": payload[1],
                 "payload": payload[2],
             })
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 404 if payload[0] == 2 else 400)
 
         rv_good = self.client.post("/api/add_media", headers=headers, json={
             "media_id": media_id,
@@ -421,7 +422,7 @@ class MediaTests(BaseTest):
                 "media_type": media_type.value,
                 "payload": 3,
             })
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 404 if media_type != MediaType.GAMES else 400)
 
             rv = self.client.post("/api/add_media", headers=headers, json={
                 "media_id": 1,

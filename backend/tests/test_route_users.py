@@ -16,13 +16,13 @@ class UserTests(BaseTest):
         self.bad_image_path = os.path.join(self.current_dir, "images/anonymous_scrambled.jpg")
 
     def test_register_user(self):
-        current_app.config["USER_ACTIVE_PER_DEFAULT"] = False
+        current_app.config["USER_ACTIVE_PER_DEFAULT"] = True
 
         with mock.patch("backend.api.routes.users.send_email") as send_email:
             rv = self.client.post("/api/register_user", json={
                 "username": "user",
                 "email": "user@example.com",
-                "password": "pipou",
+                "password": "new-password",
                 "callback": "http://localhost:3000/register_token",
             })
             self.assertEqual(rv.status_code, 204)
@@ -40,19 +40,19 @@ class UserTests(BaseTest):
             rv = self.client.post("/api/register_user", json={
                 "username": "user",
                 "email": "user2@example.com",
-                "password": "pipou",
+                "password": "good-password",
                 "callback": "http://localhost:3000/register_token",
             })
-            self.assertEqual(rv.status_code, 401)
+            self.assertEqual(rv.status_code, 400)
 
             # Email should be unique
             rv = self.client.post("/api/register_user", json={
                 "username": "user2",
                 "email": "user@example.com",
-                "password": "pipou",
+                "password": "good-password",
                 "callback": "http://localhost:3000/register_token",
             })
-            self.assertEqual(rv.status_code, 401)
+            self.assertEqual(rv.status_code, 400)
 
             rv = self.client.post("/api/tokens/register_token", json={"token": token})
             self.assertEqual(rv.status_code, 204)
@@ -67,7 +67,7 @@ class UserTests(BaseTest):
             "password": "pipou",
             "callback": "http://localhost:3000/register_token",
         })
-        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/register_user", json={
             "username": "",
@@ -75,7 +75,7 @@ class UserTests(BaseTest):
             "password": "pipou",
             "callback": "http://localhost:3000/register_token",
         })
-        self.assertEqual(rv.status_code, 401)
+        self.assertEqual(rv.status_code, 400)
 
     def test_get_current_user(self):
         rv = self.client.get("/api/current_user", headers=self.connexion())
@@ -125,7 +125,7 @@ class UserTests(BaseTest):
             "follow_id": 3,
             "follow_status": True,
         })
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 404)
 
         # <test> follows <bobby> (success)
         rv = self.client.post(f"/api/update_follow", headers=headers, json={
@@ -253,13 +253,13 @@ class UserTests(BaseTest):
         self.register_new_user(username="bobby")
         headers = self.connexion()
 
-        rv = self.client.post("/api/settings/general", headers=headers, data={"username": "test"})
+        rv = self.client.post("/api/settings/general", headers=headers, data={"username": "new-user"})
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["updated_user"]["username"], "test")
+        self.assertEqual(rv.json["data"]["username"], "new-user")
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "robert"})
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["updated_user"]["username"], "robert")
+        self.assertEqual(rv.json["data"]["username"], "robert")
 
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "too-long-username"})
         self.assertEqual(rv.status_code, 400)
@@ -272,21 +272,21 @@ class UserTests(BaseTest):
 
         with open(self.bad_image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)
 
         with open(self.bad_image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)
 
         with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv.json["updated_user"]["profile_image"].startswith("/api/static/profile_pics/"), True)
+            self.assertEqual(rv.json["data"]["profile_image"].startswith("/api/static/profile_pics/"), True)
 
         with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 200)
-            self.assertEqual(rv.json["updated_user"]["back_image"].startswith("/api/static/background_pics/"), True)
+            self.assertEqual(rv.json["data"]["back_image"].startswith("/api/static/background_pics/"), True)
 
     def test_settings_medialist(self):
         rv = self.client.post("/api/settings/medialist")
@@ -294,27 +294,31 @@ class UserTests(BaseTest):
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": True,
+            "grid_list_view": True,
             "add_anime": True,
             "add_games": True,
             "add_books": True,
         })
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["updated_user"]["add_feeling"], True)
-        self.assertEqual(rv.json["updated_user"]["settings"]["anime"]["active"], True)
-        self.assertEqual(rv.json["updated_user"]["settings"]["games"]["active"], True)
-        self.assertEqual(rv.json["updated_user"]["settings"]["books"]["active"], True)
+        self.assertEqual(rv.json["data"]["add_feeling"], True)
+        self.assertEqual(rv.json["data"]["grid_list_view"], True)
+        self.assertEqual(rv.json["data"]["settings"]["anime"]["active"], True)
+        self.assertEqual(rv.json["data"]["settings"]["games"]["active"], True)
+        self.assertEqual(rv.json["data"]["settings"]["books"]["active"], True)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "add_feeling": False,
+            "grid_list_view": False,
             "add_anime": False,
             "add_games": False,
             "add_books": False,
         })
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["updated_user"]["add_feeling"], False)
-        self.assertEqual(rv.json["updated_user"]["settings"]["anime"]["active"], False)
-        self.assertEqual(rv.json["updated_user"]["settings"]["games"]["active"], False)
-        self.assertEqual(rv.json["updated_user"]["settings"]["books"]["active"], False)
+        self.assertEqual(rv.json["data"]["add_feeling"], False)
+        self.assertEqual(rv.json["data"]["grid_list_view"], False)
+        self.assertEqual(rv.json["data"]["settings"]["anime"]["active"], False)
+        self.assertEqual(rv.json["data"]["settings"]["games"]["active"], False)
+        self.assertEqual(rv.json["data"]["settings"]["books"]["active"], False)
 
     def test_settings_password(self):
         rv = self.client.post("/api/settings/password")
@@ -326,16 +330,16 @@ class UserTests(BaseTest):
         self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/password", headers=headers, json={
-            "new_password": "titi",
             "current_password": TEST_USER["password"],
+            "new_password": "titi",
         })
         self.assertEqual(rv.status_code, 400)
 
         rv = self.client.post("/api/settings/password", headers=headers, json={
-            "new_password": "titititi",
             "current_password": TEST_USER["password"],
+            "new_password": "titititi",
         })
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 204)
 
         headers = self.connexion("test", "titititi")
         rv = self.client.get("/api/current_user", headers=headers)

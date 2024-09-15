@@ -1,4 +1,5 @@
 from unittest import mock
+
 from backend.tests.base_test import BaseTest
 
 
@@ -34,7 +35,7 @@ class SearchTests(BaseTest):
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=test&selector=users", headers=self.connexion())
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)
 
     def test_autocomplete_tmdb(self):
         with mock.patch("backend.api.routes.search.TMDBApiManager.create_search_results") as mock_search:
@@ -73,7 +74,7 @@ class SearchTests(BaseTest):
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=friends&selector=TMDB", headers=self.connexion())
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)
 
     def test_autocomplete_igdb(self):
         with mock.patch("backend.api.routes.search.GamesApiManager.create_search_results") as mock_search:
@@ -111,7 +112,7 @@ class SearchTests(BaseTest):
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=halo&selector=IGDB", headers=self.connexion())
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)
 
     def test_autocomplete_books(self):
         with mock.patch("backend.api.routes.search.BooksApiManager.create_search_results") as mock_search:
@@ -151,4 +152,4 @@ class SearchTests(BaseTest):
             mock_search.side_effect = Exception("An Unexpected Exception occurred")
 
             rv = self.client.get("/api/autocomplete?q=harry%20potter&selector=BOOKS", headers=self.connexion())
-            self.assertEqual(rv.status_code, 400)
+            self.assertEqual(rv.status_code, 500)

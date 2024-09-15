@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest import mock
+
 from backend.tests.base_test import BaseTest, TEST_USER
 
 
@@ -150,7 +151,7 @@ class AuthTests(BaseTest):
         rv = self.client.get("/api/tokens/oauth2/foo?callback=http://localhost:3000/oauth2/foo/callback")
         self.assertEqual(rv.status_code, 200)
 
-        redirect_url = rv.json["redirect_url"]
+        redirect_url = rv.json["data"]["redirect_url"]
         args = redirect_url.split("?")[1].split("&")
 
         self.assertIn("client_id=foo-id", args)
