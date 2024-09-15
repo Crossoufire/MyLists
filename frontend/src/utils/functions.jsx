@@ -115,8 +115,7 @@ export const formatNumberWithSpaces = (value) => {
 };
 
 export const getLevelColor = (intLevel) => {
-    const customPower = (x, p) => Math.pow(x, p);
-    const normalizedLevel = customPower(intLevel / 350, 0.75);
+    const normalizedLevel = Math.pow(intLevel / 350, 0.75);
 
     if (normalizedLevel <= 0.2) {
         return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;

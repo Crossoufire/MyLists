@@ -41,7 +41,7 @@ def new_token():
     """ Create an <access token> and a <refresh token>. The <refresh token> is returned as a hardened cookie """
 
     if not current_user.active:
-        return abort(403, "Your account is not activated, please check your email")
+        return abort(403, description="Account not activated, please check your email address.")
 
     token = current_user.generate_auth_token()
     db.session.add(token)
@@ -62,11 +62,11 @@ def refresh(data):
     access_token = data["access_token"]
     refresh_token = request.cookies.get("refresh_token")
     if not access_token or not refresh_token:
-        return abort(401)
+        return abort(401, description="Invalid access or refresh token")
 
     token = User.verify_refresh_token(refresh_token, access_token)
     if not token:
-        return abort(401)
+        return abort(401, description="Invalid access or refresh token")
 
     token.expire()
     new_token_ = token.user.generate_auth_token()
@@ -85,7 +85,7 @@ def revoke_token():
 
     token = Token.query.filter_by(access_token=access_token).first()
     if not token:
-        return abort(401)
+        return abort(401, description="Invalid access token")
 
     token.expire()
     db.session.commit()
@@ -107,9 +107,8 @@ def reset_password_token(data):
             callback=data["callback"],
             token=user.generate_jwt_token(),
         )
-    except Exception as e:
-        current_app.logger.error(f"ERROR sending the password reset email to user ID [{data['user'].id}]: {e}")
-        return abort(500)
+    except:
+        return abort(500, description="Failed to send password reset email")
 
     return {}, 204
 
@@ -118,8 +117,10 @@ def reset_password_token(data):
 @body(PasswordResetSchema)
 def reset_password(data):
     user = User.verify_jwt_token(data["token"])
-    if not user or not user.active:
-        return abort(400)
+    if not user:
+        return abort(400, description="Invalid token")
+    if not user.active:
+        return abort(401, description="Account not activated, please check your email address.")
 
     user.password = generate_password_hash(data["new_password"])
     db.session.commit()
@@ -134,8 +135,10 @@ def register_token(data):
     """ Check the register token to validate a new user account """
 
     user = User.verify_jwt_token(data["token"])
-    if not user or user.active:
-        return abort(400)
+    if not user:
+        return abort(400, description="Invalid token")
+    if not user.active:
+        return abort(401, description="Account not activated, please check your email address.")
 
     user.active = True
     user.activated_on = datetime.utcnow()
@@ -153,7 +156,7 @@ def oauth2_authorize(args, provider: str):
 
     provider_data = current_app.config["OAUTH2_PROVIDERS"].get(provider)
     if provider_data is None:
-        return abort(404, "Unknown OAuth2 provider")
+        return abort(404, description="OAuth2 provider not found")
 
     # Generate random string for state parameter
     session["oauth2_state"] = secrets.token_urlsafe(32)
@@ -182,11 +185,11 @@ def oauth2_new(data, provider: str):
 
     provider_data = current_app.config["OAUTH2_PROVIDERS"].get(provider)
     if provider_data is None:
-        return abort(404, "Unknown OAuth2 provider")
+        return abort(404, description="OAuth2 provider not found")
 
     # Check state parameter matches created one in authorization request
     if data["state"] != session.get("oauth2_state"):
-        return abort(401, "Invalid code or state")
+        return abort(401, description="Invalid code or state")
 
     # Exchange authorization code for <access_token>
     response = requests.post(provider_data["access_token_url"], data={
@@ -198,11 +201,11 @@ def oauth2_new(data, provider: str):
     }, headers={"Accept": "application/json"})
 
     if response.status_code != 200:
-        return abort(401, "Invalid code or state")
+        return abort(401, description="Invalid code or state")
 
     oauth2_token = response.json().get("access_token")
     if not oauth2_token:
-        return abort(401, "Invalid code or state")
+        return abort(401, description="Invalid code or state")
 
     # Use <access_token> to get user email address
     response = requests.get(provider_data["get_user"]["url"], headers={
@@ -211,7 +214,7 @@ def oauth2_new(data, provider: str):
     })
 
     if response.status_code != 200:
-        return abort(401, "Invalid code or state")
+        return abort(401, description="Invalid code or state")
 
     # Get email from provider
     email = provider_data["get_user"]["email"](response.json())

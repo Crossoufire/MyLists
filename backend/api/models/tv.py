@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import List, Dict, Tuple, Type
+
 from flask import abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
@@ -84,7 +87,7 @@ class TVModel(Media):
             tv_net = eval(f"{cls.__name__}Network")
             query = cls.query.join(tv_net, tv_net.media_id == cls.id).filter(tv_net.name == name).all()
         else:
-            return abort(400, "Invalid job type")
+            return abort(404, description="JobType not found")
 
         tv_list = eval(f"{cls.__name__}List")
         media_in_user_list = (

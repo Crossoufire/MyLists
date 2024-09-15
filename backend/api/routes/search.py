@@ -1,9 +1,11 @@
-from flask import Blueprint, jsonify, abort, current_app
-from backend.api.core.handlers import token_auth
+from flask import Blueprint, jsonify
+
+from backend.api.core.auth import token_auth
 from backend.api.managers.ApiManager import TMDBApiManager, GamesApiManager, BooksApiManager
 from backend.api.models.user import User
 from backend.api.schemas.search import SearchSchema
 from backend.api.utils.decorators import arguments
+
 
 search_bp = Blueprint("api_search", __name__)
 
@@ -15,29 +17,18 @@ def autocomplete(args):
     """ Autocomplete search route for media searching """
 
     if args["selector"] == "users":
-        try:
-            results = User.create_search_results(args["q"], args["page"])
-        except Exception as e:
-            current_app.logger.error(f"[ERROR] - Requesting the database: {e}")
-            return abort(400)
+        results = User.create_search_results(args["q"], args["page"])
         return jsonify(data=results), 200
 
     if args["selector"] == "TMDB":
-        Api_data = TMDBApiManager()
+        api_manager = TMDBApiManager()
     elif args["selector"] == "IGDB":
-        Api_data = GamesApiManager()
-    elif args["selector"] == "BOOKS":
-        Api_data = BooksApiManager()
+        api_manager = GamesApiManager()
     else:
-        return abort(400, "Selector not recognized")
+        api_manager = BooksApiManager()
 
-    try:
-        Api_data.search(args["q"], args["page"])
-        results = Api_data.create_search_results()
-    except Exception as e:
-        current_app.logger.error(f"[ERROR] - Requesting the API ({Api_data.__class__.__name__}): {e}")
-        return abort(400)
-
+    api_manager.search(args["q"], args["page"])
+    results = api_manager.create_search_results()
     results["page"] = args["page"]
 
     return jsonify(data=results), 200

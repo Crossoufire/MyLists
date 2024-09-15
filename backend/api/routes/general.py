@@ -1,10 +1,10 @@
 from operator import and_
 
-from flask import abort, Blueprint, current_app, jsonify, url_for
+from flask import Blueprint, jsonify, url_for
 from sqlalchemy import case, desc, func
 
 from backend.api import cache, db
-from backend.api.core.handlers import token_auth
+from backend.api.core.auth import token_auth
 from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.models.user import User, UserMediaSettings
@@ -21,15 +21,9 @@ general = Blueprint("api_general", __name__)
 @cache.cached(timeout=3600)
 def current_trends():
     """ Fetch the current WEEK trends for TV and Movies using the TMDB API. Function cached for an hour. """
-
-    try:
-        tv_trends = SeriesApiManager().fetch_and_format_trending()
-        movies_trends = MoviesApiManager().fetch_and_format_trending()
-    except Exception as e:
-        current_app.logger.error(f"[ERROR] - Fetching the trending data: {e}")
-        return abort(400, "Can't fetch the trending data for now. Please try again later")
-
-    return jsonify(data={"tv_trends": tv_trends, "movies_trends": movies_trends}), 200
+    tv_trends = SeriesApiManager().fetch_and_format_trending()
+    movies_trends = MoviesApiManager().fetch_and_format_trending()
+    return jsonify(data=dict(tv_trends=tv_trends, movies_trends=movies_trends)), 200
 
 
 @general.route("/hall_of_fame", methods=["GET"])

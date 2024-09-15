@@ -24,8 +24,8 @@ export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId
 
 function MediaEditPage() {
     const navigate = useNavigate();
-    const { mediaType, mediaId } = Route.useParams();
     const { editMediaMutation } = simpleMutations();
+    const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
     const form = useForm({ defaultValues: { genres: genreListsToListsOfDict(apiData.genres) } });
     const parts = sliceIntoParts(apiData.fields, 3);

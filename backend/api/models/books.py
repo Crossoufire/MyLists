@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import List, Dict, Tuple
+
 from flask import abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
@@ -57,7 +60,7 @@ class Books(Media):
                 .filter(BooksAuthors.name == name).all()
             )
         else:
-            return abort(400, "Invalid job type")
+            return abort(404, description="JobType not found")
 
         media_in_user_list = (
             db.session.query(BooksList)

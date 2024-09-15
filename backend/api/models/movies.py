@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import List, Dict, Tuple, Type
+
 from flask import abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
@@ -67,7 +70,7 @@ class Movies(Media):
                 .all()
             )
         else:
-            return abort(400, "Invalid job type")
+            return abort(404, description="JobType not found")
 
         media_in_user_list = (
             db.session.query(MoviesList)
@@ -145,7 +148,7 @@ class MoviesList(MediaList):
 
     @classmethod
     def additional_search_joins(cls) -> List[Tuple[Type[MoviesActors], bool]]:
-        return [(MoviesActors, MoviesActors.media_id == Movies.id),]
+        return [(MoviesActors, MoviesActors.media_id == Movies.id), ]
 
     @classmethod
     def additional_search_filters(cls, search: str) -> List[ColumnElement]:

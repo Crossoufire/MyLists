@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import {useAuth} from "@/hooks/AuthHook";
 import {routeTree} from "./routeTree.gen";
@@ -15,11 +14,15 @@ const router = createRouter({
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: ErrorComponent,
     context: { queryClient: queryClient, auth: undefined },
-    defaultErrorComponent: (error) => <ErrorComponent {...error}/>,
+    defaultErrorComponent: ({ error }) =>
+        <ErrorComponent
+            statusCode={error.status}
+            message={error.description}
+        />,
 });
 
 
-function App() {
+export default function App() {
     return (
         <ThemeProvider>
             <QueryClientProvider client={queryClient}>

@@ -1,18 +1,22 @@
 from __future__ import annotations
+
 import json
 import secrets
 from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict, Optional, Any
+
 import jwt
-from flask import url_for, current_app, abort
+from flask import url_for, current_app
 from flask_bcrypt import check_password_hash, generate_password_hash
 from sqlalchemy import desc, func, select, union_all, literal
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
 from backend.api.utils.functions import compute_level, safe_div
+
 
 followers = db.Table(
     "followers",
@@ -176,9 +180,7 @@ class User(db.Model):
         return token
 
     def check_autorization(self, username: str) -> User:
-        user = self.query.filter_by(username=username).first()
-        if not user:
-            return abort(404, "User not found")
+        user = self.query.filter_by(username=username).first_or_404()
         return user
 
     def set_view_count(self, user: User, media_type: MediaType):
@@ -349,14 +351,14 @@ class User(db.Model):
             page=page, per_page=8, error_out=True,
         )
 
-        users_list = [{
-            "name": user.username,
-            "image_cover": user.profile_image,
-            "date": user.registered_on.strftime("%d %b %Y"),
-            "media_type": "User",
-        } for user in users.items]
+        users_list = [dict(
+            name=user.username,
+            image_cover=user.profile_image,
+            date=user.registered_on.strftime("%d %b %Y"),
+            media_type="User",
+        ) for user in users.items]
 
-        return {"items": users_list, "total": users.total, "pages": users.pages}
+        return dict(items=users_list, total=users.total, pages=users.pages)
 
     @classmethod
     def register_new_user(cls, username: str, email: str, **kwargs) -> User:
@@ -403,12 +405,12 @@ class User(db.Model):
             db.session.commit()
 
     @staticmethod
-    def verify_jwt_token(token: str) -> User | None:
+    def verify_jwt_token(token: str) -> Optional[User]:
         try:
             user_id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])["token"]
+            return User.query.filter_by(id=user_id).first()
         except:
             return None
-        return User.query.filter_by(id=user_id).first()
 
 
 class UserMediaSettings(db.Model):

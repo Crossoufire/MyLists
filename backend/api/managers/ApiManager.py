@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 import secrets
 from datetime import datetime
@@ -6,16 +7,20 @@ from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, Type
 from urllib import request
+
 import requests
 from flask import url_for, current_app, abort
 from howlongtobeatpy import HowLongToBeat
 from ratelimit import sleep_and_retry, limits
 from requests import Response
+
 from backend.api import db
+from backend.api.core.errors import log_error
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.utils.functions import (clean_html_text, get, is_latin, format_datetime, resize_and_save_image,
                                          reorder_seas_eps)
+
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
 
@@ -57,6 +62,7 @@ class ApiManager(metaclass=ApiManagerMeta):
         self._fetch_details_from_api()
         self._format_api_data()
         self._update_data_to_db()
+        db.session.commit()
 
     def _add_data_to_db(self) -> db.Model:
         models = ModelsManager.get_dict_models(self.GROUP, "all")
@@ -107,8 +113,6 @@ class ApiManager(metaclass=ApiManagerMeta):
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
 
-        db.session.commit()
-
     def get_changed_api_ids(self) -> List[int]:
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -151,11 +155,10 @@ class ApiManager(metaclass=ApiManagerMeta):
         try:
             response = getattr(requests, method)(url, **kwargs, timeout=10)
         except requests.exceptions.RequestException as error:
-            current_app.logger.error(f"Failed to fetch data from: {url}")
             if error.response is not None:
-                return abort(error.response.status_code, error.response.reason)
+                return abort(error.response.status_code, description=error.response.reason)
             else:
-                return abort(500, "An unexpected error occurred trying to fetch the data. Please try again later.")
+                return abort(503, description="Failed to fetch data from external API")
 
         return response
 
@@ -252,7 +255,7 @@ class TMDBApiManager(ApiManager):
             try:
                 self._save_api_cover(f"{self.POSTER_BASE_URL}{cover_path}", cover_name)
             except Exception as e:
-                current_app.logger.error(f"[ERROR] - Trying to recover the cover: {e}")
+                current_app.logger.warning(f"[WARNING] - Could not fetch the TMDB poster: {e}")
                 cover_name = "default.jpg"
 
         return cover_name
@@ -414,18 +417,18 @@ class AnimeApiManager(TVApiManager):
 
         tmdb_genres_list = super()._format_genres()
 
-        anime_genres_list = []
         try:
             anime_search = self.api_anime_search(self.api_data["name"])
-            anime_genres = anime_search["data"][0]["genres"]
-            anime_demographic = anime_search["data"][0]["demographics"]
-            anime_themes = anime_search["data"][0]["themes"]
+            anime_genres = get(anime_search, "data", 0, "genres", default=[])
+            anime_demographic = get(anime_search, "data", 0, "demographics", default=[])
+            anime_themes = get(anime_search, "data", 0, "themes", default=[])
             fusion_list = anime_genres + anime_demographic + anime_themes
             anime_genres_list = [{"name": item["name"]} for item in fusion_list][:5]
         except Exception as e:
-            current_app.logger.error(f"[ERROR] - Requesting the Jikan API: {e}")
+            log_error(e)
+            return tmdb_genres_list
 
-        return anime_genres_list or tmdb_genres_list
+        return anime_genres_list
 
 
 class MoviesApiManager(TMDBApiManager):
@@ -656,12 +659,11 @@ class GamesApiManager(ApiManager):
             try:
                 self._save_api_cover(cover_path, cover_name)
             except Exception as e:
-                current_app.logger.error(f"[ERROR] - Trying to fetch the game poster: {e}")
+                current_app.logger.warning(f"[WARNING] - Could not fetch the game poster: {e}")
                 cover_name = "default.jpg"
-
         return cover_name
 
-    def update_api_token(self) -> Optional[str]:
+    def update_api_token(self) -> str:
         """ Update the IGDB API Token. Backend needs to restart to update the env variable. """
 
         try:
@@ -671,16 +673,11 @@ class GamesApiManager(ApiManager):
                     f"client_secret={self.SECRET_IGDB}&grant_type=client_credentials",
             )
             data = json.loads(response.text)
-            new_igdb_token = data.get("access_token")
-
-            if not new_igdb_token:
-                current_app.logger.error("[ERROR] - Failed to obtain the new IGDB Token.")
-                return None
+            new_igdb_token = data["access_token"]
 
             return new_igdb_token
-
         except Exception as e:
-            current_app.logger.error(f"[ERROR] - An error occurred trying to obtain the new IGDB Token: {e}")
+            log_error(e)
 
     def get_changed_api_ids(self) -> List[int]:
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
@@ -781,7 +778,8 @@ class BooksApiManager(ApiManager):
             try:
                 cover_path = get(self.api_data, "imageLinks", "large")
                 self._save_api_cover(cover_path, cover_name)
-            except:
+            except Exception as e:
+                current_app.logger.warning(f"[WARNING] - Could not fetch the book poster: {e}")
                 cover_name = "default.jpg"
 
         return cover_name

@@ -1,5 +1,4 @@
 import os
-from plistlib import InvalidFileException
 import re
 import secrets
 from datetime import datetime
@@ -29,44 +28,37 @@ def compute_level(total_time: float) -> float:
 
 
 def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = True):
-    """ Save an account picture """
+    """ Save an account picture with better error handling """
 
     try:
-        image = Image.open(form_picture.stream)
-        if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
-            raise InvalidFileException
+        with Image.open(form_picture.stream) as image:
+            if image.format.lower() not in ("gif", "jpeg", "jpg", "png", "webp", "tiff"):
+                raise ValueError("Invalid image format")
 
-        random_hex = secrets.token_hex(16)
-        _, f_ext = os.path.splitext(secure_filename(form_picture.filename))
-        picture_fn = random_hex + f_ext
+            random_hex = secrets.token_hex(16)
+            _, f_ext = os.path.splitext(secure_filename(form_picture.filename))
+            picture_fn = random_hex + f_ext
 
-        if profile:
-            save_path = os.path.join(current_app.root_path, "static/profile_pics", picture_fn)
-        else:
-            save_path = os.path.join(current_app.root_path, "static/background_pics", picture_fn)
+            folder = "static/profile_pics" if profile else "static/background_pics"
+            save_path = os.path.join(current_app.root_path, folder, picture_fn)
 
-        image.save(save_path, save_all=True if image.format.lower() == "gif" else False)
-        image.close()
+            image.save(save_path, save_all=True if image.format.lower() == "gif" else False)
+    except (Exception, ValueError) as e:
+        if isinstance(e, ValueError):
+            return abort(500, description="Invalid image format")
+        return abort(500, description="Failed to save image")
 
-        if old_picture and old_picture != "default.jpg":
-            try:
-                old_path = os.path.join(
-                    current_app.root_path,
-                    "static/profile_pics" if profile else "static/background_pics", old_picture
-                )
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-            except Exception as e:
-                current_app.logger.error(f"Error trying to remove an old picture: {str(e)}")
+    if old_picture and old_picture != "default.jpg":
+        old_path = os.path.join(current_app.root_path, folder, old_picture)
+        if os.path.exists(old_path):
+            os.remove(old_path)
 
-        return picture_fn
-    except (InvalidFileException, Exception) as e:
-        if isinstance(e, InvalidFileException):
-            return abort(400, "The image format is not supported")
-        return abort(400, "The image could not be processed")
+    return picture_fn
 
 
 def safe_div(a: float, b: float, percentage: bool = False):
+    """ Safe division which returns 0 if division by 0 """
+
     try:
         if b == 0:
             return 0

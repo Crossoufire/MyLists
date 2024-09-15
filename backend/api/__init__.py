@@ -2,6 +2,7 @@ import logging
 import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from typing import Type
+
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
@@ -10,6 +11,7 @@ from flask_mail import Mail
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 from backend.api.utils.enums import RoleType
 from backend.config import Config, get_config
@@ -77,6 +79,7 @@ def create_mail_handler(app: Flask):
 
 def init_stats_and_time_spent():
     from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
+
     compute_media_time_spent()
     update_Mylists_stats()
 
@@ -100,8 +103,9 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     cache.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
-    cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000",
-                                                           "http://localhost:4173", "http://127.0.0.1:4173"])
+    cors.init_app(app, supports_credentials=True, origins=[
+        "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173"
+    ])
 
     with app.app_context():
         import_blueprints(app)
@@ -114,6 +118,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
             init_stats_and_time_spent()
 
         from backend.cli.commands import create_cli_commands
+
         create_cli_commands()
 
         return app

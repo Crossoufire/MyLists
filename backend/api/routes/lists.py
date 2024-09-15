@@ -20,7 +20,7 @@ def media_list(args, media_type: MediaType, username: str):
     user = current_user.check_autorization(username)
 
     if not user.get_media_setting(media_type).active:
-        return abort(404)
+        return abort(404, description="MediaType not activated")
 
     current_user.set_view_count(user, media_type)
     media_data, pagination = ListQueryManager(user, media_type, args).return_results()

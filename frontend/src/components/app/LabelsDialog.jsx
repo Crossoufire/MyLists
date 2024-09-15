@@ -84,12 +84,12 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
         }
 
         renameLabel.mutate({ oldName: selectedLabel, newName: newLabelName }, {
+            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
             onSuccess: () => {
                 updateLabelsInList(labelsInList.map(x => (x === selectedLabel ? newLabelName : x)));
                 setLabelsToAdd(labelsToAdd.map(x => (x === selectedLabel ? newLabelName : x)));
                 setMessageTab2({ type: "success", value: "Label name successfully updated" });
             },
-            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
             onSettled: resetRenaming,
         });
     };
@@ -100,12 +100,12 @@ export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLab
         if (!window.confirm("Do you really want to delete this label?")) return;
 
         await deleteLabel.mutate({ name }, {
+            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
             onSuccess: () => {
                 setMessageTab2({ type: "success", value: "Label successfully deleted" });
                 updateLabelsInList(labelsInList.filter(x => x !== name));
                 setLabelsToAdd(labelsToAdd.filter(x => x !== name));
             },
-            onError: () => setMessageTab2({ type: "error", value: "An unexpected error occurred" }),
         });
     };
 
@@ -253,8 +253,8 @@ const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLab
             return setMessage({ type: "error", value: "This label already exists" });
         }
         await addLabel.mutateAsync({ payload: newLabel }, {
-            onSuccess: () => updateLabelsList([...labelsInList, newLabel]),
             onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onSuccess: () => updateLabelsList([...labelsInList, newLabel]),
             onSettled: () => setNewLabel(""),
         });
     };

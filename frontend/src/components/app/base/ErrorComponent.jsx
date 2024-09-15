@@ -1,24 +1,22 @@
-import errorImage from "@/images/error.jpg";
+import {Link} from "@tanstack/react-router";
+import {LuAlertCircle} from "react-icons/lu";
+import {Button} from "@/components/ui/button";
 
 
-export const ErrorComponent = ({ error }) => {
-    let { status, message, description } = error;
-    if (status === undefined) {
-        status = 404;
-        message = "Page not found";
-        description = "Sorry the requested page was not found";
-    }
-
+export const ErrorComponent = ({ statusCode = 404, message = "Looks like you're lost" }) => {
     return (
-        <div className="flex flex-col mt-8">
-            <h2 className="text-4xl mt-3 font-semibold">{status} - {message}</h2>
-            <h4 className="text-xl mt-4">{description}</h4>
-            <div className="flex items-center justify-center mt-14">
-                <img
-                    alt="error"
-                    src={errorImage || ""}
-                    className="w-[300px] h-[300px]"
-                />
+        <div className="flex items-center justify-center mt-12">
+            <div className="text-center px-4">
+                <h1 className="text-4xl sm:text-6xl font-bold mb-4">
+                    Oops! <span className="text-primary">{statusCode}</span>
+                </h1>
+                <p className="text-xl sm:text-2xl mb-8 text-muted-foreground">{message}</p>
+                <div className="mb-8">
+                    <LuAlertCircle className="h-24 w-24 sm:h-48 sm:w-48 mx-auto text-primary"/>
+                </div>
+                <Button asChild>
+                    <Link to="/">Take Me Home</Link>
+                </Button>
             </div>
         </div>
     );

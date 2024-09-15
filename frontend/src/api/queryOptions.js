@@ -26,6 +26,7 @@ export const bordersOptions = () => queryOptions({
 export const trendsOptions = () => queryOptions({
     queryKey: ["trends"],
     queryFn: () => fetcher({ url: "/current_trends" }),
+    meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
 });
 
 export const upcomingOptions = () => queryOptions({

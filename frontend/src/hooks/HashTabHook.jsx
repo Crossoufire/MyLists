@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 
 
 export const useHashTab = (defaultTab, storageKey) => {
-    const [selectedTab, setSelectedTab] = useState(defaultTab);
+    const [selectedTab, setSelectedTab] = useState(defaultTab || "");
 
     useEffect(() => {
         const storedData = localStorage.getItem(storageKey);

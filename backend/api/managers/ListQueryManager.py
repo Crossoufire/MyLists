@@ -1,7 +1,9 @@
 from typing import Tuple, Dict, List, Any, Optional
+
 from flask import abort
 from flask_sqlalchemy.query import Query
 from sqlalchemy import ColumnElement, func
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
@@ -187,7 +189,7 @@ class ListQueryManager:
             self.networks_filter,
             self.companies_filter,
             self.search_filter,
-            )
+        )
 
     def _execute_query(self):
         base_query = db.session.query(self.media_list).join(self.media)
@@ -205,10 +207,7 @@ class ListQueryManager:
             self.results.append(media_assoc)
 
     def return_results(self) -> Tuple[List[Dict], Dict]:
-        try:
-            self._execute_query()
-        except:
-            abort(400, "Invalid query")
+        self._execute_query()
 
         pagination = dict(
             all_status=self.all_status,
@@ -376,4 +375,4 @@ class ListFiltersManager:
         try:
             return filters_job_map[self.args["job"]]()
         except:
-            return abort(400, "Invalid query")
+            return abort(400, description="Filter not recognized")

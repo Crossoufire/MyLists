@@ -2,8 +2,9 @@ import secrets
 from pathlib import Path
 from typing import Union
 from urllib.request import urlretrieve
-from flask import current_app
-from flask import request, jsonify, Blueprint, abort
+
+from flask import current_app, request, jsonify, Blueprint, abort
+
 from backend.api import db
 from backend.api.managers.ApiManager import ApiManager
 from backend.api.core import token_auth
@@ -12,6 +13,7 @@ from backend.api.utils.decorators import body
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
 from backend.api.utils.functions import get, format_datetime, resize_and_save_image
 from backend.api.managers.ModelsManager import ModelsManager
+
 
 details_bp = Blueprint("api_details", __name__)
 
@@ -32,7 +34,7 @@ def media_details(media_type: MediaType, media_id: Union[int, str]):
         media = api_manager(api_id=media_id).save_media_to_db()
         db.session.commit()
     elif not media:
-        return abort(404, "Media not found")
+        return abort(404, description="Media not found")
 
     data = dict(
         media=media.to_dict(),
@@ -49,9 +51,7 @@ def media_details(media_type: MediaType, media_id: Union[int, str]):
 def get_details_edit(media_type: MediaType, media_id: int):
     media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
-    media = media_model.query.filter_by(id=media_id).first()
-    if not media:
-        return abort(404, "Media not found")
+    media = media_model.query.filter_by(id=media_id).first_or_404()
 
     data = dict(
         fields=[(key, val) for key, val in media.to_dict().items() if key in media_model.form_only()],
@@ -91,9 +91,7 @@ def post_details_edit(data):
 
     media_model, genre_model = data["models"]
 
-    media = media_model.query.filter_by(id=data["media_id"]).first()
-    if not media:
-        return abort(404, "Media not found")
+    media = media_model.query.filter_by(id=data["media_id"]).first_or_404()
 
     # Suppress all non-allowed fields
     form_authorized = media_model.form_only()
@@ -108,9 +106,8 @@ def post_details_edit(data):
         try:
             urlretrieve(str(updates["image_cover"]), str(picture_path))
             resize_and_save_image(str(picture_path), str(picture_path))
-        except Exception as e:
-            current_app.logger.error(f"[ERROR] - occurred updating media cover with ID [{media.id}]: {e}")
-            return abort(403, "Not allowed to upload this media cover")
+        except:
+            return abort(403, description="This media cover could not be added. Try another one.")
 
     updates["image_cover"] = picture_fn
     media.lock_status = True
@@ -134,18 +131,10 @@ def post_details_edit(data):
 def refresh_media(data):
     """ Refresh metadata of a media """
 
-    media = data["models"].query.filter_by(id=data["media_id"]).first()
-    if media is None:
-        return abort(404, "Media not found")
-
-    try:
-        api_manager = ApiManager.get_subclass(data["media_type"])
-        api_manager(api_id=media.api_id).update_media_to_db()
-        current_app.logger.info(f"[INFO] - Refreshed {data['media_type'].value} with API ID: [{media.api_id}]")
-    except Exception as e:
-        current_app.logger.error(f"[ERROR] - While refreshing {data['media_type'].value} with API ID: "
-                                 f"[{media.api_id}]: {e}")
-        return abort(400, "An error occurred trying to refresh the media")
+    media = data["models"].query.filter_by(id=data["media_id"]).first_or_404()
+    api_manager = ApiManager.get_subclass(data["media_type"])
+    api_manager(api_id=media.api_id).update_media_to_db()
+    current_app.logger.info(f"[INFO] - Refreshed {data['media_type'].value} with API ID: [{media.api_id}]")
 
     return {}, 204
 
@@ -156,9 +145,7 @@ def refresh_media(data):
 def lock_media(data):
     """ Lock a media so the API does not update it anymore """
 
-    media = data["models"].query.filter_by(id=data["media_id"]).first()
-    if not media:
-        return abort(404, "Media not found")
+    media = data["models"].query.filter_by(id=data["media_id"]).first_or_404()
 
     media.lock_status = data["payload"]
     db.session.commit()

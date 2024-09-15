@@ -36,9 +36,8 @@ def register_user(data):
             callback=data["callback"],
             token=new_user.generate_jwt_token(),
         )
-    except Exception as e:
-        current_app.logger.error(f"ERROR sending a registering email to user ID [{new_user.id}]: {e}")
-        return abort(400)
+    except:
+        return abort(500, description="Failed to send registration email")
 
     return {}, 204
 
@@ -149,9 +148,9 @@ def update_modal():
 def update_follow(data):
     """ Update the follow status of a user """
 
-    user = User.query.filter_by(id=data["follow_id"]).first()
-    if not user or user.id == current_user.id:
-        return abort(400)
+    user = User.query.filter_by(id=data["follow_id"]).first_or_404()
+    if user.id == current_user.id:
+        return abort(400, description="You cannot follow yourself")
 
     if data["follow_status"]:
         current_user.add_follow(user)
@@ -202,7 +201,7 @@ def settings_general(data):
     back_image = request.files.get("background_image")
     if back_image:
         old_pict = current_user.background_image
-        current_user.background_image = save_picture(profile_image, old_pict, profile=False)
+        current_user.background_image = save_picture(back_image, old_pict, profile=False)
 
     db.session.commit()
 
@@ -270,16 +269,17 @@ def settings_delete():
         db.session.commit()
         current_app.logger.info(f"The account [ID = {current_user.id}] has been successfully deleted")
         return {}, 204
-    except Exception as e:
+    except:
         db.session.rollback()
-        current_app.logger.error(f"Error trying to delete account [ID = {current_user.id}]: {e}")
-        return abort(500)
+        return abort(500, description="Failed to delete account")
 
 
 @users.route("/settings/download/<mediatype:media_type>", methods=["GET"])
 @token_auth.login_required
 def download_medialist(media_type: MediaType):
     """ Download the selected medialist data """
+
     list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
     media_data = list_model.query.filter_by(user_id=current_user.id).all()
+
     return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200

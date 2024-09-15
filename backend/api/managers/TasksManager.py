@@ -11,6 +11,7 @@ from flask import current_app, jsonify
 from sqlalchemy import func
 
 from backend.api import db, cache
+from backend.api.core.errors import log_error
 from backend.api.managers.ApiManager import GamesApiManager, ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.ModelsManager import ModelsManager
@@ -144,8 +145,8 @@ class TasksManager(metaclass=TasksManagerMeta):
             try:
                 os.remove(file_path)
                 count += 1
-            except Exception as e:
-                current_app.logger.error(f"Error deleting this old {self.GROUP.value} cover {image}: {e}")
+            except:
+                current_app.logger.warning(f"[WARNING] - Failed to delete {image} from {self.GROUP.value} covers")
         current_app.logger.info(f"Total old {self.GROUP.value} covers deleted: {count}")
 
     def remove_non_list_media(self) -> List[int]:
@@ -208,7 +209,7 @@ class TasksManager(metaclass=TasksManagerMeta):
             try:
                 api_manager(api_id=api_id).update_media_to_db()
             except Exception as e:
-                current_app.logger.error(f"[ERROR] - Refreshing {self.GROUP.value} with API ID = [{api_id}]: {e}")
+                log_error(e)
         current_app.logger.info(f"{self.GROUP.value} API ids refreshed")
 
 

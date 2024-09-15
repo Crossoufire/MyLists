@@ -40,13 +40,10 @@ def add_media(data):
     if new_status is None:
         new_status = list_model.DEFAULT_STATUS.value
 
-    media = media_model.query.filter_by(id=data["media_id"]).first()
-    if not media:
-        return abort(400, "Media not found")
-
+    media = media_model.query.filter_by(id=data["media_id"]).first_or_404()
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if media_assoc:
-        return abort(400, "Media already in your list")
+        return abort(400, description="Media already in your list")
 
     total_watched = media.add_to_user(new_status, current_user.id)
     db.session.commit()
@@ -74,9 +71,7 @@ def delete_media(data):
 
     list_model, label_model = data["models"]
 
-    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     old_total = media_assoc.total if data["media_type"] != MediaType.GAMES else media_assoc.playtime
     media_assoc.update_time_spent(old_value=old_total, new_value=0)
@@ -101,9 +96,7 @@ def delete_media(data):
 def update_favorite(data):
     """ Add or remove the media as favorite for the current user """
 
-    media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media:
-        return abort(404, "Media not in your list")
+    media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     media.favorite = data["payload"]
     db.session.commit()
@@ -119,9 +112,7 @@ def update_favorite(data):
 def update_status(data):
     """ Update the media status of a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     old_total = media_assoc.total if data["media_type"] != MediaType.GAMES else media_assoc.playtime
     old_status = media_assoc.status
@@ -153,14 +144,12 @@ def update_rating(data):
     if payload:
         if current_user.add_feeling:
             if payload > 5 or payload < 0:
-                return abort(400, "Feeling needs to be between 0 and 5")
+                return abort(400, description="Feeling needs to be between 0 and 5")
         else:
             if payload > 10 or payload < 0:
-                return abort(400, "Score needs to be between 0 and 10")
+                return abort(400, description="Score needs to be between 0 and 10")
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if current_user.add_feeling:
         media_assoc.feeling = payload
@@ -180,12 +169,10 @@ def update_rating(data):
 def update_redo(data):
     """ Update the media re-read/re-watched value for a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(400, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if media_assoc.status != Status.COMPLETED:
-        return abort(400, "Media is not `Completed`")
+        return abort(400, description="Media is not `Completed`")
 
     old_redo = media_assoc.redo
     old_total = media_assoc.total
@@ -207,9 +194,7 @@ def update_redo(data):
 def update_comment(data):
     """ Update the media comment for a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if media_assoc is None:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     media_assoc.comment = data["payload"]
     db.session.commit()
@@ -225,9 +210,7 @@ def update_comment(data):
 def update_playtime(data):
     """ Update playtime of an updated game from a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.PLAYTIME, media_assoc.playtime, data["payload"])
     media_assoc.update_time_spent(old_value=media_assoc.playtime, new_value=data["payload"])
@@ -245,10 +228,7 @@ def update_playtime(data):
 def update_platform(data):
     """ Update platform the user played on """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
-
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
     media_assoc.platform = data["payload"]
     db.session.commit()
     current_app.logger.info(f"[{current_user.id}] Games ID {data['media_id']} Platform updated to {data['payload']}")
@@ -262,12 +242,10 @@ def update_platform(data):
 def update_season(data):
     """ Update the season of an updated anime or series for the user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if data["payload"] > media_assoc.media.eps_per_season[-1].season:
-        return abort(400, "Invalid season")
+        return abort(400, description="Invalid season")
 
     old_season = media_assoc.current_season
     old_eps = media_assoc.last_episode_watched
@@ -300,12 +278,10 @@ def update_season(data):
 def update_episode(data):
     """ Update the episode of an updated anime or series from a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not in your list")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if data["payload"] > media_assoc.media.eps_per_season[media_assoc.current_season - 1].episodes:
-        return abort(400, "Invalid episode")
+        return abort(400, description="Invalid episode")
 
     old_season = media_assoc.current_season
     old_episode = media_assoc.last_episode_watched
@@ -337,12 +313,10 @@ def update_episode(data):
 def update_page(data):
     """ Update the page read of an updated book from a user """
 
-    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
-    if not media_assoc:
-        return abort(404, "Media not found")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if data["payload"] > int(media_assoc.media.pages):
-        return abort(400, "Invalid page")
+        return abort(400, description="Invalid page")
 
     old_page = media_assoc.actual_page
     old_total = media_assoc.total

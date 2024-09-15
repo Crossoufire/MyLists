@@ -48,7 +48,7 @@ const mutationFunctionsMap = {
         url: `/stats/${mediaType}/${username}`,
     }),
     editMediaDetails: ({ mediaType, mediaId, payload }) => postFetcher({
-        url: `/details/edit/${mediaType}/${mediaId}`,
+        url: `/details/edit`,
         data: { media_id: mediaId, media_type: mediaType, payload },
     }),
     generalSettings: ({ data }) => postFetcher({

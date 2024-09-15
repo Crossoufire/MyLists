@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import Dict, List, Tuple
+
 from flask import abort
 from sqlalchemy import func, ColumnElement
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
@@ -63,7 +66,7 @@ class Games(Media):
                 .all()
             )
         else:
-            return abort(400, "Invalid job type")
+            return abort(404, description="JobType not found")
 
         media_in_user_list = (
             db.session.query(GamesList)
@@ -171,7 +174,7 @@ class GamesGenre(Genres):
 
     @staticmethod
     def get_available_genres() -> List:
-        return ["4X", "Action",  "Adventure", "Arcade", "Business", "Card Game", "Comedy", "Drama",
+        return ["4X", "Action", "Adventure", "Arcade", "Business", "Card Game", "Comedy", "Drama",
                 "Educational", "Erotic", "Fantasy", "Fighting", "Hack and Slash", "Historical", "Horror", "Indie",
                 "Kids", "MOBA", "Music", "Mystery", "Non-fiction", "Open world", "Party", "Pinball", "Platform",
                 "Point-and-click", "Puzzle", "Quiz", "Racing", "Real Time Strategy (RTS)", "Role-playing (RPG)",
