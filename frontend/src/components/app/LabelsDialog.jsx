@@ -247,12 +247,12 @@ const LabelCreator = ({ labelsInList, isLabelDuplicate, updateLabelsList, addLab
     const [newLabel, setNewLabel] = useState("");
     const [message, setMessage] = useState({ type: "error", value: "" });
 
-    const createLabel = async () => {
+    const createLabel = () => {
         setMessage({ type: "error", value: "" });
         if (isLabelDuplicate(newLabel)) {
             return setMessage({ type: "error", value: "This label already exists" });
         }
-        await addLabel.mutateAsync({ payload: newLabel }, {
+        addLabel.mutate({ payload: newLabel }, {
             onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
             onSuccess: () => updateLabelsList([...labelsInList, newLabel]),
             onSettled: () => setNewLabel(""),

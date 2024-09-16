@@ -2,8 +2,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const StatusDrop = ({ status, allStatus, updateStatus }) => {
-    const handleStatus = async (status) => {
-        await updateStatus.mutateAsync({ payload: status });
+    const handleStatus = (status) => {
+        updateStatus.mutate({ payload: status });
     };
 
     return (
@@ -18,5 +18,5 @@ export const StatusDrop = ({ status, allStatus, updateStatus }) => {
                 </SelectContent>
             </Select>
         </div>
-    )
+    );
 };

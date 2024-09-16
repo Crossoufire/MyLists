@@ -6,8 +6,8 @@ export const PlaytimeListDrop = ({ isCurrent, playtime, updatePlaytime, classNam
     const playValues = getPlaytimeValues();
     const hoursPlaytime = playtime / 60;
 
-    const handlePlaytime = async (playtimeInHours) => {
-        await updatePlaytime.mutateAsync({ payload: playtimeInHours * 60 });
+    const handlePlaytime = (playtimeInHours) => {
+        updatePlaytime.mutate({ payload: playtimeInHours * 60 });
     };
 
     return (

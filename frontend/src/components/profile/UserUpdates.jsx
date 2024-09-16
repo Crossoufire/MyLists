@@ -1,12 +1,12 @@
 import {useState} from "react";
+import {useAuth} from "@/hooks/AuthHook";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {Link, useParams} from "@tanstack/react-router";
 import {UserUpdate} from "@/components/app/UserUpdate";
 import {MutedText} from "@/components/app/base/MutedText";
-import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations.js";
+import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const UserUpdates = ({ updates, followers = false }) => {
@@ -16,9 +16,9 @@ export const UserUpdates = ({ updates, followers = false }) => {
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
     const deleteUserUpdates = useDeleteUpdateMutation(["profile", username]);
 
-    const deleteUpdate = async (updateId) => {
+    const deleteUpdate = (updateId) => {
         setMediaIdBeingDeleted(updateId);
-        await deleteUserUpdates.mutateAsync({ updateIds: [updateId], returnData: true });
+        deleteUserUpdates.mutate({ updateIds: [updateId], returnData: true });
     };
 
     return (

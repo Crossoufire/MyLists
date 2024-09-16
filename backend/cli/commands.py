@@ -27,6 +27,12 @@ def create_cli_commands():
         get_active_users(days=days)
 
     @current_app.cli.command()
+    @click.argument("usernames", nargs=-1)
+    def get_users(usernames: List[str]):
+        """ Get users last seen. """
+        get_users_last_seen(usernames=list(usernames))
+
+    @current_app.cli.command()
     @click.argument("days", type=int, default=7)
     def delete_users(days: int):
         """ Delete non-activated users. """

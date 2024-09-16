@@ -8,9 +8,9 @@ export const HistoryDetails = ({ history, mediaType, mediaId }) => {
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
     const deleteHistory = useDeleteUpdateMutation(["details", mediaType, mediaId.toString()]);
 
-    const handleDelete = async (updateId) => {
+    const handleDelete = (updateId) => {
         setMediaIdBeingDeleted(updateId);
-        await deleteHistory.mutateAsync({ updateIds: [updateId] });
+        deleteHistory.mutate({ updateIds: [updateId] });
     };
 
     return (

@@ -16,9 +16,9 @@ export const CommentPopover = ({ isCurrent, content, updateComment }) => {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         if (content === contentsState) return;
-        await updateComment.mutateAsync({ payload: contentsState });
+        updateComment.mutate({ payload: contentsState });
         setIsEdit(false);
     };
 
@@ -61,11 +61,11 @@ export const CommentPopover = ({ isCurrent, content, updateComment }) => {
                             onChange={(ev) => setContentsState(ev.target.value)}
                         />
                         <Button className="mt-3" size="sm" onClick={handleSave}
-                        disabled={content === contentsState || updateComment.isPending}>
+                                disabled={content === contentsState || updateComment.isPending}>
                             Save
                         </Button>
                         <Button className="ml-3 mt-3" size="sm" variant="destructive" onClick={onEditCancel}
-                        disabled={content === contentsState || updateComment.isPending}>
+                                disabled={content === contentsState || updateComment.isPending}>
                             Cancel
                         </Button>
                     </>

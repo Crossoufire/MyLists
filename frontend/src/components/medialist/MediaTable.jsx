@@ -220,8 +220,8 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
     );
     const updateStatus = updateStatusFunc(onStatusSuccess);
 
-    const handleStatus = async (status) => {
-        await updateStatus.mutateAsync({ payload: status });
+    const handleStatus = (status) => {
+        updateStatus.mutate({ payload: status });
     };
 
     function onStatusSuccess(oldData, variables) {
@@ -315,9 +315,9 @@ const FavoriteCell = ({ row, isCurrent, username, mediaType, filters }) => {
 };
 
 const RedoCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateRedo } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
-
     if (row.original.status !== "Completed") return;
+
+    const { updateRedo } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
     return (
         <RedoListDrop
@@ -353,11 +353,11 @@ const SuppMediaInfoCell = ({ row, isCurrent }) => {
 };
 
 const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { removeFromList, addOtherList, updateStatusFunc } = userMediaMutations(
+    if (!isCurrent && (isCurrent || row.original.common)) return;
+
+    const { removeFromList, addToList, updateStatusFunc } = userMediaMutations(
         mediaType, row.original.media_id, ["userList", mediaType, username, filters]
     );
-
-    if (!isCurrent && (isCurrent || row.original.common)) return;
 
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
@@ -403,7 +403,7 @@ const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
     return (
         <EditMediaList
             isCurrent={isCurrent}
-            addOtherList={addOtherList}
+            addOtherList={addToList}
             status={row.original.status}
             removeMedia={removeFromList}
             allStatus={row.original.all_status}

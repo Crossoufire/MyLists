@@ -41,7 +41,7 @@ export const SearchBar = () => {
 
     return (
         <div ref={commandRef}>
-            <div className="relative">
+            <div className="relative mr-2 ml-2">
                 <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}

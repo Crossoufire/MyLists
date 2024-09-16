@@ -6,8 +6,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 export const RedoListDrop = ({ isCurrent, redo, updateRedo }) => {
     const redoValues = getRedoValues();
 
-    const selectChange = async (redo) => {
-        await updateRedo.mutateAsync({ payload: redo });
+    const selectChange = (redo) => {
+        updateRedo.mutate({ payload: redo });
     };
 
     return (

@@ -18,9 +18,9 @@ export const Commentary = ({ content, updateComment }) => {
         setUpdatedContent(content);
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         if (content === updatedContent) return;
-        await updateComment.mutateAsync({ payload: updatedContent });
+        updateComment.mutate({ payload: updatedContent });
         setCommentInput(false);
     };
 

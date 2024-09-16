@@ -1,5 +1,9 @@
 from __future__ import annotations
+
+from typing import List
+
 from flask import current_app
+
 from backend.api.managers.ApiManager import ApiManager, GamesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.TasksManager import TasksManager
@@ -131,6 +135,16 @@ def get_active_users(days: int = 30):
     current_app.logger.info("[SYSTEM] - Starting Getting Active Users -")
 
     TasksManager.get_active_users(days)
+
+    current_app.logger.info("[SYSTEM] - Finished Getting Active Users -")
+    current_app.logger.info("###############################################################################")
+
+
+def get_users_last_seen(usernames: List[str]):
+    current_app.logger.info("###############################################################################")
+    current_app.logger.info("[SYSTEM] - Starting Getting Active Users -")
+
+    TasksManager.get_users_last_seen(usernames)
 
     current_app.logger.info("[SYSTEM] - Finished Getting Active Users -")
     current_app.logger.info("###############################################################################")

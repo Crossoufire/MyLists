@@ -1,8 +1,6 @@
-import {useAuth} from "@/hooks/AuthHook";
 import {profileOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {UpdatesModal} from "@/components/app/UpdatesModal";
 import {MediaLevels} from "@/components/profile/MediaLevels";
 import {UserUpdates} from "@/components/profile/UserUpdates";
 import {GlobalStats} from "@/components/profile/GlobalStats";
@@ -18,10 +16,8 @@ export const Route = createFileRoute("/_private/profile/$username/_header/")({
 
 
 function ProfileMain() {
-    const { currentUser } = useAuth();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(profileOptions(username)).data;
-    const isCurrent = (currentUser.id === apiData.user_data.id);
 
     return (
         <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
@@ -67,9 +63,6 @@ function ProfileMain() {
                     updates={apiData.follows_updates}
                 />
             </div>
-            {isCurrent &&
-                <UpdatesModal userData={apiData.user_data}/>
-            }
         </div>
     );
 }

@@ -77,13 +77,32 @@ class TasksManager(metaclass=TasksManagerMeta):
         )
 
         headers = ["Username", "Last Seen"]
-        table_data = [[user.username, user.last_seen.strftime("%Y-%m-%d %H:%M:%S")] for user in active_users]
+        table_data = [[user.username, user.last_seen.strftime("%d %b %Y - %H:%M:%S")] for user in active_users]
         col_widths = [max(len(str(row[i])) for row in [headers] + table_data) for i in range(len(headers))]
 
         separator = "+" + "+".join("-" * (width + 2) for width in col_widths) + "+"
         row_format = "|" + "|".join(" {:%d} " % width for width in col_widths) + "|"
 
         print(f"\n### Active users ({period_repr}) = {len(active_users)}")
+        print(separator)
+        print(row_format.format(*headers))
+        print(separator)
+        for row in table_data:
+            print(row_format.format(*row))
+        print(separator)
+
+    @staticmethod
+    def get_users_last_seen(usernames: List[str]):
+        users = User.query.filter(User.username.in_(usernames)).order_by(User.last_seen.desc()).all()
+
+        headers = ["Username", "Last Seen"]
+        table_data = [[user.username, user.last_seen.strftime("%d %b %Y - %H:%M:%S")] for user in users]
+        col_widths = [max(len(str(row[i])) for row in [headers] + table_data) for i in range(len(headers))]
+
+        separator = "+" + "+".join("-" * (width + 2) for width in col_widths) + "+"
+        row_format = "|" + "|".join(" {:%d} " % width for width in col_widths) + "|"
+
+        print(f"\n### Selected users")
         print(separator)
         print(row_format.format(*headers))
         print(separator)

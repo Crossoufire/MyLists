@@ -2,17 +2,17 @@ import * as Menu from "@/components/ui/menubar";
 
 
 export const EditMediaList = ({ children, isCurrent, status, allStatus, updateStatus, removeMedia, addOtherList }) => {
-    const handleMenuRemove = async () => {
+    const handleMenuRemove = () => {
         if (!window.confirm("Are you sure you want to delete this media?")) return;
-        await removeMedia.mutateAsync();
+        removeMedia.mutate();
     };
 
-    const handleMenuAdd = async (ev) => {
-        await addOtherList.mutateAsync({ payload: ev.target.textContent });
+    const handleMenuAdd = (ev) => {
+        addOtherList.mutate({ payload: ev.target.textContent });
     };
 
-    const handleMenuStatus = async (ev) => {
-        await updateStatus.mutateAsync({ payload: ev.target.textContent });
+    const handleMenuStatus = (ev) => {
+        updateStatus.mutate({ payload: ev.target.textContent });
     };
 
     return (
@@ -21,7 +21,7 @@ export const EditMediaList = ({ children, isCurrent, status, allStatus, updateSt
                 <Menu.MenubarTrigger>
                     {children}
                 </Menu.MenubarTrigger>
-                <Menu.MenubarContent align="end" >
+                <Menu.MenubarContent align="end">
                     <div className="text-center mt-1 mb-2 text-neutral-400 text-sm">Edit media</div>
                     {isCurrent &&
                         <>

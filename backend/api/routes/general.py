@@ -30,8 +30,6 @@ def current_trends():
 @token_auth.login_required
 @arguments(HallOfFameSchema)
 def hall_of_fame(args):
-    """ Hall of fame """
-
     if args["sorting"] == "profile":
         ranking = (
             db.session.query(

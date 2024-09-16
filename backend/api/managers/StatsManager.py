@@ -10,6 +10,7 @@ from backend.api.models.user import User, UserMediaUpdate
 from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money
 
+
 """ --- GENERAL ----------------------------------------------------------------------------------------- """
 
 
@@ -195,7 +196,7 @@ class StatsManager(metaclass=StatsManagerMeta):
             query = query.join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
 
         query = (
-            query.filter(*self.common_filter, self.media_list.favorite.is_(True), *filters)
+            query.filter(*self.common_filter, self.media_list.favorite.is_(True), *filters, metric.is_not(None))
             .group_by(metric).order_by(text("count desc"))
             .limit(self.LIMIT).all()
         )

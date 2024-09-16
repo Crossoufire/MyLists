@@ -3,8 +3,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const RedoDrop = ({ name, redo, updateRedo }) => {
-    const handleRedoChange = async (redo) => {
-        await updateRedo.mutateAsync({ payload: redo });
+    const handleRedoChange = (redo) => {
+        updateRedo.mutate({ payload: redo });
     };
 
     return (
@@ -21,5 +21,5 @@ export const RedoDrop = ({ name, redo, updateRedo }) => {
                 </SelectContent>
             </Select>
         </div>
-    )
+    );
 };

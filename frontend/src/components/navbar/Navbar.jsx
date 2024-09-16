@@ -1,6 +1,6 @@
 import React, {useRef} from "react";
 import {useAuth} from "@/hooks/AuthHook";
-import {LuAlignJustify} from "react-icons/lu";
+import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
@@ -9,7 +9,6 @@ import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
 import {Link as NavLink} from "@tanstack/react-router";
 import {SearchBar} from "@/components/navbar/SearchBar";
-import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
@@ -82,15 +81,24 @@ export const Navbar = () => {
                             <Nav.NavigationMenuItem>
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button variant="invisible" className="flex items-center gap-2 text-lg
-                                        font-semibold px-1">
-                                            <img
-                                                alt="profile-picture"
-                                                src={currentUser.profile_image}
-                                                className="h-10 w-10 rounded-full"
-                                            />
-                                            <CaretSortIcon/>
-                                        </Button>
+                                        <div className="relative">
+                                            <Button variant="invisible" className="flex items-center gap-2 text-lg font-semibold px-1">
+                                                <img
+                                                    alt="profile-picture"
+                                                    src={currentUser.profile_image}
+                                                    className="h-10 w-10 rounded-full"
+                                                />
+                                                <CaretSortIcon className="opacity-80"/>
+                                            </Button>
+                                            {currentUser.show_update_modal &&
+                                                <div className="absolute right-5 top-0">
+                                                    <div className="relative">
+                                                        <div className="absolute rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-violet-600 opacity-75"/>
+                                                        <div className="rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-violet-600 animate-ping"/>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
                                     </PopoverTrigger>
                                     <PopoverClose ref={popRef} className="absolute"/>
                                     <PopoverContent align="end" className="w-36 p-2">
@@ -98,14 +106,20 @@ export const Navbar = () => {
                                             <NavMediaItem
                                                 popRef={popRef}
                                                 text={"Profile"}
-                                                icon={<FaUser className="text-grey"/>}
+                                                icon={<LuUser className="text-grey"/>}
                                                 to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
                                                 to="/settings"
                                                 text="Settings"
                                                 popRef={popRef}
-                                                icon={<FaCog className="text-grey"/>}
+                                                icon={<LuSettings className="text-grey"/>}
+                                            />
+                                            <NavMediaItem
+                                                to="/features"
+                                                text="Features"
+                                                popRef={popRef}
+                                                icon={<LuSparkles className="text-grey"/>}
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
@@ -114,7 +128,7 @@ export const Navbar = () => {
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
                                                         <div className="flex items-center gap-3">
-                                                            <div>{<FaSignOutAlt className="text-grey"/>}</div>
+                                                            <div>{<LuLogOut className="text-grey"/>}</div>
                                                             <div>Logout</div>
                                                         </div>
                                                     </NavLink>
@@ -177,14 +191,20 @@ export const Navbar = () => {
                                     <div>
                                         <NavMediaItem
                                             text="Profile"
-                                            icon={<FaUser className="text-grey"/>}
+                                            icon={<LuUser className="text-grey"/>}
                                             to={`/profile/${currentUser.username}`}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
                                             text="Settings"
-                                            icon={<FaCog className="text-grey"/>}
+                                            icon={<LuSettings className="text-grey"/>}
+                                            className="text-lg items-center font-semibold pb-2"
+                                        />
+                                        <NavMediaItem
+                                            to="/features"
+                                            text="Features"
+                                            icon={<LuSparkles className="text-grey"/>}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <li>
@@ -194,7 +214,7 @@ export const Navbar = () => {
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">
                                                     <div className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
-                                                        <div>{<FaSignOutAlt className="text-grey"/>}</div>
+                                                        <div>{<LuLogOut className="text-grey"/>}</div>
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>

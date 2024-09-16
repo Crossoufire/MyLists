@@ -12,11 +12,11 @@ export const NavMediaDrop = () => {
     const { currentUser } = useAuth();
 
     const menuItems = [
-        {url: `/list/series`, media: "series"},
-        {url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active},
-        {url: `/list/movies`, media: "movies"},
-        {url: `/list/books`, media: "books", cond: currentUser.settings.books.active},
-        {url: `/list/games`, media: "games", cond: currentUser.settings.games.active}
+        { url: `/list/series`, media: "series" },
+        { url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active },
+        { url: `/list/movies`, media: "movies" },
+        { url: `/list/books`, media: "books", cond: currentUser.settings.books.active },
+        { url: `/list/games`, media: "games", cond: currentUser.settings.games.active }
     ];
 
     return (
@@ -25,7 +25,7 @@ export const NavMediaDrop = () => {
                 <PopoverTrigger>
                     <div className="flex items-center gap-2 text-lg font-semibold px-1">
                         MyLists
-                        <CaretSortIcon/>
+                        <CaretSortIcon className="opacity-80"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>

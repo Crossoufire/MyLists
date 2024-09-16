@@ -57,8 +57,8 @@ export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
 
 
 function PlatformDrop({ platform, allPlatforms, updatePlatform }) {
-    const handleSelect = async (platform) => {
-        await updatePlatform.mutateAsync({ payload: platform });
+    const handleSelect = (platform) => {
+        updatePlatform.mutate({ payload: platform });
     };
 
     return (

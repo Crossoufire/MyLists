@@ -64,8 +64,7 @@ def stats_page(media_type: MediaType, username: str):
     data = dict(
         is_current=(user.id == current_user.id),
         stats=stats,
-        users=[{"label": user.username, "value": user.username}
-               for user in User.query.filter(User.active.is_(True)).all()]
+        users=[{"label": user.username, "value": user.username} for user in User.query.filter(User.active.is_(True)).all()]
     )
 
     return jsonify(data=data), 200
