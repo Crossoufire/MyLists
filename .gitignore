@@ -94,14 +94,14 @@ venv.bak/
 
 
 # ----- MyLists ----------------------------------------------------------------------
+
 .idea/
-backend/.env
-frontend/.env.developement
-frontend/.env.production
-build/*
 
 # BACKEND STUFF
-backend/cache/*
+backend/.env
+backend/.flaskenv
+backend/poetry.lock
+backend/instance/cache/*
 
 backend/api/static/profile_pics/*
 !backend/api/static/profile_pics/default.jpg
@@ -117,10 +117,12 @@ backend/api/static/covers/games_covers/*
 backend/api/static/covers/books_covers/*
 
 # FRONTEND STUFF
+build/*
+dist/*
+/frontend/.env.development
+/frontend/.env.production
 /frontend/node_modules
 /frontend/package-lock.json
+/frontend/src/routeTree.gen.*
 
 # -------------------------------------------------------------------------------------
-backend/.flaskenv
-frontend/src/routeTree.gen.*
-backend/poetry.lock
