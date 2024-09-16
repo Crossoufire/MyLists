@@ -1,60 +1,45 @@
-import {userClient} from "@/api/MyApiClient";
-import {LuAlignJustify} from "react-icons/lu";
+import React, {useRef} from "react";
+import {useAuth} from "@/hooks/AuthHook";
+import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
-import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
+import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
+import {Link as NavLink} from "@tanstack/react-router";
 import {SearchBar} from "@/components/navbar/SearchBar";
-import {FaCog, FaSignOutAlt, FaUser} from "react-icons/fa";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
-import {Link as NavLink, useNavigate} from "@tanstack/react-router";
-import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 
 
 export const Navbar = () => {
     const popRef = useRef();
-    const navigate = useNavigate();
     const { sheetOpen, setSheetOpen } = useSheet();
-    const [currentUser, setCurrentUser] = useState(userClient.currentUser);
+    const { currentUser, logout, isLoading } = useAuth();
 
-    useEffect(() => {
-        const navbarCurrentUserChange = (newData) => {
-            setCurrentUser(newData);
-        };
-        userClient.subscribe(navbarCurrentUserChange);
-        return () => userClient.unsubscribe(navbarCurrentUserChange);
-    }, []);
-
-    const logoutUser = async () => {
-        await userClient.logout();
-        return navigate({ to: "/" });
+    const logoutUser = () => {
+        logout.mutate(undefined);
     };
 
-    // Login page and public pages
-    if (currentUser === null) {
+    // Login page and public pages when not logged
+    if (!currentUser) {
         return (
-            <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
-                <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
-                                <p className="text-lg font-semibold mr-2">MyLists</p>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+            <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
+                <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
+                    <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
+                    <div>{isLoading && <Loading/>}</div>
                 </div>
             </nav>
         );
     }
 
     return (
-        <nav className="z-50 fixed top-0 w-full h-16 border-b flex items-center bg-background border-b-neutral-700">
-            <div className="md:max-w-screen-xl flex w-full justify-between items-center mx-auto container">
+        <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
+            <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
@@ -65,12 +50,12 @@ export const Navbar = () => {
                                 <SearchBar/>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/hall_of_fame" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}>
                                     HoF
                                 </NavLink>
                             </Nav.NavigationMenuItem>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/global_stats" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}>
                                     Stats
                                 </NavLink>
                             </Nav.NavigationMenuItem>
@@ -86,7 +71,7 @@ export const Navbar = () => {
                     <Nav.NavigationMenu>
                         <Nav.NavigationMenuList>
                             <Nav.NavigationMenuItem>
-                                <NavLink to="/coming_next" className={Nav.navigationMenuTriggerStyle()}>
+                                <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}>
                                     Coming Next
                                 </NavLink>
                             </Nav.NavigationMenuItem>
@@ -96,30 +81,45 @@ export const Navbar = () => {
                             <Nav.NavigationMenuItem>
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button variant="invisible" className="flex items-center gap-2 text-lg
-                                        font-semibold px-1">
-                                            <img
-                                                src={currentUser.profile_image}
-                                                className="h-10 w-10 rounded-full"
-                                                alt="profile-picture"
-                                            />
-                                            <CaretSortIcon/>
-                                        </Button>
+                                        <div className="relative">
+                                            <Button variant="invisible" className="flex items-center gap-2 text-lg font-semibold px-1">
+                                                <img
+                                                    alt="profile-picture"
+                                                    src={currentUser.profile_image}
+                                                    className="h-10 w-10 rounded-full"
+                                                />
+                                                <CaretSortIcon className="opacity-80"/>
+                                            </Button>
+                                            {currentUser.show_update_modal &&
+                                                <div className="absolute right-5 top-0">
+                                                    <div className="relative">
+                                                        <div className="absolute rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-violet-600 opacity-75"/>
+                                                        <div className="rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-violet-600 animate-ping"/>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
                                     </PopoverTrigger>
                                     <PopoverClose ref={popRef} className="absolute"/>
                                     <PopoverContent align="end" className="w-36 p-2">
                                         <ul>
                                             <NavMediaItem
-                                                to={`/profile/${currentUser.username}`}
-                                                icon={<FaUser className="text-grey"/>}
-                                                text="Profile"
                                                 popRef={popRef}
+                                                text={"Profile"}
+                                                icon={<LuUser className="text-grey"/>}
+                                                to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
                                                 to="/settings"
-                                                icon={<FaCog className="text-grey"/>}
                                                 text="Settings"
                                                 popRef={popRef}
+                                                icon={<LuSettings className="text-grey"/>}
+                                            />
+                                            <NavMediaItem
+                                                to="/features"
+                                                text="Features"
+                                                popRef={popRef}
+                                                icon={<LuSparkles className="text-grey"/>}
                                             />
                                             <li>
                                                 <Nav.NavigationMenuLink asChild>
@@ -128,7 +128,7 @@ export const Navbar = () => {
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
                                                         <div className="flex items-center gap-3">
-                                                            <div>{<FaSignOutAlt className="text-grey"/>}</div>
+                                                            <div>{<LuLogOut className="text-grey"/>}</div>
                                                             <div>Logout</div>
                                                         </div>
                                                     </NavLink>
@@ -146,33 +146,41 @@ export const Navbar = () => {
                         <SheetTrigger className="flex items-center">
                             <LuAlignJustify size={28}/>
                         </SheetTrigger>
-                        <SheetContent side="left" className="max-sm:w-full overflow-y-auto">
-                            <Nav.NavigationMenu className="mt-4">
+                        <SheetContent side="left" className="max-sm:w-full">
+                            <SheetHeader>
+                                <SheetTitle></SheetTitle>
+                                <SheetDescription></SheetDescription>
+                            </SheetHeader>
+                            <Nav.NavigationMenu className="mt-3">
                                 <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
                                     <Nav.NavigationMenuItem className="mt-4">
-                                        <SearchBar/>
+                                        <SearchBar currentUser={currentUser}/>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavMediaDrop/>
+                                        <NavMediaDrop currentUser={currentUser}/>
                                     </Nav.NavigationMenuItem>
                                     <Separator/>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/hall_of_fame" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             HoF
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/global_stats" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Stats
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Trends
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
                                     <Nav.NavigationMenuItem>
-                                        <NavLink to="/coming_next" className={Nav.navigationMenuTriggerStyle()} onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}
+                                                 onClick={() => setSheetOpen(false)}>
                                             Coming Next
                                         </NavLink>
                                     </Nav.NavigationMenuItem>
@@ -182,27 +190,31 @@ export const Navbar = () => {
                                     </Nav.NavigationMenuItem>
                                     <div>
                                         <NavMediaItem
-                                            to={`/profile/${currentUser.username}`}
-                                            icon={<FaUser className="text-grey"/>}
                                             text="Profile"
+                                            icon={<LuUser className="text-grey"/>}
+                                            to={`/profile/${currentUser.username}`}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
-                                            icon={<FaCog className="text-grey"/>}
                                             text="Settings"
+                                            icon={<LuSettings className="text-grey"/>}
+                                            className="text-lg items-center font-semibold pb-2"
+                                        />
+                                        <NavMediaItem
+                                            to="/features"
+                                            text="Features"
+                                            icon={<LuSparkles className="text-grey"/>}
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <li>
                                             <Nav.NavigationMenuLink asChild>
-                                                <NavLink to="#" onClick={userClient.logout} className="block select-none
-                                            space-y-1 rounded-md p-3 leading-none no-underline outline-none
-                                            transition-colors hover:bg-accent hover:text-accent-foreground
-                                            focus:bg-accent focus:text-accent-foreground">
-                                                    <div
-                                                        className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
-                                                        <div>{<FaSignOutAlt
-                                                            className="text-grey"/>}</div>
+                                                <NavLink to="#" onClick={logoutUser} className="block select-none
+                                                space-y-1 rounded-md p-3 leading-none no-underline outline-none
+                                                transition-colors hover:bg-accent hover:text-accent-foreground
+                                                focus:bg-accent focus:text-accent-foreground">
+                                                    <div className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
+                                                        <div>{<LuLogOut className="text-grey"/>}</div>
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>

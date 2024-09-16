@@ -4,7 +4,6 @@
         "original_name": "Interstellar",
         "release_date": "2014-11-05",
         "homepage": "http://www.interstellarmovie.net/",
-        "released": "Released",
         "vote_average": 8.432,
         "vote_count": 33980,
         "synopsis": "The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.",
@@ -21,16 +20,13 @@
     },
     "genres_data": [
         {
-            "genre": "Adventure",
-            "genre_id": 12
+            "name": "Adventure"
         },
         {
-            "genre": "Drama",
-            "genre_id": 18
+            "name": "Drama"
         },
         {
-            "genre": "Science Fiction",
-            "genre_id": 878
+            "name": "Science Fiction"
         }
     ],
     "actors_data": [

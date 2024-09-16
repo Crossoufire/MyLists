@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions";
 import {Command as CommandPrimitive} from "cmdk";
 import {MagnifyingGlassIcon} from "@radix-ui/react-icons";
 import {Dialog, DialogContent} from "@/components/ui/dialog";
@@ -62,7 +62,7 @@ CommandList.displayName = CommandPrimitive.List.displayName;
 const CommandEmpty = React.forwardRef((props, ref) => (
     <CommandPrimitive.Empty
         ref={ref}
-        className="py-6 text-center text-sm"
+        className="py-2 text-center text-sm"
         {...props}
     />
 ));

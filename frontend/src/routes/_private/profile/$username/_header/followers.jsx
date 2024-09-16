@@ -1,26 +1,24 @@
-import {fetcher} from "@/lib/fetcherLoader.jsx";
-import {Return} from "@/components/app/base/Return";
-import {PageTitle} from "@/components/app/PageTitle";
+import {followersOptions} from "@/api/queryOptions";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {PageTitle} from "@/components/app/base/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header/followers")({
     component: ProfileFollowers,
-    loader: async ({ params }) => fetcher(`/profile/${params.username}/followers`),
+    loader: ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(followersOptions(username));
+    },
 });
 
 
 function ProfileFollowers() {
-    const apiData = Route.useLoaderData();
     const { username } = Route.useParams();
+    const apiData = useSuspenseQuery(followersOptions(username)).data;
 
     return (
         <PageTitle title="Followers">
-            <Return className="mb-6"
-                to={`/profile/${username}`}
-                value="to profile"
-            />
             <div className="flex justify-start flex-wrap gap-11">
                 {apiData.follows.map(user =>
                     <Link key={user.id} to={`/profile/${user.username}`}>
@@ -38,5 +36,5 @@ function ProfileFollowers() {
                 )}
             </div>
         </PageTitle>
-    )
+    );
 }

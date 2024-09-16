@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions.jsx";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 
@@ -17,8 +17,8 @@ const Switch = React.forwardRef(({ className, ...props }, ref) => (
                 " data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0")}
         />
     </SwitchPrimitives.Root>
-))
+));
 Switch.displayName = SwitchPrimitives.Root.displayName;
 
 
-export { Switch };
+export {Switch};

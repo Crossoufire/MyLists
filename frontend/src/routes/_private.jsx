@@ -1,13 +1,23 @@
-import {api, userClient} from "@/api/MyApiClient";
-import {createFileRoute, redirect} from "@tanstack/react-router";
+import {api} from "@/api/apiClient";
+import {useAuth} from "@/hooks/AuthHook";
+import {createFileRoute, Navigate, Outlet} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
 export const Route = createFileRoute("/_private")({
-    beforeLoad: () => {
-        if (!userClient.currentUser || !api.isAuthenticated()) {
-            userClient.setCurrentUser(null);
-            return redirect({ to: "/" });
-        }
-    },
+    component: PrivateRoute,
 });
+
+
+function PrivateRoute() {
+    const { currentUser, isLoading } = useAuth();
+
+    if (isLoading) {
+        return null;
+    }
+    else if (!currentUser || !api.isAuthenticated()) {
+        return <Navigate to="/"/>;
+    }
+
+    return <Outlet/>;
+}

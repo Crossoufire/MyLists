@@ -1,5 +1,5 @@
-import {cn} from "@/lib/utils";
 import {forwardRef} from "react";
+import {cn} from "@/utils/functions.jsx";
 import {cva} from "class-variance-authority";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 

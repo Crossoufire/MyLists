@@ -1,3 +1,5 @@
+import {profileOptions} from "@/api/queryOptions";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {MediaLevels} from "@/components/profile/MediaLevels";
 import {UserUpdates} from "@/components/profile/UserUpdates";
@@ -5,7 +7,6 @@ import {GlobalStats} from "@/components/profile/GlobalStats";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
-import {profileHeaderRoute} from "@/routes/_private/profile/$username/_header.jsx";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_private/profile/$username/_header/")({
 
 function ProfileMain() {
     const { username } = Route.useParams();
-    const apiData = profileHeaderRoute.useLoaderData();
+    const apiData = useSuspenseQuery(profileOptions(username)).data;
 
     return (
         <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
@@ -27,9 +28,9 @@ function ProfileMain() {
                 />
                 <div className="mt-4"/>
                 <UserUpdates
+                    followers={false}
                     username={username}
                     updates={apiData.user_updates}
-                    followers={false}
                 />
                 <div className="mt-4"/>
                 <ProfileMiscInfo
@@ -57,9 +58,9 @@ function ProfileMain() {
                 />
                 <div className="mt-4"/>
                 <UserUpdates
+                    followers={true}
                     username={username}
                     updates={apiData.follows_updates}
-                    followers={true}
                 />
             </div>
         </div>

@@ -1,12 +1,12 @@
-from typing import Any, Dict
-from flask import current_app
-from flask import jsonify, Blueprint, abort
+from flask import current_app, jsonify, Blueprint, abort
+
 from backend.api import db
-from backend.api.routes.handlers import token_auth, current_user
-from backend.api.models.user_models import UserLastUpdate
-from backend.api.utils.decorators import validate_json_data
-from backend.api.utils.enums import MediaType, Status, ModelTypes
-from backend.api.utils.functions import ModelsFetcher
+from backend.api.core import token_auth, current_user
+from backend.api.models.user import UserMediaUpdate
+from backend.api.schemas.media import *
+from backend.api.utils.decorators import body
+from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
+
 
 media_bp = Blueprint("api_media", __name__)
 
@@ -14,142 +14,128 @@ media_bp = Blueprint("api_media", __name__)
 @media_bp.route("/coming_next", methods=["GET"])
 @token_auth.login_required
 def coming_next():
-    models_list = ModelsFetcher.get_lists_models(current_user.activated_media_type(), ModelTypes.LIST)
-    try:
-        # Remove <BooksList> because no coming next possible
-        from backend.api.models.books_models import BooksList
-        models_list.remove(BooksList)
-    except:
-        pass
+    active_media_types = [
+        setting.media_type for setting in current_user.settings
+        if setting.active and setting.media_type != MediaType.BOOKS
+    ]
+    models_list = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
 
-    data = [{"media_type": model.GROUP.value, "items": model.get_coming_next()} for model in models_list]
+    data = [dict(
+        media_type=model.GROUP.value,
+        items=model.get_coming_next()
+    ) for model in models_list]
 
     return jsonify(data=data), 200
 
 
 @media_bp.route("/add_media", methods=["POST"])
 @token_auth.login_required
-@validate_json_data()
-def add_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Add a <media> to the <current_user> and return the newly added information """
+@body(AddMediaSchema)
+def add_media(data):
+    """ Add `media` to the `current_user` and return the new media association data """
 
-    media_model, list_model = models[ModelTypes.MEDIA], models[ModelTypes.LIST]
-    new_status = payload
+    media_model, list_model, label_model = data["models"]
+
+    new_status = data["payload"]
     if new_status is None:
         new_status = list_model.DEFAULT_STATUS.value
 
-    try:
-        new_status = Status(new_status)
-    except:
-        return abort(400, "The status is not recognized")
+    media = media_model.query.filter_by(id=data["media_id"]).first_or_404()
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
+    if media_assoc:
+        return abort(400, description="Media already in your list")
 
-    media = media_model.query.filter_by(id=media_id).first()
-    if not media:
-        return abort(400, "The media does not exists")
-
-    in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if in_list:
-        return abort(400, "The media is already present in your list")
-
-    new_watched = media.add_media_to_user(new_status, current_user.id)
+    total_watched = media.add_to_user(new_status, current_user.id)
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type.value} added [ID {media_id}] with "
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} added [ID {data['media_id']}] with"
                             f"status: {new_status}")
 
-    UserLastUpdate.set_new_update(media=media, update_type="status", old_value=None, new_value=new_status)
+    UserMediaUpdate.set_new_update(media, UpdateType.STATUS, None, new_status)
 
     # Compute new time spent (re-query necessary!)
-    in_list = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    in_list.update_time_spent(new_value=new_watched)
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
+    media_assoc.update_time_spent(new_value=total_watched)
 
     db.session.commit()
 
-    # Return <current user> media info
-    user_data = media.get_user_list_info(models[ModelTypes.LABELS])
+    user_data = media.get_user_list_info(label_model)
 
     return jsonify(data=user_data), 200
 
 
-# noinspection PyUnusedLocal
 @media_bp.route("/delete_media", methods=["POST"])
 @token_auth.login_required
-@validate_json_data()
-def delete_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Delete a media from the user """
+@body(DeleteMediaSchema)
+def delete_media(data):
+    """ Delete a media association from the user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(400, "This media is not present in your list")
+    list_model, label_model = data["models"]
 
-    # <Games> model do not have <total>
-    old_total = media.total if media_type != MediaType.GAMES else media.playtime
+    media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media.update_time_spent(old_value=old_total, new_value=0)
+    old_total = media_assoc.total if data["media_type"] != MediaType.GAMES else media_assoc.playtime
+    media_assoc.update_time_spent(old_value=old_total, new_value=0)
 
-    # Deletion
-    db.session.delete(media)
-    models[ModelTypes.LABELS].query.filter_by(user_id=current_user.id, media_id=media_id).delete()
-    UserLastUpdate.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media.GROUP).delete()
+    db.session.delete(media_assoc)
+    label_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).delete()
+    UserMediaUpdate.query.filter_by(
+        user_id=current_user.id,
+        media_id=data["media_id"],
+        media_type=media_assoc.GROUP
+    ).delete()
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type} [ID {media_id}] successfully removed.")
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type']} [ID {data['media_id']}] removed.")
 
     return {}, 204
 
 
 @media_bp.route("/update_favorite", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(bool)
-def update_favorite(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdateFavoriteSchema)
+def update_favorite(data):
     """ Add or remove the media as favorite for the current user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media.favorite = bool(payload)
+    media.favorite = data["payload"]
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] [{media_type}], ID [{media_id}] changed favorite: {payload}")
+    current_app.logger.info(f"[User {current_user.id}] [{data['media_type']}], ID [{data['media_id']}] "
+                            f"changed favorite: {data['payload']}")
 
     return {}, 204
 
 
 @media_bp.route("/update_status", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(str)
-def update_status(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdateStatusSchema)
+def update_status(data):
     """ Update the media status of a user """
 
-    try:
-        new_status = Status(payload)
-    except:
-        return abort(400)
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    old_total = media_assoc.total if data["media_type"] != MediaType.GAMES else media_assoc.playtime
+    old_status = media_assoc.status
+    new_total = media_assoc.update_status(data["payload"])
 
-    old_total = media.total if media_type != MediaType.GAMES else media.playtime
-    old_status = media.status
-    new_total = media.update_status(new_status)
-
-    UserLastUpdate.set_new_update(media.media, "status", old_status, new_status)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.STATUS, old_status, data["payload"])
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type}'s category [ID {media_id}] changed to {new_status}")
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type']}'s category [ID {data['media_id']}] "
+                            f"changed to {data['payload']}")
 
     return {}, 204
 
 
 @media_bp.route("/update_rating", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(str)
-def update_rating(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Update the media rating (<score> or <feeling>) entered by a user """
+@body(UpdateRatingSchema)
+def update_rating(data):
+    """ Update the media rating entered by a user """
 
     try:
-        payload = float(payload)
+        payload = float(data["payload"])
         if current_user.add_feeling:
             payload = int(payload)
     except:
@@ -158,22 +144,20 @@ def update_rating(media_type: MediaType, media_id: int, payload: Any, models: Di
     if payload:
         if current_user.add_feeling:
             if payload > 5 or payload < 0:
-                return abort(400, "Feeling needs to be between 0 and 5")
+                return abort(400, description="Feeling needs to be between 0 and 5")
         else:
             if payload > 10 or payload < 0:
-                return abort(400, "Score needs to be between 0 and 10")
+                return abort(400, description="Score needs to be between 0 and 10")
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     if current_user.add_feeling:
-        media.feeling = payload
+        media_assoc.feeling = payload
     else:
-        media.score = payload
+        media_assoc.score = payload
 
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] [{media_type.value}] ID {media_id} "
+    current_app.logger.info(f"[{current_user.id}] [{data['media_type'].value}] ID {data['media_id']} "
                             f"{'feeling' if current_user.add_feeling else 'score'} updated to {payload}")
 
     return {}, 204
@@ -181,178 +165,197 @@ def update_rating(media_type: MediaType, media_id: int, payload: Any, models: Di
 
 @media_bp.route("/update_redo", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(int)
-def update_redo(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Update the media redo value for a user """
+@body(UpdateRedoSchema)
+def update_redo(data):
+    """ Update the media re-read/re-watched value for a user """
 
-    if media_type == MediaType.GAMES:
-        return abort(400, "This value can't be set for games")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    new_redo = payload
-    if new_redo < 0 or new_redo > 10:
-        return abort(400, "This value needs to be comprise between 0 and 10")
+    if media_assoc.status != Status.COMPLETED:
+        return abort(400, description="Media is not `Completed`")
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media or media.status != Status.COMPLETED:
-        return abort(400, "To update this value the media needs to be completed first")
+    old_redo = media_assoc.redo
+    old_total = media_assoc.total
+    new_total = media_assoc.update_total(data["payload"])
 
-    old_redo = media.rewatched
-    old_total = media.total
-    new_total = media.update_total_watched(new_redo)
-
-    media.update_time_spent(old_value=old_total, new_value=new_total)
-    UserLastUpdate.set_new_update(media.media, "redo", old_redo, new_redo)
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.REDO, old_redo, data["payload"])
 
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] Media ID {media_id} [{media_type}] rewatched {new_redo}x times")
+    current_app.logger.info(f"[{current_user.id}] Media ID {data['media_id']} [{data['media_type'].value}] "
+                            f"redo {data['payload']}x times")
 
     return {}, 204
 
 
 @media_bp.route("/update_comment", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(str)
-def update_comment(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdateCommentSchema)
+def update_comment(data):
     """ Update the media comment for a user """
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if media is None:
-        return abort(404, "The media could not be found")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    if len(payload) > 2000:
-        return abort(400, "This comment is too large. The limit is 2000 characters.")
-
-    media.comment = payload
+    media_assoc.comment = data["payload"]
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] updated a comment on {media_type} with ID [{media_id}]")
+    current_app.logger.info(f"[{current_user.id}] updated a comment on {data['media_type']} with ID"
+                            f"[{data['media_id']}]")
 
     return {}, 204
 
 
 @media_bp.route("/update_playtime", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(int)
-def update_playtime(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdatePlaytimeSchema)
+def update_playtime(data):
     """ Update playtime of an updated game from a user """
 
-    if media_type != MediaType.GAMES:
-        return abort(400, "This value can only be set for games")
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    if payload < 0 or payload > 10000:
-        return abort(400, "Playtime needs to be comprise between 0 and 10000 hours.")
-
-    # From [hours] to [min]
-    new_playtime = payload * 60
-
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
-
-    UserLastUpdate.set_new_update(media.media, "playtime", media.playtime, new_playtime)
-    media.update_time_spent(old_value=media.playtime, new_value=new_playtime)
-
-    media.playtime = new_playtime
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.PLAYTIME, media_assoc.playtime, data["payload"])
+    media_assoc.update_time_spent(old_value=media_assoc.playtime, new_value=data["payload"])
+    media_assoc.playtime = data["payload"]
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] {media_type.value} ID {media_id} playtime updated to {new_playtime}")
+    current_app.logger.info(f"[{current_user.id}] {data['media_type'].value} {data['media_id']} playtime updated to"
+                            f" {data['payload']} min")
+
+    return {}, 204
+
+
+@media_bp.route("/update_platform", methods=["POST"])
+@token_auth.login_required
+@body(UpdatePlatformSchema)
+def update_platform(data):
+    """ Update platform the user played on """
+
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
+    media_assoc.platform = data["payload"]
+    db.session.commit()
+    current_app.logger.info(f"[{current_user.id}] Games ID {data['media_id']} Platform updated to {data['payload']}")
 
     return {}, 204
 
 
 @media_bp.route("/update_season", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(int)
-def update_season(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdateSeasonSchema)
+def update_season(data):
     """ Update the season of an updated anime or series for the user """
 
-    new_season = payload
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    if data["payload"] > media_assoc.media.eps_per_season[-1].season:
+        return abort(400, description="Invalid season")
 
-    if 1 > new_season or new_season > media.media.eps_per_season[-1].season:
-        return abort(400)
+    old_season = media_assoc.current_season
+    old_eps = media_assoc.last_episode_watched
+    old_total = media_assoc.total
 
-    old_season = media.current_season
-    old_eps = media.last_episode_watched
-    old_total = media.total
+    new_watched = sum(media_assoc.media.eps_seasons_list[:data["payload"] - 1]) + 1
+    media_assoc.current_season = data["payload"]
+    media_assoc.last_episode_watched = 1
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_seasons_list))
+    media_assoc.total = new_total
 
-    new_watched = sum([x.episodes for x in media.media.eps_per_season[:new_season - 1]]) + 1
-    media.current_season = new_season
-    media.last_episode_watched = 1
-    new_total = new_watched + (media.rewatched * media.media.total_episodes)
-    media.total = new_total
-
-    UserLastUpdate.set_new_update(media.media, "season", old_season, new_season,
-                                  old_episode=old_eps, new_episode=1)
-
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(
+        media_assoc.media,
+        UpdateType.TV,
+        (old_season, old_eps),
+        (data["payload"], 1),
+    )
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new season = {new_season}")
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} [ID {data['media_id']}] new season ="
+                            f" {data['payload']}")
 
     return {}, 204
 
 
 @media_bp.route("/update_episode", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(int)
-def update_episode(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdateEpisodeSchema)
+def update_episode(data):
     """ Update the episode of an updated anime or series from a user """
 
-    new_episode = payload
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    if data["payload"] > media_assoc.media.eps_per_season[media_assoc.current_season - 1].episodes:
+        return abort(400, description="Invalid episode")
 
-    if 1 > new_episode or new_episode > media.media.eps_per_season[media.current_season - 1].episodes:
-        return abort(400)
+    old_season = media_assoc.current_season
+    old_episode = media_assoc.last_episode_watched
+    old_total = media_assoc.total
+    new_watched = sum(media_assoc.media.eps_seasons_list[:old_season - 1]) + data["payload"]
+    new_total = new_watched + (media_assoc.redo * sum(media_assoc.media.eps_seasons_list))
 
-    old_season = media.current_season
-    old_episode = media.last_episode_watched
-    old_total = media.total
+    media_assoc.last_episode_watched = data["payload"]
+    media_assoc.total = new_total
 
-    new_watched = sum([x.episodes for x in media.media.eps_per_season[:old_season - 1]]) + new_episode
-    media.last_episode_watched = new_episode
-    new_total = new_watched + (media.rewatched * media.media.total_episodes)
-    media.total = new_total
-
-    UserLastUpdate.set_new_update(media.media, "episode", old_episode, new_episode, old_season=old_season)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(
+        media_assoc.media,
+        UpdateType.TV,
+        (old_season, old_episode),
+        (old_season, data["payload"]),
+    )
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] new episode = {new_episode}")
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} [ID {data['media_id']}] new "
+                            f"episode = {data['payload']}")
 
     return {}, 204
 
 
 @media_bp.route("/update_page", methods=["POST"])
 @token_auth.login_required
-@validate_json_data(int)
-def update_page(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@body(UpdatePageSchema)
+def update_page(data):
     """ Update the page read of an updated book from a user """
 
-    new_page = payload
+    media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    media = models[ModelTypes.LIST].query.filter_by(user_id=current_user.id, media_id=media_id).first()
-    if not media:
-        return abort(404, "The media could not be found")
+    if data["payload"] > int(media_assoc.media.pages):
+        return abort(400, description="Invalid page")
 
-    if new_page > int(media.media.pages) or new_page < 0:
-        return abort(400, "Invalid page value. Please provide a valid page number.")
+    old_page = media_assoc.actual_page
+    old_total = media_assoc.total
 
-    old_page = media.actual_page
-    old_total = media.total
+    media_assoc.actual_page = data["payload"]
+    new_total = data["payload"] + (media_assoc.redo * media_assoc.media.pages)
+    media_assoc.total = new_total
 
-    media.actual_page = new_page
-    new_total = new_page + (media.rewatched * media.media.pages)
-    media.total = new_total
-
-    UserLastUpdate.set_new_update(media.media, "page", old_page, new_page)
-    media.update_time_spent(old_value=old_total, new_value=new_total)
+    UserMediaUpdate.set_new_update(media_assoc.media, UpdateType.PAGE, old_page, data["payload"])
+    media_assoc.update_time_spent(old_value=old_total, new_value=new_total)
 
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {media_type.value} [ID {media_id}] page updated to {new_page}")
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} [ID {data['media_id']}] page "
+                            f"updated to {data['payload']}")
+
+    return {}, 204
+
+
+@media_bp.route("/delete_updates", methods=["POST"])
+@token_auth.login_required
+@body(DeleteUpdatesSchema)
+def delete_updates(data):
+    """ Delete updates from the user """
+
+    UserMediaUpdate.query.filter(
+        UserMediaUpdate.id.in_(data["update_ids"]),
+        UserMediaUpdate.user_id == current_user.id,
+    ).delete()
+
+    db.session.commit()
+
+    if data["return_data"]:
+        new_update_to_return = (
+            UserMediaUpdate.query.filter_by(user_id=current_user.id)
+            .order_by(UserMediaUpdate.timestamp.desc())
+            .limit(7).all()
+        )
+        return jsonify(data=new_update_to_return[-1].to_dict() if new_update_to_return else None), 200
+
+    current_app.logger.info(f"[User {current_user.id}] {len(data['update_ids'])} updates successfully deleted")
 
     return {}, 204

@@ -10,14 +10,8 @@
         "image_cover": "35a5c4e3f19547d2.jpg",
         "lock_status": true
     },
-    "genres_data": [
-        {
-            "genre": "Unknown"
-        }
-    ],
+    "genres_data": [],
     "authors_data": [
-        {
-            "name": "J.K. Rowling"
-        }
+        {"name": "J.K. Rowling"}
     ]
 }

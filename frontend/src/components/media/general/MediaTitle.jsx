@@ -1,11 +1,11 @@
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions.jsx";
 import {Separator} from "@/components/ui/separator";
 
 
 export const MediaTitle = ({ children, className, ...props }) => {
     return (
         <>
-            <h4 className={cn("text-2xl font-semibold", className)}>{children}</h4>
+            <h4 className={cn("text-xl font-semibold", className)}>{children}</h4>
             <Separator variant="large" {...props}/>
         </>
     );

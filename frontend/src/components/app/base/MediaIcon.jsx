@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils";
+import {cn} from "@/utils/functions.jsx";
 import {FaBookOpen, FaFilm, FaGamepad, FaToriiGate, FaTv, FaUser} from "react-icons/fa";
 
 
@@ -13,14 +13,10 @@ const iconMappings = {
 
 
 export const MediaIcon = ({ mediaType, size, className }) => {
-    const IconComp = iconMappings[mediaType];
-
-    if (!IconComp) {
-        return <img alt="not-found"/>;
-    }
-
+    const IconComponent = iconMappings[mediaType];
+    if (!IconComponent) return <img alt="not-found"/>;
     return (
-        <IconComp
+        <IconComponent
             size={size}
             className={cn(`text-${mediaType}`, className)}
         />);

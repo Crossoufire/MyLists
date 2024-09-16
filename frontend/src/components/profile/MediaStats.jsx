@@ -2,9 +2,9 @@ import {Link} from "@tanstack/react-router";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
-import {capitalize, getStatusColor} from "@/lib/utils";
 import {BulletIcon} from "@/components/app/base/BulletIcon";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
+import {capitalize, getStatusColor} from "@/utils/functions.jsx";
 
 
 export const MediaStats = ({ user, media }) => (
@@ -41,10 +41,6 @@ export const MediaStats = ({ user, media }) => (
                     </div>
                 }
                 <div>
-                    <div className="text-neutral-500">Time</div>
-                    <div>{parseInt(media.time_days)} days</div>
-                </div>
-                <div>
                     <div className="text-neutral-500">Scored</div>
                     <div>{media.media_metric}/{media.total_media}</div>
                 </div>
@@ -66,7 +62,8 @@ export const MediaStats = ({ user, media }) => (
             <div className="grid grid-cols-2 font-medium text-sm gap-y-2 gap-x-8 md:text-base md:px-2">
                 {media.status_count.map(s =>
                     <div key={`${s.status}-${media.media_type}`} className="flex justify-between">
-                        <Link to={`/list/${media.media_type}/${user.username}?status=${s.status}`} className="text-neutral-500">
+                        <Link to={`/list/${media.media_type}/${user.username}`} search={{ status: [s.status] }}
+                        className="text-neutral-500">
                             <BulletIcon color={getStatusColor(s.status)}/> {s.status}
                         </Link>
                         <div>{s.count}</div>
@@ -75,8 +72,8 @@ export const MediaStats = ({ user, media }) => (
             </div>
         </div>
         <div>
-            <Link to={`/list/${media.media_type}/${user.username}?favorite=true`} className="text-lg font-medium
-            hover:underline hover:underline-offset-2">
+            <Link to={`/list/${media.media_type}/${user.username}`} search={{ favorite: true }} className="text-lg
+            font-medium hover:underline hover:underline-offset-2">
                 Favorites ({media.total_favorites})
             </Link>
             {media.total_favorites === 0 ?
@@ -87,10 +84,10 @@ export const MediaStats = ({ user, media }) => (
                         <Link key={m.media_name} to={`/details/${media.media_type}/${m.media_id}`}>
                             <Tooltip text={m.media_name}>
                                 <img
-                                    id={`${media.media_type}-${m.media_id}`}
-                                    src={m.media_cover}
-                                    className="h-[78px] w-[52px] rounded-sm"
                                     alt={m.media_name}
+                                    src={m.media_cover}
+                                    id={`${media.media_type}-${m.media_id}`}
+                                    className={"h-[78px] w-[52px] rounded-sm"}
                                 />
                             </Tooltip>
                         </Link>
@@ -112,7 +109,7 @@ export const MediaStats = ({ user, media }) => (
                 :
                 <div className="flex flex-wrap justify-start gap-2 mt-2">
                     {media.labels.names.map(lb =>
-                        <Link key={lb} to={`/list/${media.media_type}/${user.username}?labels=${lb}`}>
+                        <Link key={lb} to={`/list/${media.media_type}/${user.username}`} search={{ labels: [lb] }}>
                             <Badge variant="label" className="font-semibold">{lb}</Badge>
                         </Link>
                     )}

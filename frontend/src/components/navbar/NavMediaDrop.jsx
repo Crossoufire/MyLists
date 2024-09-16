@@ -1,22 +1,22 @@
 import {useRef} from "react";
-import {capitalize} from "@/lib/utils";
-import {userClient} from "@/api/MyApiClient";
+import {capitalize} from "@/utils/functions.jsx";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const NavMediaDrop = () => {
     const popRef = useRef();
-    const currentUser = userClient.currentUser;
+    const { currentUser } = useAuth();
 
     const menuItems = [
-        {url: `/list/series`, media: "series"},
-        {url: `/list/anime`, media: "anime", cond: currentUser.add_anime},
-        {url: `/list/movies`, media: "movies"},
-        {url: `/list/books`, media: "books", cond: currentUser.add_books},
-        {url: `/list/games`, media: "games", cond: currentUser.add_games}
+        { url: `/list/series`, media: "series" },
+        { url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active },
+        { url: `/list/movies`, media: "movies" },
+        { url: `/list/books`, media: "books", cond: currentUser.settings.books.active },
+        { url: `/list/games`, media: "games", cond: currentUser.settings.games.active }
     ];
 
     return (
@@ -25,7 +25,7 @@ export const NavMediaDrop = () => {
                 <PopoverTrigger>
                     <div className="flex items-center gap-2 text-lg font-semibold px-1">
                         MyLists
-                        <CaretSortIcon/>
+                        <CaretSortIcon className="opacity-80"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>
@@ -34,10 +34,10 @@ export const NavMediaDrop = () => {
                         {menuItems.filter(item => item.cond !== false).map(item =>
                             <NavMediaItem
                                 key={item.url}
+                                popRef={popRef}
+                                text={`${capitalize(item.media)}List`}
                                 to={`${item.url}/${currentUser.username}`}
                                 icon={<MediaIcon mediaType={item.media} size={18}/>}
-                                text={`${capitalize(item.media)}List`}
-                                popRef={popRef}
                             />
                         )}
                     </ul>

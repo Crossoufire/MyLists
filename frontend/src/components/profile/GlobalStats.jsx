@@ -1,10 +1,10 @@
 import {ResponsivePie} from "@nivo/pie";
-import {pieTheme} from "@/lib/constants";
 import {useEffect, useState} from "react";
+import {pieTheme} from "@/utils/nivoThemes";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, getMediaColor} from "@/lib/utils";
+import {getFeelingValues, getMediaColor} from "@/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
@@ -13,28 +13,31 @@ export const GlobalStats = ({ userData, global }) => {
     const { isOpen, caret, toggleCollapse } = useCollapse();
 
     useEffect(() => {
-        setPieData(transformToPieData(global))
+        setPieData(transformToPieData(global));
     }, [global]);
 
     const transformToPieData = (global) => {
         const timeSum = global.time_per_media.reduce((acc, curr) => acc + curr, 0);
         if (timeSum === 0) return [];
 
+        // noinspection JSValidateTypes
         return global.time_per_media.map((time, idx) => ({
             id: idx + 1,
             value: time,
             label: global.media_types[idx],
             color: getMediaColor(global.media_types[idx]),
-            total: ((time/timeSum) * 100).toFixed(0) + "%",
+            total: ((time / timeSum) * 100).toFixed(0) + "%",
         }));
     };
 
+    // noinspection JSValidateTypes
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
                     <div className="py-1 flex gap-2 items-center">
-                        {caret} <div role="button" onClick={toggleCollapse}>Statistics</div>
+                        {caret}
+                        <div role="button" onClick={toggleCollapse}>Statistics</div>
                     </div>
                 </CardTitle>
                 <Separator/>
@@ -67,12 +70,12 @@ export const GlobalStats = ({ userData, global }) => {
                                         <div className="grid grid-cols-3 font-semibold">
                                             <Tooltip text={`${global.total_days} days`}>
                                                 <div>
-                                                    <div className="text-neutral-500 text-lg">Total time</div>
+                                                    <div className="text-neutral-500 text-lg">Total Time</div>
                                                     <div>{global.total_hours} h</div>
                                                 </div>
                                             </Tooltip>
                                             <div>
-                                                <div className="text-neutral-500 text-lg">Total Media</div>
+                                                <div className="text-neutral-500 text-lg">Total Entries</div>
                                                 <div>{global.total_media}</div>
                                             </div>
                                             <Tooltip text={`${global.total_scored}/${global.total_media}`}>
@@ -96,12 +99,12 @@ export const GlobalStats = ({ userData, global }) => {
                                         <div className="grid grid-cols-2 font-semibold">
                                             <Tooltip text={`${global.total_days} days`}>
                                                 <div>
-                                                    <div className="text-neutral-500 text-lg">Total time</div>
+                                                    <div className="text-neutral-500 text-lg">Total Time</div>
                                                     <div>{global.total_hours} h</div>
                                                 </div>
                                             </Tooltip>
                                             <div>
-                                                <div className="text-neutral-500 text-lg">Total Media</div>
+                                                <div className="text-neutral-500 text-lg">Total Entries</div>
                                                 <div>{global.total_media}</div>
                                             </div>
                                         </div>

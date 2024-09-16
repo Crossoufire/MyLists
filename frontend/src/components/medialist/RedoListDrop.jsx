@@ -1,28 +1,20 @@
-import {useState} from "react";
 import {LuRotateCw} from "react-icons/lu";
-import {getRedoValues} from "@/lib/utils";
-import {useLoading} from "@/hooks/LoadingHook";
+import {getRedoValues} from "@/utils/functions.jsx";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const RedoListDrop = ({ isCurrent, initRedo, updateRedo, isDisabled = false }) => {
+export const RedoListDrop = ({ isCurrent, redo, updateRedo }) => {
     const redoValues = getRedoValues();
-    const [isLoading, handleLoading] = useLoading();
-    const [redo, setRedo] = useState(initRedo || 0);
 
-    const selectChange = async (value) => {
-        const newVal = value;
-        const response = await handleLoading(updateRedo, newVal);
-        if (response) {
-            setRedo(newVal);
-        }
+    const selectChange = (redo) => {
+        updateRedo.mutate({ payload: redo });
     };
 
     return (
         <div className="flex items-center gap-2" title="Redo">
             <LuRotateCw/>
             {isCurrent ?
-                <Select value={`${redo}`} onValueChange={selectChange} disabled={isLoading || isDisabled}>
+                <Select value={`${redo}`} onValueChange={selectChange} disabled={updateRedo.isPending}>
                     <SelectTrigger className="w-[20px]" size="list" variant="noIcon">
                         <SelectValue/>
                     </SelectTrigger>

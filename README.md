@@ -1,17 +1,17 @@
 # MyLists
 
-[MyLists](https://mylists.info) is your go-to platform for organizing your favorite series, anime, movies, games, and books. 
+[MyLists](https://mylists.info) is your go-to platform for organizing your favorite series, anime, movies, games, and books.
 With a clean and user-friendly interface, it regroups the functionalities of multiple sites into one.
 MyLists integrates features such as total viewing time, comments, favorites, and more.
 
 Live version here: [https://mylists.info](https://mylists.info)
 
-contact: <contact.us.at.mylists@gmail.com> 
+contact: <contact.us.at.mylists@gmail.com>
 
 
 # Key Features
 
-* Build your lists for all your series, anime, movies, games and books. 
+* Build your lists for all your series, anime, movies, games and books.
 * Level up your Profile and lists with the leveling systems, and climb up the Hall of Fame!
 * Get detailed statistics about your entertainment habits (time spent, number of episodes watched, preferred genres, rating distribution, etc...).
 * Stay informed about upcoming episodes in your series/anime, along with new movies.
@@ -19,6 +19,7 @@ contact: <contact.us.at.mylists@gmail.com>
 * Compare your lists with other users.
 * Notifications system.
 * And more to come!
+
 
 # Support Me
 
@@ -33,30 +34,29 @@ If you like this work, you can buy me a coffee! &nbsp;
 
 ## Prerequisites
 
-* Python 3.9+
-* WSL2 recommended for Windows to use cron jobs
+* Python 3.10+
+* Poetry (https://python-poetry.org/)
+* (optional) WSL2 recommended for Windows to use cron jobs
 
 ## Steps
-1. Install python and create a virtual env
-```
-pip install virtual-env
-python -m venv venv-mylists
-```
 
-2. Clone this repo and install the requirements
+1. Clone this repo and install the requirements using Poetry
+
 ```
 git clone https://www.github.com/Crossoufire/MyLists.git
 cd MyLists/backend
-pip install -r requirements.txt
+poetry install
 ```
 
 3. Set up the `.flaskenv` file
+
 ```
 FLASK_APP=server.py
-FLASK_DEBUG=<0|1>
+FLASK_ENV=< development | production >
 ```
 
-4. Create a `.env` file
+4. Create a `.env` file. See the `config.py` file for more details.
+
 ```
 SECRET_KEY=<change-me>
 
@@ -79,21 +79,23 @@ SECRET_IGDB=<igdb-secret>
 IGDB_API_KEY=<igdb-api-key>
 ```
 
-5. Run the command `python server.py` inside the `MyLists/backend` folder. 
-The backend will be served by default at [http://localhost:5000](http://localhost:5000).
+5. Run the command `poetry run python server.py` inside the `MyLists/backend` folder.
+   The backend will be served by default at `localhost:5000`.
 
 ---
-
 
 # Frontend Installation (Node - React)
 
 ## Prerequisites
-- WSL2 recommended for Windows
-- Node.js > 19
-- npm > 9
+
+- npm > 9.0
+- Node.js > 19.0
+- (optional) WSL2 recommended for Windows
 
 ## Steps
-1. Clone this repo and install the requirements
+
+1. Clone this repo and install the requirements using npm
+
 ```
 git clone https://www.github.com/Crossoufire/MyLists.git
 cd MyLists/frontend
@@ -101,12 +103,13 @@ npm install
 ```
 
 2. Create the `.env.development` file for development (`.env.production` for production)
+
 ```
 VITE_BASE_API_URL=http://localhost:5000
 VITE_REGISTER_CALLBACK=http://localhost:3000/register_token
 VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
 VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
-3. Run the command`npm run dev` inside the `MyLists/frontend` folder. The frontend will be served by default at http://localhost:3000.
 
+3. Run the command `npm run dev` inside the `MyLists/frontend` folder. The frontend will be served by default at `localhost:3000`.
 

@@ -3,9 +3,16 @@ import {Link} from "@tanstack/react-router";
 
 
 export const MapDetails = ({ name, valueList, mediaType, job, asJoin }) => {
-    const renderLink = (value) => (
+    const renderLink = (value, idx) => (
         <Link key={value} to={`/details/${mediaType}/${job}/${value}`}>
-            <div className="hover:underline hover:underline-offset-2">{value}</div>
+            {asJoin ?
+                <>
+                    <span className="hover:underline hover:underline-offset-2">{value}</span>
+                    {idx !== valueList.length - 1 && ", "}
+                </>
+                :
+                <div className="hover:underline hover:underline-offset-2">{value}</div>
+            }
         </Link>
     );
 
@@ -18,8 +25,9 @@ export const MapDetails = ({ name, valueList, mediaType, job, asJoin }) => {
     return (
         <div>
             <div className="font-semibold text-neutral-500">{name}</div>
+            {valueList.length === 0 && "--"}
             {valueList.map((value, idx) =>
-                (mediaType && job && value !== "Unknown") ? renderLink(value) : renderValue(value, idx)
+                (mediaType && job) ? renderLink(value, idx) : renderValue(value, idx)
             )}
         </div>
     );

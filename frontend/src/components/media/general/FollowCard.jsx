@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, zeroPad} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
+import {getFeelingValues, zeroPad} from "@/utils/functions.jsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 
@@ -21,9 +21,9 @@ export const FollowCard = ({ follow, mediaType }) => {
                     <div className="col-span-3">
                         <Link to={`/profile/${follow.username}`}>
                             <img
+                                alt={follow.username}
                                 src={follow.profile_image}
                                 className="bg-neutral-600 h-[52px] w-[52px] rounded-full"
-                                alt={follow.username}
                             />
                         </Link>
                     </div>
@@ -38,7 +38,7 @@ export const FollowCard = ({ follow, mediaType }) => {
                             </div>
                             {(follow.status === "Completed" && mediaType !== "games") &&
                                 <div className="flex items-center gap-x-2">
-                                    <LuRotateCw size={15}/> {follow.rewatched}
+                                    <LuRotateCw size={15}/> {follow.redo}
                                 </div>
                             }
                             <div className="flex items-center gap-x-2">
@@ -65,8 +65,8 @@ export const FollowCard = ({ follow, mediaType }) => {
                         <LuAlignJustify className="mt-1"/> {follow.status}
                     </div>
                     <MoreFollowDetails
-                        mediaType={mediaType}
                         follow={follow}
+                        mediaType={mediaType}
                     />
                 </div>
             </CardContent>
@@ -89,7 +89,7 @@ const MoreFollowDetails = ({ mediaType, follow }) => {
     else if (mediaType === "books" && follow.status !== "Plan to Read") {
         return (
             <div className="flex gap-x-3 items-center">
-                <LuPlay size={16} className="mt-1"/> Page {follow.actual_page}/{follow.total_pages}
+                <LuPlay size={16} className="mt-1"/> Pages {follow.actual_page}/{follow.total_pages}
             </div>
         );
     }

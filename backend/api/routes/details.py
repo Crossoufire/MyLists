@@ -1,113 +1,123 @@
 import secrets
 from pathlib import Path
-from typing import Any, Dict
+from typing import Union
 from urllib.request import urlretrieve
-from PIL import Image
-from PIL.Image import Resampling
-from flask import current_app
-from flask import request, jsonify, Blueprint, abort
+
+from flask import current_app, request, jsonify, Blueprint, abort
+
 from backend.api import db
-from backend.api.data_managers.api_data_manager import ApiData
-from backend.api.routes.handlers import token_auth, current_user
-from backend.api.utils.decorators import validate_media_type, validate_json_data
-from backend.api.utils.enums import MediaType, RoleType, ModelTypes
-from backend.api.utils.functions import get, ModelsFetcher
+from backend.api.managers.ApiManager import ApiManager
+from backend.api.core import token_auth
+from backend.api.schemas.details import *
+from backend.api.utils.decorators import body
+from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
+from backend.api.utils.functions import get, format_datetime, resize_and_save_image
+from backend.api.managers.ModelsManager import ModelsManager
+
 
 details_bp = Blueprint("api_details", __name__)
 
 
-@details_bp.route("/details/<media_type>/<media_id>", methods=["GET"])
+@details_bp.route("/details/<mediatype:media_type>/<media_id>", methods=["GET"])
 @token_auth.login_required
-@validate_media_type
-def media_details(media_type: MediaType, media_id: int):
+def media_details(media_type: MediaType, media_id: Union[int, str]):
     """ Media Details and the user details """
 
-    media_model, label_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
+    media_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.LABELS])
 
-    external_arg = request.args.get("external")
-    filter_id = {"api_id": media_id} if external_arg else {"id": media_id}
+    external = request.args.get("external")
+    filter_id = {"api_id": media_id} if external else {"id": media_id}
     media = media_model.query.filter_by(**filter_id).first()
 
-    if external_arg and not media:
-        API_class = ApiData.get_API_class(media_type)
-        media = API_class(API_id=media_id).save_media_to_db()
+    if external and not media:
+        api_manager = ApiManager.get_subclass(media_type)
+        media = api_manager(api_id=media_id).save_media_to_db()
         db.session.commit()
     elif not media:
-        return abort(404, "The media could not be found.")
+        return abort(404, description="Media not found")
 
     data = dict(
         media=media.to_dict(),
-        similar_media=media.get_similar_media(),
+        similar_media=media.get_similar(),
         user_data=media.get_user_list_info(label_model),
         follows_data=media.in_follows_lists(),
     )
 
-    return jsonify(data=data)
+    return jsonify(data=data), 200
 
 
-@details_bp.route("/details/form/<media_type>/<media_id>", methods=["GET"])
-@token_auth.login_required
-@validate_media_type
-def get_details_form(media_type: MediaType, media_id: int):
-    if current_user.role == RoleType.USER:
-        return abort(403, "You are not authorized. Please contact an admin.")
+@details_bp.route("/details/edit/<mediatype:media_type>/<media_id>", methods=["GET"])
+@token_auth.login_required(role=RoleType.MANAGER)
+def get_details_edit(media_type: MediaType, media_id: int):
+    media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
 
-    media_model, genre_model = ModelsFetcher.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+    media = media_model.query.filter_by(id=media_id).first_or_404()
 
-    media = media_model.query.filter_by(id=media_id).first()
-    if not media:
-        return abort(404, "The media does not exists")
-
-    data = {
-        "fields": [(key, val) for (key, val) in media.to_dict().items() if key in media_model.form_only()],
-        "all_genres": genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
-        "genres": [genre.genre for genre in media.genres] if media_type == MediaType.BOOKS else None,
-    }
+    data = dict(
+        fields=[(key, val) for key, val in media.to_dict().items() if key in media_model.form_only()],
+        all_genres=genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
+        genres=[genre.name for genre in media.genres] if media_type == MediaType.BOOKS else None,
+    )
 
     return jsonify(data=data), 200
 
 
-@details_bp.route("/details/form", methods=["POST"])
+@details_bp.route("/details/<mediatype:media_type>/<jobtype:job>/<name>", methods=["GET"])
 @token_auth.login_required
-@validate_json_data()
-def post_details_form(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+def job_details(media_type: MediaType, job: JobType, name: str):
+    """
+    Load associated media with <job> and <name>
+    Available jobs:
+        - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
+        - `actor`: actors (series/anime/movies)
+        - `platform`: tv network (series/anime)
+    """
+
+    media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
+    all_media = media_model.get_associated_media(job, name)
+
+    # Rename <id> and <name> keys to <media_id> and <media_name> for consistency in frontend
+    for media in all_media:
+        media.update(media_id=media.pop("id"), media_name=media.pop("name"))
+
+    return jsonify(data=dict(data=all_media, total=len(all_media))), 200
+
+
+@details_bp.route("/details/edit", methods=["POST"])
+@token_auth.login_required(role=RoleType.MANAGER)
+@body(MediaEditSchema)
+def post_details_edit(data):
     """ Post new media details after edition """
 
-    payload = {} if payload is None else payload
+    media_model, genre_model = data["models"]
 
-    if current_user.role == RoleType.USER:
-        return abort(403, "You are not authorized")
-
-    media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
-    if not media:
-        return abort(404, "This media does not exists")
+    media = media_model.query.filter_by(id=data["media_id"]).first_or_404()
 
     # Suppress all non-allowed fields
-    form_authorized = models[ModelTypes.MEDIA].form_only()
-    updates = {key: val for (key, val) in payload.items() if key in form_authorized}
-    updates["image_cover"] = get(payload, "image_cover")
+    form_authorized = media_model.form_only()
+    updates = {key: val for (key, val) in data["payload"].items() if key in form_authorized}
+    updates["image_cover"] = get(data["payload"], "image_cover")
 
     if not updates["image_cover"]:
         picture_fn = media.image_cover
     else:
-        picture_fn = f"{secrets.token_hex(12)}.jpg"
-        picture_path = Path(current_app.root_path, f"static/covers/{media_type.value}_covers", picture_fn)
+        picture_fn = f"{secrets.token_hex(16)}.jpg"
+        picture_path = Path(current_app.root_path, f"static/covers/{data['media_type'].value}_covers", picture_fn)
         try:
             urlretrieve(str(updates["image_cover"]), str(picture_path))
-            img = Image.open(str(picture_path))
-            img = img.resize((300, 450), Resampling.LANCZOS)
-            img.save(str(picture_path), quality=90)
-        except Exception as e:
-            current_app.logger.error(f"[ERROR] - occurred updating media cover with ID [{media.id}]: {e}")
-            return abort(403, "Not allowed to upload this media cover")
+            resize_and_save_image(str(picture_path), str(picture_path))
+        except:
+            return abort(403, description="This media cover could not be added. Try another one.")
 
     updates["image_cover"] = picture_fn
     media.lock_status = True
 
-    if media_type == MediaType.BOOKS and bool(get(payload, "genres")):
-        models[ModelTypes.GENRE].replace_genres(payload["genres"], media_id)
+    if data["media_type"] == MediaType.BOOKS and bool(get(data["payload"], "genres")):
+        genre_model.replace_genres(data["payload"]["genres"], data["media_id"])
 
     for name, value in updates.items():
+        if name in ("release_date", "last_air_date", "next_episode_to_air"):
+            value = format_datetime(value)
         setattr(media, name, value)
 
     db.session.commit()
@@ -115,74 +125,30 @@ def post_details_form(media_type: MediaType, media_id: int, payload: Any, models
     return {}, 204
 
 
-@details_bp.route("/details/<media_type>/<job>/<info>", methods=["GET"])
-@token_auth.login_required
-@validate_media_type
-def job_details(media_type: MediaType, job: str, info: str):
-    """
-    Load all the media associated with the <job> and the <info>
-    job can be:
-        - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
-        - `actor`: actors (series/anime/movies)
-        - `network`: tv network (series/anime)
-    """
-
-    media_model = ModelsFetcher.get_unique_model(media_type, ModelTypes.MEDIA)
-    media_data = media_model.get_information(job, info)
-
-    for media in media_data:
-        media.update(media_id=media.pop("id"), media_name=media.pop("name"))
-
-    data = dict(
-        data=media_data,
-        total=len(media_data),
-    )
-
-    return jsonify(data=data), 200
-
-
-# noinspection PyUnusedLocal
 @details_bp.route("/details/refresh", methods=["POST"])
-@token_auth.login_required
-@validate_json_data()
-def refresh_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
-    """ Refresh the details of a unique <media> if the user role is at least <manager> """
+@token_auth.login_required(role=RoleType.MANAGER)
+@body(RefreshMediaSchema)
+def refresh_media(data):
+    """ Refresh metadata of a media """
 
-    if current_user.role == RoleType.USER:
-        return abort(401, "Unauthorized to refresh this media")
-
-    api_model = ApiData.get_API_class(media_type)
-
-    media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
-    if media is None:
-        return abort(404)
-
-    try:
-        refreshed_data = api_model(API_id=media.api_id).update_media_data()
-        media.refresh_element_data(media.api_id, refreshed_data)
-        current_app.logger.info(f"[INFO] - Refreshed the {media_type.value} with API ID: [{media.api_id}]")
-    except Exception as e:
-        current_app.logger.error(f"[ERROR] - While refreshing {media_type.value} with API ID: [{media.api_id}]: {e}")
-        return abort(400, "An error occurred trying to refresh the media")
+    media = data["models"].query.filter_by(id=data["media_id"]).first_or_404()
+    api_manager = ApiManager.get_subclass(data["media_type"])
+    api_manager(api_id=media.api_id).update_media_to_db()
+    current_app.logger.info(f"[INFO] - Refreshed {data['media_type'].value} with API ID: [{media.api_id}]")
 
     return {}, 204
 
 
 @details_bp.route("/details/lock_media", methods=["POST"])
-@token_auth.login_required
-@validate_json_data(bool)
-def lock_media(media_type: MediaType, media_id: int, payload: Any, models: Dict[ModelTypes, db.Model]):
+@token_auth.login_required(role=RoleType.MANAGER)
+@body(LockMediaSchema)
+def lock_media(data):
     """ Lock a media so the API does not update it anymore """
 
-    if current_user.role == RoleType.USER:
-        return abort(401, "Unauthorized to refresh this media")
+    media = data["models"].query.filter_by(id=data["media_id"]).first_or_404()
 
-    media = models[ModelTypes.MEDIA].query.filter_by(id=media_id).first()
-    if not media:
-        return abort(400)
-
-    media.lock_status = payload
+    media.lock_status = data["payload"]
     db.session.commit()
-    current_app.logger.info(f"{media_type} [ID {media_id}] successfully locked.")
+    current_app.logger.info(f"{data['media_type'].value} [ID {media.id}] successfully locked")
 
     return {}, 204

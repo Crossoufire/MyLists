@@ -1,0 +1,7 @@
+{
+    "autoCodeSplitting": true,
+    "quoteStyle": "double",
+    "disableTypes": false,
+    "disableManifestGeneration": true,
+    "semicolons": true
+}

@@ -1,4 +1,4 @@
-import {mail} from "@/lib/constants";
+import {mail} from "@/utils/constants.js";
 import {FaEnvelope} from "react-icons/fa";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
@@ -15,9 +15,19 @@ export const Footer = () => (
                     Create your media lists, see how much time you spent, follow your friends and compare with them.
                     Add favorites, comments, re-watch and gain levels to get to the top of the Hall of Fame.
                 </p>
-                <a href={`mailto:${mail}`} className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
-                    <FaEnvelope/> Contact us
-                </a>
+                <div className="flex gap-4 mt-2">
+                    <a href={`mailto:${mail}`}
+                       className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
+                        <FaEnvelope/> Contact us
+                    </a>
+                    <a href="https://www.buymeacoffee.com/crossoufire" rel="noreferrer" target="_blank">
+                        <img
+                            alt="Buy Me A Coffee"
+                            src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
+                        />
+                    </a>
+                </div>
+
             </div>
             <div className="md:col-span-3 flex flex-col gap-y-1">
                 <div className="font-bold text-xl">Powered by</div>
@@ -33,10 +43,11 @@ export const Footer = () => (
                 <div className="font-bold text-xl">Information</div>
                 <ul>
                     <li><a href="https://github.com/Crossoufire/MyLists" rel="noreferrer" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/Crossoufire/MyLists/releases" rel="noreferrer" target="_blank">Changelog</a>
+                    </li>
                     <li><Link to="/about">About</Link></li>
-                    <li><Link to="/privacy_policy">Privacy Policy</Link></li>
-                    <li><Link to="/levels/media_levels">Media levels data</Link></li>
-                    <li><Link to="/levels/profile_levels">Profile borders data</Link></li>
+                    <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+                    <li><Link to="/levels/profile-levels">Profile borders data</Link></li>
                 </ul>
             </div>
         </div>

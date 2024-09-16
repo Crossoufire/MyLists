@@ -1,65 +1,63 @@
-import {useState} from "react";
 import {Separator} from "@/components/ui/separator";
+import {InputComponent} from "@/components/app/InputComponent";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {PageInput} from "@/components/media/books/PageInput";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {RatingComponent} from "@/components/app/RatingComponent";
+import React from "react";
 
 
-export const BooksUserDetails = ({ userData, totalPages, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
-    const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(userData.rating);
-    const [page, setPage] = useState(userData.actual_page);
+export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) => {
+    const { updateRedo, updateRating, updatePage, updateStatusFunc } = userMediaMutations(
+        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
+    );
 
-    const callbackStatus = (value) => {
-        setStatus(value);
-
-        if (value === "Completed") {
-            setPage(totalPages);
-        }
-
-        if (value === "Plan to Read") {
-            setPage(0);
-        }
-
-        setRedo(0);
-    };
-
-    const callbackRating = (value) => {
-        setRating({ ...rating, value });
+    const onStatusSuccess = (oldData, variables) => {
+        const newData = { ...oldData };
+        const status = variables.payload;
+        newData.user_data.redo = 0;
+        newData.user_data.status = status;
+        if (status === "Completed") newData.user_data.actual_page = totalPages;
+        if (status === "Plan to Read") newData.user_data.actual_page = 0;
+        return newData;
     };
 
     return (
         <>
             <StatusDrop
-                status={status}
+                status={userData.status}
                 allStatus={userData.all_status}
-                updateStatus={updatesAPI.status}
-                callbackStatus={callbackStatus}
+                updateStatus={updateStatusFunc(onStatusSuccess)}
             />
-            {status !== "Plan to Read" &&
+            {userData.status !== "Plan to Read" &&
                 <>
-                    <PageInput
-                        initPage={page}
-                        totalPages={totalPages}
-                        updatePage={updatesAPI.page}
-                    />
+                    <div className="flex justify-between items-center">
+                        <div>Pages</div>
+                        <InputComponent
+                            total={totalPages}
+                            onUpdate={updatePage}
+                            inputClassName={"w-[60px]"}
+                            initValue={userData.actual_page}
+                            containerClassName={"w-[135px]"}
+                        />
+                    </div>
                     <Separator/>
-                    <RatingDrop
-                        rating={rating}
-                        updateRating={updatesAPI.rating}
-                        callbackRating={callbackRating}
-                    />
+                    <div className="flex justify-between items-center">
+                        <div>Rating</div>
+                        <RatingComponent
+                            onUpdate={updateRating}
+                            rating={userData.rating}
+                        />
+                    </div>
                 </>
             }
-            {status === "Completed" &&
+            {userData.status === "Completed" &&
                 <RedoDrop
-                    name="Re-read"
-                    initRedo={redo}
-                    updateRedo={updatesAPI.redo}
+                    name={"Re-read"}
+                    redo={userData.redo}
+                    updateRedo={updateRedo}
                 />
             }
         </>
-    )
+    );
 };

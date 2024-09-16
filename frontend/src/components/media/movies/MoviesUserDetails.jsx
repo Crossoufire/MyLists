@@ -1,47 +1,43 @@
-import {useState} from "react";
 import {Separator} from "@/components/ui/separator";
+import {RatingComponent} from "@/components/app/RatingComponent";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {RatingDrop} from "@/components/media/general/RatingDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 
 
-export const MoviesUserDetails = ({ userData, updatesAPI }) => {
-    const [redo, setRedo] = useState(userData.rewatched);
-    const [status, setStatus] = useState(userData.status);
-    const [rating, setRating] = useState(userData.rating);
+export const MoviesUserDetails = ({ userData, mediaType, mediaId }) => {
+    const { updateRating, updateRedo, updateStatusFunc } = userMediaMutations(
+        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
+    );
 
-    const callbackStatus = (value) => {
-        setStatus(value);
-        setRedo(0);
-    };
-
-    const callbackRating = (value) => {
-        setRating({ ...rating, value });
+    const onStatusSuccess = (oldData, variables) => {
+        return { ...oldData, user_data: { ...oldData.user_data, status: variables.payload, redo: 0 } };
     };
 
     return (
         <>
             <StatusDrop
-                status={status}
+                status={userData.status}
                 allStatus={userData.all_status}
-                updateStatus={updatesAPI.status}
-                callbackStatus={callbackStatus}
+                updateStatus={updateStatusFunc(onStatusSuccess)}
             />
-            {status !== "Plan to Watch" &&
-                <>
-                    <Separator/>
-                    <RatingDrop
-                        rating={rating}
-                        updateRating={updatesAPI.rating}
-                        callbackRating={callbackRating}
+        {userData.status !== "Plan to Watch" &&
+            <>
+                <Separator/>
+                <div className="flex justify-between items-center">
+                    <div>Rating</div>
+                    <RatingComponent
+                        onUpdate={updateRating}
+                        rating={userData.rating}
                     />
-                    <RedoDrop
-                        name="Re-watched"
-                        initRedo={redo}
-                        updateRedo={updatesAPI.redo}
-                    />
-                </>
-            }
+                </div>
+                <RedoDrop
+                    name={"Re-watched"}
+                    redo={userData.redo}
+                    updateRedo={updateRedo}
+                />
+            </>
+        }
         </>
-    )
+    );
 };

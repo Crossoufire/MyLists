@@ -1,7 +1,7 @@
-import {capitalize} from "@/lib/utils";
 import {Card, CardContent} from "@/components/ui/card";
 import {MediaStats} from "@/components/profile/MediaStats";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {capitalize} from "@/utils/functions.jsx";
 
 
 export const MediaDetails = ({ mediaData, userData }) => (
@@ -18,8 +18,8 @@ export const MediaDetails = ({ mediaData, userData }) => (
                 {mediaData.map(mt =>
                     <TabsContent key={mt.media_type} value={mt.media_type}>
                         <MediaStats
-                            user={userData}
                             media={mt}
+                            user={userData}
                         />
                     </TabsContent>
                 )}

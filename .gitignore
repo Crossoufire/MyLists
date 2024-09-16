@@ -121,3 +121,6 @@ backend/api/static/covers/books_covers/*
 /frontend/package-lock.json
 
 # -------------------------------------------------------------------------------------
+backend/.flaskenv
+frontend/src/routeTree.gen.*
+backend/poetry.lock

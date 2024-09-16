@@ -1,43 +1,48 @@
-import {useParams} from "@tanstack/react-router";
-import {PagesInput} from "@/components/medialist/PagesInput";
+import {InputComponent} from "@/components/app/InputComponent";
+import {useParams, useSearch} from "@tanstack/react-router";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EpsAndSeasons} from "@/components/medialist/EpsAndSeasons";
 import {PlaytimeListDrop} from "@/components/medialist/PlaytimeListDrop";
 
 
-export const SuppMediaInfo = ({ isCurrent, media, status, updateUserAPI }) => {
-    const { mediaType } = useParams({ strict: false });
+export const SuppMediaInfo = ({ isCurrent, media }) => {
+    const search = useSearch({ strict: false });
+    const { mediaType, username } = useParams({ strict: false });
+    const { updateSeason, updateEpisode, updatePage, updatePlaytime } = userMediaMutations(
+        mediaType, media.media_id, ["userList", mediaType, username, search]
+    );
 
-    if (["series", "anime"].includes(mediaType) && !["Plan to Watch", "Random"].includes(status)) {
+    if (["series", "anime"].includes(mediaType) && !["Plan to Watch", "Random"].includes(media.status)) {
         return (
             <EpsAndSeasons
-                status={status}
                 isCurrent={isCurrent}
-                initSeas={media.current_season}
-                updateSeas={updateUserAPI.season}
-                updateEps={updateUserAPI.episode}
+                updateEps={updateEpisode}
+                updateSeason={updateSeason}
                 epsPerSeason={media.eps_per_season}
-                initEps={media.last_episode_watched}
+                currentSeason={media.current_season}
+                currentEpisode={media.last_episode_watched}
             />
         );
     }
-
-    if (mediaType === "games" && status !== "Plan to Play") {
+    if (mediaType === "games" && media.status !== "Plan to Play") {
         return (
             <PlaytimeListDrop
+                className="h-[26px]"
                 isCurrent={isCurrent}
-                initPlaytime={media.playtime}
-                updatePlaytime={updateUserAPI.playtime}
+                playtime={media.playtime}
+                updatePlaytime={updatePlaytime}
             />
         );
     }
-    if (mediaType === "books" && status !== "Plan to Read") {
+    if (mediaType === "books" && media.status !== "Plan to Read") {
         return (
-            <PagesInput
-                status={status}
-                isCurrent={isCurrent}
-                initPage={media.actual_page}
-                totalPages={media.total_pages}
-                updatePage={updateUserAPI.page}
+            <InputComponent
+                onUpdate={updatePage}
+                isEditable={isCurrent}
+                total={media.total_pages}
+                initValue={media.actual_page}
+                inputClassName={"w-[40px] p-0"}
+                containerClassName={"flex justify-center items-center h-[26px]"}
             />
         );
     }

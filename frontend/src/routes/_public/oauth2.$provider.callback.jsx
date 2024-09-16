@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {userClient} from "@/api/MyApiClient";
+import {useAuth} from "@/hooks/AuthHook";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
@@ -12,30 +12,39 @@ export const Route = createFileRoute("/_public/oauth2/$provider/callback")({
 
 function OAuth2CallbackPage() {
     const navigate = useNavigate();
+    const search = Route.useSearch();
     const { provider } = Route.useParams();
-    const searchParams = Route.useSearch();
+    const { currentUser, oAuth2Login } = useAuth();
+
+    const authUsingOAuth2 = async () => {
+        const data = {
+            code: search?.code,
+            state: search?.state,
+            callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
+        };
+
+        oAuth2Login.mutate({ provider, data }, {
+            onError: async () => {
+                toast.error("Failed to authenticate with the provider");
+                await navigate({ to: "/" });
+            },
+        });
+    };
+
+    useEffect(() => {
+        void authUsingOAuth2();
+    }, []);
 
     useEffect(() => {
         (async () => {
-            const oauth2Data = {
-                ...searchParams,
-                callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider),
-            };
-
-            const response = await userClient.login(provider, oauth2Data, true);
-
-            if (!response.ok) {
-                toast.error(response.body.description);
-                return navigate({ to: "/" });
-            }
-
-            return navigate({ to: `/profile/${userClient.currentUser.username}` });
+            if (!currentUser) return;
+            await navigate({ to: `/profile/${currentUser.username}` });
         })();
-    }, []);
+    }, [currentUser]);
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
             <div className="text-xl mb-2 font-semibold">Authentication in progress...</div>
         </div>
-    )
+    );
 }

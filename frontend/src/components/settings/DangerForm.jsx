@@ -1,46 +1,37 @@
 import {toast} from "sonner";
-import {useState} from "react";
+import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
-import {api, userClient} from "@/api/MyApiClient";
 import {useNavigate} from "@tanstack/react-router";
-import {FormError} from "@/components/app/base/FormError";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 
 
 export const DangerForm = () => {
+    const { logout } = useAuth();
     const navigate = useNavigate();
-    const [error, setError] = useState("");
-    const [pending, setPending] = useState(false);
+    const { deleteAccount } = simpleMutations();
 
-    const deleteAccount = async () => {
-        setError("");
+    const onSubmit = async () => {
         if (!window.confirm("Are you really sure?")) return;
 
-        try {
-            setPending(true);
-            const response = await api.post("/settings/delete_account");
-            if (!response.ok) {
-                return setError(response.body.description);
+        deleteAccount.mutate(undefined, {
+            onError: () => toast.error("An error occurred while deleting your account"),
+            onSuccess: async () => {
+                logout.mutate();
+                toast.success("Your account has been successfully deleted");
+                return navigate({ to: "/" });
             }
-        }
-        finally {
-            setPending(false);
-        }
-
-        toast.success("Your account has been successfully deleted");
-        await userClient.logout();
-        return navigate({ to: "/" });
+        });
     };
 
     return (
         <div className="space-y-6">
-            <div>
-                WARNING: Deleting your account is irreversible and will permanently remove all your data and access. Are
-                you sure you want to proceed?
+            <div className="max-w-[500px]">
+                WARNING: Deleting your account is irreversible and will permanently
+                remove all your data and access. Are you sure you want to proceed?
             </div>
-            <Button variant="destructive" onClick={deleteAccount} className="w-48" disabled={pending}>
+            <Button variant="destructive" onClick={onSubmit} className="w-48" disabled={deleteAccount.isPending}>
                 DELETE MY ACCOUNT
             </Button>
-            {error && <FormError message={error}/>}
         </div>
     );
 };

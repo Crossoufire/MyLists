@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 0;
+            margin: 50px auto;
+            background-color: #404040;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .email-container {
+            max-width: 440px;
+            min-width: 320px;
+            margin: 0 auto;
+            background-color: #202020;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .email-header {
+            background-color: #042f2e;
+            color: #eaeaea;
+            text-align: center;
+            padding: 14px;
+            font-size: 28px;
+        }
+
+        .email-body {
+            padding: 20px;
+            color: #eaeaea;
+        }
+
+        .email-body p {
+            margin: 0 0 20px;
+            line-height: 1.6;
+        }
+
+        .email-footer {
+            background-color: #151515;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777777;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #042f2e;
+            color: #eaeaea;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: rgba(4, 47, 46, 0.8);
+        }
+
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100%;
+                border-radius: 0;
+            }
+
+            .email-header, .email-footer {
+                padding: 15px;
+            }
+
+            .email-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        Welcome to <br/> MyLists!
+    </div>
+    <div class="email-body">
+        <p>Hi {{ username }},</p>
+        <p>Thank you for registering :).</p>
+        <p>To get started, please confirm your email address by clicking the button below:</p>
+        <p style="text-align: center; margin-top: -20px;">
+            <a href="{{ link }}" class="btn" target="_blank" rel="noreferrer">Confirm Email</a>
+        </p>
+        <p>If you did not sign up for this account, please ignore this email.</p>
+        <p>Best regards,<br>The MyLists Team</p>
+    </div>
+    <div class="email-footer">
+        2024 MyLists &nbsp;|&nbsp; <a href="https://mylists.info" style="color: #b8b8b8;">MyLists.info</a>
+    </div>
+</div>
+</body>
+</html>
