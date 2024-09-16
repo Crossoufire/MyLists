@@ -31,44 +31,52 @@ def upgrade():
 
     results = connection.execute(sa.select(user_last_update)).fetchall()
     for row in results:
-        update_values = dict(
-            user_id=row.user_id,
-            media_id=row.media_id,
-            media_name=row.media_name,
-            media_type=row.media_type,
-            timestamp=row.date,
-        )
-        if row.old_status is not None or row.new_status is not None:
-            update_values["update_type"] = "STATUS"
-            update_values["payload"] = json.dumps(dict(
-                old_value=format_status(row.old_status),
-                new_value=format_status(row.new_status),
-            ))
+        try:
+            update_values = dict(
+                user_id=row.user_id,
+                media_id=row.media_id,
+                media_name=row.media_name,
+                media_type=row.media_type,
+                timestamp=row.date,
+            )
 
-        if row.old_season is not None or row.new_season is not None:
-            update_values["update_type"] = "TV"
-            update_values["payload"] = json.dumps(dict(
-                old_value=(int(row.old_season), int(row.old_episode)),
-                new_value=(int(row.new_season), int(row.new_episode)),
-            ))
-        if row.old_playtime is not None or row.new_playtime is not None:
-            update_values["update_type"] = "PLAYTIME"
-            update_values["payload"] = json.dumps(dict(
-                old_value=row.old_playtime,
-                new_value=row.new_playtime,
-            ))
-        if row.old_page is not None or row.new_page is not None:
-            update_values["update_type"] = "PAGE"
-            update_values["payload"] = json.dumps(dict(
-                old_value=row.old_page,
-                new_value=row.new_page,
-            ))
-        if row.old_redo is not None or row.new_redo is not None:
-            update_values["update_type"] = "REDO"
-            update_values["payload"] = json.dumps(dict(
-                old_value=row.old_redo,
-                new_value=row.new_redo,
-            ))
+            if row.old_status is not None or row.new_status is not None:
+                update_values["update_type"] = "STATUS"
+                update_values["payload"] = json.dumps(dict(
+                    old_value=format_status(row.old_status),
+                    new_value=format_status(row.new_status),
+                ))
+
+            if row.old_season is not None or row.new_season is not None:
+                update_values["update_type"] = "TV"
+                update_values["payload"] = json.dumps(dict(
+                    old_value=(int(row.old_season), int(row.old_episode)),
+                    new_value=(int(row.new_season), int(row.new_episode)),
+                ))
+
+            if row.old_playtime is not None or row.new_playtime is not None:
+                update_values["update_type"] = "PLAYTIME"
+                update_values["payload"] = json.dumps(dict(
+                    old_value=row.old_playtime,
+                    new_value=row.new_playtime,
+                ))
+
+            if row.old_page is not None or row.new_page is not None:
+                update_values["update_type"] = "PAGE"
+                update_values["payload"] = json.dumps(dict(
+                    old_value=row.old_page,
+                    new_value=row.new_page,
+                ))
+
+            if row.old_redo is not None or row.new_redo is not None:
+                update_values["update_type"] = "REDO"
+                update_values["payload"] = json.dumps(dict(
+                    old_value=row.old_redo,
+                    new_value=row.new_redo,
+                ))
+        except Exception as e:
+            print(row.media_name, row.media_type, row.user_id, e)
+            continue
 
         connection.execute(user_media_update.insert().values(**update_values))
 
