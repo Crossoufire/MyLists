@@ -79,7 +79,6 @@ def create_mail_handler(app: Flask):
 
 def init_stats_and_time_spent():
     from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
-
     compute_media_time_spent()
     update_Mylists_stats()
 

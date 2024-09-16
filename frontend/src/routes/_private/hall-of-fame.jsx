@@ -138,8 +138,7 @@ const HoFCard = ({ user }) => {
                                         {user.username}
                                     </Link>
                                 </h3>
-                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r
-                                from-blue-600 to-violet-600">
+                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r from-blue-600 to-violet-600">
                                     Lvl {user.profile_level}
                                 </div>
                             </div>
