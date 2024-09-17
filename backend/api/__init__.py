@@ -2,6 +2,7 @@ import logging
 import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from typing import Type
+import sys
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -114,10 +115,10 @@ def create_app(config_class: Type[Config] = None) -> Flask:
         if not app.debug and not app.testing:
             create_app_logger(app)
             create_mail_handler(app)
-            init_stats_and_time_spent()
+            if not sys.argv[0].endswith("flask") or "flask" in sys.argv:
+                init_stats_and_time_spent()
 
         from backend.cli.commands import create_cli_commands
-
         create_cli_commands()
 
         return app

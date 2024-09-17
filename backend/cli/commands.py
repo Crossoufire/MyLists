@@ -17,7 +17,7 @@ def create_cli_commands():
     @current_app.cli.command()
     def vacuum_db():
         """ Run VACUUM on SQLite. """
-        db.session.execute(text("ANALYZE"))
+        db.session.execute(text("VACUUM"))
         click.echo("VACUUM operation completed successfully")
 
     @current_app.cli.command()
@@ -85,7 +85,8 @@ def create_cli_commands():
         update_igdb_api_token()
 
     @current_app.cli.command()
-    def scheduled_tasks():
+    @click.pass_context
+    def scheduled_tasks(ctx):
         """ Run scheduled tasks. """
         delete_non_activated_users()
         remove_non_list_media()
@@ -95,5 +96,5 @@ def create_cli_commands():
         automatic_movies_locking()
         compute_media_time_spent()
         update_Mylists_stats()
-        vacuum_db()
-        analyze_db()
+        ctx.forward(vacuum_db)
+        ctx.forward(analyze_db)

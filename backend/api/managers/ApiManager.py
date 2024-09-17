@@ -746,6 +746,10 @@ class BooksApiManager(ApiManager):
 
         return dict(items=media_results, total=total, pages=pages)
 
+    def get_changed_api_ids(self) -> List[int]:
+        """ Books API cannot be checked for changes """
+        return []
+
     def _format_api_data(self):
         self.media_details = dict(
             api_id=self.api_id,
