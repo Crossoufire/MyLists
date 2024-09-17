@@ -155,6 +155,7 @@ class TasksManager(metaclass=TasksManagerMeta):
     def remove_all_old_covers(self):
         path_covers = Path(current_app.root_path, f"static/covers/{self.GROUP.value}_covers/")
         images_in_db = self.media.query.with_entities(self.media.image_cover).all()
+        images_in_db = [image[0] for image in images_in_db]
         images_to_remove = [image for image in os.listdir(path_covers) if image not in images_in_db]
 
         count = 0
