@@ -25,8 +25,8 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
 
 function MediaList() {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
     const search = Route.useSearch();
+    const { currentUser } = useAuth();
     const { username, mediaType } = Route.useParams();
     const [isGrid, setIsGrid] = useState(currentUser.grid_list_view);
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);

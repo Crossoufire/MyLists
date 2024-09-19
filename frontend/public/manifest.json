@@ -1,6 +1,12 @@
 {
     "short_name": "MyLists",
     "name": "MyLists",
+    "description": "App that allows you to manage your series, anime, movies, games and books lists.",
+    "orientation": "portrait",
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#070a0c",
+    "background_color": "#070a0c",
     "icons": [
         {
             "src": "favicon.ico",
@@ -17,9 +23,5 @@
             "type": "image/png",
             "sizes": "512x512"
         }
-    ],
-    "start_url": ".",
-    "display": "standalone",
-    "theme_color": "#e2e2e2",
-    "background_color": "#070a0c"
+    ]
 }
