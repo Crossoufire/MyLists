@@ -1,10 +1,10 @@
+import React from "react";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import React from "react";
 
 
 export const TvUserDetails = ({ userData, mediaType, mediaId }) => {

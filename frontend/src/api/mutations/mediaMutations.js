@@ -12,7 +12,7 @@ const updateMediaMap = {
     update_playtime: (media, value) => ({ ...media, playtime: value }),
     update_page: (media, value) => ({ ...media, page: value }),
     update_platform: (media, value) => ({ ...media, platform: value }),
-    update_season: (media, value) => ({ ...media, current_season: value }),
+    update_season: (media, value) => ({ ...media, current_season: value, last_episode_watched: 1 }),
     update_episode: (media, value) => ({ ...media, last_episode_watched: value }),
 };
 

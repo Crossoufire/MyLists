@@ -90,13 +90,11 @@ function MediaList() {
                 <MediaGrid
                     isCurrent={isCurrent}
                     mediaList={apiData.media_data}
-                    key={`${username}-${mediaType}`}
                 />
                 :
                 <MediaTable
                     apiData={apiData}
                     isCurrent={isCurrent}
-                    key={`${username}-${mediaType}`}
                     onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}
                 />
             }
