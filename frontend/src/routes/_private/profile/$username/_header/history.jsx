@@ -1,4 +1,5 @@
 import {useMemo, useState} from "react";
+import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {formatDateTime} from "@/utils/functions";
@@ -6,11 +7,11 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {historyOptions} from "@/api/queryOptions";
 import {Payload} from "@/components/app/base/Payload";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {useDebounceCallback} from "@/hooks/DebounceHook";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {TablePagination} from "@/components/app/TablePagination";
+import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -28,8 +29,10 @@ export const Route = createFileRoute("/_private/profile/$username/_header/histor
 
 function AllUpdates() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const filters = Route.useSearch();
     const { username } = Route.useParams();
+    const isCurrent = (username === currentUser.username);
     const [rowSelected, setRowSelected] = useState({});
     const apiData = useSuspenseQuery(historyOptions(username, filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
@@ -54,18 +57,26 @@ function AllUpdates() {
         {
             id: "select",
             header: ({ table }) => (
-                <Checkbox
-                    aria-label="Select all"
-                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-                />
+                <>
+                    {isCurrent &&
+                        <Checkbox
+                            aria-label="Select all"
+                            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                            checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+                        />
+                    }
+                </>
             ),
             cell: ({ row }) => (
-                <Checkbox
-                    aria-label="Select row"
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => row.toggleSelected(!!value)}
-                />
+                <>
+                    {isCurrent &&
+                        <Checkbox
+                            aria-label="Select row"
+                            checked={row.getIsSelected()}
+                            onCheckedChange={(value) => row.toggleSelected(!!value)}
+                        />
+                    }
+                </>
             ),
         },
         {
@@ -136,10 +147,11 @@ function AllUpdates() {
                             </Button>
                         }
                     </div>
-                    <Button disabled={Object.keys(rowSelected).length === 0 || deleteMutation.isPending}
-                            onClick={deleteSelectedRows}>
-                        Delete Selected
-                    </Button>
+                    {isCurrent &&
+                        <Button disabled={Object.keys(rowSelected).length === 0 || deleteMutation.isPending} onClick={deleteSelectedRows}>
+                            Delete Selected
+                        </Button>
+                    }
                 </div>
                 <div className="rounded-md border">
                     <Table>
