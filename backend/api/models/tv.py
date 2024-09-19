@@ -139,17 +139,22 @@ class TVListModel(MediaList):
         return media_dict
 
     def update_status(self, new_status: str) -> int:
+        special_statuses = (Status.RANDOM, Status.PLAN_TO_WATCH)
         new_total = self.total
 
         self.status = new_status
         self.redo = 0
+
+        if self.status in special_statuses and new_status not in special_statuses:
+            self.last_episode_watched = 1
+
         if new_status == Status.COMPLETED:
             total_eps = sum(self.media.eps_seasons_list)
             self.current_season = len(self.media.eps_per_season)
             self.last_episode_watched = self.media.eps_per_season[-1].episodes
             self.total = total_eps
             new_total = total_eps
-        elif new_status in (Status.RANDOM, Status.PLAN_TO_WATCH):
+        elif new_status in special_statuses:
             new_total = 0
             self.total = 0
             self.current_season = 1
