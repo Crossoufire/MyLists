@@ -1,5 +1,7 @@
 import os
+
 from dotenv import load_dotenv
+
 
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -7,13 +9,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 def as_bool(value: str) -> bool:
     if value:
-        return value.lower() in ["true", "yes", "on", "1"]
+        return value.lower() in ["true", "yes", "on", "1", "t", "y"]
     return False
 
 
 class Config:
     DEBUG = False
     TESTING = False
+    CREATE_APP_LOGGER = True
+    CREATE_MAIL_HANDLER = True
     USER_ACTIVE_PER_DEFAULT = False
 
     # Database option
@@ -31,24 +35,30 @@ class Config:
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024
 
     # Email options
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
-    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS"))
-    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL"))
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
+    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
+    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
 
     # API keys
-    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY") or None
-    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY") or None
-    CLIENT_IGDB = os.environ.get("CLIENT_IGDB") or None
-    SECRET_IGDB = os.environ.get("SECRET_IGDB") or None
-    IGDB_API_KEY = os.environ.get("IGDB_API_KEY") or None
+    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY")
+    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY")
+    CLIENT_IGDB = os.environ.get("CLIENT_IGDB")
+    SECRET_IGDB = os.environ.get("SECRET_IGDB")
+    IGDB_API_KEY = os.environ.get("IGDB_API_KEY")
 
-    # Caching
-    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "FileSystemCache"
-    CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(basedir, "instance/cache")
-    CACHE_THRESHOLD = os.environ.get("CACHE_THRESHOLD") or 100000
+    # Flask-Caching
+    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "RedisCache"
+    CACHE_REDIS_HOST = os.environ.get("CACHE_REDIS_HOST") or "localhost"
+    CACHE_REDIS_PORT = int(os.environ.get("CACHE_REDIS_PORT") or "6379")
+    CACHE_REDIS_DB = int(os.environ.get("CACHE_REDIS_DB") or "0")
+    CACHE_KEY_PREFIX = os.environ.get("CACHE_KEY_PREFIX") or "mylists_cache_"
+
+    # Flask-Limiter
+    RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI") or "redis://localhost:6379/0"
+    RATELIMIT_KEY_PREFIX = os.environ.get("RATELIMIT_KEY_PREFIX") or "mylists_limiter_"
 
     # OAuth2
     OAUTH2_PROVIDERS = {
@@ -81,22 +91,22 @@ class Config:
 
 class DevConfig(Config):
     DEBUG = True
-    ACCESS_TOKEN_MINUTES = int("99999999")
+    CREATE_APP_LOGGER = True
+    CREATE_MAIL_HANDLER = False
     USER_ACTIVE_PER_DEFAULT = False
-
-
-class ProdConfig(Config):
-    pass
+    CACHE_TYPE = "SimpleCache"
+    RATELIMIT_STORAGE_URI = "memory://"
+    ACCESS_TOKEN_MINUTES = int("99999999")
 
 
 class TestConfig(Config):
     TESTING = True
-
-    # Set for using url_for in tests
-    SERVER_NAME = "localhost:5000"
-
-    CACHE_TYPE = "SimpleCache"
+    CREATE_APP_LOGGER = False
+    CREATE_MAIL_HANDLER = False
     USER_ACTIVE_PER_DEFAULT = True
+    CACHE_TYPE = "SimpleCache"
+    SERVER_NAME = "localhost:5000"
+    RATELIMIT_STORAGE_URI = "memory://"
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     OAUTH2_PROVIDERS = {
         "foo": {
@@ -114,9 +124,9 @@ class TestConfig(Config):
 
 
 def get_config():
-    env = os.getenv("FLASK_ENV", "development")
+    env = os.getenv("FLASK_ENV")
     if env == "production":
-        return ProdConfig
+        return Config
     elif env == "testing":
         return TestConfig
     return DevConfig

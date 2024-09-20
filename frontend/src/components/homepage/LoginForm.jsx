@@ -24,6 +24,9 @@ export const LoginForm = () => {
                     form.setError("password", { type: "manual", message: "Username or password incorrect." });
                     return;
                 }
+                if (error.status === 403) {
+                    return toast.error("Your account is not activated yet. Please check your email or contact us.");
+                }
                 toast.error("An error occurred trying to login");
             },
             onSuccess: async () => {

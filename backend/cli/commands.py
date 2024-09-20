@@ -5,7 +5,7 @@ from backend.api import db
 from backend.cli.tasks import *
 
 
-def create_cli_commands():
+def register_cli_commands():
     """ Register commands to the Flask CLI """
 
     @current_app.cli.command()
@@ -50,9 +50,9 @@ def create_cli_commands():
         remove_non_list_media()
 
     @current_app.cli.command()
-    def auto_refresh():
-        """ Mediadata Auto-Refresh. """
-        automatic_media_refresh()
+    def bulk_refresh():
+        """ Mediadata Bulk Refresh. """
+        bulk_media_refresh()
 
     @current_app.cli.command()
     def remove_covers():
@@ -85,13 +85,20 @@ def create_cli_commands():
         update_igdb_api_token()
 
     @current_app.cli.command()
+    @click.argument("username", type=str)
+    @click.argument("toggle", type=bool)
+    def active_account(username: str, toggle: bool):
+        """ Activate user account """
+        activate_user_account(username, toggle)
+
+    @current_app.cli.command()
     @click.pass_context
     def scheduled_tasks(ctx):
         """ Run scheduled tasks. """
         delete_non_activated_users()
         remove_non_list_media()
         remove_all_old_covers()
-        automatic_media_refresh()
+        bulk_media_refresh()
         add_media_related_notifications()
         automatic_movies_locking()
         compute_media_time_spent()

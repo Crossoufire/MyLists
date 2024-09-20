@@ -74,9 +74,12 @@ export const SearchBar = () => {
                                     <LuLoader2 className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
-                            {error &&
-                                <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
-                            }
+                            {error && (
+                                error.status === 429 ?
+                                    <Com.CommandEmpty>To many requests. Please try again later.</Com.CommandEmpty>
+                                    :
+                                    <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
+                            )}
                             {data && data.items.length === 0 &&
                                 <Com.CommandEmpty>No results found.</Com.CommandEmpty>
                             }

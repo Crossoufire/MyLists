@@ -62,6 +62,18 @@ class TasksManager(metaclass=TasksManagerMeta):
         db.session.commit()
 
     @staticmethod
+    def activate_user_account(username: str, toggle: bool):
+        """ Toggle users accounts activation manually """
+
+        user = User.query.filter(User.username == username).first()
+        if not user:
+            print(f"User {username} not found")
+            return
+
+        user.active = toggle
+        db.session.commit()
+
+    @staticmethod
     def get_active_users(days: int = 30):
         delta_time = datetime.now() - timedelta(days=days)
         if days < 30:
@@ -137,6 +149,19 @@ class TasksManager(metaclass=TasksManagerMeta):
             dotenv_file = dotenv.find_dotenv()
             dotenv.set_key(dotenv_file, "IGDB_API_KEY", new_igdb_token)
 
+    @staticmethod
+    def bulk_media_refresh(api_manager: Type[ApiManager]):
+        media_type = api_manager.GROUP.value
+        api_ids_to_refresh = api_manager().get_changed_api_ids()
+        current_app.logger.info(f"{media_type} API ids to refresh: {len(api_ids_to_refresh)}")
+        for api_id in api_ids_to_refresh:
+            try:
+                api_manager(api_id=api_id).update_media_to_db(bulk=True)
+                current_app.logger.info(f"{media_type} [API ID {api_id}] refreshed")
+            except Exception as e:
+                log_error(e)
+        current_app.logger.info(f"{media_type} API ids refreshed")
+
     def compute_user_time_spent(self):
         subq = (
             db.session.query(self.media_list.user_id, self.media_list.total_user_time_def().label("time_spent"))
@@ -157,6 +182,10 @@ class TasksManager(metaclass=TasksManagerMeta):
         images_in_db = self.media.query.with_entities(self.media.image_cover).all()
         images_in_db = [image[0] for image in images_in_db]
         images_to_remove = [image for image in os.listdir(path_covers) if image not in images_in_db]
+
+        if len(images_to_remove) > 100:
+            current_app.logger.error(f"Too many images to remove ({len(images_to_remove)})")
+            return
 
         count = 0
         current_app.logger.info(f"Deleting {self.GROUP.value} covers...")
@@ -221,16 +250,6 @@ class TasksManager(metaclass=TasksManagerMeta):
                 db.session.add(new_notification)
 
         db.session.commit()
-
-    def automatic_media_refresh(self, api_manager: Type[ApiManager]):
-        api_ids_to_refresh = api_manager().get_changed_api_ids()
-        current_app.logger.info(f"{self.GROUP.value} API ids to refresh: {len(api_ids_to_refresh)}")
-        for api_id in api_ids_to_refresh:
-            try:
-                api_manager(api_id=api_id).update_media_to_db()
-            except Exception as e:
-                log_error(e)
-        current_app.logger.info(f"{self.GROUP.value} API ids refreshed")
 
 
 class TvTasksManager(TasksManager):

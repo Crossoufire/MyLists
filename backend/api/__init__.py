@@ -8,10 +8,13 @@ from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_mail import Mail
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
 
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 from backend.api.utils.enums import RoleType
@@ -26,6 +29,8 @@ bcrypt = Bcrypt()
 cache = Cache()
 cors = CORS()
 ma = Marshmallow()
+redis = Redis(socket_timeout=15, socket_connect_timeout=15)
+limiter = Limiter(key_func=get_remote_address, default_limits=["8/second"])
 
 
 def import_blueprints(app: Flask):
@@ -46,6 +51,9 @@ def import_blueprints(app: Flask):
 
 
 def create_app_logger(app: Flask):
+    if not app.config["CREATE_APP_LOGGER"]:
+        return
+
     log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "mylists.log")
 
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
@@ -65,6 +73,9 @@ def create_app_logger(app: Flask):
 def create_mail_handler(app: Flask):
     """ Create a TLS only mail handler associated with the app logger: send email when errors occurs """
 
+    if not app.config["CREATE_MAIL_HANDLER"]:
+        return
+
     mail_handler = SMTPHandler(
         mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
         fromaddr=app.config["MAIL_USERNAME"],
@@ -78,7 +89,13 @@ def create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
-def init_stats_and_time_spent():
+def refresh_database(app: Flask):
+    """ Refresh global stats and time spent when app starts. """
+
+    # Pass when using Flask CLI or in debug mode
+    if sys.argv[0].endswith("flask") or app.debug:
+        return
+
     from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
     compute_media_time_spent()
     update_Mylists_stats()
@@ -92,8 +109,6 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
     app.config.from_object(config_class)
     app.url_map.strict_slashes = False
-
-    # Add custom route converters
     app.url_map.converters["mediatype"] = MediaTypeConverter
     app.url_map.converters["jobtype"] = JobTypeConverter
 
@@ -102,6 +117,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     bcrypt.init_app(app)
     cache.init_app(app)
     ma.init_app(app)
+    limiter.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=[
         "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173"
@@ -112,13 +128,11 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
         db.create_all()
 
-        if not app.debug and not app.testing:
-            create_app_logger(app)
-            create_mail_handler(app)
-            if not sys.argv[0].endswith("flask") or "flask" in sys.argv:
-                init_stats_and_time_spent()
+        create_app_logger(app)
+        create_mail_handler(app)
+        refresh_database(app)
 
-        from backend.cli.commands import create_cli_commands
-        create_cli_commands()
+        from backend.cli.commands import register_cli_commands
+        register_cli_commands()
 
         return app

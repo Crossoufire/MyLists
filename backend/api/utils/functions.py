@@ -160,3 +160,8 @@ def format_to_download_as_csv(media_dict: Dict) -> Dict:
         media_dict.pop(attr, None)
 
     return media_dict
+
+
+def global_limiter() -> str:
+    """ Create a global limiter key """
+    return "global"

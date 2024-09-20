@@ -5,21 +5,20 @@ import secrets
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Type
+from typing import Dict, List, Literal, Optional, Type, Set
 from urllib import request
 
 import requests
 from flask import url_for, current_app, abort
 from howlongtobeatpy import HowLongToBeat
-from ratelimit import sleep_and_retry, limits
 from requests import Response
 
-from backend.api import db
+from backend.api import db, limiter, cache
 from backend.api.core.errors import log_error
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.utils.functions import (clean_html_text, get, is_latin, format_datetime, resize_and_save_image,
-                                         reorder_seas_eps)
+                                         reorder_seas_eps, global_limiter)
 
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
@@ -58,9 +57,9 @@ class ApiManager(metaclass=ApiManagerMeta):
         self._format_api_data()
         return self._add_data_to_db()
 
-    def update_media_to_db(self):
+    def update_media_to_db(self, bulk: bool = False):
         self._fetch_details_from_api()
-        self._format_api_data()
+        self._format_api_data(bulk)
         self._update_data_to_db()
         db.session.commit()
 
@@ -119,7 +118,7 @@ class ApiManager(metaclass=ApiManagerMeta):
     def _fetch_details_from_api(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _format_api_data(self):
+    def _format_api_data(self, bulk: bool = False):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def _save_api_cover(self, cover_path: str, cover_name: str):
@@ -174,11 +173,9 @@ class TMDBApiManager(ApiManager):
         super().__init__(api_id)
         self.api_id = api_id
 
+    @limiter.limit("40/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
-        response = self.call_api(
-            f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}"
-            f"&query={query}&page={page}"
-        )
+        response = self.call_api(f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}&query={query}&page={page}")
         self.api_data = response.json()
 
     def create_search_results(self) -> Dict:
@@ -208,19 +205,6 @@ class TMDBApiManager(ApiManager):
 
         return dict(items=search_results, total=total, pages=pages)
 
-    def get_changed_api_ids(self) -> List:
-        type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
-        model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
-
-        response = self.call_api(f"https://api.themoviedb.org/3/{type_}/changes?api_key={self.API_KEY}")
-        data = json.loads(response.text)
-
-        changed_api_ids = {d.get("id") for d in data.get("results", {})}
-        api_ids_in_db = {m[0] for m in db.session.query(model.api_id).filter(model.lock_status.is_not(True))}
-        api_ids_to_refresh = list(api_ids_in_db.intersection(changed_api_ids))
-
-        return api_ids_to_refresh
-
     def _fetch_details_from_api(self):
         type_ = "movie" if self.GROUP == MediaType.MOVIES else "tv"
         response = self.call_api(
@@ -229,7 +213,7 @@ class TMDBApiManager(ApiManager):
         )
         self.api_data = json.loads(response.text)
 
-    def _format_genres(self) -> List[Dict]:
+    def _format_genres(self, bulk: bool = False) -> List[Dict]:
         """ Fetch series, anime, or movies genres (fallback for anime if Jikan API bug) """
 
         all_genres = get(self.api_data, "genres", default=[])
@@ -289,7 +273,7 @@ class TMDBApiManager(ApiManager):
 class TVApiManager(TMDBApiManager):
     MAX_NETWORK = 4
 
-    def _format_api_data(self):
+    def _format_api_data(self, bulk: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "name"),
             original_name=get(self.api_data, "original_name"),
@@ -334,7 +318,7 @@ class TVApiManager(TMDBApiManager):
         self.all_data = dict(
             media_data=self.media_details,
             seasons_data=seasons_list,
-            genres_data=self._format_genres(),
+            genres_data=self._format_genres(bulk),
             actors_data=self._format_actors(),
             networks_data=networks_list,
         )
@@ -360,6 +344,33 @@ class TVApiManager(TMDBApiManager):
 
         return ", ".join(top_writers)
 
+    @cache.cached(timeout=300, key_prefix="tv_changed_api_ids")
+    def _fetch_changed_api_ids(self) -> Set[int]:
+        """ Fetch API IDs for Series and Anime. This method caches results for 5 minutes, allowing the `SeriesApiManager` to
+        create the data on the first call. Subsequent calls from `AnimeApiManager` will use the cached data, avoiding
+        unnecessary API requests. """
+
+        page = 1
+        total_pages = 1
+        changed_api_ids = set()
+        while page <= min(total_pages, 20):
+            response = self.call_api(f"https://api.themoviedb.org/3/tv/changes?api_key={self.API_KEY}&page={page}")
+            data = json.loads(response.text)
+            changed_api_ids.update(d.get("id") for d in data.get("results", []))
+            total_pages = data.get("total_pages", 1)
+            page += 1
+            current_app.logger.info(f"Changed Tv Api Ids - Fetched page {page} / {total_pages}")
+
+        return changed_api_ids
+
+    def get_changed_api_ids(self) -> List[int]:
+        media_model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
+        changed_api_ids = self._fetch_changed_api_ids()
+        api_ids_in_db = {int(m[0]) for m in db.session.query(media_model.api_id).filter(media_model.lock_status.is_not(True))}
+        api_ids_to_refresh = list(api_ids_in_db.intersection(changed_api_ids))
+
+        return api_ids_to_refresh
+
 
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
 
@@ -369,6 +380,7 @@ class SeriesApiManager(TVApiManager):
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
 
+    @limiter.limit("20/second")
     def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
         api_data = response.json()
@@ -400,8 +412,7 @@ class AnimeApiManager(TVApiManager):
     GROUP = MediaType.ANIME
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/anime_covers/")
 
-    @sleep_and_retry
-    @limits(calls=1, period=4)
+    @limiter.limit("3/second", key_func=global_limiter)
     def api_anime_search(self, anime_name: str):
         """
         Fetch the anime name from the TMDB API to the Jikan API. Then use the Jikan API to get more accurate
@@ -411,11 +422,14 @@ class AnimeApiManager(TVApiManager):
         response = self.call_api(f"https://api.jikan.moe/v4/anime?q={anime_name}")
         return json.loads(response.text)
 
-    def _format_genres(self) -> List[Dict]:
+    def _format_genres(self, bulk: bool = False) -> List[Dict]:
         """ Get anime genre from the Jikan API (fusion between genre, themes and demographic).
         Fallback on TMDB API genres if necessary """
 
-        tmdb_genres_list = super()._format_genres()
+        tmdb_genres_list = super()._format_genres(bulk)
+
+        if bulk:
+            return tmdb_genres_list
 
         try:
             anime_search = self.api_anime_search(self.api_data["name"])
@@ -436,6 +450,7 @@ class MoviesApiManager(TMDBApiManager):
     GROUP = MediaType.MOVIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/movies_covers")
 
+    @limiter.limit("20/second")
     def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
         api_data = response.json()
@@ -461,7 +476,7 @@ class MoviesApiManager(TMDBApiManager):
 
         return movies_results
 
-    def _format_api_data(self):
+    def _format_api_data(self, bulk: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "title"),
             original_name=get(self.api_data, "original_title"),
@@ -514,8 +529,7 @@ class GamesApiManager(ApiManager):
             "Authorization": f"Bearer {self.API_KEY}",
         }
 
-    @sleep_and_retry
-    @limits(calls=4, period=1)
+    @limiter.limit("4/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
         data = (
             f'fields id, name, cover.image_id, first_release_date; limit 10; '
@@ -602,7 +616,7 @@ class GamesApiManager(ApiManager):
 
         return genres_list[:5]
 
-    def _format_api_data(self):
+    def _format_api_data(self, bulk: bool = False):
         self.media_details = dict(
             name=get(self.api_data, "name"),
             release_date=format_datetime(get(self.api_data, "first_release_date")),
@@ -616,15 +630,13 @@ class GamesApiManager(ApiManager):
             api_id=self.api_data["id"],
             last_api_update=datetime.utcnow(),
             image_cover=self._get_media_cover(),
-            hltb_main_time=None,
-            hltb_main_and_extra_time=None,
-            hltb_total_complete_time=None,
         )
 
-        hltb_time = self._get_HLTB_time(self.media_details["name"])
-        self.media_details["hltb_main_time"] = hltb_time["main"]
-        self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
-        self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
+        if not bulk:
+            hltb_time = self._get_HLTB_time(self.media_details["name"])
+            self.media_details["hltb_main_time"] = hltb_time["main"]
+            self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
+            self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
 
         self.all_data = dict(
             media_data=self.media_details,
@@ -709,15 +721,12 @@ class BooksApiManager(ApiManager):
         self.query = []
         self.api_id = api_id
 
-    @sleep_and_retry
-    @limits(calls=2, period=1)
+    @limiter.limit("10/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
         offset = (page - 1) * self.RESULTS_PER_PAGE
         response = self.call_api(f"https://www.googleapis.com/books/v1/volumes?q={query}&startIndex={offset}")
         self.api_data = json.loads(response.text)
 
-    @sleep_and_retry
-    @limits(calls=2, period=1)
     def _fetch_details_from_api(self):
         response = self.call_api(f"https://www.googleapis.com/books/v1/volumes/{self.api_id}")
         self.api_data = json.loads(response.text)["volumeInfo"]
@@ -746,11 +755,7 @@ class BooksApiManager(ApiManager):
 
         return dict(items=media_results, total=total, pages=pages)
 
-    def get_changed_api_ids(self) -> List[int]:
-        """ Books API cannot be checked for changes """
-        return []
-
-    def _format_api_data(self):
+    def _format_api_data(self, bulk: bool = False):
         self.media_details = dict(
             api_id=self.api_id,
             name=get(self.api_data, "title"),
