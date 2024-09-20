@@ -140,6 +140,18 @@ def get_active_users(days: int = 30):
     current_app.logger.info("###############################################################################")
 
 
+def activate_user_account(username: str, toggle: bool):
+    """ Change user account activation status """
+
+    current_app.logger.info("###############################################################################")
+    current_app.logger.info("[SYSTEM] - Starting Changing User Account Activation -")
+
+    TasksManager.activate_user_account(username, toggle)
+
+    current_app.logger.info("[SYSTEM] - Finished Changing User Account Activation -")
+    current_app.logger.info("###############################################################################")
+
+
 def get_users_last_seen(usernames: List[str]):
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Getting Active Users -")

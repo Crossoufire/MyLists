@@ -92,6 +92,18 @@ class TasksManager(metaclass=TasksManagerMeta):
         print(separator)
 
     @staticmethod
+    def activate_user_account(username: str, toggle: bool):
+        """ Toggle user account activation status """
+
+        user = User.query.filter(User.username == username).first()
+        if not user:
+            print(f"User {username} not found")
+            return
+
+        user.active = toggle
+        db.session.commit()
+
+    @staticmethod
     def get_users_last_seen(usernames: List[str]):
         users = User.query.filter(User.username.in_(usernames)).order_by(User.last_seen.desc()).all()
 

@@ -27,6 +27,13 @@ def create_cli_commands():
         get_active_users(days=days)
 
     @current_app.cli.command()
+    @click.argument("username", type=str)
+    @click.argument("toggle", type=bool)
+    def active_account(username: str, toggle: bool):
+        """ Activate user account """
+        activate_user_account(username, toggle)
+
+    @current_app.cli.command()
     @click.argument("usernames", nargs=-1)
     def get_users(usernames: List[str]):
         """ Get users last seen. """
