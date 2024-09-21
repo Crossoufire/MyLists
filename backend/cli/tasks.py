@@ -50,16 +50,15 @@ def remove_all_old_covers():
     current_app.logger.info("###############################################################################")
 
 
-def automatic_media_refresh():
+def bulk_media_refresh():
     """ Automatically refresh the media using the appropriate API """
 
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Media Refresh -")
 
-    for media_type in MediaType:
+    for media_type in [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.GAMES]:
         api_manager = ApiManager.get_subclass(media_type)
-        tasks_manager = TasksManager.get_subclass(media_type)
-        tasks_manager().automatic_media_refresh(api_manager)
+        TasksManager.bulk_media_refresh(api_manager)
 
     current_app.logger.info("[SYSTEM] - Finished Automatic Media Refresh -")
     current_app.logger.info("###############################################################################")
@@ -169,4 +168,16 @@ def delete_non_activated_users(days: int = 7):
     TasksManager.delete_non_activated_users(days)
 
     current_app.logger.info("[SYSTEM] - Finished Deleting Inactive Users -")
+    current_app.logger.info("###############################################################################")
+
+
+def activate_user_account(username: str, toggle: bool):
+    """ Activate users accounts that have been inactive for more than 30 days """
+
+    current_app.logger.info("###############################################################################")
+    current_app.logger.info("[SYSTEM] - Starting Activating User Manually -")
+
+    TasksManager.activate_user_account(username, toggle)
+
+    current_app.logger.info("[SYSTEM] - Finished Activating User Manually -")
     current_app.logger.info("###############################################################################")

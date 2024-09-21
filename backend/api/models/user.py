@@ -337,11 +337,13 @@ class User(db.Model):
     @classmethod
     def generate_unique_username(cls, email: str):
         """ Generate a unique username for OAuth2 registration """
+
         base_username = email.split("@")[0]
-        username = base_username
+        username = base_username[:14]
         while cls.query.filter_by(username=username).first():
             suffix = secrets.token_hex(2)
-            username = f"{base_username}_{suffix}"
+            username = f"{base_username}_{suffix}"[:14]
+        
         return username
 
     @classmethod

@@ -55,10 +55,11 @@ def log_error(error: Exception):
             ))
 
         current_app.logger.error(
-            f" ################################# ERROR #################################\n"
+            f" ### ERROR BEGIN ----------------------------------------------------------\n"
             f"{json.dumps(error_context, indent=4, default=str)}\n"
             "---- TRACEBACK ----\n"
             f"{traceback.format_exc()}"
+            f" ### ERROR END ------------------------------------------------------------\n"
         )
 
 

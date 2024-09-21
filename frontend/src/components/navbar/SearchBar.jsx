@@ -22,7 +22,7 @@ export const SearchBar = () => {
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
-    const [selectDrop, setSelectDrop] = useState("TMDB");
+    const [selectDrop, setSelectDrop] = useState("tmdb");
     const { data, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     const handleInputChange = (ev) => {
@@ -56,9 +56,9 @@ export const SearchBar = () => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {<SelectItem value="TMDB">Media</SelectItem>}
-                                {currentUser.settings.books.active && <SelectItem value="BOOKS">Books</SelectItem>}
-                                {currentUser.settings.games.active && <SelectItem value="IGDB">Games</SelectItem>}
+                                {<SelectItem value="tmdb">Media</SelectItem>}
+                                {currentUser.settings.books.active && <SelectItem value="books">Books</SelectItem>}
+                                {currentUser.settings.games.active && <SelectItem value="igdb">Games</SelectItem>}
                                 <SelectItem value="users">Users</SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -74,9 +74,12 @@ export const SearchBar = () => {
                                     <LuLoader2 className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
-                            {error &&
-                                <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
-                            }
+                            {error && (
+                                error.status === 429 ?
+                                    <Com.CommandEmpty>Too many requests. Please wait a bit and try again.</Com.CommandEmpty>
+                                    :
+                                    <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
+                            )}
                             {data && data.items.length === 0 &&
                                 <Com.CommandEmpty>No results found.</Com.CommandEmpty>
                             }
