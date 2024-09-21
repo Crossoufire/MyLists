@@ -47,7 +47,7 @@ def add_media(data):
 
     total_watched = media.add_to_user(new_status, current_user.id)
     db.session.commit()
-    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} added [ID {data['media_id']}] with"
+    current_app.logger.info(f"[User {current_user.id}] {data['media_type'].value} added [ID {data['media_id']}] with "
                             f"status: {new_status}")
 
     UserMediaUpdate.set_new_update(media, UpdateType.STATUS, None, new_status)

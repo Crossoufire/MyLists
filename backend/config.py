@@ -101,12 +101,12 @@ class DevConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
+    RATELIMIT_ENABLED = False
     CREATE_APP_LOGGER = False
     CREATE_MAIL_HANDLER = False
     USER_ACTIVE_PER_DEFAULT = True
     CACHE_TYPE = "SimpleCache"
     SERVER_NAME = "localhost:5000"
-    RATELIMIT_STORAGE_URI = "memory://"
     SQLALCHEMY_DATABASE_URI = "sqlite://"
     OAUTH2_PROVIDERS = {
         "foo": {

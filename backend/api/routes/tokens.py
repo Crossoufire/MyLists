@@ -137,8 +137,6 @@ def register_token(data):
     user = User.verify_jwt_token(data["token"])
     if not user:
         return abort(400, description="Invalid token")
-    if not user.active:
-        return abort(401, description="Account not activated, please check your email address.")
 
     user.active = True
     user.activated_on = datetime.utcnow()
