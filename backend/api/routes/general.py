@@ -1,16 +1,17 @@
 from operator import and_
 
-from flask import Blueprint, jsonify, url_for
 from sqlalchemy import case, desc, func
+from flask import Blueprint, jsonify, url_for
 
-from backend.api import cache, db
+from backend.api import cache, db, limiter
 from backend.api.core.auth import token_auth
-from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
-from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.api.models.user import User, UserMediaSettings
-from backend.api.schemas.general import HallOfFameSchema
-from backend.api.utils.decorators import arguments
 from backend.api.utils.enums import MediaType
+from backend.api.utils.decorators import arguments
+from backend.api.utils.functions import global_limiter
+from backend.api.schemas.general import HallOfFameSchema
+from backend.api.models.user import User, UserMediaSettings
+from backend.api.managers.GlobalStatsManager import GlobalStats
+from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
 
 
 general = Blueprint("api_general", __name__)
@@ -18,6 +19,7 @@ general = Blueprint("api_general", __name__)
 
 @general.route("/current_trends", methods=["GET"])
 @token_auth.login_required
+@limiter.limit("10/second", key_func=global_limiter)
 @cache.cached(timeout=3600)
 def current_trends():
     """ Fetch the current WEEK trends for TV and Movies using the TMDB API. Function cached for an hour. """

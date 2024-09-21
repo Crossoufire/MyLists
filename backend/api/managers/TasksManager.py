@@ -83,7 +83,7 @@ class TasksManager(metaclass=TasksManagerMeta):
             period_repr = f"< {months} months"
 
         active_users = (
-            User.query.filter(User.last_seen >= delta_time)
+            User.query.filter(User.last_seen >= delta_time, User.active.is_(True))
             .order_by(User.last_seen.desc())
             .all()
         )
@@ -134,7 +134,7 @@ class TasksManager(metaclass=TasksManagerMeta):
 
         non_activated_user_count = User.query.filter(User.active.is_(False), User.registered_on <= delta_time).count()
         User.query.filter(User.active.is_(False), User.registered_on <= delta_time).delete()
-        print(f"### Deleted {non_activated_user_count} non-activated users ({period_repr})")
+        current_app.logger.info(f"### Deleted {non_activated_user_count} non-activated users ({period_repr})")
         db.session.commit()
 
     @staticmethod
@@ -184,8 +184,8 @@ class TasksManager(metaclass=TasksManagerMeta):
         images_to_remove = [image for image in os.listdir(path_covers) if image not in images_in_db]
 
         if len(images_to_remove) > 100:
-            current_app.logger.error(f"Too many images to remove ({len(images_to_remove)})")
-            return
+            current_app.logger.error(f"Too many images to remove ({len(images_to_remove)}). Validation necessary.")
+            raise Exception("Too many images to remove")
 
         count = 0
         current_app.logger.info(f"Deleting {self.GROUP.value} covers...")
@@ -204,6 +204,10 @@ class TasksManager(metaclass=TasksManagerMeta):
             .filter(self.media_list.media_id.is_(None))
             .all()
         )
+
+        if len(media_to_delete) > 50:
+            current_app.logger.error(f"Too many media to delete ({len(media_to_delete)}). Validation necessary.")
+            raise Exception("Too many media to delete")
 
         current_app.logger.info(f"{self.GROUP.value.capitalize()} to delete: {len(media_to_delete)}")
         media_ids = [media.id for media in media_to_delete]

@@ -90,7 +90,7 @@ export const mediaLabelsOptions = (mediaType, mediaId, isOpen) => queryOptions({
 
 export const navSearchOptions = (query, page, selector) => queryOptions({
     queryKey: ["navSearch", query, page, selector],
-    queryFn: () => fetcher({ url: "/autocomplete", queryOrData: { q: query, page, selector } }),
+    queryFn: () => fetcher({ url: `/search/${selector}`, queryOrData: { q: query, page } }),
     staleTime: 1000 * 60 * 2,
     enabled: query.length >= 2,
 });

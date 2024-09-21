@@ -30,7 +30,7 @@ cache = Cache()
 cors = CORS()
 ma = Marshmallow()
 redis = Redis(socket_timeout=15, socket_connect_timeout=15)
-limiter = Limiter(key_func=get_remote_address, default_limits=["8/second"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 
 def import_blueprints(app: Flask):

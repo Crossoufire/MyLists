@@ -56,7 +56,7 @@ def bulk_media_refresh():
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Automatic Media Refresh -")
 
-    for media_type in [MediaType.SERIES, MediaType.ANIME, MediaType.GAMES]:
+    for media_type in [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.GAMES]:
         api_manager = ApiManager.get_subclass(media_type)
         TasksManager.bulk_media_refresh(api_manager)
 

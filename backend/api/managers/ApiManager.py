@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import json
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Type, Set
+from typing import Dict, List, Literal, Optional, Type
 from urllib import request
 
 import requests
 from flask import url_for, current_app, abort
 from howlongtobeatpy import HowLongToBeat
 from requests import Response
+from sqlalchemy import or_
 
 from backend.api import db, limiter, cache
 from backend.api.core.errors import log_error
@@ -173,7 +174,6 @@ class TMDBApiManager(ApiManager):
         super().__init__(api_id)
         self.api_id = api_id
 
-    @limiter.limit("40/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
         response = self.call_api(f"https://api.themoviedb.org/3/search/multi?api_key={self.API_KEY}&query={query}&page={page}")
         self.api_data = response.json()
@@ -345,31 +345,37 @@ class TVApiManager(TMDBApiManager):
         return ", ".join(top_writers)
 
     @cache.cached(timeout=300, key_prefix="tv_changed_api_ids")
-    def _fetch_changed_api_ids(self) -> Set[int]:
+    def _fetch_changed_api_ids(self) -> List[int]:
         """ Fetch API IDs for Series and Anime. This method caches results for 5 minutes, allowing the `SeriesApiManager` to
         create the data on the first call. Subsequent calls from `AnimeApiManager` will use the cached data, avoiding
         unnecessary API requests. """
 
         page = 1
         total_pages = 1
-        changed_api_ids = set()
+        changed_api_ids = []
         while page <= min(total_pages, 20):
             response = self.call_api(f"https://api.themoviedb.org/3/tv/changes?api_key={self.API_KEY}&page={page}")
             data = json.loads(response.text)
-            changed_api_ids.update(d.get("id") for d in data.get("results", []))
+            changed_api_ids.extend(d.get("id") for d in data.get("results", []))
             total_pages = data.get("total_pages", 1)
-            page += 1
             current_app.logger.info(f"Changed Tv Api Ids - Fetched page {page} / {total_pages}")
+            page += 1
 
         return changed_api_ids
 
     def get_changed_api_ids(self) -> List[int]:
+        """ Check tv shows updates every day """
+
         media_model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
         changed_api_ids = self._fetch_changed_api_ids()
-        api_ids_in_db = {int(m[0]) for m in db.session.query(media_model.api_id).filter(media_model.lock_status.is_not(True))}
-        api_ids_to_refresh = list(api_ids_in_db.intersection(changed_api_ids))
 
-        return api_ids_to_refresh
+        query = media_model.query.with_entities(media_model.api_id).filter(
+            media_model.lock_status.is_not(True),
+            media_model.api_id.in_(changed_api_ids),
+            media_model.last_api_update < datetime.utcnow() - timedelta(seconds=86000),
+        ).all()
+
+        return [tv_id[0] for tv_id in query]
 
 
 """ --- CLASS CALL ------------------------------------------------------------------------------------------ """
@@ -380,7 +386,6 @@ class SeriesApiManager(TVApiManager):
     GROUP = MediaType.SERIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/series_covers/")
 
-    @limiter.limit("20/second")
     def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/tv/week?api_key={self.API_KEY}")
         api_data = response.json()
@@ -415,8 +420,8 @@ class AnimeApiManager(TVApiManager):
     @limiter.limit("3/second", key_func=global_limiter)
     def api_anime_search(self, anime_name: str):
         """
-        Fetch the anime name from the TMDB API to the Jikan API. Then use the Jikan API to get more accurate
-        genres with the <get_anime_genres> method
+        IMPORTANT: This method cannot be called if not in a request context!!! (flask-limiter)
+        Fetch anime name from TMDB API. Then use Jikan API to get more accurate genres for anime.
         """
 
         response = self.call_api(f"https://api.jikan.moe/v4/anime?q={anime_name}")
@@ -450,7 +455,6 @@ class MoviesApiManager(TMDBApiManager):
     GROUP = MediaType.MOVIES
     LOCAL_COVER_PATH = Path(current_app.root_path, "static/covers/movies_covers")
 
-    @limiter.limit("20/second")
     def fetch_and_format_trending(self) -> List[Dict]:
         response = self.call_api(f"https://api.themoviedb.org/3/trending/movie/week?api_key={self.API_KEY}")
         api_data = response.json()
@@ -509,6 +513,19 @@ class MoviesApiManager(TMDBApiManager):
             actors_data=self._format_actors(),
         )
 
+    def get_changed_api_ids(self) -> List[int]:
+        """ Check movies updates every week, only the most recent ones """
+
+        media_model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
+
+        query = media_model.query.with_entities(media_model.api_id).filter(
+            media_model.lock_status.is_not(True),
+            media_model.last_api_update < datetime.utcnow() - timedelta(days=7),
+            or_(media_model.release_date > datetime.utcnow() - timedelta(days=90), media_model.release_date.is_(None)),
+        ).all()
+
+        return [movie_id[0] for movie_id in query]
+
 
 class GamesApiManager(ApiManager):
     GROUP = MediaType.GAMES
@@ -529,7 +546,6 @@ class GamesApiManager(ApiManager):
             "Authorization": f"Bearer {self.API_KEY}",
         }
 
-    @limiter.limit("4/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
         data = (
             f'fields id, name, cover.image_id, first_release_date; limit 10; '
@@ -692,9 +708,16 @@ class GamesApiManager(ApiManager):
             log_error(e)
 
     def get_changed_api_ids(self) -> List[int]:
+        """ Check games to be released once a week """
+
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
-        query = model.query.with_entities(model.api_id).filter(model.release_date > datetime.utcnow()).all()
-        return [result[0] for result in query]
+
+        query = model.query.with_entities(model.api_id).filter(
+            or_(model.release_date > datetime.utcnow(), model.release_date.is_(None)),
+            model.last_api_update < datetime.utcnow() - timedelta(days=7),
+        ).all()
+
+        return [int(game_id[0]) for game_id in query]
 
     @staticmethod
     def _get_HLTB_time(game_name: str) -> Dict:
@@ -721,7 +744,6 @@ class BooksApiManager(ApiManager):
         self.query = []
         self.api_id = api_id
 
-    @limiter.limit("10/second", key_func=global_limiter)
     def search(self, query: str, page: int = 1):
         offset = (page - 1) * self.RESULTS_PER_PAGE
         response = self.call_api(f"https://www.googleapis.com/books/v1/volumes?q={query}&startIndex={offset}")

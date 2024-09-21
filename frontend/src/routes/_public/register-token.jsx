@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {simpleMutations} from "@/api/mutations/simpleMutations.js";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
@@ -17,20 +17,16 @@ function RegisterTokenPage() {
 
     const registerHandler = () => {
         registerToken.mutate({ token }, {
-            onError: () => toast.error("The provided token is invalid or expired"),
-            onSuccess: async () => {
-                toast.success("Your account has been successfully activated. Feel free to log in now.");
-                await navigate({ to: "/" });
-            }
+            onError: () => toast.error("The provided token is invalid or expired. If the problem persists, please contact us."),
+            onSuccess: () => toast.success("Your account has been successfully activated. Feel free to log in now."),
+            onSettled: async () => await navigate({ to: "/" }),
         });
     };
 
     useEffect(() => {
-        const registrationTimeout = setTimeout(async () => {
-            await registerHandler();
-        }, 700);
+        const registrationTimeout = setTimeout(() => registerHandler(), 700);
         return () => clearTimeout(registrationTimeout);
-    }, [token, registerHandler]);
+    }, []);
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
