@@ -343,7 +343,7 @@ class User(db.Model):
         while cls.query.filter_by(username=username).first():
             suffix = secrets.token_hex(2)
             username = f"{base_username}_{suffix}"[:14]
-        
+
         return username
 
     @classmethod
@@ -388,6 +388,7 @@ class User(db.Model):
 
     @staticmethod
     def verify_access_token(access_token: str) -> User:
+        # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
         if token:
             if token.access_expiration > datetime.utcnow():
