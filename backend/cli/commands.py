@@ -1,12 +1,52 @@
 import click
 from sqlalchemy import text
+from rich.table import Table
+from rich.console import Console
 
 from backend.api import db
 from backend.cli.tasks import *
 
 
+console = Console()
+
+
 def register_cli_commands():
     """ Register commands to the Flask CLI """
+
+    @current_app.cli.command()
+    def caching():
+        """ Display the current Flask-Caching configuration """
+
+        cache_extension = current_app.extensions.get("cache", {})
+        if not cache_extension:
+            console.print("[bold red]Flask-caching was not found in the current app.[/bold red]")
+            return
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Configuration Key", width=18)
+        table.add_column("Value", style="bold")
+
+        for cache_name, cache_instance in cache_extension.items():
+            try:
+                # Retrieve and display Redis cache client info if possible
+                client_info = cache_instance._write_client.info().get("db0", {})
+                for info_key, info_value in client_info.items():
+                    formatted_key = f"[bold cyan]{info_key.upper()}[/bold cyan]"
+                    if "avg_ttl" in info_key:
+                        # Convert avg_ttl from [ms] to [h]
+                        avg_ttl_hours = round(info_value / 3600000, 1)
+                        formatted_key = f"[bold cyan]{info_key.upper()} (H)[/bold cyan]"
+                        table.add_row(formatted_key, str(avg_ttl_hours))
+                    else:
+                        table.add_row(formatted_key, str(info_value))
+            except:
+                pass
+
+        for config_key, config_value in current_app.config.items():
+            if config_key.startswith("CACHE_"):
+                table.add_row(config_key, str(config_value))
+
+        console.print(table)
 
     @current_app.cli.command()
     def analyze_db():
