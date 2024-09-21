@@ -29,6 +29,7 @@ webargs = "^8.4.0"
 marshmallow-sqlalchemy = "^1.1.0"
 flask-limiter = {extras = ["redis"], version = "^3.8.0"}
 redis = "^5.0.8"
+rich = "^13.8.1"
 
 
 [build-system]

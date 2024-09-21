@@ -82,7 +82,7 @@ def hall_of_fame(args):
 @token_auth.login_required
 @cache.cached(timeout=86400, key_prefix="mylists-stats")
 def mylists_stats():
-    """ Global MyLists stats. Actualized every day at 3:00 AM UTC+1 """
+    """ Global MyLists stats. Updated every day at 3:00 AM UTC+1 """
     return jsonify(data=GlobalStats().compute_global_stats()), 200
 
 
