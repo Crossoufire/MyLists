@@ -1,6 +1,13 @@
 import {fetcher} from "@/api/fetcher";
 import {queryOptions} from "@tanstack/react-query";
+import {api} from "@/api/apiClient";
 
+
+export const authOptions = () => queryOptions({
+    queryKey: ["currentUser"],
+    queryFn: () => api.fetchCurrentUser(),
+    staleTime: Infinity,
+});
 
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
     queryKey: ["details", mediaType, mediaId],

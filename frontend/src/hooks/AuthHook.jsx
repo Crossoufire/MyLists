@@ -1,14 +1,11 @@
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
+import {authOptions} from "@/api/queryOptions";
 import {useMutation, useQuery} from "@tanstack/react-query";
 
 
 export const useAuth = () => {
-    const { data: currentUser, isLoading, isFetching } = useQuery({
-        queryKey: ["currentUser"],
-        queryFn: () => api.fetchCurrentUser(),
-        staleTime: Infinity,
-    });
+    const { data: currentUser, isLoading, isFetching } = useQuery(authOptions());
 
     const setCurrentUser = (updates) => {
         queryClient.setQueryData(["currentUser"], updates);

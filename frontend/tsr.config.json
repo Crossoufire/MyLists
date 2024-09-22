@@ -1,6 +1,6 @@
 {
     "quoteStyle": "double",
-    "disableTypes": false,
+    "disableTypes": true,
     "disableManifestGeneration": true,
     "semicolons": true
 }
