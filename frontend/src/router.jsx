@@ -1,3 +1,4 @@
+import nProgress from "nprogress";
 import {routeTree} from "@/routeTree.gen";
 import {queryClient} from "@/api/queryClient";
 import {createRouter} from "@tanstack/react-router";
@@ -14,4 +15,16 @@ export const router = createRouter({
             statusCode={error.status}
             message={error.description}
         />,
+});
+
+
+router.subscribe("onBeforeLoad", () => {
+    // noinspection JSUnresolvedReference
+    nProgress.start();
+});
+
+
+router.subscribe("onResolved", () => {
+    // noinspection JSUnresolvedReference
+    nProgress.done();
 });

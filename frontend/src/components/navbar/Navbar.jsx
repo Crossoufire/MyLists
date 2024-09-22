@@ -1,6 +1,5 @@
 import React, {useRef} from "react";
 import {useAuth} from "@/hooks/AuthHook";
-import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
@@ -12,6 +11,7 @@ import {SearchBar} from "@/components/navbar/SearchBar";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
+import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 
@@ -22,7 +22,7 @@ export const Navbar = () => {
     const { currentUser, logout, isLoading } = useAuth();
 
     const logoutUser = () => {
-        logout.mutate(undefined);
+        logout.mutate();
     };
 
     // Login page and public pages when not logged

@@ -48,7 +48,10 @@ def new_token():
     Token.clean()
     db.session.commit()
 
-    return token_response(token)
+    response = token_response(token)
+    response[0]["data"] = current_user.to_dict()
+
+    return response
 
 
 @tokens.route("/tokens", methods=["PUT"])
@@ -59,6 +62,7 @@ def refresh(data):
     The client needs to pass the `refresh token` in a cookie.
     The `access token` must be passed in the request body.
     """
+
     access_token = data["access_token"]
     refresh_token = request.cookies.get("refresh_token")
     if not access_token or not refresh_token:
@@ -233,4 +237,7 @@ def oauth2_new(data, provider: str):
     Token.clean()
     db.session.commit()
 
-    return token_response(token)
+    response = token_response(token)
+    response[0]["data"] = user.to_dict()
+
+    return response

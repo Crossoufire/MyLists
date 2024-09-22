@@ -19,5 +19,6 @@ export default function App() {
 
 function InnerApp() {
     const auth = useAuth();
+    if (auth.isLoading) return;
     return <RouterProvider router={router} context={{ auth, queryClient }}/>;
 }

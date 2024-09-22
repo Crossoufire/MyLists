@@ -1,3 +1,4 @@
+import {router} from "@/router";
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
 import {authOptions} from "@/api/queryOptions";
@@ -15,7 +16,7 @@ export const useAuth = () => {
         mutationFn: ({ username, password }) => api.login(username, password),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            return queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            queryClient.setQueryData(authOptions().queryKey, data.body.data);
         },
     });
 
@@ -23,14 +24,15 @@ export const useAuth = () => {
         mutationFn: ({ provider, data }) => api.oAuth2Login(provider, data),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            queryClient.setQueryData(authOptions().queryKey, data.body.data);
         },
     });
 
     const logout = useMutation({
         mutationFn: () => api.logout(),
-        onSuccess: () => {
+        onSuccess: async () => {
             api.removeAccessToken();
+            await router.invalidate();
             setCurrentUser(null);
         },
     });
