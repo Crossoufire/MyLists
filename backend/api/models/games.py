@@ -110,7 +110,7 @@ class GamesList(MediaList):
         media_dict["platform"] = self.platform.value if self.platform else None
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["all_platforms"] = GamesPlatformsEnum.to_list()
+        media_dict["all_platforms"] = [platform.value for platform in GamesPlatformsEnum]
         media_dict["rating"] = {
             "type": "feeling" if is_feeling else "score",
             "value": self.feeling if is_feeling else self.score

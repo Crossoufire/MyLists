@@ -1,16 +1,43 @@
 from __future__ import annotations
-from enum import Enum
+
+from enum import StrEnum
 from typing import List
 
 
-class ExtendedEnum(Enum):
-    @classmethod
-    def to_list(cls) -> List:
-        return [c.value for c in cls]
+# --- USERS ------------------------------------------------------------------------
+
+class RoleType(StrEnum):
+    """
+    Represents the different roles available in MyLists.
+    - `manager`: can lock, edit, and refresh the media details
+    - `user`: standard user
+    """
+
+    MANAGER = "manager"
+    USER = "user"
 
 
-class MediaType(ExtendedEnum):
-    """ The enum order is used, do not modify !! """
+class Privacy(StrEnum):
+    """
+    Represents the different privacy settings available in MyLists.
+    - `public`: everyone can see the user profile.
+    - `restricted` (default): only the users connected can see the user profile.
+    - `private`: only the owner and the accepted followers can see the user profile.
+    """
+
+    PUBLIC = "public"
+    RESTRICTED = "restricted"
+    PRIVATE = "private"
+
+
+# --- MEDIA ------------------------------------------------------------------------
+
+
+class MediaType(StrEnum):
+    """
+    Represents each media type available in MyLists.
+    The enum order is used, do not modify !!
+    """
 
     SERIES = "series"
     ANIME = "anime"
@@ -27,7 +54,12 @@ class MediaType(ExtendedEnum):
         return [cls.SERIES, cls.MOVIES]
 
 
-class Status(str, ExtendedEnum):
+class Status(StrEnum):
+    """
+    Represents all the different statuses available in MyLists for all the media types.
+    As well as the default status for each media type.
+    """
+
     ALL = "All"
     WATCHING = "Watching"
     READING = "Reading"
@@ -72,46 +104,25 @@ class Status(str, ExtendedEnum):
             raise ValueError(f"Invalid media type: {media_type}")
 
 
-class RoleType(str, ExtendedEnum):
-    MANAGER = "manager"  # Can lock and edit media
-    USER = "user"        # Standard user
+class JobType(StrEnum):
+    """
+    Represents the different accepted job type in a media details page:
+    - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
+    - `actor`: actors (series/anime/movies)
+    - `platform`: tv network (series/anime)
+    """
 
-
-class ModelTypes(str, ExtendedEnum):
-    MEDIA = "media"
-    LIST = "list"
-    GENRE = "genre"
-    ACTORS = "actors"
-    LABELS = "labels"
-    EPS = "episodesPerSeason"
-    NETWORK = "network"
-    PLATFORMS = "platforms"
-    COMPANIES = "companies"
-    AUTHORS = "authors"
-
-
-class JobType(str, Enum):
     ACTOR = "actor"
     CREATOR = "creator"
     PLATFORM = "platform"
-    COLLECTION = "collection"
 
 
-class NotificationType(str, Enum):
-    TV = "tv"
-    MEDIA = "media"
-    FOLLOW = "follow"
+class GamesPlatformsEnum(StrEnum):
+    """
+    Represents the different platforms available for the games in MyLists.
+    Needs to be updated when new video games platforms are created.
+    """
 
-
-class UpdateType(str, Enum):
-    TV = "tv"
-    PAGE = "page"
-    REDO = "redo"
-    STATUS = "status"
-    PLAYTIME = "playtime"
-
-
-class GamesPlatformsEnum(ExtendedEnum):
     PC = "PC"
     ANDROID = "Android"
     IPHONE = "Iphone"
@@ -149,3 +160,54 @@ class GamesPlatformsEnum(ExtendedEnum):
     OLD_SEGA_CONSOLE = "Old Sega"
     OLD_ATARI_CONSOLE = "Old Atari"
     OTHER = "Other"
+
+
+# --- OTHER ------------------------------------------------------------------------
+
+
+class ModelTypes(StrEnum):
+    """
+    Represents the different types of SQLAlchemy models available in MyLists.
+    Used to determine the appropriate model to use in polymorphic endpoints
+    """
+
+    MEDIA = "media"
+    LIST = "list"
+    GENRE = "genre"
+    ACTORS = "actors"
+    LABELS = "labels"
+    EPS = "episodesPerSeason"
+    NETWORK = "network"
+    PLATFORMS = "platforms"
+    COMPANIES = "companies"
+    AUTHORS = "authors"
+
+
+class NotificationType(StrEnum):
+    """
+    Represents the different types of notifications available in MyLists, excluding the books.
+    - `tv`: notifications for the series/anime
+    - `media`: notifications for movies/games
+    - `follow`: notifications for following users
+    """
+
+    TV = "tv"
+    MEDIA = "media"
+    FOLLOW = "follow"
+
+
+class UpdateType(StrEnum):
+    """
+    Represents the different types of updates available in MyLists.
+    - `tv`: seasons and episodes updates for the series/anime
+    - `page`: updates for the books
+    - `redo`: updates re-watched / re-read for the series/anime/movies/books
+    - `status`: updates for the status of the media (all media concerned)
+    - `playtime`: updates for the playtime of the games
+    """
+
+    TV = "tv"
+    PAGE = "page"
+    REDO = "redo"
+    STATUS = "status"
+    PLAYTIME = "playtime"

@@ -14,7 +14,7 @@ from sqlalchemy import desc, func, select, union_all, literal
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy
 from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
@@ -68,7 +68,7 @@ class User(db.Model):
     password = db.Column(db.String)
     image_file = db.Column(db.String, nullable=False, default="default.jpg")
     background_image = db.Column(db.String, nullable=False, default="default.jpg")
-    private = db.Column(db.Boolean, nullable=False, default=False)
+    privacy = db.Column(db.Enum(Privacy), nullable=False, default=Privacy.RESTRICTED)
     active = db.Column(db.Boolean, nullable=False, default=False)
     role = db.Column(db.Enum(RoleType), nullable=False, default=RoleType.USER)
     transition_email = db.Column(db.String)
@@ -132,15 +132,16 @@ class User(db.Model):
         excluded_attrs = ("email", "password")
         user_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name not in excluded_attrs}
 
-        user_dict.update({
-            "role": self.role.value,
-            "registered_on": self.registered_on,
-            "profile_image": self.profile_image,
-            "back_image": self.back_image,
-            "profile_level": self.profile_level,
-            "followers_count": self.followers_count,
-            "settings": {setting.media_type.value: setting.to_dict() for setting in self.settings},
-        })
+        user_dict.update(dict(
+            role=self.role.value,
+            privacy=self.privacy.value,
+            registered_on=self.registered_on,
+            profile_image=self.profile_image,
+            back_image=self.back_image,
+            profile_level=self.profile_level,
+            followers_count=self.followers_count,
+            settings={setting.media_type.value: setting.to_dict() for setting in self.settings}),
+        )
 
         return user_dict
 
