@@ -12,9 +12,6 @@ class UserModelTests(BaseTest):
     def test_back_image(self):
         self.assertEqual(self.user.back_image, "http://localhost:5000/api/static/background_pics/default.jpg")
 
-    def test_profile_border(self):
-        self.assertIn("border_", self.user.profile_border)
-
     def test_followers_count(self):
         self.assertEqual(self.user.followers_count, 0)
 

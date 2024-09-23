@@ -121,26 +121,12 @@ class User(db.Model):
         return url_for("static", filename=f"background_pics/{self.background_image}")
 
     @property
-    def profile_border(self) -> str:
-        profile_border = "border_40.png"
-        profile_border_level = (self.profile_level // 8) + 1
-        if profile_border_level < 40:
-            profile_border = f"border_{profile_border_level}.png"
-
-        return url_for("static", filename=f"img/profile_borders/{profile_border}")
-
-    @property
     def followers_count(self) -> int:
-        """ Return the number of followers of the user """
         return self.followers.count()
 
     @property
     def profile_level(self) -> int:
-        total_time = 0
-        for setting in self.settings:
-            if setting.active:
-                total_time += setting.time_spent
-        return int(compute_level(total_time))
+        return int(compute_level(sum(settings.time_spent for settings in self.settings if settings.active)))
 
     def to_dict(self) -> Dict:
         excluded_attrs = ("email", "password")
@@ -152,7 +138,6 @@ class User(db.Model):
             "profile_image": self.profile_image,
             "back_image": self.back_image,
             "profile_level": self.profile_level,
-            "profile_border": self.profile_border,
             "followers_count": self.followers_count,
             "settings": {setting.media_type.value: setting.to_dict() for setting in self.settings},
         })
