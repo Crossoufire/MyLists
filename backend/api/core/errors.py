@@ -1,4 +1,3 @@
-from datetime import datetime
 from http import HTTPStatus
 import json
 import traceback
@@ -10,6 +9,7 @@ from werkzeug.exceptions import InternalServerError, HTTPException, Unauthorized
 
 from backend.api.core import token_auth, basic_auth, current_user
 from backend.api.schemas.core import ApiValidationError
+from backend.api.utils.functions import naive_utcnow
 
 
 errors = Blueprint("errors_api", __name__)
@@ -51,7 +51,7 @@ def log_error(error: Exception):
                 body=request.get_data(as_text=True),
                 user_id=current_user.id if current_user else None,
                 user_username=current_user.username if current_user else None,
-                timestamp=f"{datetime.utcnow().strftime('%d-%b-%Y %H:%M:%S')} UTC",
+                timestamp=f"{naive_utcnow().strftime('%d-%b-%Y %H:%M:%S')} UTC",
             ))
 
         current_app.logger.error(

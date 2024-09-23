@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime
 from urllib.parse import urlencode
 
 import requests
@@ -15,6 +14,7 @@ from backend.api.core.email import send_email
 from backend.api.models.user import Token, User
 from backend.api.schemas.tokens import *
 from backend.api.utils.decorators import body, arguments
+from backend.api.utils.functions import naive_utcnow
 
 
 tokens = Blueprint("api_tokens", __name__)
@@ -143,7 +143,7 @@ def register_token(data):
         return abort(400, description="Invalid token")
 
     user.active = True
-    user.activated_on = datetime.utcnow()
+    user.activated_on = naive_utcnow()
 
     db.session.commit()
     current_app.logger.info(f"[INFO] - [{user.id}] Account activated.")
@@ -229,7 +229,7 @@ def oauth2_new(data, provider: str):
             username=unique_username,
             email=email,
             active=True,
-            activated_on=datetime.utcnow(),
+            activated_on=naive_utcnow(),
         )
 
     token = user.generate_auth_token()

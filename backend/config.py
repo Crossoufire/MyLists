@@ -96,7 +96,7 @@ class DevConfig(Config):
     USER_ACTIVE_PER_DEFAULT = False
     CACHE_TYPE = "SimpleCache"
     RATELIMIT_STORAGE_URI = "memory://"
-    ACCESS_TOKEN_MINUTES = int("99999999")
+    ACCESS_TOKEN_MINUTES = int("15")
 
 
 class TestConfig(Config):

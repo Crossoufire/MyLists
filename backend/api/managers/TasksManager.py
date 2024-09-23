@@ -17,6 +17,7 @@ from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User, UserMediaUpdate, Notifications, UserMediaSettings
 from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
+from backend.api.utils.functions import naive_utcnow
 
 
 class TasksManagerMeta(type):
@@ -235,8 +236,8 @@ class TasksManager(metaclass=TasksManagerMeta):
             .join(self.media_list, self.media.id == self.media_list.media_id)
             .filter(
                 self.media.release_date.is_not(None),
-                self.media.release_date > datetime.utcnow(),
-                self.media.release_date <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
+                self.media.release_date > naive_utcnow(),
+                self.media.release_date <= naive_utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
             ).all()
         )
 
@@ -279,8 +280,8 @@ class TvTasksManager(TasksManager):
             .join(top_eps_subq, self.media.id == top_eps_subq.c.media_id)
             .filter(
                 self.media.next_episode_to_air.is_not(None),
-                self.media.next_episode_to_air > datetime.utcnow(),
-                self.media.next_episode_to_air <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
+                self.media.next_episode_to_air > naive_utcnow(),
+                self.media.next_episode_to_air <= naive_utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
                 self.media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
             ).all()
         )
@@ -333,7 +334,7 @@ class MoviesTasksManager(TasksManager):
         current_app.logger.info(f"Movies successfully deleted")
 
     def automatic_locking(self):
-        locking_threshold = datetime.utcnow() - timedelta(days=self.media.LOCKING_DAYS)
+        locking_threshold = naive_utcnow() - timedelta(days=self.media.LOCKING_DAYS)
         locked_movies = (
             self.media.query.filter(
                 self.media.lock_status.is_not(True),

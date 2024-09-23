@@ -1,15 +1,17 @@
 from __future__ import annotations
-from datetime import datetime
+
 from typing import List, Dict, Optional
+
 from flask import url_for
 from sqlalchemy import func, desc
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers, UserMediaUpdate
 from backend.api.utils.enums import ModelTypes, Status, MediaType
-from backend.api.utils.functions import safe_div
+from backend.api.utils.functions import safe_div, naive_utcnow
 
 
 class Media(db.Model, UpdateMixin):
@@ -211,7 +213,7 @@ class MediaList(db.Model):
         next_media = (
             db.session.query(media).join(cls, media.id == cls.media_id)
             .filter(
-                getattr(media, media_date) > datetime.utcnow(),
+                getattr(media, media_date) > naive_utcnow(),
                 cls.user_id == current_user.id,
                 cls.status.notin_([Status.DROPPED, Status.RANDOM]),
             ).order_by(getattr(media, media_date))

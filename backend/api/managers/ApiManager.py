@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import secrets
-from datetime import datetime, timedelta
+from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Literal, Optional, Type
@@ -19,7 +19,7 @@ from backend.api.core.errors import log_error
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.utils.functions import (clean_html_text, get, is_latin, format_datetime, resize_and_save_image,
-                                         reorder_seas_eps, global_limiter)
+                                         reorder_seas_eps, global_limiter, naive_utcnow)
 
 
 """ --- GENERAL --------------------------------------------------------------------------------------------- """
@@ -291,7 +291,7 @@ class TVApiManager(TMDBApiManager):
             origin_country=get(self.api_data, "origin_country", 0),
             created_by=self._format_creators(),
             api_id=self.api_data["id"],
-            last_api_update=datetime.utcnow(),
+            last_api_update=naive_utcnow(),
             image_cover=self._get_media_cover(),
             next_episode_to_air=None,
             season_to_air=None,
@@ -372,7 +372,7 @@ class TVApiManager(TMDBApiManager):
         query = media_model.query.with_entities(media_model.api_id).filter(
             media_model.lock_status.is_not(True),
             media_model.api_id.in_(changed_api_ids),
-            media_model.last_api_update < datetime.utcnow() - timedelta(seconds=86000),
+            media_model.last_api_update < naive_utcnow() - timedelta(seconds=86000),
         ).all()
 
         return [tv_id[0] for tv_id in query]
@@ -498,7 +498,7 @@ class MoviesApiManager(TMDBApiManager):
             api_id=self.api_data.get("id"),
             director_name=None,
             image_cover=self._get_media_cover(),
-            last_api_update=datetime.utcnow(),
+            last_api_update=naive_utcnow(),
         )
 
         all_crew = get(self.api_data, "credits", "crew", default=[])
@@ -520,8 +520,8 @@ class MoviesApiManager(TMDBApiManager):
 
         query = media_model.query.with_entities(media_model.api_id).filter(
             media_model.lock_status.is_not(True),
-            media_model.last_api_update < datetime.utcnow() - timedelta(days=7),
-            or_(media_model.release_date > datetime.utcnow() - timedelta(days=90), media_model.release_date.is_(None)),
+            media_model.last_api_update < naive_utcnow() - timedelta(days=7),
+            or_(media_model.release_date > naive_utcnow() - timedelta(days=90), media_model.release_date.is_(None)),
         ).all()
 
         return [movie_id[0] for movie_id in query]
@@ -644,7 +644,7 @@ class GamesApiManager(ApiManager):
             player_perspective=get(self.api_data, "player_perspectives", 0, "name"),
             game_modes=",".join([g.get("name") for g in get(self.api_data, "game_modes", default=[])]),
             api_id=self.api_data["id"],
-            last_api_update=datetime.utcnow(),
+            last_api_update=naive_utcnow(),
             image_cover=self._get_media_cover(),
         )
 
@@ -713,8 +713,8 @@ class GamesApiManager(ApiManager):
         model = ModelsManager.get_unique_model(self.GROUP, ModelTypes.MEDIA)
 
         query = model.query.with_entities(model.api_id).filter(
-            or_(model.release_date > datetime.utcnow(), model.release_date.is_(None)),
-            model.last_api_update < datetime.utcnow() - timedelta(days=7),
+            or_(model.release_date > naive_utcnow(), model.release_date.is_(None)),
+            model.last_api_update < naive_utcnow() - timedelta(days=7),
         ).all()
 
         return [int(game_id[0]) for game_id in query]
@@ -787,7 +787,7 @@ class BooksApiManager(ApiManager):
             language=get(self.api_data, "language"),
             release_date=format_datetime(self.api_data.get("publishedDate")),
             image_cover=self._get_media_cover(),
-            last_api_update=datetime.utcnow(),
+            last_api_update=naive_utcnow(),
             lock_status=True,
         )
 

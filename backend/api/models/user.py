@@ -15,7 +15,7 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
-from backend.api.utils.functions import compute_level, safe_div
+from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
 followers = db.Table(
@@ -38,21 +38,21 @@ class Token(db.Model):
 
     def generate(self):
         self.access_token = secrets.token_urlsafe()
-        self.access_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
+        self.access_expiration = naive_utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
         self.refresh_token = secrets.token_urlsafe()
-        self.refresh_expiration = datetime.utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
+        self.refresh_expiration = naive_utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
     def expire(self, delay: int = None):
         # Add 5 second delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
-        self.access_expiration = datetime.utcnow() + timedelta(seconds=delay)
-        self.refresh_expiration = datetime.utcnow() + timedelta(seconds=delay)
+        self.access_expiration = naive_utcnow() + timedelta(seconds=delay)
+        self.refresh_expiration = naive_utcnow() + timedelta(seconds=delay)
 
     @classmethod
     def clean(cls):
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = naive_utcnow() - timedelta(days=1)
         cls.query.filter(cls.refresh_expiration < yesterday).delete()
         db.session.commit()
 
@@ -74,7 +74,7 @@ class User(db.Model):
     transition_email = db.Column(db.String)
     activated_on = db.Column(db.DateTime)
     last_notif_read_time = db.Column(db.DateTime)
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime, default=naive_utcnow)
     show_update_modal = db.Column(db.Boolean, default=True)
     grid_list_view = db.Column(db.Boolean, nullable=False, default=True)
     profile_views = db.Column(db.Integer, nullable=False, default=0)
@@ -168,7 +168,7 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
     def ping(self):
-        self.last_seen = datetime.utcnow()
+        self.last_seen = naive_utcnow()
 
     def revoke_all_tokens(self):
         Token.query.filter(Token.user == self).delete()
@@ -203,7 +203,7 @@ class User(db.Model):
         return {"total": len(follows), "follows": [follow.to_dict() for follow in follows[:limit]]}
 
     def get_last_notifications(self, limit: int = 8) -> List[Dict]:
-        current_user.last_notif_read_time = datetime.utcnow()
+        current_user.last_notif_read_time = naive_utcnow()
         db.session.commit()
         query = (
             Notifications.query.filter_by(user_id=self.id).order_by(desc(Notifications.timestamp))
@@ -369,7 +369,7 @@ class User(db.Model):
             email=email,
             password=None if not kwargs.get("password") else generate_password_hash(kwargs["password"]),
             activated_on=kwargs.get("activated_on", None),
-            registered_on=datetime.utcnow(),
+            registered_on=naive_utcnow(),
             active=kwargs.get("active", current_app.config["USER_ACTIVE_PER_DEFAULT"]),
         )
         db.session.add(new_user)
@@ -391,7 +391,7 @@ class User(db.Model):
         # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
         if token:
-            if token.access_expiration > datetime.utcnow():
+            if token.access_expiration > naive_utcnow():
                 token.user.ping()
                 db.session.commit()
                 return token.user
@@ -400,7 +400,7 @@ class User(db.Model):
     def verify_refresh_token(refresh_token: str, access_token: str) -> Optional[Token]:
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
-            if token.refresh_expiration > datetime.utcnow():
+            if token.refresh_expiration > naive_utcnow():
                 return token
 
             # Try to refresh with expired token: revoke all tokens from user as precaution
@@ -451,7 +451,7 @@ class UserMediaUpdate(db.Model):
     media_type = db.Column(db.Enum(MediaType), nullable=False, index=True)
     update_type = db.Column(db.Enum(UpdateType), nullable=False)
     payload = db.Column(db.TEXT, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=naive_utcnow, nullable=False, index=True)
 
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="updates", lazy="joined")
@@ -478,7 +478,7 @@ class UserMediaUpdate(db.Model):
 
         time_difference = float("inf")
         if previous_db_entry:
-            time_difference = (datetime.utcnow() - previous_db_entry.timestamp).total_seconds()
+            time_difference = (naive_utcnow() - previous_db_entry.timestamp).total_seconds()
 
         # noinspection PyArgumentList
         new_update = cls(
@@ -513,7 +513,7 @@ class Notifications(db.Model):
     media_type = db.Column(db.Enum(MediaType))
     notification_type = db.Column(db.Enum(NotificationType))
     payload = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=naive_utcnow)
 
     # --- Relationships -----------------------------------------------------------
     user = db.relationship("User", back_populates="notifications", lazy="select")

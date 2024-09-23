@@ -8,11 +8,7 @@ import {ProfileHeader} from "@/components/profile/ProfileHeader";
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header")({
     component: ProfileTop,
-    loader: ({ context: { auth, queryClient }, params: { username } }) => {
-        if (!auth.isLoading) {
-            return queryClient.ensureQueryData(profileOptions(username));
-        }
-    },
+    loader: ({ context: { queryClient }, params: { username } }) => queryClient.ensureQueryData(profileOptions(username)),
 });
 
 

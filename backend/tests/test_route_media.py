@@ -1,11 +1,12 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Dict
 
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.functions import naive_utcnow
 from backend.tests.base_test import BaseTest
 
 
@@ -25,7 +26,7 @@ class MediaTests(BaseTest):
 
             api_manager = ApiManager.get_subclass(media_type)()
             api_manager.all_data = media_data
-            api_manager.all_data["media_data"]["last_api_update"] = datetime.utcnow()
+            api_manager.all_data["media_data"]["last_api_update"] = naive_utcnow()
             api_manager._add_data_to_db()
 
     def _add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:
@@ -785,7 +786,7 @@ class MediaTests(BaseTest):
             else:
                 attr = "release_date"
             media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
-            media_model.query.filter_by(id=1).update({attr: datetime.utcnow() + timedelta(days=3)})
+            media_model.query.filter_by(id=1).update({attr: naive_utcnow() + timedelta(days=3)})
             db.session.commit()
 
             rv = self.client.post("/api/add_media", headers=headers, json={
