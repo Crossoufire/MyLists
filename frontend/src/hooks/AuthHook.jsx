@@ -1,4 +1,3 @@
-import {router} from "@/router";
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
 import {authOptions} from "@/api/queryOptions";
@@ -30,9 +29,8 @@ export const useAuth = () => {
 
     const logout = useMutation({
         mutationFn: () => api.logout(),
-        onSuccess: async () => {
+        onSuccess: () => {
             api.removeAccessToken();
-            await router.invalidate();
             setCurrentUser(null);
         },
     });

@@ -21,7 +21,7 @@ export const LoginForm = () => {
 
     useLayoutEffect(() => {
         if (!currentUser) return;
-        router.invalidate();
+        void router.invalidate();
         void navigate({ to: `/profile/${currentUser.username}` });
     }, [currentUser]);
 

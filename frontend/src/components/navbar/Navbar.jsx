@@ -6,11 +6,11 @@ import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
-import {Link as NavLink} from "@tanstack/react-router";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
+import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
@@ -18,11 +18,19 @@ import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTri
 
 export const Navbar = () => {
     const popRef = useRef();
+    const router = useRouter();
+    const navigate = useNavigate();
     const { sheetOpen, setSheetOpen } = useSheet();
     const { currentUser, logout, isLoading } = useAuth();
 
     const logoutUser = () => {
-        logout.mutate();
+        logout.mutate(undefined, {
+            onSuccess: async () => {
+                router.invalidate().then(() => {
+                    navigate({ to: "/" });
+                });
+            },
+        });
     };
 
     // Login page and public pages when not logged
