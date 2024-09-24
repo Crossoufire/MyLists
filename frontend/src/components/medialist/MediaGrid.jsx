@@ -1,15 +1,16 @@
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
-import {CommonCorner} from "@/components/app/base/CommonCorner";
+import {MediaInfoCorner} from "@/components/app/base/MediaInfoCorner";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import {Route} from "@/routes/_private/list/$mediaType.$username";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
+import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
+import {useAuth} from "@/hooks/AuthHook";
 
 
 export const MediaGrid = ({ isCurrent, mediaList }) => {
@@ -29,6 +30,7 @@ export const MediaGrid = ({ isCurrent, mediaList }) => {
 
 const MediaItem = ({ isCurrent, media }) => {
     const search = Route.useSearch();
+    const { currentUser } = useAuth();
     const { username, mediaType } = Route.useParams();
     const mediaMutations = userMediaMutations(mediaType, media.media_id, ["userList", mediaType, username, search]);
 
@@ -85,7 +87,7 @@ const MediaItem = ({ isCurrent, media }) => {
     return (
         <MediaCard media={media} mediaType={mediaType} isPending={cardPending}>
             <div className="absolute top-2 right-1 z-10">
-                {(isCurrent || (!isCurrent && !media.common)) &&
+                {(isCurrent || ((!isCurrent && !!currentUser) && !media.common)) &&
                     <EditMediaList
                         status={media.status}
                         isCurrent={isCurrent}
@@ -104,7 +106,7 @@ const MediaItem = ({ isCurrent, media }) => {
                     isCurrent={isCurrent}
                 />
             </div>
-            <CommonCorner isCommon={media.common}/>
+            {!!currentUser && <MediaInfoCorner isCommon={media.common}/>}
             <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-2 bg-gray-900 w-full rounded-b-sm">
                 <h3 className="font-semibold line-clamp-1" title={media.media_name}>
                     {media.media_name}

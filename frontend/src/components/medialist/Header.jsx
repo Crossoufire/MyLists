@@ -4,10 +4,10 @@ import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
-import {Route} from "@/routes/_private/list/$mediaType.$username";
 import {LuArrowUpDown, LuFilter, LuGrid, LuList} from "react-icons/lu";
 import {SearchComponent} from "@/components/medialist/SearchComponent";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
+import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 

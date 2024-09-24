@@ -3,6 +3,8 @@ from marshmallow import validates, ValidationError, validate
 from backend.api import ma
 from backend.api.core import current_user
 from backend.api.models import User
+from backend.api.schemas.core import EnumField
+from backend.api.utils.enums import Privacy
 
 
 class RegisterUserSchema(ma.Schema):
@@ -52,6 +54,7 @@ class ListSettingsSchema(ma.Schema):
 
 class GeneralSettingsSchema(ma.Schema):
     username = ma.String(required=False, validate=validate.Length(min=3, max=15))
+    privacy = EnumField(Privacy, required=False)
     profile_image = ma.Raw(required=False)
     background_image = ma.Raw(required=False)
 

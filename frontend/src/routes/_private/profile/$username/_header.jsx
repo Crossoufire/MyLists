@@ -1,29 +1,18 @@
 import {profileOptions} from "@/api/queryOptions";
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
-import {createFileRoute, Outlet} from "@tanstack/react-router";
-import {ProfileHeader} from "@/components/profile/ProfileHeader";
+import {createFileRoute, redirect} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/profile/$username/_header")({
-    component: ProfileTop,
-    loader: ({ context: { queryClient }, params: { username } }) => queryClient.ensureQueryData(profileOptions(username)),
+    loader: async ({ context: { auth, queryClient }, params: { username } }) => {
+        const apiData = await queryClient.ensureQueryData(profileOptions(username));
+
+        // Not allowed to view non-public profile if user not logged in
+        if (!auth.currentUser && apiData.user_data?.privacy !== "public") {
+            throw redirect({
+                to: "/",
+                search: { message: "You need to be logged in to view this profile" },
+            });
+        }
+    }
 });
-
-
-function ProfileTop() {
-    const { username } = Route.useParams();
-    const apiData = useSuspenseQuery(profileOptions(username)).data;
-
-    return (
-        <PageTitle title={`${username} Profile`} onlyHelmet>
-            <ProfileHeader
-                user={apiData.user_data}
-                followId={apiData.user_data.id}
-                followStatus={apiData.is_following}
-            />
-            <Outlet/>
-        </PageTitle>
-    );
-}

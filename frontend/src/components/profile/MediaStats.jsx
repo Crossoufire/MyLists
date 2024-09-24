@@ -3,8 +3,9 @@ import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {BulletIcon} from "@/components/app/base/BulletIcon";
+import {capitalize, getStatusColor} from "@/utils/functions";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
-import {capitalize, getStatusColor} from "@/utils/functions.jsx";
+import {BlockLink} from "@/components/app/BlockLink";
 
 
 export const MediaStats = ({ user, media }) => (
@@ -53,7 +54,7 @@ export const MediaStats = ({ user, media }) => (
                         <Tooltip key={`${status.status}-${media.media_type}`} text={status.status}>
                             <span
                                 className="flex-grow"
-                                style={{width: `${status.percent}%`, backgroundColor: getStatusColor(status.status)}}
+                                style={{ width: `${status.percent}%`, backgroundColor: getStatusColor(status.status) }}
                             />
                         </Tooltip>
                     )
@@ -63,7 +64,7 @@ export const MediaStats = ({ user, media }) => (
                 {media.status_count.map(s =>
                     <div key={`${s.status}-${media.media_type}`} className="flex justify-between">
                         <Link to={`/list/${media.media_type}/${user.username}`} search={{ status: [s.status] }}
-                        className="text-neutral-500">
+                              className="text-neutral-500">
                             <BulletIcon color={getStatusColor(s.status)}/> {s.status}
                         </Link>
                         <div>{s.count}</div>
@@ -81,7 +82,7 @@ export const MediaStats = ({ user, media }) => (
                 :
                 <div className="flex flex-wrap justify-start gap-2 mt-2">
                     {media.favorites.map(m =>
-                        <Link key={m.media_name} to={`/details/${media.media_type}/${m.media_id}`}>
+                        <BlockLink key={m.media_name} to={`/details/${media.media_type}/${m.media_id}`}>
                             <Tooltip text={m.media_name}>
                                 <img
                                     alt={m.media_name}
@@ -90,7 +91,7 @@ export const MediaStats = ({ user, media }) => (
                                     className={"h-[78px] w-[52px] rounded-sm"}
                                 />
                             </Tooltip>
-                        </Link>
+                        </BlockLink>
                     )}
                 </div>
             }

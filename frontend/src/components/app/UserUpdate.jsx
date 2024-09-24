@@ -5,6 +5,7 @@ import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
 import {Payload} from "@/components/app/base/Payload";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {BlockLink} from "@/components/app/BlockLink";
 
 
 export const UserUpdate = ({ update, username, onDelete, canDelete, isPending, mediaIdBeingDeleted }) => {
@@ -18,11 +19,11 @@ export const UserUpdate = ({ update, username, onDelete, canDelete, isPending, m
             <div className={cn("flex relative py-1 gap-3 pr-2 group", (mediaIdBeingDeleted === update.id && isPending) && "opacity-20")}>
                 <MediaIcon size={18} className="mt-1" mediaType={update.media_type}/>
                 <div>
-                    <Link to={`/details/${update.media_type}/${update.media_id}`} disabled={isPending}>
+                    <BlockLink to={`/details/${update.media_type}/${update.media_id}`} disabled={isPending}>
                         <div className="line-clamp-1 hover:underline hover:underline-offset-2" title={update.media_name}>
                             {update.media_name}
                         </div>
-                    </Link>
+                    </BlockLink>
                     <Payload update={update}/>
                     <div className="text-sm text-neutral-400">
                         {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}

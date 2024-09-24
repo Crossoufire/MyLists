@@ -304,9 +304,11 @@ class User(db.Model):
     def get_last_updates(self, limit: int) -> List[Dict]:
         return [update.to_dict() for update in self.updates.limit(limit).all()]
 
-    def get_follows_updates(self, limit: int) -> List[Dict]:
+    def get_follows_updates(self, limit: int, as_public: bool = False) -> List[Dict]:
+        followed_users = self.followed.all() if not as_public else self.followed.filter_by(privacy=Privacy.PUBLIC).all()
+        
         follows_updates = (
-            UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in self.followed.all()]))
+            UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in followed_users]))
             .order_by(desc(UserMediaUpdate.timestamp))
             .limit(limit).all()
         )

@@ -53,7 +53,7 @@ export const UserUpdates = ({ updates, followers = false }) => {
                                     isPending={deleteUserUpdates.isPending}
                                     username={followers && update.username}
                                     mediaIdBeingDeleted={mediaIdBeingDeleted}
-                                    canDelete={(currentUser.id === update.user_id) && !followers}
+                                    canDelete={(currentUser?.id === update.user_id) && !followers}
                                 />
                             )
                         }

@@ -2,10 +2,7 @@ import {useRef, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import * as Com from "@/components/ui/command";
-import * as Pop from "@/components/ui/popover";
 import {useQuery} from "@tanstack/react-query";
-import * as Sheet from "@/components/ui/sheet";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
@@ -13,9 +10,12 @@ import {Loading} from "@/components/app/base/Loading";
 import {LuLoader2, LuSearch, LuX} from "react-icons/lu";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {capitalize, getLangCountryName} from "@/utils/functions";
-import {Route} from "@/routes/_private/list/$mediaType.$username";
+import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {filterSearchOptions, smallFiltersOptions} from "@/api/queryOptions";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
+import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
@@ -24,6 +24,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     const { username, mediaType } = Route.useParams();
     const searchFiltersList = getListSearchFilters(mediaType);
     const { data: smallFilters, isLoading } = useQuery(smallFiltersOptions(mediaType, username));
+
+    console.log(smallFilters);
 
     const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
@@ -57,17 +59,17 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     };
 
     return (
-        <Sheet.Sheet defaultOpen={true} onOpenChange={onClose}>
-            <Sheet.SheetContent className="max-sm:w-full">
-                <Sheet.SheetHeader>
-                    <Sheet.SheetTitle>Additional Filters</Sheet.SheetTitle>
-                    <Sheet.SheetDescription>
+        <Sheet defaultOpen={true} onOpenChange={onClose}>
+            <SheetContent className="max-sm:w-full">
+                <SheetHeader>
+                    <SheetTitle>Additional Filters</SheetTitle>
+                    <SheetDescription>
                         <div className="flex items-center space-x-2">
                             How filters works &nbsp;
                             <FilterInfoPopover/>
                         </div>
-                    </Sheet.SheetDescription>
-                </Sheet.SheetHeader>
+                    </SheetDescription>
+                </SheetHeader>
                 <Separator/>
                 <form onSubmit={handleOnSubmit}>
                     {isLoading ?
@@ -182,16 +184,16 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                     <Separator/>
                                 </>
                             }
-                            <Sheet.SheetFooter className="pr-2">
-                                <Sheet.SheetClose asChild className="w-full">
+                            <SheetFooter className="pr-2">
+                                <SheetClose asChild className="w-full">
                                     <Button type="submit">Apply Filters</Button>
-                                </Sheet.SheetClose>
-                            </Sheet.SheetFooter>
+                                </SheetClose>
+                            </SheetFooter>
                         </div>
                     }
                 </form>
-            </Sheet.SheetContent>
-        </Sheet.Sheet>
+            </SheetContent>
+        </Sheet>
     );
 };
 
@@ -292,28 +294,24 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                 </div>
                 {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
                     <div className="z-50 absolute w-[280px] rounded-lg border shadow-md mt-1">
-                        <Com.Command>
-                            <Com.CommandList className="max-h-[300px] overflow-y-auto">
+                        <Command>
+                            <CommandList className="max-h-[300px] overflow-y-auto">
                                 {isLoading &&
                                     <div className="flex items-center justify-center p-4">
                                         <LuLoader2 className="h-6 w-6 animate-spin"/>
                                     </div>
                                 }
-                                {error &&
-                                    <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
-                                }
-                                {data && data.length === 0 &&
-                                    <Com.CommandEmpty>No results found.</Com.CommandEmpty>
-                                }
+                                {error && <CommandEmpty>An error occurred. Please try again.</CommandEmpty>}
+                                {data && data.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
                                 {data && data.length > 0 &&
                                     data.map((result, idx) =>
                                         <div key={idx} role="button" onClick={() => handleAddClicked(result)}>
-                                            <Com.CommandItem>{result}</Com.CommandItem>
+                                            <CommandItem>{result}</CommandItem>
                                         </div>
                                     )
                                 }
-                            </Com.CommandList>
-                        </Com.Command>
+                            </CommandList>
+                        </Command>
                     </div>
                 }
             </div>
@@ -333,11 +331,11 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 
 
 const FilterInfoPopover = () => (
-    <Pop.Popover>
-        <Pop.PopoverTrigger>
+    <Popover>
+        <PopoverTrigger>
             <FaCircleQuestion/>
-        </Pop.PopoverTrigger>
-        <Pop.PopoverContent className="w-full space-y-2" align="left">
+        </PopoverTrigger>
+        <PopoverContent className="w-full space-y-2" align="left">
             <div className="-mt-2 font-medium underline underline-offset-2">
                 Examples
             </div>
@@ -355,6 +353,6 @@ const FilterInfoPopover = () => (
                 <br/>
                 (Drama <b>OR</b> Crime) <b>AND</b> France
             </div>
-        </Pop.PopoverContent>
-    </Pop.Popover>
+        </PopoverContent>
+    </Popover>
 );

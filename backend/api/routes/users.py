@@ -11,7 +11,7 @@ from backend.api.models.user import Notifications, User, Token, followers, UserM
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
 from backend.api.utils.decorators import arguments, body
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, Privacy
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
@@ -49,16 +49,19 @@ def get_current_user():
 
 
 @users.route("/profile/<username>", methods=["GET"])
-@token_auth.login_required
+@token_auth.login_required(optional=True)
 def profile(username: str):
-    user = current_user.check_autorization(username)
-    active_media_types = [setting.media_type for setting in user.settings if setting.active]
+    user = User.query.filter_by(username=username).first_or_404()
 
-    if current_user.id != user.id:
+    if not current_user and user.privacy != Privacy.PUBLIC:
+        return jsonify(data=dict(user_data=user.privacy.value)), 200
+
+    if current_user and current_user.id != user.id:
         user.profile_views += 1
 
+    active_media_types = [setting.media_type for setting in user.settings if setting.active]
     user_updates = user.get_last_updates(limit=6)
-    follows_updates = user.get_follows_updates(limit=10)
+    follows_updates = user.get_follows_updates(limit=10, as_public=True if not current_user else False)
     list_levels = user.get_list_levels()
     media_global = user.get_global_media_stats()
     models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
@@ -71,7 +74,7 @@ def profile(username: str):
         user_updates=user_updates,
         follows=user.get_follows(limit=8),
         follows_updates=follows_updates,
-        is_following=current_user.is_following(user),
+        is_following=False if not current_user else current_user.is_following(user),
         list_levels=list_levels,
         media_global=media_global,
         media_data=media_data,
@@ -81,11 +84,14 @@ def profile(username: str):
 
 
 @users.route("/profile/<username>/followers", methods=["GET"])
-@token_auth.login_required
+@token_auth.login_required(optional=True)
 def profile_followers(username: str):
     """ Fetch all the followers of the user """
 
-    user = current_user.check_autorization(username)
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if not current_user and user.privacy != Privacy.PUBLIC:
+        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     data = dict(
         user_data=user.to_dict(),
@@ -96,11 +102,14 @@ def profile_followers(username: str):
 
 
 @users.route("/profile/<username>/follows", methods=["GET"])
-@token_auth.login_required
+@token_auth.login_required(optional=True)
 def profile_follows(username: str):
     """ Fetch all the follows of the user """
 
-    user = current_user.check_autorization(username)
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if not current_user and user.privacy != Privacy.PUBLIC:
+        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     data = dict(
         user_data=user.to_dict(),
@@ -111,12 +120,15 @@ def profile_follows(username: str):
 
 
 @users.route("/profile/<username>/history", methods=["GET"])
-@token_auth.login_required
+@token_auth.login_required(optional=True)
 @arguments(HistorySchema)
 def history(args, username: str):
     """ Fetch all history for each media for the user """
 
-    user = current_user.check_autorization(username)
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if not current_user and user.privacy != Privacy.PUBLIC:
+        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     history_query = (
         user.updates.filter(UserMediaUpdate.media_name.ilike(f"%{args['search']}%"))
@@ -192,6 +204,9 @@ def settings_general(data):
 
     if data.get("username"):
         current_user.username = data["username"]
+
+    if data.get("privacy"):
+        current_user.privacy = data["privacy"]
 
     profile_image = request.files.get("profile_image")
     if profile_image:

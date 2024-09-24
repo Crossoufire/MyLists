@@ -4,7 +4,6 @@ import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
@@ -26,7 +25,7 @@ export const Navbar = () => {
     const logoutUser = () => {
         logout.mutate(undefined, {
             onSuccess: async () => {
-                router.invalidate().then(() => {
+                await router.invalidate().then(() => {
                     navigate({ to: "/" });
                 });
             },
@@ -39,7 +38,14 @@ export const Navbar = () => {
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
-                    <div>{isLoading && <Loading/>}</div>
+                    <div className="space-x-3">
+                        <Button size="sm">
+                            <NavLink to="/">Login</NavLink>
+                        </Button>
+                        <Button size="sm" variant="secondary">
+                            <NavLink to="/">Register</NavLink>
+                        </Button>
+                    </div>
                 </div>
             </nav>
         );

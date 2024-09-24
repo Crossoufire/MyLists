@@ -3,7 +3,7 @@ import * as Drop from "@/components/ui/dropdown-menu";
 import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {TablePagination} from "@/components/app/TablePagination";
-import {Link, useParams, useSearch} from "@tanstack/react-router";
+import {useParams, useSearch} from "@tanstack/react-router";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
@@ -12,6 +12,8 @@ import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {RatingComponent} from "@/components/app/RatingComponent";
+import {useAuth} from "@/hooks/AuthHook";
+import {BlockLink} from "@/components/app/BlockLink";
 
 
 export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
@@ -29,12 +31,12 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
             header: "Name",
             cell: ({ row }) => {
                 return (
-                    <Link to={`/details/${mediaType}/${row.original.media_id}`}>
+                    <BlockLink to={`/details/${mediaType}/${row.original.media_id}`}>
                         <div className="flex justify-between items-center">
                             {row.original.media_name}
                             {!isCurrent && row.original.common && <LuCheckCircle2 className="h-4 w-4 text-green-500"/>}
                         </div>
-                    </Link>
+                    </BlockLink>
                 );
             },
         },
@@ -175,9 +177,7 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map(header =>
                                     <TableHead key={header.id}>
-                                        {!header.isPlaceholder &&
-                                            flexRender(header.column.columnDef.header, header.getContext())
-                                        }
+                                        {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 )}
                             </TableRow>
@@ -215,9 +215,7 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
 
 
 const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateStatusFunc } = userMediaMutations(
-        mediaType, row.original.media_id, ["userList", mediaType, username, filters]
-    );
+    const { updateStatusFunc } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
     const updateStatus = updateStatusFunc(onStatusSuccess);
 
     const handleStatus = (status) => {
@@ -353,6 +351,8 @@ const SuppMediaInfoCell = ({ row, isCurrent }) => {
 };
 
 const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
+    const { currentUser } = useAuth();
+    if (!currentUser) return;
     if (!isCurrent && (isCurrent || row.original.common)) return;
 
     const { removeFromList, addToList, updateStatusFunc } = userMediaMutations(
