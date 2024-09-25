@@ -19,8 +19,8 @@ export const Navbar = () => {
     const popRef = useRef();
     const router = useRouter();
     const navigate = useNavigate();
+    const { currentUser, logout } = useAuth();
     const { sheetOpen, setSheetOpen } = useSheet();
-    const { currentUser, logout, isLoading } = useAuth();
 
     const logoutUser = () => {
         logout.mutate(undefined, {

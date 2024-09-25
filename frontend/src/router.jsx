@@ -1,8 +1,11 @@
-import nProgress from "nprogress";
+import NProgress from "nprogress";
 import {routeTree} from "@/routeTree.gen";
 import {queryClient} from "@/api/queryClient";
 import {createRouter} from "@tanstack/react-router";
 import {ErrorComponent} from "@/components/app/base/ErrorComponent";
+
+
+NProgress.configure({ showSpinner: false, parent: "body" });
 
 
 export const router = createRouter({
@@ -18,13 +21,12 @@ export const router = createRouter({
 });
 
 
-router.subscribe("onBeforeLoad", () => {
-    // noinspection JSUnresolvedReference
-    nProgress.start();
+router.subscribe("onBeforeLoad", (event) => {
+    if (event.fromLocation.pathname === event.toLocation.pathname && event.fromLocation.hash !== event.toLocation.hash) return;
+    NProgress.start();
 });
 
 
-router.subscribe("onResolved", () => {
-    // noinspection JSUnresolvedReference
-    nProgress.done();
+router.subscribe("onResolved", (event) => {
+    NProgress.done();
 });

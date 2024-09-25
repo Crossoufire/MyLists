@@ -1,33 +1,32 @@
 import {useEffect, useState} from "react";
 
 
-export const useHashTab = (defaultTab, storageKey) => {
+export const useHashTab = (defaultTab) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab || "");
 
     useEffect(() => {
-        const storedData = localStorage.getItem(storageKey);
-        if (storedData) {
-            const { tab, timestamp } = JSON.parse(storedData);
-            const currentTime = new Date().getTime();
-            const fiveMinutesInMs = 5 * 60 * 1000;
-
-            if (currentTime - timestamp < fiveMinutesInMs) {
-                setSelectedTab(tab);
-            }
-            else {
-                setSelectedTab(defaultTab);
-                localStorage.removeItem(storageKey);
-            }
+        const hash = window.location.hash.replace("#", "");
+        if (hash) {
+            window.history.replaceState(null, "", `#${hash}`);
+            setSelectedTab(hash);
         }
-    }, [storageKey]);
+        else {
+            window.history.replaceState(null, "", `#${defaultTab}`);
+        }
 
-    const handleTabChange = (newTab) => {
-        const storageData = JSON.stringify({
-            tab: newTab,
-            timestamp: new Date().getTime(),
-        });
-        setSelectedTab(newTab);
-        localStorage.setItem(storageKey, storageData);
+        const handleHashChange = () => {
+            const newHash = window.location.hash.replace("#", "");
+            setSelectedTab(newHash);
+        };
+
+        window.addEventListener("hashchange", handleHashChange);
+
+        return () => window.removeEventListener("hashchange", handleHashChange);
+    }, []);
+
+    const handleTabChange = (tab) => {
+        setSelectedTab(tab);
+        window.history.pushState(null, "", `#${tab}`);
     };
 
     return [selectedTab, handleTabChange];

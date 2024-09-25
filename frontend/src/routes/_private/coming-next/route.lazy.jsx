@@ -17,7 +17,7 @@ export const Route = createLazyFileRoute("/_private/coming-next")({
 
 function ComingNextPage() {
     const apiData = useSuspenseQuery(upcomingOptions()).data;
-    const [selectedTab, handleTabChange] = useHashTab("series", "upcoming_tab");
+    const [selectedTab, handleTabChange] = useHashTab("series");
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">

@@ -17,7 +17,7 @@ export const Route = createLazyFileRoute("/_private/trends")({
 
 function TrendsPage() {
     const apiData = useSuspenseQuery(trendsOptions()).data;
-    const [selectedTab, handleTabChange] = useHashTab("series", "trends_tab");
+    const [selectedTab, handleTabChange] = useHashTab("series");
 
     return (
         <PageTitle title="Week Trends" subtitle="The Series and Movies trending this week according to TMDB">
