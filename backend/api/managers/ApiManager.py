@@ -75,7 +75,6 @@ class ApiManager(metaclass=ApiManagerMeta):
             models.get(ModelTypes.EPS): self.all_data.get("seasons_data", []),
             models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
             models.get(ModelTypes.ACTORS): self.all_data.get("actors_data", []),
-            models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
             models.get(ModelTypes.NETWORK): self.all_data.get("networks_data", []),
             models.get(ModelTypes.COMPANIES): self.all_data.get("companies_data", []),
             models.get(ModelTypes.PLATFORMS): self.all_data.get("platforms_data", []),
@@ -100,7 +99,6 @@ class ApiManager(metaclass=ApiManagerMeta):
             models.get(ModelTypes.EPS): self.all_data.get("seasons_data", []),
             models.get(ModelTypes.GENRE): self.all_data.get("genres_data", []),
             models.get(ModelTypes.ACTORS): self.all_data.get("actors_data", []),
-            models.get(ModelTypes.AUTHORS): self.all_data.get("authors_data", []),
             models.get(ModelTypes.NETWORK): self.all_data.get("networks_data", []),
             models.get(ModelTypes.COMPANIES): self.all_data.get("companies_data", []),
             models.get(ModelTypes.PLATFORMS): self.all_data.get("platforms_data", []),
@@ -780,6 +778,7 @@ class BooksApiManager(ApiManager):
     def _format_api_data(self, bulk: bool = False):
         self.media_details = dict(
             api_id=self.api_id,
+            authors=", ".join([author for author in get(self.api_data, "authors", default=[])]),
             name=get(self.api_data, "title"),
             pages=get(self.api_data, "pageCount", default=self.DEFAULT_PAGES),
             publishers=get(self.api_data, "publisher"),
@@ -791,13 +790,9 @@ class BooksApiManager(ApiManager):
             lock_status=True,
         )
 
-        authors = get(self.api_data, "authors", default=[])
-        authors_list = [{"name": author} for author in authors]
-
         self.all_data = dict(
             media_data=self.media_details,
             genres_data=[],
-            authors_data=authors_list,
         )
 
     def _get_media_cover(self) -> str:

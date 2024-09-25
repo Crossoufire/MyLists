@@ -45,7 +45,6 @@ class ListQueryManager:
 
         self.media_actors = media_models.get(ModelTypes.ACTORS)
         self.media_network = media_models.get(ModelTypes.NETWORK)
-        self.media_authors = media_models.get(ModelTypes.AUTHORS)
         self.media_companies = media_models.get(ModelTypes.COMPANIES)
 
     def _create_filter(self, attr: str, model_attr: Any) -> ColumnElement | bool:
@@ -124,7 +123,11 @@ class ListQueryManager:
 
     @property
     def authors_filter(self) -> ColumnElement | bool:
-        return True if not self.media_authors else self._create_filter("authors", self.media_authors.name)
+        if self.media_type != MediaType.BOOKS:
+            return True
+        if self.ALL_VALUE in self.args["authors"]:
+            return True
+        return self.media.authors.ilike(f"%{' '.join(self.args['authors'])}%")
 
     @property
     def companies_filter(self) -> ColumnElement | bool:
@@ -149,7 +152,7 @@ class ListQueryManager:
             .filter_by(user_id=current_user.id).subquery()
         )
         common_ids_query = (
-            db.session.query(self.media_list.media_id)
+            self.media_list.query.with_entities(self.media_list.media_id)
             .filter(self.media_list.user_id == self.user.id, self.media_list.media_id.in_(subq))
             .all()
         )
@@ -160,7 +163,6 @@ class ListQueryManager:
             (self.media_genre, "genres"),
             (self.media_label, "labels"),
             (self.media_actors, "actors"),
-            (self.media_authors, "authors"),
             (self.media_network, "networks"),
             (self.media_companies, "companies"),
         ]
@@ -298,7 +300,6 @@ class ListFiltersManager:
         self.media = media_models[ModelTypes.MEDIA]
         self.media_list = media_models[ModelTypes.LIST]
         self.media_actors = media_models.get(ModelTypes.ACTORS)
-        self.media_authors = media_models.get(ModelTypes.AUTHORS)
         self.media_platform = media_models.get(ModelTypes.PLATFORMS)
         self.media_companies = media_models.get(ModelTypes.COMPANIES)
         self.media_network = media_models.get(ModelTypes.NETWORK)
@@ -314,12 +315,18 @@ class ListFiltersManager:
 
     def _authors_filters(self) -> List[str]:
         query = (
-            db.session.query(self.media_authors.name).join(self.media.authors)
-            .join(self.media_list).filter(self.media_list.user_id == self.user.id)
-            .group_by(self.media_authors.name).filter(self.media_authors.name.ilike(f"%{self.args['q']}%"))
+            db.session.query(self.media.authors).join(self.media_list)
+            .filter(self.media_list.user_id == self.user.id)
+            .group_by(self.media.authors).filter(self.media.authors.ilike(f"%{self.args['q']}%"))
             .all()
         )
-        return [author[0] for author in query]
+
+        authors = []
+        for (author_string,) in query:
+            authors.extend(author.strip() for author in author_string.split(",") if author.strip())
+            authors = list(set(authors))
+
+        return authors
 
     def _directors_filters(self) -> List[str]:
         query = (
@@ -350,6 +357,7 @@ class ListFiltersManager:
         creators = []
         for (creator_string,) in query:
             creators.extend(creator.strip() for creator in creator_string.split(",") if creator.strip())
+            creators = list(set(creators))
 
         return creators
 

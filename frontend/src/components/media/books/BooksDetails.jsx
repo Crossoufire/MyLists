@@ -5,6 +5,8 @@ import {capitalize, formatDateTime, formatMinutes} from "@/utils/functions";
 
 
 export const BooksDetails = ({ mediaData, mediaType }) => {
+    const authors = mediaData.authors?.split(", ") || [];
+
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
             <div className="bg-card rounded-md p-4">
@@ -14,7 +16,7 @@ export const BooksDetails = ({ mediaData, mediaType }) => {
                             job="creator"
                             name="Authors"
                             mediaType={mediaType}
-                            valueList={mediaData.authors}
+                            valueList={authors}
                         />
                         <GenericDetails
                             name="Release date"

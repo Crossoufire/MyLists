@@ -21,8 +21,8 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             </div>
                         </div>
                         <MapDetails
-                            name="Created by"
                             job="creator"
+                            name="Created by"
                             mediaType={mediaType}
                             valueList={creators}
                         />
@@ -93,5 +93,5 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                 epsDuration={mediaData.duration}
             />
         </div>
-    )
+    );
 };

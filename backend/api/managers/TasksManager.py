@@ -48,7 +48,6 @@ class TasksManager(metaclass=TasksManagerMeta):
         # MediaType dependent
         self.media_eps = media_models.get(ModelTypes.EPS)
         self.media_actors = media_models.get(ModelTypes.ACTORS)
-        self.media_authors = media_models.get(ModelTypes.AUTHORS)
         self.media_network = media_models.get(ModelTypes.NETWORK)
         self.media_platform = media_models.get(ModelTypes.PLATFORMS)
         self.media_companies = media_models.get(ModelTypes.COMPANIES)
@@ -361,8 +360,7 @@ class BooksTasksManager(TasksManager):
     GROUP = MediaType.BOOKS
 
     def remove_non_list_media(self):
-        media_ids = super().remove_non_list_media()
-        self.media_authors.query.filter(self.media_authors.media_id.in_(media_ids)).delete()
+        _ = super().remove_non_list_media()
         db.session.commit()
         current_app.logger.info(f"Books successfully deleted")
 
