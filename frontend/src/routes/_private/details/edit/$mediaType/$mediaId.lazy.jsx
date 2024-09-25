@@ -8,7 +8,7 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {FormButton} from "@/components/app/base/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import MultipleSelector from "@/components/ui/multiple-selector";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
+import {createLazyFileRoute, useRouter} from "@tanstack/react-router";
 import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -20,7 +20,7 @@ export const Route = createLazyFileRoute("/_private/details/edit/$mediaType/$med
 
 
 function MediaEditPage() {
-    const navigate = useNavigate();
+    const { history } = useRouter();
     const { editMediaMutation } = simpleMutations();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
@@ -32,7 +32,7 @@ function MediaEditPage() {
             onError: (error) => toast.error(error.description),
             onSuccess: async () => {
                 toast.success("Media successfully updated!");
-                await navigate({ to: `/details/${mediaType}/${mediaId}`, resetScroll: true });
+                history.go(-1);
             },
         });
     };

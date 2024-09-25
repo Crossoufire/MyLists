@@ -1,13 +1,12 @@
 import {useAuth} from "@/hooks/AuthHook";
-import {Button} from "@/components/ui/button";
 import {detailsOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
-import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {createLazyFileRoute} from "@tanstack/react-router";
 import {FollowCard} from "@/components/media/general/FollowCard";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
-import {RefreshMedia} from "@/components/media/general/RefreshMedia";
+import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
 import {UserListDetails} from "@/components/media/general/UserListDetails";
 import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
@@ -29,12 +28,10 @@ function MediaDetailsPage() {
         <PageTitle title={apiData.media.name} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">
                 <div>
-                    <h3 className="text-2xl font-semibold flex justify-between items-center mt-8">
-                        <div className="flex items-center gap-4">
-                            {apiData.media.name}
-                        </div>
+                    <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
+                        <div>{apiData.media.name}</div>
                         {currentUser.role === "manager" &&
-                            <RefreshMedia
+                            <RefreshAndEditMedia
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
                                 lastUpdate={apiData.media.last_api_update}
@@ -97,13 +94,6 @@ function MediaDetailsPage() {
                         </Tabs>
                     </div>
                 </div>
-                {currentUser.role === "manager" &&
-                    <div className="flex justify-end mt-12">
-                        <Link to={`/details/edit/${mediaType}/${apiData.media.id}`} className="ml-4">
-                            <Button variant="warning">Edit Media</Button>
-                        </Link>
-                    </div>
-                }
             </div>
         </PageTitle>
     );

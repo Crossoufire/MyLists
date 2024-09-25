@@ -54,13 +54,12 @@ export const jobDetailsOptions = (mediaType, job, name) => queryOptions({
 export const editMediaOptions = (mediaType, mediaId) => queryOptions({
     queryKey: ["editDetails", mediaType, mediaId],
     queryFn: () => fetcher({ url: `/details/edit/${mediaType}/${mediaId}` }),
+    gcTime: 0,
 });
 
 export const listOptions = (mediaType, username, search) => queryOptions({
     queryKey: ["userList", mediaType, username, search],
     queryFn: () => fetcher({ url: `/list/${mediaType}/${username}`, queryOrData: search }),
-    enabled: false,
-    staleTime: Infinity,
 });
 
 export const followersOptions = (username) => queryOptions({
