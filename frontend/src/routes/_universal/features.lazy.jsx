@@ -14,8 +14,13 @@ export const Route = createLazyFileRoute("/_universal/features")({
 function FeatureShowcase() {
     const features = [
         {
+            name: "Privacy Mode",
+            description: "Adjust your privacy settings to control who can view your profile, lists, stats, and media updates.",
+            isNew: true,
+        },
+        {
             name: "Media Update Removal",
-            description: "Add the possibility to delete media updates.",
+            description: "Add the possibility to delete your media updates.",
             isNew: true,
         },
         {

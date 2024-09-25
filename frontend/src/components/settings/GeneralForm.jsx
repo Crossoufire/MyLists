@@ -61,8 +61,8 @@ export const GeneralForm = () => {
                         control={form.control}
                         name="username"
                         rules={{
-                            minLength: { value: 3, message: "The username is too short (3 min)" },
-                            maxLength: { value: 15, message: "The username is too long (15 max)" },
+                            minLength: { value: 3, message: "The username is too short (3 min)." },
+                            maxLength: { value: 15, message: "The username is too long (15 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>
@@ -84,30 +84,7 @@ export const GeneralForm = () => {
                                 <FormLabel>
                                     <div className="flex items-center gap-2">
                                         Privacy
-                                        <Popover>
-                                            <PopoverTrigger>
-                                                <FaCircleInfo/>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="p-5">
-                                                <div className="mb-3 text-sm font-medium text-muted-foreground">
-                                                    Determine who can see your profile and media updates
-                                                </div>
-                                                <ul className="text-sm list-disc space-y-3 pl-4">
-                                                    <li>
-                                                        <span className="font-semibold text-green-500">Public:</span>
-                                                        {" "}Anyone can see your profile.
-                                                    </li>
-                                                    <li>
-                                                        <span className="font-semibold text-amber-500">Restricted (default):</span>
-                                                        {" "}Only logged-in users can see your profile.
-                                                    </li>
-                                                    <li>
-                                                        <span className="font-semibold text-red-500">Private:</span>
-                                                        {" "}Only approved followers can see your profile.
-                                                    </li>
-                                                </ul>
-                                            </PopoverContent>
-                                        </Popover>
+                                        <PrivacyPopover/>
                                     </div>
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -119,7 +96,7 @@ export const GeneralForm = () => {
                                     <SelectContent>
                                         <SelectItem value="public">Public</SelectItem>
                                         <SelectItem value="restricted">Restricted</SelectItem>
-                                        <SelectItem value="private">Private</SelectItem>
+                                        <SelectItem value="private" disabled>Private</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage/>
@@ -176,5 +153,35 @@ export const GeneralForm = () => {
                 </FormButton>
             </form>
         </Form>
+    );
+};
+
+
+const PrivacyPopover = () => {
+    return (
+        <Popover>
+            <PopoverTrigger>
+                <FaCircleInfo/>
+            </PopoverTrigger>
+            <PopoverContent className="p-5 w-80">
+                <div className="mb-3 text-sm font-medium text-muted-foreground">
+                    Determine who can see your profile, lists, stats, and media updates.
+                </div>
+                <ul className="text-sm list-disc space-y-3 pl-4">
+                    <li>
+                        <span className="font-semibold text-green-500">Public:</span>
+                        {" "}Anyone can see your profile, lists, stats, and media updates.
+                    </li>
+                    <li>
+                        <span className="font-semibold text-amber-500">Restricted (default):</span>
+                        {" "}Only logged-in users can see your profile, lists, stats, and media updates.
+                    </li>
+                    <li>
+                        <span className="font-semibold text-red-500">Private (not implemented yet):</span>
+                        {" "}Only approved followers can see your profile, lists, stats, and media updates.
+                    </li>
+                </ul>
+            </PopoverContent>
+        </Popover>
     );
 };
