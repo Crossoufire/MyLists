@@ -24,9 +24,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     const { username, mediaType } = Route.useParams();
     const searchFiltersList = getListSearchFilters(mediaType);
     const { data: smallFilters, isLoading } = useQuery(smallFiltersOptions(mediaType, username));
-
-    console.log(smallFilters);
-
+    
     const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
             const updatedSearch = { ...localFilters };

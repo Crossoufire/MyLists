@@ -1,12 +1,12 @@
 import {toast} from "sonner";
+import {mail} from "@/utils/constants";
 import {useEffect, useState} from "react";
-import {mail} from "@/utils/constants.js";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {LoginForm} from "@/components/homepage/LoginForm";
+import {createLazyFileRoute} from "@tanstack/react-router";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
-import {createLazyFileRoute, useLocation} from "@tanstack/react-router";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {FaBootstrap, FaCode, FaComment, FaDollarSign, FaGithub, FaHeart, FaSmile} from "react-icons/fa";
@@ -19,14 +19,14 @@ export const Route = createLazyFileRoute("/_public/")({
 
 
 function HomePage() {
-    const location = useLocation();
+    const search = Route.useSearch();
     const [activeTab, setActiveTab] = useState("login");
 
     useEffect(() => {
-        if (location?.search?.message) {
-            toast.warning(location.search.message);
+        if (search.message) {
+            toast.warning(search.message);
         }
-    }, [location]);
+    }, [search]);
 
     const onTabChange = (newTab) => {
         setActiveTab(newTab);

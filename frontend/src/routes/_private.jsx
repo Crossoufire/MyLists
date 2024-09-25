@@ -5,13 +5,11 @@ import {createFileRoute, redirect} from "@tanstack/react-router";
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
 export const Route = createFileRoute("/_private")({
     beforeLoad: ({ context: { auth }, location }) => {
-        // Do not redirect if user is not logged-in if trying to access profile/list/stats page
-        if (["/profile", "/stats", "/list"].some(path => location.pathname.startsWith(path))) {
-            return;
-        }
+        const routeType = ["/profile", "/stats", "/list"].some(path => location.pathname.startsWith(path))
+            ? location.pathname.split("/")[1] : "other";
 
-        if (!auth.currentUser || !api.isAuthenticated()) {
-            throw redirect({ to: "/" });
+        if (routeType === "other" && (!auth.currentUser || !api.isAuthenticated())) {
+            throw redirect({ to: "/", search: { message: "You need to be logged-in to view this page" } });
         }
     },
 });

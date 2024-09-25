@@ -58,19 +58,27 @@ class TasksManager(metaclass=TasksManagerMeta):
         return cls.subclasses.get(media_type, cls)
 
     @staticmethod
+    def change_privacy_setting(user: str | int, privacy: str):
+        filter_ = {"username": user} if isinstance(user, str) else {"id": user}
+        user = User.query.filter_by(**filter_).first()
+        if not user:
+            raise ValueError(f"User not found with criteria: {filter_}")
+        user.privacy = privacy
+        db.session.commit()
+
+    @staticmethod
     def reactivate_update_modal(value: bool = True):
         db.session.execute(db.update(User).values(show_update_modal=value))
         db.session.commit()
 
     @staticmethod
-    def activate_user_account(username: str, toggle: bool):
+    def activate_user_account(user: str | int, toggle: bool):
         """ Toggle users accounts activation manually """
 
-        user = User.query.filter(User.username == username).first()
+        filter_ = {"username": user} if isinstance(user, str) else {"id": user}
+        user = User.query.filter_by(**filter_).first()
         if not user:
-            print(f"User {username} not found")
-            return
-
+            raise ValueError(f"User not found with criteria: {filter_}")
         user.active = toggle
         db.session.commit()
 

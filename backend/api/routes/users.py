@@ -10,8 +10,8 @@ from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
-from backend.api.utils.decorators import arguments, body
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, Privacy
+from backend.api.utils.decorators import arguments, body, check_authorization
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
@@ -48,13 +48,11 @@ def get_current_user():
     return current_user.to_dict(), 200
 
 
-@users.route("/profile/<username>", methods=["GET"])
+@users.route("/profile/<string:username>", methods=["GET"])
 @token_auth.login_required(optional=True)
-def profile(username: str):
-    user = User.query.filter_by(username=username).first_or_404()
-
-    if not current_user and user.privacy != Privacy.PUBLIC:
-        return jsonify(data=dict(user_data=user.privacy.value)), 200
+@check_authorization
+def profile(user: User):
+    """ Fetch the profile of a user """
 
     if current_user and current_user.id != user.id:
         user.profile_views += 1
@@ -85,13 +83,9 @@ def profile(username: str):
 
 @users.route("/profile/<username>/followers", methods=["GET"])
 @token_auth.login_required(optional=True)
-def profile_followers(username: str):
+@check_authorization
+def profile_followers(user: User):
     """ Fetch all the followers of the user """
-
-    user = User.query.filter_by(username=username).first_or_404()
-
-    if not current_user and user.privacy != Privacy.PUBLIC:
-        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     data = dict(
         user_data=user.to_dict(),
@@ -103,13 +97,9 @@ def profile_followers(username: str):
 
 @users.route("/profile/<username>/follows", methods=["GET"])
 @token_auth.login_required(optional=True)
-def profile_follows(username: str):
+@check_authorization
+def profile_follows(user: User):
     """ Fetch all the follows of the user """
-
-    user = User.query.filter_by(username=username).first_or_404()
-
-    if not current_user and user.privacy != Privacy.PUBLIC:
-        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     data = dict(
         user_data=user.to_dict(),
@@ -121,14 +111,10 @@ def profile_follows(username: str):
 
 @users.route("/profile/<username>/history", methods=["GET"])
 @token_auth.login_required(optional=True)
+@check_authorization
 @arguments(HistorySchema)
-def history(args, username: str):
+def history(user: User, args):
     """ Fetch all history for each media for the user """
-
-    user = User.query.filter_by(username=username).first_or_404()
-
-    if not current_user and user.privacy != Privacy.PUBLIC:
-        return jsonify(data=dict(user_data=user.privacy.value)), 200
 
     history_query = (
         user.updates.filter(UserMediaUpdate.media_name.ilike(f"%{args['search']}%"))
