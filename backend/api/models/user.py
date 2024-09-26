@@ -9,12 +9,12 @@ from typing import List, Dict, Optional, Any
 import jwt
 from flask import url_for, current_app
 from flask_bcrypt import check_password_hash, generate_password_hash
-from sqlalchemy import desc, func, select, union_all, literal
+from sqlalchemy import desc, func, select, union_all, literal, case
 
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status
 from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
@@ -245,24 +245,28 @@ class User(db.Model):
 
         # Combine queries for count total media, percentage rated, and average rating
         rating = "feeling" if self.add_feeling else "score"
+        # noinspection PyTypeChecker
         subqueries = union_all(
             *[(db.session.query(
-                func.count(model.media_id), func.count(getattr(model, rating)),
-                func.coalesce(func.sum(getattr(model, rating)), 0)
+                func.count(model.media_id),
+                func.count(getattr(model, rating)),
+                func.coalesce(func.sum(getattr(model, rating)), 0),
+                func.sum(case(*[(~model.status.in_([Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]), 1)], else_=0))
             ).filter(model.user_id == self.id)) for model in models]
         )
 
         results = db.session.execute(subqueries).all()
 
         # Calculation for total media, percent scored, and mean score
-        total_media, total_scored, sum_score = map(sum, zip(*results))
-        percent_scored = safe_div(total_scored, total_media, percentage=True)
+        total_media, total_scored, sum_score, total_media_no_plan_to_x = map(sum, zip(*results))
+        percent_scored = safe_div(total_scored, total_media_no_plan_to_x, percentage=True)
         mean_score = safe_div(sum_score, total_scored)
 
         data = dict(
             total_hours=int(total_hours),
             total_days=round(total_hours / 24, 0),
             total_media=total_media,
+            total_media_no_plan_to_x=total_media_no_plan_to_x,
             time_per_media=time_per_media,
             total_scored=total_scored,
             percent_scored=percent_scored,
@@ -306,7 +310,7 @@ class User(db.Model):
 
     def get_follows_updates(self, limit: int, as_public: bool = False) -> List[Dict]:
         followed_users = self.followed.all() if not as_public else self.followed.filter_by(privacy=Privacy.PUBLIC).all()
-        
+
         follows_updates = (
             UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in followed_users]))
             .order_by(desc(UserMediaUpdate.timestamp))

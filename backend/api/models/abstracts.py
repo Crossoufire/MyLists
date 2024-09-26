@@ -110,6 +110,8 @@ class MediaList(db.Model):
 
     @classmethod
     def get_media_count_per_status(cls, user_id: int) -> Dict:
+        plan_to_x = (Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ)
+
         media_count = (
             db.session.query(cls.status, func.count(cls.status))
             .filter_by(user_id=user_id).group_by(cls.status)
@@ -118,6 +120,7 @@ class MediaList(db.Model):
 
         status_count = {status.value: {"count": 0, "percent": 0} for status in Status.by(cls.GROUP)}
         total_media = sum(count for _, count in media_count)
+        total_media_no_plan_to_x = total_media - sum(c for s, c in media_count if s in plan_to_x)
         no_data = (total_media == 0)
 
         # Update <status_count> dict with actual values from <media_count> query
@@ -131,7 +134,14 @@ class MediaList(db.Model):
 
         status_list = [{"status": key, **val} for key, val in status_count.items()]
 
-        return dict(total_media=total_media, no_data=no_data, status_count=status_list)
+        data = dict(
+            total_media=total_media,
+            total_media_no_plan_to_x=total_media_no_plan_to_x,
+            no_data=no_data,
+            status_count=status_list
+        )
+
+        return data
 
     @classmethod
     def get_media_count_per_rating(cls, user: User) -> List[int]:
