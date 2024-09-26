@@ -55,6 +55,7 @@ export const editMediaOptions = (mediaType, mediaId) => queryOptions({
     queryKey: ["editDetails", mediaType, mediaId],
     queryFn: () => fetcher({ url: `/details/edit/${mediaType}/${mediaId}` }),
     gcTime: 0,
+    staleTime: 0,
 });
 
 export const listOptions = (mediaType, username, search) => queryOptions({

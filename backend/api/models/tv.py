@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Dict, Tuple, Type
+from typing import List, Dict
 
 from flask import abort
-from sqlalchemy import func, ColumnElement
+from sqlalchemy import func
 
 from backend.api import db
 from backend.api.core import current_user
@@ -205,16 +205,6 @@ class SeriesList(TVListModel):
     user = db.relationship("User", back_populates="series_list", lazy="select")
     media = db.relationship("Series", back_populates="list_info", lazy="joined")
 
-    @classmethod
-    def additional_search_joins(cls) -> List[Tuple[Type[db.Model], bool]]:
-        return [(SeriesNetwork, SeriesNetwork.media_id == Series.id),
-                (SeriesActors, SeriesActors.media_id == Series.id)]
-
-    @classmethod
-    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
-        return [Series.name.ilike(f"%{search}%"), Series.original_name.ilike(f"%{search}%"),
-                SeriesNetwork.name.ilike(f"%{search}%"), SeriesActors.name.ilike(f"%{search}%")]
-
 
 class SeriesGenre(Genres):
     GROUP = MediaType.SERIES
@@ -296,16 +286,6 @@ class AnimeList(TVListModel):
     # --- Relationships -------------------------------------------------------------
     user = db.relationship("User", back_populates="anime_list", lazy="select")
     media = db.relationship("Anime", back_populates="list_info", lazy="joined")
-
-    @classmethod
-    def additional_search_joins(cls) -> List[Tuple[Type[db.Model], bool]]:
-        return [(AnimeNetwork, AnimeNetwork.media_id == Anime.id),
-                (AnimeActors, AnimeActors.media_id == Anime.id)]
-
-    @classmethod
-    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
-        return [Anime.name.ilike(f"%{search}%"), Anime.original_name.ilike(f"%{search}%"),
-                AnimeNetwork.name.ilike(f"%{search}%"), AnimeActors.name.ilike(f"%{search}%")]
 
 
 class AnimeGenre(Genres):

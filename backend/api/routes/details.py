@@ -49,15 +49,21 @@ def media_details(media_type: MediaType, media_id: Union[int, str]):
 @details_bp.route("/details/edit/<mediatype:media_type>/<media_id>", methods=["GET"])
 @token_auth.login_required(role=RoleType.MANAGER)
 def get_details_edit(media_type: MediaType, media_id: int):
-    media_model, genre_model = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+    """ Get the details of a media item to edit """
 
-    media = media_model.query.filter_by(id=media_id).first_or_404()
+    media_m, genre_m = ModelsManager.get_lists_models(media_type, [ModelTypes.MEDIA, ModelTypes.GENRE])
+
+    media = media_m.query.filter_by(id=media_id).first_or_404()
 
     data = dict(
-        fields=[(key, val) for key, val in media.to_dict().items() if key in media_model.form_only()],
-        all_genres=genre_model.get_available_genres() if media_type == MediaType.BOOKS else None,
+        fields=[(key, val) for key, val in media.to_dict().items() if key in media_m.form_only()],
+        all_genres=genre_m.get_available_genres() if media_type == MediaType.BOOKS else None,
         genres=[genre.name for genre in media.genres] if media_type == MediaType.BOOKS else None,
     )
+
+    if media_type == MediaType.BOOKS:
+        authors_m = ModelsManager.get_unique_model(media_type, ModelTypes.AUTHORS)
+        data["authors"] = ", ".join([a.name for a in authors_m.query.filter_by(media_id=media_id).all()]),
 
     return jsonify(data=data), 200
 
@@ -114,6 +120,10 @@ def post_details_edit(data):
 
     if data["media_type"] == MediaType.BOOKS and bool(get(data["payload"], "genres")):
         genre_model.replace_genres(data["payload"]["genres"], data["media_id"])
+
+    if data["media_type"] == MediaType.BOOKS and get(data["payload"], "authors"):
+        authors_model = ModelsManager.get_unique_model(data["media_type"], ModelTypes.AUTHORS)
+        authors_model.replace_authors(data["payload"]["authors"], data["media_id"])
 
     for name, value in updates.items():
         if name in ("release_date", "last_air_date", "next_episode_to_air"):

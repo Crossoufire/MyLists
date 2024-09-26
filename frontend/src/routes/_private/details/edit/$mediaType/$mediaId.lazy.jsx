@@ -106,6 +106,24 @@ function MediaEditPage() {
                                     )}
                                 />
                             }
+                            {apiData.authors &&
+                                <FormField
+                                    name="authors"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Authors</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    defaultValue={apiData.authors}
+                                                />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            }
                             {parts[0].map(arr => renderField(form, arr))}
                         </div>
                         <div className="space-y-4">{parts[1].map(arr => renderField(form, arr))}</div>
