@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from flask import abort
 from sqlalchemy import func, ColumnElement
@@ -152,6 +152,16 @@ class GamesList(MediaList):
     @classmethod
     def total_user_time_def(cls):
         return func.sum(cls.playtime)
+
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple]:
+        return [(GamesPlatforms, GamesPlatforms.media_id == Games.id),
+                (GamesCompanies, GamesCompanies.media_id == Games.id)]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Games.name.ilike(f"%{search}%"), GamesPlatforms.name.ilike(f"%{search}%"),
+                GamesCompanies.name.ilike(f"%{search}%")]
 
 
 class GamesGenre(Genres):

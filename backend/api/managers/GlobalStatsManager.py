@@ -1,8 +1,5 @@
-from collections import Counter
 from typing import Tuple, Dict, Union
-
 from sqlalchemy import func, text
-
 from backend.api import db
 from backend.api.models.user import User, UserMediaSettings
 from backend.api.utils.enums import MediaType, Status, ModelTypes
@@ -117,17 +114,16 @@ class GlobalStats:
         return {list_m.GROUP.value: [{"info": dev, "quantity": count} for dev, count in query]}
 
     def get_top_authors(self) -> Dict:
-        media_m, list_m = ModelsManager.get_lists_models(MediaType.BOOKS, [ModelTypes.MEDIA, ModelTypes.LIST])
-        author_counter = Counter()
+        author_m, list_m = ModelsManager.get_lists_models(MediaType.BOOKS, [ModelTypes.AUTHORS, ModelTypes.LIST])
+        query = (
+            db.session.query(author_m.name, func.count(author_m.name).label("count"))
+            .join(list_m, author_m.media_id == list_m.media_id)
+            .group_by(author_m.name)
+            .order_by(text("count desc"))
+            .limit(self.LIMIT).all()
+        )
 
-        query = db.session.query(media_m.authors).join(list_m, media_m.id == list_m.media_id).all()
-        for row in query:
-            authors = row.authors.split(", ")
-            author_counter.update(authors)
-
-        top_authors = author_counter.most_common(self.LIMIT)
-
-        return {media_m.GROUP.value: [{"info": author, "quantity": count} for author, count in top_authors]}
+        return {list_m.GROUP.value: [{"info": author, "quantity": count} for author, count in query]}
 
     @staticmethod
     def get_total_time_spent() -> Dict:

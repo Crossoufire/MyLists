@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from flask import abort
-from sqlalchemy import func
+from sqlalchemy import func, ColumnElement
 
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
-from backend.api.utils.enums import MediaType, Status, JobType
+from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
 
 class Books(Media):
     GROUP = MediaType.BOOKS
 
-    authors = db.Column(db.String)
     pages = db.Column(db.Integer)
     language = db.Column(db.String)
     publishers = db.Column(db.String)
@@ -22,6 +21,7 @@ class Books(Media):
     # --- Relationships -----------------------------------------------------------
     genres = db.relationship("BooksGenre", back_populates="media", lazy="select")
     labels = db.relationship("BooksLabels", back_populates="media", lazy="select")
+    authors = db.relationship("BooksAuthors", back_populates="media", lazy="select")
     list_info = db.relationship("BooksList", back_populates="media", lazy="dynamic")
 
     def to_dict(self) -> Dict:
@@ -30,8 +30,9 @@ class Books(Media):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
         media_dict.update(dict(
-            genres=self.genres_list,
             media_cover=self.media_cover,
+            authors=[author.name for author in self.authors],
+            genres=self.genres_list
         ))
 
         return media_dict
@@ -54,7 +55,10 @@ class Books(Media):
     @classmethod
     def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
         if job == JobType.CREATOR:
-            query = cls.query.filter(cls.authors.ilike(f"%{name}%")).all()
+            query = (
+                cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
+                .filter(BooksAuthors.name == name).all()
+            )
         else:
             return abort(404, description="JobType not found")
 
@@ -69,7 +73,7 @@ class Books(Media):
 
     @staticmethod
     def form_only() -> List[str]:
-        return ["authors", "name", "release_date", "pages", "language", "publishers", "synopsis"]
+        return ["name", "release_date", "pages", "language", "publishers", "synopsis"]
 
 
 class BooksList(MediaList):
@@ -151,6 +155,14 @@ class BooksList(MediaList):
     def total_user_time_def(cls):
         return func.sum(cls.TIME_PER_PAGE * cls.total)
 
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple]:
+        return [(BooksAuthors, BooksAuthors.media_id == Books.id)]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Books.name.ilike(f"%{search}%"), BooksAuthors.name.ilike(f"%{search}%")]
+
 
 class BooksGenre(Genres):
     GROUP = MediaType.BOOKS
@@ -172,6 +184,18 @@ class BooksGenre(Genres):
                 "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
                 "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
                 "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
+
+
+class BooksAuthors(db.Model):
+    TYPE = ModelTypes.AUTHORS
+    GROUP = MediaType.BOOKS
+
+    id = db.Column(db.Integer, primary_key=True)
+    media_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
+    name = db.Column(db.String)
+
+    # --- Relationships -----------------------------------------------------------
+    media = db.relationship("Books", back_populates="authors", lazy="select")
 
 
 class BooksLabels(Labels):

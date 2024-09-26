@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict, Counter
 from typing import List, Type
 
 from sqlalchemy import func, text, ColumnElement
@@ -435,6 +434,10 @@ class BooksStatsManager(StatsManager):
         super().__init__(user)
         self.common_filter = [self.media_list.user_id == self.user.id, self.media_list.status != Status.PLAN_TO_READ]
 
+    def _initialize_media_models(self):
+        super()._initialize_media_models()
+        self.media_authors = self.media_models[ModelTypes.AUTHORS]
+
     def compute_total_hours(self):
         data = (
             db.session.query(func.coalesce(func.sum(self.media_list.TIME_PER_PAGE * self.media_list.total), 0))
@@ -482,40 +485,14 @@ class BooksStatsManager(StatsManager):
         }
 
     def compute_authors(self):
-        query = (
-            db.session.query(self.media.authors, self.rating, self.media_list.favorite)
-            .join(self.media_list, self.media.id == self.media_list.media_id)
-            .filter(*self.common_filter, self.media.authors.is_not(None))
-            .all()
-        )
-
-        author_counter = Counter()
-        favorite_counts = Counter()
-        rating_sums = defaultdict(float)
-        rating_counts = defaultdict(int)
-
-        for row in query:
-            authors = row[0].split(", ")
-            for author in authors:
-                author_counter.update([author])
-                if row[1] is not None:
-                    rating_sums[author] += row[1]
-                    rating_counts[author] += 1
-                if row[2]:
-                    favorite_counts.update([author])
-
-        top_values = author_counter.most_common(self.LIMIT)
-        top_rated = sorted(
-            ((author, rating_sums[author] / rating_counts[author]) for author in rating_sums if rating_counts[author] > 3),
-            key=lambda x: x[1],
-            reverse=True,
-        )[:self.LIMIT]
-        top_favorited = favorite_counts.most_common(self.LIMIT)
+        top_values = self._query_top_values(self.media_authors, self.media_authors.name)
+        top_rated = self._query_top_rated(self.media_authors, self.media_authors.name, min_=3)
+        top_favorited = self._query_top_favorites(self.media_authors, self.media_authors.name)
 
         self.data["lists"]["authors"] = {
-            "top_values": [{"name": d, "value": c} for (d, c) in top_values or [(None, 0)]],
-            "top_rated": [{"name": d, "value": round(c, 2)} for (d, c) in top_rated or [(None, 0)]],
-            "top_favorited": [{"name": d, "value": c} for (d, c) in top_favorited or [(None, 0)]],
+            "top_values": [{"name": d, "value": c} for (d, c) in top_values],
+            "top_rated": [{"name": d, "value": round(c, 2)} for (d, c) in top_rated],
+            "top_favorited": [{"name": d, "value": c} for (d, c) in top_favorited],
         }
 
     def compute_languages(self):

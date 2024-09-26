@@ -180,6 +180,7 @@ class ModelTypes(StrEnum):
     NETWORK = "network"
     PLATFORMS = "platforms"
     COMPANIES = "companies"
+    AUTHORS = "authors"
 
 
 class NotificationType(StrEnum):

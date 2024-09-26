@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List, Dict, Tuple, Type
 
 from flask import abort
-from sqlalchemy import func
+from sqlalchemy import func, ColumnElement
 
 from backend.api import db
 from backend.api.core import current_user
@@ -145,6 +145,15 @@ class MoviesList(MediaList):
     @classmethod
     def total_user_time_def(cls):
         return func.sum(Movies.duration * cls.total)
+
+    @classmethod
+    def additional_search_joins(cls) -> List[Tuple[Type[MoviesActors], bool]]:
+        return [(MoviesActors, MoviesActors.media_id == Movies.id), ]
+
+    @classmethod
+    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
+        return [Movies.name.ilike(f"%{search}%"), Movies.original_name.ilike(f"%{search}%"),
+                Movies.director_name.ilike(f"%{search}%"), MoviesActors.name.ilike(f"%{search}%")]
 
 
 class MoviesGenre(Genres):
