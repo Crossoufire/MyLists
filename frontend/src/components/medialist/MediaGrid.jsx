@@ -14,13 +14,20 @@ import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 
 
 export const MediaGrid = ({ isCurrent, mediaList }) => {
+    const search = Route.useSearch();
+    const { currentUser } = useAuth();
+    const { username, mediaType } = Route.useParams();
+
     return (
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:gap-4 lg:grid-cols-5 sm:gap-5">
-            {mediaList.map(media =>
+            {mediaList.map(userMedia =>
                 <MediaItem
-                    media={media}
-                    key={media.media_id}
+                    search={search}
+                    userMedia={userMedia}
                     isCurrent={isCurrent}
+                    key={userMedia.media_id}
+                    isConnected={!!currentUser}
+                    queryKey={["userList", mediaType, username, search]}
                 />
             )}
         </div>
@@ -28,11 +35,9 @@ export const MediaGrid = ({ isCurrent, mediaList }) => {
 };
 
 
-const MediaItem = ({ isCurrent, media }) => {
-    const search = Route.useSearch();
-    const { currentUser } = useAuth();
-    const { username, mediaType } = Route.useParams();
-    const mediaMutations = userMediaMutations(mediaType, media.media_id, ["userList", mediaType, username, search]);
+const MediaItem = ({ isCurrent, isConnected, userMedia, search, queryKey }) => {
+    const { mediaType } = Route.useParams();
+    const mediaMutations = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
@@ -41,17 +46,17 @@ const MediaItem = ({ isCurrent, media }) => {
 
         if (searchStatuses) {
             if (!searchStatuses.includes(status)) {
-                newData.media_data = newData.media_data.filter(m => m.media_id !== media.media_id);
+                newData.media_data = newData.media_data.filter(m => m.media_id !== userMedia.media_id);
                 return newData;
             }
         }
         if (status === "Completed" && (mediaType === "series" || mediaType === "anime")) {
             newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === media.media_id) {
+                if (m.media_id === userMedia.media_id) {
                     return {
                         ...m,
-                        current_season: media.eps_per_season.length,
-                        last_episode_watched: media.eps_per_season[media.eps_per_season.length - 1],
+                        current_season: userMedia.eps_per_season.length,
+                        last_episode_watched: userMedia.eps_per_season[userMedia.eps_per_season.length - 1],
                     };
                 }
                 return m;
@@ -59,15 +64,15 @@ const MediaItem = ({ isCurrent, media }) => {
         }
         if (status === "Completed" && mediaType === "books") {
             newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === media.media_id) {
-                    return { ...m, actual_page: media.total_pages };
+                if (m.media_id === userMedia.media_id) {
+                    return { ...m, actual_page: userMedia.total_pages };
                 }
                 return m;
             });
         }
 
         newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === media.media_id) {
+            if (m.media_id === userMedia.media_id) {
                 return { ...m, status: status, redo: 0 };
             }
             return m;
@@ -77,22 +82,17 @@ const MediaItem = ({ isCurrent, media }) => {
     };
 
     const updateStatus = mediaMutations.updateStatusFunc(onStatusSuccess);
-
-    const cardPending = (
-        updateStatus.isPending ||
-        mediaMutations.addToList.isPending ||
-        mediaMutations.removeFromList.isPending
-    );
+    const cardPending = (updateStatus.isPending || mediaMutations.addToList.isPending || mediaMutations.removeFromList.isPending);
 
     return (
-        <MediaCard media={media} mediaType={mediaType} isPending={cardPending}>
+        <MediaCard media={userMedia} mediaType={mediaType} isPending={cardPending}>
             <div className="absolute top-2 right-1 z-10">
-                {(isCurrent || ((!isCurrent && !!currentUser) && !media.common)) &&
+                {(isCurrent || ((!isCurrent && isConnected) && !userMedia.common)) &&
                     <EditMediaList
-                        status={media.status}
                         isCurrent={isCurrent}
+                        status={userMedia.status}
                         updateStatus={updateStatus}
-                        allStatus={media.all_status}
+                        allStatus={userMedia.all_status}
                         addOtherList={mediaMutations.addToList}
                         removeMedia={mediaMutations.removeFromList}
                     >
@@ -102,38 +102,39 @@ const MediaItem = ({ isCurrent, media }) => {
             </div>
             <div className="absolute top-1.5 left-1.5 z-10 bg-gray-950 px-2 rounded-md opacity-85">
                 <SuppMediaInfo
-                    media={media}
+                    queryKey={queryKey}
+                    userMedia={userMedia}
                     isCurrent={isCurrent}
                 />
             </div>
-            {!!currentUser && <MediaInfoCorner isCommon={media.common}/>}
+            {isConnected && <MediaInfoCorner isCommon={userMedia.common}/>}
             <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-2 bg-gray-900 w-full rounded-b-sm">
-                <h3 className="font-semibold line-clamp-1" title={media.media_name}>
-                    {media.media_name}
+                <h3 className="font-semibold line-clamp-1" title={userMedia.media_name}>
+                    {userMedia.media_name}
                 </h3>
-                <Badge variant="outline">{media.status}</Badge>
+                <Badge variant="outline">{userMedia.status}</Badge>
                 <div className="flex items-center justify-between h-[24px]">
                     <ManageFavorite
                         isCurrent={isCurrent}
-                        isFavorite={media.favorite}
+                        isFavorite={userMedia.favorite}
                         updateFavorite={mediaMutations.updateFavorite}
                     />
                     <RatingComponent
                         inline={true}
-                        rating={media.rating}
                         isEditable={isCurrent}
+                        rating={userMedia.rating}
                         onUpdate={mediaMutations.updateRating}
                     />
-                    {(media.status === "Completed" && mediaType !== "games") &&
+                    {(userMedia.status === "Completed" && mediaType !== "games") &&
                         <RedoListDrop
-                            redo={media.redo}
+                            redo={userMedia.redo}
                             isCurrent={isCurrent}
                             updateRedo={mediaMutations.updateRedo}
                         />
                     }
                     <CommentPopover
                         isCurrent={isCurrent}
-                        content={media.comment}
+                        content={userMedia.comment}
                         updateComment={mediaMutations.updateComment}
                     />
                 </div>

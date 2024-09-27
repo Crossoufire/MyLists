@@ -79,18 +79,18 @@ class Media(db.Model, UpdateMixin):
 
         return data
 
-    def get_user_list_info(self, label_class: Labels) -> Optional[Dict]:
+    def get_user_media_info(self, label_class: Labels) -> Optional[Dict]:
         media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
-        user_data = media_assoc.to_dict() if media_assoc else None
+        user_media = media_assoc.to_dict() if media_assoc else None
 
-        if user_data:
-            user_data.update(dict(
+        if user_media:
+            user_media.update(dict(
                 username=current_user.username,
                 labels=label_class.get_user_media_labels(user_id=current_user.id, media_id=self.id),
                 history=UserMediaUpdate.get_history(self.id, self.GROUP)),
             )
 
-        return user_data
+        return user_media
 
 
 class MediaList(db.Model):

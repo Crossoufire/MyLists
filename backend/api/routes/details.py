@@ -40,7 +40,7 @@ def media_details(media_type: MediaType, media_id: Union[int, str]):
         media=media.to_dict(),
         similar_media=media.get_similar(),
         follows_data=media.in_follows_lists(),
-        user_media=media.get_user_list_info(label_model),
+        user_media=media.get_user_media_info(label_model),
     )
 
     return jsonify(data=data), 200

@@ -58,7 +58,6 @@ function MediaDetailsPage() {
                             {apiData.user_media ?
                                 <UserListDetails
                                     mediaType={mediaType}
-                                    mediaId={apiData.media.id}
                                     userMedia={apiData.user_media}
                                     queryKey={["details", mediaType, mediaId.toString()]}
                                 />

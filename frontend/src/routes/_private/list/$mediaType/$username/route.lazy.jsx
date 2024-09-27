@@ -66,10 +66,6 @@ function MediaList() {
         });
     };
 
-    const handleGridChange = () => {
-        setIsGrid(!isGrid);
-    };
-
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
@@ -77,7 +73,7 @@ function MediaList() {
                 isCurrent={isCurrent}
                 userData={apiData.user_data}
                 pagination={apiData.pagination}
-                handleGridChange={handleGridChange}
+                handleGridChange={() => setIsGrid(!isGrid)}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onStatusChange={(status) => handleFilterChange(status)}
                 onSortChange={(sort) => handleFilterChange({ sort: sort })}
