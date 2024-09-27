@@ -245,13 +245,13 @@ class User(db.Model):
 
         # Combine queries for count total media, percentage rated, and average rating
         rating = "feeling" if self.add_feeling else "score"
-        # noinspection PyTypeChecker
+        statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
         subqueries = union_all(
             *[(db.session.query(
                 func.count(model.media_id),
                 func.count(getattr(model, rating)),
                 func.coalesce(func.sum(getattr(model, rating)), 0),
-                func.sum(case(*[(~model.status.in_([Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]), 1)], else_=0))
+                func.coalesce(func.sum(case(*[(~model.status.in_(statuses), 1)], else_=0)), 0)
             ).filter(model.user_id == self.id)) for model in models]
         )
 
