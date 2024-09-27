@@ -194,7 +194,7 @@ class TasksManager(metaclass=TasksManagerMeta):
 
         if len(images_to_remove) > 100:
             current_app.logger.error(f"Too many images to remove ({len(images_to_remove)}). Validation necessary.")
-            raise Exception("Too many images to remove")
+            return
 
         count = 0
         current_app.logger.info(f"Deleting {self.GROUP.value} covers...")
