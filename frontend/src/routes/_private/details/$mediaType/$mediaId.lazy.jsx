@@ -4,12 +4,14 @@ import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
+import {FormButton} from "@/components/app/base/FormButton";
 import {FollowCard} from "@/components/media/general/FollowCard";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {SimilarMedia} from "@/components/media/general/SimilarMedia";
-import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
 import {UserListDetails} from "@/components/media/general/UserListDetails";
 import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -23,6 +25,11 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(detailsOptions(mediaType, mediaId, external)).data;
+    const { addToList } = userMediaMutations(mediaType, mediaId, ["details", mediaType, mediaId.toString()]);
+
+    const handleAddMediaUser = () => {
+        addToList.mutate({ payload: undefined });
+    };
 
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>
@@ -48,11 +55,20 @@ function MediaDetailsPage() {
                                 src={apiData.media.media_cover}
                                 className="w-[300px] h-[450px] rounded-md"
                             />
-                            <UserListDetails
-                                apiData={apiData}
-                                mediaType={mediaType}
-                                mediaId={apiData.media.id}
-                            />
+                            {apiData.user_media ?
+                                <UserListDetails
+                                    mediaType={mediaType}
+                                    mediaId={apiData.media.id}
+                                    userMedia={apiData.user_media}
+                                    queryKey={["details", mediaType, mediaId.toString()]}
+                                />
+                                :
+                                <div className="w-[300px]">
+                                    <FormButton onClick={handleAddMediaUser} disabled={addToList.isPending}>
+                                        Add to your list
+                                    </FormButton>
+                                </div>
+                            }
                         </div>
                     </div>
                     <div className="col-span-12 md:col-span-7 lg:col-span-8">

@@ -58,9 +58,9 @@ def add_media(data):
 
     db.session.commit()
 
-    user_data = media.get_user_list_info(label_model)
+    user_media = media.get_user_list_info(label_model)
 
-    return jsonify(data=user_data), 200
+    return jsonify(data=user_media), 200
 
 
 @media_bp.route("/delete_media", methods=["POST"])

@@ -89,9 +89,9 @@ export const useDeleteUpdateMutation = (queryKey) => {
             else if (queryKey[0] === "details") {
                 return queryClient.setQueryData(queryKey, (oldData) => ({
                     ...oldData,
-                    user_data: {
-                        ...oldData.user_data,
-                        history: oldData.user_data.history.filter(hist => hist.id !== variables.updateIds[0]),
+                    user_media: {
+                        ...oldData.user_media,
+                        history: oldData.user_media.history.filter(hist => hist.id !== variables.updateIds[0]),
                     },
                 }));
             }

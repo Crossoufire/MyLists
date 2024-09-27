@@ -56,7 +56,7 @@ const createMediaMutation = (url, mediaType, mediaId, queryKey) => {
             const updateFn = updateMediaMap[url];
             queryClient.setQueryData(queryKey, (oldData) => {
                 if (queryKey[0] === "details") {
-                    return { ...oldData, user_data: updateFn(oldData.user_data, variables.payload) };
+                    return { ...oldData, user_media: updateFn(oldData.user_media, variables.payload) };
                 }
                 return {
                     ...oldData,
@@ -89,7 +89,7 @@ const useRemoveFromList = (mediaType, mediaId, queryKey) => {
             toast.success("Media removed from your list");
             queryClient.setQueryData(queryKey, (oldData) => {
                 if (queryKey[0] === "details") {
-                    return { ...oldData, user_data: false };
+                    return { ...oldData, user_media: false };
                 }
                 return { ...oldData, media_data: [...oldData.media_data.filter(m => m.media_id !== mediaId)] };
             });
@@ -105,7 +105,7 @@ const useAddMediaToList = (mediaType, mediaId, queryKey) => {
             toast.success("Media added to your list");
             queryClient.setQueryData(queryKey, (oldData) => {
                 if (queryKey[0] === "details") {
-                    return { ...oldData, user_data: data };
+                    return { ...oldData, user_media: data };
                 }
                 return {
                     ...oldData,

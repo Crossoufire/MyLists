@@ -1,14 +1,15 @@
+import {useAuth} from "@/hooks/AuthHook";
 import {Fragment, useState} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
+import {useQueryClient} from "@tanstack/react-query";
 import {MutedText} from "@/components/app/base/MutedText";
 import {LabelsDialog} from "@/components/app/LabelsDialog";
-import {useAuth} from "@/hooks/AuthHook.jsx";
-import {queryClient} from "@/api/queryClient.js";
 
 
 export const LabelLists = ({ mediaType, mediaId, labelsInList }) => {
+    const queryClient = useQueryClient();
     const { currentUser: { username } } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -16,10 +17,10 @@ export const LabelLists = ({ mediaType, mediaId, labelsInList }) => {
         queryClient.setQueryData(["details", mediaType, mediaId.toString()], (oldData) => {
             return {
                 ...oldData,
-                user_data: {
-                    ...oldData.user_data,
+                user_media: {
+                    ...oldData.user_media,
                     labels: {
-                        ...oldData.user_data.labels,
+                        ...oldData.user_media.labels,
                         already_in: labels,
                     }
                 },
