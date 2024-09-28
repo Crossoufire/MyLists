@@ -1,14 +1,11 @@
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
+import {authOptions} from "@/api/queryOptions";
 import {useMutation, useQuery} from "@tanstack/react-query";
 
 
 export const useAuth = () => {
-    const { data: currentUser, isLoading, isFetching } = useQuery({
-        queryKey: ["currentUser"],
-        queryFn: () => api.fetchCurrentUser(),
-        staleTime: Infinity,
-    });
+    const { data: currentUser, isLoading } = useQuery(authOptions());
 
     const setCurrentUser = (updates) => {
         queryClient.setQueryData(["currentUser"], updates);
@@ -18,7 +15,7 @@ export const useAuth = () => {
         mutationFn: ({ username, password }) => api.login(username, password),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            return queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            queryClient.setQueryData(authOptions().queryKey, data.body.data);
         },
     });
 
@@ -26,7 +23,7 @@ export const useAuth = () => {
         mutationFn: ({ provider, data }) => api.oAuth2Login(provider, data),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+            queryClient.setQueryData(authOptions().queryKey, data.body.data);
         },
     });
 
@@ -42,5 +39,5 @@ export const useAuth = () => {
         mutationFn: ({ data }) => api.register(data),
     });
 
-    return { currentUser, isLoading, isFetching, login, oAuth2Login, logout, register, setCurrentUser };
+    return { currentUser, isLoading, login, oAuth2Login, logout, register, setCurrentUser };
 };

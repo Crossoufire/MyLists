@@ -1,44 +1,41 @@
 import {Separator} from "@/components/ui/separator";
-import {InputComponent} from "@/components/app/InputComponent";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
+import {InputComponent} from "@/components/app/InputComponent";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import React from "react";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 
 
-export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) => {
-    const { updateRedo, updateRating, updatePage, updateStatusFunc } = userMediaMutations(
-        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
-    );
+export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {
+    const { updateRedo, updateRating, updatePage, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
         const status = variables.payload;
-        newData.user_data.redo = 0;
-        newData.user_data.status = status;
-        if (status === "Completed") newData.user_data.actual_page = totalPages;
-        if (status === "Plan to Read") newData.user_data.actual_page = 0;
+        newData.user_media.redo = 0;
+        newData.user_media.status = status;
+        if (status === "Completed") newData.user_media.actual_page = userMedia.total_pages;
+        if (status === "Plan to Read") newData.user_media.actual_page = 0;
         return newData;
     };
 
     return (
         <>
             <StatusDrop
-                status={userData.status}
-                allStatus={userData.all_status}
+                status={userMedia.status}
+                allStatus={userMedia.all_status}
                 updateStatus={updateStatusFunc(onStatusSuccess)}
             />
-            {userData.status !== "Plan to Read" &&
+            {userMedia.status !== "Plan to Read" &&
                 <>
                     <div className="flex justify-between items-center">
                         <div>Pages</div>
                         <InputComponent
-                            total={totalPages}
                             onUpdate={updatePage}
                             inputClassName={"w-[60px]"}
-                            initValue={userData.actual_page}
+                            total={userMedia.total_pages}
                             containerClassName={"w-[135px]"}
+                            initValue={userMedia.actual_page}
                         />
                     </div>
                     <Separator/>
@@ -46,15 +43,15 @@ export const BooksUserDetails = ({ userData, mediaType, mediaId, totalPages }) =
                         <div>Rating</div>
                         <RatingComponent
                             onUpdate={updateRating}
-                            rating={userData.rating}
+                            rating={userMedia.rating}
                         />
                     </div>
                 </>
             }
-            {userData.status === "Completed" &&
+            {userMedia.status === "Completed" &&
                 <RedoDrop
                     name={"Re-read"}
-                    redo={userData.redo}
+                    redo={userMedia.redo}
                     updateRedo={updateRedo}
                 />
             }

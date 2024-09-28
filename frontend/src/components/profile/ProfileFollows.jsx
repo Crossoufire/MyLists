@@ -2,8 +2,9 @@ import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {MutedText} from "@/components/app/base/MutedText";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {BlockLink} from "@/components/app/BlockLink";
 
 
 export const ProfileFollows = ({ username, follows }) => {
@@ -14,7 +15,8 @@ export const ProfileFollows = ({ username, follows }) => {
             <CardHeader>
                 <CardTitle>
                     <div className="p-1 flex gap-2 items-center">
-                        {caret} <div role="button" onClick={toggleCollapse}>Follows</div>
+                        {caret}
+                        <div role="button" onClick={toggleCollapse}>Follows</div>
                     </div>
                     <div>
                         <Link to={`/profile/${username}/follows`}>
@@ -31,7 +33,7 @@ export const ProfileFollows = ({ username, follows }) => {
                             <div className="text-muted-foreground italic">No follows to display yet</div>
                             :
                             follows.follows.map(follow =>
-                                <Link key={follow.username} to={`/profile/${follow.username}`}>
+                                <BlockLink key={follow.username} to={`/profile/${follow.username}`} privacy={follow.privacy}>
                                     <Tooltip text={follow.username}>
                                         <img
                                             className="w-14 h-14 bg-neutral-500 rounded-full"
@@ -39,7 +41,7 @@ export const ProfileFollows = ({ username, follows }) => {
                                             alt={follow.username}
                                         />
                                     </Tooltip>
-                                </Link>
+                                </BlockLink>
                             )}
                     </div>
                 }

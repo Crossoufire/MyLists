@@ -1,11 +1,14 @@
 import {toast} from "sonner";
-import {useState} from "react";
+import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
+import {FaCircleInfo} from "react-icons/fa6";
 import {FormButton} from "@/components/app/base/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const GeneralForm = () => {
@@ -13,7 +16,12 @@ export const GeneralForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const [profileImage, setProfileImage] = useState("");
     const [backgroundImage, setBackgroundImage] = useState("");
-    const form = useForm({ defaultValues: { username: currentUser.username } });
+    const form = useForm({
+        defaultValues: {
+            username: currentUser.username,
+            privacy: currentUser.privacy,
+        }
+    });
 
     const onSubmit = async (data) => {
         if (data.username === currentUser.username) {
@@ -53,8 +61,8 @@ export const GeneralForm = () => {
                         control={form.control}
                         name="username"
                         rules={{
-                            minLength: { value: 3, message: "The username is too short (3 min)" },
-                            maxLength: { value: 15, message: "The username is too long (15 max)" },
+                            minLength: { value: 3, message: "The username is too short (3 min)." },
+                            maxLength: { value: 15, message: "The username is too long (15 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>
@@ -64,6 +72,33 @@ export const GeneralForm = () => {
                                         {...field}
                                     />
                                 </FormControl>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="privacy"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>
+                                    <div className="flex items-center gap-2">
+                                        Privacy
+                                        <PrivacyPopover/>
+                                    </div>
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger className="border ">
+                                            <SelectValue placeholder="Select a privacy mode"/>
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="public">Public</SelectItem>
+                                        <SelectItem value="restricted">Restricted</SelectItem>
+                                        <SelectItem value="private" disabled>Private</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage/>
                             </FormItem>
                         )}
@@ -118,5 +153,35 @@ export const GeneralForm = () => {
                 </FormButton>
             </form>
         </Form>
+    );
+};
+
+
+const PrivacyPopover = () => {
+    return (
+        <Popover>
+            <PopoverTrigger>
+                <FaCircleInfo/>
+            </PopoverTrigger>
+            <PopoverContent className="p-5 w-80">
+                <div className="mb-3 text-sm font-medium text-muted-foreground">
+                    Determine who can see your profile, lists, stats, and media updates.
+                </div>
+                <ul className="text-sm list-disc space-y-3 pl-4">
+                    <li>
+                        <span className="font-semibold text-green-500">Public:</span>
+                        {" "}Anyone can see your profile, lists, stats, and media updates.
+                    </li>
+                    <li>
+                        <span className="font-semibold text-amber-500">Restricted (default):</span>
+                        {" "}Only logged-in users can see your profile, lists, stats, and media updates.
+                    </li>
+                    <li>
+                        <span className="font-semibold text-red-500">Private (not implemented yet):</span>
+                        {" "}Only approved followers can see your profile, lists, stats, and media updates.
+                    </li>
+                </ul>
+            </PopoverContent>
+        </Popover>
     );
 };

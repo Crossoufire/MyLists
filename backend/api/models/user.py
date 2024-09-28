@@ -9,13 +9,13 @@ from typing import List, Dict, Optional, Any
 import jwt
 from flask import url_for, current_app
 from flask_bcrypt import check_password_hash, generate_password_hash
-from sqlalchemy import desc, func, select, union_all, literal
+from sqlalchemy import desc, func, select, union_all, literal, case
 
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType
-from backend.api.utils.functions import compute_level, safe_div
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status
+from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
 followers = db.Table(
@@ -38,21 +38,21 @@ class Token(db.Model):
 
     def generate(self):
         self.access_token = secrets.token_urlsafe()
-        self.access_expiration = datetime.utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
+        self.access_expiration = naive_utcnow() + timedelta(minutes=current_app.config["ACCESS_TOKEN_MINUTES"])
         self.refresh_token = secrets.token_urlsafe()
-        self.refresh_expiration = datetime.utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
+        self.refresh_expiration = naive_utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
     def expire(self, delay: int = None):
         # Add 5 second delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
-        self.access_expiration = datetime.utcnow() + timedelta(seconds=delay)
-        self.refresh_expiration = datetime.utcnow() + timedelta(seconds=delay)
+        self.access_expiration = naive_utcnow() + timedelta(seconds=delay)
+        self.refresh_expiration = naive_utcnow() + timedelta(seconds=delay)
 
     @classmethod
     def clean(cls):
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = naive_utcnow() - timedelta(days=1)
         cls.query.filter(cls.refresh_expiration < yesterday).delete()
         db.session.commit()
 
@@ -68,13 +68,13 @@ class User(db.Model):
     password = db.Column(db.String)
     image_file = db.Column(db.String, nullable=False, default="default.jpg")
     background_image = db.Column(db.String, nullable=False, default="default.jpg")
-    private = db.Column(db.Boolean, nullable=False, default=False)
+    privacy = db.Column(db.Enum(Privacy), nullable=False, default=Privacy.RESTRICTED)
     active = db.Column(db.Boolean, nullable=False, default=False)
     role = db.Column(db.Enum(RoleType), nullable=False, default=RoleType.USER)
     transition_email = db.Column(db.String)
     activated_on = db.Column(db.DateTime)
     last_notif_read_time = db.Column(db.DateTime)
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime, default=naive_utcnow)
     show_update_modal = db.Column(db.Boolean, default=True)
     grid_list_view = db.Column(db.Boolean, nullable=False, default=True)
     profile_views = db.Column(db.Integer, nullable=False, default=0)
@@ -121,41 +121,27 @@ class User(db.Model):
         return url_for("static", filename=f"background_pics/{self.background_image}")
 
     @property
-    def profile_border(self) -> str:
-        profile_border = "border_40.png"
-        profile_border_level = (self.profile_level // 8) + 1
-        if profile_border_level < 40:
-            profile_border = f"border_{profile_border_level}.png"
-
-        return url_for("static", filename=f"img/profile_borders/{profile_border}")
-
-    @property
     def followers_count(self) -> int:
-        """ Return the number of followers of the user """
         return self.followers.count()
 
     @property
     def profile_level(self) -> int:
-        total_time = 0
-        for setting in self.settings:
-            if setting.active:
-                total_time += setting.time_spent
-        return int(compute_level(total_time))
+        return int(compute_level(sum(settings.time_spent for settings in self.settings if settings.active)))
 
     def to_dict(self) -> Dict:
         excluded_attrs = ("email", "password")
         user_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name not in excluded_attrs}
 
-        user_dict.update({
-            "role": self.role.value,
-            "registered_on": self.registered_on,
-            "profile_image": self.profile_image,
-            "back_image": self.back_image,
-            "profile_level": self.profile_level,
-            "profile_border": self.profile_border,
-            "followers_count": self.followers_count,
-            "settings": {setting.media_type.value: setting.to_dict() for setting in self.settings},
-        })
+        user_dict.update(dict(
+            role=self.role.value,
+            privacy=self.privacy.value,
+            registered_on=self.registered_on,
+            profile_image=self.profile_image,
+            back_image=self.back_image,
+            profile_level=self.profile_level,
+            followers_count=self.followers_count,
+            settings={setting.media_type.value: setting.to_dict() for setting in self.settings}),
+        )
 
         return user_dict
 
@@ -168,7 +154,7 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
     def ping(self):
-        self.last_seen = datetime.utcnow()
+        self.last_seen = naive_utcnow()
 
     def revoke_all_tokens(self):
         Token.query.filter(Token.user == self).delete()
@@ -203,7 +189,7 @@ class User(db.Model):
         return {"total": len(follows), "follows": [follow.to_dict() for follow in follows[:limit]]}
 
     def get_last_notifications(self, limit: int = 8) -> List[Dict]:
-        current_user.last_notif_read_time = datetime.utcnow()
+        current_user.last_notif_read_time = naive_utcnow()
         db.session.commit()
         query = (
             Notifications.query.filter_by(user_id=self.id).order_by(desc(Notifications.timestamp))
@@ -259,24 +245,28 @@ class User(db.Model):
 
         # Combine queries for count total media, percentage rated, and average rating
         rating = "feeling" if self.add_feeling else "score"
+        statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
         subqueries = union_all(
             *[(db.session.query(
-                func.count(model.media_id), func.count(getattr(model, rating)),
-                func.coalesce(func.sum(getattr(model, rating)), 0)
+                func.count(model.media_id),
+                func.count(getattr(model, rating)),
+                func.coalesce(func.sum(getattr(model, rating)), 0),
+                func.coalesce(func.sum(case(*[(~model.status.in_(statuses), 1)], else_=0)), 0)
             ).filter(model.user_id == self.id)) for model in models]
         )
 
         results = db.session.execute(subqueries).all()
 
         # Calculation for total media, percent scored, and mean score
-        total_media, total_scored, sum_score = map(sum, zip(*results))
-        percent_scored = safe_div(total_scored, total_media, percentage=True)
+        total_media, total_scored, sum_score, total_media_no_plan_to_x = map(sum, zip(*results))
+        percent_scored = safe_div(total_scored, total_media_no_plan_to_x, percentage=True)
         mean_score = safe_div(sum_score, total_scored)
 
         data = dict(
             total_hours=int(total_hours),
             total_days=round(total_hours / 24, 0),
             total_media=total_media,
+            total_media_no_plan_to_x=total_media_no_plan_to_x,
             time_per_media=time_per_media,
             total_scored=total_scored,
             percent_scored=percent_scored,
@@ -318,9 +308,11 @@ class User(db.Model):
     def get_last_updates(self, limit: int) -> List[Dict]:
         return [update.to_dict() for update in self.updates.limit(limit).all()]
 
-    def get_follows_updates(self, limit: int) -> List[Dict]:
+    def get_follows_updates(self, limit: int, as_public: bool = False) -> List[Dict]:
+        followed_users = self.followed.all() if not as_public else self.followed.filter_by(privacy=Privacy.PUBLIC).all()
+
         follows_updates = (
-            UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in self.followed.all()]))
+            UserMediaUpdate.query.filter(UserMediaUpdate.user_id.in_([u.id for u in followed_users]))
             .order_by(desc(UserMediaUpdate.timestamp))
             .limit(limit).all()
         )
@@ -369,7 +361,7 @@ class User(db.Model):
             email=email,
             password=None if not kwargs.get("password") else generate_password_hash(kwargs["password"]),
             activated_on=kwargs.get("activated_on", None),
-            registered_on=datetime.utcnow(),
+            registered_on=naive_utcnow(),
             active=kwargs.get("active", current_app.config["USER_ACTIVE_PER_DEFAULT"]),
         )
         db.session.add(new_user)
@@ -391,7 +383,7 @@ class User(db.Model):
         # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
         if token:
-            if token.access_expiration > datetime.utcnow():
+            if token.access_expiration > naive_utcnow():
                 token.user.ping()
                 db.session.commit()
                 return token.user
@@ -400,7 +392,7 @@ class User(db.Model):
     def verify_refresh_token(refresh_token: str, access_token: str) -> Optional[Token]:
         token = Token.query.filter_by(refresh_token=refresh_token, access_token=access_token).first()
         if token:
-            if token.refresh_expiration > datetime.utcnow():
+            if token.refresh_expiration > naive_utcnow():
                 return token
 
             # Try to refresh with expired token: revoke all tokens from user as precaution
@@ -451,7 +443,7 @@ class UserMediaUpdate(db.Model):
     media_type = db.Column(db.Enum(MediaType), nullable=False, index=True)
     update_type = db.Column(db.Enum(UpdateType), nullable=False)
     payload = db.Column(db.TEXT, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=naive_utcnow, nullable=False, index=True)
 
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="updates", lazy="joined")
@@ -478,7 +470,7 @@ class UserMediaUpdate(db.Model):
 
         time_difference = float("inf")
         if previous_db_entry:
-            time_difference = (datetime.utcnow() - previous_db_entry.timestamp).total_seconds()
+            time_difference = (naive_utcnow() - previous_db_entry.timestamp).total_seconds()
 
         # noinspection PyArgumentList
         new_update = cls(
@@ -513,7 +505,7 @@ class Notifications(db.Model):
     media_type = db.Column(db.Enum(MediaType))
     notification_type = db.Column(db.Enum(NotificationType))
     payload = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=naive_utcnow)
 
     # --- Relationships -----------------------------------------------------------
     user = db.relationship("User", back_populates="notifications", lazy="select")

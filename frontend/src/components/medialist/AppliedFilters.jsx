@@ -1,8 +1,8 @@
 import {LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
+import {capitalize} from "@/utils/functions";
 import {MutedText} from "@/components/app/base/MutedText";
-import {Route} from "@/routes/_private/list/$mediaType.$username";
-import {capitalize} from "@/utils/functions.jsx";
+import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 
 
 export const AppliedFilters = ({ total, onFilterRemove }) => {

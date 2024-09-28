@@ -1,22 +1,12 @@
-import {useAuth} from "@/hooks/AuthHook";
-import {createFileRoute, Navigate, Outlet} from "@tanstack/react-router";
+import {api} from "@/api/apiClient";
+import {createFileRoute, redirect} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
 export const Route = createFileRoute("/_public")({
-    component: PublicRoute,
+    beforeLoad: ({ context: { auth } }) => {
+        if (auth.currentUser && api.isAuthenticated()) {
+            throw redirect({ to: `/profile/${auth.currentUser.username}` });
+        }
+    },
 });
-
-
-function PublicRoute() {
-    const { currentUser, isLoading } = useAuth();
-
-    if (isLoading) {
-        return null;
-    }
-    else if (currentUser !== null && currentUser !== undefined) {
-        return <Navigate to={`/profile/${currentUser.username}`}/>;
-    }
-
-    return <Outlet/>;
-}

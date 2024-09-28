@@ -1,10 +1,12 @@
 import unittest
-from datetime import datetime
 from typing import Dict
+
 from flask_bcrypt import generate_password_hash
+
 from backend.api import create_app, db
 from backend.api.models import UserMediaSettings
 from backend.api.utils.enums import RoleType, MediaType
+from backend.api.utils.functions import naive_utcnow
 from backend.config import TestConfig
 
 
@@ -43,9 +45,9 @@ class BaseTest(unittest.TestCase):
         self.user = User(
             username=TEST_USER["username"],
             email=f"{TEST_USER['username']}@example.com",
-            registered_on=datetime.utcnow(),
+            registered_on=naive_utcnow(),
             password=generate_password_hash(TEST_USER["password"]),
-            activated_on=datetime.utcnow(),
+            activated_on=naive_utcnow(),
             role=RoleType.USER,
             active=True,
         )

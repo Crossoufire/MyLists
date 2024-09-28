@@ -1,20 +1,29 @@
 import {toast} from "sonner";
+import {useLayoutEffect} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {Link, useNavigate} from "@tanstack/react-router";
 import {FormButton} from "@/components/app/base/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const LoginForm = () => {
+    const router = useRouter();
     const { login } = useAuth();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const { oAuth2Provider } = simpleMutations();
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
+
+    useLayoutEffect(() => {
+        if (!currentUser) return;
+        void router.invalidate();
+        void navigate({ to: `/profile/${currentUser.username}` });
+    }, [currentUser]);
 
     const onSubmit = (data) => {
         login.mutate(data, {
@@ -28,10 +37,7 @@ export const LoginForm = () => {
                     return toast.error("Your account is not activated yet. Please check your email or contact us.");
                 }
                 toast.error("An error occurred trying to login");
-            },
-            onSuccess: async () => {
-                return navigate({ to: `/profile/${data.username}` });
-            },
+            }
         });
     };
 

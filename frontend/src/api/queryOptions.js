@@ -1,6 +1,13 @@
 import {fetcher} from "@/api/fetcher";
 import {queryOptions} from "@tanstack/react-query";
+import {api} from "@/api/apiClient";
 
+
+export const authOptions = () => queryOptions({
+    queryKey: ["currentUser"],
+    queryFn: () => api.fetchCurrentUser(),
+    staleTime: Infinity,
+});
 
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
     queryKey: ["details", mediaType, mediaId],
@@ -47,13 +54,13 @@ export const jobDetailsOptions = (mediaType, job, name) => queryOptions({
 export const editMediaOptions = (mediaType, mediaId) => queryOptions({
     queryKey: ["editDetails", mediaType, mediaId],
     queryFn: () => fetcher({ url: `/details/edit/${mediaType}/${mediaId}` }),
+    gcTime: 0,
+    staleTime: 0,
 });
 
 export const listOptions = (mediaType, username, search) => queryOptions({
     queryKey: ["userList", mediaType, username, search],
     queryFn: () => fetcher({ url: `/list/${mediaType}/${username}`, queryOrData: search }),
-    enabled: false,
-    staleTime: Infinity,
 });
 
 export const followersOptions = (username) => queryOptions({

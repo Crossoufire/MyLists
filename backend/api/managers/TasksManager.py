@@ -17,6 +17,7 @@ from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User, UserMediaUpdate, Notifications, UserMediaSettings
 from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
+from backend.api.utils.functions import naive_utcnow
 
 
 class TasksManagerMeta(type):
@@ -57,19 +58,27 @@ class TasksManager(metaclass=TasksManagerMeta):
         return cls.subclasses.get(media_type, cls)
 
     @staticmethod
+    def change_privacy_setting(user: str | int, privacy: str):
+        filter_ = {"username": user} if isinstance(user, str) else {"id": user}
+        user = User.query.filter_by(**filter_).first()
+        if not user:
+            raise ValueError(f"User not found with criteria: {filter_}")
+        user.privacy = privacy
+        db.session.commit()
+
+    @staticmethod
     def reactivate_update_modal(value: bool = True):
         db.session.execute(db.update(User).values(show_update_modal=value))
         db.session.commit()
 
     @staticmethod
-    def activate_user_account(username: str, toggle: bool):
+    def activate_user_account(user: str | int, toggle: bool):
         """ Toggle users accounts activation manually """
 
-        user = User.query.filter(User.username == username).first()
+        filter_ = {"username": user} if isinstance(user, str) else {"id": user}
+        user = User.query.filter_by(**filter_).first()
         if not user:
-            print(f"User {username} not found")
-            return
-
+            raise ValueError(f"User not found with criteria: {filter_}")
         user.active = toggle
         db.session.commit()
 
@@ -197,7 +206,7 @@ class TasksManager(metaclass=TasksManagerMeta):
 
         if len(images_to_remove) > 100:
             current_app.logger.error(f"Too many images to remove ({len(images_to_remove)}). Validation necessary.")
-            raise Exception("Too many images to remove")
+            return
 
         count = 0
         current_app.logger.info(f"Deleting {self.GROUP.value} covers...")
@@ -247,8 +256,8 @@ class TasksManager(metaclass=TasksManagerMeta):
             .join(self.media_list, self.media.id == self.media_list.media_id)
             .filter(
                 self.media.release_date.is_not(None),
-                self.media.release_date > datetime.utcnow(),
-                self.media.release_date <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
+                self.media.release_date > naive_utcnow(),
+                self.media.release_date <= naive_utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
             ).all()
         )
 
@@ -291,8 +300,8 @@ class TvTasksManager(TasksManager):
             .join(top_eps_subq, self.media.id == top_eps_subq.c.media_id)
             .filter(
                 self.media.next_episode_to_air.is_not(None),
-                self.media.next_episode_to_air > datetime.utcnow(),
-                self.media.next_episode_to_air <= datetime.utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
+                self.media.next_episode_to_air > naive_utcnow(),
+                self.media.next_episode_to_air <= naive_utcnow() + timedelta(days=self.media.RELEASE_WINDOW),
                 self.media_list.status.notin_([Status.RANDOM, Status.DROPPED]),
             ).all()
         )
@@ -345,7 +354,7 @@ class MoviesTasksManager(TasksManager):
         current_app.logger.info(f"Movies successfully deleted")
 
     def automatic_locking(self):
-        locking_threshold = datetime.utcnow() - timedelta(days=self.media.LOCKING_DAYS)
+        locking_threshold = naive_utcnow() - timedelta(days=self.media.LOCKING_DAYS)
         locked_movies = (
             self.media.query.filter(
                 self.media.lock_status.is_not(True),

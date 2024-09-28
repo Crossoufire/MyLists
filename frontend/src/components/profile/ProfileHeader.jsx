@@ -9,7 +9,8 @@ import {LuCalendarDays, LuUserMinus, LuUserPlus, LuUsers} from "react-icons/lu";
 
 export const ProfileHeader = ({ user, followStatus, followId }) => {
     const { currentUser } = useAuth();
-    const isCurrent = (currentUser.id === user.id);
+    const isConnected = (!!currentUser);
+    const isCurrent = (currentUser?.id === user.id);
 
     return (
         <div className="relative h-72 bg-cover border-b bg-center bg-no-repeat" style={{ backgroundImage: `url(${user.back_image})` }}>
@@ -31,7 +32,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                         max-sm:px-4 max-sm:rounded-lg">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-2xl font-bold">{user.username}</h2>
-                                {!isCurrent &&
+                                {(!isCurrent && isConnected) &&
                                     <FollowButton
                                         followId={followId}
                                         followStatus={followStatus}

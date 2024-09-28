@@ -61,7 +61,20 @@ def register_cli_commands():
         click.echo("VACUUM operation completed successfully")
 
     @current_app.cli.command()
-    @click.argument("days", type=int, default=180)
+    @click.argument("user")
+    @click.argument("privacy", type=str)
+    def change_privacy(user, privacy):
+        """ Change user privacy. """
+
+        try:
+            user = int(user)
+        except ValueError:
+            pass
+
+        change_privacy_setting(user, privacy)
+
+    @current_app.cli.command()
+    @click.argument("days", type=int, default=30)
     def active_users(days: int):
         """ Count active users. """
         get_active_users(days=days)
@@ -132,11 +145,15 @@ def register_cli_commands():
         update_igdb_api_token()
 
     @current_app.cli.command()
-    @click.argument("username", type=str)
+    @click.argument("user")
     @click.argument("toggle", type=bool)
-    def active_account(username: str, toggle: bool):
+    def active_account(user: str | int, toggle: bool):
         """ Activate user account """
-        activate_user_account(username, toggle)
+        try:
+            user = int(user)
+        except ValueError:
+            pass
+        activate_user_account(user, toggle)
 
     @current_app.cli.command()
     @click.pass_context

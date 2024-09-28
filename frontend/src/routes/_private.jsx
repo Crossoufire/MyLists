@@ -1,23 +1,15 @@
 import {api} from "@/api/apiClient";
-import {useAuth} from "@/hooks/AuthHook";
-import {createFileRoute, Navigate, Outlet} from "@tanstack/react-router";
+import {createFileRoute, redirect} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
 export const Route = createFileRoute("/_private")({
-    component: PrivateRoute,
+    beforeLoad: ({ context: { auth }, location }) => {
+        const routeType = ["/profile", "/stats", "/list"].some(path => location.pathname.startsWith(path))
+            ? location.pathname.split("/")[1] : "other";
+
+        if (routeType === "other" && (!auth.currentUser || !api.isAuthenticated())) {
+            throw redirect({ to: "/", search: { message: "You need to be logged-in to view this page" } });
+        }
+    },
 });
-
-
-function PrivateRoute() {
-    const { currentUser, isLoading } = useAuth();
-
-    if (isLoading) {
-        return null;
-    }
-    else if (!currentUser || !api.isAuthenticated()) {
-        return <Navigate to="/"/>;
-    }
-
-    return <Outlet/>;
-}

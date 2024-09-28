@@ -1,15 +1,17 @@
 from __future__ import annotations
-from datetime import datetime
+
 from typing import List, Dict, Optional
+
 from flask import url_for
 from sqlalchemy import func, desc
+
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers, UserMediaUpdate
 from backend.api.utils.enums import ModelTypes, Status, MediaType
-from backend.api.utils.functions import safe_div
+from backend.api.utils.functions import safe_div, naive_utcnow
 
 
 class Media(db.Model, UpdateMixin):
@@ -77,18 +79,18 @@ class Media(db.Model, UpdateMixin):
 
         return data
 
-    def get_user_list_info(self, label_class: Labels) -> Optional[Dict]:
+    def get_user_media_info(self, label_class: Labels) -> Optional[Dict]:
         media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
-        user_data = media_assoc.to_dict() if media_assoc else None
+        user_media = media_assoc.to_dict() if media_assoc else None
 
-        if user_data:
-            user_data.update(dict(
+        if user_media:
+            user_media.update(dict(
                 username=current_user.username,
                 labels=label_class.get_user_media_labels(user_id=current_user.id, media_id=self.id),
                 history=UserMediaUpdate.get_history(self.id, self.GROUP)),
             )
 
-        return user_data
+        return user_media
 
 
 class MediaList(db.Model):
@@ -108,6 +110,8 @@ class MediaList(db.Model):
 
     @classmethod
     def get_media_count_per_status(cls, user_id: int) -> Dict:
+        plan_to_x = (Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ)
+
         media_count = (
             db.session.query(cls.status, func.count(cls.status))
             .filter_by(user_id=user_id).group_by(cls.status)
@@ -116,6 +120,7 @@ class MediaList(db.Model):
 
         status_count = {status.value: {"count": 0, "percent": 0} for status in Status.by(cls.GROUP)}
         total_media = sum(count for _, count in media_count)
+        total_media_no_plan_to_x = total_media - sum(c for s, c in media_count if s in plan_to_x)
         no_data = (total_media == 0)
 
         # Update <status_count> dict with actual values from <media_count> query
@@ -129,7 +134,14 @@ class MediaList(db.Model):
 
         status_list = [{"status": key, **val} for key, val in status_count.items()]
 
-        return dict(total_media=total_media, no_data=no_data, status_count=status_list)
+        data = dict(
+            total_media=total_media,
+            total_media_no_plan_to_x=total_media_no_plan_to_x,
+            no_data=no_data,
+            status_count=status_list
+        )
+
+        return data
 
     @classmethod
     def get_media_count_per_rating(cls, user: User) -> List[int]:
@@ -211,7 +223,7 @@ class MediaList(db.Model):
         next_media = (
             db.session.query(media).join(cls, media.id == cls.media_id)
             .filter(
-                getattr(media, media_date) > datetime.utcnow(),
+                getattr(media, media_date) > naive_utcnow(),
                 cls.user_id == current_user.id,
                 cls.status.notin_([Status.DROPPED, Status.RANDOM]),
             ).order_by(getattr(media, media_date))

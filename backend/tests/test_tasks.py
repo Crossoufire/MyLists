@@ -1,6 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+
 from flask import jsonify
+
 from backend.api import db, cache
+from backend.api.utils.functions import naive_utcnow
 from backend.tests.base_test import BaseTest
 
 
@@ -29,13 +32,13 @@ class TestTasks(BaseTest):
         self.register_new_user("bobby")
         bobby = User.query.filter_by(username="bobby").first()
         bobby.active = False
-        bobby.registered_on = datetime.utcnow() - timedelta(days=8)
+        bobby.registered_on = naive_utcnow() - timedelta(days=8)
 
         # Non-activated < 7 days
         self.register_new_user("tutu")
         tutu = User.query.filter_by(username="tutu").first()
         tutu.active = False
-        tutu.registered_on = datetime.utcnow() - timedelta(days=5)
+        tutu.registered_on = naive_utcnow() - timedelta(days=5)
 
         db.session.commit()
 

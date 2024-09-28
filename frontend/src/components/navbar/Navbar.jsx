@@ -1,28 +1,35 @@
 import React, {useRef} from "react";
 import {useAuth} from "@/hooks/AuthHook";
-import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {Loading} from "@/components/app/base/Loading";
 import * as Nav from "@/components/ui/navigation-menu";
-import {Link as NavLink} from "@tanstack/react-router";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Notifications} from "@/components/navbar/Notifications";
+import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
+import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 
 
 export const Navbar = () => {
     const popRef = useRef();
+    const router = useRouter();
+    const navigate = useNavigate();
+    const { currentUser, logout } = useAuth();
     const { sheetOpen, setSheetOpen } = useSheet();
-    const { currentUser, logout, isLoading } = useAuth();
 
     const logoutUser = () => {
-        logout.mutate(undefined);
+        logout.mutate(undefined, {
+            onSuccess: async () => {
+                await router.invalidate().then(() => {
+                    navigate({ to: "/" });
+                });
+            },
+        });
     };
 
     // Login page and public pages when not logged
@@ -31,7 +38,14 @@ export const Navbar = () => {
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
-                    <div>{isLoading && <Loading/>}</div>
+                    <div className="space-x-3">
+                        <Button size="sm">
+                            <NavLink to="/">Login</NavLink>
+                        </Button>
+                        <Button size="sm" variant="secondary">
+                            <NavLink to="/">Register</NavLink>
+                        </Button>
+                    </div>
                 </div>
             </nav>
         );

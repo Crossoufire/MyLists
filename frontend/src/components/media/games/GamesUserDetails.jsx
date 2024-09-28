@@ -1,52 +1,50 @@
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
-import * as Com from "@/components/ui/command";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {RatingComponent} from "@/components/app/RatingComponent";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {PlaytimeDrop} from "@/components/media/games/PlaytimeDrop";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {RatingComponent} from "@/components/app/RatingComponent";
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
 
-export const GamesUserDetails = ({ userData, mediaType, mediaId }) => {
-    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(
-        mediaType, mediaId, ["details", mediaType, mediaId.toString()]
-    );
+export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
+    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const onStatusSuccess = (oldData, variables) => {
         const newData = { ...oldData };
-        newData.user_data.status = variables.payload;
-        if (variables.payload === "Plan to Play") newData.user_data.playtime = 0;
+        newData.user_media.status = variables.payload;
+        if (variables.payload === "Plan to Play") newData.user_media.playtime = 0;
         return newData;
     };
 
     return (
         <>
             <StatusDrop
-                status={userData.status}
-                allStatus={userData.all_status}
+                status={userMedia.status}
+                allStatus={userMedia.all_status}
                 updateStatus={updateStatusFunc(onStatusSuccess)}
             />
             <PlatformDrop
-                platform={userData.platform}
+                platform={userMedia.platform}
                 updatePlatform={updatePlatform}
-                allPlatforms={userData.all_platforms}
+                allPlatforms={userMedia.all_platforms}
             />
-            {userData.status !== "Plan to Play" &&
+            {userMedia.status !== "Plan to Play" &&
                 <>
                     <Separator/>
                     <PlaytimeDrop
-                        playtime={userData.playtime}
+                        playtime={userMedia.playtime}
                         updatePlaytime={updatePlaytime}
                     />
                     <div className="flex justify-between items-center">
                         <div>Rating</div>
                         <RatingComponent
                             onUpdate={updateRating}
-                            rating={userData.rating}
+                            rating={userMedia.rating}
                         />
                     </div>
                 </>
@@ -101,23 +99,20 @@ const PlatformComboBox = ({ resetValue = "", dataList, callback, isPending }) =>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[160px] p-0">
-                <Com.Command className="overflow-y-auto max-h-[270px]">
-                    <Com.CommandInput placeholder="Search..." className="h-9"/>
-                    <Com.CommandList>
-                        <Com.CommandEmpty>No results</Com.CommandEmpty>
-                        <Com.CommandGroup>
+                <Command className="overflow-y-auto max-h-[270px]">
+                    <CommandInput placeholder="Search..." className="h-9"/>
+                    <CommandList>
+                        <CommandEmpty>No results</CommandEmpty>
+                        <CommandGroup>
                             {dataList.map(user =>
-                                <Com.CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
+                                <CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
                                     {user.label}
-                                    <CheckIcon
-                                        className={cn("ml-auto h-4 w-4",
-                                            value === user.value ? "opacity-100" : "opacity-0")}
-                                    />
-                                </Com.CommandItem>
+                                    <CheckIcon className={cn("ml-auto h-4 w-4", value === user.value ? "opacity-100" : "opacity-0")}/>
+                                </CommandItem>
                             )}
-                        </Com.CommandGroup>
-                    </Com.CommandList>
-                </Com.Command>
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
             </PopoverContent>
         </Popover>
     );

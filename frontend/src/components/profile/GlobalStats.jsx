@@ -78,7 +78,7 @@ export const GlobalStats = ({ userData, global }) => {
                                                 <div className="text-neutral-500 text-lg">Total Entries</div>
                                                 <div>{global.total_media}</div>
                                             </div>
-                                            <Tooltip text={`${global.total_scored}/${global.total_media}`}>
+                                            <Tooltip text={`${global.total_scored}/${global.total_media_no_plan_to_x}`}>
                                                 <div>
                                                     <div className="text-neutral-500 text-lg">% Rated</div>
                                                     <div>{global.percent_scored.toFixed(1)} %</div>
@@ -109,7 +109,7 @@ export const GlobalStats = ({ userData, global }) => {
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 font-semibold">
-                                            <Tooltip text={`${global.total_scored}/${global.total_media}`}>
+                                            <Tooltip text={`${global.total_scored}/${global.total_media_no_plan_to_x}`}>
                                                 <div>
                                                     <div className="text-neutral-500 text-lg">% Rated</div>
                                                     <div>{global.percent_scored.toFixed(1)} %</div>

@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest import mock
 
+from backend.api.utils.functions import naive_utcnow
 from backend.tests.base_test import BaseTest, TEST_USER
 
 
@@ -40,11 +41,9 @@ class AuthTests(BaseTest):
 
     def test_token_expired(self):
         rv = self._get_token()
-
         access_token = rv.json["access_token"]
-
-        with mock.patch("backend.api.models.user.datetime") as dt:
-            dt.utcnow.return_value = datetime.utcnow() + timedelta(days=1)
+        with mock.patch("backend.api.models.user.naive_utcnow") as now:
+            now.return_value = naive_utcnow() + timedelta(days=1)
             rv = self.client.get("/api/current_user", headers={"Authorization": f"Bearer {access_token}"})
             self.assertEqual(rv.status_code, 401)
 

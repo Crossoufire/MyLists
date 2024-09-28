@@ -139,15 +139,13 @@ def get_active_users(days: int = 30):
     current_app.logger.info("###############################################################################")
 
 
-def activate_user_account(username: str, toggle: bool):
-    """ Change user account activation status """
-
+def change_privacy_setting(user: str | int, privacy: str):
     current_app.logger.info("###############################################################################")
-    current_app.logger.info("[SYSTEM] - Starting Changing User Account Activation -")
+    current_app.logger.info("[SYSTEM] - Starting Getting Active Users -")
 
-    TasksManager.activate_user_account(username, toggle)
+    TasksManager.change_privacy_setting(user, privacy)
 
-    current_app.logger.info("[SYSTEM] - Finished Changing User Account Activation -")
+    current_app.logger.info("[SYSTEM] - Finished Getting Active Users -")
     current_app.logger.info("###############################################################################")
 
 
@@ -171,13 +169,13 @@ def delete_non_activated_users(days: int = 7):
     current_app.logger.info("###############################################################################")
 
 
-def activate_user_account(username: str, toggle: bool):
+def activate_user_account(user: str | int, toggle: bool):
     """ Activate users accounts that have been inactive for more than 30 days """
 
     current_app.logger.info("###############################################################################")
     current_app.logger.info("[SYSTEM] - Starting Activating User Manually -")
 
-    TasksManager.activate_user_account(username, toggle)
+    TasksManager.activate_user_account(user, toggle)
 
     current_app.logger.info("[SYSTEM] - Finished Activating User Manually -")
     current_app.logger.info("###############################################################################")

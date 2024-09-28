@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Dict, Tuple
+from typing import List, Dict
 
 from flask import abort
-from sqlalchemy import func, ColumnElement
+from sqlalchemy import func
 
 from backend.api import db
 from backend.api.core import current_user
@@ -155,14 +155,6 @@ class BooksList(MediaList):
     def total_user_time_def(cls):
         return func.sum(cls.TIME_PER_PAGE * cls.total)
 
-    @classmethod
-    def additional_search_joins(cls) -> List[Tuple]:
-        return [(BooksAuthors, BooksAuthors.media_id == Books.id)]
-
-    @classmethod
-    def additional_search_filters(cls, search: str) -> List[ColumnElement]:
-        return [Books.name.ilike(f"%{search}%"), BooksAuthors.name.ilike(f"%{search}%")]
-
 
 class BooksGenre(Genres):
     GROUP = MediaType.BOOKS
@@ -196,6 +188,17 @@ class BooksAuthors(db.Model):
 
     # --- Relationships -----------------------------------------------------------
     media = db.relationship("Books", back_populates="authors", lazy="select")
+
+    @classmethod
+    def replace_authors(cls, authors: str, media_id: int):
+        try:
+            authors = authors.split(", ")
+        except:
+            return
+        
+        cls.query.filter_by(media_id=media_id).delete()
+        db.session.add_all([cls(media_id=media_id, name=author) for author in authors])
+        db.session.commit()
 
 
 class BooksLabels(Labels):

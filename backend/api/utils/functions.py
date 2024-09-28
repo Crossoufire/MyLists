@@ -1,7 +1,7 @@
 import os
 import re
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Any, Iterable, Tuple, Dict, Optional
 
 from PIL import Image
@@ -165,3 +165,19 @@ def format_to_download_as_csv(media_dict: Dict) -> Dict:
 def global_limiter() -> str:
     """ Create a global limiter key """
     return "global"
+
+
+def aware_utcnow():
+    return datetime.now(timezone.utc)
+
+
+def aware_utcfromtimestamp(timestamp):
+    return datetime.fromtimestamp(timestamp, timezone.utc)
+
+
+def naive_utcnow():
+    return aware_utcnow().replace(tzinfo=None)
+
+
+def naive_utcfromtimestamp(timestamp):
+    return aware_utcfromtimestamp(timestamp).replace(tzinfo=None)

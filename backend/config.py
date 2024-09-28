@@ -96,7 +96,7 @@ class DevConfig(Config):
     USER_ACTIVE_PER_DEFAULT = False
     CACHE_TYPE = "SimpleCache"
     RATELIMIT_STORAGE_URI = "memory://"
-    ACCESS_TOKEN_MINUTES = int("99999999")
+    ACCESS_TOKEN_MINUTES = int("15")
 
 
 class TestConfig(Config):
@@ -124,9 +124,9 @@ class TestConfig(Config):
 
 
 def get_config():
-    env = os.getenv("FLASK_ENV")
-    if env == "production":
-        return Config
+    env = os.getenv("FLASK_ENV", "production")
+    if env == "development":
+        return DevConfig
     elif env == "testing":
         return TestConfig
-    return DevConfig
+    return Config

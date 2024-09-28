@@ -11,12 +11,12 @@ import {Loading} from "@/components/app/base/Loading";
 import {mediaLabelsOptions} from "@/api/queryOptions";
 import {MutedText} from "@/components/app/base/MutedText";
 import {FormButton} from "@/components/app/base/FormButton";
+import {userLabelsMutations} from "@/api/mutations/labelsMutations";
 import {CheckIcon, ExclamationTriangleIcon} from "@radix-ui/react-icons";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Dialog, DialogContent, DialogDescription, DialogTitle} from "@/components/ui/dialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {userLabelsMutations} from "@/api/mutations/labelsMutations";
 
 
 export const LabelsDialog = ({ isOpen, onClose, mediaId, labelsInList, updateLabelsInList, manageOnly = false }) => {

@@ -3,7 +3,6 @@ import {Toaster} from "@/components/ui/sonner";
 import {Footer} from "@/components/app/Footer";
 import {Navbar} from "@/components/navbar/Navbar";
 import {SheetProvider} from "@/providers/SheetProvider";
-import {RouterSpinner} from "@/components/app/base/RouterSpinner";
 import {createRootRouteWithContext, Outlet, ScrollRestoration} from "@tanstack/react-router";
 
 
@@ -16,7 +15,6 @@ export const Route = createRootRouteWithContext()({
 function RootComponent() {
     return (
         <>
-            <RouterSpinner/>
             <Toaster/>
             <SheetProvider><Navbar/></SheetProvider>
             <main className="md:max-w-screen-xl container">

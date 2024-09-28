@@ -1,11 +1,11 @@
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 
 
 export const Loading = ({ className }) => {
     return (
         <div role="status" className="flex justify-center items-center">
             <svg className={cn("w-8 h-8 animate-spin dark:text-gray-400 fill-cyan-700", className)}
-            viewBox="0 0 100 101" xmlns="http://www.w3.org/2000/svg" fill="none">
+                 viewBox="0 0 100 101" xmlns="http://www.w3.org/2000/svg" fill="none">
                 <path
                     d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0
                     22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144
@@ -25,5 +25,5 @@ export const Loading = ({ className }) => {
             </svg>
             <span className="sr-only">Loading...</span>
         </div>
-    )
+    );
 };
