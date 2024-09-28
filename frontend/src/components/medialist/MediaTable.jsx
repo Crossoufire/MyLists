@@ -1,24 +1,24 @@
 import {useMemo} from "react";
-import * as Drop from "@/components/ui/dropdown-menu";
+import {useAuth} from "@/hooks/AuthHook";
+import {BlockLink} from "@/components/app/BlockLink";
 import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
 import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {TablePagination} from "@/components/app/TablePagination";
-import {useParams, useSearch} from "@tanstack/react-router";
+import {RatingComponent} from "@/components/app/RatingComponent";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EditMediaList} from "@/components/medialist/EditMediaList";
 import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
+import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {ManageFavorite} from "@/components/media/general/ManageFavorite";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {RatingComponent} from "@/components/app/RatingComponent";
-import {useAuth} from "@/hooks/AuthHook";
-import {BlockLink} from "@/components/app/BlockLink";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
 export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
-    const filters = useSearch({ strict: false });
-    const { mediaType, username } = useParams({ strict: false });
+    const filters = Route.useSearch();
+    const { mediaType, username } = Route.useParams();
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
 
     const onPaginationChange = (paginateFunc) => {
@@ -62,7 +62,10 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                 return (
                     <SuppMediaInfoCell
                         row={row}
+                        filters={filters}
+                        username={username}
                         isCurrent={isCurrent}
+                        mediaType={mediaType}
                     />
                 );
             },
@@ -265,19 +268,19 @@ const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
     return (
         <>
             {isCurrent ?
-                <Drop.DropdownMenu>
-                    <Drop.DropdownMenuTrigger disabled={updateStatus.isPending}>
+                <DropdownMenu>
+                    <DropdownMenuTrigger disabled={updateStatus.isPending}>
                         <>{row.original.status}</>
-                    </Drop.DropdownMenuTrigger>
-                    <Drop.DropdownMenuContent align="end">
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
                         {row.original.all_status.map(status =>
-                            <Drop.DropdownMenuItem key={status} value={status} disabled={row.original.status === status}
-                                                   onClick={(ev) => handleStatus(ev.target.textContent)}>
+                            <DropdownMenuItem key={status} value={status} disabled={row.original.status === status}
+                                              onClick={(ev) => handleStatus(ev.target.textContent)}>
                                 {status}
-                            </Drop.DropdownMenuItem>
+                            </DropdownMenuItem>
                         )}
-                    </Drop.DropdownMenuContent>
-                </Drop.DropdownMenu>
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 :
                 row.original.status
             }
@@ -339,12 +342,13 @@ const CommentCell = ({ row, isCurrent, username, mediaType, filters }) => {
     );
 };
 
-const SuppMediaInfoCell = ({ row, isCurrent }) => {
+const SuppMediaInfoCell = ({ row, isCurrent, mediaType, filters, username }) => {
     return (
         <div className="flex items-center justify-between h-[20px]">
             <SuppMediaInfo
-                media={row.original}
                 isCurrent={isCurrent}
+                userMedia={row.original}
+                queryKey={["userList", mediaType, username, filters]}
             />
         </div>
     );
