@@ -1,3 +1,30 @@
+## CHANGELOG v2.1.0
+---
+
+### Under the Hood
+
+- Add `Redis-Server` to the backend
+- Add `Flask-Limiter` to the backend
+- Use Redis for `Flask-Cache`
+- Add `gzip` compression with `nginx` for json responses
+- Replace `datetime.utcnow` (deprecated python 3.12)
+
+### Features
+
+- Add privacy modes (`restricted` and `public`) `private` mode soon&trade;
+- Add `authors` to the book edition (in `/details`) (`manager` only)
+
+### Fixes
+
+- Fix tv refresh data from TMDB
+- Fix changing a season was not resetting the episodes dropdown to 1 (in `/details` and `/list`)
+- Fix possible to edit history when not current user (in `/profile`)
+- Fix E00 for tv shows (in `/details` and `/list`)
+- Fix oAuth2 new username could have > 14 characters
+- Fix no Stale-While-Revalidate for the `/list` page
+- Fix browser history and edit media (`/details`)
+- Fix correct % of non-rated media in `/profile` (do not take into account the `plan to X` media)
+
 ## CHANGELOG v2.0.0
 ---
 
