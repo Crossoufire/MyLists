@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
 from typing import List
 
 
 # --- USERS ------------------------------------------------------------------------
 
-class RoleType(StrEnum):
+class RoleType(str, Enum):
     """
     Represents the different roles available in MyLists.
     - `manager`: can lock, edit, and refresh the media details
@@ -17,7 +17,7 @@ class RoleType(StrEnum):
     USER = "user"
 
 
-class Privacy(StrEnum):
+class Privacy(str, Enum):
     """
     Represents the different privacy settings available in MyLists.
     - `public`: everyone can see the user profile.
@@ -33,7 +33,7 @@ class Privacy(StrEnum):
 # --- MEDIA ------------------------------------------------------------------------
 
 
-class MediaType(StrEnum):
+class MediaType(str, Enum):
     """
     Represents each media type available in MyLists.
     The enum order is used, do not modify !!
@@ -54,7 +54,7 @@ class MediaType(StrEnum):
         return [cls.SERIES, cls.MOVIES]
 
 
-class Status(StrEnum):
+class Status(str, Enum):
     """
     Represents all the different statuses available in MyLists for all the media types.
     As well as the default status for each media type.
@@ -104,7 +104,7 @@ class Status(StrEnum):
             raise ValueError(f"Invalid media type: {media_type}")
 
 
-class JobType(StrEnum):
+class JobType(str, Enum):
     """
     Represents the different accepted job type in a media details page:
     - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
@@ -117,7 +117,7 @@ class JobType(StrEnum):
     PLATFORM = "platform"
 
 
-class GamesPlatformsEnum(StrEnum):
+class GamesPlatformsEnum(str, Enum):
     """
     Represents the different platforms available for the games in MyLists.
     Needs to be updated when new video games platforms are created.
@@ -165,7 +165,7 @@ class GamesPlatformsEnum(StrEnum):
 # --- OTHER ------------------------------------------------------------------------
 
 
-class ModelTypes(StrEnum):
+class ModelTypes(str, Enum):
     """
     Represents the different types of SQLAlchemy models available in MyLists.
     Used to determine the appropriate model to use in polymorphic endpoints
@@ -183,7 +183,7 @@ class ModelTypes(StrEnum):
     AUTHORS = "authors"
 
 
-class NotificationType(StrEnum):
+class NotificationType(str, Enum):
     """
     Represents the different types of notifications available in MyLists, excluding the books.
     - `tv`: notifications for the series/anime
@@ -196,7 +196,7 @@ class NotificationType(StrEnum):
     FOLLOW = "follow"
 
 
-class UpdateType(StrEnum):
+class UpdateType(str, Enum):
     """
     Represents the different types of updates available in MyLists.
     - `tv`: seasons and episodes updates for the series/anime
