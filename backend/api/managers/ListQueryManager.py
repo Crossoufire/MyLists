@@ -146,7 +146,7 @@ class ListQueryManager:
     def _calculate_common_ids(self) -> List[int]:
         subq = (
             self.media_list.query.with_entities(self.media_list.media_id)
-            .filter_by(user_id=current_user.id).subquery()
+            .filter_by(user_id=current_user.id).scalar_subquery()
         )
         common_ids_query = (
             db.session.query(self.media_list.media_id)
@@ -274,13 +274,14 @@ class SmallListFiltersManager:
             )
             platforms_results = [plat[0].value for plat in platforms_results] if platforms_results else []
 
+        langs = results.langs.split(",") if getattr(results, "langs", None) else []
+
         data = dict(
             labels=[label[0] for label in labels_results] or [],
             genres=results.genres.split(",") if results.genres else [],
-            langs=results.langs.split(",") if getattr(results, "langs", None) else [],
+            langs=list(set([x.strip() for x in langs])),
             platforms=platforms_results,
         )
-
         return data
 
 
