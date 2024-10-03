@@ -1,5 +1,4 @@
 import {toast} from "sonner";
-import {mail} from "@/utils/constants";
 import {useEffect, useState} from "react";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
@@ -9,7 +8,7 @@ import {createLazyFileRoute} from "@tanstack/react-router";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {FaBootstrap, FaCode, FaComment, FaDollarSign, FaGithub, FaHeart, FaSmile} from "react-icons/fa";
+import {LuDollarSign, LuHeart, LuMessageCircle, LuMonitorSmartphone, LuPackageOpen, LuSparkles} from "react-icons/lu";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -85,86 +84,60 @@ function HomePage() {
                 </div>
             </section>
             <section className="mt-6">
-                <div className="grid md:grid-cols-3 items-center gap-y-10">
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaBootstrap size={35} className="mr-5"/>
-                                <div className="text-lg font-bold">Responsive</div>
-                            </div>
-                            <p className="ml-14">
-                                Fully responsive created with Shadcn/ui.
-                                Supports PC, tablets, mobile, and TV.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaGithub size={35} className="mr-5"/>
-                                <div className="text-lg font-bold">Open Source</div>
-                            </div>
-                            <p className="ml-14">
-                                Totally open source, made with&nbsp;
-                                <a href="https://flask.palletsprojects.com/" target="_blank" rel="noreferrer">Flask </a>
-                                and <a href="https://react.dev" target="_blank" rel="noreferrer"> React</a>.
-                                You can find the source code on&nbsp;
-                                <a href="https://www.github.com/Crossoufire/MyLists" target="_blank"
-                                   rel="noreferrer">Github</a>.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaDollarSign size={35} className="mr-5"/>
-                                <div className="text-lg font-bold">No ads & 100% free</div>
-                            </div>
-                            <p className="ml-14">
-                                You will not find any ads, we don't do that here.
-                                You only need to create an account to access all the content.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaComment size={35} className="mr-5"/>
-                                <div className="text-lg font-bold">Found a bug?</div>
-                            </div>
-                            <p className="ml-14">
-                                You can contact us by e-mail at:
-                                <a href={`mailto:${mail}`}> {mail}</a>
-                            </p>
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaSmile size={35} className="mr-5"/>
-                                <div className="text-lg font-bold flex items-center">
-                                    Made by me with <FaHeart size={15}/>
-                                </div>
-                            </div>
-                            <p className="ml-14">
-                                Fully responsive created with Tailwind CSS.
-                                Supports PC, tablets, mobile, and TV.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="p-2">
-                        <div className="flex flex-col">
-                            <div className="flex items-center">
-                                <FaCode size={35} className="mr-5"/>
-                                <div className="text-lg font-bold">New features coming</div>
-                            </div>
-                            <p className="ml-14">
-                                I have still ideas, just not enough time. Stay tuned!
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <FeatureCards/>
             </section>
         </PageTitle>
+    );
+}
+
+
+export default function FeatureCards() {
+    const features = [
+        {
+            icon: <LuMonitorSmartphone size={25}/>,
+            title: "Responsive",
+            description: "Fully responsive created with Shadcn/UI. Supports PC, tablets, mobile, and TV."
+        },
+        {
+            icon: <LuPackageOpen size={25}/>,
+            title: "Open Source",
+            description: "Totally open source, made using Flask and React. You can find the source code on my Github page."
+        },
+        {
+            icon: <LuDollarSign size={25}/>,
+            title: "No ads - 100% free",
+            description: "You will not find any ads, we don't do that here. You only need to create an account to access all the content."
+        },
+        {
+            icon: <LuMessageCircle size={25}/>,
+            title: "Found a bug?",
+            description: "You can contact me by mail at: contact.us.at.mylists@gmail.com"
+        },
+        {
+            icon: <LuHeart size={25}/>,
+            title: "Made by me with ❤️",
+            description: "I hope you will like it. If you have any suggestions, do not hesitate to contact me."
+        },
+        {
+            icon: <LuSparkles size={25}/>,
+            title: "New features coming",
+            description: "I still have ideas, just not enough time. Stay tuned!"
+        }
+    ];
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+            {features.map((feature, idx) => (
+                <div key={idx} className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                        {feature.icon}
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                        <p className="text-gray-300">{feature.description}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 }

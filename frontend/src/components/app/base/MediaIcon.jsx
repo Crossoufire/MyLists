@@ -1,14 +1,14 @@
-import {cn} from "@/utils/functions.jsx";
-import {FaBookOpen, FaFilm, FaGamepad, FaToriiGate, FaTv, FaUser} from "react-icons/fa";
+import {cn} from "@/utils/functions";
+import {LuCat, LuGamepad2, LuLibrary, LuMonitor, LuPopcorn, LuUser} from "react-icons/lu";
 
 
 const iconMappings = {
-    series: FaTv,
-    anime: FaToriiGate,
-    movies: FaFilm,
-    games: FaGamepad,
-    books: FaBookOpen,
-    user: FaUser,
+    series: LuMonitor,
+    anime: LuCat,
+    movies: LuPopcorn,
+    games: LuGamepad2,
+    books: LuLibrary,
+    user: LuUser,
 };
 
 

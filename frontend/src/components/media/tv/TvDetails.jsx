@@ -1,9 +1,9 @@
-import {FaStar} from "react-icons/fa";
 import {Synopsis} from "@/components/media/general/Synopsis";
 import {EpsPerSeason} from "@/components/media/tv/EpsPerSeason";
 import {MapDetails} from "@/components/media/general/MapDetails";
 import {GenericDetails} from "@/components/media/general/GenericDetails";
 import {formatDateTime, formatMinutes} from "@/utils/functions.jsx";
+import {LuStar} from "react-icons/lu";
 
 
 export const TvDetails = ({ mediaData, mediaType }) => {
@@ -16,8 +16,8 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                     <div className="flex flex-col gap-y-4">
                         <div>
                             <div className="font-semibold text-neutral-500">TMDB Rating</div>
-                            <div className="flex items-center gap-2">
-                                <FaStar/> {mediaData.vote_average.toFixed(1)} ({mediaData.vote_count})
+                            <div className="flex items-center gap-1">
+                                <LuStar className="text-amber-500"/> {mediaData.vote_average.toFixed(1)} ({mediaData.vote_count})
                             </div>
                         </div>
                         <MapDetails
@@ -93,5 +93,5 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                 epsDuration={mediaData.duration}
             />
         </div>
-    )
+    );
 };

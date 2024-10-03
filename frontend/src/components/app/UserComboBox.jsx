@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from "@/components/ui/command";
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
 
 export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback }) => {
@@ -30,7 +30,7 @@ export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback 
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
                 <Command className="overflow-y-auto max-h-[270px]">
-                    <ommandInput placeholder="Search user..." className="h-9"/>
+                    <CommandInput placeholder="Search user..." className="h-9"/>
                     <CommandList>
                         <CommandEmpty>No user found.</CommandEmpty>
                         <CommandGroup>

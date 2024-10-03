@@ -1,5 +1,5 @@
-import {mail} from "@/utils/constants.js";
-import {FaEnvelope} from "react-icons/fa";
+import {LuMail} from "react-icons/lu";
+import {mail} from "@/utils/constants";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 
@@ -18,7 +18,7 @@ export const Footer = () => (
                 <div className="flex gap-4 mt-2">
                     <a href={`mailto:${mail}`}
                        className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
-                        <FaEnvelope/> Contact us
+                        <LuMail/> Contact us
                     </a>
                     <a href="https://www.buymeacoffee.com/crossoufire" rel="noreferrer" target="_blank">
                         <img

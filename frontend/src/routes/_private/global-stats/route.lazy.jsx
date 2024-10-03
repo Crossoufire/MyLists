@@ -1,7 +1,6 @@
 import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
 import {barTheme} from "@/utils/nivoThemes";
-import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
 import {globalStatsOptions} from "@/api/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -9,7 +8,6 @@ import {PageTitle} from "@/components/app/base/PageTitle";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions";
 
 
@@ -242,23 +240,13 @@ function GlobalStatsPage() {
 }
 
 
-const GlobalTopMediaItem = ({ title, dataToMap, asFloat = false, help = null }) => {
+const GlobalTopMediaItem = ({ title, dataToMap, asFloat = false }) => {
     return (
         <div className="bg-card p-3 rounded-md">
             {title &&
                 <div>
                     <div className="flex justify-left gap-3 items-center">
                         <div className="text-base font-medium">{title}</div>
-                        {help &&
-                            <Popover>
-                                <PopoverTrigger className="opacity-30 hover:opacity-80">
-                                    <FaQuestionCircle size={15}/>
-                                </PopoverTrigger>
-                                <PopoverContent>
-                                    {help}
-                                </PopoverContent>
-                            </Popover>
-                        }
                     </div>
                     <Separator/>
                 </div>

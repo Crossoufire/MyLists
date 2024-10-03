@@ -3,9 +3,8 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {queryClient} from "@/api/queryClient";
 import {useQuery} from "@tanstack/react-query";
-import {LuBell, LuLoader2} from "react-icons/lu";
+import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
 import {useEffect, useRef, useState} from "react";
-import {FaLongArrowAltRight} from "react-icons/fa";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
@@ -113,7 +112,7 @@ const NotificationItem = ({ data, handlePopoverClose }) => {
                                         <div>Release</div>
                                     }
                                 </div>
-                                <div><FaLongArrowAltRight/></div>
+                                <div><LuMoveRight size={17}/></div>
                                 <div>{formatDateTime(data.payload.release_date)}</div>
                             </>
                         }

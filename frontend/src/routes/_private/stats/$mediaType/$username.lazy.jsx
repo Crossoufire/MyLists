@@ -8,12 +8,12 @@ import {capitalize, cn} from "@/utils/functions";
 import {Sidebar} from "@/components/app/Sidebar";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {LuHelpCircle, LuList, LuX} from "react-icons/lu";
 import {PageTitle} from "@/components/app/base/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {UserComboBox} from "@/components/app/UserComboBox";
 import {dataToLoad} from "@/components/mediaStats/statsData";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
-import {FaList, FaQuestionCircle, FaTimes} from "react-icons/fa";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -53,20 +53,20 @@ function StatsPage() {
 
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Stats`} subtitle="Detailed stats for the user">
-            <div className="flex items-center gap-4 m-4 ml-0 max-sm:justify-center">
+            <div className="flex items-center gap-3 my-4 max-sm:justify-center">
                 {apiData.is_current &&
                     <>
-                        <div>Compare with</div>
-                        <div>
+                        <div className="flex items-center gap-2">
                             <Popover>
-                                <PopoverTrigger asChild>
-                                    <div role="button"><FaQuestionCircle/></div>
+                                <PopoverTrigger>
+                                    <LuHelpCircle/>
                                 </PopoverTrigger>
-                                <PopoverContent>
-                                    Comparison between users is solely based on card statistics, excluding tables and
+                                <PopoverContent align="start">
+                                    Comparison between users is only based on card statistics, excluding tables and
                                     graphs.
                                 </PopoverContent>
                             </Popover>
+                            <span>Compare with</span>
                         </div>
                         <UserComboBox
                             resetValue={otherUser}
@@ -75,11 +75,9 @@ function StatsPage() {
                             placeholder="Search user..."
                         />
                         {otherUser &&
-                            <Tooltip text="Remove comparison" side="right">
-                                <div role="button" onClick={resetComparison}>
-                                    <FaTimes/>
-                                </div>
-                            </Tooltip>
+                            <div role="button" className="text-muted-foreground hover:text-neutral-300" onClick={resetComparison}>
+                                Clear
+                            </div>
                         }
                     </>
                 }
@@ -94,7 +92,7 @@ function StatsPage() {
                     {(apiData.is_feeling && feelingInfo) &&
                         <div className="mb-4 p-3 bg-cyan-900/80 rounded-md">
                             <div role="button" className="relative" onClick={() => setFeelingInfo(false)}>
-                                <FaTimes className="absolute right-0 opacity-80"/>
+                                <LuX className="absolute right-0 opacity-80"/>
                             </div>
                             <div className="text-lg font-medium">Feeling rating</div>
                             <p>The feeling system was converted from 0 to 5 for convenience and clarity</p>
@@ -190,7 +188,7 @@ const StatsCard = ({ data, otherData }) => {
                         <Popover>
                             <Tooltip text="Details">
                                 <PopoverTrigger>
-                                    <FaList className="opacity-50 hover:opacity-100"/>
+                                    <LuList className="opacity-50 hover:opacity-100"/>
                                 </PopoverTrigger>
                             </Tooltip>
                             <PopoverContent align="end" className="max-h-[500px] overflow-auto">

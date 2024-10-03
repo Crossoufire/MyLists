@@ -7,14 +7,13 @@ import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
 import {Loading} from "@/components/app/base/Loading";
-import {LuLoader2, LuSearch, LuX} from "react-icons/lu";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {capitalize, getLangCountryName} from "@/utils/functions";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {filterSearchOptions, smallFiltersOptions} from "@/api/queryOptions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
-import {FaArrowRightLong, FaCaretDown, FaCaretUp, FaCircleQuestion} from "react-icons/fa6";
+import {LuChevronDown, LuChevronUp, LuHelpCircle, LuLoader2, LuMoveRight, LuSearch, LuX} from "react-icons/lu";
 import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
@@ -62,9 +61,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                 <SheetHeader>
                     <SheetTitle>Additional Filters</SheetTitle>
                     <SheetDescription>
-                        <div className="flex items-center space-x-2">
-                            How filters works &nbsp;
-                            <FilterInfoPopover/>
+                        <div className="flex items-center gap-2">
+                            How filters works <FilterInfoPopover/>
                         </div>
                     </SheetDescription>
                 </SheetHeader>
@@ -234,8 +232,8 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
             </div>
             {items.length > initVisibleItems &&
                 <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
-                    {showAll ? <>Show Less <FaCaretUp className="h-4 w-4"/></> :
-                        <>Show More <FaCaretDown className="h-4 w-4"/></>}
+                    {showAll ? <>Show Less <LuChevronUp className="ml-1" size={17}/></> :
+                        <>Show More <LuChevronDown className="ml-1" size={17}/></>}
                 </Button>
             }
         </div>
@@ -330,7 +328,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 const FilterInfoPopover = () => (
     <Popover>
         <PopoverTrigger>
-            <FaCircleQuestion/>
+            <LuHelpCircle/>
         </PopoverTrigger>
         <PopoverContent className="w-full space-y-2" align="left">
             <div className="-mt-2 font-medium underline underline-offset-2">
@@ -339,14 +337,14 @@ const FilterInfoPopover = () => (
             <div>
                 Drama + Crime
                 <br/>
-                <FaArrowRightLong className="inline-block"/>&nbsp;
+                <LuMoveRight className="inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime)
             </div>
             <div>
                 Drama + Crime + France
                 <br/>
-                <FaArrowRightLong className="inline-block"/>&nbsp;
+                <LuMoveRight className="inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime) <b>AND</b> France
             </div>
