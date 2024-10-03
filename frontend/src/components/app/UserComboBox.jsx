@@ -1,9 +1,9 @@
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
-import * as Com from "@/components/ui/command";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from "@/components/ui/command";
 
 
 export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback }) => {
@@ -29,24 +29,24 @@ export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback 
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
-                <Com.Command className="overflow-y-auto max-h-[270px]">
-                    <Com.CommandInput placeholder="Search user..." className="h-9"/>
-                    <Com.CommandList>
-                        <Com.CommandEmpty>No user found.</Com.CommandEmpty>
-                        <Com.CommandGroup>
+                <Command className="overflow-y-auto max-h-[270px]">
+                    <ommandInput placeholder="Search user..." className="h-9"/>
+                    <CommandList>
+                        <CommandEmpty>No user found.</CommandEmpty>
+                        <CommandGroup>
                             {dataList.map(user =>
-                                <Com.CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
+                                <CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
                                     {user.label}
                                     <CheckIcon
                                         className={cn("ml-auto h-4 w-4",
                                             value === user.value ? "opacity-100" : "opacity-0")}
                                     />
-                                </Com.CommandItem>
+                                </CommandItem>
                             )}
-                        </Com.CommandGroup>
-                    </Com.CommandList>
-                </Com.Command>
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
             </PopoverContent>
         </Popover>
-    )
+    );
 };

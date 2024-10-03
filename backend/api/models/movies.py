@@ -111,7 +111,6 @@ class MoviesList(MediaList):
         media_dict["media_cover"] = self.media.media_cover
         media_dict["media_name"] = self.media.name
         media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["labels"] = [label.name for label in self.media.labels]
         media_dict["rating"] = {
             "type": "feeling" if is_feeling else "score",
             "value": self.feeling if is_feeling else self.score

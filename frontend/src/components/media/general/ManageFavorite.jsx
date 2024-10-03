@@ -2,21 +2,21 @@ import {cn} from "@/utils/functions";
 import {LuHeart} from "react-icons/lu";
 
 
-export const ManageFavorite = ({ updateFavorite, isFavorite, isCurrent = true }) => {
+export const ManageFavorite = ({ updateFavorite, isFavorite }) => {
     const handleFavorite = () => {
         updateFavorite.mutate({ payload: !isFavorite });
     };
 
     return (
-        <>
-            {isCurrent ?
-                <div role="button" onClick={handleFavorite}>
-                    <LuHeart className={cn("opacity-100", isFavorite && "text-red-700",
-                        updateFavorite.isPending && "opacity-20")} title="Favorite"/>
-                </div>
-                :
-                <span><LuHeart className={isFavorite && "text-red-700"} title="Favorite"/></span>
-            }
-        </>
+        <div role="button" onClick={handleFavorite}>
+            <LuHeart
+                title="Favorite"
+                className={cn(
+                    "opacity-100 w-5 h-5 text-white",
+                    isFavorite && "text-red-700",
+                    updateFavorite.isPending && "opacity-20"
+                )}
+            />
+        </div>
     );
 };

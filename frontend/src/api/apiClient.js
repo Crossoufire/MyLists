@@ -45,7 +45,7 @@ class ApiClient {
     async request(data) {
         let response = await this.requestInternal(data);
 
-        if (response.status === 401 && data.url !== "/tokens") {
+        if ((response.status === 401 || (response.status === 403 && this.isAuthenticated())) && data.url !== "/tokens") {
             let beforeRenewAccessToken = this.getAccessToken();
             const refreshResponse = await this.put("/tokens", {
                 access_token: this.getAccessToken(),

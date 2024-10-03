@@ -1,24 +1,24 @@
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {BlockLink} from "@/components/app/BlockLink";
-import {LuCheckCircle2, LuMoreHorizontal} from "react-icons/lu";
-import {RedoListDrop} from "@/components/medialist/RedoListDrop";
 import {TablePagination} from "@/components/app/TablePagination";
-import {RatingComponent} from "@/components/app/RatingComponent";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {EditMediaList} from "@/components/medialist/EditMediaList";
-import {SuppMediaInfo} from "@/components/medialist/SuppMediaInfo";
+import {DisplayRating} from "@/components/medialist/DisplayRating";
+import {QuickAddMedia} from "@/components/medialist/QuickAddMedia";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
-import {ManageFavorite} from "@/components/media/general/ManageFavorite";
+import {UserMediaEditDialog} from "@/components/medialist/UserMediaEditDialog";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
+import {LuCheckCircle2, LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
+import {SpecificUserMediaData} from "@/components/medialist/SpecificUserMediaData";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
-export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
+export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryKey, onChangePage }) => {
+    const { currentUser } = useAuth();
     const filters = Route.useSearch();
-    const { mediaType, username } = Route.useParams();
+    const isConnected = !!currentUser;
+    const [editingId, setEditingId] = useState(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
 
     const onPaginationChange = (paginateFunc) => {
@@ -27,12 +27,11 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
 
     let listColumns = useMemo(() => [
         {
-            accessorKey: "media_name",
             header: "Name",
             cell: ({ row }) => {
                 return (
                     <BlockLink to={`/details/${mediaType}/${row.original.media_id}`}>
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
                             {row.original.media_name}
                             {!isCurrent && row.original.common && <LuCheckCircle2 className="h-4 w-4 text-green-500"/>}
                         </div>
@@ -43,133 +42,79 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
         {
             accessorKey: "status",
             header: "Status",
+        },
+        ...(mediaType === "movies" ? [] : [
+            {
+                header: "Progress",
+                cell: ({ row }) => (
+                    <div className="flex items-center">
+                        <SpecificUserMediaData mediaType={mediaType} userMedia={row.original}/>
+                    </div>
+                ),
+            },
+        ]),
+        {
+            header: "Information",
             cell: ({ row }) => {
                 return (
-                    <StatusCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
+                    <div className="flex items-center gap-3">
+                        <DisplayRating rating={row.original.rating}/>
+                        {row.original.redo > 0 &&
+                            <div className="flex items-center gap-1">
+                                <LuRefreshCw className="text-green-500"/> {row.original.redo}
+                            </div>
+                        }
+                        {row.original.favorite && <LuHeart className="text-red-500"/>}
+                        {row.original.comment && <CommentPopover content={row.original.comment}/>}
+                    </div>
                 );
             },
         },
         {
-            accessorKey: "suppInfo",
-            header: "--",
+            id: "actions",
             cell: ({ row }) => {
-                return (
-                    <SuppMediaInfoCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
-                );
+                if (!isConnected) return null;
+                if (isCurrent) {
+                    return (
+                        <div role="button" className="flex items-center justify-center" onClick={() => {
+                            setDialogOpen(true);
+                            setEditingId(row.original.media_id);
+                        }}>
+                            <LuSettings2 className="opacity-70"/>
+                        </div>
+                    );
+                }
+                if (!isCurrent && !row.original.common) {
+                    return (
+                        <div className="flex items-center justify-center">
+                            <QuickAddMedia
+                                queryKey={queryKey}
+                                mediaType={mediaType}
+                                mediaId={row.original.media_id}
+                                allStatus={pagination.all_status}
+                            />
+                        </div>
+                    );
+                }
             },
         },
-        {
-            accessorKey: "rating",
-            header: "Rating",
-            cell: ({ row }) => {
-                return (
-                    <RatingCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
-                );
-            },
-        },
-        {
-            accessorKey: "redo",
-            header: "Redo",
-            cell: ({ row }) => {
-                return (
-                    <RedoCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
-                );
-            },
-        },
-        {
-            accessorKey: "favorite",
-            header: "Favorite",
-            cell: ({ row }) => {
-                return (
-                    <FavoriteCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
-                );
-            },
-        },
-        {
-            accessorKey: "comment",
-            header: "Comment",
-            cell: ({ row }) => {
-                return (
-                    <CommentCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        isCurrent={isCurrent}
-                        mediaType={mediaType}
-                    />
-                );
-            },
-        },
-        {
-            id: "action",
-            cell: ({ row }) => {
-                return (
-                    <ActionsCell
-                        row={row}
-                        filters={filters}
-                        username={username}
-                        mediaType={mediaType}
-                        isCurrent={isCurrent}
-                    />
-                );
-            },
-        },
-    ], []);
-
-    if (mediaType === "series" || mediaType === "anime") {
-        listColumns[2].header = "Progress";
-    }
-    else if (mediaType === "movies") {
-        listColumns = listColumns.filter(item => item.accessorKey !== "suppInfo");
-    }
-    else if (mediaType === "games") {
-        listColumns[2].header = "Playtime";
-        listColumns = listColumns.filter(item => item.accessorKey !== "redo");
-    }
-    else if (mediaType === "books") {
-        listColumns[2].header = "Pages";
-    }
+    ], [isCurrent, isConnected, mediaType, queryKey, pagination.all_status]);
 
     const table = useReactTable({
         columns: listColumns,
         manualFiltering: true,
+        data: mediaList ?? [],
         manualPagination: true,
-        data: apiData.media_data ?? [],
+        rowCount: pagination.total ?? 0,
         getCoreRowModel: getCoreRowModel(),
         onPaginationChange: onPaginationChange,
-        rowCount: apiData?.pagination.total ?? 0,
         state: { pagination: paginationState },
     });
+
+    const getCurrentEditingItem = () => {
+        if (!editingId) return null;
+        return mediaList.find(item => item.media_id === editingId);
+    };
 
     return (
         <>
@@ -180,7 +125,7 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map(header =>
                                     <TableHead key={header.id}>
-                                        {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 )}
                             </TableRow>
@@ -188,17 +133,15 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ?
-                            table.getRowModel().rows.map(row => {
-                                return (
-                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                        {row.getVisibleCells().map(cell =>
-                                            <TableCell key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                );
-                            })
+                            table.getRowModel().rows.map(row =>
+                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                    {row.getVisibleCells().map(cell =>
+                                        <TableCell key={cell.id} style={{ width: getColumnWidth(cell.column.id) }}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            )
                             :
                             <TableRow>
                                 <TableCell colSpan={listColumns.length} className="h-24 text-center">
@@ -210,210 +153,32 @@ export const MediaTable = ({ apiData, isCurrent, onChangePage }) => {
                 </Table>
             </div>
             <div className="mt-3">
-                <TablePagination table={table}/>
+                <TablePagination table={table} withSelection={false}/>
             </div>
-        </>
-    );
-};
-
-
-const StatusCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateStatusFunc } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
-    const updateStatus = updateStatusFunc(onStatusSuccess);
-
-    const handleStatus = (status) => {
-        updateStatus.mutate({ payload: status });
-    };
-
-    function onStatusSuccess(oldData, variables) {
-        const newData = { ...oldData };
-        const status = variables.payload;
-        const searchStatuses = filters?.status;
-
-        if (searchStatuses) {
-            if (!searchStatuses.includes(status)) {
-                newData.media_data = newData.media_data.filter(m => m.media_id !== row.original.media_id);
-                return newData;
-            }
-        }
-        if (status === "Completed" && (mediaType === "series" || mediaType === "anime")) {
-            newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === row.original.media_id) {
-                    return {
-                        ...m,
-                        current_season: row.original.eps_per_season.length,
-                        last_episode_watched: row.original.eps_per_season[row.original.eps_per_season.length - 1],
-                    };
-                }
-                return m;
-            });
-        }
-        if (status === "Completed" && mediaType === "books") {
-            newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === row.original.media_id) {
-                    return { ...m, actual_page: row.original.total_pages };
-                }
-                return m;
-            });
-        }
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, status: status, redo: 0 };
-            }
-            return m;
-        });
-        return newData;
-    }
-
-    return (
-        <>
-            {isCurrent ?
-                <DropdownMenu>
-                    <DropdownMenuTrigger disabled={updateStatus.isPending}>
-                        <>{row.original.status}</>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {row.original.all_status.map(status =>
-                            <DropdownMenuItem key={status} value={status} disabled={row.original.status === status}
-                                              onClick={(ev) => handleStatus(ev.target.textContent)}>
-                                {status}
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                :
-                row.original.status
+            {dialogOpen &&
+                <UserMediaEditDialog
+                    queryKey={queryKey}
+                    mediaType={mediaType}
+                    userMedia={getCurrentEditingItem()}
+                    onOpenChange={() => {
+                        setDialogOpen(false);
+                        setEditingId(null);
+                    }}
+                />
             }
         </>
     );
 };
 
-const RatingCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateRating } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
 
-    return (
-        <RatingComponent
-            inline={true}
-            isEditable={isCurrent}
-            onUpdate={updateRating}
-            rating={row.original.rating}
-        />
-    );
-};
-
-const FavoriteCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateFavorite } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
-
-    return (
-        <div className="text-center">
-            <ManageFavorite
-                isCurrent={isCurrent}
-                updateFavorite={updateFavorite}
-                isFavorite={row.original.favorite}
-            />
-        </div>
-    );
-};
-
-const RedoCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    if (row.original.status !== "Completed") return;
-
-    const { updateRedo } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
-
-    return (
-        <RedoListDrop
-            isCurrent={isCurrent}
-            updateRedo={updateRedo}
-            redo={row.original.redo}
-        />
-    );
-};
-
-const CommentCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { updateComment } = userMediaMutations(mediaType, row.original.media_id, ["userList", mediaType, username, filters]);
-
-    return (
-        <CommentPopover
-            isCurrent={isCurrent}
-            key={row.original.media_id}
-            updateComment={updateComment}
-            content={row.original.comment}
-        />
-    );
-};
-
-const SuppMediaInfoCell = ({ row, isCurrent, mediaType, filters, username }) => {
-    return (
-        <div className="flex items-center justify-between h-[20px]">
-            <SuppMediaInfo
-                isCurrent={isCurrent}
-                userMedia={row.original}
-                queryKey={["userList", mediaType, username, filters]}
-            />
-        </div>
-    );
-};
-
-const ActionsCell = ({ row, isCurrent, username, mediaType, filters }) => {
-    const { currentUser } = useAuth();
-    if (!currentUser) return;
-    if (!isCurrent && (isCurrent || row.original.common)) return;
-
-    const { removeFromList, addToList, updateStatusFunc } = userMediaMutations(
-        mediaType, row.original.media_id, ["userList", mediaType, username, filters]
-    );
-
-    const onStatusSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        const status = variables.payload;
-        const searchStatuses = filters?.status;
-
-        if (searchStatuses) {
-            if (!searchStatuses.includes(status)) {
-                newData.media_data = newData.media_data.filter(m => m.media_id !== row.original.media_id);
-                return newData;
-            }
-        }
-
-        if (status === "Completed" && (mediaType === "series" || mediaType === "anime")) {
-            newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === row.original.media_id) {
-                    return {
-                        ...m,
-                        current_season: row.original.eps_per_season.length,
-                        last_episode_watched: row.original.eps_per_season[row.original.eps_per_season.length - 1],
-                    };
-                }
-                return m;
-            });
-        }
-        if (status === "Completed" && mediaType === "books") {
-            newData.media_data = newData.media_data.map(m => {
-                if (m.media_id === row.original.media_id) {
-                    return { ...m, actual_page: row.original.total_pages };
-                }
-                return m;
-            });
-        }
-        newData.media_data = newData.media_data.map(m => {
-            if (m.media_id === row.original.media_id) {
-                return { ...m, status: status, redo: 0 };
-            }
-            return m;
-        });
-        return newData;
+function getColumnWidth(colId) {
+    const columnWidths = {
+        "Name": "auto",
+        "status": "auto",
+        "Progress": "auto",
+        "Information": "auto",
+        "actions": "80px",
     };
 
-    return (
-        <EditMediaList
-            isCurrent={isCurrent}
-            addOtherList={addToList}
-            status={row.original.status}
-            removeMedia={removeFromList}
-            allStatus={row.original.all_status}
-            updateStatus={updateStatusFunc(onStatusSuccess)}
-        >
-            <LuMoreHorizontal className="h-4 w-4"/>
-        </EditMediaList>
-    );
-};
+    return columnWidths[colId] || "auto";
+}

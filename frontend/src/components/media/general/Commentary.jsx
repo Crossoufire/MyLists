@@ -37,9 +37,9 @@ export const Commentary = ({ content, updateComment }) => {
                 <>
                     <Textarea
                         value={updatedContent}
-                        className="w-full h-20"
+                        className={"w-full h-20"}
                         disabled={updateComment.isPending}
-                        placeholder="Enter your comment..."
+                        placeholder={"Enter your comment..."}
                         onChange={(ev) => setUpdatedContent(ev.target.value)}
                     />
                     <div className="flex justify-end gap-2 mt-2">
@@ -52,7 +52,9 @@ export const Commentary = ({ content, updateComment }) => {
                     </div>
                 </>
                 :
-                <MutedText>{updatedContent ? `${updatedContent}` : "No comments added yet"}</MutedText>
+                <MutedText className="text-sm break-words max-h-[150px] overflow-y-auto">
+                    {updatedContent ? `${updatedContent}` : "No comments added yet"}
+                </MutedText>
             }
         </>
     );

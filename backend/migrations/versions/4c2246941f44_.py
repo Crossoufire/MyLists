@@ -21,6 +21,7 @@ def upgrade():
     user_table = sa.Table("user", metadata, autoload_with=connection)
     ums_table = sa.Table("user_media_settings", metadata, autoload_with=connection)
 
+    # noinspection PyTypeChecker
     admin_user_id = connection.execute(sa.select(user_table.c.id).where(user_table.c.username == "admin")).scalar()
     # noinspection PyTypeChecker
     connection.execute(ums_table.delete().where(ums_table.c.user_id == admin_user_id))

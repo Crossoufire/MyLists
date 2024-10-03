@@ -1,15 +1,25 @@
 import {useState} from "react";
-import {FaCaretDown, FaCaretRight} from "react-icons/fa";
+import {cn} from "@/utils/functions";
+import {LuChevronUp} from "react-icons/lu";
 
 
-export const useCollapse = (initPos = true) => {
-    const [isOpen, setIsOpen] = useState(initPos);
-    const [caret, setCaret] = useState(initPos ? <FaCaretRight size={21}/> : <FaCaretDown size={21}/>);
+export const useCollapse = (defaultOpen = true) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
 
     const toggleCollapse = () => {
         setIsOpen(!isOpen);
-        isOpen ? setCaret(<FaCaretDown size={21}/>) : setCaret(<FaCaretRight size={21}/>);
     };
 
-    return { isOpen, caret, toggleCollapse };
+    const caret = (
+        <div className={cn("transform transition-transform duration-300", isOpen ? "rotate-0" : "rotate-180")}>
+            <LuChevronUp size={21}/>
+        </div>
+    );
+
+    const contentClasses = cn(
+        "transition-all duration-300 ease-in-out",
+        isOpen ? "max-h-[900px] opacity-100 pointer-events-auto" : "max-h-0 opacity-0 pointer-events-none"
+    );
+
+    return { isOpen, caret, toggleCollapse, contentClasses };
 };

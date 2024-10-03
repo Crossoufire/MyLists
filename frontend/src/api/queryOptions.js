@@ -89,9 +89,9 @@ export const smallFiltersOptions = (mediaType, username) => queryOptions({
     staleTime: Infinity,
 });
 
-export const mediaLabelsOptions = (mediaType, mediaId, isOpen) => queryOptions({
-    queryKey: ["labels", mediaType, mediaId],
-    queryFn: () => fetcher({ url: `/labels_for_media/${mediaType}/${mediaId}` }),
+export const mediaLabelsOptions = (mediaType, isOpen) => queryOptions({
+    queryKey: ["labels", mediaType],
+    queryFn: () => fetcher({ url: `/all_labels/${mediaType}` }),
     enabled: isOpen,
 });
 

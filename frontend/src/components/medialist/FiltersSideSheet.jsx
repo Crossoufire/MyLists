@@ -24,7 +24,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     const { username, mediaType } = Route.useParams();
     const searchFiltersList = getListSearchFilters(mediaType);
     const { data: smallFilters, isLoading } = useQuery(smallFiltersOptions(mediaType, username));
-    
+
     const registerChange = (filterType, value) => {
         if (Array.isArray(value)) {
             const updatedSearch = { ...localFilters };
@@ -122,8 +122,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                                         defaultChecked={search.langs?.includes(lang)}
                                                         onCheckedChange={() => registerChange("langs", [lang])}
                                                     />
-                                                    <label htmlFor={`${lang}-id`}
-                                                           className="text-sm cursor-pointer line-clamp-1">
+                                                    <label htmlFor={`${lang}-id`} className="text-sm cursor-pointer line-clamp-1">
                                                         {(mediaType === "series" || mediaType === "anime") ?
                                                             getLangCountryName(lang, "region")
                                                             :

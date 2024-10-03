@@ -32,7 +32,7 @@ class Books(Media):
         media_dict.update(dict(
             media_cover=self.media_cover,
             authors=[author.name for author in self.authors],
-            genres=self.genres_list
+            genres=self.genres_list,
         ))
 
         return media_dict
@@ -195,7 +195,7 @@ class BooksAuthors(db.Model):
             authors = authors.split(", ")
         except:
             return
-        
+
         cls.query.filter_by(media_id=media_id).delete()
         db.session.add_all([cls(media_id=media_id, name=author) for author in authors])
         db.session.commit()

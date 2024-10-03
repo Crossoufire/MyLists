@@ -8,8 +8,20 @@ import {userMediaMutations} from "@/api/mutations/mediaMutations";
 export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }) => {
     const { updateRating, updateRedo, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
+    const updateMedia = (media, status) => ({ ...media, status, redo: 0 });
+
     const onStatusSuccess = (oldData, variables) => {
-        return { ...oldData, user_media: { ...oldData.user_media, status: variables.payload, redo: 0 } };
+        const status = variables.payload;
+
+        if (queryKey[0] === "details") {
+            return { ...oldData, user_media: updateMedia(oldData.user_media, status) };
+        }
+
+        return {
+            ...oldData, media_data: oldData.media_data.map(m =>
+                m.media_id === userMedia.media_id ? updateMedia(m, status) : m
+            )
+        };
     };
 
     return (

@@ -4,7 +4,6 @@ import {Input} from "@/components/ui/input";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
-import * as Com from "@/components/ui/command";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {LuLoader2, LuSearch} from "react-icons/lu";
 import {useSheet} from "@/providers/SheetProvider";
@@ -12,6 +11,7 @@ import {navSearchOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {capitalize, formatDateTime} from "@/utils/functions";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
+import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -67,8 +67,8 @@ export const SearchBar = () => {
             </div>
             {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
                 <div className="z-50 absolute w-[310px] rounded-lg border shadow-md mt-1">
-                    <Com.Command>
-                        <Com.CommandList className="max-h-[350px] overflow-y-auto">
+                    <Command>
+                        <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
                                     <LuLoader2 className="h-6 w-6 animate-spin"/>
@@ -76,12 +76,12 @@ export const SearchBar = () => {
                             }
                             {error && (
                                 error.status === 429 ?
-                                    <Com.CommandEmpty>Too many requests. Please wait a bit and try again.</Com.CommandEmpty>
+                                    <CommandEmpty>Too many requests. Please wait a bit and try again.</CommandEmpty>
                                     :
-                                    <Com.CommandEmpty>An error occurred. Please try again.</Com.CommandEmpty>
+                                    <CommandEmpty>An error occurred. Please try again.</CommandEmpty>
                             )}
                             {data && data.items.length === 0 &&
-                                <Com.CommandEmpty>No results found.</Com.CommandEmpty>
+                                <CommandEmpty>No results found.</CommandEmpty>
                             }
                             {data && data.items.length > 0 &&
                                 data.items.map(media =>
@@ -90,7 +90,7 @@ export const SearchBar = () => {
                                         resetSearch={resetSearch}
                                     />
                                 )}
-                        </Com.CommandList>
+                        </CommandList>
                         {data && data.pages > 1 &&
                             <div className="flex justify-between items-center p-4">
                                 <Button size="sm" variant="outline" disabled={page === 1}
@@ -106,7 +106,7 @@ export const SearchBar = () => {
                                 </Button>
                             </div>
                         }
-                    </Com.Command>
+                    </Command>
                 </div>
             }
         </div>
@@ -127,7 +127,7 @@ const SearchComponent = ({ media, resetSearch }) => {
 
     return (
         <Link to={url} onClick={handleLinkClick}>
-            <Com.CommandItem key={media.api_id} className="cursor-pointer py-2">
+            <CommandItem key={media.api_id} className="cursor-pointer py-2">
                 <div className="flex gap-4 items-center">
                     <img
                         alt={media.name}
@@ -141,7 +141,7 @@ const SearchComponent = ({ media, resetSearch }) => {
                         <div className="text-muted-foreground text-sm">{formatDateTime(media.date)}</div>
                     </div>
                 </div>
-            </Com.CommandItem>
+            </CommandItem>
             <Separator className="m-0"/>
         </Link>
     );

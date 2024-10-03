@@ -142,11 +142,13 @@ class TVListModel(MediaList):
         special_statuses = (Status.RANDOM, Status.PLAN_TO_WATCH)
         new_total = self.total
 
-        self.status = new_status
-        self.redo = 0
+        print(self.status, new_status)
 
         if self.status in special_statuses and new_status not in special_statuses:
             self.last_episode_watched = 1
+
+        self.status = new_status
+        self.redo = 0
 
         if new_status == Status.COMPLETED:
             total_eps = sum(self.media.eps_seasons_list)

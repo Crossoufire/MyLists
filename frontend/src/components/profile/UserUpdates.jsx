@@ -12,7 +12,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 export const UserUpdates = ({ updates, followers = false }) => {
     const { currentUser } = useAuth();
     const { username } = useParams({ strict: false });
-    const { isOpen, caret, toggleCollapse } = useCollapse();
+    const { caret, toggleCollapse, contentClasses } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
     const deleteUserUpdates = useDeleteUpdateMutation(["profile", username]);
 
@@ -39,25 +39,21 @@ export const UserUpdates = ({ updates, followers = false }) => {
                 </CardTitle>
                 <Separator/>
             </CardHeader>
-            <CardContent className="pb-3 relative">
-                {isOpen &&
-                    <>
-                        {updates.length === 0 ?
-                            <MutedText className="pb-3">No updates to display yet</MutedText>
-                            :
-                            updates.map(update =>
-                                <UserUpdate
-                                    key={update.id}
-                                    update={update}
-                                    onDelete={deleteUpdate}
-                                    isPending={deleteUserUpdates.isPending}
-                                    username={followers && update.username}
-                                    mediaIdBeingDeleted={mediaIdBeingDeleted}
-                                    canDelete={(currentUser?.id === update.user_id) && !followers}
-                                />
-                            )
-                        }
-                    </>
+            <CardContent className={`pb-3 relative ${contentClasses}`}>
+                {updates.length === 0 ?
+                    <MutedText className="pb-3">No updates to display yet</MutedText>
+                    :
+                    updates.map(update =>
+                        <UserUpdate
+                            key={update.id}
+                            update={update}
+                            onDelete={deleteUpdate}
+                            isPending={deleteUserUpdates.isPending}
+                            username={followers && update.username}
+                            mediaIdBeingDeleted={mediaIdBeingDeleted}
+                            canDelete={(currentUser?.id === update.user_id) && !followers}
+                        />
+                    )
                 }
             </CardContent>
         </Card>

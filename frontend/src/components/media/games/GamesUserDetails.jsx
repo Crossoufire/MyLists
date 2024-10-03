@@ -14,11 +14,27 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
     const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
+    const updateMedia = (media, status) => {
+        const updatedMedia = { ...media, status };
+        if (status === "Plan to Play") {
+            updatedMedia.playtime = 0;
+        }
+        return updatedMedia;
+    };
+
     const onStatusSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        newData.user_media.status = variables.payload;
-        if (variables.payload === "Plan to Play") newData.user_media.playtime = 0;
-        return newData;
+        const status = variables.payload;
+
+        if (queryKey[0] === "details") {
+            return { ...oldData, user_media: updateMedia(oldData.user_media, status) };
+        }
+
+        return {
+            ...oldData,
+            media_data: oldData.media_data.map(m =>
+                m.media_id === userMedia.media_id ? updateMedia(m, status) : m
+            )
+        };
     };
 
     return (

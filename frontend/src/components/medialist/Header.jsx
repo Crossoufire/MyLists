@@ -1,51 +1,48 @@
-import {useState} from "react";
 import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
-import {LabelsDialog} from "@/components/app/LabelsDialog";
-import {LuArrowUpDown, LuFilter, LuGrid, LuList} from "react-icons/lu";
 import {SearchComponent} from "@/components/medialist/SearchComponent";
 import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {LuArrowUpDown, LuFilter, LuGrid, LuLineChart, LuList, LuUser} from "react-icons/lu";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
 export const Header = (props) => {
+    const { isGrid, userData, pagination, onGridClick, onFilterClick, onStatusChange, onSortChange, onSearchEnter } = props;
     const { username, mediaType } = Route.useParams();
-    const { sorting, all_status: allStatus, all_sorting: allSorting } = props.pagination;
+    const { sorting, all_status: allStatus, all_sorting: allSorting } = pagination;
 
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
-            <h3 className="flex items-center gap-3 text-3xl font-medium line-clamp-1">
-                <MediaLevelCircle intLevel={parseInt(props.userData.settings[mediaType].level)}/>
+            <h3 className="flex items-center gap-3 text-3xl font-medium truncate max-sm:text-xl">
+                <MediaLevelCircle intLevel={parseInt(userData.settings[mediaType].level)}/>
                 {`${username} ${capitalize(mediaType)} Collection`}
             </h3>
             <div className="flex flex-wrap gap-3">
                 <SearchComponent
-                    onSearchEnter={props.onSearchEnter}
+                    onSearchEnter={onSearchEnter}
                 />
                 <StatusComponent
                     allStatus={allStatus}
-                    onStatusChange={props.onStatusChange}
+                    onStatusChange={onStatusChange}
                 />
-                <Button variant="filters" onClick={props.onFilterClick}>
+                <Button variant="filters" onClick={onFilterClick}>
                     <LuFilter className="w-4 h-4"/> Filters
                 </Button>
                 <SortComponent
                     sorting={sorting}
                     allSorting={allSorting}
-                    applySorting={props.onSortChange}
+                    applySorting={onSortChange}
                 />
                 <div className="flex items-center gap-3">
-                    <Button variant="filters" onClick={props.handleGridChange}>
-                        {props.isGrid ? <LuList className="w-4 h-4"/> : <LuGrid className="w-4 h-4"/>}
+                    <Button variant="filters" onClick={onGridClick}>
+                        {isGrid ? <LuList className="w-4 h-4"/> : <LuGrid className="w-4 h-4"/>}
                     </Button>
                 </div>
-                <DotsOthers
-                    isCurrent={props.isCurrent}
-                />
+                <DotsOthers/>
             </div>
         </div>
     );
@@ -104,47 +101,28 @@ const SortComponent = ({ sorting, allSorting, applySorting }) => {
 };
 
 
-const DotsOthers = ({ isCurrent }) => {
+const DotsOthers = () => {
     const { mediaType, username } = Route.useParams();
-    const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant="filters" className="px-2">
-                        <DotsVerticalIcon/>
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
-                    <Button variant="list" asChild>
-                        <Link to={`/profile/${username}`}>
-                            User's profile
-                        </Link>
-                    </Button>
-                    <Button variant="list" asChild>
-                        <Link to={`/stats/${mediaType}/${username}`}>
-                            Collection Stats
-                        </Link>
-                    </Button>
-                    {isCurrent &&
-                        <Button variant="list" onClick={() => setIsOpen(true)}>
-                            Manage Labels
-                        </Button>
-                    }
-                </PopoverContent>
-            </Popover>
-            {isCurrent &&
-                <LabelsDialog
-                    mediaId={1}
-                    isOpen={isOpen}
-                    manageOnly={true}
-                    labelsInList={[]}
-                    updateLabelsInList={() => {
-                    }}
-                    onClose={() => setIsOpen(false)}
-                />
-            }
-        </>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="filters" className="px-2">
+                    <DotsVerticalIcon/>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
+                <Button variant="list" asChild>
+                    <Link to={`/profile/${username}`}>
+                        <LuUser className="mr-2"/> User's profile
+                    </Link>
+                </Button>
+                <Button variant="list" asChild>
+                    <Link to={`/stats/${mediaType}/${username}`}>
+                        <LuLineChart className="mr-2"/> Collection Stats
+                    </Link>
+                </Button>
+            </PopoverContent>
+        </Popover>
     );
 };

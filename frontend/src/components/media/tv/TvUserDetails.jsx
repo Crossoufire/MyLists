@@ -1,4 +1,3 @@
-import React from "react";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
@@ -12,25 +11,47 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
         mediaType, userMedia.media_id, queryKey
     );
 
-    const onStatusSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
-        const status = variables.payload;
-        newData.user_media.redo = 0;
-        newData.user_media.status = status;
+    const updateMediaData = (media, status) => {
+        const updatedMedia = { ...media, redo: 0, status: status };
 
         if (userMedia.last_episode_watched === 0 && !["Plan to Watch", "Random"].includes(status)) {
-            newData.user_media.last_episode_watched = 1;
-        }
-        if (["Plan to Watch", "Random"].includes(status)) {
-            newData.user_media.current_season = 1;
-            newData.user_media.last_episode_watched = 1;
-        }
-        if (status === "Completed") {
-            newData.user_media.current_season = userMedia.eps_per_season.length;
-            newData.user_media.last_episode_watched = userMedia.eps_per_season[userMedia.eps_per_season.length - 1];
+            updatedMedia.last_episode_watched = 1;
         }
 
-        return newData;
+        if (["Plan to Watch", "Random"].includes(status)) {
+            updatedMedia.current_season = 1;
+            updatedMedia.last_episode_watched = 1;
+        }
+
+        if (status === "Completed") {
+            updatedMedia.current_season = userMedia.eps_per_season.length;
+            updatedMedia.last_episode_watched = userMedia.eps_per_season[userMedia.eps_per_season.length - 1];
+        }
+
+        return updatedMedia;
+    };
+
+    const onStatusListSuccess = (oldData, variables) => {
+        const status = variables.payload;
+
+        return {
+            ...oldData,
+            media_data: oldData.media_data.map(m =>
+                m.media_id === userMedia.media_id ? updateMediaData(m, status) : m
+            )
+        };
+    };
+
+    const onStatusDetailsSuccess = (oldData, variables) => {
+        const status = variables.payload;
+        return {
+            ...oldData,
+            user_media: updateMediaData(oldData.user_media, status)
+        };
+    };
+
+    const onStatusChanged = (oldData, variables) => {
+        return queryKey[0] === "details" ? onStatusDetailsSuccess(oldData, variables) : onStatusListSuccess(oldData, variables);
     };
 
     return (
@@ -38,7 +59,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
             <StatusDrop
                 status={userMedia.status}
                 allStatus={userMedia.all_status}
-                updateStatus={updateStatusFunc(onStatusSuccess)}
+                updateStatus={updateStatusFunc(onStatusChanged)}
             />
             {(userMedia.status !== "Plan to Watch" && userMedia.status !== "Random") &&
                 <EpsSeasonsDrop

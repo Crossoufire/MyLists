@@ -9,14 +9,32 @@ import {userMediaMutations} from "@/api/mutations/mediaMutations";
 export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {
     const { updateRedo, updateRating, updatePage, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
 
+    const updateMedia = (media, status) => {
+        const updatedMedia = { ...media, redo: 0, status: status };
+
+        if (status === "Completed") {
+            updatedMedia.actual_page = userMedia.total_pages;
+        }
+        if (status === "Plan to Read") {
+            updatedMedia.actual_page = 0;
+        }
+
+        return updatedMedia;
+    };
+
     const onStatusSuccess = (oldData, variables) => {
-        const newData = { ...oldData };
         const status = variables.payload;
-        newData.user_media.redo = 0;
-        newData.user_media.status = status;
-        if (status === "Completed") newData.user_media.actual_page = userMedia.total_pages;
-        if (status === "Plan to Read") newData.user_media.actual_page = 0;
-        return newData;
+
+        if (queryKey[0] === "details") {
+            return { ...oldData, user_media: updateMedia(oldData.user_media, status) };
+        }
+
+        return {
+            ...oldData,
+            media_data: oldData.media_data.map(m =>
+                m.media_id === userMedia.media_id ? updateMedia(m, status) : m
+            )
+        };
     };
 
     return (

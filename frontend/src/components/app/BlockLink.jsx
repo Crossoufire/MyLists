@@ -31,7 +31,7 @@ export const BlockLink = ({ children, ...props }) => {
                             Register or log in to access this content.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
+                    <DialogFooter className="mt-4">
                         <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
                             Cancel
                         </Button>

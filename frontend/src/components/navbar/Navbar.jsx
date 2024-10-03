@@ -4,7 +4,6 @@ import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import * as Nav from "@/components/ui/navigation-menu";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
@@ -13,6 +12,7 @@ import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle} from "@/components/ui/navigation-menu";
 
 
 export const Navbar = () => {
@@ -55,44 +55,44 @@ export const Navbar = () => {
         <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
             <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
                                 <NavMediaDrop/>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
                                 <SearchBar/>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/hall-of-fame" className={navigationMenuTriggerStyle()}>
                                     HoF
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/global-stats" className={navigationMenuTriggerStyle()}>
                                     Stats
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()}>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/trends" className={navigationMenuTriggerStyle()}>
                                     Trends
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
                 </div>
                 <div className="hidden lg:block">
-                    <Nav.NavigationMenu>
-                        <Nav.NavigationMenuList>
-                            <Nav.NavigationMenuItem>
-                                <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}>
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavLink to="/coming-next" className={navigationMenuTriggerStyle()}>
                                     Coming Next
                                 </NavLink>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
                                 <Notifications/>
-                            </Nav.NavigationMenuItem>
-                            <Nav.NavigationMenuItem>
+                            </NavigationMenuItem>
+                            <NavigationMenuItem>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <div className="relative">
@@ -136,7 +136,7 @@ export const Navbar = () => {
                                                 icon={<LuSparkles className="text-grey"/>}
                                             />
                                             <li>
-                                                <Nav.NavigationMenuLink asChild>
+                                                <NavigationMenuLink asChild>
                                                     <NavLink to="#" onClick={logoutUser} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
@@ -146,14 +146,14 @@ export const Navbar = () => {
                                                             <div>Logout</div>
                                                         </div>
                                                     </NavLink>
-                                                </Nav.NavigationMenuLink>
+                                                </NavigationMenuLink>
                                             </li>
                                         </ul>
                                     </PopoverContent>
                                 </Popover>
-                            </Nav.NavigationMenuItem>
-                        </Nav.NavigationMenuList>
-                    </Nav.NavigationMenu>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
                 </div>
                 <div className="lg:hidden ml-auto mr-2">
                     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -165,43 +165,43 @@ export const Navbar = () => {
                                 <SheetTitle></SheetTitle>
                                 <SheetDescription></SheetDescription>
                             </SheetHeader>
-                            <Nav.NavigationMenu className="mt-3">
-                                <Nav.NavigationMenuList className="flex flex-col items-start gap-3">
-                                    <Nav.NavigationMenuItem className="mt-4">
+                            <NavigationMenu className="mt-3">
+                                <NavigationMenuList className="flex flex-col items-start gap-3">
+                                    <NavigationMenuItem className="mt-4">
                                         <SearchBar currentUser={currentUser}/>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
                                         <NavMediaDrop currentUser={currentUser}/>
-                                    </Nav.NavigationMenuItem>
+                                    </NavigationMenuItem>
                                     <Separator/>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/hall-of-fame" className={Nav.navigationMenuTriggerStyle()}
+                                    <NavigationMenuItem>
+                                        <NavLink to="/hall-of-fame" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             HoF
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/global-stats" className={Nav.navigationMenuTriggerStyle()}
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/global-stats" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             Stats
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/trends" className={Nav.navigationMenuTriggerStyle()}
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/trends" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             Trends
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
-                                    <Nav.NavigationMenuItem>
-                                        <NavLink to="/coming-next" className={Nav.navigationMenuTriggerStyle()}
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/coming-next" className={navigationMenuTriggerStyle()}
                                                  onClick={() => setSheetOpen(false)}>
                                             Coming Next
                                         </NavLink>
-                                    </Nav.NavigationMenuItem>
+                                    </NavigationMenuItem>
                                     <Separator/>
-                                    <Nav.NavigationMenuItem>
+                                    <NavigationMenuItem>
                                         <Notifications isMobile/>
-                                    </Nav.NavigationMenuItem>
+                                    </NavigationMenuItem>
                                     <div>
                                         <NavMediaItem
                                             text="Profile"
@@ -222,7 +222,7 @@ export const Navbar = () => {
                                             className="text-lg items-center font-semibold pb-2"
                                         />
                                         <li>
-                                            <Nav.NavigationMenuLink asChild>
+                                            <NavigationMenuLink asChild>
                                                 <NavLink to="#" onClick={logoutUser} className="block select-none
                                                 space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
@@ -232,11 +232,11 @@ export const Navbar = () => {
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>
-                                            </Nav.NavigationMenuLink>
+                                            </NavigationMenuLink>
                                         </li>
                                     </div>
-                                </Nav.NavigationMenuList>
-                            </Nav.NavigationMenu>
+                                </NavigationMenuList>
+                            </NavigationMenu>
                         </SheetContent>
                     </Sheet>
                 </div>

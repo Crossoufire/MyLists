@@ -85,7 +85,7 @@ export const sliceIntoParts = (arr, n) => {
 export const getLangCountryName = (name, type) => {
     let languageNames = new Intl.DisplayNames(["en"], { type });
     if (name === "cn") return "Chinese";
-    return languageNames.of(name);
+    return languageNames.of(name.trim());
 };
 
 export const zeroPad = (value) => {

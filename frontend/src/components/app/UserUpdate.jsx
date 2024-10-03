@@ -3,15 +3,15 @@ import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
+import {BlockLink} from "@/components/app/BlockLink";
 import {Payload} from "@/components/app/base/Payload";
 import {MediaIcon} from "@/components/app/base/MediaIcon";
-import {BlockLink} from "@/components/app/BlockLink";
 
 
 export const UserUpdate = ({ update, username, onDelete, canDelete, isPending, mediaIdBeingDeleted }) => {
-    const handleDeleteUpdate = async (updateId) => {
+    const handleDeleteUpdate = async (updateId, mediaId) => {
         if (!window.confirm("This update will be definitively deleted, are you sure?")) return;
-        await onDelete(updateId);
+        await onDelete(updateId, mediaId);
     };
 
     return (
@@ -36,7 +36,7 @@ export const UserUpdate = ({ update, username, onDelete, canDelete, isPending, m
                             variant="invisible"
                             className="p-0 m-0 h-4 absolute top-2.5 right-0 opacity-0 hover:opacity-100
                             group-hover:opacity-30 transition-opacity"
-                            onClick={() => handleDeleteUpdate(update.id)}
+                            onClick={() => handleDeleteUpdate(update.id, update.media_id)}
                             disabled={isPending}
                         >
                             {isPending ? "" : <LuTrash2 className="h-4 w-4" title="Delete update"/>}

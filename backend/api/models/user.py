@@ -278,20 +278,20 @@ class User(db.Model):
         return data
 
     def get_one_media_details(self, media_type: MediaType) -> Dict:
-        media_list, media_label = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+        list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,
-            specific_total=media_list.get_specific_total(self.id),
-            count_per_metric=media_list.get_media_count_per_rating(self),
+            specific_total=list_model.get_specific_total(self.id),
+            count_per_metric=list_model.get_media_count_per_rating(self),
             time_hours=int(self.get_media_setting(media_type).time_spent / 60),
             time_days=int(self.get_media_setting(media_type).time_spent / 1440),
-            labels=media_label.get_total_and_labels_names(self.id, limit=10),
+            labels=label_model.get_total_and_user_labels(self.id, limit=10),
         )
 
-        media_dict.update(media_list.get_media_count_per_status(self.id))
-        media_dict.update(media_list.get_favorites_media(self.id, limit=10))
-        media_dict.update(media_list.get_media_rating(self))
+        media_dict.update(list_model.get_media_count_per_status(self.id))
+        media_dict.update(list_model.get_favorites_media(self.id, limit=10))
+        media_dict.update(list_model.get_media_rating(self))
 
         return media_dict
 

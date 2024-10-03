@@ -86,17 +86,13 @@ export const useDeleteUpdateMutation = (queryKey) => {
                     user_updates: [...oldData.user_updates.filter(up => up.id !== variables.updateIds[0]), data],
                 }));
             }
-            else if (queryKey[0] === "details") {
-                return queryClient.setQueryData(queryKey, (oldData) => ({
-                    ...oldData,
-                    user_media: {
-                        ...oldData.user_media,
-                        history: oldData.user_media.history.filter(hist => hist.id !== variables.updateIds[0]),
-                    },
-                }));
-            }
             else if (queryKey[0] === "history") {
                 await queryClient.invalidateQueries({ queryKey });
+            }
+            else if (queryKey[0] === "onOpenHistory") {
+                return queryClient.setQueryData(queryKey, (oldData) => {
+                    return [...oldData.filter(hist => hist.id !== variables.updateIds[0])];
+                });
             }
             toast.success("Update(s) successfully deleted");
         },
