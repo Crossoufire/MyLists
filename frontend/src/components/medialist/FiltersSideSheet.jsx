@@ -77,8 +77,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                             <CheckboxGroup
                                 title="Status"
                                 items={allStatus}
-                                onChange={(status) => registerChange("status", [status])}
                                 defaultChecked={(status) => search.status?.includes(status)}
+                                onChange={(status) => registerChange("status", [status])}
                             />
                             {smallFilters.platforms.length > 0 &&
                                 <>
@@ -219,21 +219,24 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
         <div className="space-y-2">
             <h3 className="font-medium">{title}</h3>
             <div className="grid grid-cols-2 gap-2">
-                {visibleItems.map(item => (
+                {visibleItems.map(item =>
                     <div key={item} className="flex items-center space-x-2">
                         <Checkbox
                             id={`${item}-id`}
-                            defaultChecked={defaultChecked?.(item)}
                             onCheckedChange={() => onChange(item)}
+                            defaultChecked={defaultChecked?.(item)}
                         />
                         <label htmlFor={`${item}-id`} className="text-sm cursor-pointer line-clamp-1">{item}</label>
                     </div>
-                ))}
+                )}
             </div>
             {items.length > initVisibleItems &&
                 <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
-                    {showAll ? <>Show Less <LuChevronUp className="ml-1" size={17}/></> :
-                        <>Show More <LuChevronDown className="ml-1" size={17}/></>}
+                    {showAll ?
+                        <>Show Less <LuChevronUp className="ml-1" size={17}/></>
+                        :
+                        <>Show More <LuChevronDown className="ml-1" size={17}/></>
+                    }
                 </Button>
             }
         </div>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import {ChevronDownIcon} from "@radix-ui/react-icons";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
@@ -44,7 +44,7 @@ const NavigationMenuTrigger = React.forwardRef(({ className, children, ...props 
         {children}{" "}
         <ChevronDownIcon
             className="relative top-[1px] ml-1 h-3 w-3 transition duration-300 group-data-[state=open]:rotate-180"
-            aria-hidden="true" />
+            aria-hidden="true"/>
     </NavigationMenuPrimitive.Trigger>
 ));
 NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName;
@@ -66,9 +66,9 @@ const NavigationMenuViewport = React.forwardRef(({ className, ...props }, ref) =
     <div className={cn("absolute left-0 top-full flex justify-center")}>
         <NavigationMenuPrimitive.Viewport
             className={cn("origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full " +
-            "overflow-hidden rounded-md border bg-popover text-popover-foreground shadow data-[state=open]:animate-in " +
-            "data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 " +
-            "md:w-[var(--radix-navigation-menu-viewport-width)]", className)}
+                "overflow-hidden rounded-md border bg-popover text-popover-foreground shadow data-[state=open]:animate-in " +
+                "data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 " +
+                "md:w-[var(--radix-navigation-menu-viewport-width)]", className)}
             ref={ref}
             {...props}
         />
@@ -79,8 +79,8 @@ NavigationMenuViewport.displayName = NavigationMenuPrimitive.Viewport.displayNam
 
 const NavigationMenuIndicator = React.forwardRef(({ className, ...props }, ref) => (
     <NavigationMenuPrimitive.Indicator ref={ref} className={cn("top-full z-[1] flex h-1.5 items-end justify-center " +
-    "overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out " +
-    "data-[state=visible]:fade-in", className)} {...props}>
+        "overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out " +
+        "data-[state=visible]:fade-in", className)} {...props}>
         <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md"/>
     </NavigationMenuPrimitive.Indicator>
 ));
