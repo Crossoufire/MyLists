@@ -3,7 +3,7 @@ import {formatDateTime} from "@/utils/functions";
 import {trendsOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardTitle} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";

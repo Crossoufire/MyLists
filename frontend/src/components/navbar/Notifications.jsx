@@ -9,8 +9,8 @@ import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
 import {notifPollingInterval} from "@/utils/constants";
-import {MutedText} from "@/components/app/base/MutedText";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {MutedText} from "@/components/app/MutedText";
+import {MediaIcon} from "@/components/app/MediaIcon";
 import {notificationsCountOptions, notificationsOptions} from "@/api/queryOptions";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 

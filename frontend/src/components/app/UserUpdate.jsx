@@ -1,10 +1,10 @@
 import {LuTrash2} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
+import {Payload} from "@/components/app/Payload";
 import {Separator} from "@/components/ui/separator";
 import {BlockLink} from "@/components/app/BlockLink";
 import {cn, formatDateTime} from "@/utils/functions";
-import {Payload} from "@/components/app/base/Payload";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {MediaIcon} from "@/components/app/MediaIcon";
 
 
 export function UserUpdate({ update, username, onDelete, canDelete, isPending, mediaIdBeingDeleted }) {

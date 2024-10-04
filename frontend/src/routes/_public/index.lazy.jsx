@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {useEffect, useState} from "react";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {LoginForm} from "@/components/homepage/LoginForm";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
@@ -91,7 +91,7 @@ function HomePage() {
 }
 
 
-export default function FeatureCards() {
+function FeatureCards() {
     const features = [
         {
             icon: <LuMonitorSmartphone size={25}/>,

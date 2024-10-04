@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
 import {Separator} from "@/components/ui/separator";
-import {MutedText} from "@/components/app/base/MutedText";
+import {MutedText} from "@/components/app/MutedText";
 
 
 export const Commentary = ({ content, updateComment }) => {

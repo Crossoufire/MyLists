@@ -26,6 +26,7 @@ const getUpdatePayload = (updateType) => {
     return choosePayload[updateType];
 };
 
+
 const StatusPayload = ({ payload }) => {
     return (
         <>
@@ -38,6 +39,7 @@ const StatusPayload = ({ payload }) => {
     );
 };
 
+
 const TVPayload = ({ payload }) => {
     return (
         <>
@@ -46,14 +48,17 @@ const TVPayload = ({ payload }) => {
     );
 };
 
+
 const RedoPayload = ({ payload, mediaType }) => {
     const name = (mediaType === "books") ? "Re-read" : "Re-watched";
     return <>{name} {payload.old_value}x <LuMoveRight/> {payload.new_value}x</>;
 };
 
+
 const PlaytimePayload = ({ payload }) => {
     return <>{payload.old_value / 60} h <LuMoveRight/> {payload.new_value / 60} h</>;
 };
+
 
 const PagePayload = ({ payload }) => {
     return <>p. {payload.old_value} <LuMoveRight/> p. {payload.new_value}</>;

@@ -2,7 +2,7 @@ import NProgress from "nprogress";
 import {routeTree} from "@/routeTree.gen";
 import {queryClient} from "@/api/queryClient";
 import {createRouter} from "@tanstack/react-router";
-import {ErrorComponent} from "@/components/app/base/ErrorComponent";
+import {ErrorComponent} from "@/components/app/ErrorComponent";
 
 
 NProgress.configure({ showSpinner: false, parent: "body" });

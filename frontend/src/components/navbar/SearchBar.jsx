@@ -138,7 +138,9 @@ const SearchComponent = ({ media, resetSearch }) => {
                     <div>
                         <div className="font-semibold mb-2 line-clamp-2">{media.name}</div>
                         <div className="text-neutral-300">{capitalize(media.media_type)}</div>
-                        <div className="text-muted-foreground text-sm">{formatDateTime(media.date)}</div>
+                        <div className="text-muted-foreground text-sm">
+                            {formatDateTime(media.date, { useLocalTz: true })}
+                        </div>
                     </div>
                 </div>
             </CommandItem>

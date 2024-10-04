@@ -5,7 +5,7 @@ import {listOptions} from "@/api/queryOptions";
 import {Header} from "@/components/medialist/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {MediaGrid} from "@/components/medialist/MediaGrid";
 import {MediaTable} from "@/components/medialist/MediaTable";
 import {AppliedFilters} from "@/components/medialist/AppliedFilters";

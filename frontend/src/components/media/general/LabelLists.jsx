@@ -4,8 +4,8 @@ import {Badge} from "@/components/ui/badge";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {useQueryClient} from "@tanstack/react-query";
-import {MutedText} from "@/components/app/base/MutedText";
-import {LabelsDialog} from "@/components/app/LabelsDialog";
+import {MutedText} from "@/components/app/MutedText";
+import {LabelsDialog} from "@/components/media/general/LabelsDialog";
 
 
 export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }) => {

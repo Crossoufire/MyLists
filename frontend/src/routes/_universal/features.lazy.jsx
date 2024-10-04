@@ -1,7 +1,7 @@
 import {LuSparkles} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
+import {PageTitle} from "@/components/app/PageTitle";
 import {Card, CardContent} from "@/components/ui/card";
-import {PageTitle} from "@/components/app/base/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 
 

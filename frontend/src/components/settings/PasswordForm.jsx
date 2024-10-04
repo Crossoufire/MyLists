@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 

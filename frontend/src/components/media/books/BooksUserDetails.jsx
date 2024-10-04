@@ -1,9 +1,9 @@
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {InputComponent} from "@/components/app/InputComponent";
 import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {InputComponent} from "@/components/media/books/InputComponent";
 
 
 export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {

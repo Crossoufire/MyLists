@@ -6,7 +6,7 @@ import {LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
 import {QuickAddMedia} from "@/components/medialist/QuickAddMedia";
 import {DisplayRating} from "@/components/medialist/DisplayRating";
 import {CommentPopover} from "@/components/medialist/CommentPopover";
-import {MediaInfoCorner} from "@/components/app/base/MediaInfoCorner";
+import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
 import {UserMediaEditDialog} from "@/components/medialist/UserMediaEditDialog";
 import {SpecificUserMediaData} from "@/components/medialist/SpecificUserMediaData";
 

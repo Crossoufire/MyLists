@@ -1,6 +1,6 @@
 import {useHashTab} from "@/hooks/HashTabHook";
 import {Sidebar} from "@/components/app/Sidebar";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {DangerForm} from "@/components/settings/DangerForm";
 import {GeneralForm} from "@/components/settings/GeneralForm";

@@ -13,6 +13,25 @@ export const dataToLoad = (mediaType, apiData) => {
     return mediaData[mediaType](apiData) || undefined;
 };
 
+
+const getCardsData = (data, suffix = "Watched") => {
+    return [
+        { title: `Top ${suffix}`, subtitle: `With ${data.top_values[0].value} media`, value: data.top_values[0].name },
+        { title: "Top Rated", subtitle: `With a Rating of ${data.top_rated[0].value}`, value: data.top_rated[0].name },
+        { title: "Top Favorited", subtitle: `With ${data.top_favorited[0].value} favorites`, value: data.top_favorited[0].name },
+    ];
+};
+
+
+const getListsData = (data, suffix = "Watched") => {
+    return [
+        { title: `Top ${suffix}`, data: data.top_values },
+        { title: "Top Ratings", data: data.top_rated },
+        { title: "Top Favorited", data: data.top_favorited },
+    ];
+};
+
+
 const tvData = (apiData) => {
     return [
         {
@@ -152,6 +171,7 @@ const tvData = (apiData) => {
         },
     ];
 };
+
 
 const moviesData = (apiData) => {
     return [
@@ -293,6 +313,7 @@ const moviesData = (apiData) => {
     ];
 };
 
+
 const booksData = (apiData) => {
     return [
         {
@@ -427,6 +448,7 @@ const booksData = (apiData) => {
         },
     ];
 };
+
 
 const gamesData = (apiData) => {
     return [
@@ -581,21 +603,5 @@ const gamesData = (apiData) => {
                 dataList: getListsData(apiData.lists.genres, "Played"),
             }
         },
-    ];
-};
-
-const getCardsData = (data, suffix = "Watched") => {
-    return [
-        { title: `Top ${suffix}`, subtitle: `With ${data.top_values[0].value} media`, value: data.top_values[0].name },
-        { title: "Top Rated", subtitle: `With a Rating of ${data.top_rated[0].value}`, value: data.top_rated[0].name },
-        { title: "Top Favorited", subtitle: `With ${data.top_favorited[0].value} favorites`, value: data.top_favorited[0].name },
-    ];
-};
-
-const getListsData = (data, suffix = "Watched") => {
-    return [
-        { title: `Top ${suffix}`, data: data.top_values },
-        { title: "Top Ratings", data: data.top_rated },
-        { title: "Top Favorited", data: data.top_favorited },
     ];
 };

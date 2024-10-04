@@ -5,11 +5,11 @@ import {Button} from "@/components/ui/button";
 import {formatDateTime} from "@/utils/functions";
 import {Checkbox} from "@/components/ui/checkbox";
 import {historyOptions} from "@/api/queryOptions";
-import {Payload} from "@/components/app/base/Payload";
+import {Payload} from "@/components/app/Payload";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/hooks/DebounceHook";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {MediaIcon} from "@/components/app/MediaIcon";
+import {PageTitle} from "@/components/app/PageTitle";
 import {TablePagination} from "@/components/app/TablePagination";
 import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {createLazyFileRoute, Link, useNavigate} from "@tanstack/react-router";
@@ -99,7 +99,6 @@ function AllUpdates() {
             header: "Date",
             cell: ({ row }) => formatDateTime(row.original.timestamp, { includeTime: true, useLocalTz: true }),
         },
-
     ], []);
 
     const table = useReactTable({

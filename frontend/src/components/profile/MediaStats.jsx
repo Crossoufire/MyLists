@@ -3,7 +3,7 @@ import {Badge} from "@/components/ui/badge";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {BlockLink} from "@/components/app/BlockLink";
-import {BulletIcon} from "@/components/app/base/BulletIcon";
+import {BulletIcon} from "@/components/profile/BulletIcon";
 import {capitalize, getStatusColor} from "@/utils/functions";
 import {RatingDistribution} from "@/components/profile/RatingDistribution";
 
@@ -118,8 +118,7 @@ export const MediaStats = ({ user, media }) => {
                     </div>
                 }
             </div>
-            <Link to={`/stats/${media.media_type}/${user.username}`} className="text-lg font-medium hover:underline
-        hover:underline-offset-2">
+            <Link to={`/stats/${media.media_type}/${user.username}`} className="text-lg font-medium hover:underline hover:underline-offset-2">
                 Detailed stats
             </Link>
         </div>

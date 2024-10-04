@@ -6,7 +6,7 @@ import {useQuery} from "@tanstack/react-query";
 import {useDebounce} from "@/hooks/DebounceHook";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
-import {Loading} from "@/components/app/base/Loading";
+import {Loading} from "@/components/app/Loading";
 import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {capitalize, getLangCountryName} from "@/utils/functions";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";

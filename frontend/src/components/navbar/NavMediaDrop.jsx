@@ -1,7 +1,7 @@
 import {useRef} from "react";
 import {capitalize} from "@/utils/functions.jsx";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {MediaIcon} from "@/components/app/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {useAuth} from "@/hooks/AuthHook.jsx";

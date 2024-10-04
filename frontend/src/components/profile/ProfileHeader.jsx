@@ -1,10 +1,8 @@
-import {toast} from "sonner";
 import {useAuth} from "@/hooks/AuthHook";
-import {Button} from "@/components/ui/button";
+import {Link} from "@tanstack/react-router";
 import {formatDateTime} from "@/utils/functions";
-import {Link, useParams} from "@tanstack/react-router";
-import {useFollowMutation} from "@/api/mutations/simpleMutations";
-import {LuCalendarDays, LuUserMinus, LuUserPlus, LuUsers} from "react-icons/lu";
+import {LuCalendarDays, LuUsers} from "react-icons/lu";
+import {FollowButton} from "@/components/profile/FollowButton";
 
 
 export const ProfileHeader = ({ user, followStatus, followId }) => {
@@ -56,23 +54,5 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                 </div>
             </div>
         </div>
-    );
-};
-
-
-const FollowButton = ({ followStatus, followId }) => {
-    const { username } = useParams({ strict: false });
-    const updateFollowStatus = useFollowMutation(["profile", username]);
-
-    const handleFollow = () => {
-        updateFollowStatus.mutate({ followId, followStatus: !followStatus }, {
-            onError: () => toast.error("An error occurred while updating the follow status"),
-        });
-    };
-
-    return (
-        <Button variant={followStatus ? "destructive" : "outline"} size="xs" onClick={handleFollow} disabled={updateFollowStatus.isPending}>
-            {followStatus ? <><LuUserMinus className="mr-2 h-4 w-4"/>Unfollow</> : <><LuUserPlus className="mr-2 h-4 w-4"/>Follow</>}
-        </Button>
     );
 };

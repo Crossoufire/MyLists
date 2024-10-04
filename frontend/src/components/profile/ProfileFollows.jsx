@@ -3,7 +3,7 @@ import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {BlockLink} from "@/components/app/BlockLink";
-import {MutedText} from "@/components/app/base/MutedText";
+import {MutedText} from "@/components/app/MutedText";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 

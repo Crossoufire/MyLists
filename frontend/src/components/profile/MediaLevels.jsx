@@ -3,7 +3,7 @@ import {useCollapse} from "@/hooks/CollapseHook";
 import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
 import {capitalize, zeroPad} from "@/utils/functions";
-import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
+import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 

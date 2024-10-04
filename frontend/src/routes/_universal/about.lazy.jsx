@@ -1,5 +1,5 @@
 import {mail} from "@/utils/constants";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 
 

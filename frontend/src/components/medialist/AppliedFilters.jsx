@@ -1,7 +1,7 @@
 import {LuX} from "react-icons/lu";
 import {Badge} from "@/components/ui/badge";
 import {capitalize} from "@/utils/functions";
-import {MutedText} from "@/components/app/base/MutedText";
+import {MutedText} from "@/components/app/MutedText";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 
 

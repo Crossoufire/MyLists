@@ -1,6 +1,6 @@
 import {Helmet} from "react-helmet";
 import {Separator} from "@/components/ui/separator";
-import {MutedText} from "@/components/app/base/MutedText";
+import {MutedText} from "@/components/app/MutedText";
 
 
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => {

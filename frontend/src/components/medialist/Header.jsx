@@ -3,7 +3,7 @@ import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {SearchComponent} from "@/components/medialist/SearchComponent";
-import {MediaLevelCircle} from "@/components/app/base/MediaLevelCircle";
+import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {LuArrowUpDown, LuFilter, LuGrid, LuLineChart, LuList, LuUser} from "react-icons/lu";

@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {LuHelpCircle} from "react-icons/lu";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";

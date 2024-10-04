@@ -1,6 +1,6 @@
 import {fetcher} from "@/api/fetcher";
 import {useQuery} from "@tanstack/react-query";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormButton} from "@/components/app/FormButton";
 import {Commentary} from "@/components/media/general/Commentary";
 import {LabelLists} from "@/components/media/general/LabelLists";
 import {TvUserDetails} from "@/components/media/tv/TvUserDetails";
