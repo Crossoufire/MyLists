@@ -15,17 +15,17 @@ import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, Credenza
 export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabels }) => {
     const inputRef = useRef();
     const queryClient = useQueryClient();
+    const [toast, setToast] = useState(null);
     const [oldName, setOldName] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingName, setEditingName] = useState("");
     const [newLabelName, setNewLabelName] = useState("");
-    const [message, setMessage] = useState({ type: "error", value: "" });
     const { data: allLabels = [], error, isLoading } = useQuery(mediaLabelsOptions(mediaType, isOpen));
     const { addLabel, removeLabel, renameLabel, deleteLabel } = userLabelsMutations(mediaType, mediaId);
 
     useEffect(() => {
-        error && setMessage({ type: "error", value: "An unexpected error occurred. Please try again later." });
+        error && showToast("An unexpected error occurred. Please try again later.", "error");
     }, [error]);
 
     useEffect(() => {
@@ -34,6 +34,11 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
         }
     }, [isEditing]);
 
+    const showToast = (message, type) => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
     const isLabelUnique = (name) => {
         return !allLabels.includes(name);
     };
@@ -41,29 +46,24 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     const createLabel = () => {
         if (!newLabelName.trim()) return;
         const newLabel = newLabelName.trim();
-        setMessage({ type: "error", value: "" });
 
         if (!isLabelUnique(newLabel)) {
-            return setMessage({ type: "error", value: "This label name already exists" });
+            return showToast("This label name already exists", "error");
         }
 
         addLabel.mutate({ payload: newLabel }, {
-            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: async () => {
                 updateMediaLabels([...mediaLabels, newLabel]);
-                queryClient.setQueryData(["labels", mediaType], (oldData) => {
-                    return [...oldData, newLabel];
-                });
+                queryClient.setQueryData(["labels", mediaType], (oldData) => [...oldData, newLabel]);
             },
             onSettled: () => setNewLabelName(""),
         });
     };
 
     const removeFromMedia = (name) => {
-        setMessage({ type: "error", value: "" });
-
         removeLabel.mutate({ payload: name }, {
-            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => updateMediaLabels(mediaLabels.filter(l => l !== name)),
         });
     };
@@ -74,15 +74,14 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
         }
 
         const editedLabelName = editingName.trim();
-        setMessage({ type: "error", value: "" });
 
         if (!isLabelUnique(editedLabelName)) {
             setIsEditing(false);
-            return setMessage({ type: "error", value: "This label name already exists" });
+            return showToast("This label name already exists", "error");
         }
 
         renameLabel.mutate({ oldName: oldName, newName: editedLabelName }, {
-            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 if (mediaLabels.includes(oldName)) {
                     updateMediaLabels(mediaLabels.map(l => l === oldName ? editedLabelName : l));
@@ -102,7 +101,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     const addLabelToMedia = (name) => {
         if (mediaLabels.includes(name)) return;
         addLabel.mutate({ payload: name }, {
-            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => updateMediaLabels([...mediaLabels, name]),
         });
     };
@@ -114,14 +113,13 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     };
 
     const deleteLabelTotally = (name) => {
-        setMessage({ type: "error", value: "" });
         if (!window.confirm("Do you really want to delete this label?")) return;
 
         deleteLabel.mutate({ name }, {
-            onError: () => setMessage({ type: "error", value: "An unexpected error occurred" }),
+            onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 updateMediaLabels(mediaLabels.filter(l => l !== name));
-                setMessage({ type: "success", value: "Label successfully deleted" });
+                showToast("Label successfully deleted", "success");
                 queryClient.setQueryData(["labels", mediaType], (oldData) => {
                     return oldData.filter(l => l !== name);
                 });
@@ -139,14 +137,15 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                     <CredenzaTitle>Manage Labels</CredenzaTitle>
                     <CredenzaDescription>Here you can manage your labels.</CredenzaDescription>
                 </CredenzaHeader>
+                {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)}/>}
                 <div className="space-y-8 mt-8 max-sm:mt-4 max-sm:p-6">
-                    {message.value && <FormMessage {...message} updateMessage={setMessage}/>}
                     <div className="flex items-center gap-3">
                         <Input
                             value={newLabelName}
                             disabled={addLabel.isPending}
-                            placeholder={"Create new label"}
+                            placeholder={"Create a new label"}
                             onChange={(ev) => setNewLabelName(ev.target.value)}
+                            onKeyPress={(ev) => ev.key === "Enter" && createLabel()}
                         />
                         <Button size="sm" onClick={createLabel} disabled={addLabel.isPending}>
                             <LuPlusCircle className="mr-2"/> Create
@@ -171,7 +170,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                     </div>
                     <div className="space-y-2">
                         <h4 className="font-medium">All Labels</h4>
-                        <ul className="max-h-[220px] overflow-y-auto">
+                        <ul className="max-h-[200px] overflow-y-auto">
                             {isLoading ?
                                 <Loading/>
                                 :
@@ -183,8 +182,8 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                                             {(oldName === name && isEditing) ?
                                                 <Input
                                                     ref={inputRef}
-                                                    className="mr-2"
                                                     value={editingName}
+                                                    className={"mr-2 w-52"}
                                                     disabled={renameLabel.isPending}
                                                     onBlur={() => renameMediaLabel()}
                                                     onChange={(ev) => setEditingName(ev.target.value)}
@@ -197,14 +196,14 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                                                 {!mediaLabels.includes(name) &&
                                                     <Button variant="ghost" size="icon" onClick={() => addLabelToMedia(name)}
                                                             disabled={addLabel.isPending}>
-                                                        <LuPlusCircle className="h-4 w-4"/>
+                                                        <LuPlusCircle/>
                                                     </Button>
                                                 }
                                                 <Button variant="ghost" size="icon" onClick={() => startEditingLabel(name)}>
-                                                    <LuPen className="h-4 w-4"/>
+                                                    <LuPen/>
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => deleteLabelTotally(name)}>
-                                                    <LuTrash2 className="h-4 w-4"/>
+                                                    <LuTrash2/>
                                                 </Button>
                                             </div>
                                         </li>
@@ -218,22 +217,16 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
 };
 
 
-const FormMessage = ({ type, value, updateMessage }) => {
-    const [isVisible, setIsVisible] = useState(true);
-    const bgColor = type === "error" ? "bg-rose-500/10" : "bg-green-500/10";
-
-    useEffect(() => {
-        if (!isVisible) {
-            updateMessage({ type: "error", value: "" });
-        }
-    }, [isVisible]);
-
+const Toast = ({ message, type, onClose }) => {
     return (
-        <div className={cn("p-3 rounded-md flex items-center gap-x-2 text-sm text-neutral-200", bgColor)}>
-            {type === "error" ? <LuAlertTriangle/> : <LuCheckCircle/>}
-            <p>{value}</p>
-            <div role="button" onClick={() => setIsVisible(false)} className="ml-auto">
-                <LuX className="h-4 w-4"/>
+        <div className={cn("flex items-center justify-between mt-4 p-2 rounded-md",
+            type === "error" ? "bg-rose-500/10" : "bg-green-500/10")}>
+            <div className="flex items-center text-sm">
+                {type === "error" ? <LuAlertTriangle className="mr-3"/> : <LuCheckCircle className="mr-3"/>}
+                <span>{message}</span>
+            </div>
+            <div role="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                <LuX/>
             </div>
         </div>
     );
