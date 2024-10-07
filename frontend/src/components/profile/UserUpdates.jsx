@@ -2,9 +2,9 @@ import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
+import {MutedText} from "@/components/app/MutedText";
 import {Link, useParams} from "@tanstack/react-router";
 import {UserUpdate} from "@/components/app/UserUpdate";
-import {MutedText} from "@/components/app/MutedText";
 import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 

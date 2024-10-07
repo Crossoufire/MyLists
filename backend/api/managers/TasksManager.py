@@ -288,9 +288,11 @@ class TvTasksManager(TasksManager):
 
     def add_notifications(self):
         top_eps_subq = (
-            db.session.query(self.media_eps.media_id, self.media_eps.episodes.label("last_episode"),
-                             func.max(self.media_eps.season))
-            .group_by(self.media_eps.media_id)
+            db.session.query(
+                self.media_eps.media_id,
+                self.media_eps.episodes.label("last_episode"),
+                func.max(self.media_eps.season),
+            ).group_by(self.media_eps.media_id)
             .subquery()
         )
 
@@ -321,7 +323,7 @@ class TvTasksManager(TasksManager):
                 season=f"{media.season_to_air:02d}",
                 episode=f"{media.episode_to_air:02d}",
                 release_date=media.next_episode_to_air,
-                finale=(last_episode == media.episode_to_air),
+                finale=(last_episode == media.episode_to_air and media.episode_to_air != 1),
             )
 
             new_notification = Notifications(

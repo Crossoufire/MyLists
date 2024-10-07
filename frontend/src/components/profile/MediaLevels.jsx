@@ -36,6 +36,9 @@ export const MediaLevels = ({ username, mediaLevels }) => {
 };
 
 
+
+
+
 const MediaLevelBar = ({ mediaType, username, level }) => {
     const intLevel = Math.floor(level);
     const percent = (level - intLevel) * 100;
@@ -52,10 +55,7 @@ const MediaLevelBar = ({ mediaType, username, level }) => {
                     </div>
                     <div>{zeroPad(percent.toFixed(0))} %</div>
                 </div>
-                <Progress
-                    value={percent}
-                    color={`bg-${mediaType}`}
-                />
+                <Progress value={percent} color={`bg-${mediaType}`}/>
             </div>
         </div>
     );
