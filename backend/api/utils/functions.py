@@ -123,7 +123,7 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
 def format_datetime(date) -> Optional[datetime]:
     """ Format to a universal datetime format or None if datetime not valid before saving to db """
 
-    date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d", "%Y"]
+    date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y"]
     for pattern in date_patterns:
         try:
             return datetime.strptime(date, pattern)

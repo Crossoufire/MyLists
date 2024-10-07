@@ -563,7 +563,7 @@ class GamesApiManager(ApiManager):
         search_results = []
         api_data = get(self.api_data, "results", default=[])
         for result in api_data:
-            if len(search_results) >= self.RESULTS_PER_PAGE:
+            if len(search_results) >= self.RESULTS_PER_PAGE or result == "message":
                 break
 
             media_details = dict(

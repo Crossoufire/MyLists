@@ -370,7 +370,7 @@ def media_history(media_type: MediaType, media_id: int):
             UserMediaUpdate.user_id == current_user.id,
             UserMediaUpdate.media_type == media_type,
             UserMediaUpdate.media_id == media_id
-        ).order_by(UserMediaUpdate.timestamp)
+        ).order_by(UserMediaUpdate.timestamp.desc())
         .all()
     )
 

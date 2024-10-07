@@ -32,7 +32,7 @@ export const UserListDetails = ({ userMedia, mediaType, queryKey }) => {
     const { data: history } = useQuery({
         queryKey: ["onOpenHistory", mediaType, userMedia.media_id],
         queryFn: () => fetcher({ url: `/history/${mediaType}/${userMedia.media_id}` }),
-        staleTime: Infinity,
+        staleTime: 10 * 1000,
         placeholderData: [],
     });
 

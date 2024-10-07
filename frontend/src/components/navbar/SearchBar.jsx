@@ -66,7 +66,7 @@ export const SearchBar = () => {
                 </div>
             </div>
             {isOpen && (debouncedSearch.length >= 2 || isLoading) &&
-                <div className="z-50 absolute w-[310px] rounded-lg border shadow-md mt-1">
+                <div className="z-50 absolute w-[310px] mr-2 ml-2 rounded-lg border shadow-md mt-1">
                     <Command>
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&

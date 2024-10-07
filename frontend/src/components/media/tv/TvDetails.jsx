@@ -21,14 +21,20 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                             </div>
                         </div>
                         <MapDetails
-                            name="Created by"
                             job="creator"
-                            mediaType={mediaType}
+                            name="Created by"
                             valueList={creators}
+                            mediaType={mediaType}
                         />
                         <GenericDetails
                             name="Airing dates"
-                            value={<>{formatDateTime(mediaData.release_date)}<br/>{formatDateTime(mediaData.last_air_date)}</>}
+                            value={
+                                <>
+                                    {formatDateTime(mediaData.release_date, { useLocalTz: true })}
+                                    <br/>
+                                    {formatDateTime(mediaData.last_air_date, { useLocalTz: true })}
+                                </>
+                            }
                         />
                         <GenericDetails
                             name="Prod. Status"
