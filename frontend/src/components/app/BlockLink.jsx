@@ -28,7 +28,7 @@ export const BlockLink = ({ children, ...props }) => {
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold text-center">Login Required</DialogTitle>
                         <DialogDescription className="text-center text-base">
-                            Register or log in to access this content.
+                            Register or log-in to access this content.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="mt-4">

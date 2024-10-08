@@ -4,6 +4,7 @@ from rich.table import Table
 from rich.console import Console
 
 from backend.api import db
+from backend.cli.demo_creator import DemoAccountCreator
 from backend.cli.tasks import *
 
 
@@ -12,6 +13,12 @@ console = Console()
 
 def register_cli_commands():
     """ Register commands to the Flask CLI """
+
+    @current_app.cli.command()
+    def create_demo():
+        """ Create a demo profile account """
+        creator = DemoAccountCreator()
+        creator.create_account()
 
     @current_app.cli.command()
     def caching():

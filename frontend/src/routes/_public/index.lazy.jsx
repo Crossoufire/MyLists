@@ -4,11 +4,12 @@ import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {LoginForm} from "@/components/homepage/LoginForm";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {LuDollarSign, LuHeart, LuMessageCircle, LuMonitorSmartphone, LuPackageOpen, LuSparkles} from "react-icons/lu";
+import {LuArrowRight, LuDollarSign, LuHeart, LuMessageCircle, LuMonitorSmartphone, LuPackageOpen, LuSparkles} from "react-icons/lu";
+import {RainbowButton} from "@/components/ui/rainbow-button";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -48,6 +49,13 @@ function HomePage() {
                         <RegisterForm onTabChange={onTabChange}/>
                     </TabsContent>
                 </Tabs>
+                <div className="mt-6">
+                    <RainbowButton>
+                        <Link to="/profile/DemoProfile" className="inline-flex items-center">
+                            View Demo Profile <LuArrowRight className="ml-2"/>
+                        </Link>
+                    </RainbowButton>
+                </div>
             </div>
             <section className="mt-6">
                 <div className="grid md:grid-cols-3 items-center gap-6">

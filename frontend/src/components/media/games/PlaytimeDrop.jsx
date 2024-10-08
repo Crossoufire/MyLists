@@ -1,4 +1,4 @@
-import {getPlaytimeValues} from "@/utils/functions.jsx";
+import {getPlaytimeValues} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 

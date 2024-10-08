@@ -163,7 +163,7 @@ def format_to_download_as_csv(media_dict: Dict) -> Dict:
 
 
 def global_limiter() -> str:
-    """ Create a global limiter key """
+    """ Create a global API limiter key """
     return "global"
 
 

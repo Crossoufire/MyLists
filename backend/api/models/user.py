@@ -462,7 +462,7 @@ class UserMediaUpdate(db.Model):
         return update_dict
 
     @classmethod
-    def set_new_update(cls, media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any):
+    def set_new_update(cls, media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any, **kwargs):
         previous_db_entry = (
             cls.query.filter_by(user_id=current_user.id, media_id=media.id, media_type=media.GROUP)
             .order_by(cls.timestamp.desc()).first()
@@ -480,6 +480,7 @@ class UserMediaUpdate(db.Model):
             media_type=media.GROUP,
             update_type=update_type,
             payload=json.dumps({"old_value": old_value, "new_value": new_value}),
+            **kwargs,
         )
 
         if time_difference > cls.UPDATE_THRESHOLD:

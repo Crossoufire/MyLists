@@ -1,4 +1,5 @@
 import {toast} from "sonner";
+import {router} from "@/router";
 import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
 import {useNavigate} from "@tanstack/react-router";
@@ -16,9 +17,14 @@ export const DangerForm = () => {
         deleteAccount.mutate(undefined, {
             onError: () => toast.error("An error occurred while deleting your account"),
             onSuccess: async () => {
-                logout.mutate();
+                logout.mutate(undefined, {
+                    onSuccess: async () => {
+                        await router.invalidate().then(() => {
+                            navigate({ to: "/" });
+                        });
+                    },
+                });
                 toast.success("Your account has been successfully deleted");
-                return navigate({ to: "/" });
             }
         });
     };
