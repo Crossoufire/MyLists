@@ -45,16 +45,16 @@ export const Notifications = ({ isMobile }) => {
             <PopoverTrigger asChild>
                 <div className="flex items-center">
                     <Button variant="ghost" size="sm" className="mr-3 px-1.5" onClick={handleOnClickOpen}>
-                        <LuBell className={cn("w-5 h-5 mr-1.5", isMobile && "w-4 h-4 ml-0.5 mr-1.5 -mb-1")}/>
-                        {isMobile && <div className="text-lg ml-2 mr-3">Notifications</div>}
-                        <Badge variant="notif" className={notifCount > 0 && "bg-destructive"}>
+                        <LuBell className={cn("w-5 h-5 mr-0.5", isMobile && "w-4 h-4 ml-2")}/>
+                        {isMobile && <div className="text-base ml-2 mr-3">Notifications</div>}
+                        <Badge variant="notif" className={cn(notifCount > 0 && "bg-destructive")}>
                             {notifCount}
                         </Badge>
                     </Button>
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
-            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto" align={isMobile ? "start" : "end"}>
+            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto max-sm:max-h-[350px]" align={isMobile ? "start" : "end"}>
                 {isLoading ?
                     <div className="flex items-center justify-center p-4">
                         <LuLoader2 className="h-6 w-6 animate-spin"/>

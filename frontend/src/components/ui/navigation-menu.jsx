@@ -10,8 +10,8 @@ const NavigationMenuItem = NavigationMenuPrimitive.Item;
 const NavigationMenuLink = NavigationMenuPrimitive.Link;
 
 
-const navigationMenuTriggerStyle = cva("group inline-flex h-8 w-max items-center justify-center rounded-md " +
-    "bg-transparent px-3 py-2 text-lg font-medium transition-colors hover:bg-accent hover:text-accent-foreground " +
+const navStyle = cva("group inline-flex h-8 w-max items-center justify-center rounded-md " +
+    "bg-transparent px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground " +
     "focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none " +
     "disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
 );
@@ -39,7 +39,7 @@ NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 const NavigationMenuTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
     <NavigationMenuPrimitive.Trigger
         ref={ref}
-        className={cn(navigationMenuTriggerStyle(), "group", className)}
+        className={cn(navStyle(), "group", className)}
         {...props}>
         {children}{" "}
         <ChevronDownIcon
@@ -88,7 +88,7 @@ NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Indicator.displayN
 
 
 export {
-    navigationMenuTriggerStyle,
+    navStyle,
     NavigationMenu,
     NavigationMenuList,
     NavigationMenuItem,

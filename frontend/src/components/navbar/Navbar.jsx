@@ -12,7 +12,7 @@ import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
-import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle} from "@/components/ui/navigation-menu";
+import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/components/ui/navigation-menu";
 
 
 export const Navbar = () => {
@@ -64,17 +64,17 @@ export const Navbar = () => {
                                 <SearchBar/>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavLink to="/hall-of-fame" className={navigationMenuTriggerStyle()}>
+                                <NavLink to="/hall-of-fame" className={navStyle()}>
                                     HoF
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavLink to="/global-stats" className={navigationMenuTriggerStyle()}>
+                                <NavLink to="/global-stats" className={navStyle()}>
                                     Stats
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavLink to="/trends" className={navigationMenuTriggerStyle()}>
+                                <NavLink to="/trends" className={navStyle()}>
                                     Trends
                                 </NavLink>
                             </NavigationMenuItem>
@@ -85,7 +85,7 @@ export const Navbar = () => {
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
-                                <NavLink to="/coming-next" className={navigationMenuTriggerStyle()}>
+                                <NavLink to="/coming-next" className={navStyle()}>
                                     Coming Next
                                 </NavLink>
                             </NavigationMenuItem>
@@ -120,20 +120,20 @@ export const Navbar = () => {
                                             <NavMediaItem
                                                 popRef={popRef}
                                                 text={"Profile"}
-                                                icon={<LuUser className="text-grey"/>}
+                                                icon={<LuUser/>}
                                                 to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
                                                 to="/settings"
                                                 text="Settings"
                                                 popRef={popRef}
-                                                icon={<LuSettings className="text-grey"/>}
+                                                icon={<LuSettings/>}
                                             />
                                             <NavMediaItem
                                                 to="/features"
                                                 text="Features"
                                                 popRef={popRef}
-                                                icon={<LuSparkles className="text-grey"/>}
+                                                icon={<LuSparkles/>}
                                             />
                                             <li>
                                                 <NavigationMenuLink asChild>
@@ -168,33 +168,29 @@ export const Navbar = () => {
                             <NavigationMenu className="mt-3">
                                 <NavigationMenuList className="flex flex-col items-start gap-3">
                                     <NavigationMenuItem className="mt-4">
-                                        <SearchBar currentUser={currentUser}/>
+                                        <SearchBar/>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavMediaDrop currentUser={currentUser}/>
+                                        <NavMediaDrop/>
                                     </NavigationMenuItem>
                                     <Separator/>
                                     <NavigationMenuItem>
-                                        <NavLink to="/hall-of-fame" className={navigationMenuTriggerStyle()}
-                                                 onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/hall-of-fame" className={navStyle()} onClick={() => setSheetOpen(false)}>
                                             HoF
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavLink to="/global-stats" className={navigationMenuTriggerStyle()}
-                                                 onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/global-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>
                                             Stats
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavLink to="/trends" className={navigationMenuTriggerStyle()}
-                                                 onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>
                                             Trends
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavLink to="/coming-next" className={navigationMenuTriggerStyle()}
-                                                 onClick={() => setSheetOpen(false)}>
+                                        <NavLink to="/coming-next" className={navStyle()} onClick={() => setSheetOpen(false)}>
                                             Coming Next
                                         </NavLink>
                                     </NavigationMenuItem>
@@ -202,24 +198,24 @@ export const Navbar = () => {
                                     <NavigationMenuItem>
                                         <Notifications isMobile/>
                                     </NavigationMenuItem>
-                                    <div>
+                                    <div className="-mt-3">
                                         <NavMediaItem
                                             text="Profile"
-                                            icon={<LuUser className="text-grey"/>}
+                                            icon={<LuUser/>}
                                             to={`/profile/${currentUser.username}`}
-                                            className="text-lg items-center font-semibold pb-2"
+                                            className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
                                             text="Settings"
-                                            icon={<LuSettings className="text-grey"/>}
-                                            className="text-lg items-center font-semibold pb-2"
+                                            icon={<LuSettings/>}
+                                            className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/features"
                                             text="Features"
-                                            icon={<LuSparkles className="text-grey"/>}
-                                            className="text-lg items-center font-semibold pb-2"
+                                            icon={<LuSparkles/>}
+                                            className="items-center font-semibold pb-2"
                                         />
                                         <li>
                                             <NavigationMenuLink asChild>
@@ -227,8 +223,8 @@ export const Navbar = () => {
                                                 space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">
-                                                    <div className="grid grid-cols-3 text-lg font-semibold pb-2 items-center">
-                                                        <div>{<LuLogOut className="text-grey"/>}</div>
+                                                    <div className="grid grid-cols-3 font-semibold pb-2 items-center">
+                                                        <div>{<LuLogOut/>}</div>
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>
