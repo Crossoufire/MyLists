@@ -16,7 +16,7 @@ from backend.api.managers.ApiManager import GamesApiManager, ApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import User, UserMediaUpdate, Notifications, UserMediaSettings
-from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
+from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status, Privacy
 from backend.api.utils.functions import naive_utcnow
 
 
@@ -56,6 +56,32 @@ class TasksManager(metaclass=TasksManagerMeta):
     @classmethod
     def get_subclass(cls, media_type: MediaType) -> Type[TasksManager]:
         return cls.subclasses.get(media_type, cls)
+
+    @staticmethod
+    def check_accounts(privacy: str):
+        users = (
+            User.query.filter(
+                User.active == True,
+                User.last_seen.is_not(None),
+                User.privacy == Privacy(privacy),
+            ).order_by(User.last_seen.desc())
+            .all()
+        )
+
+        headers = ["Username", "Last Seen"]
+        table_data = [[user.username, user.last_seen.strftime("%d %b %Y - %H:%M:%S")] for user in users]
+        col_widths = [max(len(str(row[i])) for row in [headers] + table_data) for i in range(len(headers))]
+
+        separator = "+" + "+".join("-" * (width + 2) for width in col_widths) + "+"
+        row_format = "|" + "|".join(" {:%d} " % width for width in col_widths) + "|"
+
+        print(f"\n### Users with privacy = {privacy}")
+        print(separator)
+        print(row_format.format(*headers))
+        print(separator)
+        for row in table_data:
+            print(row_format.format(*row))
+        print(separator)
 
     @staticmethod
     def change_privacy_setting(user: str | int, privacy: str):
@@ -111,18 +137,6 @@ class TasksManager(metaclass=TasksManagerMeta):
         for row in table_data:
             print(row_format.format(*row))
         print(separator)
-
-    @staticmethod
-    def activate_user_account(username: str, toggle: bool):
-        """ Toggle user account activation status """
-
-        user = User.query.filter(User.username == username).first()
-        if not user:
-            print(f"User {username} not found")
-            return
-
-        user.active = toggle
-        db.session.commit()
 
     @staticmethod
     def get_users_last_seen(usernames: List[str]):

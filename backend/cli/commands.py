@@ -61,6 +61,12 @@ def register_cli_commands():
         click.echo("VACUUM operation completed successfully")
 
     @current_app.cli.command()
+    @click.argument("privacy", type=str)
+    def check_privacy(privacy: str):
+        """ Check accounts with specific privacy setting. """
+        TasksManager.check_accounts(privacy)
+
+    @current_app.cli.command()
     @click.argument("user")
     @click.argument("privacy", type=str)
     def change_privacy(user, privacy):
