@@ -1,9 +1,9 @@
 import {Separator} from "@/components/ui/separator";
-import {RedoDrop} from "@/components/media/general/RedoDrop";
-import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {RedoDrop} from "@/components/media-user/RedoDrop";
+import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {EpsSeasonsDrop} from "@/components/media/tv/EpsSeasonsDrop";
+import {EpsSeasonsDrop} from "@/components/media-user/EpsSeasonsDrop";
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {

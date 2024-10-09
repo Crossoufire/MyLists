@@ -1,4 +1,4 @@
-import {UserListDetails} from "@/components/media/general/UserListDetails";
+import {UserMediaDetails} from "@/components/media-user/UserMediaDetails";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle} from "@/components/ui/credenza";
 
 
@@ -13,7 +13,7 @@ export const UserMediaEditDialog = ({ userMedia, mediaType, queryKey, onOpenChan
                     <CredenzaDescription>Here you can edit your media details</CredenzaDescription>
                 </CredenzaHeader>
                 <div className="flex items-center justify-center">
-                    <UserListDetails
+                    <UserMediaDetails
                         queryKey={queryKey}
                         userMedia={userMedia}
                         mediaType={mediaType}

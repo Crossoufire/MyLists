@@ -1,11 +1,11 @@
-import {useAuth} from "@/hooks/AuthHook";
 import {Fragment} from "react";
+import {useAuth} from "@/hooks/AuthHook";
 import {Badge} from "@/components/ui/badge";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {useQueryClient} from "@tanstack/react-query";
 import {MutedText} from "@/components/app/MutedText";
-import {LabelsDialog} from "@/components/media/general/LabelsDialog";
+import {LabelsDialog} from "@/components/media-user/LabelsDialog";
 
 
 export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }) => {

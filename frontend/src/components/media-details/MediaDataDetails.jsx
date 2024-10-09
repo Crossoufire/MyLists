@@ -1,8 +1,8 @@
-import {TvDetails} from "@/components/media/tv/TvDetails";
-import {MediaTitle} from "@/components/media/general/MediaTitle";
-import {GamesDetails} from "@/components/media/games/GamesDetails";
-import {BooksDetails} from "@/components/media/books/BooksDetails";
-import {MoviesDetails} from "@/components/media/movies/MoviesDetails";
+import {TvDetails} from "@/components/media-details/TvDetails";
+import {MediaTitle} from "@/components/media-details/MediaTitle";
+import {GamesDetails} from "@/components/media-details/GamesDetails";
+import {BooksDetails} from "@/components/media-details/BooksDetails";
+import {MoviesDetails} from "@/components/media-details/MoviesDetails";
 
 
 const mediaDetailsMap = (value) => {

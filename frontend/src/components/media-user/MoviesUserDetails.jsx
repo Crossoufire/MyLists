@@ -1,7 +1,7 @@
 import {Separator} from "@/components/ui/separator";
-import {RedoDrop} from "@/components/media/general/RedoDrop";
+import {RedoDrop} from "@/components/media-user/RedoDrop";
+import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import {StatusDrop} from "@/components/media/general/StatusDrop";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
 
 

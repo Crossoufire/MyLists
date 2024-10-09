@@ -2,15 +2,15 @@ import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {capitalize} from "@/utils/functions";
 import {listOptions} from "@/api/queryOptions";
-import {Header} from "@/components/medialist/Header";
+import {Header} from "@/components/media-list/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {PageTitle} from "@/components/app/PageTitle";
-import {MediaGrid} from "@/components/medialist/MediaGrid";
-import {MediaTable} from "@/components/medialist/MediaTable";
-import {AppliedFilters} from "@/components/medialist/AppliedFilters";
+import {MediaGrid} from "@/components/media-list/MediaGrid";
+import {MediaTable} from "@/components/media-list/MediaTable";
+import {AppliedFilters} from "@/components/media-list/AppliedFilters";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
-import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
+import {FiltersSideSheet} from "@/components/media-list/FiltersSideSheet";
 
 
 // noinspection JSCheckFunctionSignatures

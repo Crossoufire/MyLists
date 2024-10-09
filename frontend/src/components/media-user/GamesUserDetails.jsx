@@ -3,10 +3,10 @@ import {Button} from "@/components/ui/button";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
-import {StatusDrop} from "@/components/media/general/StatusDrop";
+import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {PlaytimeDrop} from "@/components/media/games/PlaytimeDrop";
+import {PlaytimeDrop} from "@/components/media-user/PlaytimeDrop";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 

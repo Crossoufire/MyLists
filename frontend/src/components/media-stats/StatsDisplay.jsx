@@ -1,10 +1,10 @@
 import {cn} from "@/utils/functions";
-import {ListData} from "@/components/media-stats/ListData";
+import {StatsList} from "@/components/media-stats/StatsList";
 import {StatsCard} from "@/components/media-stats/StatsCard";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
 
 
-export const DisplayStats = ({ statsData, otherUserStatsData }) => {
+export const StatsDisplay = ({ statsData, otherUserStatsData }) => {
     return (
         <>
             {statsData.cards.isCarouselActive ?
@@ -60,7 +60,7 @@ export const DisplayStats = ({ statsData, otherUserStatsData }) => {
                 statsData.lists.listsPerRow === 3 ? "grid-cols-3" : "grid-cols-2")}>
                 {statsData.lists.dataList.map((data, idx) =>
                     <div key={idx} className="mt-2">
-                        <ListData
+                        <StatsList
                             key={idx}
                             data={data}
                             asGraph={statsData.lists.asGraph}

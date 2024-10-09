@@ -2,7 +2,7 @@ import {StatsGraph} from "@/components/media-stats/StatsGraph";
 import {StatsTable} from "@/components/media-stats/StatsTable";
 
 
-export const ListData = ({ data, asGraph }) => {
+export const StatsList = ({ data, asGraph }) => {
     return (
         <>
             {asGraph ?

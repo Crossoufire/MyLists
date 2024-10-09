@@ -2,14 +2,14 @@ import {useMemo, useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {BlockLink} from "@/components/app/BlockLink";
 import {TablePagination} from "@/components/app/TablePagination";
-import {DisplayRating} from "@/components/medialist/DisplayRating";
-import {QuickAddMedia} from "@/components/medialist/QuickAddMedia";
-import {CommentPopover} from "@/components/medialist/CommentPopover";
+import {DisplayRating} from "@/components/media-list/DisplayRating";
+import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
+import {CommentPopover} from "@/components/media-list/CommentPopover";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
-import {UserMediaEditDialog} from "@/components/medialist/UserMediaEditDialog";
+import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {LuCheckCircle2, LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
-import {SpecificUserMediaData} from "@/components/medialist/SpecificUserMediaData";
+import {SpecificUserMediaData} from "@/components/media-list/SpecificUserMediaData";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
 

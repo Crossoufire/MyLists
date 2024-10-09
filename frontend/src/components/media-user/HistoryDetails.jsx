@@ -1,6 +1,6 @@
 import {useState} from "react";
-import {UserUpdate} from "@/components/app/UserUpdate";
 import {MutedText} from "@/components/app/MutedText";
+import {UserUpdate} from "@/components/app/UserUpdate";
 import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 
 

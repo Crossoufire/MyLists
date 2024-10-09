@@ -1,4 +1,4 @@
-import {MediaTitle} from "@/components/media/general/MediaTitle";
+import {MediaTitle} from "@/components/media-details/MediaTitle";
 
 
 export const EpsPerSeason = ({ epsPerSeason }) => (

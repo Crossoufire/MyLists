@@ -5,13 +5,13 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {FormButton} from "@/components/app/FormButton";
-import {FollowCard} from "@/components/media/general/FollowCard";
+import {FollowCard} from "@/components/media-details/FollowCard";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {SimilarMedia} from "@/components/media/general/SimilarMedia";
-import {UserListDetails} from "@/components/media/general/UserListDetails";
-import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
+import {SimilarMedia} from "@/components/media-details/SimilarMedia";
+import {UserMediaDetails} from "@/components/media-user/UserMediaDetails";
+import {MediaDataDetails} from "@/components/media-details/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
+import {RefreshAndEditMedia} from "@/components/media-details/RefreshAndEditMedia";
 import AvatarCircles from "@/components/ui/avatar-circles";
 
 
@@ -57,7 +57,7 @@ function MediaDetailsPage() {
                                 className="w-[300px] h-[450px] rounded-md"
                             />
                             {apiData.user_media ?
-                                <UserListDetails
+                                <UserMediaDetails
                                     mediaType={mediaType}
                                     userMedia={apiData.user_media}
                                     queryKey={["details", mediaType, mediaId.toString()]}

@@ -1,7 +1,7 @@
-import {Synopsis} from "@/components/media/general/Synopsis";
+import {Synopsis} from "@/components/media-details/Synopsis";
 import {formatDateTime, formatMinutes} from "@/utils/functions";
-import {MapDetails} from "@/components/media/general/MapDetails";
-import {GenericDetails} from "@/components/media/general/GenericDetails";
+import {MapDetails} from "@/components/media-details/MapDetails";
+import {GenericDetails} from "@/components/media-details/GenericDetails";
 import {LuStar} from "react-icons/lu";
 
 

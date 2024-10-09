@@ -1,17 +1,17 @@
-import {fetcher} from "@/api/fetcher";
-import {useQuery} from "@tanstack/react-query";
-import {FormButton} from "@/components/app/FormButton";
-import {Commentary} from "@/components/media/general/Commentary";
-import {LabelLists} from "@/components/media/general/LabelLists";
-import {TvUserDetails} from "@/components/media/tv/TvUserDetails";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {ManageFavorite} from "@/components/media/general/ManageFavorite";
-import {HistoryDetails} from "@/components/media/general/HistoryDetails";
-import {GamesUserDetails} from "@/components/media/games/GamesUserDetails";
-import {BooksUserDetails} from "@/components/media/books/BooksUserDetails";
-import {MoviesUserDetails} from "@/components/media/movies/MoviesUserDetails";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {queryClient} from "@/api/queryClient";
+import {useQuery} from "@tanstack/react-query";
+import {historyOptions} from "@/api/queryOptions";
+import {FormButton} from "@/components/app/FormButton";
+import {Commentary} from "@/components/media-user/Commentary";
+import {LabelLists} from "@/components/media-user/LabelLists";
+import {userMediaMutations} from "@/api/mutations/mediaMutations";
+import {TvUserDetails} from "@/components/media-user/TvUserDetails";
+import {ManageFavorite} from "@/components/media-user/ManageFavorite";
+import {HistoryDetails} from "@/components/media-user/HistoryDetails";
+import {GamesUserDetails} from "@/components/media-user/GamesUserDetails";
+import {BooksUserDetails} from "@/components/media-user/BooksUserDetails";
+import {MoviesUserDetails} from "@/components/media-user/MoviesUserDetails";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 
 const mediaComponentMap = (value) => {
@@ -26,15 +26,10 @@ const mediaComponentMap = (value) => {
 };
 
 
-export const UserListDetails = ({ userMedia, mediaType, queryKey }) => {
+export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
     const MediaUserDetails = mediaComponentMap(mediaType);
+    const { data: history } = useQuery(historyOptions(mediaType, userMedia.media_id));
     const { removeFromList, updateFavorite, updateComment } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
-    const { data: history } = useQuery({
-        queryKey: ["onOpenHistory", mediaType, userMedia.media_id],
-        queryFn: () => fetcher({ url: `/history/${mediaType}/${userMedia.media_id}` }),
-        staleTime: 10 * 1000,
-        placeholderData: [],
-    });
 
     const handleDeleteMedia = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;

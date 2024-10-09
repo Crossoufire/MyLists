@@ -1,19 +1,20 @@
 import {toast} from "sonner";
-import {useState} from "react";
 import {capitalize} from "@/utils/functions";
+import {Button} from "@/components/ui/button";
 import {statsOptions} from "@/api/queryOptions";
 import {Sidebar} from "@/components/app/Sidebar";
-import {LuHelpCircle, LuUser, LuX} from "react-icons/lu";
+import {useEffect, useRef, useState} from "react";
 import {PageTitle} from "@/components/app/PageTitle";
+import {MediaIcon} from "@/components/app/MediaIcon";
+import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {LuHelpCircle, LuUser, LuX} from "react-icons/lu";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
+import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
-import {DisplayStats} from "@/components/media-stats/DisplayStats";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Button} from "@/components/ui/button";
-import {DotsVerticalIcon} from "@radix-ui/react-icons";
+import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
+import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -31,6 +32,10 @@ function StatsPage() {
     const [selectedTab, handleTabChange] = useState("Main Statistics");
     const apiData = useSuspenseQuery(statsOptions(mediaType, username)).data;
     const statsData = dataToLoad(mediaType, apiData.stats);
+
+    useEffect(() => {
+        resetComparison();
+    }, [mediaType, username]);
 
     const addComparison = async (username) => {
         otherUserStats.mutate({ mediaType, username }, {
@@ -50,15 +55,13 @@ function StatsPage() {
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Stats`} subtitle="Detailed stats for the user">
             <div className="flex items-center justify-between gap-3 my-4 max-sm:justify-center">
-                {apiData.is_current &&
-                    <ComparisonSelector
-                        users={apiData.users}
-                        otherUser={otherUser}
-                        addComparison={addComparison}
-                        resetComparison={resetComparison}
-                    />
-                }
-                <NavigationButtons/>
+                <ComparisonSelector
+                    users={apiData.users}
+                    otherUser={otherUser}
+                    addComparison={addComparison}
+                    resetComparison={resetComparison}
+                />
+                <NavigationButtons settings={apiData.settings}/>
             </div>
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
                 <Sidebar
@@ -76,7 +79,7 @@ function StatsPage() {
                             <p>The feeling system was converted from 0 to 5 for convenience and clarity</p>
                         </div>
                     }
-                    <DisplayStats
+                    <StatsDisplay
                         statsData={statsData.find(data => data.sidebarTitle === selectedTab)}
                         otherUserStatsData={statsDataOtherUser?.find(data => data.sidebarTitle === selectedTab)}
                     />
@@ -87,8 +90,13 @@ function StatsPage() {
 }
 
 
-const NavigationButtons = () => {
-    const { username } = Route.useParams();
+const NavigationButtons = ({ settings }) => {
+    const popRef = useRef();
+    const { mediaType, username } = Route.useParams();
+
+    const closePopover = () => {
+        popRef?.current?.click();
+    };
 
     return (
         <Popover>
@@ -97,12 +105,26 @@ const NavigationButtons = () => {
                     <DotsVerticalIcon/>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
+            <PopoverClose ref={popRef} className="absolute"/>
+            <PopoverContent align="end" className="w-full py-1 px-1 text-sm">
                 <Button variant="list" asChild>
-                    <Link to={`/profile/${username}`}>
-                        <LuUser className="mr-2"/> User's profile
+                    <Link to={`/profile/${username}`} onClick={closePopover}>
+                        <LuUser className="-ml-2 mr-2"/> User's profile
                     </Link>
                 </Button>
+                {settings.map(setting =>
+                    <Link
+                        key={setting.media_type}
+                        to={`/stats/${setting.media_type}/${username}`}
+                        disabled={setting.media_type === mediaType}
+                        onClick={closePopover}
+                        asChild
+                    >
+                        <Button variant="list" disabled={setting.media_type === mediaType}>
+                            <MediaIcon mediaType={setting.media_type} className="-ml-2 mr-2"/> {capitalize(setting.media_type)} Stats
+                        </Button>
+                    </Link>
+                )}
             </PopoverContent>
         </Popover>
     );

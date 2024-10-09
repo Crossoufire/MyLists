@@ -86,7 +86,7 @@ export const useDeleteUpdateMutation = (queryKey) => {
                     user_updates: [...oldData.user_updates.filter(up => up.id !== variables.updateIds[0]), data],
                 }));
             }
-            else if (queryKey[0] === "history") {
+            else if (queryKey[0] === "allUpdates") {
                 await queryClient.invalidateQueries({ queryKey });
             }
             else if (queryKey[0] === "onOpenHistory") {

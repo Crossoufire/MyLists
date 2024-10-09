@@ -3,12 +3,12 @@ import {useAuth} from "@/hooks/AuthHook";
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
 import {LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
-import {QuickAddMedia} from "@/components/medialist/QuickAddMedia";
-import {DisplayRating} from "@/components/medialist/DisplayRating";
-import {CommentPopover} from "@/components/medialist/CommentPopover";
+import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
+import {DisplayRating} from "@/components/media-list/DisplayRating";
+import {CommentPopover} from "@/components/media-list/CommentPopover";
 import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
-import {UserMediaEditDialog} from "@/components/medialist/UserMediaEditDialog";
-import {SpecificUserMediaData} from "@/components/medialist/SpecificUserMediaData";
+import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
+import {SpecificUserMediaData} from "@/components/media-list/SpecificUserMediaData";
 
 
 export const MediaGrid = ({ isCurrent, allStatus, mediaList, queryKey, mediaType }) => {

@@ -9,6 +9,14 @@ export const authOptions = () => queryOptions({
     staleTime: Infinity,
 });
 
+export const historyOptions = (mediaType, mediaId) => queryOptions({
+    queryKey: ["onOpenHistory", mediaType, mediaId],
+    queryFn: () => fetcher({ url: `/history/${mediaType}/${mediaId}` }),
+    staleTime: 10 * 1000,
+    placeholderData: [],
+});
+
+
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
     queryKey: ["details", mediaType, mediaId],
     queryFn: () => fetcher({ url: `/details/${mediaType}/${mediaId}`, queryOrData: { external } }),
@@ -20,8 +28,8 @@ export const profileOptions = (username) => queryOptions({
     queryFn: () => fetcher({ url: `/profile/${username}` }),
 });
 
-export const historyOptions = (username, filters) => queryOptions({
-    queryKey: ["history", username, filters],
+export const allUpdatesOptions = (username, filters) => queryOptions({
+    queryKey: ["allUpdates", username, filters],
     queryFn: () => fetcher({ url: `/profile/${username}/history`, queryOrData: filters }),
 });
 
