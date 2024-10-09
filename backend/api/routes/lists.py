@@ -20,7 +20,7 @@ lists_bp = Blueprint("api_lists", __name__)
 def media_list(user: User, args, media_type: MediaType):
     """ Fetch the list of media for a user """
 
-    if not user.get_media_settin(media_type).active:
+    if not user.get_media_setting(media_type).active:
         return abort(404, description="MediaType not activated")
 
     if current_user:

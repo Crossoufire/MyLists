@@ -53,7 +53,7 @@ class ApiManager(metaclass=ApiManagerMeta):
     def get_subclass(cls, media_type: MediaType) -> Type[ApiManager]:
         return cls.subclasses.get(media_type, cls)
 
-    def save_media_to_db(self):
+    def save_media_to_db(self) -> db.Model:
         self._fetch_details_from_api()
         self._format_api_data()
         return self._add_data_to_db()
@@ -116,7 +116,7 @@ class ApiManager(metaclass=ApiManagerMeta):
     def get_changed_api_ids(self) -> List[int]:
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def _fetch_details_from_api(self) -> bool:
+    def _fetch_details_from_api(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def _format_api_data(self, bulk: bool = False):
