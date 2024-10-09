@@ -1,6 +1,6 @@
 import logging
-import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
+import os
 from typing import Type
 import sys
 
@@ -18,6 +18,7 @@ from redis import Redis
 
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 from backend.api.utils.enums import RoleType
+from backend.cli.commands import register_cli_commands
 from backend.config import Config, get_config
 
 
@@ -50,28 +51,26 @@ def import_blueprints(app: Flask):
         app.register_blueprint(blueprint, url_prefix="/api")
 
 
-def create_app_logger(app: Flask):
-    if not app.config["CREATE_APP_LOGGER"]:
+def create_file_handler(app: Flask):
+    """ Create a File Handler depending on the environment and config """
+
+    # `sys.stdin.isatty()` check if app running in terminal (CLI)
+    if not app.config["CREATE_FILE_LOGGER"] or sys.stdin.isatty():
         return
 
     log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "mylists.log")
-
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-    if not os.path.exists(log_file_path):
-        with open(log_file_path, "a"):
-            pass
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
-    handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     handler.setLevel(logging.INFO)
 
-    app.logger.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     app.logger.info("MyLists is starting up...")
 
 
 def create_mail_handler(app: Flask):
-    """ Create a TLS only mail handler associated with the app logger: send email when errors occurs """
+    """ Create a TLS only mail handler for the app logger which send email when errors occurs """
 
     if not app.config["CREATE_MAIL_HANDLER"]:
         return
@@ -90,15 +89,17 @@ def create_mail_handler(app: Flask):
 
 
 def refresh_database(app: Flask):
-    """ Refresh global stats and time spent when app starts. """
+    """ In production: refresh global stats and time spent when app starts """
 
-    # Pass when using Flask CLI or in debug mode
-    if sys.argv[0].endswith("flask") or app.debug:
+    # Pass when using Flask CLI
+    if sys.stdin.isatty() or app.debug:
         return
 
-    from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
-    compute_media_time_spent()
-    update_Mylists_stats()
+    from backend.cli.managers.media_manager import CLIMediaManager
+    CLIMediaManager.compute_all_time_spent()
+
+    from backend.cli.managers.system_manager import CLISystemManager
+    CLISystemManager().update_global_stats()
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
@@ -128,11 +129,9 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
         db.create_all()
 
-        create_app_logger(app)
+        create_file_handler(app)
         create_mail_handler(app)
+        register_cli_commands(app)
         refresh_database(app)
-
-        from backend.cli.commands import register_cli_commands
-        register_cli_commands()
 
         return app

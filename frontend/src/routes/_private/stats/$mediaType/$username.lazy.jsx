@@ -3,15 +3,17 @@ import {useState} from "react";
 import {capitalize} from "@/utils/functions";
 import {statsOptions} from "@/api/queryOptions";
 import {Sidebar} from "@/components/app/Sidebar";
-import {LuHelpCircle, LuX} from "react-icons/lu";
+import {LuHelpCircle, LuUser, LuX} from "react-icons/lu";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {DisplayStats} from "@/components/media-stats/DisplayStats";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
+import {DotsVerticalIcon} from "@radix-ui/react-icons";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -47,34 +49,16 @@ function StatsPage() {
 
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Stats`} subtitle="Detailed stats for the user">
-            <div className="flex items-center gap-3 my-4 max-sm:justify-center">
+            <div className="flex items-center justify-between gap-3 my-4 max-sm:justify-center">
                 {apiData.is_current &&
-                    <>
-                        <div className="flex items-center gap-2">
-                            <Popover>
-                                <PopoverTrigger>
-                                    <LuHelpCircle/>
-                                </PopoverTrigger>
-                                <PopoverContent align="start">
-                                    Comparison between users is only based on card statistics, excluding tables and
-                                    graphs.
-                                </PopoverContent>
-                            </Popover>
-                            <span>Compare with</span>
-                        </div>
-                        <UserComboBox
-                            resetValue={otherUser}
-                            dataList={apiData.users}
-                            callback={addComparison}
-                            placeholder="Search user..."
-                        />
-                        {otherUser &&
-                            <div role="button" className="text-muted-foreground hover:text-neutral-300" onClick={resetComparison}>
-                                Clear
-                            </div>
-                        }
-                    </>
+                    <ComparisonSelector
+                        users={apiData.users}
+                        otherUser={otherUser}
+                        addComparison={addComparison}
+                        resetComparison={resetComparison}
+                    />
                 }
+                <NavigationButtons/>
             </div>
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
                 <Sidebar
@@ -101,3 +85,54 @@ function StatsPage() {
         </PageTitle>
     );
 }
+
+
+const NavigationButtons = () => {
+    const { username } = Route.useParams();
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="filters" className="px-2">
+                    <DotsVerticalIcon/>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
+                <Button variant="list" asChild>
+                    <Link to={`/profile/${username}`}>
+                        <LuUser className="mr-2"/> User's profile
+                    </Link>
+                </Button>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
+
+const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }) => {
+    return (
+        <div className="flex items-center gap-3">
+            <span>Compare with</span>
+            <Popover>
+                <PopoverTrigger>
+                    <LuHelpCircle/>
+                </PopoverTrigger>
+                <PopoverContent align="start">
+                    Comparison between users is only based on card statistics, excluding tables and
+                    graphs.
+                </PopoverContent>
+            </Popover>
+            <UserComboBox
+                dataList={users}
+                resetValue={otherUser}
+                callback={addComparison}
+                placeholder="Search user..."
+            />
+            {otherUser &&
+                <div role="button" className="text-muted-foreground hover:text-neutral-300" onClick={resetComparison}>
+                    Clear
+                </div>
+            }
+        </div>
+    );
+};

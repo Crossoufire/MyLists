@@ -9,7 +9,7 @@ from backend.tests.base_test import BaseTest
 
 class TestTasks(BaseTest):
     def test_reactivate_update_modal(self):
-        from backend.api.managers.TasksManager import TasksManager
+        from backend.cli.TasksManager import TasksManager
 
         self.user.show_update_modal = False
         db.session.commit()
@@ -23,7 +23,7 @@ class TestTasks(BaseTest):
 
     def test_delete_non_activated_users(self):
         from backend.api.models import User
-        from backend.api.managers.TasksManager import TasksManager
+        from backend.cli.TasksManager import TasksManager
 
         # Active
         self.register_new_user("toto")
@@ -52,7 +52,7 @@ class TestTasks(BaseTest):
         self.assertIsNotNone(tutu)
 
     def test_update_mylists_stats(self):
-        from backend.api.managers.TasksManager import TasksManager
+        from backend.cli.TasksManager import TasksManager
         from backend.api.managers.GlobalStatsManager import GlobalStats
 
         TasksManager.update_Mylists_stats(GlobalStats)

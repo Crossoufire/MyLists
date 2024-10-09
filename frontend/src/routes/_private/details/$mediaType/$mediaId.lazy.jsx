@@ -12,6 +12,7 @@ import {UserListDetails} from "@/components/media/general/UserListDetails";
 import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
+import AvatarCircles from "@/components/ui/avatar-circles";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -75,7 +76,8 @@ function MediaDetailsPage() {
                             <TabsList className="grid grid-cols-2">
                                 <TabsTrigger value="mediaDetails">Media Details</TabsTrigger>
                                 <TabsTrigger value="follows" disabled={apiData.follows_data.length === 0}>
-                                    Your Follows ({apiData.follows_data.length})
+                                    Your Follows &nbsp;
+                                    <AvatarCircles avatarUrls={apiData.follows_data.map(follow => follow.profile_image)}/>
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="mediaDetails">

@@ -18,7 +18,7 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }) => {
     };
 
     return (
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex items-center gap-3 mt-2">
             <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
                 <div role="button" onClick={handleRefresh}>
                     <LuRefreshCw size={18} className={refreshMutation.isPending && "animate-spin opacity-30"}/>
