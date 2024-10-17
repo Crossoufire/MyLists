@@ -88,6 +88,7 @@ class User(db.Model):
     movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
     series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
     settings = db.relationship("UserMediaSettings", back_populates="user", lazy="joined")
+    achievements = db.relationship("UserAchievement", back_populates="user", lazy="select")
     notifications = db.relationship(
         "Notifications",
         primaryjoin="Notifications.user_id == User.id",
@@ -283,10 +284,10 @@ class User(db.Model):
         media_dict = dict(
             media_type=media_type.value,
             specific_total=list_model.get_specific_total(self.id),
-            count_per_metric=list_model.get_media_count_per_rating(self),
+            # count_per_metric=list_model.get_media_count_per_rating(self),
             time_hours=int(self.get_media_setting(media_type).time_spent / 60),
             time_days=int(self.get_media_setting(media_type).time_spent / 1440),
-            labels=label_model.get_total_and_user_labels(self.id, limit=10),
+            # labels=label_model.get_total_and_user_labels(self.id, limit=10),
         )
 
         media_dict.update(list_model.get_media_count_per_status(self.id))

@@ -5,7 +5,7 @@ from flask import current_app
 from rich.progress import track
 from sqlalchemy import func
 
-from .base import CLIBaseManager
+from ._base import CLIBaseManager
 from backend.api import db
 from backend.api.core import set_current_user
 from backend.api.managers.ModelsManager import ModelsManager

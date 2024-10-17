@@ -18,7 +18,7 @@ from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.user import UserMediaUpdate, Notifications, UserMediaSettings
 from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
 from backend.api.utils.functions import naive_utcnow
-from backend.cli.managers.base import CLIBaseManager
+from backend.cli.managers._base import CLIBaseManager
 
 
 class CLIMediaManagerMeta(type):

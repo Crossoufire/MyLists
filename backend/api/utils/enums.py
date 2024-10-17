@@ -46,7 +46,7 @@ class MediaType(str, Enum):
     GAMES = "games"
 
     def __lt__(self, other: MediaType):
-        order = {t: idx for (idx, t) in enumerate(MediaType)}
+        order = {mt: idx for (idx, mt) in enumerate(MediaType)}
         return order[self] < order[other]
 
     @classmethod
@@ -211,3 +211,18 @@ class UpdateType(str, Enum):
     REDO = "redo"
     STATUS = "status"
     PLAYTIME = "playtime"
+
+
+class AchievementDifficulty(str, Enum):
+    """
+    Represents the different difficulties available for the achievements.
+    - `BRONZE`: lowest difficulty
+    - `SILVER`: medium difficulty
+    - `GOLD`: high difficulty
+    - `PLATINUM`: highest difficulty
+    """
+
+    BRONZE = "Bronze"
+    SILVER = "Silver"
+    GOLD = "Gold"
+    PLATINUM = "Platinum"

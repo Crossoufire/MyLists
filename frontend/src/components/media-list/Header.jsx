@@ -2,11 +2,11 @@ import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
-import {SearchComponent} from "@/components/media-list/SearchComponent";
 import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
+import {SearchComponent} from "@/components/media-list/SearchComponent";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {LuArrowUpDown, LuFilter, LuGrid, LuLineChart, LuList, LuUser} from "react-icons/lu";
+import {LuArrowUpDown, LuAward, LuFilter, LuGrid, LuLineChart, LuList, LuUser} from "react-icons/lu";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
@@ -120,6 +120,11 @@ const DotsOthers = () => {
                 <Button variant="list" asChild>
                     <Link to={`/stats/${mediaType}/${username}`}>
                         <LuLineChart className="mr-2"/> Collection Stats
+                    </Link>
+                </Button>
+                <Button variant="list" asChild>
+                    <Link to={`/achievements/${username}`}>
+                        <LuAward className="mr-2"/> Achievements
                     </Link>
                 </Button>
             </PopoverContent>

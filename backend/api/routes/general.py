@@ -36,8 +36,7 @@ def hall_of_fame(args):
         ranking = (
             db.session.query(
                 UserMediaSettings.user_id,
-                func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0))
-                .label("time_spent")
+                func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0)).label("time_spent")
             ).group_by(UserMediaSettings.user_id)
             .order_by(desc("time_spent")).subquery()
         )
@@ -47,20 +46,20 @@ def hall_of_fame(args):
                 UserMediaSettings.user_id,
                 func.sum(case((
                     and_(UserMediaSettings.media_type == MediaType(args["sorting"]), UserMediaSettings.active),
-                    UserMediaSettings.time_spent
-                ), else_=0)).label("time_spent")
+                    UserMediaSettings.time_spent), else_=0)
+                ).label("time_spent")
             ).group_by(UserMediaSettings.user_id)
             .order_by(desc("time_spent")).subquery()
         )
 
     ranked_users = (
         db.session.query(User.id, func.rank().over(order_by=ranking.c.time_spent.desc()).label("rank"))
-        .join(ranking, User.id == ranking.c.user_id, isouter=True).cte()
+        .outerjoin(ranking, User.id == ranking.c.user_id).cte()
     )
 
     users_data = (
         User.query.with_entities(User, ranked_users.c.rank)
-        .join(ranked_users, User.id == ranked_users.c.id)
+        .outerjoin(ranked_users, User.id == ranked_users.c.id)
         .filter(User.active.is_(True), User.username.ilike(f"%{args['search']}%"))
         .order_by(ranked_users.c.rank)
         .paginate(page=args["page"], per_page=10, error_out=True)

@@ -99,13 +99,33 @@ module.exports = {
                     "100%": {
                         "background-position": "200%"
                     }
-                }
+                },
+                shimmer: {
+                    "0%": {
+                        left: "-100%",
+                        top: "-100%",
+                    },
+                    "30%": {
+                        left: "100%",
+                        top: "100%",
+                    },
+                    "50%, 100%": {
+                        left: "100%",
+                        top: "100%",
+                    },
+                },
+                sparkle: {
+                    "0%, 100%": { opacity: 0, transform: "scale(0)" },
+                    "50%": { opacity: 0.7, transform: "scale(0.8)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
                 pulse: "pulse var(--duration) ease-out infinite",
-                rainbow: "rainbow var(--speed, 2s) infinite linear"
+                rainbow: "rainbow var(--speed, 2s) infinite linear",
+                shimmer: "shimmer 6s infinite linear",
+                sparkle: "sparkle 4s ease-in-out infinite",
             }
         }
     },

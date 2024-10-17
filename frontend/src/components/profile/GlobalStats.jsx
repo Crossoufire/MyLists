@@ -45,7 +45,7 @@ export const GlobalStats = ({ userData, global }) => {
             <CardContent className={contentClasses}>
                 <div className="grid grid-cols-12 gap-4 items-center">
                     <div className="col-span-12 sm:col-span-5">
-                        <div className="flex items-center h-[200px]">
+                        <div className="flex items-center h-[180px]">
                             <ResponsivePie
                                 data={pieData}
                                 borderWidth={1}

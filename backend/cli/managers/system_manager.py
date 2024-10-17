@@ -5,7 +5,7 @@ from sqlalchemy import text
 from backend.api import cache, db
 from backend.api.managers.ApiManager import GamesApiManager
 from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.cli.managers.base import CLIBaseManager, with_console_status
+from backend.cli.managers._base import CLIBaseManager, with_console_status
 
 
 class CLISystemManager(CLIBaseManager):

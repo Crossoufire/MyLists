@@ -1,5 +1,5 @@
 import {forwardRef} from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
@@ -32,4 +32,4 @@ const Separator = forwardRef(({ className, variant, orientation = "horizontal", 
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 
-export { Separator };
+export {Separator};

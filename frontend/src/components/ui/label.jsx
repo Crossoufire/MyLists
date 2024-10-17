@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import * as LabelPrimitive from "@radix-ui/react-label";
 

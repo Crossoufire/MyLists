@@ -2,7 +2,7 @@ import {cn} from "@/utils/functions";
 import {LuList} from "react-icons/lu";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
-import {ListData} from "@/components/media-stats/ListData";
+import {StatsList} from "@/components/media-stats/StatsList";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 
@@ -21,7 +21,7 @@ export const StatsCard = ({ data, otherData }) => {
                                 </PopoverTrigger>
                             </Tooltip>
                             <PopoverContent align="end" className="max-h-[500px] overflow-auto">
-                                <ListData
+                                <StatsList
                                     data={data}
                                     asGraph={false}
                                 />

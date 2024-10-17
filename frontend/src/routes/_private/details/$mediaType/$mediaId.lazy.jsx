@@ -76,7 +76,8 @@ function MediaDetailsPage() {
                             <TabsList className="grid grid-cols-2">
                                 <TabsTrigger value="mediaDetails">Media Details</TabsTrigger>
                                 <TabsTrigger value="follows" disabled={apiData.follows_data.length === 0}>
-                                    Your Follows &nbsp;
+                                    <span>Your Follows &nbsp;</span>
+                                    <span className="sm:hidden">({apiData.follows_data.length})</span>
                                     <AvatarCircles avatarUrls={apiData.follows_data.map(follow => follow.profile_image)}/>
                                 </TabsTrigger>
                             </TabsList>

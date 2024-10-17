@@ -1,17 +1,22 @@
+from collections import defaultdict
 import json
+import random
 
 from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
+from sqlalchemy import and_
+from sqlalchemy.orm import contains_eager
 
 from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.models import UserAchievement, Achievement
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
-from backend.api.utils.decorators import arguments, body, check_authorization
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
+from backend.api.utils.decorators import arguments, body, check_authorization, timer
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, AchievementDifficulty
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
@@ -51,11 +56,13 @@ def get_current_user():
 @users.route("/profile/<string:username>", methods=["GET"])
 @token_auth.login_required(optional=True)
 @check_authorization
+@timer
 def profile(user: User):
     """ Fetch the profile of a user """
 
     if current_user and current_user.id != user.id:
         user.profile_views += 1
+        db.session.commit()
 
     active_media_types = [setting.media_type for setting in user.settings if setting.active]
     user_updates = user.get_last_updates(limit=6)
@@ -64,8 +71,29 @@ def profile(user: User):
     media_global = user.get_global_media_stats()
     models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
     media_data = [user.get_one_media_details(model.GROUP) for model in models]
+    summary = UserAchievement.get_highest_tier_counts(user.id)
 
-    db.session.commit()
+    achievements = (
+        Achievement.query
+        .join(UserAchievement, and_(UserAchievement.achievement_id == Achievement.id, UserAchievement.user_id == user.id))
+        .options(contains_eager(Achievement.users))
+        .all()
+    )
+    random.shuffle(achievements)
+
+    details = []
+    for achievement in achievements[:6]:
+        highest_diff_completed = AchievementDifficulty.BRONZE
+        for i, user_ach in enumerate(reversed(achievement.users)):
+            if user_ach.completed:
+                highest_diff_completed = achievement.tiers[len(achievement.users) - i - 1].difficulty
+                break
+
+        details.append(dict(
+            name=achievement.name,
+            description=achievement.description,
+            difficulty=highest_diff_completed,
+        ))
 
     data = dict(
         user_data=user.to_dict(),
@@ -76,6 +104,7 @@ def profile(user: User):
         list_levels=list_levels,
         media_global=media_global,
         media_data=media_data,
+        achievements={"summary": summary, "details": details},
     )
 
     return jsonify(data=data), 200
@@ -264,6 +293,71 @@ def download_medialist(media_type: MediaType):
     media_data = list_model.query.filter_by(user_id=current_user.id).all()
 
     return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200
+
+
+@users.route("/achievements/<username>", methods=["GET"])
+@token_auth.login_required
+@timer
+def achievements(username: str):
+    """ View the user achievements """
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    achievements = (
+        Achievement.query
+        .outerjoin(UserAchievement, and_(UserAchievement.user_id == user.id, UserAchievement.achievement_id == Achievement.id))
+        .options(contains_eager(Achievement.users))
+        .all()
+    )
+
+    result = []
+    total_achievements = defaultdict(int)
+    difficulty_count = defaultdict(lambda: defaultdict(int))
+    for achievement in achievements:
+        achievement_dict = {
+            **achievement.to_dict(),
+            "user_data": [user_ach.to_dict() for user_ach in achievement.users],
+        }
+        result.append(achievement_dict)
+        total_achievements[achievement.media_type] += 1
+
+        if achievement.users:
+            for i, user_ach in enumerate(achievement.users[::-1]):
+                if user_ach.completed:
+                    highest_diff_completed = achievement.tiers[len(achievement.users) - i - 1].difficulty
+                    difficulty_count[achievement.media_type][highest_diff_completed] += 1
+                    break
+
+    for mt in MediaType:
+        if mt not in difficulty_count.keys():
+            difficulty_count[mt][AchievementDifficulty.BRONZE] = 0
+
+    total_achievements["all"] = sum(total_achievements.values())
+
+    difficulty_summary = {}
+    for media_type, tiers in difficulty_count.items():
+        difficulty_summary[media_type] = [
+            {"tier": "bronze", "value": tiers.get(AchievementDifficulty.BRONZE, 0)},
+            {"tier": "silver", "value": tiers.get(AchievementDifficulty.SILVER, 0)},
+            {"tier": "gold", "value": tiers.get(AchievementDifficulty.GOLD, 0)},
+            {"tier": "platinum", "value": tiers.get(AchievementDifficulty.PLATINUM, 0)},
+            {"tier": "total", "value": f"{sum(tiers.values())}/{total_achievements[media_type]}"},
+        ]
+
+    difficulty_summary["all"] = [
+        {"tier": "bronze", "value": sum([difficulty_count.get(mt).get(AchievementDifficulty.BRONZE, 0) for mt in MediaType])},
+        {"tier": "silver", "value": sum([difficulty_count.get(mt).get(AchievementDifficulty.SILVER, 0) for mt in MediaType])},
+        {"tier": "gold", "value": sum([difficulty_count.get(mt).get(AchievementDifficulty.GOLD, 0) for mt in MediaType])},
+        {"tier": "platinum", "value": sum([difficulty_count.get(mt).get(AchievementDifficulty.PLATINUM, 0) for mt in MediaType])},
+    ]
+    difficulty_summary["all"].append({
+        "tier": "total", "value": f"{sum([item['value'] for item in difficulty_summary['all']])}/{total_achievements['all']}"
+    })
+
+    print(json.dumps(result, indent=4, default=str))
+    print(json.dumps(difficulty_summary, indent=4, default=str))
+
+    return jsonify(data=dict(result=result, summary=difficulty_summary)), 200
 
 
 def delete_user_account(user_id: int):

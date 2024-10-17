@@ -26,7 +26,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                                 Lvl {user.profile_level}
                             </div>
                         </div>
-                        <div className="space-y-3 max-sm:bg-gradient-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
+                        <div className="space-y-2 max-sm:bg-gradient-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
                         max-sm:px-4 max-sm:rounded-lg">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-2xl font-bold">{user.username}</h2>

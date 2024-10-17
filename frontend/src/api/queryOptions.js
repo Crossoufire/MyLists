@@ -16,7 +16,6 @@ export const historyOptions = (mediaType, mediaId) => queryOptions({
     placeholderData: [],
 });
 
-
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
     queryKey: ["details", mediaType, mediaId],
     queryFn: () => fetcher({ url: `/details/${mediaType}/${mediaId}`, queryOrData: { external } }),
@@ -133,4 +132,9 @@ export const filterSearchOptions = (mediaType, username, query, job) => queryOpt
     },
     staleTime: 1000 * 60 * 2,
     enabled: query.length >= 2,
+});
+
+export const achievementOptions = (username) => queryOptions({
+    queryKey: ["achievementPage", username],
+    queryFn: () => fetcher({ url: `/achievements/${username}` }),
 });

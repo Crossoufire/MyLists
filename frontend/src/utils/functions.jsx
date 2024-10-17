@@ -254,3 +254,21 @@ export function jsonToCsv(items) {
     );
     return [headerString, ...rowItems].join("\r\n");
 }
+
+export const diffColors = (difficulty, bg = false) => {
+    const bgColors = {
+        Bronze: "bg-amber-700",
+        Silver: "bg-neutral-400",
+        Gold: "bg-yellow-600",
+        Platinum: "bg-teal-600",
+    };
+
+    const textColors = {
+        bronze: "text-amber-700",
+        silver: "text-neutral-400",
+        gold: "text-yellow-600",
+        platinum: "text-teal-600",
+    };
+
+    return bg ? bgColors[difficulty] : textColors[difficulty];
+};

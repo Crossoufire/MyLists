@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
 
@@ -14,4 +14,4 @@ const Progress = React.forwardRef(({ className, color, value, ...props }, ref) =
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
 
-export { Progress };
+export {Progress};

@@ -18,8 +18,8 @@ class ListQueryManager:
 
     def __init__(self, user: User, media_type: MediaType, args: Dict):
         self.user = user
-        self.media_type = media_type
         self.args = args
+        self.media_type = media_type
 
         self._initialize_media_models()
 

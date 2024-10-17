@@ -8,9 +8,9 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {LuHelpCircle, LuUser, LuX} from "react-icons/lu";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {LuAward, LuHelpCircle, LuUser, LuX} from "react-icons/lu";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
@@ -110,6 +110,11 @@ const NavigationButtons = ({ settings }) => {
                 <Button variant="list" asChild>
                     <Link to={`/profile/${username}`} onClick={closePopover}>
                         <LuUser className="-ml-2 mr-2"/> User's profile
+                    </Link>
+                </Button>
+                <Button variant="list" asChild>
+                    <Link to={`/achievements/${username}`}>
+                        <LuAward className="-ml-2 mr-2"/> Achievements
                     </Link>
                 </Button>
                 {settings.map(setting =>

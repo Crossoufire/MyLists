@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import useEmblaCarousel from "embla-carousel-react";
 import {ArrowLeftIcon, ArrowRightIcon} from "@radix-ui/react-icons";
@@ -13,7 +13,7 @@ function useCarousel() {
     if (!context) {
         throw new Error("useCarousel must be used within a <Carousel />");
     }
-    return context
+    return context;
 }
 
 
@@ -43,18 +43,19 @@ const Carousel = React.forwardRef((
     }, []);
 
     const scrollPrev = React.useCallback(() => {
-        api?.scrollPrev()
+        api?.scrollPrev();
     }, [api]);
 
     const scrollNext = React.useCallback(() => {
-        api?.scrollNext()
+        api?.scrollNext();
     }, [api]);
 
     const handleKeyDown = React.useCallback((event) => {
         if (event.key === "ArrowLeft") {
             event.preventDefault();
             scrollPrev();
-        } else if (event.key === "ArrowRight") {
+        }
+        else if (event.key === "ArrowRight") {
             event.preventDefault();
             scrollNext();
         }
@@ -180,4 +181,4 @@ const CarouselNext = React.forwardRef(({ className, variant = "outline", size = 
 CarouselNext.displayName = "CarouselNext";
 
 
-export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
+export {Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext};

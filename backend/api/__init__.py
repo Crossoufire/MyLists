@@ -88,7 +88,7 @@ def create_mail_handler(app: Flask):
     app.logger.addHandler(mail_handler)
 
 
-def refresh_database(app: Flask):
+def seed_and_refresh_database(app: Flask):
     """ In production: refresh global stats and time spent when app starts """
 
     # Pass when using Flask CLI
@@ -100,6 +100,9 @@ def refresh_database(app: Flask):
 
     from backend.cli.managers.system_manager import CLISystemManager
     CLISystemManager().update_global_stats()
+
+    from backend.api.utils.seeders import seed_achievements
+    seed_achievements()
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
@@ -132,6 +135,6 @@ def create_app(config_class: Type[Config] = None) -> Flask:
         create_file_handler(app)
         create_mail_handler(app)
         register_cli_commands(app)
-        refresh_database(app)
+        seed_and_refresh_database(app)
 
         return app

@@ -17,7 +17,7 @@ flask-mail = "^0.10.0"
 flask-caching = "^2.3.0"
 flask-httpauth = "^4.8.0"
 flask-migrate = "^4.0.7"
-pillow = "^10.4.0"
+pillow = "^11.0.0"
 pyjwt = "^2.9.0"
 requests = "^2.32.3"
 howlongtobeatpy = "^1.0.8"
@@ -25,11 +25,11 @@ python-dotenv = "^1.0.1"
 gunicorn = "^23.0.0"
 marshmallow = "^3.22.0"
 flask-marshmallow = "^1.2.1"
-webargs = "^8.4.0"
+webargs = "^8.6.0"
 marshmallow-sqlalchemy = "^1.1.0"
 flask-limiter = { extras = ["redis"], version = "^3.8.0" }
-redis = "^5.0.8"
-rich = "^13.8.1"
+redis = "^5.1.1"
+rich = "^13.9.2"
 
 
 [build-system]

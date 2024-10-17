@@ -100,7 +100,7 @@ const NotificationItem = ({ data, handlePopoverClose }) => {
                     }
                 </div>
                 {data.media_type &&
-                    <div className="flex items-center gap-2 text-neutral-400">
+                    <div className="flex items-center gap-2 text-neutral-500">
                         {data.payload?.new ?
                             <div className="line-clamp-1">{data.payload.message}</div>
                             :

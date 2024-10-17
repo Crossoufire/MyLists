@@ -6,7 +6,7 @@ const AvatarCircles = ({ className, avatarUrls }) => {
     const rest = avatarUrls.length - showPeople;
 
     return (
-        <div className={cn("flex -space-x-2.5", className)}>
+        <div className={cn("flex -space-x-2.5 max-sm:hidden", className)}>
             {avatarUrls.slice(0, showPeople).map((avatarUrl, idx) =>
                 <img
                     key={idx}
