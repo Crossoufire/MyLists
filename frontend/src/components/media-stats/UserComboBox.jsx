@@ -6,7 +6,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
 
-export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback }) => {
+export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback, isConnected }) => {
     const [value, setValue] = useState(resetValue);
     const [open, setOpen] = useState(false);
 
@@ -29,23 +29,29 @@ export const UserComboBox = ({ placeholder, resetValue = "", dataList, callback 
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
-                <Command className="overflow-y-auto max-h-[270px]">
-                    <CommandInput placeholder="Search user..." className="h-9"/>
-                    <CommandList>
-                        <CommandEmpty>No user found.</CommandEmpty>
-                        <CommandGroup>
-                            {dataList.map(user =>
-                                <CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
-                                    {user.label}
-                                    <CheckIcon
-                                        className={cn("ml-auto h-4 w-4",
-                                            value === user.value ? "opacity-100" : "opacity-0")}
-                                    />
-                                </CommandItem>
-                            )}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
+                {isConnected ?
+                    <Command className="overflow-y-auto max-h-[270px]">
+                        <CommandInput placeholder="Search user..." className="h-9"/>
+                        <CommandList>
+                            <CommandEmpty>No user found.</CommandEmpty>
+                            <CommandGroup>
+                                {dataList.map(user =>
+                                    <CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
+                                        {user.label}
+                                        <CheckIcon
+                                            className={cn("ml-auto h-4 w-4",
+                                                value === user.value ? "opacity-100" : "opacity-0")}
+                                        />
+                                    </CommandItem>
+                                )}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                    :
+                    <Command className="overflow-y-auto max-h-[270px]">
+                        <CommandEmpty>You need to be logged-in to compare.</CommandEmpty>
+                    </Command>
+                }
             </PopoverContent>
         </Popover>
     );

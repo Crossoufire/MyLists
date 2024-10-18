@@ -4,7 +4,7 @@ import {getStatusColor} from "@/utils/functions";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 import {BlockLink} from "@/components/app/BlockLink";
-import {Link, useSearch} from "@tanstack/react-router";
+import {Link} from "@tanstack/react-router";
 import {BulletIcon} from "@/components/profile/BulletIcon";
 
 
@@ -46,8 +46,14 @@ export const MediaStats = ({ user, media }) => {
                     value={`${media.media_metric}/${media.total_media_no_plan_to_x}`}
                 />
             </div>
-            <MediaStatuses media={media}/>
-            <MediaFavorites media={media}/>
+            <MediaStatuses
+                media={media}
+                username={user.username}
+            />
+            <MediaFavorites
+                media={media}
+                username={user.username}
+            />
             <Separator className="mt-3 mb-1.5"/>
             <div className="flex items-center justify-end">
                 <Link to={`/stats/${media.media_type}/${user.username}`} className="text-base font-medium hover:underline">
@@ -69,9 +75,7 @@ function MediaValues({ title, value }) {
 }
 
 
-function MediaStatuses({ media }) {
-    const { username } = useSearch({ strict: false });
-
+function MediaStatuses({ media, username }) {
     return (
         <div>
             <div className="flex h-8 mb-2 mt-2 max-sm:h-6">
@@ -100,9 +104,7 @@ function MediaStatuses({ media }) {
 }
 
 
-function MediaFavorites({ media }) {
-    const { username } = useSearch({ strict: false });
-
+function MediaFavorites({ media, username }) {
     return (
         <div className="mt-4">
             <Link to={`/list/${media.media_type}/${username}`} search={{ favorite: true }} className="text-lg font-medium hover:underline">

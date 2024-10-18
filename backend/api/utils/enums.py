@@ -47,7 +47,7 @@ class MediaType(str, Enum):
 
     def __lt__(self, other: MediaType):
         order = {mt: idx for (idx, mt) in enumerate(MediaType)}
-        return order[self] < order[other]
+        return order[self] < order.get(other, 0)
 
     @classmethod
     def default(cls) -> List[MediaType]:

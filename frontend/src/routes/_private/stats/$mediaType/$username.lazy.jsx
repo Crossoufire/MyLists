@@ -15,6 +15,7 @@ import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {useAuth} from "@/hooks/AuthHook";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -137,6 +138,9 @@ const NavigationButtons = ({ settings }) => {
 
 
 const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }) => {
+    const { currentUser } = useAuth();
+    const isConnected = !!currentUser;
+
     return (
         <div className="flex items-center gap-3">
             <span>Compare with</span>
@@ -153,7 +157,8 @@ const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }
                 dataList={users}
                 resetValue={otherUser}
                 callback={addComparison}
-                placeholder="Search user..."
+                isConnected={isConnected}
+                placeholder={"Search user..."}
             />
             {otherUser &&
                 <div role="button" className="text-muted-foreground hover:text-neutral-300" onClick={resetComparison}>

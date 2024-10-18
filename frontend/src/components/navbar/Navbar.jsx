@@ -1,6 +1,7 @@
 import {useRef} from "react";
 import {router} from "@/router";
 import {useAuth} from "@/hooks/AuthHook";
+import {queryClient} from "@/api/queryClient";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
@@ -26,6 +27,7 @@ export const Navbar = () => {
     const logoutUser = () => {
         logout.mutate(undefined, {
             onSuccess: async () => {
+                queryClient.clear();
                 await router.invalidate().then(() => {
                     navigate({ to: "/" });
                 });
@@ -41,10 +43,10 @@ export const Navbar = () => {
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
                     {location.pathname !== "/" &&
                         <div className="space-x-3">
-                            <Button size="sm">
+                            <Button size="sm" asChild>
                                 <NavLink to="/">Login</NavLink>
                             </Button>
-                            <Button size="sm" variant="secondary">
+                            <Button size="sm" variant="secondary" asChild>
                                 <NavLink to="/">Register</NavLink>
                             </Button>
                         </div>

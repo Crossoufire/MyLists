@@ -100,11 +100,11 @@ export const capitalize = (str) => {
 
 export const getMediaColor = (media) => {
     const colors = {
-        "series": "#216e7d",
-        "anime": "#945141",
-        "movies": "#8c7821",
-        "books": "#584c6e",
-        "games": "#196219",
+        series: "#216e7d",
+        anime: "#945141",
+        movies: "#8c7821",
+        books: "#584c6e",
+        games: "#196219",
     };
     return colors[media];
 };
@@ -256,18 +256,20 @@ export function jsonToCsv(items) {
 }
 
 export const diffColors = (difficulty, bg = false) => {
+    if (!difficulty) return null;
+
     const bgColors = {
         Bronze: "bg-amber-700",
-        Silver: "bg-neutral-400",
+        Silver: "bg-slate-400",
         Gold: "bg-yellow-600",
         Platinum: "bg-teal-600",
     };
 
     const textColors = {
-        bronze: "text-amber-700",
-        silver: "text-neutral-400",
-        gold: "text-yellow-600",
-        platinum: "text-teal-600",
+        Bronze: "text-amber-700",
+        Silver: "text-slate-400",
+        Gold: "text-yellow-600",
+        Platinum: "text-teal-600",
     };
 
     return bg ? bgColors[difficulty] : textColors[difficulty];

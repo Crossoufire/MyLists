@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+from operator import and_
+import random
 from typing import Dict, List
 
 from sqlalchemy import case, Case, func
+from sqlalchemy.orm import contains_eager
 
 from backend.api import db
-from backend.api.utils.enums import AchievementDifficulty
+from backend.api.utils.enums import AchievementDifficulty, MediaType
 
 
 class AchievementTier(db.Model):
@@ -49,6 +54,53 @@ class Achievement(db.Model):
         ach_dict["tiers"] = [tier.to_dict() for tier in self.tiers]
         return ach_dict
 
+    @classmethod
+    def get_all_achievements_with_user(cls, user_id: int) -> List[Dict]:
+        """ Return all the achievements as well as user achievement if they exist as a list of dict """
+
+        achievements = (
+            cls.query.outerjoin(
+                UserAchievement, and_(UserAchievement.user_id == user_id, UserAchievement.achievement_id == Achievement.id)
+            ).options(contains_eager(cls.users)).all()
+        )
+
+        result = []
+        for achievement in achievements:
+            ach_dict = {
+                **achievement.to_dict(),
+                "user_data": [user_ach.to_dict() for user_ach in achievement.users],
+            }
+            result.append(ach_dict)
+
+        return result
+
+    @classmethod
+    def get_achievements_with_user(cls, user_id: int, limit: int = 6) -> List[Dict]:
+        """ Get only N randomized achievements for the user (for profile page) """
+
+        achievements = (
+            cls.query
+            .join(UserAchievement, and_(UserAchievement.user_id == user_id, UserAchievement.achievement_id == Achievement.id))
+            .options(contains_eager(cls.users)).all()
+        )
+        random.shuffle(achievements)
+
+        details = []
+        for achievement in achievements[:limit]:
+            highest_diff_completed = None
+            for i, user_ach in enumerate(reversed(achievement.users)):
+                if user_ach.completed:
+                    highest_diff_completed = achievement.tiers[len(achievement.users) - i - 1].difficulty
+                    break
+
+            details.append(dict(
+                name=achievement.name,
+                description=achievement.description,
+                difficulty=highest_diff_completed,
+            ))
+
+        return details
+
 
 class UserAchievement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,8 +122,58 @@ class UserAchievement(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     @classmethod
-    def get_highest_tier_counts(cls, user_id: int) -> List[Dict]:
-        """ Return the highest tier achievement count for each difficulty """
+    def get_full_summary(cls, user_id: int) -> Dict:
+        """ Return a summary dict counting each media type and difficulty + total """
+
+        tier_order = get_difficulty_case()
+
+        subq = (
+            db.session.query(Achievement.media_type, cls.achievement_id, func.max(tier_order).label("max_tier_order"))
+            .join(AchievementTier, cls.tier_id == AchievementTier.id)
+            .join(Achievement, cls.achievement_id == Achievement.id)
+            .filter(cls.user_id == user_id, cls.completed == True)
+            .group_by(Achievement.media_type, cls.achievement_id)
+            .subquery()
+        )
+
+        completed_result = (
+            db.session.query(subq.c.media_type, AchievementTier.difficulty, func.count().label("count"))
+            .join(subq, (AchievementTier.achievement_id == subq.c.achievement_id) & (tier_order == subq.c.max_tier_order))
+            .group_by(subq.c.media_type, AchievementTier.difficulty)
+            .order_by(subq.c.media_type, tier_order).all()
+        )
+
+        total_achievements = (
+            db.session.query(Achievement.media_type, func.count().label("total"))
+            .group_by(Achievement.media_type).all()
+        )
+
+        results = {mt: {diff: 0 for diff in AchievementDifficulty} for mt in MediaType}
+        # noinspection PyTypeChecker
+        results["all"] = {diff: 0 for diff in AchievementDifficulty}
+
+        for sub_dict in results.values():
+            sub_dict.update({"acquired": 0, "total": 0})
+
+        for mt, total in total_achievements:
+            results[mt]["total"] = total
+            results["all"]["total"] += total
+
+        for mt, difficulty, count in completed_result:
+            results[mt][difficulty] = count
+            results[mt]["acquired"] += count
+            results["all"][difficulty] += count
+            results["all"]["acquired"] += count
+
+        for sub_dict in results.values():
+            sub_dict["total"] = f"{sub_dict['acquired']}/{sub_dict['total']}"
+            del sub_dict["acquired"]
+
+        return results
+
+    @classmethod
+    def get_total_only_summary(cls, user_id: int) -> List[Dict]:
+        """ Return a list of dict containing the count for each difficulty tier """
 
         tier_order = get_difficulty_case()
 
@@ -90,4 +192,4 @@ class UserAchievement(db.Model):
             .order_by(tier_order).all()
         )
 
-        return [dict(difficulty=d.value, count=c) for d, c in result]
+        return [{"difficulty": difficulty, "count": count} for difficulty, count in result]
