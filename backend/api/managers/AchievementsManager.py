@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Type, List, Dict
+from typing import Type, List, Dict, Optional
 
-from sqlalchemy import func, distinct, case, literal, insert, exists
+from sqlalchemy import func, distinct, case, literal, select, update, exists, insert
 
 from backend.api import db
 from backend.api.managers.ModelsManager import ModelsManager
@@ -81,6 +81,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
         if not achievement:
             return False
 
+        # Update only if `name` and/or `description` are not `None`
         achievement.name = name if name else achievement.name
         achievement.description = description if description else achievement.description
         db.session.commit()
@@ -99,7 +100,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
         return True
 
     @staticmethod
-    def _execute_statements(achievement: Achievement, subquery, **kwargs):
+    def _execute_statements(achievement: Achievement, subquery: select, **kwargs):
         """ Execute the update and insert statements of an achievement and its tiers for N users """
 
         tiers = AchievementTier.query.filter_by(achievement_id=achievement.id).all()
@@ -114,9 +115,10 @@ class AchievementManager(metaclass=AchievementManagerMeta):
                 else_=UserAchievement.completed_at
             )
 
+            # noinspection PyTypeChecker
             update_stmt = (
-                UserAchievement.__table__.update()
-                .filter(
+                update(UserAchievement)
+                .where(
                     UserAchievement.tier_id == tier.id,
                     UserAchievement.user_id == subquery.c.user_id,
                     UserAchievement.achievement_id == achievement.id,
@@ -131,7 +133,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
             )
             db.session.execute(update_stmt)
 
-            # Get columns of interest and redefine completed_at for insert statement
+            # Get columns of interest and redefine `completed_at` for insert statement
             columns_to_insert = ["user_id", "achievement_id", "tier_id", "count", "progress", "completed", "completed_at",
                                  "last_calculated_at"]
             # noinspection PyTypeChecker
@@ -160,31 +162,32 @@ class AchievementManager(metaclass=AchievementManagerMeta):
 
         db.session.commit()
 
-    def _filter_by_users(self, base_query, user_ids: List[int]):
+    def _filter_and_group_by_users(self, base_query, user_ids: List[int] = None) -> select:
         if user_ids:
             base_query = base_query.filter(self.media_list.user_id.in_(user_ids))
-        return base_query.group_by(self.media_list.user_id).subquery()
+        return base_query.group_by(self.media_list.user_id).cte()
 
-    def calculate_achievements(self, code_names: List[str] = None, user_ids: List[int] = None):
-        """
-        Calculate achievements for users based on optional `code_names` and `user_ids`.
-        - If no `code_names` provided --> calculate all achievements.
-        - If no `user_ids` provided --> calculate for all users.
-        """
+    def calculate_achievements(self, code_name: Optional[str], user_ids: Optional[List[int]], callback=None):
+        """ Calculate achievements for users based on `code_names` and `user_ids`. """
 
         query = Achievement.query
-        if code_names:
-            query = query.filter(Achievement.code_name.in_(code_names))
+        if code_name:
+            query = query.filter(Achievement.code_name == code_name)
         achievements = query.filter(Achievement.media_type == self.GROUP).all()
 
-        for achievement in achievements:
+        total_achievements = len(achievements)
+        for i, achievement in enumerate(achievements):
             data = self.calculator_map.get(achievement.code_name)
             if isinstance(data, tuple):
                 self.calculator_map[achievement.code_name][0](achievement, user_ids, data[-1])
             else:
                 self.calculator_map[achievement.code_name](achievement, user_ids)
 
+            if callback:
+                callback((i + 1) / total_achievements)
+
     # --- General implementations -----------------------------------------
+
     def _calculate_completed(self, achievement: Achievement, user_ids: List[int] = None):
         """ Complete N media """
 
@@ -193,7 +196,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
             .join(self.media).filter(self.media_list.status == Status.COMPLETED)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_rated(self, achievement: Achievement, user_ids: List[int] = None):
@@ -205,7 +208,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
             .filter(case((User.add_feeling.is_(True), self.media_list.feeling), else_=self.media_list.score).is_not(None))
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_comment(self, achievement: Achievement, user_ids: List[int] = None):
@@ -216,7 +219,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
             .join(self.media).filter(self.media_list.comment.is_not(None))
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_specific_genre(self, achievement: Achievement, user_ids: List[int] = None):
@@ -230,7 +233,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
             .filter(self.media_list.status == Status.COMPLETED, self.media_genre.name == genre_name)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
 
@@ -267,7 +270,7 @@ class TVAchievementManager(TMDBAchievementManager):
             .join(self.media).filter(self.media_list.status == Status.COMPLETED, filter_cond)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_network(self, achievement: Achievement, user_ids: List[int] = None):
@@ -279,7 +282,7 @@ class TVAchievementManager(TMDBAchievementManager):
             .filter(self.media_list.status != Status.PLAN_TO_WATCH)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
 
@@ -347,11 +350,11 @@ class MoviesAchievementManager(TMDBAchievementManager):
         filter_cond = self.media.duration >= value if GTE else self.media.duration <= value
 
         base_query = (
-            db.session.query(self.media_list.user_id, func.count(self.media_list.id).label("value")).join(self.media)
-            .filter(self.media_list.status == Status.COMPLETED, filter_cond)
+            db.session.query(self.media_list.user_id, func.count(self.media_list.id).label("value"))
+            .join(self.media).filter(self.media_list.status == Status.COMPLETED, filter_cond)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_director(self, achievement: Achievement, user_ids: List[int] = None):
@@ -378,7 +381,7 @@ class MoviesAchievementManager(TMDBAchievementManager):
             .filter(self.media_list.status == Status.COMPLETED)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
 
@@ -401,7 +404,7 @@ class BooksAchievementManager(AchievementManager):
             "fantasy_books": self._calculate_specific_genre,
         }
 
-    def _calculate_short_or_long(self, achievement: Achievement, user_ids: List[int] = None, GTE: bool = False):
+    def _calculate_short_or_long(self, achievement: Achievement, user_ids: List[int], GTE: bool = False):
         """ Complete N books LTE (Less Than or Equal) or GTE (Greater Than or Equal) to M pages """
 
         value = achievement.tiers[0].criteria["value"]
@@ -412,7 +415,7 @@ class BooksAchievementManager(AchievementManager):
             .join(self.media).filter(self.media_list.status == Status.COMPLETED, filter_cond)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_authors(self, achievement: Achievement, user_ids: List[int] = None):
@@ -440,7 +443,7 @@ class BooksAchievementManager(AchievementManager):
             .having(func.count(distinct(self.media.language)) >= 2)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
 
@@ -482,7 +485,7 @@ class GamesAchievementManager(AchievementManager):
             .filter(self.media_list.status.in_(statuses_cond), filter_cond)
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_game_modes(self, achievement: Achievement, user_ids: List[int] = None):
@@ -496,14 +499,14 @@ class GamesAchievementManager(AchievementManager):
             .filter(self.media_list.status.not_in([Status.PLAN_TO_PLAY, Status.DROPPED]), self.media.game_modes.ilike(f"%{value}%"))
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_time(self, achievement: Achievement, user_ids: List[int] = None):
         """ Log N hours of games """
 
         base_query = db.session.query(self.media_list.user_id, (func.sum(self.media_list.playtime) / 60).label("value"))
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_companies(self, achievement: Achievement, user_ids: List[int] = None, developer: bool = True):
@@ -536,7 +539,7 @@ class GamesAchievementManager(AchievementManager):
             )
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_platforms(self, achievement: Achievement, user_ids: List[int] = None):
@@ -547,7 +550,7 @@ class GamesAchievementManager(AchievementManager):
             .filter(self.media_list.status.not_in([Status.PLAN_TO_PLAY, Status.DROPPED]))
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)
 
     def _calculate_specific_platforms(self, achievement: Achievement, user_ids: List[int] = None):
@@ -563,5 +566,5 @@ class GamesAchievementManager(AchievementManager):
             )
         )
 
-        subquery = self._filter_by_users(base_query, user_ids)
+        subquery = self._filter_and_group_by_users(base_query, user_ids)
         self._execute_statements(achievement, subquery)

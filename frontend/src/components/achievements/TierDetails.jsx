@@ -1,7 +1,7 @@
 import {LuAward} from "react-icons/lu";
-import {diffColors} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {Progress} from "@/components/ui/progress";
+import {capitalize, diffColors} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
@@ -12,7 +12,7 @@ export const TiersDetails = ({ achievement }) => {
             <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full mt-3">View Tiers</Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full">
+            <PopoverContent className="w-full" align="center">
                 <h3 className="font-semibold mb-2">{achievement.name} Tiers</h3>
                 <Table>
                     <TableHeader>
@@ -30,7 +30,7 @@ export const TiersDetails = ({ achievement }) => {
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
                                             <LuAward className={`w-4 h-4 ${diffColors(tier.difficulty)}`}/>
-                                            {tier.difficulty}
+                                            {capitalize(tier.difficulty)}
                                         </div>
                                     </TableCell>
                                     <TableCell>

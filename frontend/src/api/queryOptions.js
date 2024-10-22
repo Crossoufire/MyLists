@@ -1,6 +1,6 @@
+import {api} from "@/api/apiClient";
 import {fetcher} from "@/api/fetcher";
 import {queryOptions} from "@tanstack/react-query";
-import {api} from "@/api/apiClient";
 
 
 export const authOptions = () => queryOptions({

@@ -3,6 +3,7 @@ import sys
 
 from flask import current_app
 from rich.console import Console
+from rich.progress import Progress
 from rich.table import Table
 from rich.text import Text
 
@@ -28,6 +29,7 @@ class CLIBaseManager:
     def __init__(self):
         self.is_terminal = sys.stdin.isatty()
         self.console = console
+        self.progress = Progress()
 
     @staticmethod
     def _log_table(rich_table: Table):
@@ -73,9 +75,3 @@ class CLIBaseManager:
             console.print(f"[yellow]![/yellow] {message}")
         else:
             current_app.logger.warning(message)
-
-    def log_debug(self, message: str):
-        if self.is_terminal:
-            console.print(f"[magenta]DEBUG[/magenta] {message}")
-        else:
-            current_app.logger.debug(message)

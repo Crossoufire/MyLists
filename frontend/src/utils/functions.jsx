@@ -259,17 +259,17 @@ export const diffColors = (difficulty, bg = false) => {
     if (!difficulty) return null;
 
     const bgColors = {
-        Bronze: "bg-amber-700",
-        Silver: "bg-slate-400",
-        Gold: "bg-yellow-600",
-        Platinum: "bg-teal-600",
+        bronze: "bg-amber-700",
+        silver: "bg-slate-400",
+        gold: "bg-yellow-600",
+        platinum: "bg-teal-600",
     };
 
     const textColors = {
-        Bronze: "text-amber-700",
-        Silver: "text-slate-400",
-        Gold: "text-yellow-600",
-        Platinum: "text-teal-600",
+        bronze: "text-amber-700",
+        silver: "text-slate-400",
+        gold: "text-yellow-600",
+        platinum: "text-teal-600",
     };
 
     return bg ? bgColors[difficulty] : textColors[difficulty];

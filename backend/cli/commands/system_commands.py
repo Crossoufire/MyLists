@@ -1,10 +1,10 @@
 import click
 from flask import current_app
 
-from backend.cli.commands.user_commands import delete_users
+from backend.api.utils.enums import MediaType
+from backend.cli.managers.media_manager import CLIMediaManager
 from backend.cli.managers.system_manager import CLISystemManager
-from backend.cli.commands.media_commands import (remove_media, remove_covers, bulk_refresh, add_notifications, movies_locking,
-                                                 compute_media_time)
+from backend.cli.managers.user_manager import CLIUserManager
 
 
 system_manager = CLISystemManager()
@@ -43,19 +43,22 @@ def caching():
 
 
 @system_cli.command()
-@click.pass_context
-def scheduled_tasks(ctx):
+def scheduled_tasks():
     """ Run daily scheduled tasks. """
 
-    ctx.forward(delete_users)
+    user_manager = CLIUserManager()
+    user_manager.delete_non_activated_users()
 
-    ctx.forward(remove_media)
-    ctx.forward(remove_covers)
-    ctx.forward(bulk_refresh)
-    ctx.forward(add_notifications)
-    ctx.forward(movies_locking)
-    ctx.forward(compute_media_time)
+    CLIMediaManager.remove_all_non_list_media()
+    CLIMediaManager.remove_all_old_media_covers()
+    CLIMediaManager.bulk_all_media_refresh()
+    CLIMediaManager.add_all_media_notifications()
 
-    ctx.forward(update_stats)
-    ctx.forward(vacuum_db)
-    ctx.forward(analyze_db)
+    media_manager = CLIMediaManager.get_manager(MediaType.MOVIES)
+    media_manager().automatic_locking()
+
+    CLIMediaManager.compute_all_time_spent()
+
+    system_manager.update_global_stats()
+    system_manager.vacuum_sqlite_db()
+    system_manager.vacuum_sqlite_db()

@@ -51,7 +51,7 @@ function AchievementSummary({ summary }) {
         <div className="flex items-center justify-between font-bold mb-4">
             <div className="flex items-center font-bold gap-4">
                 {summary.length === 0 ?
-                    ["Bronze", "Silver", "Gold", "Platinum"].map((diff, idx) =>
+                    ["bronze", "silver", "gold", "platinum"].map((diff, idx) =>
                         <div key={idx} className="flex items-center gap-1">
                             <LuAward className={cn("w-5 h-5", diffColors(diff))}/>
                             <span>0</span>

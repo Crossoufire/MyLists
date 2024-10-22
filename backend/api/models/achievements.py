@@ -148,26 +148,31 @@ class UserAchievement(db.Model):
             .group_by(Achievement.media_type).all()
         )
 
-        results = {mt: {diff: 0 for diff in AchievementDifficulty} for mt in MediaType}
-        # noinspection PyTypeChecker
-        results["all"] = {diff: 0 for diff in AchievementDifficulty}
+        results = {media_type: [] for media_type in MediaType}
+        results.update({"all": []})
+        completed_counts = {(res.media_type, res.difficulty): res.count for res in completed_result}
 
-        for sub_dict in results.values():
-            sub_dict.update({"acquired": 0, "total": 0})
+        grand_total = 0
+        grand_total_gained = 0
+        all_difficulty_sums = {difficulty: 0 for difficulty in AchievementDifficulty}
 
-        for mt, total in total_achievements:
-            results[mt]["total"] = total
-            results["all"]["total"] += total
+        for media_type in MediaType:
+            media_type_total_gained = 0
+            for difficulty in AchievementDifficulty:
+                count = completed_counts.get((media_type, difficulty), 0)
+                results[media_type].append({"tier": difficulty, "count": count})
+                all_difficulty_sums[difficulty] += count
+                media_type_total_gained += count
 
-        for mt, difficulty, count in completed_result:
-            results[mt][difficulty] = count
-            results[mt]["acquired"] += count
-            results["all"][difficulty] += count
-            results["all"]["acquired"] += count
+            media_type_total = next((total for mt, total in total_achievements if mt == media_type), 0)
+            results[media_type].append({"tier": "total", "count": f"{media_type_total_gained}/{media_type_total}"})
 
-        for sub_dict in results.values():
-            sub_dict["total"] = f"{sub_dict['acquired']}/{sub_dict['total']}"
-            del sub_dict["acquired"]
+            grand_total += media_type_total
+            grand_total_gained += media_type_total_gained
+
+        for difficulty, sum_count in all_difficulty_sums.items():
+            results["all"].append({"tier": difficulty, "count": sum_count})
+        results["all"].append({"tier": "total", "count": f"{grand_total_gained}/{grand_total}"})
 
         return results
 

@@ -18,6 +18,13 @@ def seed():
 
 
 @ach_cli.command()
+@click.option("--media_type", "-m", help="show the code names for the selected media type")
+def code_names(media_type: str):
+    """ List the code names. """
+    achievement_manager.get_code_names(media_type)
+
+
+@ach_cli.command()
 @click.argument("code_name")
 @click.option("--name", "-n", type=str, help="Updated name")
 @click.option("--description", "-d", type=str, help="Updated description")
@@ -32,19 +39,24 @@ def update_def(code_name: str, name: str = None, description: str = None):
 @click.argument("criteria")
 def update_tier(code_name: str, tier: str, criteria: str):
     """ Update the tier of an achievement and recalculate. """
-    achievement_manager.update_tier_achievement(code_name, tier, criteria)
+    achievement_manager.update_achievement_tier(code_name, tier, criteria)
 
 
 @ach_cli.command()
-@click.option("--code_names", "-c", multiple=True, help="List of code names")
-@click.option("--user_ids", "-u", multiple=True, help="List of user ids")
-def calculate(code_names: List[str] | str = None, user_ids: List[int] | int = None):
-    """ Calculates the achievements. """
+@click.option("--code-names", "-c", multiple=True, help="List of achievement code names")
+@click.option("--user-ids", "-u", multiple=True, type=int, help="List of user IDs")
+@click.option("--all-users", "-a", is_flag=True, help="Calculate for all users")
+@click.option("--active-users", "-t", is_flag=True, help="Calculate for users active in the last 24 hours")
+def calculate(code_names: List[str], user_ids: List[int], all_users: bool, active_users: bool):
+    """ Calculates achievements based on options. """
+
+    if not code_names:
+        code_names = "all"
+
+    if not user_ids or active_users:
+        user_ids = "active"
+
+    if all_users:
+        user_ids = "all"
+
     achievement_manager.calculate_achievements(code_names, user_ids)
-
-
-@ach_cli.command()
-@click.option("--media_type", "-m", help="show only selected media type code names")
-def code_names(media_type: str):
-    """ List the code names. """
-    achievement_manager.get_code_names(media_type)

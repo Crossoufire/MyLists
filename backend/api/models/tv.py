@@ -142,8 +142,6 @@ class TVListModel(MediaList):
         special_statuses = (Status.RANDOM, Status.PLAN_TO_WATCH)
         new_total = self.total
 
-        print(self.status, new_status)
-
         if self.status in special_statuses and new_status not in special_statuses:
             self.last_episode_watched = 1
 

@@ -25,12 +25,13 @@ class Config:
     DEMO_EMAIL = "demo@demo.com"
     DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo-password"
 
-    # Database option
+    # Database options
     SQLALCHEMY_DATABASE_URI = (
             os.environ.get("MYLISTS_DATABASE_URI") or
             f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
 
     # Security options
     SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")

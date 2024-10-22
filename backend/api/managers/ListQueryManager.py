@@ -2,8 +2,7 @@ from collections import defaultdict
 from typing import Tuple, Dict, List, Any, Optional
 
 from flask import abort
-from flask_sqlalchemy.query import Query
-from sqlalchemy import ColumnElement, func
+from sqlalchemy import ColumnElement, func, select
 
 from backend.api import db
 from backend.api.core import current_user
@@ -156,7 +155,7 @@ class ListQueryManager:
         )
         return [media_id[0] for media_id in common_ids_query]
 
-    def _apply_joins(self, query) -> Query:
+    def _apply_joins(self, query) -> select:
         joins = [
             (self.media_genre, "genres"),
             (self.media_label, "labels"),
@@ -172,7 +171,7 @@ class ListQueryManager:
 
         return query
 
-    def _apply_filters(self, query) -> Query:
+    def _apply_filters(self, query) -> select:
         return query.filter(
             self.media_list.user_id == self.user.id,
             self.langs_filter,

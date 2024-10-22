@@ -18,8 +18,6 @@ function AchievementPage() {
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(achievementOptions(username)).data;
 
-    console.log(apiData);
-
     const mediaTypes = [
         { value: "all", label: "All", icon: null },
         { value: "series", label: "Series", icon: <MediaIcon mediaType="series"/> },
@@ -32,10 +30,10 @@ function AchievementPage() {
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
             <Tabs defaultValue="all">
-                <TabsList className="my-4 max-sm:flex max-sm:gap-x-4 max-sm:justify-center max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
+                <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {mediaTypes.map(mt =>
-                        <TabsTrigger key={mt.value} value={mt.value} className="max-sm:px-4 px-6 flex items-center gap-2">
-                            {mt.label}
+                        <TabsTrigger key={mt.value} value={mt.value} className="max-sm:px-2 px-4 flex items-center gap-2">
+                            {mt.icon} {mt.label}
                         </TabsTrigger>
                     )}
                 </TabsList>
@@ -45,7 +43,7 @@ function AchievementPage() {
                             mediaType={mt.value}
                             summary={apiData.summary[mt.value]}
                         />
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
                             {apiData.result.filter(achievement => mt.value === "all" || mt.value === achievement.media_type)
                                 .map(achievement =>
                                     <AchievementCard

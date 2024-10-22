@@ -7,6 +7,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {capitalize, formatDateTime, zeroPad} from "@/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {MediaIcon} from "@/components/app/MediaIcon";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -21,11 +22,11 @@ function ComingNextPage() {
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-5">
-                <TabsList className="mb-5 max-sm:flex max-sm:justify-around">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-2">
+                <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {apiData.map(next =>
-                        <TabsTrigger key={next.media_type} value={next.media_type} className="md:px-8">
-                            {capitalize(next.media_type)}
+                        <TabsTrigger key={next.media_type} value={next.media_type} className="max-sm:px-2 px-4 flex items-center gap-2">
+                            <MediaIcon mediaType={next.media_type}/> {capitalize(next.media_type)}
                         </TabsTrigger>
                     )}
                 </TabsList>

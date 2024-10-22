@@ -128,7 +128,6 @@ def post_details_edit(data):
     for name, value in updates.items():
         if name in ("release_date", "last_air_date", "next_episode_to_air"):
             value = format_datetime(value)
-            print(value)
         setattr(media, name, value)
 
     db.session.commit()

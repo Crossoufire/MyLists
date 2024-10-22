@@ -1,21 +1,26 @@
 import {LuAward} from "react-icons/lu";
-import {diffColors} from "@/utils/functions";
 import {Card, CardContent} from "@/components/ui/card";
+import {capitalize, cn, diffColors} from "@/utils/functions";
 
 
 export const AchievementSummary = ({ summary }) => {
     return (
-        <div className="flex gap-4">
-            {Object.entries(summary).map(([tier, count]) =>
-                <Card key={tier} className="w-full mb-7">
-                    <CardContent className="p-4">
-                        <div className="flex flex-wrap justify-center font-medium gap-4">
-                            <div key={tier} className="flex items-center gap-3">
+        <div className="grid grid-cols-5 gap-6 w-[80%] mx-auto mb-6 max-lg:w-[95%] max-sm:grid-cols-3 max-sm:w-full max-sm:gap-2
+        max-sm:mb-4">
+            {summary.map(diff =>
+                <Card key={diff.tier}>
+                    <CardContent className="p-4 max-sm:p-3">
+                        <div className="flex items-center justify-center font-medium">
+                            <div key={diff.tier} className="flex items-center gap-3 max-sm:gap-2">
                                 <div className="flex flex-col items-center">
-                                    <LuAward className={`h-5 w-5 ${diffColors(tier)}`}/>
-                                    <span className={`${diffColors(tier)}`}>{tier}</span>
+                                    <LuAward className={cn("h-5 w-5 max-sm:h-4 max-sm:w-4", diffColors(diff.tier))}/>
+                                    <span className={cn("max-sm:text-sm", diffColors(diff.tier))}>
+                                        {capitalize(diff.tier)}
+                                    </span>
                                 </div>
-                                <span className={`text-2xl ${diffColors(tier)}`}>{count}</span>
+                                <span className={cn("text-2xl max-lg:text-xl max-sm:text-lg", diffColors(diff.tier))}>
+                                    {diff.count}
+                                </span>
                             </div>
                         </div>
                     </CardContent>
