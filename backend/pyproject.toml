@@ -28,8 +28,8 @@ flask-marshmallow = "^1.2.1"
 webargs = "^8.6.0"
 marshmallow-sqlalchemy = "^1.1.0"
 flask-limiter = { extras = ["redis"], version = "^3.8.0" }
-redis = "^5.1.1"
-rich = "^13.9.2"
+redis = "^5.2.0"
+rich = "^13.9.3"
 
 
 [build-system]
