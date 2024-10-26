@@ -121,10 +121,10 @@ class CLIAchievementManager(CLIBaseManager):
                 for i, code_name in enumerate(code_names):
                     achievement_manager = AchievementManager.get_manager_by_code(code_name)
                     achievement_manager().calculate_achievements(code_name, user_ids)
-                    self.progress.update(task_id, completed=(i + 1) / len(code_names) * 100, refresh=True)
+                    self.progress.update(task_id, completed=(i + 1) / len(code_names) * 100)
         else:
             def update_progress(percent: float):
-                self.progress.update(task_id, completed=percent * 100, refresh=True)
+                self.progress.update(task_id, completed=percent * 100)
 
             with self.progress:
                 for media_type in MediaType:

@@ -2,10 +2,10 @@
 module.exports = {
     darkMode: ["class"],
     content: [
-        "./pages/**/*.{js,jsx}",
-        "./components/**/*.{js,jsx}",
-        "./app/**/*.{js,jsx}",
-        "./src/**/*.{js,jsx}",
+        "./pages/**/*.{js,jsx,ts,tsx}",
+        "./components/**/*.{js,jsx,ts,tsx}",
+        "./app/**/*.{js,jsx,ts,tsx}",
+        "./src/**/*.{js,jsx,ts,tsx}",
     ],
     prefix: "",
     theme: {
@@ -69,6 +69,13 @@ module.exports = {
                 "color-3": "hsl(var(--color-3))",
                 "color-4": "hsl(var(--color-4))",
                 "color-5": "hsl(var(--color-5))",
+                chart: {
+                    "1": "hsl(var(--chart-1))",
+                    "2": "hsl(var(--chart-2))",
+                    "3": "hsl(var(--chart-3))",
+                    "4": "hsl(var(--chart-4))",
+                    "5": "hsl(var(--chart-5))"
+                }
             },
             borderRadius: {
                 lg: "var(--radius)",
@@ -103,21 +110,27 @@ module.exports = {
                 shimmer: {
                     "0%": {
                         left: "-100%",
-                        top: "-100%",
+                        top: "-100%"
                     },
                     "30%": {
                         left: "100%",
-                        top: "100%",
+                        top: "100%"
                     },
                     "50%, 100%": {
                         left: "100%",
-                        top: "100%",
-                    },
+                        top: "100%"
+                    }
                 },
                 sparkle: {
-                    "0%, 100%": { opacity: 0, transform: "scale(0)" },
-                    "50%": { opacity: 0.7, transform: "scale(0.8)" },
-                },
+                    "0%, 100%": {
+                        opacity: "0",
+                        transform: "scale(0)"
+                    },
+                    "50%": {
+                        opacity: "0.7",
+                        transform: "scale(0.8)"
+                    }
+                }
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
@@ -125,7 +138,7 @@ module.exports = {
                 pulse: "pulse var(--duration) ease-out infinite",
                 rainbow: "rainbow var(--speed, 2s) infinite linear",
                 shimmer: "shimmer 6s infinite linear",
-                sparkle: "sparkle 4s ease-in-out infinite",
+                sparkle: "sparkle 4s ease-in-out infinite"
             }
         }
     },
