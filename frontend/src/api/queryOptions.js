@@ -138,3 +138,15 @@ export const achievementOptions = (username) => queryOptions({
     queryKey: ["achievementPage", username],
     queryFn: () => fetcher({ url: `/achievements/${username}` }),
 });
+
+export const dailyGameOptions = () => queryOptions({
+    queryKey: ["dailyGame"],
+    queryFn: () => fetcher({ url: "/daily-game" }),
+});
+
+export const gameSuggestionsOptions = (query) => queryOptions({
+    queryKey: ["gameSuggestions", query],
+    queryFn: () => fetcher({ url: "/daily-game/suggestions", queryOrData: { q: query } }),
+    staleTime: 2 * 60 * 1000,
+    enabled: query.length >= 2,
+});

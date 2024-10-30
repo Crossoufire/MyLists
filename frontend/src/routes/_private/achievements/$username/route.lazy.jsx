@@ -59,5 +59,3 @@ function AchievementPage() {
         </PageTitle>
     );
 }
-
-

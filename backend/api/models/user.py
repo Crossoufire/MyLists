@@ -85,10 +85,12 @@ class User(db.Model):
     anime_list = db.relationship("AnimeList", back_populates="user", lazy="select")
     games_list = db.relationship("GamesList", back_populates="user", lazy="select")
     books_list = db.relationship("BooksList", back_populates="user", lazy="select")
+    game_stats = db.relationship("GameStats", back_populates="user", lazy="select")
     movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
     series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
     settings = db.relationship("UserMediaSettings", back_populates="user", lazy="joined")
     achievements = db.relationship("UserAchievement", back_populates="user", lazy="select")
+    game_progress = db.relationship("UserGameProgress", back_populates="user", lazy="select")
     notifications = db.relationship(
         "Notifications",
         primaryjoin="Notifications.user_id == User.id",

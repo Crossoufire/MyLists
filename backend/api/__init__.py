@@ -45,8 +45,9 @@ def import_blueprints(register_bp):
     from backend.api.routes.details import details_bp as details_bp
     from backend.api.routes.lists import lists_bp as lists_bp
     from backend.api.routes.labels import labels_bp as labels_bp
+    from backend.api.routes.mediadle import game_bp as game_bp
 
-    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp, lists_bp, labels_bp]
+    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp, lists_bp, labels_bp, game_bp]
     for blueprint in api_blueprints:
         register_bp(blueprint, url_prefix="/api")
 
@@ -92,8 +93,8 @@ def create_db_and_setup_pragma():
         """ Configure SQLite database to use WAL mode and NORMAL synchronous mode. """
 
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA journal_mode=DELETE")
+        cursor.execute("PRAGMA synchronous=FULL")
         cursor.close()
 
     event.listen(db.engine, "connect", configure_sqlite)

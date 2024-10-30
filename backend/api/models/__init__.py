@@ -6,3 +6,4 @@ from .games import *
 from .movies import *
 from .tv import *
 from .achievements import *
+from .mediadle import *

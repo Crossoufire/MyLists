@@ -83,6 +83,11 @@ export const Navbar = () => {
                                     Trends
                                 </NavLink>
                             </NavigationMenuItem>
+                            <NavigationMenuItem>
+                                <NavLink to="/mediadle" className={navStyle()}>
+                                    Mediadle
+                                </NavLink>
+                            </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
@@ -192,6 +197,11 @@ export const Navbar = () => {
                                     <NavigationMenuItem>
                                         <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>
                                             Trends
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/mediadle" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Mediadle
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
