@@ -139,14 +139,14 @@ export const achievementOptions = (username) => queryOptions({
     queryFn: () => fetcher({ url: `/achievements/${username}` }),
 });
 
-export const dailyGameOptions = () => queryOptions({
-    queryKey: ["dailyGame"],
-    queryFn: () => fetcher({ url: "/daily-game" }),
+export const dailyMediadleOptions = () => queryOptions({
+    queryKey: ["dailyMediadle"],
+    queryFn: () => fetcher({ url: "/daily-mediadle" }),
 });
 
-export const gameSuggestionsOptions = (query) => queryOptions({
-    queryKey: ["gameSuggestions", query],
-    queryFn: () => fetcher({ url: "/daily-game/suggestions", queryOrData: { q: query } }),
+export const mediadleSuggestionsOptions = (query) => queryOptions({
+    queryKey: ["mediadleSuggestions", query],
+    queryFn: () => fetcher({ url: "/daily-mediadle/suggestions", queryOrData: { q: query } }),
     staleTime: 2 * 60 * 1000,
     enabled: query.length >= 2,
 });

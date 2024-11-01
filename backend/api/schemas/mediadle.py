@@ -5,5 +5,5 @@ class MediaGuessSchema(ma.Schema):
     guess = ma.String(required=True)
 
 
-class GameSuggestionsSchema(ma.Schema):
+class MediadleSuggestionsSchema(ma.Schema):
     q = ma.String(required=True)

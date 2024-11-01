@@ -8,71 +8,71 @@ from flask import Blueprint, jsonify, abort, current_app
 from backend.api import db
 from backend.api.core import token_auth, current_user
 from backend.api.models import Movies
-from backend.api.models.mediadle import DailyGame, UserGameProgress, GameStats
-from backend.api.schemas.mediadle import MediaGuessSchema, GameSuggestionsSchema
+from backend.api.models.mediadle import DailyMediadle, UserMediadleProgress, MediadleStats
+from backend.api.schemas.mediadle import MediaGuessSchema, MediadleSuggestionsSchema
 from backend.api.utils.decorators import body, arguments
 from backend.api.utils.enums import MediaType
 from backend.api.utils.functions import naive_utcnow
 
 
-game_bp = Blueprint("game", __name__)
+mediadle_bp = Blueprint("mediadle", __name__)
 
 
-@game_bp.route("/daily-game", methods=["GET"])
+@mediadle_bp.route("/daily-mediadle", methods=["GET"])
 @token_auth.login_required
-def get_daily_game():
+def get_daily_mediadle():
     today = naive_utcnow().date()
-    daily_game = DailyGame.query.filter_by(game_date=today).first()
-    if not daily_game:
-        daily_game = DailyGame.create_game(today=today)
+    daily_mediadle = DailyMediadle.query.filter_by(date=today).first()
+    if not daily_mediadle:
+        daily_mediadle = DailyMediadle.create_mediadle(today=today)
 
-    user_progress = UserGameProgress.query.filter_by(user_id=current_user.id, daily_game_id=daily_game.id).first()
+    user_progress = UserMediadleProgress.query.filter_by(user_id=current_user.id, daily_mediadle_id=daily_mediadle.id).first()
     if not user_progress:
-        user_progress = UserGameProgress.create_progress(user_id=current_user.id, daily_game_id=daily_game.id)
+        user_progress = UserMediadleProgress.create_progress(user_id=current_user.id, daily_mediadle_id=daily_mediadle.id)
 
-    selected_movie = Movies.query.get(daily_game.media_id)
-    pixelation_level = min(daily_game.pixelation_levels, user_progress.attempts + 1)
+    selected_movie = Movies.query.get(daily_mediadle.media_id)
+    pixelation_level = min(daily_mediadle.pixelation_levels, user_progress.attempts + 1)
 
-    stats = GameStats.query.filter_by(user_id=current_user.id).first()
+    mediadle_stats = MediadleStats.query.filter_by(user_id=current_user.id).first()
 
     data = dict(
-        game_id=daily_game.id,
-        media_id=daily_game.media_id,
+        mediadle_id=daily_mediadle.id,
+        media_id=daily_mediadle.media_id,
         attempts=user_progress.attempts,
         completed=user_progress.completed,
         succeeded=user_progress.succeeded,
-        max_attempts=daily_game.pixelation_levels,
+        max_attempts=daily_mediadle.pixelation_levels,
         pixelated_cover=pixelate_image(selected_movie.media_cover, pixelation_level),
         non_pixelated_cover=selected_movie.media_cover if user_progress.completed else None,
-        stats=stats.to_dict() if stats else None,
+        stats=mediadle_stats.to_dict() if mediadle_stats else None,
     )
 
     return jsonify(data=data), 200
 
 
-@game_bp.route("/daily-game/guess", methods=["POST"])
+@mediadle_bp.route("/daily-mediadle/guess", methods=["POST"])
 @token_auth.login_required
 @body(MediaGuessSchema)
 def make_guess(data):
-    daily_game = DailyGame.query.filter_by(game_date=naive_utcnow().date()).first()
-    if not daily_game:
-        return abort(404, description="No game available")
+    daily_mediadle = DailyMediadle.query.filter_by(date=naive_utcnow().date()).first()
+    if not daily_mediadle:
+        return abort(404, description="No mediadle game available")
 
-    progress = UserGameProgress.query.filter_by(user_id=current_user.id, daily_game_id=daily_game.id).first()
+    progress = UserMediadleProgress.query.filter_by(user_id=current_user.id, daily_mediadle_id=daily_mediadle.id).first()
     if progress.completed:
-        return abort(400, description="Game already completed")
+        return abort(400, description="Mediadle game already completed")
     progress.attempts += 1
 
-    selected_movie = Movies.query.get(daily_game.media_id)
+    selected_movie = Movies.query.get(daily_mediadle.media_id)
     correct = selected_movie.name.lower().strip() == data["guess"].lower().strip()
-    if correct or progress.attempts >= daily_game.pixelation_levels:
+    if correct or progress.attempts >= daily_mediadle.pixelation_levels:
         progress.completed = True
         progress.succeeded = correct
         progress.completion_time = naive_utcnow()
 
-        stats = GameStats.query.filter_by(user_id=current_user.id, media_type=MediaType.MOVIES).first()
+        stats = MediadleStats.query.filter_by(user_id=current_user.id, media_type=MediaType.MOVIES).first()
         if not stats:
-            stats = GameStats.create_stats(user_id=current_user.id, media_type=MediaType.MOVIES)
+            stats = MediadleStats.create_stats(user_id=current_user.id, media_type=MediaType.MOVIES)
 
         stats.total_played += 1
         if correct:
@@ -90,15 +90,15 @@ def make_guess(data):
         correct=correct,
         attempts=progress.attempts,
         completed=progress.completed,
-        max_attempts=daily_game.pixelation_levels,
+        max_attempts=daily_mediadle.pixelation_levels,
     )
 
     return jsonify(data=data), 200
 
 
-@game_bp.route("/daily-game/suggestions", methods=["GET"])
+@mediadle_bp.route("/daily-mediadle/suggestions", methods=["GET"])
 @token_auth.login_required
-@arguments(GameSuggestionsSchema)
+@arguments(MediadleSuggestionsSchema)
 def get_suggestions(args):
     if len(args["q"]) < 2:
         return jsonify(data=[]), 200
@@ -106,9 +106,9 @@ def get_suggestions(args):
     return jsonify(data=[s.name for s in suggestions]), 200
 
 
-@game_bp.route("/game-stats", methods=["GET"])
+@mediadle_bp.route("/game-stats", methods=["GET"])
 def get_stats():
-    stats = GameStats.query.filter_by(user_id=current_user.id, media_type=MediaType.MOVIES).first()
+    stats = MediadleStats.query.filter_by(user_id=current_user.id, media_type=MediaType.MOVIES).first()
 
     data = dict(total_won=0, current_streak=0, best_streak=0, total_played=0, average_attempts=0, win_rate=0)
     if stats:

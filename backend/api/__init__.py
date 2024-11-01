@@ -45,9 +45,10 @@ def import_blueprints(register_bp):
     from backend.api.routes.details import details_bp as details_bp
     from backend.api.routes.lists import lists_bp as lists_bp
     from backend.api.routes.labels import labels_bp as labels_bp
-    from backend.api.routes.mediadle import game_bp as game_bp
+    from backend.api.routes.mediadle import mediadle_bp as mediadle_bp
 
-    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp, lists_bp, labels_bp, game_bp]
+    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp,
+                      lists_bp, labels_bp, mediadle_bp]
     for blueprint in api_blueprints:
         register_bp(blueprint, url_prefix="/api")
 

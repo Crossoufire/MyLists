@@ -2,7 +2,7 @@ import click
 from flask import current_app
 
 from backend.api import db
-from backend.api.models import DailyGame, UserGameProgress, GameStats
+from backend.api.models import DailyMediadle, UserMediadleProgress, MediadleStats
 
 
 mediadle = click.Group("mediadle", help="Mediadle management commands")
@@ -13,9 +13,9 @@ current_app.cli.add_command(mediadle)
 def reset():
     """ Reset the mediadle game """
 
-    DailyGame.query.delete()
-    UserGameProgress.query.delete()
-    GameStats.query.delete()
+    DailyMediadle.query.delete()
+    UserMediadleProgress.query.delete()
+    MediadleStats.query.delete()
 
     db.session.commit()
     click.echo("Mediadle game successfully reset.")

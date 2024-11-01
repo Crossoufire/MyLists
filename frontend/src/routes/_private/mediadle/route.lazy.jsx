@@ -9,31 +9,31 @@ import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
-import {dailyGameOptions, gameSuggestionsOptions} from "@/api/queryOptions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {useMutation, useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/api/queryOptions";
 import {LuAward, LuCrown, LuFlame, LuPartyPopper, LuSigma, LuTarget, LuThumbsDown, LuTrophy} from "react-icons/lu";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createLazyFileRoute("/_private/mediadle")({
-    component: MediaGamePage,
+    component: MediadlePage,
 });
 
 
-function MediaGamePage() {
+function MediadlePage() {
     const [guess, setGuess] = useState("");
     const [debouncedSearch] = useDebounce(guess, 350);
-    const gameData = useSuspenseQuery(dailyGameOptions()).data;
+    const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const { data = [] } = useQuery(gameSuggestionsOptions(debouncedSearch));
+    const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 
     const makeGuess = useMutation({
-        mutationFn: ({ guess }) => postFetcher({ url: "/daily-game/guess", data: { guess } }),
+        mutationFn: ({ guess }) => postFetcher({ url: "/daily-mediadle/guess", data: { guess } }),
         onSuccess: async () => {
             setGuess("");
             setShowSuggestions(false);
-            await queryClient.invalidateQueries({ queryKey: ["dailyGame"] });
+            await queryClient.invalidateQueries({ queryKey: dailyMediadleOptions().queryKey });
         }
     });
 
@@ -60,11 +60,11 @@ function MediaGamePage() {
                     <CardContent>
                         <div className="space-y-4">
                             <div className="relative aspect-[2/3] max-w-[300px] mx-auto">
-                                {gameData.non_pixelated_cover ?
-                                    <Link to={`/details/movies/${gameData.media_id}`}>
+                                {mediadleData.non_pixelated_cover ?
+                                    <Link to={`/details/movies/${mediadleData.media_id}`}>
                                         <img
                                             alt="Movie Cover"
-                                            src={gameData.non_pixelated_cover}
+                                            src={mediadleData.non_pixelated_cover}
                                             className="w-full h-full object-cover rounded-lg"
                                         />
                                     </Link>
@@ -72,24 +72,24 @@ function MediaGamePage() {
                                     <img
                                         alt="Movie Cover"
                                         className="w-full h-full object-cover rounded-lg"
-                                        src={`data:image/png;base64,${gameData.pixelated_cover}`}
+                                        src={`data:image/png;base64,${mediadleData.pixelated_cover}`}
                                     />
                                 }
                             </div>
 
-                            {gameData.completed ?
+                            {mediadleData.completed ?
                                 <div className="animate-fade-up rounded-lg bg-primary/10 text-center p-4 max-w-[400px] mx-auto">
-                                    {gameData.succeeded ?
+                                    {mediadleData.succeeded ?
                                         <LuPartyPopper className="w-6 h-6 text-amber-500 mx-auto mb-1"/>
                                         :
                                         <LuThumbsDown className="w-6 h-6 text-red-700 mx-auto mb-1"/>
                                     }
                                     <h3 className="font-semibold">
-                                        {gameData.succeeded ? "Congratulations!" : "Game Over :("}
+                                        {mediadleData.succeeded ? "Congratulations!" : "Game Over :("}
                                     </h3>
                                     <p className="text-sm text-neutral-300">
-                                        {gameData.succeeded ?
-                                            `You got it in ${gameData.attempts} ${gameData.attempts === 1 ? "try" : "tries"}!`
+                                        {mediadleData.succeeded ?
+                                            `You got it in ${mediadleData.attempts} ${mediadleData.attempts === 1 ? "try" : "tries"}!`
                                             :
                                             "Better luck tomorrow ;)!"
                                         }
@@ -103,7 +103,7 @@ function MediaGamePage() {
                                                 type={"text"}
                                                 value={guess}
                                                 onChange={onInputChange}
-                                                disabled={gameData.completed}
+                                                disabled={mediadleData.completed}
                                                 placeholder={"Guess the movie title..."}
                                             />
                                             {showSuggestions && data.length > 0 &&
@@ -125,9 +125,9 @@ function MediaGamePage() {
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-sm">
                                             <span>Attempts</span>
-                                            <span>{gameData.attempts}/{gameData.max_attempts}</span>
+                                            <span>{mediadleData.attempts}/{mediadleData.max_attempts}</span>
                                         </div>
-                                        <Progress value={gameData.attempts / gameData.max_attempts * 100}/>
+                                        <Progress value={mediadleData.attempts / mediadleData.max_attempts * 100}/>
                                     </div>
                                 </div>
                             }
@@ -142,12 +142,12 @@ function MediaGamePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-2">
-                            <StatsCard icon={LuSigma} label="Total Played" value={gameData?.stats?.total_played ?? 0} color="text-blue-600"/>
-                            <StatsCard icon={LuAward} label="Win Rate" value={`${gameData?.stats?.win_rate ?? 0.0}%`} color="text-green-600"/>
-                            <StatsCard icon={LuFlame} label="Current Streak" value={gameData?.stats?.current_streak ?? 0} color="text-red-600"/>
-                            <StatsCard icon={LuCrown} label="Best Streak" value={gameData?.stats?.best_streak ?? 0} color="text-amber-600"/>
-                            <StatsCard icon={LuTarget} label="Avg. Attempts" value={gameData?.stats?.average_attempts ?? 0.0} color="text-blue-600"/>
-                            <StatsCard icon={LuTrophy} label="Total Won" value={gameData?.stats?.total_won ?? 0} color="text-amber-600"/>
+                            <StatsCard icon={LuSigma} label="Total Played" value={mediadleData?.stats?.total_played ?? 0} color="text-blue-600"/>
+                            <StatsCard icon={LuAward} label="Win Rate" value={`${mediadleData?.stats?.win_rate ?? 0.0}%`} color="text-green-600"/>
+                            <StatsCard icon={LuFlame} label="Current Streak" value={mediadleData?.stats?.current_streak ?? 0} color="text-red-600"/>
+                            <StatsCard icon={LuCrown} label="Best Streak" value={mediadleData?.stats?.best_streak ?? 0} color="text-amber-600"/>
+                            <StatsCard icon={LuTarget} label="Avg. Attempts" value={mediadleData?.stats?.average_attempts ?? 0.0} color="text-blue-600"/>
+                            <StatsCard icon={LuTrophy} label="Total Won" value={mediadleData?.stats?.total_won ?? 0} color="text-amber-600"/>
                         </div>
                     </CardContent>
                 </Card>
