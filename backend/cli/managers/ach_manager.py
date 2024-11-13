@@ -106,7 +106,7 @@ class CLIAchievementManager(CLIBaseManager):
         if user_ids == "active":
             from backend.api.models import User
             user_ids = [user.id for user in User.query.filter(User.last_seen >= (naive_utcnow() - timedelta(days=1))).all()]
-            self.log_info(f"Calculating for {len(user_ids)} active user(s) in the past 24 hours: {', '.join(str(u) for u in user_ids)}.")
+            self.log_info(f"Calculating for {len(user_ids)} active user(s) in the past 24 hours. IDs: {', '.join(str(u) for u in user_ids)}.")
         elif user_ids == "all":
             user_ids = None
             self.log_info(f"Calculating achievement(s) for all users.")

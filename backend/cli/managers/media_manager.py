@@ -108,6 +108,7 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
                 self.log_success(f"'{media_type}' [API ID {api_id}] successfully refreshed")
             except Exception as e:
                 errors = True
+                db.session.rollback()
                 self.log_error(f"'{media_type}' [API ID {api_id}] could not be refreshed")
                 if not sys.stdin.isatty():
                     log_error(e)

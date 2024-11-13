@@ -94,8 +94,8 @@ def create_db_and_setup_pragma():
         """ Configure SQLite database to use WAL mode and NORMAL synchronous mode. """
 
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=DELETE")
-        cursor.execute("PRAGMA synchronous=FULL")
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
         cursor.close()
 
     event.listen(db.engine, "connect", configure_sqlite)

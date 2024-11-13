@@ -303,10 +303,10 @@ def movies_achievements() -> List[AchievementData]:
             description="Awarded for rating movies, because slapping stars on films is harder than it looks, right?",
             media_type=MediaType.MOVIES,
             tiers=[
-                TierData(criteria=CriteriaData(count=20), difficulty=AchievementDifficulty.BRONZE),
-                TierData(criteria=CriteriaData(count=40), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=60), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=80), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=50), difficulty=AchievementDifficulty.BRONZE),
+                TierData(criteria=CriteriaData(count=100), difficulty=AchievementDifficulty.SILVER),
+                TierData(criteria=CriteriaData(count=150), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=250), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -315,10 +315,10 @@ def movies_achievements() -> List[AchievementData]:
             description="Awarded for commenting movies, because every film deserves your unsolicited director’s cut.",
             media_type=MediaType.MOVIES,
             tiers=[
-                TierData(criteria=CriteriaData(count=50), difficulty=AchievementDifficulty.BRONZE),
-                TierData(criteria=CriteriaData(count=120), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=350), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=500), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=20), difficulty=AchievementDifficulty.BRONZE),
+                TierData(criteria=CriteriaData(count=60), difficulty=AchievementDifficulty.SILVER),
+                TierData(criteria=CriteriaData(count=100), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=150), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -440,10 +440,10 @@ def games_achievements() -> List[AchievementData]:
             description="Awarded for completing games, because finishing a game is the only thing that counts in the endless cycle of gaming.",
             media_type=MediaType.GAMES,
             tiers=[
-                TierData(criteria=CriteriaData(count=10), difficulty=AchievementDifficulty.BRONZE),
-                TierData(criteria=CriteriaData(count=30), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=80), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=150), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=50), difficulty=AchievementDifficulty.BRONZE),
+                TierData(criteria=CriteriaData(count=100), difficulty=AchievementDifficulty.SILVER),
+                TierData(criteria=CriteriaData(count=150), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=250), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -454,8 +454,8 @@ def games_achievements() -> List[AchievementData]:
             tiers=[
                 TierData(criteria=CriteriaData(count=20), difficulty=AchievementDifficulty.BRONZE),
                 TierData(criteria=CriteriaData(count=40), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=100), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=200), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=80), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=120), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -467,7 +467,7 @@ def games_achievements() -> List[AchievementData]:
                 TierData(criteria=CriteriaData(count=10), difficulty=AchievementDifficulty.BRONZE),
                 TierData(criteria=CriteriaData(count=20), difficulty=AchievementDifficulty.SILVER),
                 TierData(criteria=CriteriaData(count=30), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=40), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=50), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -515,7 +515,7 @@ def games_achievements() -> List[AchievementData]:
                 TierData(criteria=CriteriaData(count=3, value="Hack and Slash"), difficulty=AchievementDifficulty.BRONZE),
                 TierData(criteria=CriteriaData(count=5, value="Hack and Slash"), difficulty=AchievementDifficulty.SILVER),
                 TierData(criteria=CriteriaData(count=8, value="Hack and Slash"), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=12, value="Hack and Slash"), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=15, value="Hack and Slash"), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -524,10 +524,10 @@ def games_achievements() -> List[AchievementData]:
             description="Awarded for playing multiplayer games, because teamwork makes the dream work—until it doesn’t!",
             media_type=MediaType.GAMES,
             tiers=[
-                TierData(criteria=CriteriaData(count=4, value="Multiplayer"), difficulty=AchievementDifficulty.BRONZE),
+                TierData(criteria=CriteriaData(count=5, value="Multiplayer"), difficulty=AchievementDifficulty.BRONZE),
                 TierData(criteria=CriteriaData(count=10, value="Multiplayer"), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=14, value="Multiplayer"), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=22, value="Multiplayer"), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=20, value="Multiplayer"), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=40, value="Multiplayer"), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
@@ -536,10 +536,10 @@ def games_achievements() -> List[AchievementData]:
             description="Awarded for logging hours, because you’ve officially become a time lord in the gaming universe!",
             media_type=MediaType.GAMES,
             tiers=[
-                TierData(criteria=CriteriaData(count=100), difficulty=AchievementDifficulty.BRONZE),
-                TierData(criteria=CriteriaData(count=500), difficulty=AchievementDifficulty.SILVER),
-                TierData(criteria=CriteriaData(count=1000), difficulty=AchievementDifficulty.GOLD),
-                TierData(criteria=CriteriaData(count=2000), difficulty=AchievementDifficulty.PLATINUM),
+                TierData(criteria=CriteriaData(count=200), difficulty=AchievementDifficulty.BRONZE),
+                TierData(criteria=CriteriaData(count=800), difficulty=AchievementDifficulty.SILVER),
+                TierData(criteria=CriteriaData(count=2000), difficulty=AchievementDifficulty.GOLD),
+                TierData(criteria=CriteriaData(count=5000), difficulty=AchievementDifficulty.PLATINUM),
             ],
         ),
         AchievementData(
