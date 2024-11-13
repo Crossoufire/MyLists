@@ -14,6 +14,21 @@ export const Route = createLazyFileRoute("/_universal/features")({
 function FeatureShowcase() {
     const features = [
         {
+            name: "Updates in /lists",
+            description: "You can now update everything about a media directly from the /list page.",
+            isNew: true,
+        },
+        {
+            name: "Achievements system",
+            description: "Each media type has now achievements, with 4 levels of difficulty.",
+            isNew: true,
+        },
+        {
+            name: "Moviedle game",
+            description: "A Wordle-like game where you guess the movie from a pixelated cover.",
+            isNew: true,
+        },
+        {
             name: "Privacy Mode",
             description: "Adjust your privacy settings to control who can view your profile, lists, stats, and media updates.",
             isNew: true,
@@ -31,17 +46,14 @@ function FeatureShowcase() {
         {
             name: "Game Platform",
             description: "Specify the platform on which you played the game.",
-            isNew: true,
         },
         {
             name: "Advanced Media List Filtering",
             description: "Refine your lists with a new expanded set of filter options.",
-            isNew: true,
         },
         {
             name: "Table View",
             description: "Switch to a table layout for your media lists.",
-            isNew: true,
         },
         {
             name: "Enhanced Stats Dashboard",
