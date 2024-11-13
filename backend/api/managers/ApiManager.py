@@ -650,7 +650,10 @@ class GamesApiManager(ApiManager):
         )
 
         if not bulk:
-            hltb_time = self._get_HLTB_time(self.media_details["name"])
+            try:
+                hltb_time = self._get_HLTB_time(self.media_details["name"])
+            except:
+                hltb_time = dict(main=None, extra=None, completionist=None)
             self.media_details["hltb_main_time"] = hltb_time["main"]
             self.media_details["hltb_main_and_extra_time"] = hltb_time["extra"]
             self.media_details["hltb_total_complete_time"] = hltb_time["completionist"]
