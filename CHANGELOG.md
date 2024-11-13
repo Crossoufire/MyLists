@@ -1,3 +1,41 @@
+## CHANGELOG v2.2.0
+---
+
+### Under the Hood
+
+- Refactored CLI commands and associated managers.
+- Implemented new SQLite database PRAGMA settings (`JOURNAL_MODE = WAL` and `SYNCHRONOUS = NORMAL`) for improved writing concurrency.
+- Added the `rich` package for CLI enhancements.
+- Improved error logging.
+
+### Features
+
+- Added achievements, accessible from the `/profile` page.
+- Added a `Wordle-like` game featuring movie covers for fun :).
+- Created a demo profile to allow users to preview `MyLists` without creating an account.
+
+### UI Modifications
+
+- Streamlined the `/list` update system enabling direct updates from that page instead of the `/details` page.
+- Added navigation between media stats pages (`/stats`, `/achievements`, and `/profile`).
+- Added circle avatars in the follows tab section of the `/details` page
+- Reduced the font size of the navbar.
+- Replaced `Font Awesome` icons with `Lucid` icons
+
+### Fixes
+
+- Fixed minor label dialog bugs and inconsistencies.
+- Removed the Login/Register buttons from the navbar on the homepage (`/`).
+- Fixed logout behavior after account deletion
+- Fixed issues with the user history not updating due to `tanstack query` StaleTime set to `Infinite`.
+- Fixed the release date updating in the `/details/edit page`.
+- Fixed the finale badge notification when only 1 episode is present.
+- Fixed date difference between user `/search` and `/profile`.
+- Fixed icon size change on user updates using clamp-line in `/profile`.
+- Fixed very subtle public / restricted account errors.
+- Fixed the `langs` filter on `/lists`.
+- Fixed `SQLAlchemy` warnings in some subqueries.
+
 ## CHANGELOG v2.1.0
 ---
 
