@@ -16,7 +16,7 @@ class MediaTypeConverter(BaseConverter):
             return abort(404, description="MediaType not found")
 
     def to_url(self, value: MediaType) -> str:
-        return value.value
+        return value
 
 
 class JobTypeConverter(BaseConverter):
@@ -31,4 +31,4 @@ class JobTypeConverter(BaseConverter):
             return abort(404, description="JobType not found")
 
     def to_url(self, value: JobType) -> str:
-        return value.value
+        return value

@@ -6,9 +6,9 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import InternalServerError
 
 from backend.api import db
-from backend.api.utils.functions import save_picture, compute_level, clean_html_text, is_latin, safe_div, get, \
-    int_to_money, reorder_seas_eps, format_datetime, resize_and_save_image, format_to_download_as_csv
 from backend.tests.base_test import BaseTest
+from backend.api.utils.functions import (save_picture, compute_level, clean_html_text, is_latin, safe_div, get, int_to_money,
+                                         reorder_seas_eps, format_datetime, resize_and_save_image, format_to_download_as_csv)
 
 
 class UtilsFunctionTests(BaseTest):

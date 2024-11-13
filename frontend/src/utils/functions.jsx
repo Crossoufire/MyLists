@@ -85,7 +85,7 @@ export const sliceIntoParts = (arr, n) => {
 export const getLangCountryName = (name, type) => {
     let languageNames = new Intl.DisplayNames(["en"], { type });
     if (name === "cn") return "Chinese";
-    return languageNames.of(name);
+    return languageNames.of(name.trim());
 };
 
 export const zeroPad = (value) => {
@@ -100,11 +100,11 @@ export const capitalize = (str) => {
 
 export const getMediaColor = (media) => {
     const colors = {
-        "series": "#216e7d",
-        "anime": "#945141",
-        "movies": "#8c7821",
-        "books": "#584c6e",
-        "games": "#196219",
+        series: "#216e7d",
+        anime: "#945141",
+        movies: "#8c7821",
+        books: "#584c6e",
+        games: "#196219",
     };
     return colors[media];
 };
@@ -254,3 +254,23 @@ export function jsonToCsv(items) {
     );
     return [headerString, ...rowItems].join("\r\n");
 }
+
+export const diffColors = (difficulty, bg = false) => {
+    if (!difficulty) return null;
+
+    const bgColors = {
+        bronze: "bg-amber-700",
+        silver: "bg-slate-400",
+        gold: "bg-yellow-600",
+        platinum: "bg-teal-600",
+    };
+
+    const textColors = {
+        bronze: "text-amber-700",
+        silver: "text-slate-400",
+        gold: "text-yellow-600",
+        platinum: "text-teal-600",
+    };
+
+    return bg ? bgColors[difficulty] : textColors[difficulty];
+};

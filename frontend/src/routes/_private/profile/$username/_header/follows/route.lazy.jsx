@@ -1,7 +1,7 @@
 import {followsOptions} from "@/api/queryOptions";
 import {BlockLink} from "@/components/app/BlockLink";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 
 

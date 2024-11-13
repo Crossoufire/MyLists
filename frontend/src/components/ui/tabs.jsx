@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 
@@ -40,4 +40,4 @@ const TabsContent = React.forwardRef(({ className, ...props }, ref) => (
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export {Tabs, TabsList, TabsTrigger, TabsContent};

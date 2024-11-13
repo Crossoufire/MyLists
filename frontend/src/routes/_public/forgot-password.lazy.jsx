@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {PageTitle} from "@/components/app/base/PageTitle";
-import {FormButton} from "@/components/app/base/FormButton";
+import {PageTitle} from "@/components/app/PageTitle";
+import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";

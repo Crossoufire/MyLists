@@ -1,6 +1,6 @@
 import {Card} from "@/components/ui/card";
+import {Loading} from "@/components/app/Loading";
 import {BlockLink} from "@/components/app/BlockLink";
-import {Loading} from "@/components/app/base/Loading";
 
 
 export const MediaCard = ({ children, media, mediaType, isPending = false }) => {

@@ -239,7 +239,7 @@ class TMDBApiManager(ApiManager):
             try:
                 self._save_api_cover(f"{self.POSTER_BASE_URL}{cover_path}", cover_name)
             except Exception as e:
-                current_app.logger.warning(f"[WARNING] - Could not fetch the TMDB poster: {e}")
+                current_app.logger.warning(f"Could not fetch the TMDB poster: {e}")
                 cover_name = "default.jpg"
 
         return cover_name
@@ -358,7 +358,7 @@ class TVApiManager(TMDBApiManager):
             data = json.loads(response.text)
             changed_api_ids.extend(d.get("id") for d in data.get("results", []))
             total_pages = data.get("total_pages", 1)
-            current_app.logger.info(f"Changed Tv Api Ids - Fetched page {page} / {total_pages}")
+            current_app.logger.info(f"Changed TV API Ids - Fetched page {page} / {total_pages}")
             page += 1
 
         return changed_api_ids
@@ -563,7 +563,7 @@ class GamesApiManager(ApiManager):
         search_results = []
         api_data = get(self.api_data, "results", default=[])
         for result in api_data:
-            if len(search_results) >= self.RESULTS_PER_PAGE:
+            if len(search_results) >= self.RESULTS_PER_PAGE or result == "message":
                 break
 
             media_details = dict(
@@ -597,6 +597,7 @@ class GamesApiManager(ApiManager):
         )
 
         response = self.call_api("https://api.igdb.com/v4/games", "post", data=body, headers=self.headers)
+
         self.api_data = json.loads(response.text)[0]
 
     def _format_platforms(self) -> List[Dict]:
@@ -691,7 +692,7 @@ class GamesApiManager(ApiManager):
                 cover_name = "default.jpg"
         return cover_name
 
-    def update_api_token(self) -> str:
+    def update_api_token(self) -> Optional[str]:
         """ Update the IGDB API Token. Backend needs to restart to update the env variable. """
 
         try:

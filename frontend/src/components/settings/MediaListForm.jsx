@@ -2,13 +2,12 @@ import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
-import {LuDownload} from "react-icons/lu";
+import {LuDownload, LuHelpCircle} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
-import {FaQuestionCircle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -125,11 +124,11 @@ export const MediaListForm = () => {
                     </div>
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 <div>Rating System</div>
                                 <Popover>
                                     <PopoverTrigger className="opacity-50 hover:opacity-80">
-                                        <FaQuestionCircle size={16}/>
+                                        <LuHelpCircle/>
                                     </PopoverTrigger>
                                     <PopoverContent>
                                         Switch between a numerical rating on a scale of 0 to 10 (steps of 0.5)

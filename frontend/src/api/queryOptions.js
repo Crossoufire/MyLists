@@ -1,12 +1,19 @@
+import {api} from "@/api/apiClient";
 import {fetcher} from "@/api/fetcher";
 import {queryOptions} from "@tanstack/react-query";
-import {api} from "@/api/apiClient";
 
 
 export const authOptions = () => queryOptions({
     queryKey: ["currentUser"],
     queryFn: () => api.fetchCurrentUser(),
     staleTime: Infinity,
+});
+
+export const historyOptions = (mediaType, mediaId) => queryOptions({
+    queryKey: ["onOpenHistory", mediaType, mediaId],
+    queryFn: () => fetcher({ url: `/history/${mediaType}/${mediaId}` }),
+    staleTime: 10 * 1000,
+    placeholderData: [],
 });
 
 export const detailsOptions = (mediaType, mediaId, external) => queryOptions({
@@ -20,8 +27,8 @@ export const profileOptions = (username) => queryOptions({
     queryFn: () => fetcher({ url: `/profile/${username}` }),
 });
 
-export const historyOptions = (username, filters) => queryOptions({
-    queryKey: ["history", username, filters],
+export const allUpdatesOptions = (username, filters) => queryOptions({
+    queryKey: ["allUpdates", username, filters],
     queryFn: () => fetcher({ url: `/profile/${username}/history`, queryOrData: filters }),
 });
 
@@ -89,9 +96,9 @@ export const smallFiltersOptions = (mediaType, username) => queryOptions({
     staleTime: Infinity,
 });
 
-export const mediaLabelsOptions = (mediaType, mediaId, isOpen) => queryOptions({
-    queryKey: ["labels", mediaType, mediaId],
-    queryFn: () => fetcher({ url: `/labels_for_media/${mediaType}/${mediaId}` }),
+export const mediaLabelsOptions = (mediaType, isOpen) => queryOptions({
+    queryKey: ["labels", mediaType],
+    queryFn: () => fetcher({ url: `/all_labels/${mediaType}` }),
     enabled: isOpen,
 });
 
@@ -124,5 +131,22 @@ export const filterSearchOptions = (mediaType, username, query, job) => queryOpt
         });
     },
     staleTime: 1000 * 60 * 2,
+    enabled: query.length >= 2,
+});
+
+export const achievementOptions = (username) => queryOptions({
+    queryKey: ["achievementPage", username],
+    queryFn: () => fetcher({ url: `/achievements/${username}` }),
+});
+
+export const dailyMediadleOptions = () => queryOptions({
+    queryKey: ["dailyMediadle"],
+    queryFn: () => fetcher({ url: "/daily-mediadle" }),
+});
+
+export const mediadleSuggestionsOptions = (query) => queryOptions({
+    queryKey: ["mediadleSuggestions", query],
+    queryFn: () => fetcher({ url: "/daily-mediadle/suggestions", queryOrData: { q: query } }),
+    staleTime: 2 * 60 * 1000,
     enabled: query.length >= 2,
 });

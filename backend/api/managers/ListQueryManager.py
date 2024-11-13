@@ -1,8 +1,8 @@
+from collections import defaultdict
 from typing import Tuple, Dict, List, Any, Optional
 
 from flask import abort
-from flask_sqlalchemy.query import Query
-from sqlalchemy import ColumnElement, func
+from sqlalchemy import ColumnElement, func, select
 
 from backend.api import db
 from backend.api.core import current_user
@@ -17,8 +17,8 @@ class ListQueryManager:
 
     def __init__(self, user: User, media_type: MediaType, args: Dict):
         self.user = user
-        self.media_type = media_type
         self.args = args
+        self.media_type = media_type
 
         self._initialize_media_models()
 
@@ -149,13 +149,13 @@ class ListQueryManager:
             .filter_by(user_id=current_user.id).scalar_subquery()
         )
         common_ids_query = (
-            db.session.query(self.media_list.media_id)
+            self.media_list.query.with_entities(self.media_list.media_id)
             .filter(self.media_list.user_id == self.user.id, self.media_list.media_id.in_(subq))
             .all()
         )
         return [media_id[0] for media_id in common_ids_query]
 
-    def _apply_joins(self, query) -> Query:
+    def _apply_joins(self, query) -> select:
         joins = [
             (self.media_genre, "genres"),
             (self.media_label, "labels"),
@@ -171,7 +171,7 @@ class ListQueryManager:
 
         return query
 
-    def _apply_filters(self, query) -> Query:
+    def _apply_filters(self, query) -> select:
         return query.filter(
             self.media_list.user_id == self.user.id,
             self.langs_filter,
@@ -201,8 +201,23 @@ class ListQueryManager:
         self.total = paginated_query.total
         self.pages = paginated_query.pages
 
+        results_ids = [result.media_id for result in paginated_query.items]
+
+        grouped_labels = {}
+        if current_user:
+            all_labels = (
+                self.media_label.query
+                .filter(self.media_label.media_id.in_(results_ids), self.media_label.user_id == current_user.id)
+                .all()
+            )
+
+            grouped_labels = defaultdict(list)
+            for media_label in all_labels:
+                grouped_labels[media_label.media_id].append(media_label)
+
         for result in paginated_query.items:
             media_assoc = result.to_dict()
+            media_assoc["labels"] = [label.name for label in grouped_labels.get(result.media_id, [])]
             media_assoc["common"] = result.media_id in self.common_ids
             self.results.append(media_assoc)
 

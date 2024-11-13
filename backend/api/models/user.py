@@ -88,6 +88,9 @@ class User(db.Model):
     movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
     series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
     settings = db.relationship("UserMediaSettings", back_populates="user", lazy="joined")
+    mediadle_stats = db.relationship("MediadleStats", back_populates="user", lazy="select")
+    achievements = db.relationship("UserAchievement", back_populates="user", lazy="select")
+    mediadle_progress = db.relationship("UserMediadleProgress", back_populates="user", lazy="select")
     notifications = db.relationship(
         "Notifications",
         primaryjoin="Notifications.user_id == User.id",
@@ -278,20 +281,20 @@ class User(db.Model):
         return data
 
     def get_one_media_details(self, media_type: MediaType) -> Dict:
-        media_list, media_label = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
+        list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
 
         media_dict = dict(
             media_type=media_type.value,
-            specific_total=media_list.get_specific_total(self.id),
-            count_per_metric=media_list.get_media_count_per_rating(self),
+            specific_total=list_model.get_specific_total(self.id),
+            # count_per_metric=list_model.get_media_count_per_rating(self),
             time_hours=int(self.get_media_setting(media_type).time_spent / 60),
             time_days=int(self.get_media_setting(media_type).time_spent / 1440),
-            labels=media_label.get_total_and_labels_names(self.id, limit=10),
+            # labels=label_model.get_total_and_user_labels(self.id, limit=10),
         )
 
-        media_dict.update(media_list.get_media_count_per_status(self.id))
-        media_dict.update(media_list.get_favorites_media(self.id, limit=10))
-        media_dict.update(media_list.get_media_rating(self))
+        media_dict.update(list_model.get_media_count_per_status(self.id))
+        media_dict.update(list_model.get_favorites_media(self.id, limit=10))
+        media_dict.update(list_model.get_media_rating(self))
 
         return media_dict
 
@@ -462,7 +465,7 @@ class UserMediaUpdate(db.Model):
         return update_dict
 
     @classmethod
-    def set_new_update(cls, media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any):
+    def set_new_update(cls, media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any, **kwargs):
         previous_db_entry = (
             cls.query.filter_by(user_id=current_user.id, media_id=media.id, media_type=media.GROUP)
             .order_by(cls.timestamp.desc()).first()
@@ -480,6 +483,7 @@ class UserMediaUpdate(db.Model):
             media_type=media.GROUP,
             update_type=update_type,
             payload=json.dumps({"old_value": old_value, "new_value": new_value}),
+            **kwargs,
         )
 
         if time_difference > cls.UPDATE_THRESHOLD:

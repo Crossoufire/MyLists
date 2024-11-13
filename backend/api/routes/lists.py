@@ -77,8 +77,8 @@ def stats_page(user: User, media_type: MediaType):
 
     data = dict(
         stats=stats,
-        user_data={"privacy": user.privacy.value},
-        is_current=(user.id == current_user.id) if current_user else False,
+        is_feeling=user.add_feeling,
+        settings=[setting.to_dict() for setting in user.settings if setting.active],
         users=[{"label": user.username, "value": user.username} for user in User.query.filter(User.active.is_(True)).all()]
     )
 

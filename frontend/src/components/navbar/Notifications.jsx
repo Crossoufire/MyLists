@@ -3,15 +3,14 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {queryClient} from "@/api/queryClient";
 import {useQuery} from "@tanstack/react-query";
-import {LuBell, LuLoader2} from "react-icons/lu";
+import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
 import {useEffect, useRef, useState} from "react";
-import {FaLongArrowAltRight} from "react-icons/fa";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
 import {notifPollingInterval} from "@/utils/constants";
-import {MutedText} from "@/components/app/base/MutedText";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {MutedText} from "@/components/app/MutedText";
+import {MediaIcon} from "@/components/app/MediaIcon";
 import {notificationsCountOptions, notificationsOptions} from "@/api/queryOptions";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
@@ -46,16 +45,16 @@ export const Notifications = ({ isMobile }) => {
             <PopoverTrigger asChild>
                 <div className="flex items-center">
                     <Button variant="ghost" size="sm" className="mr-3 px-1.5" onClick={handleOnClickOpen}>
-                        <LuBell className={cn("w-5 h-5 mr-1.5", isMobile && "w-4 h-4 ml-0.5 mr-1.5 -mb-1")}/>
-                        {isMobile && <div className="text-lg ml-2 mr-3">Notifications</div>}
-                        <Badge variant="notif" className={notifCount > 0 && "bg-destructive"}>
+                        <LuBell className={cn("w-5 h-5 mr-0.5", isMobile && "w-4 h-4 ml-2")}/>
+                        {isMobile && <div className="text-base ml-2 mr-3">Notifications</div>}
+                        <Badge variant="notif" className={cn(notifCount > 0 && "bg-destructive")}>
                             {notifCount}
                         </Badge>
                     </Button>
                 </div>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
-            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto" align={isMobile ? "start" : "end"}>
+            <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto max-sm:max-h-[350px]" align={isMobile ? "start" : "end"}>
                 {isLoading ?
                     <div className="flex items-center justify-center p-4">
                         <LuLoader2 className="h-6 w-6 animate-spin"/>
@@ -101,7 +100,7 @@ const NotificationItem = ({ data, handlePopoverClose }) => {
                     }
                 </div>
                 {data.media_type &&
-                    <div className="flex items-center gap-2 text-neutral-400">
+                    <div className="flex items-center gap-2 text-neutral-500">
                         {data.payload?.new ?
                             <div className="line-clamp-1">{data.payload.message}</div>
                             :
@@ -113,7 +112,7 @@ const NotificationItem = ({ data, handlePopoverClose }) => {
                                         <div>Release</div>
                                     }
                                 </div>
-                                <div><FaLongArrowAltRight/></div>
+                                <div><LuMoveRight size={17}/></div>
                                 <div>{formatDateTime(data.payload.release_date)}</div>
                             </>
                         }

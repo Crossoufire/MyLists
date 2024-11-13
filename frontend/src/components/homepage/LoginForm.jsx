@@ -5,7 +5,7 @@ import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {FormButton} from "@/components/app/base/FormButton";
+import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";

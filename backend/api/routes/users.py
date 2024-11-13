@@ -7,6 +7,7 @@ from backend.api import db
 from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.models import UserAchievement, Achievement
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
@@ -56,6 +57,7 @@ def profile(user: User):
 
     if current_user and current_user.id != user.id:
         user.profile_views += 1
+        db.session.commit()
 
     active_media_types = [setting.media_type for setting in user.settings if setting.active]
     user_updates = user.get_last_updates(limit=6)
@@ -64,8 +66,8 @@ def profile(user: User):
     media_global = user.get_global_media_stats()
     models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
     media_data = [user.get_one_media_details(model.GROUP) for model in models]
-
-    db.session.commit()
+    summary = UserAchievement.get_total_only_summary(user.id)
+    details = Achievement.get_achievements_with_user(user.id, limit=6)
 
     data = dict(
         user_data=user.to_dict(),
@@ -76,6 +78,7 @@ def profile(user: User):
         list_levels=list_levels,
         media_global=media_global,
         media_data=media_data,
+        achievements={"summary": summary, "details": details},
     )
 
     return jsonify(data=data), 200
@@ -248,27 +251,7 @@ def settings_delete():
     """ Endpoint allowing the user to delete its account """
 
     try:
-        Token.query.filter_by(user_id=current_user.id).delete()
-        User.query.filter_by(id=current_user.id).delete()
-
-        db.session.query(followers).filter(
-            (followers.c.follower_id == current_user.id) | (followers.c.followed_id == current_user.id)
-        ).delete()
-
-        UserMediaUpdate.query.filter_by(user_id=current_user.id).delete()
-        Notifications.query.filter_by(user_id=current_user.id).delete()
-        UserMediaSettings.query.filter_by(user_id=current_user.id).delete()
-
-        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
-        for model in models.values():
-            model.query.filter_by(user_id=current_user.id).delete()
-
-        models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
-        for model in models_labels.values():
-            model.query.filter_by(user_id=current_user.id).delete()
-
-        db.session.commit()
-        current_app.logger.info(f"The account [ID = {current_user.id}] has been successfully deleted")
+        delete_user_account(current_user.id)
         return {}, 204
     except:
         db.session.rollback()
@@ -284,3 +267,39 @@ def download_medialist(media_type: MediaType):
     media_data = list_model.query.filter_by(user_id=current_user.id).all()
 
     return jsonify(data=[format_to_download_as_csv(media.to_dict()) for media in media_data]), 200
+
+
+@users.route("/achievements/<username>", methods=["GET"])
+@token_auth.login_required(optional=True)
+@check_authorization
+def achievements(user: User):
+    """ View the user achievements """
+
+    result = Achievement.get_all_achievements_with_user(user.id)
+    summary = UserAchievement.get_full_summary(user.id)
+
+    return jsonify(data=dict(result=result, summary=summary)), 200
+
+
+def delete_user_account(user_id: int):
+    Token.query.filter_by(user_id=user_id).delete()
+    User.query.filter_by(id=user_id).delete()
+
+    db.session.query(followers).filter(
+        (followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)
+    ).delete()
+
+    UserMediaUpdate.query.filter_by(user_id=user_id).delete()
+    Notifications.query.filter_by(user_id=user_id).delete()
+    UserMediaSettings.query.filter_by(user_id=user_id).delete()
+
+    models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
+    for model in models.values():
+        model.query.filter_by(user_id=user_id).delete()
+
+    models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
+    for model in models_labels.values():
+        model.query.filter_by(user_id=user_id).delete()
+
+    db.session.commit()
+    current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted")

@@ -1,9 +1,10 @@
 import logging
-import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
+import os
 from typing import Type
 import sys
 
+import flask
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
@@ -18,6 +19,7 @@ from redis import Redis
 
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 from backend.api.utils.enums import RoleType
+from backend.cli.commands import register_cli_commands
 from backend.config import Config, get_config
 
 
@@ -33,7 +35,7 @@ redis = Redis(socket_timeout=15, socket_connect_timeout=15)
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 
-def import_blueprints(app: Flask):
+def import_blueprints(register_bp):
     from backend.api.routes.tokens import tokens as tokens_bp
     from backend.api.routes.users import users as users_bp
     from backend.api.routes.media import media_bp as media_bp
@@ -43,62 +45,70 @@ def import_blueprints(app: Flask):
     from backend.api.routes.details import details_bp as details_bp
     from backend.api.routes.lists import lists_bp as lists_bp
     from backend.api.routes.labels import labels_bp as labels_bp
+    from backend.api.routes.mediadle import mediadle_bp as mediadle_bp
 
-    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp, lists_bp, labels_bp]
-
+    api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp,
+                      lists_bp, labels_bp, mediadle_bp]
     for blueprint in api_blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api")
+        register_bp(blueprint, url_prefix="/api")
 
 
-def create_app_logger(app: Flask):
-    if not app.config["CREATE_APP_LOGGER"]:
-        return
+def create_file_handler(logger: logging.Logger, root_path: str):
+    """ Create a File Handler depending on the environment and config """
 
-    log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "mylists.log")
-
+    log_file_path = os.path.join(os.path.dirname(root_path), "logs", "mylists.log")
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-    if not os.path.exists(log_file_path):
-        with open(log_file_path, "a"):
-            pass
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
-    handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)s - %(message)s"))
+    handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     handler.setLevel(logging.INFO)
 
-    app.logger.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
-    app.logger.info("MyLists is starting up...")
+    logger.addHandler(handler)
+    logger.info("MyLists is starting up...")
 
 
-def create_mail_handler(app: Flask):
-    """ Create a TLS only mail handler associated with the app logger: send email when errors occurs """
-
-    if not app.config["CREATE_MAIL_HANDLER"]:
-        return
+def create_mail_handler(logger: logging.Logger, config: flask.Config):
+    """ Create a TLS only mail handler for the app logger which send email when errors occurs """
 
     mail_handler = SMTPHandler(
-        mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
-        fromaddr=app.config["MAIL_USERNAME"],
-        toaddrs=app.config["MAIL_USERNAME"],
+        mailhost=(config["MAIL_SERVER"], config["MAIL_PORT"]),
+        fromaddr=config["MAIL_USERNAME"],
+        toaddrs=config["MAIL_USERNAME"],
         subject="MyLists - Exceptions occurred",
-        credentials=(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"]),
+        credentials=(config["MAIL_USERNAME"], config["MAIL_PASSWORD"]),
         secure=(),
     )
 
     mail_handler.setLevel(logging.ERROR)
-    app.logger.addHandler(mail_handler)
+    logger.addHandler(mail_handler)
 
 
-def refresh_database(app: Flask):
-    """ Refresh global stats and time spent when app starts. """
+def create_db_and_setup_pragma():
+    """ On app starts: create tables and change pragmas. """
 
-    # Pass when using Flask CLI or in debug mode
-    if sys.argv[0].endswith("flask") or app.debug:
-        return
+    from sqlalchemy import event
 
-    from backend.cli.tasks import compute_media_time_spent, update_Mylists_stats
-    compute_media_time_spent()
-    update_Mylists_stats()
+    db.create_all()
+
+    def configure_sqlite(dbapi_connection, connection_record):
+        """ Configure SQLite database to use WAL mode and NORMAL synchronous mode. """
+
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.close()
+
+    event.listen(db.engine, "connect", configure_sqlite)
+
+
+def refresh_database():
+    """ On app starts execute refreshing functions. """
+
+    from backend.cli.managers.media_manager import CLIMediaManager
+    from backend.cli.managers.system_manager import CLISystemManager
+
+    CLIMediaManager.compute_all_time_spent()
+    CLISystemManager().update_global_stats()
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
@@ -120,19 +130,21 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     limiter.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=[
-        "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173"
+        "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173",
     ])
 
     with app.app_context():
-        import_blueprints(app)
-
-        db.create_all()
-
-        create_app_logger(app)
-        create_mail_handler(app)
-        refresh_database(app)
-
-        from backend.cli.commands import register_cli_commands
         register_cli_commands()
+        create_db_and_setup_pragma()
+        import_blueprints(app.register_blueprint)
+
+        if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
+            create_file_handler(app.logger, app.root_path)
+
+        if app.config["CREATE_MAIL_HANDLER"]:
+            create_mail_handler(app.logger, app.config)
+
+        if not sys.stdin.isatty() and not app.debug:
+            refresh_database()
 
         return app

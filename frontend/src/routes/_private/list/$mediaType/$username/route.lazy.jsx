@@ -2,15 +2,15 @@ import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {capitalize} from "@/utils/functions";
 import {listOptions} from "@/api/queryOptions";
-import {Header} from "@/components/medialist/Header";
+import {Header} from "@/components/media-list/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {PageTitle} from "@/components/app/base/PageTitle";
-import {MediaGrid} from "@/components/medialist/MediaGrid";
-import {MediaTable} from "@/components/medialist/MediaTable";
-import {AppliedFilters} from "@/components/medialist/AppliedFilters";
+import {PageTitle} from "@/components/app/PageTitle";
+import {MediaGrid} from "@/components/media-list/MediaGrid";
+import {MediaTable} from "@/components/media-list/MediaTable";
+import {AppliedFilters} from "@/components/media-list/AppliedFilters";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
-import {FiltersSideSheet} from "@/components/medialist/FiltersSideSheet";
+import {FiltersSideSheet} from "@/components/media-list/FiltersSideSheet";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -26,7 +26,7 @@ function MediaList() {
     const { username, mediaType } = Route.useParams();
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(listOptions(mediaType, username, search)).data;
-    const [isGrid, setIsGrid] = useState(currentUser?.grid_list_view || true);
+    const [isGrid, setIsGrid] = useState(currentUser?.grid_list_view ?? true);
     const isCurrent = (currentUser?.id === apiData.user_data.id);
 
     const handleFilterChange = async (newFilters) => {
@@ -70,10 +70,9 @@ function MediaList() {
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header
                 isGrid={isGrid}
-                isCurrent={isCurrent}
                 userData={apiData.user_data}
                 pagination={apiData.pagination}
-                handleGridChange={() => setIsGrid(!isGrid)}
+                onGridClick={() => setIsGrid(!isGrid)}
                 onFilterClick={() => setFiltersPanelOpen(true)}
                 onStatusChange={(status) => handleFilterChange(status)}
                 onSortChange={(sort) => handleFilterChange({ sort: sort })}
@@ -86,12 +85,18 @@ function MediaList() {
             {isGrid ?
                 <MediaGrid
                     isCurrent={isCurrent}
+                    mediaType={mediaType}
                     mediaList={apiData.media_data}
+                    allStatus={apiData.pagination.all_status}
+                    queryKey={["userList", mediaType, username, search]}
                 />
                 :
                 <MediaTable
-                    apiData={apiData}
+                    mediaType={mediaType}
                     isCurrent={isCurrent}
+                    mediaList={apiData.media_data}
+                    pagination={apiData.pagination}
+                    queryKey={["userList", mediaType, username, search]}
                     onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}
                 />
             }

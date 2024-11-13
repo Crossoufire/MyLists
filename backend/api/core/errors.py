@@ -7,6 +7,7 @@ from flask import Blueprint, current_app, has_request_context, request
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.exceptions import InternalServerError, HTTPException, Unauthorized, Forbidden
 
+from backend.api import db
 from backend.api.core import token_auth, basic_auth, current_user
 from backend.api.schemas.core import ApiValidationError
 from backend.api.utils.functions import naive_utcnow
@@ -30,6 +31,10 @@ def should_log_error(error: Exception):
 def log_error(error: Exception):
     if current_app.testing:
         return
+
+    # Rollback session transaction if integrity error occurs
+    if isinstance(error, IntegrityError) or isinstance(error, SQLAlchemyError):
+        db.session.rollback()
 
     if should_log_error(error):
         error_context = dict(

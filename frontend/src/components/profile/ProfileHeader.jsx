@@ -1,10 +1,8 @@
-import {toast} from "sonner";
 import {useAuth} from "@/hooks/AuthHook";
-import {Button} from "@/components/ui/button";
+import {Link} from "@tanstack/react-router";
 import {formatDateTime} from "@/utils/functions";
-import {Link, useParams} from "@tanstack/react-router";
-import {useFollowMutation} from "@/api/mutations/simpleMutations";
-import {LuCalendarDays, LuUserMinus, LuUserPlus, LuUsers} from "react-icons/lu";
+import {LuCalendarDays, LuUsers} from "react-icons/lu";
+import {FollowButton} from "@/components/profile/FollowButton";
 
 
 export const ProfileHeader = ({ user, followStatus, followId }) => {
@@ -28,7 +26,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                                 Lvl {user.profile_level}
                             </div>
                         </div>
-                        <div className="space-y-3 max-sm:bg-gradient-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
+                        <div className="space-y-2 max-sm:bg-gradient-to-r max-sm:from-slate-900 max-sm:to-slate-700 max-sm:py-2
                         max-sm:px-4 max-sm:rounded-lg">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-2xl font-bold">{user.username}</h2>
@@ -56,23 +54,5 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                 </div>
             </div>
         </div>
-    );
-};
-
-
-const FollowButton = ({ followStatus, followId }) => {
-    const { username } = useParams({ strict: false });
-    const updateFollowStatus = useFollowMutation(["profile", username]);
-
-    const handleFollow = () => {
-        updateFollowStatus.mutate({ followId, followStatus: !followStatus }, {
-            onError: () => toast.error("An error occurred while updating the follow status"),
-        });
-    };
-
-    return (
-        <Button variant={followStatus ? "destructive" : "outline"} size="xs" onClick={handleFollow} disabled={updateFollowStatus.isPending}>
-            {followStatus ? <><LuUserMinus className="mr-2 h-4 w-4"/>Unfollow</> : <><LuUserPlus className="mr-2 h-4 w-4"/>Follow</>}
-        </Button>
     );
 };

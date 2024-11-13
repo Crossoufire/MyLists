@@ -16,16 +16,22 @@ def as_bool(value: str) -> bool:
 class Config:
     DEBUG = False
     TESTING = False
-    CREATE_APP_LOGGER = True
+    CREATE_FILE_LOGGER = True
     CREATE_MAIL_HANDLER = True
     USER_ACTIVE_PER_DEFAULT = False
 
-    # Database option
+    # Demo Profile options
+    DEMO_USERNAME = "DemoProfile"
+    DEMO_EMAIL = "demo@demo.com"
+    DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo-password"
+
+    # Database options
     SQLALCHEMY_DATABASE_URI = (
             os.environ.get("MYLISTS_DATABASE_URI") or
             f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
 
     # Security options
     SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")
@@ -91,7 +97,7 @@ class Config:
 
 class DevConfig(Config):
     DEBUG = True
-    CREATE_APP_LOGGER = True
+    CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
     USER_ACTIVE_PER_DEFAULT = False
     CACHE_TYPE = "SimpleCache"
@@ -102,7 +108,7 @@ class DevConfig(Config):
 class TestConfig(Config):
     TESTING = True
     RATELIMIT_ENABLED = False
-    CREATE_APP_LOGGER = False
+    CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
     USER_ACTIVE_PER_DEFAULT = True
     CACHE_TYPE = "SimpleCache"

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {Slot} from "@radix-ui/react-slot";
 import {Label} from "@/components/ui/label";
 import {Controller, FormProvider, useFormContext} from "react-hook-form";

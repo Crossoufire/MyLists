@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "mylists"
-version = "2.0.0"
+version = "2.2.0"
 description = ""
 authors = ["Crossoufire <vince.delmas.38@gmail.com>"]
-license = "GPL-3.0"
+license = "../GPL-3.0"
 readme = "../README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.10 || ^3.11"
+python = "^3.11 || ^3.12"
 flask = "^3.0.3"
 flask-sqlalchemy = "^3.1.1"
 flask-bcrypt = "^1.0.1"
@@ -17,19 +17,19 @@ flask-mail = "^0.10.0"
 flask-caching = "^2.3.0"
 flask-httpauth = "^4.8.0"
 flask-migrate = "^4.0.7"
-pillow = "^10.4.0"
+pillow = "^11.0.0"
 pyjwt = "^2.9.0"
 requests = "^2.32.3"
-howlongtobeatpy = "^1.0.8"
+howlongtobeatpy = "^1.0.9"
 python-dotenv = "^1.0.1"
 gunicorn = "^23.0.0"
-marshmallow = "^3.22.0"
+marshmallow = "^3.23.1"
 flask-marshmallow = "^1.2.1"
-webargs = "^8.4.0"
+webargs = "^8.6.0"
 marshmallow-sqlalchemy = "^1.1.0"
-flask-limiter = {extras = ["redis"], version = "^3.8.0"}
-redis = "^5.0.8"
-rich = "^13.8.1"
+flask-limiter = { extras = ["redis"], version = "^3.8.0" }
+redis = "^5.2.0"
+rich = "^13.9.4"
 
 
 [build-system]

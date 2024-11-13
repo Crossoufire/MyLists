@@ -3,9 +3,9 @@ import {jobDetailsOptions} from "@/api/queryOptions";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
-import {MediaInfoCorner} from "@/components/app/base/MediaInfoCorner";
+import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
 
 
 // noinspection JSCheckFunctionSignatures

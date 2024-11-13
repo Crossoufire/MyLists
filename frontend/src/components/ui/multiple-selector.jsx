@@ -3,7 +3,7 @@
 import * as React from "react";
 import {useEffect} from "react";
 import {LuX} from "react-icons/lu";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Command as CommandPrimitive} from "cmdk";
 import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList,} from "@/components/ui/command";
@@ -30,13 +30,13 @@ function transToGroupOption(options, groupBy) {
     }
     if (!groupBy) {
         return {
-            '': options,
+            "": options,
         };
     }
 
     const groupOption = {};
     options.forEach((option) => {
-        const key = (option[groupBy]) || '';
+        const key = (option[groupBy]) || "";
         if (!groupOption[key]) {
             groupOption[key] = [];
         }
@@ -91,7 +91,7 @@ const MultipleSelector = React.forwardRef(
         const [options, setOptions] = React.useState(
             transToGroupOption(arrayDefaultOptions, groupBy),
         );
-        const [inputValue, setInputValue] = React.useState('');
+        const [inputValue, setInputValue] = React.useState("");
         const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
 
         React.useImperativeHandle(
@@ -116,13 +116,13 @@ const MultipleSelector = React.forwardRef(
             (e) => {
                 const input = inputRef.current;
                 if (input) {
-                    if (e.key === 'Delete' || e.key === 'Backspace') {
-                        if (input.value === '' && selected.length > 0) {
+                    if (e.key === "Delete" || e.key === "Backspace") {
+                        if (input.value === "" && selected.length > 0) {
                             handleUnselect(selected[selected.length - 1]);
                         }
                     }
                     // This is not a default behaviour of the <input /> field
-                    if (e.key === 'Escape') {
+                    if (e.key === "Escape") {
                         input.blur();
                     }
                 }
@@ -186,7 +186,7 @@ const MultipleSelector = React.forwardRef(
                             onMaxSelected?.(selected.length);
                             return;
                         }
-                        setInputValue('');
+                        setInputValue("");
                         const newOptions = [...selected, { value, label: value }];
                         setSelected(newOptions);
                         onChange?.(newOptions);
@@ -224,7 +224,7 @@ const MultipleSelector = React.forwardRef(
 
         const selectables = React.useMemo(
             () => removePickedOption(options, selected),
-                [options, selected],
+            [options, selected],
         );
 
         /** Avoid Creatable Selector freezing or lagging when paste a long string. */
@@ -254,8 +254,8 @@ const MultipleSelector = React.forwardRef(
                 filter={commandFilter()}
             >
                 <div
-                    className={cn('group rounded-md border border-input px-2 py-2 text-sm ring-offset-background ' +
-                        'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+                    className={cn("group rounded-md border border-input px-2 py-2 text-sm ring-offset-background " +
+                        "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
                         className,
                     )}
                 >
@@ -265,8 +265,8 @@ const MultipleSelector = React.forwardRef(
                                 <Badge
                                     key={option.value}
                                     className={cn(
-                                        'data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground',
-                                        'data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground',
+                                        "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
+                                        "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",
                                         badgeClassName,
                                     )}
                                     data-fixed={option.fixed}
@@ -275,11 +275,11 @@ const MultipleSelector = React.forwardRef(
                                     {option.label}
                                     <button
                                         className={cn(
-                                            'ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                                            (disabled || option.fixed) && 'hidden',
+                                            "ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                                            (disabled || option.fixed) && "hidden",
                                         )}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
+                                            if (e.key === "Enter") {
                                                 handleUnselect(option);
                                             }
                                         }}
@@ -289,7 +289,7 @@ const MultipleSelector = React.forwardRef(
                                         }}
                                         onClick={() => handleUnselect(option)}
                                     >
-                                        <LuX className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                        <LuX className="h-3 w-3 text-muted-foreground hover:text-foreground"/>
                                     </button>
                                 </Badge>
                             );
@@ -313,7 +313,7 @@ const MultipleSelector = React.forwardRef(
                                 triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
                                 inputProps?.onFocus?.(event);
                             }}
-                            placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder}
+                            placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? "" : placeholder}
                             className={cn("ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground cursor-pointer",
                                 inputProps?.className,
                             )}
@@ -330,7 +330,7 @@ const MultipleSelector = React.forwardRef(
                                 <>
                                     {EmptyItem()}
                                     {CreatableItem()}
-                                    {!selectFirstItem && <CommandItem value="-" className="hidden" />}
+                                    {!selectFirstItem && <CommandItem value="-" className="hidden"/>}
                                     {Object.entries(selectables).map(([key, dropdowns]) => (
                                         <CommandGroup key={key} heading={key} className="h-full overflow-auto">
                                             <>
@@ -349,12 +349,12 @@ const MultipleSelector = React.forwardRef(
                                                                     onMaxSelected?.(selected.length);
                                                                     return;
                                                                 }
-                                                                setInputValue('');
+                                                                setInputValue("");
                                                                 const newOptions = [...selected, option];
                                                                 setSelected(newOptions);
                                                                 onChange?.(newOptions);
                                                             }}
-                                                            className={cn('cursor-pointer', option.disable && 'cursor-default text-muted-foreground',)}
+                                                            className={cn("cursor-pointer", option.disable && "cursor-default text-muted-foreground",)}
                                                         >
                                                             {option.label}
                                                         </CommandItem>
@@ -372,7 +372,7 @@ const MultipleSelector = React.forwardRef(
         );
     },
 );
-MultipleSelector.displayName = 'MultipleSelector';
+MultipleSelector.displayName = "MultipleSelector";
 
 
 export default MultipleSelector;

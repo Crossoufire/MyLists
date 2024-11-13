@@ -2,16 +2,17 @@ import {useAuth} from "@/hooks/AuthHook";
 import {detailsOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/components/app/base/PageTitle";
+import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
-import {FormButton} from "@/components/app/base/FormButton";
-import {FollowCard} from "@/components/media/general/FollowCard";
+import {FormButton} from "@/components/app/FormButton";
+import {FollowCard} from "@/components/media-details/FollowCard";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
-import {SimilarMedia} from "@/components/media/general/SimilarMedia";
-import {UserListDetails} from "@/components/media/general/UserListDetails";
-import {MediaDataDetails} from "@/components/media/general/MediaDataDetails";
+import {SimilarMedia} from "@/components/media-details/SimilarMedia";
+import {UserMediaDetails} from "@/components/media-user/UserMediaDetails";
+import {MediaDataDetails} from "@/components/media-details/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {RefreshAndEditMedia} from "@/components/media/general/RefreshAndEditMedia";
+import {RefreshAndEditMedia} from "@/components/media-details/RefreshAndEditMedia";
+import AvatarCircles from "@/components/ui/avatar-circles";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -56,7 +57,7 @@ function MediaDetailsPage() {
                                 className="w-[300px] h-[450px] rounded-md"
                             />
                             {apiData.user_media ?
-                                <UserListDetails
+                                <UserMediaDetails
                                     mediaType={mediaType}
                                     userMedia={apiData.user_media}
                                     queryKey={["details", mediaType, mediaId.toString()]}
@@ -75,7 +76,9 @@ function MediaDetailsPage() {
                             <TabsList className="grid grid-cols-2">
                                 <TabsTrigger value="mediaDetails">Media Details</TabsTrigger>
                                 <TabsTrigger value="follows" disabled={apiData.follows_data.length === 0}>
-                                    Your Follows ({apiData.follows_data.length})
+                                    <span>Your Follows &nbsp;</span>
+                                    <span className="sm:hidden">({apiData.follows_data.length})</span>
+                                    <AvatarCircles avatarUrls={apiData.follows_data.map(follow => follow.profile_image)}/>
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="mediaDetails">

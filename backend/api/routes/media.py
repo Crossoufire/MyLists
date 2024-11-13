@@ -357,3 +357,21 @@ def delete_updates(data):
     current_app.logger.info(f"[User {current_user.id}] {len(data['update_ids'])} updates successfully deleted")
 
     return {}, 204
+
+
+@media_bp.route("/history/<mediatype:media_type>/<media_id>", methods=["GET"])
+@token_auth.login_required
+def media_history(media_type: MediaType, media_id: int):
+    """ Fetch the history of a media item """
+
+    history = (
+        UserMediaUpdate.query
+        .filter(
+            UserMediaUpdate.user_id == current_user.id,
+            UserMediaUpdate.media_type == media_type,
+            UserMediaUpdate.media_id == media_id
+        ).order_by(UserMediaUpdate.timestamp.desc())
+        .all()
+    )
+
+    return jsonify(data=[h.to_dict() for h in history]), 200

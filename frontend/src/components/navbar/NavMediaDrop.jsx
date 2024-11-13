@@ -1,7 +1,7 @@
 import {useRef} from "react";
 import {capitalize} from "@/utils/functions.jsx";
 import {CaretSortIcon} from "@radix-ui/react-icons";
-import {MediaIcon} from "@/components/app/base/MediaIcon";
+import {MediaIcon} from "@/components/app/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {useAuth} from "@/hooks/AuthHook.jsx";
@@ -23,13 +23,13 @@ export const NavMediaDrop = () => {
         <>
             <Popover>
                 <PopoverTrigger>
-                    <div className="flex items-center gap-2 text-lg font-semibold px-1">
+                    <div className="flex items-center gap-2 font-semibold px-1 max-sm:ml-2">
                         MyLists
                         <CaretSortIcon className="opacity-80"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>
-                <PopoverContent className="w-[160px] px-2 py-2" align="start">
+                <PopoverContent className="w-full px-2 py-2" align="start">
                     <ul>
                         {menuItems.filter(item => item.cond !== false).map(item =>
                             <NavMediaItem

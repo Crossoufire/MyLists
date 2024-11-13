@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import List
 
 
 # --- USERS ------------------------------------------------------------------------
 
-class RoleType(str, Enum):
+class RoleType(StrEnum):
     """
     Represents the different roles available in MyLists.
     - `manager`: can lock, edit, and refresh the media details
@@ -17,7 +17,7 @@ class RoleType(str, Enum):
     USER = "user"
 
 
-class Privacy(str, Enum):
+class Privacy(StrEnum):
     """
     Represents the different privacy settings available in MyLists.
     - `public`: everyone can see the user profile.
@@ -33,7 +33,7 @@ class Privacy(str, Enum):
 # --- MEDIA ------------------------------------------------------------------------
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     """
     Represents each media type available in MyLists.
     The enum order is used, do not modify !!
@@ -46,15 +46,15 @@ class MediaType(str, Enum):
     GAMES = "games"
 
     def __lt__(self, other: MediaType):
-        order = {t: idx for (idx, t) in enumerate(MediaType)}
-        return order[self] < order[other]
+        order = {mt: idx for (idx, mt) in enumerate(MediaType)}
+        return order[self] < order.get(other, 0)
 
     @classmethod
     def default(cls) -> List[MediaType]:
         return [cls.SERIES, cls.MOVIES]
 
 
-class Status(str, Enum):
+class Status(StrEnum):
     """
     Represents all the different statuses available in MyLists for all the media types.
     As well as the default status for each media type.
@@ -104,7 +104,7 @@ class Status(str, Enum):
             raise ValueError(f"Invalid media type: {media_type}")
 
 
-class JobType(str, Enum):
+class JobType(StrEnum):
     """
     Represents the different accepted job type in a media details page:
     - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
@@ -117,7 +117,7 @@ class JobType(str, Enum):
     PLATFORM = "platform"
 
 
-class GamesPlatformsEnum(str, Enum):
+class GamesPlatformsEnum(StrEnum):
     """
     Represents the different platforms available for the games in MyLists.
     Needs to be updated when new video games platforms are created.
@@ -165,7 +165,7 @@ class GamesPlatformsEnum(str, Enum):
 # --- OTHER ------------------------------------------------------------------------
 
 
-class ModelTypes(str, Enum):
+class ModelTypes(StrEnum):
     """
     Represents the different types of SQLAlchemy models available in MyLists.
     Used to determine the appropriate model to use in polymorphic endpoints
@@ -183,7 +183,7 @@ class ModelTypes(str, Enum):
     AUTHORS = "authors"
 
 
-class NotificationType(str, Enum):
+class NotificationType(StrEnum):
     """
     Represents the different types of notifications available in MyLists, excluding the books.
     - `tv`: notifications for the series/anime
@@ -196,7 +196,7 @@ class NotificationType(str, Enum):
     FOLLOW = "follow"
 
 
-class UpdateType(str, Enum):
+class UpdateType(StrEnum):
     """
     Represents the different types of updates available in MyLists.
     - `tv`: seasons and episodes updates for the series/anime
@@ -211,3 +211,18 @@ class UpdateType(str, Enum):
     REDO = "redo"
     STATUS = "status"
     PLAYTIME = "playtime"
+
+
+class AchievementDifficulty(StrEnum):
+    """
+    Represents the different difficulties available for the achievements.
+    - `BRONZE`: lowest difficulty
+    - `SILVER`: medium difficulty
+    - `GOLD`: high difficulty
+    - `PLATINUM`: highest difficulty
+    """
+
+    BRONZE = "bronze"
+    SILVER = "silver"
+    GOLD = "gold"
+    PLATINUM = "platinum"

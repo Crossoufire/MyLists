@@ -7,6 +7,7 @@ import {GlobalStats} from "@/components/profile/GlobalStats";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
+import {AchievementsDisplay} from "@/components/profile/AchivementProfile";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -48,6 +49,11 @@ function ProfileMain() {
                 <MediaDetails
                     userData={apiData.user_data}
                     mediaData={apiData.media_data}
+                />
+                <div className="mt-4"/>
+                <AchievementsDisplay
+                    username={username}
+                    achievements={apiData.achievements}
                 />
                 <div className="mt-4"/>
             </div>

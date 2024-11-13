@@ -1,5 +1,5 @@
 import * as React from "react";
-import {cn} from "@/utils/functions.jsx";
+import {cn} from "@/utils/functions";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
 

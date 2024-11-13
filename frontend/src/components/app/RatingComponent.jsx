@@ -6,11 +6,12 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 export const RatingComponent = ({ rating, onUpdate, isEditable = true, inline = false }) => {
     const ratingValues = (rating.type === "feeling") ? getFeelingValues(16) : getScoreValues();
 
-    const selectItems = ratingValues.map(val =>
-        <SelectItem key={val?.value ?? val} value={val?.value ?? val}>
-            {rating.type === "feeling" ? val.icon : (typeof val === "number" ? val.toFixed(1) : "--")}
-        </SelectItem>
-    );
+    const selectItems = ratingValues.map(val => {
+        if (rating.type === "feeling") {
+            return <SelectItem key={val.value} value={val.value}>{val.icon}</SelectItem>;
+        }
+        return <SelectItem key={val} value={val}>{typeof val === "number" ? val.toFixed(1) : "--"}</SelectItem>;
+    });
 
     const handleSelectChange = (newRating) => {
         onUpdate.mutate({ payload: newRating });
