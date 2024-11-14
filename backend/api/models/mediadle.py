@@ -24,15 +24,22 @@ class DailyMediadle(db.Model):
     def create_mediadle(cls, today: datetime) -> DailyMediadle:
         """ Select a random movie that hasn't been used recently """
 
+        # Take last two years of already used movies
         used_movies = (
             cls.query.filter_by(media_type=MediaType.MOVIES)
             .order_by(DailyMediadle.date.desc())
             .with_entities(DailyMediadle.media_id)
-            .limit(100).all()
+            .limit(730).all()
         )
         used_movie_ids = [m.media_id for m in used_movies]
 
-        available_movie = Movies.query.filter(Movies.id.not_in(used_movie_ids)).order_by(func.random()).first()
+        # Take random movie with more than 500 votes and not in used movies
+        available_movie = (
+            Movies.query.filter(
+                Movies.id.not_in(used_movie_ids),
+                Movies.vote_count >= 500,
+            ).order_by(func.random()).first()
+        )
         daily_mediadle = cls(media_type=MediaType.MOVIES, media_id=available_movie.id, date=today)
 
         db.session.add(daily_mediadle)
