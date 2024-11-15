@@ -1,21 +1,15 @@
 import click
 from flask import current_app
 
-from backend.api import db
-from backend.api.models import DailyMediadle, UserMediadleProgress, MediadleStats
+from backend.cli.managers.mediadle_manager import CLIMediadleManager
 
 
+mediadle_manager = CLIMediadleManager()
 mediadle = click.Group("mediadle", help="Mediadle management commands")
 current_app.cli.add_command(mediadle)
 
 
 @mediadle.command()
-def reset():
-    """ Reset the mediadle game """
-
-    DailyMediadle.query.delete()
-    UserMediadleProgress.query.delete()
-    MediadleStats.query.delete()
-
-    db.session.commit()
-    click.echo("Mediadle game successfully reset.")
+def check():
+    """ Check all users mediadle stats. """
+    mediadle_manager.show_mediadle_stats()
