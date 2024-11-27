@@ -14,7 +14,7 @@ from sqlalchemy import desc, func, select, union_all, literal, case
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status, SearchSelector
 from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
@@ -79,6 +79,7 @@ class User(db.Model):
     grid_list_view = db.Column(db.Boolean, nullable=False, default=True)
     profile_views = db.Column(db.Integer, nullable=False, default=0)
     add_feeling = db.Column(db.Boolean, nullable=False, default=False)
+    search_selector = db.Column(db.Enum(SearchSelector), nullable=False, default=SearchSelector.TMDB)
 
     # --- Relationships ----------------------------------------------------------------
     token = db.relationship("Token", back_populates="user", lazy="noload")
@@ -136,8 +137,6 @@ class User(db.Model):
         user_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name not in excluded_attrs}
 
         user_dict.update(dict(
-            role=self.role.value,
-            privacy=self.privacy.value,
             registered_on=self.registered_on,
             profile_image=self.profile_image,
             back_image=self.back_image,

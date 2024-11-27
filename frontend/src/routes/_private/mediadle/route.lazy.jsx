@@ -11,7 +11,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {useMutation, useQuery, useSuspenseQuery} from "@tanstack/react-query";
-import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/api/queryOptions";
+import {dailyMediadleOptions, mediadleSuggestionsOptions, queryKeys} from "@/api/queryOptions";
 import {LuAward, LuCrown, LuFlame, LuPartyPopper, LuSigma, LuTarget, LuThumbsDown, LuTrophy} from "react-icons/lu";
 
 
@@ -33,7 +33,7 @@ function MediadlePage() {
         onSuccess: async () => {
             setGuess("");
             setShowSuggestions(false);
-            await queryClient.invalidateQueries({ queryKey: dailyMediadleOptions().queryKey });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() });
         }
     });
 

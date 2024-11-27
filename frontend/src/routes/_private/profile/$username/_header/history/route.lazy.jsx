@@ -5,11 +5,11 @@ import {Button} from "@/components/ui/button";
 import {formatDateTime} from "@/utils/functions";
 import {Payload} from "@/components/app/Payload";
 import {Checkbox} from "@/components/ui/checkbox";
-import {allUpdatesOptions} from "@/api/queryOptions";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/hooks/DebounceHook";
+import {allUpdatesOptions, queryKeys} from "@/api/queryOptions";
 import {TablePagination} from "@/components/app/TablePagination";
 import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 import {createLazyFileRoute, Link, useNavigate} from "@tanstack/react-router";
@@ -32,8 +32,8 @@ function AllUpdates() {
     const [rowSelected, setRowSelected] = useState({});
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const deleteMutation = useDeleteUpdateMutation(["allUpdates", username, filters]);
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+    const deleteMutation = useDeleteUpdateMutation(queryKeys.allUpdatesKey(username, filters));
 
     const setFilters = ({ pageIndex, pageSize, ...otherFilters }) => {
         const updatedFilters = { ...otherFilters, page: pageIndex + 1 };

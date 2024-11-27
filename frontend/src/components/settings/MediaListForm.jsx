@@ -1,13 +1,13 @@
 import {toast} from "sonner";
-import {useState} from "react";
+import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/hooks/AuthHook";
-import {LuDownload, LuHelpCircle} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
-import {downloadFile, jsonToCsv} from "@/utils/functions";
 import {FormButton} from "@/components/app/FormButton";
+import {LuDownload, LuHelpCircle} from "react-icons/lu";
+import {downloadFile, jsonToCsv} from "@/utils/functions";
 import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -15,10 +15,14 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const MediaListForm = () => {
-    const form = useForm();
     const { currentUser, setCurrentUser } = useAuth();
     const { listSettings, downloadListAsCSV } = simpleMutations();
     const [selectedList, setSelectedList] = useState("");
+    const form = useForm({
+        defaultValues: {
+            search_selector: currentUser.search_selector,
+        }
+    });
 
     const onSubmit = (data) => {
         listSettings.mutate({ ...data }, {
@@ -28,6 +32,32 @@ export const MediaListForm = () => {
                 toast.success("Settings successfully updated");
             }
         });
+    };
+
+    const checkDisabled = (fieldName) => {
+        const checkForm = form.watch(fieldName);
+        const value = fieldName.replace("add_", "");
+
+        if (checkForm !== undefined) {
+            return checkForm !== true;
+        }
+
+        return !currentUser.settings[value].active;
+    };
+
+    const onListChanged = (field, value) => {
+        field.onChange(value);
+        const searchSelector = form.watch("search_selector");
+
+        if (field.name === "add_games" && (searchSelector.value === "igdb" || currentUser.search_selector === "igdb")) {
+            form.setValue("search_selector", "tmdb");
+        }
+
+        if (field.name === "add_books" && (searchSelector.value === "books" || currentUser.search_selector === "books")) {
+            form.setValue("search_selector", "tmdb");
+        }
+
+        checkDisabled(field.name);
     };
 
     const handleDownloadCSV = async (ev) => {
@@ -91,7 +121,7 @@ export const MediaListForm = () => {
                                     <FormControl>
                                         <Switch
                                             checked={field.value}
-                                            onCheckedChange={field.onChange}
+                                            onCheckedChange={(value) => onListChanged(field, value)}
                                             defaultChecked={currentUser.settings.games.active}
                                         />
                                     </FormControl>
@@ -110,7 +140,7 @@ export const MediaListForm = () => {
                                     <FormControl>
                                         <Switch
                                             checked={field.value}
-                                            onCheckedChange={field.onChange}
+                                            onCheckedChange={(value) => onListChanged(field, value)}
                                             defaultChecked={currentUser.settings.books.active}
                                         />
                                     </FormControl>
@@ -125,17 +155,47 @@ export const MediaListForm = () => {
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">
                             <div className="flex items-center gap-2">
+                                Navbar Search Selector
+                                <TextPopover>
+                                    Select your preferred navbar search selector.
+                                    'Media' correspond to Series/Anime and Movies.
+                                    Selecting Games/Books as default impose that your Games/Books list must be activated.
+                                </TextPopover>
+                            </div>
+                            <Separator/>
+                        </h3>
+                        <FormField
+                            control={form.control}
+                            name="search_selector"
+                            render={({ field }) =>
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="border">
+                                                <SelectValue placeholder="Select a search selector"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="tmdb">Media</SelectItem>
+                                            <SelectItem value="books" disabled={checkDisabled("add_books")}>Books</SelectItem>
+                                            <SelectItem value="igdb" disabled={checkDisabled("add_games")}>Games</SelectItem>
+                                            <SelectItem value="users">Users</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage/>
+                                </FormItem>
+                            }
+                        />
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="text-base font-medium">
+                            <div className="flex items-center gap-2">
                                 <div>Rating System</div>
-                                <Popover>
-                                    <PopoverTrigger className="opacity-50 hover:opacity-80">
-                                        <LuHelpCircle/>
-                                    </PopoverTrigger>
-                                    <PopoverContent>
-                                        Switch between a numerical rating on a scale of 0 to 10 (steps of 0.5)
-                                        to an emoticon-based rating (5 levels) to convey your liking or disliking of a
-                                        media.
-                                    </PopoverContent>
-                                </Popover>
+                                <TextPopover>
+                                    Switch between a numerical rating on a scale of 0 to 10 (steps of 0.5)
+                                    to an emoticon-based rating (5 levels) to convey your liking or disliking of a
+                                    media.
+                                </TextPopover>
                             </div>
                             <Separator/>
                         </h3>
@@ -191,8 +251,8 @@ export const MediaListForm = () => {
                     </FormButton>
                 </form>
             </Form>
-
-            <div className="mt-8 space-y-4 w-[400px] max-sm:w-full bg-neutral-900 p-3 rounded-lg">
+            <Separator variant="large" className="mt-4 w-[400px] max-sm:w-full"/>
+            <div className="mt-4 space-y-4 w-[400px] max-sm:w-full bg-neutral-900 p-3 rounded-lg">
                 <h3 className="text-base font-medium">
                     Export Your Lists As CSV
                     <Separator/>
@@ -218,3 +278,17 @@ export const MediaListForm = () => {
         </div>
     );
 };
+
+
+function TextPopover({ children }) {
+    return (
+        <Popover>
+            <PopoverTrigger className="opacity-50 hover:opacity-80">
+                <LuHelpCircle/>
+            </PopoverTrigger>
+            <PopoverContent>
+                {children}
+            </PopoverContent>
+        </Popover>
+    );
+}

@@ -5,9 +5,9 @@ from flask import abort
 from sqlalchemy import ColumnElement, func, select
 
 from backend.api import db
+from backend.api.models.user import User
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.user import User
 from backend.api.utils.enums import Status, MediaType, ModelTypes, GamesPlatformsEnum
 
 

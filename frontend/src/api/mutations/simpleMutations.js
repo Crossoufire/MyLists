@@ -56,6 +56,7 @@ const mutationFunctionsMap = {
     }),
 };
 
+
 export const simpleMutations = () => {
     const resetPassword = useMutation({ mutationFn: mutationFunctionsMap.resetPassword });
     const registerToken = useMutation({ mutationFn: mutationFunctionsMap.registerToken });
@@ -74,6 +75,7 @@ export const simpleMutations = () => {
         downloadListAsCSV, oAuth2Provider, otherUserStats, editMediaMutation, generalSettings
     };
 };
+
 
 export const useDeleteUpdateMutation = (queryKey) => {
     return useMutation({
@@ -99,6 +101,7 @@ export const useDeleteUpdateMutation = (queryKey) => {
     });
 };
 
+
 export const useFollowMutation = (queryKey) => {
     return useMutation({
         mutationFn: mutationFunctionsMap.updateFollowStatus,
@@ -118,12 +121,14 @@ export const useFollowMutation = (queryKey) => {
     });
 };
 
+
 export const useRefreshMutation = (queryKey) => {
     return useMutation({
         mutationFn: mutationFunctionsMap.updateMediaDetails,
         onSuccess: async () => await queryClient.invalidateQueries({ queryKey }),
     });
 };
+
 
 export const useModalMutation = () => {
     const { setCurrentUser } = useAuth();

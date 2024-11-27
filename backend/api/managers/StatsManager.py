@@ -5,10 +5,10 @@ from typing import List, Type
 from sqlalchemy import func, text, ColumnElement
 
 from backend.api import db
-from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.user import User, UserMediaUpdate
-from backend.api.utils.enums import MediaType, ModelTypes, Status
 from backend.api.utils.functions import int_to_money
+from backend.api.models.user import User, UserMediaUpdate
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import MediaType, ModelTypes, Status
 
 
 """ --- GENERAL ----------------------------------------------------------------------------------------- """

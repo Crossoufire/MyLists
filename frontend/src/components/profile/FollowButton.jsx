@@ -1,5 +1,6 @@
 import React from "react";
 import {toast} from "sonner";
+import {queryKeys} from "@/api/queryOptions";
 import {Button} from "@/components/ui/button";
 import {useParams} from "@tanstack/react-router";
 import {LuUserMinus, LuUserPlus} from "react-icons/lu";
@@ -8,7 +9,7 @@ import {useFollowMutation} from "@/api/mutations/simpleMutations";
 
 export const FollowButton = ({ followStatus, followId }) => {
     const { username } = useParams({ strict: false });
-    const updateFollowStatus = useFollowMutation(["profile", username]);
+    const updateFollowStatus = useFollowMutation(queryKeys.profileKey(username));
 
     const handleFollow = () => {
         updateFollowStatus.mutate({ followId, followStatus: !followStatus }, {

@@ -5,8 +5,8 @@ import {Button} from "@/components/ui/button";
 import {Loading} from "@/components/app/Loading";
 import {useEffect, useRef, useState} from "react";
 import {MutedText} from "@/components/app/MutedText";
-import {mediaLabelsOptions} from "@/api/queryOptions";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {mediaLabelsOptions, queryKeys} from "@/api/queryOptions";
 import {userLabelsMutations} from "@/api/mutations/labelsMutations";
 import {LuAlertTriangle, LuCheckCircle, LuPen, LuPlusCircle, LuTrash2, LuX} from "react-icons/lu";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/components/ui/credenza";
@@ -30,6 +30,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
 
     useEffect(() => {
         if (isEditing) {
+            // noinspection JSUnresolvedReference
             inputRef.current.focus();
         }
     }, [isEditing]);
@@ -55,7 +56,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: async () => {
                 updateMediaLabels([...mediaLabels, newLabel]);
-                queryClient.setQueryData(["labels", mediaType], (oldData) => [...oldData, newLabel]);
+                queryClient.setQueryData(queryKeys.labelsKey(mediaType), (oldData) => [...oldData, newLabel]);
             },
             onSettled: () => setNewLabelName(""),
         });
@@ -86,7 +87,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                 if (mediaLabels.includes(oldName)) {
                     updateMediaLabels(mediaLabels.map(l => l === oldName ? editedLabelName : l));
                 }
-                queryClient.setQueryData(["labels", mediaType], (oldData) => {
+                queryClient.setQueryData(queryKeys.labelsKey(mediaType), (oldData) => {
                     return oldData.map(l => l === oldName ? editedLabelName : l);
                 });
             },
@@ -120,7 +121,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
             onSuccess: () => {
                 updateMediaLabels(mediaLabels.filter(l => l !== name));
                 showToast("Label successfully deleted", "success");
-                queryClient.setQueryData(["labels", mediaType], (oldData) => {
+                queryClient.setQueryData(queryKeys.labelsKey(mediaType), (oldData) => {
                     return oldData.filter(l => l !== name);
                 });
             },

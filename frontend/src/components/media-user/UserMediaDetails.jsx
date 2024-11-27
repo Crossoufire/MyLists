@@ -1,7 +1,7 @@
 import {queryClient} from "@/api/queryClient";
 import {useQuery} from "@tanstack/react-query";
-import {historyOptions} from "@/api/queryOptions";
 import {FormButton} from "@/components/app/FormButton";
+import {historyOptions, queryKeys} from "@/api/queryOptions";
 import {Commentary} from "@/components/media-user/Commentary";
 import {LabelLists} from "@/components/media-user/LabelLists";
 import {userMediaMutations} from "@/api/mutations/mediaMutations";
@@ -34,7 +34,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
     const handleDeleteMedia = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;
         removeFromList.mutate(undefined, {
-            onSuccess: () => queryClient.removeQueries({ queryKey: ["onOpenHistory", mediaType, userMedia.media_id] }),
+            onSuccess: () => queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.media_id) }),
         });
     };
 
@@ -77,7 +77,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
                 <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-5 pt-3">
                     <HistoryDetails
                         history={history}
-                        queryKey={["onOpenHistory", mediaType, userMedia.media_id]}
+                        queryKey={queryKeys.historyKey(mediaType, userMedia.media_id)}
                     />
                 </TabsContent>
             </Tabs>

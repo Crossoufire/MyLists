@@ -1,9 +1,11 @@
 from typing import Tuple, Dict, Union
+
 from sqlalchemy import func, text
+
 from backend.api import db
 from backend.api.models.user import User, UserMediaSettings
-from backend.api.utils.enums import MediaType, Status, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 
 
 class GlobalStats:

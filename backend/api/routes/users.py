@@ -12,7 +12,7 @@ from backend.api.models.user import Notifications, User, Token, followers, UserM
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
 from backend.api.utils.decorators import arguments, body, check_authorization
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
@@ -217,6 +217,9 @@ def settings_general(data):
 @body(ListSettingsSchema)
 def settings_medialist(data):
     """ Edit the medialist current user information """
+
+    if data["search_selector"] is not None:
+        current_user.search_selector = SearchSelector(data["search_selector"])
 
     if data["add_feeling"] is not None:
         current_user.add_feeling = data["add_feeling"]

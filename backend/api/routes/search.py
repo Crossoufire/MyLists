@@ -1,21 +1,24 @@
 from flask import Blueprint, jsonify
 
 from backend.api import limiter
-from backend.api.core.auth import token_auth
-from backend.api.managers.ApiManager import TMDBApiManager, GamesApiManager, BooksApiManager
 from backend.api.models.user import User
-from backend.api.schemas.search import SearchSchema
+from backend.api.core.auth import token_auth
 from backend.api.utils.decorators import arguments
+from backend.api.schemas.search import SearchSchema
 from backend.api.utils.functions import global_limiter
+from backend.api.managers.ApiManager import TMDBApiManager, GamesApiManager, BooksApiManager
 
 
 search_bp = Blueprint("api_search", __name__)
 
 
 def process_api_search(api_manager, args):
+    """ Processes the search results from the API manager """
+
     api_manager.search(args["q"], args["page"])
     results = api_manager.create_search_results()
     results["page"] = args["page"]
+
     return jsonify(data=results), 200
 
 

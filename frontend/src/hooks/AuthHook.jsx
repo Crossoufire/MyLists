@@ -1,6 +1,6 @@
 import {api} from "@/api/apiClient";
 import {queryClient} from "@/api/queryClient";
-import {authOptions} from "@/api/queryOptions";
+import {authOptions, queryKeys} from "@/api/queryOptions";
 import {useMutation, useQuery} from "@tanstack/react-query";
 
 
@@ -8,14 +8,14 @@ export const useAuth = () => {
     const { data: currentUser, isLoading } = useQuery(authOptions());
 
     const setCurrentUser = (updates) => {
-        queryClient.setQueryData(["currentUser"], updates);
+        queryClient.setQueryData(queryKeys.authKey(), updates);
     };
 
     const login = useMutation({
         mutationFn: ({ username, password }) => api.login(username, password),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            queryClient.setQueryData(authOptions().queryKey, data.body.data);
+            queryClient.setQueryData(queryKeys.authKey(), data.body.data);
         },
     });
 
@@ -23,7 +23,7 @@ export const useAuth = () => {
         mutationFn: ({ provider, data }) => api.oAuth2Login(provider, data),
         onSuccess: async (data) => {
             api.setAccessToken(data.body.access_token);
-            queryClient.setQueryData(authOptions().queryKey, data.body.data);
+            queryClient.setQueryData(queryKeys.authKey(), data.body.data);
         },
     });
 

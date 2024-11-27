@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from enum import StrEnum
 from typing import List
+from enum import StrEnum
 
 
 # --- USERS ------------------------------------------------------------------------
@@ -226,3 +226,12 @@ class AchievementDifficulty(StrEnum):
     SILVER = "silver"
     GOLD = "gold"
     PLATINUM = "platinum"
+
+
+class SearchSelector(StrEnum):
+    """ Search selector enum for the navbar search. """
+
+    TMDB = "tmdb"
+    BOOKS = "books"
+    IGDB = "igdb"
+    USERS = "users"
