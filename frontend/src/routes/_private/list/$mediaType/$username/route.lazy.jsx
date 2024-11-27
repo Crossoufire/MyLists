@@ -1,11 +1,11 @@
 import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {capitalize} from "@/utils/functions";
-import {listOptions} from "@/api/queryOptions";
+import {PageTitle} from "@/components/app/PageTitle";
 import {Header} from "@/components/media-list/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {PageTitle} from "@/components/app/PageTitle";
+import {listOptions, queryKeys} from "@/api/queryOptions";
 import {MediaGrid} from "@/components/media-list/MediaGrid";
 import {MediaTable} from "@/components/media-list/MediaTable";
 import {AppliedFilters} from "@/components/media-list/AppliedFilters";
@@ -88,7 +88,7 @@ function MediaList() {
                     mediaType={mediaType}
                     mediaList={apiData.media_data}
                     allStatus={apiData.pagination.all_status}
-                    queryKey={["userList", mediaType, username, search]}
+                    queryKey={queryKeys.userListKey(mediaType, username, search)}
                 />
                 :
                 <MediaTable
@@ -96,7 +96,7 @@ function MediaList() {
                     isCurrent={isCurrent}
                     mediaList={apiData.media_data}
                     pagination={apiData.pagination}
-                    queryKey={["userList", mediaType, username, search]}
+                    queryKey={queryKeys.userListKey(mediaType, username, search)}
                     onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}
                 />
             }

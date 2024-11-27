@@ -1,10 +1,10 @@
-import {useRef, useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
 import {useDebounce} from "@/hooks/DebounceHook";
+import {useEffect, useRef, useState} from "react";
 import {LuLoader2, LuSearch} from "react-icons/lu";
 import {useSheet} from "@/providers/SheetProvider";
 import {navSearchOptions} from "@/api/queryOptions";
@@ -22,8 +22,12 @@ export const SearchBar = () => {
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
-    const [selectDrop, setSelectDrop] = useState("tmdb");
+    const [selectDrop, setSelectDrop] = useState(currentUser.search_selector);
     const { data, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
+
+    useEffect(() => {
+        setSelectDrop(currentUser.search_selector);
+    }, [currentUser.search_selector]);
 
     const handleInputChange = (ev) => {
         setPage(1);
@@ -50,7 +54,7 @@ export const SearchBar = () => {
                     placeholder="Search for media/users..."
                 />
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[100px]">
-                    <Select defaultValue={selectDrop} onValueChange={setSelectDrop}>
+                    <Select value={selectDrop} onValueChange={setSelectDrop}>
                         <SelectTrigger>
                             <SelectValue/>
                         </SelectTrigger>

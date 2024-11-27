@@ -1,5 +1,6 @@
 from enum import EnumMeta
 from typing import List, Literal, Dict, Tuple, Type
+
 from backend.api import db
 from backend.api.utils.enums import MediaType, ModelTypes
 

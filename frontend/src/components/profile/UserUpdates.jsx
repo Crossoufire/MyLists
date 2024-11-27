@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {useAuth} from "@/hooks/AuthHook";
+import {queryKeys} from "@/api/queryOptions";
 import {useCollapse} from "@/hooks/CollapseHook";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
@@ -14,7 +15,7 @@ export const UserUpdates = ({ updates, followers = false }) => {
     const { username } = useParams({ strict: false });
     const { caret, toggleCollapse, contentClasses } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
-    const deleteUserUpdates = useDeleteUpdateMutation(["profile", username]);
+    const deleteUserUpdates = useDeleteUpdateMutation(queryKeys.profileKey(username));
 
     const deleteUpdate = (updateId) => {
         setMediaIdBeingDeleted(updateId);

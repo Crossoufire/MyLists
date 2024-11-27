@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import {Link} from "@tanstack/react-router";
+import {queryKeys} from "@/api/queryOptions";
 import {Tooltip} from "@/components/ui/tooltip";
 import {formatDateTime} from "@/utils/functions";
 import {LuPencil, LuRefreshCw} from "react-icons/lu";
@@ -7,7 +8,7 @@ import {useRefreshMutation} from "@/api/mutations/simpleMutations";
 
 
 export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }) => {
-    const refreshMutation = useRefreshMutation(["details", mediaType, mediaId.toString()]);
+    const refreshMutation = useRefreshMutation(queryKeys.detailsKey(mediaType, mediaId.toString()));
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
 
     const handleRefresh = () => {

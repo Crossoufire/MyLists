@@ -4,7 +4,7 @@ from backend.api import ma
 from backend.api.core import current_user
 from backend.api.models import User
 from backend.api.schemas.core import EnumField
-from backend.api.utils.enums import Privacy
+from backend.api.utils.enums import Privacy, SearchSelector
 
 
 class RegisterUserSchema(ma.Schema):
@@ -49,6 +49,7 @@ class ListSettingsSchema(ma.Schema):
     add_anime = ma.Bool(load_default=None)
     add_games = ma.Bool(load_default=None)
     add_books = ma.Bool(load_default=None)
+    search_selector = EnumField(SearchSelector, load_default=None)
     grid_list_view = ma.Bool(load_default=None)
 
 

@@ -1,5 +1,5 @@
 import {useAuth} from "@/hooks/AuthHook";
-import {detailsOptions} from "@/api/queryOptions";
+import {detailsOptions, queryKeys} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/PageTitle";
@@ -26,7 +26,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(detailsOptions(mediaType, mediaId, external)).data;
-    const { addToList } = userMediaMutations(mediaType, mediaId, ["details", mediaType, mediaId.toString()]);
+    const { addToList } = userMediaMutations(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()));
 
     const handleAddMediaUser = () => {
         addToList.mutate({ payload: undefined });
@@ -60,7 +60,7 @@ function MediaDetailsPage() {
                                 <UserMediaDetails
                                     mediaType={mediaType}
                                     userMedia={apiData.user_media}
-                                    queryKey={["details", mediaType, mediaId.toString()]}
+                                    queryKey={queryKeys.detailsKey(mediaType, mediaId.toString())}
                                 />
                                 :
                                 <div className="w-[300px]">

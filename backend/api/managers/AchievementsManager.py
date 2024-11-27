@@ -5,11 +5,11 @@ from typing import Type, List, Dict, Optional
 from sqlalchemy import func, distinct, case, literal, select, update, exists, insert
 
 from backend.api import db
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models import User
+from backend.api.utils.functions import naive_utcnow
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.achievements import UserAchievement, Achievement, AchievementTier
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum, AchievementDifficulty
-from backend.api.utils.functions import naive_utcnow
 
 
 class AchievementManagerMeta(type):

@@ -94,12 +94,6 @@ class MediaTests(BaseTest):
         self.assertEqual(data["favorite"], None)
         self.assertEqual(data["comment"], None)
         self.assertEqual(data["labels"], [])
-        # self.assertEqual(data["history"][0]["media_id"], 1)
-        # self.assertEqual(data["history"][0]["media_name"], "Breaking Bad")
-        # self.assertEqual(data["history"][0]["media_type"], "series")
-        # self.assertEqual(data["history"][0]["update_type"], "status")
-        # self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Watching"})
-        # self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_anime(self):
         data = self._add_media("anime", 1, "Watching", 24)
@@ -120,12 +114,6 @@ class MediaTests(BaseTest):
         self.assertEqual(data["favorite"], None)
         self.assertEqual(data["comment"], None)
         self.assertEqual(data["labels"], [])
-        # self.assertEqual(data["history"][0]["media_id"], 1)
-        # self.assertEqual(data["history"][0]["media_name"], "Attack on Titan")
-        # self.assertEqual(data["history"][0]["media_type"], "anime")
-        # self.assertEqual(data["history"][0]["update_type"], "status")
-        # self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Watching"})
-        # self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_movies(self):
         data = self._add_media("movies", 1, "Completed", 169)
@@ -143,12 +131,6 @@ class MediaTests(BaseTest):
         self.assertEqual(data["favorite"], None)
         self.assertEqual(data["comment"], None)
         self.assertEqual(data["labels"], [])
-        # self.assertEqual(data["history"][0]["media_id"], 1)
-        # self.assertEqual(data["history"][0]["media_name"], "Interstellar")
-        # self.assertEqual(data["history"][0]["media_type"], "movies")
-        # self.assertEqual(data["history"][0]["update_type"], "status")
-        # self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Completed"})
-        # self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_books(self):
         from backend.api.models.books import BooksList
@@ -169,12 +151,6 @@ class MediaTests(BaseTest):
         self.assertEqual(data["favorite"], None)
         self.assertEqual(data["comment"], None)
         self.assertEqual(data["labels"], [])
-        # self.assertEqual(data["history"][0]["media_id"], 1)
-        # self.assertEqual(data["history"][0]["media_name"], "Harry Potter à L'école des Sorciers")
-        # self.assertEqual(data["history"][0]["media_type"], "books")
-        # self.assertEqual(data["history"][0]["update_type"], "status")
-        # self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Completed"})
-        # self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_add_games(self):
         data = self._add_media("games", 1, "Playing", 0)
@@ -191,12 +167,6 @@ class MediaTests(BaseTest):
         self.assertEqual(data["favorite"], None)
         self.assertEqual(data["comment"], None)
         self.assertEqual(data["labels"], [])
-        # self.assertEqual(data["history"][0]["media_id"], 1)
-        # self.assertEqual(data["history"][0]["media_name"], "Elden Ring")
-        # self.assertEqual(data["history"][0]["media_type"], "games")
-        # self.assertEqual(data["history"][0]["update_type"], "status")
-        # self.assertEqual(data["history"][0]["payload"], {"old_value": None, "new_value": "Playing"})
-        # self.assertEqual("timestamp" in data["history"][0], True)
 
     def test_delete_media(self):
         headers = self.connexion()

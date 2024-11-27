@@ -2,22 +2,22 @@ from __future__ import annotations
 
 import json
 import secrets
-from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Type
 from urllib import request
+from datetime import timedelta
+from typing import Dict, List, Literal, Optional, Type
 
 import requests
-from flask import url_for, current_app, abort
-from howlongtobeatpy import HowLongToBeat
-from requests import Response
 from sqlalchemy import or_
+from requests import Response
+from howlongtobeatpy import HowLongToBeat
+from flask import url_for, current_app, abort
 
 from backend.api import db, limiter, cache
 from backend.api.core.errors import log_error
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.functions import (clean_html_text, get, is_latin, format_datetime, resize_and_save_image,
                                          reorder_seas_eps, global_limiter, naive_utcnow)
 

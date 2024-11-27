@@ -1,16 +1,16 @@
-from http import HTTPStatus
 import json
 import traceback
+from http import HTTPStatus
 from typing import Tuple, Dict
 
-from flask import Blueprint, current_app, has_request_context, request
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from flask import Blueprint, current_app, has_request_context, request
 from werkzeug.exceptions import InternalServerError, HTTPException, Unauthorized, Forbidden
 
 from backend.api import db
-from backend.api.core import token_auth, basic_auth, current_user
-from backend.api.schemas.core import ApiValidationError
 from backend.api.utils.functions import naive_utcnow
+from backend.api.schemas.core import ApiValidationError
+from backend.api.core import token_auth, basic_auth, current_user
 
 
 errors = Blueprint("errors_api", __name__)

@@ -3,15 +3,15 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {queryClient} from "@/api/queryClient";
 import {useQuery} from "@tanstack/react-query";
-import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
 import {useEffect, useRef, useState} from "react";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {cn, formatDateTime} from "@/utils/functions";
-import {notifPollingInterval} from "@/utils/constants";
 import {MutedText} from "@/components/app/MutedText";
 import {MediaIcon} from "@/components/app/MediaIcon";
-import {notificationsCountOptions, notificationsOptions} from "@/api/queryOptions";
+import {notifPollingInterval} from "@/utils/constants";
+import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
+import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/api/queryOptions";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
@@ -25,7 +25,7 @@ export const Notifications = ({ isMobile }) => {
     const handleOnClickOpen = async () => {
         await refetch();
         setIsOpen(true);
-        queryClient.setQueryData(["notificationCount"], 0);
+        queryClient.setQueryData(queryKeys.notificationCountKey(), 0);
     };
 
     const handlePopoverClose = () => {
@@ -35,7 +35,7 @@ export const Notifications = ({ isMobile }) => {
 
     useEffect(() => {
         const intervalId = setInterval(async () => {
-            await queryClient.invalidateQueries({ queryKey: ["notificationCount"] });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.notificationCountKey() });
         }, notifPollingInterval);
         return () => clearInterval(intervalId);
     }, [queryClient]);

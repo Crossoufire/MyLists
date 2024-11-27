@@ -37,7 +37,7 @@ export const NavMediaDrop = () => {
                                 popRef={popRef}
                                 text={`${capitalize(item.media)}List`}
                                 to={`${item.url}/${currentUser.username}`}
-                                icon={<MediaIcon mediaType={item.media} size={18}/>}
+                                icon={<MediaIcon mediaType={item.media} size={16}/>}
                             />
                         )}
                     </ul>
