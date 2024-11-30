@@ -31,7 +31,7 @@ export const AchievementCard = ({ achievement }) => {
     return (
         <div className="relative overflow-hidden rounded-lg">
             <div className={cn("absolute w-full h-full rounded-md", diffColors(highestTierData?.difficulty, true))}/>
-            <Card className="relative h-full w-[99%] h-[99%] px-2 py-1">
+            <Card className="relative w-[99%] h-[99%] px-2 py-1">
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">

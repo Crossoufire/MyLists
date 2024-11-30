@@ -74,7 +74,7 @@ export const LoginForm = () => {
                             control={form.control}
                             name="password"
                             rules={{ required: "This field is required" }}
-                            render={({ field }) => (
+                            render={({ field }) =>
                                 <FormItem>
                                     <div className="flex items-center justify-between">
                                         <FormLabel>Password</FormLabel>
@@ -91,7 +91,7 @@ export const LoginForm = () => {
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
-                            )}
+                            }
                         />
                     </div>
                     <FormButton disabled={login.isPending || oAuth2Provider.isSuccess}>

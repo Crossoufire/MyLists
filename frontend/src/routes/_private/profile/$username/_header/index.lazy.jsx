@@ -7,7 +7,7 @@ import {GlobalStats} from "@/components/profile/GlobalStats";
 import {MediaDetails} from "@/components/profile/MediaDetails";
 import {ProfileFollows} from "@/components/profile/ProfileFollows";
 import {ProfileMiscInfo} from "@/components/profile/ProfileMiscInfo";
-import {AchievementsDisplay} from "@/components/profile/AchivementProfile";
+import {AchievementsDisplay} from "@/components/profile/AchievementProfile";
 
 
 // noinspection JSCheckFunctionSignatures
