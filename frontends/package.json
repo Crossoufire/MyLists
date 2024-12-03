@@ -1,0 +1,11 @@
+{
+    "name": "@mylists/workspace",
+    "version": "1.0.0",
+    "description": "Workspace for mylists",
+    "main": "index.js",
+    "scripts": {
+        "dev-web": "pnpm --filter ./apps/web run dev",
+        "build-web": "pnpm --filter ./apps/web run build"
+    },
+    "packageManager": "pnpm@9.14.4"
+}
