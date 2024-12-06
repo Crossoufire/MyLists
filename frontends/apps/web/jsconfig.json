@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ],
+            "@mylists/api": [
+                "../../libs/api"
+            ]
+        }
+    }
+}

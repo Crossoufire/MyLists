@@ -123,6 +123,6 @@ dist/*
 /**/.env.production
 /**/node_modules
 /**/package-lock.json
-/**/src/routeTree.gen.*
+/**/routeTree.gen.*
 
 # -------------------------------------------------------------------------------------
