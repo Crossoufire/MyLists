@@ -119,10 +119,10 @@ backend/api/static/covers/books_covers/*
 # FRONTEND STUFF
 build/*
 dist/*
-/frontend/.env.development
-/frontend/.env.production
-/frontend/node_modules
-/frontend/package-lock.json
-/frontend/src/routeTree.gen.*
+/**/.env.development
+/**/.env.production
+/**/node_modules
+/**/package-lock.json
+/**/src/routeTree.gen.*
 
 # -------------------------------------------------------------------------------------
