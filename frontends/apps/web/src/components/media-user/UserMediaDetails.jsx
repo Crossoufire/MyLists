@@ -9,7 +9,7 @@ import {ManageFavorite} from "@/components/media-user/ManageFavorite";
 import {HistoryDetails} from "@/components/media-user/HistoryDetails";
 import {GamesUserDetails} from "@/components/media-user/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media-user/BooksUserDetails";
-import {historyOptions, queryKeys, userMediaMutations} from "@mylists/api";
+import {historyOptions, queryKeys, userMediaMutations} from "@mylists/api/src";
 import {MoviesUserDetails} from "@/components/media-user/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 

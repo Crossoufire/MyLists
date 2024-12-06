@@ -1,12 +1,12 @@
-import {useAuth} from "@mylists/api/useAuthHook";
-import {detailsOptions, queryKeys} from "@mylists/api/queryOptions";
+import {useAuth} from "@mylists/api/src/useAuthHook";
+import {detailsOptions, queryKeys} from "@mylists/api/src/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {FormButton} from "@/components/app/FormButton";
 import {FollowCard} from "@/components/media-details/FollowCard";
-import {userMediaMutations} from "@mylists/api/mutations/mediaMutations";
+import {userMediaMutations} from "@mylists/api/src/mediaMutations";
 import {SimilarMedia} from "@/components/media-details/SimilarMedia";
 import {UserMediaDetails} from "@/components/media-user/UserMediaDetails";
 import {MediaDataDetails} from "@/components/media-details/MediaDataDetails";

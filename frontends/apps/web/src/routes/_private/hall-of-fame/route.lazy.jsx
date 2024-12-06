@@ -2,7 +2,7 @@ import {useState} from "react";
 import {LuSearch} from "react-icons/lu";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {hallOfFameOptions} from "@mylists/api/queryOptions";
+import {hallOfFameOptions} from "@mylists/api/src/queryOptions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MutedText} from "@/components/app/MutedText";
 import {useSuspenseQuery} from "@tanstack/react-query";

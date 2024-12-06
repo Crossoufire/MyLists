@@ -6,7 +6,7 @@ import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/components/media-list/SearchComponent";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {LuArrowUpDown, LuAward, LuFilter, LuGrid, LuLineChart, LuList, LuUser} from "react-icons/lu";
+import {LuArrowUpDown, LuAward, LuChartLine, LuFilter, LuGrid2X2, LuList, LuUser} from "react-icons/lu";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
@@ -39,7 +39,7 @@ export const Header = (props) => {
                 />
                 <div className="flex items-center gap-3">
                     <Button variant="filters" onClick={onGridClick}>
-                        {isGrid ? <LuList className="w-4 h-4"/> : <LuGrid className="w-4 h-4"/>}
+                        {isGrid ? <LuList className="w-4 h-4"/> : <LuGrid2X2 className="w-4 h-4"/>}
                     </Button>
                 </div>
                 <DotsOthers/>
@@ -119,7 +119,7 @@ const DotsOthers = () => {
                 </Button>
                 <Button variant="list" asChild>
                     <Link to={`/stats/${mediaType}/${username}`}>
-                        <LuLineChart className="mr-2"/> Collection Stats
+                        <LuChartLine className="mr-2"/> Collection Stats
                     </Link>
                 </Button>
                 <Button variant="list" asChild>

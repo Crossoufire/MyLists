@@ -6,8 +6,8 @@ import {Loading} from "@/components/app/Loading";
 import {useEffect, useRef, useState} from "react";
 import {MutedText} from "@/components/app/MutedText";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {mediaLabelsOptions, queryKeys, userLabelsMutations} from "@mylists/api";
-import {LuAlertTriangle, LuCheckCircle, LuPen, LuPlusCircle, LuTrash2, LuX} from "react-icons/lu";
+import {mediaLabelsOptions, queryKeys, userLabelsMutations} from "@mylists/api/src";
+import {LuCircleCheck, LuCirclePlus, LuPen, LuTrash2, LuTriangleAlert, LuX} from "react-icons/lu";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/components/ui/credenza";
 
 
@@ -148,7 +148,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                             onKeyPress={(ev) => ev.key === "Enter" && createLabel()}
                         />
                         <Button size="sm" onClick={createLabel} disabled={addLabel.isPending}>
-                            <LuPlusCircle className="mr-2"/> Create
+                            <LuCirclePlus className="mr-2"/> Create
                         </Button>
                     </div>
                     <div className="space-y-2">
@@ -196,7 +196,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                                                 {!mediaLabels.includes(name) &&
                                                     <Button variant="ghost" size="icon" onClick={() => addLabelToMedia(name)}
                                                             disabled={addLabel.isPending}>
-                                                        <LuPlusCircle/>
+                                                        <LuCirclePlus/>
                                                     </Button>
                                                 }
                                                 <Button variant="ghost" size="icon" onClick={() => startEditingLabel(name)}>
@@ -222,7 +222,7 @@ const Toast = ({ message, type, onClose }) => {
         <div className={cn("flex items-center justify-between mt-4 p-2 rounded-md",
             type === "error" ? "bg-rose-500/10" : "bg-green-500/10")}>
             <div className="flex items-center text-sm">
-                {type === "error" ? <LuAlertTriangle className="mr-3"/> : <LuCheckCircle className="mr-3"/>}
+                {type === "error" ? <LuTriangleAlert className="mr-3"/> : <LuCircleCheck className="mr-3"/>}
                 <span>{message}</span>
             </div>
             <div role="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">

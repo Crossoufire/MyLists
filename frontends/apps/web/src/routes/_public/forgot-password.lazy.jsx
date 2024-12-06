@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {simpleMutations} from "@mylists/api";
+import {simpleMutations} from "@mylists/api/src";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormButton} from "@/components/app/FormButton";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";

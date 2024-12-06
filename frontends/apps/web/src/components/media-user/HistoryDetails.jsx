@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useDeleteUpdateMutation} from "@mylists/api";
+import {useDeleteUpdateMutation} from "@mylists/api/src";
 import {MutedText} from "@/components/app/MutedText";
 import {UserUpdate} from "@/components/app/UserUpdate";
 

@@ -1,6 +1,6 @@
 import {useRef} from "react";
 import {router} from "@/router";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {Button} from "@/components/ui/button";
 import {queryClient} from "@/libs/queryClient";
 import {useSheet} from "@/providers/SheetProvider";

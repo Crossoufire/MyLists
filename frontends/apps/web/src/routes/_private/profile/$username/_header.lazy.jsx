@@ -1,4 +1,4 @@
-import {profileOptions} from "@mylists/api/queryOptions";
+import {profileOptions} from "@mylists/api/src/queryOptions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";

@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {cn} from "@/utils/functions";
-import {LuLoader2} from "react-icons/lu";
+import {LuLoader} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 
 
@@ -28,7 +28,7 @@ export const FormButton = ({ children, disabled = false, onClick, className, ...
             className={cn(className ? className : "w-full", className)}
             {...props}
         >
-            {isPending && <LuLoader2 className="mr-2 h-4 w-4 animate-spin"/>}
+            {isPending && <LuLoader className="mr-2 h-4 w-4 animate-spin"/>}
             {children}
         </Button>
     );

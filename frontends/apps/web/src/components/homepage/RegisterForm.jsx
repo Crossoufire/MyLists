@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {FormButton} from "@/components/app/FormButton";

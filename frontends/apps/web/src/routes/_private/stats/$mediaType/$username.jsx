@@ -1,4 +1,4 @@
-import {statsOptions} from "@mylists/api";
+import {statsOptions} from "@mylists/api/src";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

@@ -1,11 +1,15 @@
 {
     "name": "@mylists/workspace",
     "version": "1.0.0",
-    "description": "Workspace for mylists",
-    "main": "index.js",
+    "description": "Workspace for the mylists' frontends",
+    "private": true,
     "scripts": {
-        "dev-web": "pnpm --filter ./apps/web run dev",
-        "build-web": "pnpm --filter ./apps/web run build"
+        "dev-web": "npm run dev --workspace=apps/web",
+        "build-web": "npm run build --workspace=apps/web",
+        "dev-mobile": "npm run start --android --workspace=apps/mobile"
     },
-    "packageManager": "pnpm@9.14.4"
+    "workspaces": [
+        "apps/*",
+        "libs/*"
+    ]
 }

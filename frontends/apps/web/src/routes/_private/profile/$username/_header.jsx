@@ -1,4 +1,4 @@
-import {profileOptions} from "@mylists/api/queryOptions";
+import {profileOptions} from "@mylists/api/src/queryOptions";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

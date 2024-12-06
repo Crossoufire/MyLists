@@ -1,21 +1,21 @@
 import {toast} from "sonner";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
-import {statsOptions} from "@mylists/api/queryOptions";
 import {Sidebar} from "@/components/app/Sidebar";
 import {useEffect, useRef, useState} from "react";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
+import {useAuth} from "@mylists/api/src/useAuthHook";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {simpleMutations} from "@mylists/api/mutations/simpleMutations";
+import {statsOptions} from "@mylists/api/src/queryOptions";
+import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
-import {LuAward, LuHelpCircle, LuUser, LuX} from "react-icons/lu";
+import {LuAward, LuCircleHelp, LuUser, LuX} from "react-icons/lu";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useAuth} from "@mylists/api/useAuthHook";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -120,11 +120,10 @@ const NavigationButtons = ({ settings }) => {
                 </Button>
                 {settings.map(setting =>
                     <Link
-                        key={setting.media_type}
-                        to={`/stats/${setting.media_type}/${username}`}
-                        disabled={setting.media_type === mediaType}
                         onClick={closePopover}
-                        asChild
+                        key={setting.media_type}
+                        disabled={setting.media_type === mediaType}
+                        to={`/stats/${setting.media_type}/${username}`}
                     >
                         <Button variant="list" disabled={setting.media_type === mediaType}>
                             <MediaIcon mediaType={setting.media_type} className="-ml-2 mr-2"/> {capitalize(setting.media_type)} Stats
@@ -146,7 +145,7 @@ const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }
             <span>Compare with</span>
             <Popover>
                 <PopoverTrigger>
-                    <LuHelpCircle/>
+                    <LuCircleHelp/>
                 </PopoverTrigger>
                 <PopoverContent align="start">
                     Comparison between users is only based on card statistics, excluding tables and

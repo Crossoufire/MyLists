@@ -1,4 +1,4 @@
-import {APIError} from "./utils";
+import {APIError} from "./apiError";
 
 
 let api = null;
@@ -25,6 +25,18 @@ export class ApiClient {
         throw new Error("removeAccessToken needs to be implemented by the child class");
     }
 
+    setRefreshToken(value) {
+        throw new Error("setRefreshToken needs to be implemented by the child class");
+    }
+
+    getRefreshToken() {
+        return null;
+    }
+
+    includeCredentials() {
+        return true;
+    }
+
     filterParams(queryData) {
         const filteredParams = Object.entries(queryData || {})
             .filter(([_, value]) => value !== undefined && value !== "null" && value !== null)
@@ -46,12 +58,24 @@ export class ApiClient {
 
         if ((response.status === 401 || (response.status === 403 && this.isAuthenticated())) && data.url !== "/tokens") {
             let beforeRenewAccessToken = this.getAccessToken();
-            const refreshResponse = await this.put("/tokens", {
-                access_token: this.getAccessToken(),
-            });
+
+            const body = { access_token: this.getAccessToken() };
+
+            // Include refresh token in body for mobile clients
+            if (!this.includeCredentials()) {
+                body.refresh_token = this.getRefreshToken();
+            }
+
+            const refreshResponse = await this.put("/tokens", body);
 
             if (refreshResponse.ok) {
                 this.setAccessToken(refreshResponse.body.access_token);
+
+                // Set refresh token from body for mobile clients
+                if (!this.includeCredentials()) {
+                    this.setRefreshToken(refreshResponse.body.refresh_token);
+                }
+
                 response = await this.requestInternal(data);
             }
 
@@ -73,12 +97,18 @@ export class ApiClient {
                 method: data.method,
                 headers: {
                     "Authorization": `Bearer ${this.getAccessToken()}`,
+                    "X-Is-Mobile": !this.includeCredentials(),
                     ...(data.removeContentType ? {} : { "Content-Type": "application/json" }),
                     ...data.headers,
                 },
-                credentials: "include",
                 body: data.body ? data.body instanceof FormData ? data.body : JSON.stringify(data.body) : null,
             };
+
+            // Only include credentials for web clients
+            if (this.includeCredentials()) {
+                body.credentials = "include";
+            }
+
             response = await fetch(this.base_url + data.url + queryArgs, body);
         }
         catch (error) {
@@ -112,6 +142,11 @@ export class ApiClient {
 
         if (!response.ok) {
             throw new APIError(response.status, response.body.message, response.body.description);
+        }
+
+        // Set refresh token from body for mobile clients
+        if (response.ok && !this.includeCredentials()) {
+            this.setRefreshToken(response.body.refresh_token);
         }
 
         return response;

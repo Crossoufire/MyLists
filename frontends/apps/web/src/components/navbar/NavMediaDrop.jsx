@@ -1,5 +1,5 @@
 import {useRef} from "react";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {capitalize} from "@/utils/functions";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {MediaIcon} from "@/components/app/MediaIcon";

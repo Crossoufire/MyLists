@@ -5,7 +5,7 @@ import {Header} from "@/components/media-list/Header";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {MediaGrid} from "@/components/media-list/MediaGrid";
-import {listOptions, queryKeys, useAuth} from "@mylists/api";
+import {listOptions, queryKeys, useAuth} from "@mylists/api/src";
 import {MediaTable} from "@/components/media-list/MediaTable";
 import {AppliedFilters} from "@/components/media-list/AppliedFilters";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";

@@ -2,9 +2,9 @@ import {toast} from "sonner";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {LuHelpCircle} from "react-icons/lu";
-import {simpleMutations, useAuth} from "@mylists/api";
+import {LuCircleHelp} from "react-icons/lu";
 import {FormButton} from "@/components/app/FormButton";
+import {simpleMutations, useAuth} from "@mylists/api/src";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -160,7 +160,7 @@ const PrivacyPopover = () => {
     return (
         <Popover>
             <PopoverTrigger>
-                <LuHelpCircle/>
+                <LuCircleHelp/>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
                 <div className="mb-3 text-sm font-medium text-muted-foreground">

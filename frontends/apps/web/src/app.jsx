@@ -3,7 +3,7 @@ import {queryClient} from "@/libs/queryClient";
 import {ApiClientWeb} from "@/libs/apiClientWeb";
 import {RouterProvider} from "@tanstack/react-router";
 import {ThemeProvider} from "@/providers/ThemeProvider";
-import {initializeApiClient, useAuth} from "@mylists/api";
+import {initializeApiClient, useAuth} from "@mylists/api/src";
 import {QueryClientProvider} from "@tanstack/react-query";
 
 

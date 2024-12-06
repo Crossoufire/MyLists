@@ -1,4 +1,4 @@
-import {getApiClient} from "@mylists/api";
+import {getApiClient} from "@mylists/api/src";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

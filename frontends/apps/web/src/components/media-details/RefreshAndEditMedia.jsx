@@ -3,7 +3,7 @@ import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {formatDateTime} from "@/utils/functions";
 import {LuPencil, LuRefreshCw} from "react-icons/lu";
-import {queryKeys, useRefreshMutation} from "@mylists/api";
+import {queryKeys, useRefreshMutation} from "@mylists/api/src";
 
 
 export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }) => {

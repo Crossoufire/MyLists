@@ -1,14 +1,14 @@
-import {useAuth} from "@mylists/api";
 import {useMemo, useState} from "react";
+import {useAuth} from "@mylists/api/src";
 import {BlockLink} from "@/components/app/BlockLink";
 import {TablePagination} from "@/components/app/TablePagination";
 import {DisplayRating} from "@/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
 import {CommentPopover} from "@/components/media-list/CommentPopover";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {LuCircleCheck, LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
 import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
-import {LuCheckCircle2, LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
 import {SpecificUserMediaData} from "@/components/media-list/SpecificUserMediaData";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
@@ -33,7 +33,7 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                     <BlockLink to={`/details/${mediaType}/${row.original.media_id}`}>
                         <div className="flex items-center gap-3">
                             {row.original.media_name}
-                            {!isCurrent && row.original.common && <LuCheckCircle2 className="h-4 w-4 text-green-500"/>}
+                            {!isCurrent && row.original.common && <LuCircleCheck className="h-4 w-4 text-green-500"/>}
                         </div>
                     </BlockLink>
                 );

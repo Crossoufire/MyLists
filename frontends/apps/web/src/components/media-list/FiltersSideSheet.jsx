@@ -9,11 +9,11 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
 import {useOnClickOutside} from "@/hooks/useClickedOutside";
 import {capitalize, getLangCountryName} from "@/utils/functions";
-import {filterSearchOptions, smallFiltersOptions} from "@mylists/api";
+import {filterSearchOptions, smallFiltersOptions} from "@mylists/api/src";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
-import {LuChevronDown, LuChevronUp, LuHelpCircle, LuLoader2, LuMoveRight, LuSearch, LuX} from "react-icons/lu";
+import {LuChevronDown, LuChevronUp, LuCircleHelp, LuLoader, LuMoveRight, LuSearch, LuX} from "react-icons/lu";
 import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
@@ -296,7 +296,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                             <CommandList className="max-h-[300px] overflow-y-auto">
                                 {isLoading &&
                                     <div className="flex items-center justify-center p-4">
-                                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                        <LuLoader className="h-6 w-6 animate-spin"/>
                                     </div>
                                 }
                                 {error && <CommandEmpty>An error occurred. Please try again.</CommandEmpty>}
@@ -331,7 +331,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 const FilterInfoPopover = () => (
     <Popover>
         <PopoverTrigger>
-            <LuHelpCircle/>
+            <LuCircleHelp/>
         </PopoverTrigger>
         <PopoverContent className="w-full space-y-2" align="left">
             <div className="-mt-2 font-medium underline underline-offset-2">

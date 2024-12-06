@@ -1,5 +1,5 @@
 import {useHashTab} from "@/hooks/useHashTab";
-import {upcomingOptions} from "@mylists/api/queryOptions";
+import {upcomingOptions} from "@mylists/api/src/queryOptions";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {MutedText} from "@/components/app/MutedText";

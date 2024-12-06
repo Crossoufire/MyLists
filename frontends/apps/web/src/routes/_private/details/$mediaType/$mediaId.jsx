@@ -1,5 +1,5 @@
 import {createFileRoute, redirect} from "@tanstack/react-router";
-import {detailsOptions, queryKeys} from "@mylists/api/queryOptions";
+import {detailsOptions, queryKeys} from "@mylists/api/src/queryOptions";
 
 
 // noinspection JSCheckFunctionSignatures

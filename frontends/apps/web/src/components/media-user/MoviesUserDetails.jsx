@@ -1,4 +1,4 @@
-import {userMediaMutations} from "@mylists/api";
+import {userMediaMutations} from "@mylists/api/src";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";

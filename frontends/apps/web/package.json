@@ -27,8 +27,8 @@
         "@radix-ui/react-switch": "^1.1.1",
         "@radix-ui/react-tabs": "^1.1.1",
         "@radix-ui/react-tooltip": "^1.1.4",
-        "@tanstack/react-query": "^5.61.5",
-        "@tanstack/react-router": "^1.84.0",
+        "@tanstack/react-router": "^1.85.5",
+        "@tanstack/react-query": "^5.62.2",
         "@tanstack/react-table": "^8.20.5",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -39,27 +39,26 @@
         "react-dom": "^18.3.1",
         "react-helmet": "^6.1.0",
         "react-hook-form": "^7.53.2",
-        "react-icons": "^5.3.0",
+        "react-icons": "^5.4.0",
         "react-spinners": "^0.14.1",
         "sonner": "^1.7.0",
         "vaul": "^1.1.1",
-        "@mylists/api": "workspace:*"
+        "@mylists/api": "file:../../libs/api"
     },
     "devDependencies": {
         "@tanstack/eslint-plugin-query": "^5.62.1",
         "@tailwindcss/typography": "^0.5.15",
-        "@tanstack/react-query-devtools": "^5.61.5",
-        "@tanstack/router-devtools": "^1.84.0",
-        "@tanstack/router-plugin": "^1.83.1",
+        "@tanstack/react-query-devtools": "^5.62.2",
+        "@tanstack/router-devtools": "^1.85.5",
+        "@tanstack/router-plugin": "^1.85.3",
         "@vitejs/plugin-react": "^4.3.4",
         "autoprefixer": "^10.4.20",
         "postcss": "^8.4.49",
         "tailwind-merge": "^2.5.5",
-        "tailwindcss": "^3.4.15",
+        "tailwindcss": "^3.4.16",
         "tailwindcss-animate": "^1.0.7",
-        "vite": "^6.0.1",
+        "vite": "^6.0.2",
         "shadcn": "^2.1.6",
         "web-vitals": "^4.2.4"
-    },
-    "packageManager": "pnpm@9.14.4"
+    }
 }

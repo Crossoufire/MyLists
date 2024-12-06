@@ -1,6 +1,6 @@
 import React from "react";
 import {cn} from "@/utils/functions";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {Link} from "@tanstack/react-router";
 import {Card, CardContent} from "@/components/ui/card";
 import {ListItem} from "@/components/hall-of-fame/ListItem";

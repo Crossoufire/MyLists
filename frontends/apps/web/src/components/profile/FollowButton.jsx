@@ -3,7 +3,7 @@ import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
 import {useParams} from "@tanstack/react-router";
 import {LuUserMinus, LuUserPlus} from "react-icons/lu";
-import {queryKeys, useFollowMutation} from "@mylists/api";
+import {queryKeys, useFollowMutation} from "@mylists/api/src";
 
 
 export const FollowButton = ({ followStatus, followId }) => {

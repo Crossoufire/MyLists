@@ -1,4 +1,4 @@
-import {postFetcher} from "../utils";
+import {postFetcher} from "./utils";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 

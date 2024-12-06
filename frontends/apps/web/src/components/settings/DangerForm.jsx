@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {router} from "@/router";
 import {Button} from "@/components/ui/button";
 import {useNavigate} from "@tanstack/react-router";
-import {simpleMutations, useAuth} from "@mylists/api";
+import {simpleMutations, useAuth} from "@mylists/api/src";
 
 
 export const DangerForm = () => {

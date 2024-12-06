@@ -1,6 +1,6 @@
-import {LuPlusCircle} from "react-icons/lu";
+import {LuCirclePlus} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
-import {userMediaMutations} from "@mylists/api";
+import {userMediaMutations} from "@mylists/api/src";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
@@ -14,7 +14,7 @@ export const QuickAddMedia = ({ mediaType, mediaId, allStatus, queryKey }) => {
     return (
         <Popover>
             <PopoverTrigger>
-                <LuPlusCircle className="opacity-70"/>
+                <LuCirclePlus className="opacity-70"/>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-40 py-1 px-1 text-sm">
                 <div className="text-sm not-italic text-center mb-2 text-muted-foreground">Add to your list</div>

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
 import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";

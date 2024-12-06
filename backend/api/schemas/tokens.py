@@ -5,6 +5,7 @@ from backend.api import ma
 
 class TokenSchema(ma.Schema):
     access_token = ma.String(required=True)
+    refresh_token = ma.String(load_default=None)
 
 
 class PasswordResetRequestSchema(ma.Schema):

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";

@@ -4,7 +4,7 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {simpleMutations, useAuth} from "@mylists/api";
+import {simpleMutations, useAuth} from "@mylists/api/src";
 import {FormButton} from "@/components/app/FormButton";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";

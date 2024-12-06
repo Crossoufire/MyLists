@@ -1,15 +1,5 @@
 import {getApiClient} from "./apiClient";
-
-
-export class APIError extends Error {
-    constructor(status, message, description, errors = undefined) {
-        super(message);
-        this.name = "APIError";
-        this.status = status;
-        this.description = description;
-        this.errors = errors;
-    }
-}
+import {APIError} from "./apiError";
 
 
 export const fetcher = async ({ url, queryOrData, options = {}, method = "get" }) => {

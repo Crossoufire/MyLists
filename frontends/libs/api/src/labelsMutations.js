@@ -1,4 +1,4 @@
-import {postFetcher} from "../utils";
+import {postFetcher} from "./utils";
 import {useMutation} from "@tanstack/react-query";
 import {mutationFunctionsMap as mediaMutations} from "./mediaMutations";
 

@@ -1,6 +1,6 @@
 import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
-import {userMediaMutations} from "@mylists/api";
+import {userMediaMutations} from "@mylists/api/src";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
 import {StatusDrop} from "@/components/media-user/StatusDrop";

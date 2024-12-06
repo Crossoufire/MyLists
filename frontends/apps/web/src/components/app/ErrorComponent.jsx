@@ -1,5 +1,5 @@
 import {Link} from "@tanstack/react-router";
-import {LuAlertCircle} from "react-icons/lu";
+import {LuCircleAlert} from "react-icons/lu";
 import {Button} from "@/components/ui/button";
 
 
@@ -15,7 +15,7 @@ export const ErrorComponent = ({ statusCode = 404, message = "Looks like you're 
                 </h1>
                 <p className="text-xl sm:text-2xl mb-8 text-muted-foreground">{message}</p>
                 <div className="mb-8">
-                    <LuAlertCircle className="h-24 w-24 sm:h-48 sm:w-48 mx-auto text-primary"/>
+                    <LuCircleAlert className="h-24 w-24 sm:h-48 sm:w-48 mx-auto text-primary"/>
                 </div>
                 <Button asChild>
                     <Link to="/">Take Me Home</Link>

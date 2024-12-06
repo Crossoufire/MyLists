@@ -10,8 +10,8 @@ import {cn, formatDateTime} from "@/utils/functions";
 import {MutedText} from "@/components/app/MutedText";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {notifPollingInterval} from "@/utils/constants";
-import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
-import {notificationsCountOptions, notificationsOptions, queryKeys} from "@mylists/api";
+import {LuBell, LuLoader, LuMoveRight} from "react-icons/lu";
+import {notificationsCountOptions, notificationsOptions, queryKeys} from "@mylists/api/src";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
@@ -57,16 +57,16 @@ export const Notifications = ({ isMobile }) => {
             <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto max-sm:max-h-[350px]" align={isMobile ? "start" : "end"}>
                 {isLoading ?
                     <div className="flex items-center justify-center p-4">
-                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                        <LuLoader className="h-6 w-6 animate-spin"/>
                     </div>
                     :
                     notifs.length === 0 ?
                         <MutedText className="p-3 text-center">No notifications to display</MutedText>
                         :
-                        notifs.map(data =>
+                        notifs.map((data, idx) =>
                             <NotificationItem
+                                key={idx}
                                 data={data}
-                                key={data.timestamp}
                                 handlePopoverClose={handlePopoverClose}
                             />
                         )

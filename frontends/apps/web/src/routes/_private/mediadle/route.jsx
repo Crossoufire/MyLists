@@ -1,5 +1,5 @@
 import {createFileRoute} from "@tanstack/react-router";
-import {dailyMediadleOptions} from "@mylists/api/queryOptions";
+import {dailyMediadleOptions} from "@mylists/api/src/queryOptions";
 
 
 // noinspection JSCheckFunctionSignatures

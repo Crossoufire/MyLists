@@ -2,9 +2,9 @@
     "name": "@mylists/api",
     "version": "1.0.0",
     "description": "API system abstraction for MyLists",
-    "main": "index.js",
+    "private": true,
+    "main": "src/index.js",
     "peerDependencies": {
-        "react": "^18.3.1",
-        "@tanstack/react-query": "^5.61.5"
+        "@tanstack/react-query": "^5.62.2"
     }
 }

@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {PageTitle} from "@/components/app/PageTitle";
-import {simpleMutations} from "@mylists/api/mutations/simpleMutations";
+import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 

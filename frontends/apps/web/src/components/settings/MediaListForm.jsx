@@ -1,14 +1,14 @@
 import {toast} from "sonner";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
-import {useAuth} from "@mylists/api/useAuthHook";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
+import {useAuth} from "@mylists/api/src/useAuthHook";
 import {FormButton} from "@/components/app/FormButton";
-import {LuDownload, LuHelpCircle} from "react-icons/lu";
+import {LuCircleHelp, LuDownload} from "react-icons/lu";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
-import {simpleMutations} from "@mylists/api/mutations/simpleMutations";
+import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -284,7 +284,7 @@ function TextPopover({ children }) {
     return (
         <Popover>
             <PopoverTrigger className="opacity-50 hover:opacity-80">
-                <LuHelpCircle/>
+                <LuCircleHelp/>
             </PopoverTrigger>
             <PopoverContent>
                 {children}

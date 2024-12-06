@@ -1,6 +1,6 @@
 import {cn} from "@/utils/functions";
 import {useEffect, useState} from "react";
-import {useMakeGuess} from "@mylists/api";
+import {useMakeGuess} from "@mylists/api/src";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/useDebounce";
@@ -10,7 +10,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@mylists/api/queryOptions";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@mylists/api/src/queryOptions";
 import {LuAward, LuCrown, LuFlame, LuPartyPopper, LuSigma, LuTarget, LuThumbsDown, LuTrophy} from "react-icons/lu";
 
 

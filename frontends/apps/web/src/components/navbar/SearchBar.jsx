@@ -4,12 +4,12 @@ import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
 import {useDebounce} from "@/hooks/useDebounce";
 import {useEffect, useRef, useState} from "react";
-import {LuLoader2, LuSearch} from "react-icons/lu";
+import {LuLoader, LuSearch} from "react-icons/lu";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
-import {navSearchOptions, useAuth} from "@mylists/api";
-import {capitalize, formatDateTime} from "@/utils/functions";
+import {navSearchOptions, useAuth} from "@mylists/api/src";
 import {useOnClickOutside} from "@/hooks/useClickedOutside";
+import {capitalize, formatDateTime} from "@/utils/functions";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -74,7 +74,7 @@ export const SearchBar = () => {
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
-                                    <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                    <LuLoader className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
                             {error && (

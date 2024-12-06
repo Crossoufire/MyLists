@@ -1,4 +1,4 @@
-import {ApiClient} from "@mylists/api";
+import {ApiClient} from "@mylists/api/src";
 
 
 export class ApiClientWeb extends ApiClient {

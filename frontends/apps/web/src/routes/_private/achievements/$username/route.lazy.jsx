@@ -1,6 +1,6 @@
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
-import {achievementOptions} from "@mylists/api/queryOptions";
+import {achievementOptions} from "@mylists/api/src/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {AchievementCard} from "@/components/achievements/AchievementCard";

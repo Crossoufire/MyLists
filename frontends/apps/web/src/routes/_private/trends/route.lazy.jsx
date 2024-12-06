@@ -1,6 +1,6 @@
 import {useHashTab} from "@/hooks/useHashTab";
 import {formatDateTime} from "@/utils/functions";
-import {trendsOptions} from "@mylists/api/queryOptions";
+import {trendsOptions} from "@mylists/api/src/queryOptions";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";

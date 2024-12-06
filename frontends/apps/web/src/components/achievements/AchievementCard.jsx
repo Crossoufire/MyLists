@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {Badge} from "@/components/ui/badge";
 import {Progress} from "@/components/ui/progress";
-import {LuAward, LuCheckCircle} from "react-icons/lu";
+import {LuAward, LuCircleCheck} from "react-icons/lu";
 import {capitalize, cn, diffColors} from "@/utils/functions";
 import {TiersDetails} from "@/components/achievements/TierDetails";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
@@ -70,7 +70,7 @@ export const AchievementCard = ({ achievement }) => {
                     {fullyCompleted &&
                         <>
                             <div className="flex items-center justify-center gap-2 h-12">
-                                <LuCheckCircle className="w-5 h-5 text-green-500"/>
+                                <LuCircleCheck className="w-5 h-5 text-green-500"/>
                                 <span className="font-semibold">Achievement Completed!</span>
                             </div>
                         </>

@@ -1,6 +1,6 @@
-import {useAuth} from "../useAuthHook";
-import {queryKeys} from "../queryOptions";
-import {fetcher, postFetcher} from "../utils";
+import {useAuth} from "./useAuthHook";
+import {queryKeys} from "./queryOptions";
+import {fetcher, postFetcher} from "./utils";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 
@@ -21,7 +21,7 @@ const mutationFunctionsMap = {
         url: "/tokens/register_token", data: { token },
     }),
     forgotPassword: ({ email }) => postFetcher({
-        url: "/tokens/reset_password_token", data: { email, callback: import.meta.env.VITE_RESET_PASSWORD_CALLBACK },
+        url: "/tokens/reset_password_token", data: { email, callback: "http://localhost:3000/reset_password" },
     }),
     updateModal: () => postFetcher({
         url: "/update_modal",
@@ -40,7 +40,7 @@ const mutationFunctionsMap = {
     }),
     oAuth2Provider: ({ provider }) => fetcher({
         url: `/tokens/oauth2/${provider}`, queryOrData: {
-            callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider)
+            callback: "http://localhost:3000/oauth2/{provider}/callback".replace("{provider}", provider)
         },
     }),
     otherUserStats: ({ mediaType, username }) => fetcher({

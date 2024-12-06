@@ -1,5 +1,5 @@
 import {useMemo, useState} from "react";
-import {useAuth} from "@mylists/api/useAuthHook";
+import {useAuth} from "@mylists/api/src/useAuthHook";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {formatDateTime} from "@/utils/functions";
@@ -9,9 +9,9 @@ import {MediaIcon} from "@/components/app/MediaIcon";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/hooks/useDebounce";
-import {allUpdatesOptions, queryKeys} from "@mylists/api/queryOptions";
+import {allUpdatesOptions, queryKeys} from "@mylists/api/src/queryOptions";
 import {TablePagination} from "@/components/app/TablePagination";
-import {useDeleteUpdateMutation} from "@mylists/api/mutations/simpleMutations";
+import {useDeleteUpdateMutation} from "@mylists/api/src/simpleMutations";
 import {createLazyFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";

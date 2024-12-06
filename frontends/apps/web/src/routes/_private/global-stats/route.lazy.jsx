@@ -2,7 +2,7 @@ import {Fragment} from "react";
 import {ResponsiveBar} from "@nivo/bar";
 import {barTheme} from "@/utils/nivoThemes";
 import {Separator} from "@/components/ui/separator";
-import {globalStatsOptions} from "@mylists/api/queryOptions";
+import {globalStatsOptions} from "@mylists/api/src/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";

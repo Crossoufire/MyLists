@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {jobDetailsOptions} from "@mylists/api/queryOptions";
+import {jobDetailsOptions} from "@mylists/api/src/queryOptions";
 import {MediaCard} from "@/components/app/MediaCard";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";

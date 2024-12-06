@@ -1,4 +1,4 @@
-import {useAuth} from "@mylists/api";
+import {useAuth} from "@mylists/api/src";
 import {Link} from "@tanstack/react-router";
 import {formatDateTime} from "@/utils/functions";
 import {LuCalendarDays, LuUsers} from "react-icons/lu";

@@ -1,4 +1,4 @@
-import {profileOptions} from "@mylists/api/queryOptions";
+import {profileOptions} from "@mylists/api/src/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {MediaLevels} from "@/components/profile/MediaLevels";

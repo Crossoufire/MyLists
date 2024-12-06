@@ -1,6 +1,6 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
-import {simpleMutations} from "@mylists/api";
+import {simpleMutations} from "@mylists/api/src";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 
 
