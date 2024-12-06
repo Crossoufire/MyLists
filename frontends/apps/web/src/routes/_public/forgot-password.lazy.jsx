@@ -20,7 +20,7 @@ function ForgotPasswordPage() {
     const form = useForm({ defaultValues: { email: "" } });
 
     const onSubmit = (data) => {
-        forgotPassword.mutate({ email: data.email }, {
+        forgotPassword.mutate({ email: data.email, callback: import.meta.env.VITE_RESET_PASSWORD_CALLBACK }, {
             onError: (error) => {
                 if (error?.errors?.json?.email) {
                     const message = error.errors.json.email[0];

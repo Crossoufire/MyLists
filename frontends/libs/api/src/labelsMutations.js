@@ -12,6 +12,7 @@ const mutationFunctionsMap = {
     }),
 };
 
+
 export const userLabelsMutations = (mediaType, mediaId) => {
     const addLabel = useAddLabelMutation("add_media_to_label", mediaType, mediaId);
     const removeLabel = useRemoveLabelMutation("remove_label_from_media", mediaType, mediaId);
@@ -21,6 +22,7 @@ export const userLabelsMutations = (mediaType, mediaId) => {
     return { addLabel, removeLabel, renameLabel, deleteLabel };
 };
 
+
 const useAddLabelMutation = (url, mediaType, mediaId) => {
     return useMutation({
         mutationFn: ({ payload }) => {
@@ -28,6 +30,7 @@ const useAddLabelMutation = (url, mediaType, mediaId) => {
         },
     });
 };
+
 
 const useRemoveLabelMutation = (url, mediaType, mediaId) => {
     return useMutation({
@@ -37,6 +40,7 @@ const useRemoveLabelMutation = (url, mediaType, mediaId) => {
     });
 };
 
+
 const useRenameLabelMutation = (mediaType) => {
     return useMutation({
         mutationFn: ({ oldName, newName }) => {
@@ -44,6 +48,7 @@ const useRenameLabelMutation = (mediaType) => {
         },
     });
 };
+
 
 const useDeleteLabelMutation = (mediaType) => {
     return useMutation({

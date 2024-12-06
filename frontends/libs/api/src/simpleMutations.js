@@ -20,8 +20,8 @@ const mutationFunctionsMap = {
     registerToken: ({ token }) => postFetcher({
         url: "/tokens/register_token", data: { token },
     }),
-    forgotPassword: ({ email }) => postFetcher({
-        url: "/tokens/reset_password_token", data: { email, callback: "http://localhost:3000/reset_password" },
+    forgotPassword: ({ email, callback }) => postFetcher({
+        url: "/tokens/reset_password_token", data: { email, callback },
     }),
     updateModal: () => postFetcher({
         url: "/update_modal",
@@ -38,10 +38,8 @@ const mutationFunctionsMap = {
     downloadListAsCSV: ({ selectedList }) => fetcher({
         url: `/settings/download/${selectedList}`,
     }),
-    oAuth2Provider: ({ provider }) => fetcher({
-        url: `/tokens/oauth2/${provider}`, queryOrData: {
-            callback: "http://localhost:3000/oauth2/{provider}/callback".replace("{provider}", provider)
-        },
+    oAuth2Provider: ({ provider, callback }) => fetcher({
+        url: `/tokens/oauth2/${provider}`, queryOrData: { callback },
     }),
     otherUserStats: ({ mediaType, username }) => fetcher({
         url: `/stats/${mediaType}/${username}`,

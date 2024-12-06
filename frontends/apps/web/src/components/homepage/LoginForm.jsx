@@ -4,8 +4,8 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
-import {simpleMutations, useAuth} from "@mylists/api/src";
 import {FormButton} from "@/components/app/FormButton";
+import {simpleMutations, useAuth} from "@mylists/api/src";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -20,6 +20,7 @@ export const LoginForm = () => {
 
     useLayoutEffect(() => {
         if (!currentUser) return;
+        // noinspection JSUnresolvedReference
         void router.invalidate();
         void navigate({ to: `/profile/${currentUser.username}` });
     }, [currentUser]);
@@ -41,7 +42,7 @@ export const LoginForm = () => {
     };
 
     const withProvider = (provider) => {
-        oAuth2Provider.mutate({ provider }, {
+        oAuth2Provider.mutate({ provider, callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider) }, {
             onError: () => toast.error("An error occurred with the provider"),
             onSuccess: async (data) => window.location.replace(data.redirect_url),
         });

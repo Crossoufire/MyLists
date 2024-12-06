@@ -1,5 +1,5 @@
-import {getApiClient} from "./apiClient";
 import {APIError} from "./apiError";
+import {getApiClient} from "./apiClient";
 
 
 export const fetcher = async ({ url, queryOrData, options = {}, method = "get" }) => {
