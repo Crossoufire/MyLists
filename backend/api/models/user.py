@@ -2,20 +2,19 @@ from __future__ import annotations
 
 import json
 import secrets
-from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict, Optional, Any
+from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Any, Type
 
 import jwt
 from flask import url_for, current_app
-from flask_bcrypt import check_password_hash, generate_password_hash
 from sqlalchemy import desc, func, select, union_all, case
+from flask_bcrypt import check_password_hash, generate_password_hash
 
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status, SearchSelector, RatingSystem
 from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
+from backend.api.utils.enums import RoleType, MediaType, NotificationType, UpdateType, Privacy, Status, SearchSelector, RatingSystem
 
 
 followers = db.Table(
@@ -142,8 +141,8 @@ class User(db.Model):
             back_image=self.back_image,
             profile_level=self.profile_level,
             followers_count=self.followers_count,
-            settings={setting.media_type.value: setting.to_dict() for setting in self.settings}),
-        )
+            settings=[setting.to_dict() for setting in self.settings],
+        ))
 
         return user_dict
 
@@ -208,10 +207,7 @@ class User(db.Model):
         )
         return notification_count
 
-    def get_global_media_stats(self) -> Dict:
-        active_media_types = [setting.media_type for setting in self.settings if setting.active]
-        models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
-
+    def get_global_media_stats(self, models: List[Type[db.Model]]) -> Dict:
         # Calculate time per media [hours]
         time_per_media = [setting.time_spent / 60 for setting in self.settings if setting.active]
 
@@ -231,7 +227,7 @@ class User(db.Model):
 
         results = db.session.execute(subqueries).all()
 
-        # Calculation for total media, percent scored, and mean score
+        # Calculation for total media, percent rated, and mean rating
         total_media, total_rated, sum_rated, total_media_no_plan_to_x = map(sum, zip(*results))
         percent_rated = safe_div(total_rated, total_media_no_plan_to_x, percentage=True)
         mean_rated = safe_div(sum_rated, total_rated)
@@ -249,32 +245,6 @@ class User(db.Model):
         )
 
         return data
-
-    def get_one_media_details(self, media_type: MediaType) -> Dict:
-        list_model, label_model = ModelsManager.get_lists_models(media_type, [ModelTypes.LIST, ModelTypes.LABELS])
-
-        media_dict = dict(
-            media_type=media_type.value,
-            specific_total=list_model.get_specific_total(self.id),
-            time_hours=int(self.get_media_setting(media_type).time_spent / 60),
-            time_days=int(self.get_media_setting(media_type).time_spent / 1440),
-        )
-
-        media_dict.update(list_model.get_media_count_per_status(self.id))
-        media_dict.update(list_model.get_favorites_media(self.id, limit=10))
-        media_dict.update(list_model.get_media_rating(self))
-
-        return media_dict
-
-    def get_list_levels(self) -> List[Dict]:
-        level_per_ml = []
-        for setting in self.settings:
-            if setting.active:
-                level_per_ml.append(dict(
-                    media_type=setting.media_type.value,
-                    level=compute_level(setting.time_spent),
-                ))
-        return level_per_ml
 
     def get_last_updates(self, limit: int) -> List[Dict]:
         return [update.to_dict() for update in self.updates.limit(limit).all()]
@@ -396,11 +366,11 @@ class UserMediaSettings(db.Model):
 
     def to_dict(self) -> Dict:
         return dict(
-            media_type=self.media_type.value,
-            time_spent=self.time_spent,
-            active=self.active,
             level=self.level,
             views=self.views,
+            active=self.active,
+            time_spent=self.time_spent,
+            media_type=self.media_type.value,
         )
 
 

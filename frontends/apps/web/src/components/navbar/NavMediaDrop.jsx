@@ -13,10 +13,10 @@ export const NavMediaDrop = () => {
 
     const menuItems = [
         { url: `/list/series`, media: "series" },
-        { url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active },
+        { url: `/list/anime`, media: "anime", cond: currentUser.settings.find(s => s.media_type === "anime").active },
         { url: `/list/movies`, media: "movies" },
-        { url: `/list/books`, media: "books", cond: currentUser.settings.books.active },
-        { url: `/list/games`, media: "games", cond: currentUser.settings.games.active }
+        { url: `/list/books`, media: "books", cond: currentUser.settings.find(s => s.media_type === "books").active },
+        { url: `/list/games`, media: "games", cond: currentUser.settings.find(s => s.media_type === "games").active },
     ];
 
     return (

@@ -24,7 +24,7 @@ export const MediaListForm = () => {
             rating_system: currentUser.rating_system,
         }
     });
-    
+
     const onSubmit = (data) => {
         listSettings.mutate({ ...data }, {
             onError: () => toast.error("An error occurred while updating the data"),
@@ -43,7 +43,7 @@ export const MediaListForm = () => {
             return checkForm !== true;
         }
 
-        return !currentUser.settings[value].active;
+        return !currentUser.settings.find(s => s.media_type === value).active;
     };
 
     const onListChanged = (field, value) => {
@@ -104,7 +104,7 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.settings.anime.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "anime").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">
@@ -123,7 +123,7 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={(value) => onListChanged(field, value)}
-                                            defaultChecked={currentUser.settings.games.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "games").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">
@@ -142,7 +142,7 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={(value) => onListChanged(field, value)}
-                                            defaultChecked={currentUser.settings.books.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "books").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">

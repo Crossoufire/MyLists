@@ -8,8 +8,6 @@ import {ListItem} from "@/components/hall-of-fame/ListItem";
 
 export const HoFCard = ({ user }) => {
     const { currentUser } = useAuth();
-    const { series, anime, movies, books, games } = user.settings;
-    const settings = [series, anime, movies, books, games];
 
     return (
         <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser.id === user.id && "bg-teal-950")}>
@@ -41,7 +39,7 @@ export const HoFCard = ({ user }) => {
                     </div>
                     <div className="col-span-7 max-md:col-span-12">
                         <div className="flex justify-center items-center font-medium h-full gap-8 max-md:gap-6">
-                            {settings.map(setting =>
+                            {user.settings.map(setting =>
                                 <ListItem
                                     setting={setting}
                                     key={setting.media_type}

@@ -106,6 +106,21 @@ class MediaList(db.Model):
     comment = db.Column(db.Text)
 
     @classmethod
+    def get_user_media_details(cls, user: User) -> Dict:
+        media_dict = dict(
+            media_type=cls.GROUP,
+            specific_total=cls.get_specific_total(user.id),
+            time_hours=int(user.get_media_setting(cls.GROUP).time_spent / 60),
+            time_days=int(user.get_media_setting(cls.GROUP).time_spent / 1440),
+        )
+
+        media_dict.update(cls.get_media_count_per_status(user.id))
+        media_dict.update(cls.get_favorites_media(user.id, limit=10))
+        media_dict.update(cls.get_media_rating(user.id))
+
+        return media_dict
+
+    @classmethod
     def get_media_count_per_status(cls, user_id: int) -> Dict:
         plan_to_x = (Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ)
 
@@ -141,10 +156,10 @@ class MediaList(db.Model):
         return data
 
     @classmethod
-    def get_media_rating(cls, user: User) -> Dict:
+    def get_media_rating(cls, user_id: int) -> Dict:
         media_ratings = (
             db.session.query(func.count(cls.rating), func.count(cls.media_id), func.sum(cls.rating))
-            .filter(cls.user_id == user.id).all()
+            .filter(cls.user_id == user_id).all()
         )
 
         count_rating, count_media, sum_rating = media_ratings[0]

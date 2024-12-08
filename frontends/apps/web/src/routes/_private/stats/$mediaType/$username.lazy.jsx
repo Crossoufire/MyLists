@@ -61,7 +61,7 @@ function StatsPage() {
                     addComparison={addComparison}
                     resetComparison={resetComparison}
                 />
-                <NavigationButtons settings={apiData.settings}/>
+                <NavigationButtons mediaSettings={apiData.settings}/>
             </div>
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
                 <Sidebar
@@ -83,7 +83,7 @@ function StatsPage() {
 }
 
 
-const NavigationButtons = ({ settings }) => {
+const NavigationButtons = ({ mediaSettings }) => {
     const popRef = useRef();
     const { mediaType, username } = Route.useParams();
 
@@ -110,7 +110,7 @@ const NavigationButtons = ({ settings }) => {
                         <LuAward className="-ml-2 mr-2"/> Achievements
                     </Link>
                 </Button>
-                {settings.map(setting =>
+                {mediaSettings.map(setting =>
                     <Link
                         onClick={closePopover}
                         key={setting.media_type}

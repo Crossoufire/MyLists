@@ -60,25 +60,20 @@ def profile(user: User):
         db.session.commit()
 
     active_media_types = [setting.media_type for setting in user.settings if setting.active]
-    user_updates = user.get_last_updates(limit=6)
-    follows_updates = user.get_follows_updates(limit=10, as_public=True if not current_user else False)
-    list_levels = user.get_list_levels()
-    media_global = user.get_global_media_stats()
     models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
-    media_data = [user.get_one_media_details(model.GROUP) for model in models]
-    summary = UserAchievement.get_total_only_summary(user.id)
-    details = Achievement.get_achievements_with_user(user.id, limit=6)
 
     data = dict(
         user_data=user.to_dict(),
-        user_updates=user_updates,
+        user_updates=user.get_last_updates(limit=6),
         follows=user.get_follows(limit=8),
-        follows_updates=follows_updates,
+        follows_updates=user.get_follows_updates(limit=10, as_public=True if not current_user else False),
         is_following=False if not current_user else current_user.is_following(user),
-        list_levels=list_levels,
-        media_global=media_global,
-        media_data=media_data,
-        achievements={"summary": summary, "details": details},
+        media_global=user.get_global_media_stats(models),
+        media_data=[model.get_user_media_details(user) for model in models],
+        achievements=dict(
+            summary=UserAchievement.get_difficulty_summary(user.id),
+            details=Achievement.get_user_achievements(user.id, limit=6),
+        ),
     )
 
     return jsonify(data=data), 200

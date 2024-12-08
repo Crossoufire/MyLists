@@ -75,8 +75,8 @@ class Achievement(db.Model):
         return result
 
     @classmethod
-    def get_achievements_with_user(cls, user_id: int, limit: int = 6) -> List[Dict]:
-        """ Get only N randomized achievements for the user (for profile page) """
+    def get_user_achievements(cls, user_id: int, limit: int = 6) -> List[Dict]:
+        """ Get only `limit` randomized achievements for the user (profile page) """
 
         achievements = (
             cls.query
@@ -177,7 +177,7 @@ class UserAchievement(db.Model):
         return results
 
     @classmethod
-    def get_total_only_summary(cls, user_id: int) -> List[Dict]:
+    def get_difficulty_summary(cls, user_id: int) -> List[Dict]:
         """ Return a list of dict containing the count for each difficulty tier """
 
         tier_order = get_difficulty_case()
@@ -197,4 +197,4 @@ class UserAchievement(db.Model):
             .order_by(tier_order).all()
         )
 
-        return [{"difficulty": difficulty, "count": count} for difficulty, count in result]
+        return [{"difficulty": diff, "count": count} for diff, count in result]

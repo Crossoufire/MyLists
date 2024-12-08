@@ -18,7 +18,7 @@ export const Header = (props) => {
     return (
         <div className="flex flex-wrap items-center justify-between mt-8 mb-6 gap-6">
             <h3 className="flex items-center gap-3 text-3xl font-medium truncate max-sm:text-xl">
-                <MediaLevelCircle intLevel={parseInt(userData.settings[mediaType].level)}/>
+                <MediaLevelCircle intLevel={parseInt(userData.settings.find(s => s.media_type === mediaType).level)}/>
                 {`${username} ${capitalize(mediaType)} Collection`}
             </h3>
             <div className="flex flex-wrap gap-3">

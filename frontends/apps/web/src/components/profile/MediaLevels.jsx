@@ -7,7 +7,7 @@ import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
-export const MediaLevels = ({ username, mediaLevels }) => {
+export const MediaLevels = ({ userData }) => {
     const { caret, toggleCollapse, contentClasses } = useCollapse();
 
     return (
@@ -22,12 +22,12 @@ export const MediaLevels = ({ username, mediaLevels }) => {
                 <Separator/>
             </CardHeader>
             <CardContent className={contentClasses}>
-                {mediaLevels.map(data =>
+                {userData.settings.filter(s => s.active).map(data =>
                     <MediaLevelBar
                         level={data.level}
-                        username={username}
                         key={data.media_type}
                         mediaType={data.media_type}
+                        username={userData.username}
                     />
                 )}
             </CardContent>

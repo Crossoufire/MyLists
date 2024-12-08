@@ -60,8 +60,8 @@ export const SearchBar = () => {
                         <SelectContent>
                             <SelectGroup>
                                 {<SelectItem value="tmdb">Media</SelectItem>}
-                                {currentUser.settings.books.active && <SelectItem value="books">Books</SelectItem>}
-                                {currentUser.settings.games.active && <SelectItem value="igdb">Games</SelectItem>}
+                                {currentUser.settings.find(s => s.media_type === "books").active && <SelectItem value="books">Books</SelectItem>}
+                                {currentUser.settings.find(s => s.media_type === "games").active && <SelectItem value="igdb">Games</SelectItem>}
                                 <SelectItem value="users">Users</SelectItem>
                             </SelectGroup>
                         </SelectContent>
