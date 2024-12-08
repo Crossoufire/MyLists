@@ -73,13 +73,13 @@ def upgrade():
             .values(rating=media_list_table.c.feeling * 2)
         )
 
-    for media_list_table in ["series_list", "anime_list", "movies_list", "games_list"]:
+    for media_list_table in ["series_list", "anime_list", "movies_list", "games_list", "books_list"]:
         migrate_table_ratings(media_list_table)
 
     with op.batch_alter_table("user", schema=None) as batch_op:
         batch_op.drop_column("add_feeling")
 
-    for media_list_table in ["series_list", "anime_list", "movies_list", "games_list"]:
+    for media_list_table in ["series_list", "anime_list", "movies_list", "games_list", "books_list"]:
         with op.batch_alter_table(media_list_table, schema=None) as batch_op:
             batch_op.drop_column("score")
             batch_op.drop_column("feeling")

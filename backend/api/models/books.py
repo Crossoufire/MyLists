@@ -29,11 +29,11 @@ class Books(Media):
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        media_dict.update(dict(
-            media_cover=self.media_cover,
-            authors=[author.name for author in self.authors],
-            genres=self.genres_list,
-        ))
+        media_dict.update({
+            "media_cover": self.media_cover,
+            "authors": [author.name for author in self.authors],
+            "genres": self.genres_list,
+        })
 
         return media_dict
 
