@@ -1,4 +1,4 @@
-import {getRedoValues} from "@/utils/functions";
+import {getRedoList} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
@@ -15,7 +15,7 @@ export const RedoDrop = ({ name, redo, updateRedo }) => {
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {getRedoValues().map(val =>
+                    {getRedoList().map(val =>
                         <SelectItem key={val} value={val}>{`${val}`}</SelectItem>
                     )}
                 </SelectContent>

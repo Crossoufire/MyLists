@@ -1,9 +1,8 @@
-import {getPlaytimeValues} from "@/utils/functions";
+import {getPlaytimeList} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const PlaytimeDrop = ({ playtime, updatePlaytime }) => {
-    const playValues = getPlaytimeValues();
     const hoursPlaytime = playtime / 60;
 
     const handleSelect = (playtimeInHours) => {
@@ -18,7 +17,7 @@ export const PlaytimeDrop = ({ playtime, updatePlaytime }) => {
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {playValues.map(play => <SelectItem key={play} value={`${play}`}>{play} hours</SelectItem>)}
+                    {getPlaytimeList().map(play => <SelectItem key={play} value={`${play}`}>{play} hours</SelectItem>)}
                 </SelectContent>
             </Select>
         </div>

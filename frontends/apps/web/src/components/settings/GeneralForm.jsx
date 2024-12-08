@@ -159,7 +159,7 @@ export const GeneralForm = () => {
 const PrivacyPopover = () => {
     return (
         <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger className="opacity-50 hover:opacity-80">
                 <LuCircleHelp/>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">

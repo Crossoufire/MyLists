@@ -21,9 +21,10 @@ export const MediaListForm = () => {
     const form = useForm({
         defaultValues: {
             search_selector: currentUser.search_selector,
+            rating_system: currentUser.rating_system,
         }
     });
-
+    
     const onSubmit = (data) => {
         listSettings.mutate({ ...data }, {
             onError: () => toast.error("An error occurred while updating the data"),
@@ -191,29 +192,26 @@ export const MediaListForm = () => {
                         <h3 className="text-base font-medium">
                             <div className="flex items-center gap-2">
                                 <div>Rating System</div>
-                                <TextPopover>
-                                    Switch between a numerical rating on a scale of 0 to 10 (steps of 0.5)
-                                    to an emoticon-based rating (5 levels) to convey your liking or disliking of a
-                                    media.
-                                </TextPopover>
+                                <RatingSystemPopover/>
                             </div>
                             <Separator/>
                         </h3>
                         <FormField
                             control={form.control}
-                            name="add_feeling"
+                            name="rating_system"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.add_feeling}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>Score (unchecked) or Feeling (checked)</FormLabel>
-                                    </div>
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="border">
+                                                <SelectValue placeholder="Select a rating system"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="score">Score</SelectItem>
+                                            <SelectItem value="feeling">Feeling</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage/>
                                 </FormItem>
                             )}
@@ -292,3 +290,28 @@ function TextPopover({ children }) {
         </Popover>
     );
 }
+
+const RatingSystemPopover = () => {
+    return (
+        <Popover>
+            <PopoverTrigger className="opacity-50 hover:opacity-80">
+                <LuCircleHelp/>
+            </PopoverTrigger>
+            <PopoverContent className="p-5 w-80">
+                <div className="mb-3 text-sm font-medium text-muted-foreground">
+                    Switch between two rating systems to rate your media.
+                </div>
+                <ul className="text-sm list-disc space-y-3 pl-4">
+                    <li>
+                        <span className="font-semibold">Score (default):</span>
+                        {" "}Numerical rating from 0 to 10 in 0.5 increments (21 levels).
+                    </li>
+                    <li>
+                        <span className="font-semibold">Feeling:</span>
+                        {" "}Emoticon-based rating with 6 different levels.
+                    </li>
+                </ul>
+            </PopoverContent>
+        </Popover>
+    );
+};

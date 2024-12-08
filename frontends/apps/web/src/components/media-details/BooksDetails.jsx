@@ -38,7 +38,7 @@ export const BooksDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Completion"
-                            value={formatMinutes(mediaData.pages * 1.7, { format: "hm" })}
+                            value={formatMinutes(mediaData.pages * 1.7)}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

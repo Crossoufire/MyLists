@@ -1,13 +1,13 @@
 from flask import jsonify, Blueprint, abort
 
 from backend.api import db, cache
-from backend.api.models.user import User
-from backend.api.core import token_auth, current_user
-from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
 from backend.api.schemas.lists import *
-from backend.api.utils.decorators import arguments, check_authorization
+from backend.api.models.user import User
 from backend.api.utils.enums import MediaType
+from backend.api.core import token_auth, current_user
 from backend.api.managers.StatsManager import StatsManager
+from backend.api.utils.decorators import arguments, check_authorization
+from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
 
 
 lists_bp = Blueprint("api_lists", __name__)
@@ -74,10 +74,10 @@ def stats_page(user: User, media_type: MediaType):
 
     stats_manager = StatsManager.get_subclass(media_type)
     stats = stats_manager(user).create_stats()
+    stats["rating_system"] = user.rating_system
 
     data = dict(
         stats=stats,
-        is_feeling=user.add_feeling,
         settings=[setting.to_dict() for setting in user.settings if setting.active],
         users=[{"label": user.username, "value": user.username} for user in User.query.filter(User.active.is_(True)).all()]
     )

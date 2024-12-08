@@ -73,7 +73,6 @@ class Media(db.Model, UpdateMixin):
         data = [{
             "username": follow[0].username,
             "profile_image": follow[0].profile_image,
-            "add_feeling": follow[0].add_feeling,
             **follow[1].to_dict(),
         } for follow in in_follows_lists]
 
@@ -102,8 +101,7 @@ class MediaList(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     status = db.Column(db.Enum(Status), nullable=False)
-    feeling = db.Column(db.String)
-    score = db.Column(db.Float)
+    rating = db.Column(db.Float)
     favorite = db.Column(db.Boolean)
     comment = db.Column(db.Text)
 
@@ -143,36 +141,17 @@ class MediaList(db.Model):
         return data
 
     @classmethod
-    def get_media_count_per_rating(cls, user: User) -> List[int]:
-        rating = cls.feeling if user.add_feeling else cls.score
-        range_ = list(range(6)) if user.add_feeling else [i * 0.5 for i in range(21)]
-
-        media_count = (
-            db.session.query(rating, func.count(rating))
-            .filter(cls.user_id == user.id, rating.is_not(None))
-            .group_by(rating).order_by(rating).all()
-        )
-
-        metric_counts = {str(val): 0 for val in range_}
-        new_metric = {str(val): count for val, count in media_count}
-        metric_counts.update(new_metric)
-
-        return list(metric_counts.values())
-
-    @classmethod
     def get_media_rating(cls, user: User) -> Dict:
-        rating = cls.feeling if user.add_feeling else cls.score
-
         media_ratings = (
-            db.session.query(func.count(rating), func.count(cls.media_id), func.sum(rating))
+            db.session.query(func.count(cls.rating), func.count(cls.media_id), func.sum(cls.rating))
             .filter(cls.user_id == user.id).all()
         )
 
         count_rating, count_media, sum_rating = media_ratings[0]
         percent_rating = safe_div(count_rating, count_media, percentage=True)
-        mean_metric = safe_div(sum_rating, count_rating)
+        mean_rating = safe_div(sum_rating, count_rating)
 
-        return dict(media_metric=count_rating, percent_metric=percent_rating, mean_metric=mean_metric)
+        return dict(media_rated=count_rating, percent_rated=percent_rating, mean_rating=mean_rating)
 
     @classmethod
     def get_specific_total(cls, user_id: int) -> int:
@@ -197,7 +176,7 @@ class MediaList(db.Model):
         return dict(favorites=favorites_list, total_favorites=len(favorites_query))
 
     @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict:
+    def get_available_sorting(cls) -> Dict:
         media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {
@@ -205,10 +184,10 @@ class MediaList(db.Model):
             "Title Z-A": media.name.desc(),
             "Release Date +": media.release_date.desc(),
             "Release Date -": media.release_date.asc(),
-            "Score TMDB +": media.vote_average.desc(),
-            "Score TMDB -": media.vote_average.asc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "TMDB Rating +": media.vote_average.desc(),
+            "TMDB Rating -": media.vote_average.asc(),
+            "Rating +": cls.rating.desc(),
+            "Rating -": cls.rating.asc(),
             "Re-watched": cls.redo.desc(),
         }
 

@@ -1,8 +1,8 @@
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
-import {achievementOptions} from "@mylists/api/src/queryOptions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createLazyFileRoute} from "@tanstack/react-router";
+import {achievementOptions} from "@mylists/api/src/queryOptions";
 import {AchievementCard} from "@/components/achievements/AchievementCard";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {AchievementSummary} from "@/components/achievements/AchievementSummary";

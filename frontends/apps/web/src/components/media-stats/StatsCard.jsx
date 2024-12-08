@@ -32,13 +32,13 @@ export const StatsCard = ({ data, otherData }) => {
                 <CardDescription>{data.subtitle}</CardDescription>
             </CardHeader>
             <CardContent className={cn("grid items-center", otherData ? "grid-cols-[1fr_0fr_1fr]" : "grid-cols-1")}>
-                <div className={cn("text-3xl font-bold max-sm:text-xl", otherData && "text-2xl text-center")} title={data.value}>
+                <div className={cn("text-3xl font-bold max-sm:text-xl", otherData && "text-2xl text-center flex items-center justify-center")} title={data.value}>
                     {data.value}
                 </div>
                 {otherData &&
                     <>
                         <Separator variant="vertical" className="mx-3 h-full bg-neutral-600"/>
-                        <div className="text-2xl font-bold max-sm:text-xl text-center" title={otherData.value}>
+                        <div className="text-2xl font-bold max-sm:text-xl text-center flex items-center justify-center" title={otherData.value}>
                             {typeof otherData.value === "number" || otherData.title === "Total Budgets" ||
                             otherData.title === "Total Revenue" ?
                                 <span className={otherData.value > data.value ? "text-green-400" : "text-red-400"}>

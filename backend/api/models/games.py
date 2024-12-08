@@ -97,24 +97,21 @@ class GamesList(MediaList):
     media = db.relationship("Games", back_populates="list_info", lazy="joined")
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        del media_dict["feeling"]
-        del media_dict["score"]
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["platform"] = self.platform.value if self.platform else None
-        media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["all_platforms"] = [platform.value for platform in GamesPlatformsEnum]
-        media_dict["rating"] = {
-            "type": "feeling" if is_feeling else "score",
-            "value": self.feeling if is_feeling else self.score
-        }
+        media_dict.update({
+            "media_name": self.media.name,
+            "media_cover": self.media.media_cover,
+            "platform": self.platform if self.platform else None,
+            "all_status": Status.by(self.GROUP),
+            "all_platforms": list(GamesPlatformsEnum),
+            "rating": {
+                "type": self.user.rating_system,
+                "value": self.rating,
+            }
+        })
 
         return media_dict
 
@@ -134,16 +131,16 @@ class GamesList(MediaList):
         return
 
     @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict[str, ColumnElement]:
+    def get_available_sorting(cls) -> Dict[str, ColumnElement]:
         sorting_dict = {
             "Title A-Z": Games.name.asc(),
             "Title Z-A": Games.name.desc(),
             "Release date +": Games.release_date.desc(),
             "Release date -": Games.release_date.asc(),
-            "Score IGDB +": Games.vote_average.desc(),
-            "Score IGDB -": Games.vote_average.asc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "IGDB Rating +": Games.vote_average.desc(),
+            "IGDB Rating -": Games.vote_average.asc(),
+            "Rating +": cls.rating.desc(),
+            "Rating -": cls.rating.asc(),
             "Playtime +": cls.playtime.desc(),
             "Playtime -": cls.playtime.asc(),
         }

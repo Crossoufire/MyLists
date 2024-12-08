@@ -1,11 +1,11 @@
 import {LuArrowRight} from "react-icons/lu";
+import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
-import {getStatusColor} from "@/utils/functions";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 import {BlockLink} from "@/components/app/BlockLink";
-import {Link} from "@tanstack/react-router";
 import {BulletIcon} from "@/components/profile/BulletIcon";
+import {getFeelingIcon, getStatusColor} from "@/utils/functions";
 
 
 export const MediaStats = ({ user, media }) => {
@@ -24,26 +24,30 @@ export const MediaStats = ({ user, media }) => {
                 }
                 {media.media_type === "movies" &&
                     <MediaValues
-                        title="Watched"
+                        title="(Re)Watched"
                         value={media.specific_total}/>
                 }
                 {["series", "anime"].includes(media.media_type) &&
                     <MediaValues
-                        title="Episodes"
-                        value={media.specific_total}/>
+                        title="Tot. Eps."
+                        value={media.specific_total}
+                    />
                 }
                 <MediaValues
                     title="Entries"
                     value={media.total_media}
                 />
-                {!user.add_feeling &&
-                    <MediaValues
-                        title="Rating"
-                        value={media.mean_metric.toFixed(2)}/>
-                }
                 <MediaValues
-                    title="Scored"
-                    value={`${media.media_metric}/${media.total_media_no_plan_to_x}`}
+                    title="Avg. Rating"
+                    value={user.rating_system === "score" ?
+                        media.media_rated === 0 ? "--" : `${media.mean_rating.toFixed(2)}`
+                        :
+                        getFeelingIcon(media.mean_rating, { size: 16, className: "mt-1" })
+                    }
+                />
+                <MediaValues
+                    title="Rated"
+                    value={`${media.media_rated}/${media.total_media_no_plan_to_x}`}
                 />
             </div>
             <MediaStatuses
@@ -69,7 +73,7 @@ function MediaValues({ title, value }) {
     return (
         <div>
             <div className="text-neutral-500">{title}</div>
-            <div>{value}</div>
+            <div className="flex items-center justify-center">{value}</div>
         </div>
     );
 }

@@ -1,10 +1,10 @@
 from marshmallow import validates, ValidationError, validate
 
 from backend.api import ma
-from backend.api.core import current_user
 from backend.api.models import User
+from backend.api.core import current_user
 from backend.api.schemas.core import EnumField
-from backend.api.utils.enums import Privacy, SearchSelector
+from backend.api.utils.enums import Privacy, SearchSelector, RatingSystem
 
 
 class RegisterUserSchema(ma.Schema):
@@ -45,12 +45,12 @@ class PasswordSchema(ma.Schema):
 
 
 class ListSettingsSchema(ma.Schema):
-    add_feeling = ma.Bool(load_default=None)
     add_anime = ma.Bool(load_default=None)
     add_games = ma.Bool(load_default=None)
     add_books = ma.Bool(load_default=None)
-    search_selector = EnumField(SearchSelector, load_default=None)
     grid_list_view = ma.Bool(load_default=None)
+    rating_system = EnumField(RatingSystem, load_default=None)
+    search_selector = EnumField(SearchSelector, load_default=None)
 
 
 class GeneralSettingsSchema(ma.Schema):

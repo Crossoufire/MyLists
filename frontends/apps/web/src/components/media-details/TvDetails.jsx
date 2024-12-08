@@ -56,7 +56,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         />
                         <GenericDetails
                             name="Completion"
-                            value={formatMinutes(mediaData.total_episodes * mediaData.duration, { format: "hm" })}
+                            value={formatMinutes(mediaData.total_episodes * mediaData.duration)}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

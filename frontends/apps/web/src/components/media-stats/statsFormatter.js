@@ -1,4 +1,4 @@
-import {formatNumberWithSpaces} from "@/utils/functions";
+import {formatNumberWithSpaces, getFeelingIcon} from "@/utils/functions";
 
 
 export const dataToLoad = (mediaType, apiData) => {
@@ -33,6 +33,8 @@ const getListsData = (data, suffix = "Watched") => {
 
 
 const tvData = (apiData) => {
+    console.log(apiData);
+
     return [
         {
             sidebarTitle: "Main Statistics",
@@ -53,8 +55,11 @@ const tvData = (apiData) => {
                     },
                     {
                         title: "Average Rating",
-                        subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating || "-",
+                        subtitle: apiData.rating_system === "score" ? "Rated from 0 - 10" : "Most common feel",
+                        value: (
+                            apiData.rating_system === "score" ?
+                                apiData.values.avg_rating : getFeelingIcon(apiData.values.avg_rating, { size: 25, className: "mt-1.5" })
+                        ) || "-",
                     },
                     {
                         title: "Average Duration",
@@ -194,8 +199,11 @@ const moviesData = (apiData) => {
                     },
                     {
                         title: "Average Rating",
-                        subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating || "-",
+                        subtitle: apiData.rating_system === "score" ? "Rated from 0 - 10" : "Most common feel",
+                        value: (
+                            apiData.rating_system === "score" ?
+                                apiData.values.avg_rating : getFeelingIcon(apiData.values.avg_rating, { size: 25, className: "mt-1.5" })
+                        ) || "-",
                     },
                     {
                         title: "Average Duration",
@@ -335,8 +343,11 @@ const booksData = (apiData) => {
                     },
                     {
                         title: "Average Rating",
-                        subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating || "-",
+                        subtitle: apiData.rating_system === "score" ? "Rated from 0 - 10" : "Most common feel",
+                        value: (
+                            apiData.rating_system === "score" ?
+                                apiData.values.avg_rating : getFeelingIcon(apiData.values.avg_rating, { size: 25, className: "mt-1.5" })
+                        ) || "-",
                     },
                     {
                         title: "Average Pages",
@@ -470,14 +481,17 @@ const gamesData = (apiData) => {
                         value: formatNumberWithSpaces(apiData.values.total_hours),
                     },
                     {
+                        title: "Average Rating",
+                        subtitle: apiData.rating_system === "score" ? "Rated from 0 - 10" : "Most common feel",
+                        value: (
+                            apiData.rating_system === "score" ?
+                                apiData.values.avg_rating : getFeelingIcon(apiData.values.avg_rating, { size: 25, className: "mt-1.5" })
+                        ) || "-",
+                    },
+                    {
                         title: "Average Playtime",
                         subtitle: `Playtime in hours`,
                         value: apiData.values.avg_playtime || "-",
-                    },
-                    {
-                        title: "Average Rating",
-                        subtitle: apiData.is_feeling ? "Most common feeling" : "Scored from 0 - 10",
-                        value: apiData.values.avg_rating || "-",
                     },
                     {
                         title: "Average Updates",

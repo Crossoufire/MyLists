@@ -9,12 +9,12 @@ from typing import List, Dict, Optional, Any
 import jwt
 from flask import url_for, current_app
 from flask_bcrypt import check_password_hash, generate_password_hash
-from sqlalchemy import desc, func, select, union_all, literal, case
+from sqlalchemy import desc, func, select, union_all, case
 
 from backend.api import db
 from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status, SearchSelector
+from backend.api.utils.enums import RoleType, MediaType, ModelTypes, NotificationType, UpdateType, Privacy, Status, SearchSelector, RatingSystem
 from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
 
 
@@ -43,7 +43,7 @@ class Token(db.Model):
         self.refresh_expiration = naive_utcnow() + timedelta(days=current_app.config["REFRESH_TOKEN_DAYS"])
 
     def expire(self, delay: int = None):
-        # Add 5 second delay for simultaneous requests
+        # Add 5 seconds delay for simultaneous requests
         if delay is None:
             delay = 5 if not current_app.testing else 0
 
@@ -78,8 +78,8 @@ class User(db.Model):
     show_update_modal = db.Column(db.Boolean, default=True)
     grid_list_view = db.Column(db.Boolean, nullable=False, default=True)
     profile_views = db.Column(db.Integer, nullable=False, default=0)
-    add_feeling = db.Column(db.Boolean, nullable=False, default=False)
     search_selector = db.Column(db.Enum(SearchSelector), nullable=False, default=SearchSelector.TMDB)
+    rating_system = db.Column(db.Enum(RatingSystem), nullable=False, default=RatingSystem.SCORE)
 
     # --- Relationships ----------------------------------------------------------------
     token = db.relationship("Token", back_populates="user", lazy="noload")
@@ -218,41 +218,13 @@ class User(db.Model):
         # Total time [hours]
         total_hours = sum(time_per_media)
 
-        # If feeling - count per feeling
-        count_per_feeling = []
-        if self.add_feeling:
-            # Create temporary table subquery with all feelings [0 to 5]
-            all_feelings = union_all(
-                select(literal(0).label("feeling")), select(literal(1)), select(literal(2)),
-                select(literal(3)), select(literal(4)), select(literal(5))
-            ).subquery()
-
-            # Query feelings for each model
-            user_feelings = union_all(
-                *[db.session.query(model.feeling.label("feeling"))
-                  .filter(model.user_id == self.id, model.feeling.isnot(None)) for model in models]
-            ).subquery()
-
-            # Query results as list of tuple
-            results = (
-                db.session.query(all_feelings.c.feeling, func.count(user_feelings.c.feeling))
-                .outerjoin(user_feelings, all_feelings.c.feeling == user_feelings.c.feeling)
-                .group_by(all_feelings.c.feeling)
-                .order_by(desc(all_feelings.c.feeling))
-                .all()
-            )
-
-            # Create List[int] always size 5 from highest to lowest
-            count_per_feeling = [r[1] for r in results]
-
-        # Combine queries for count total media, percentage rated, and average rating
-        rating = "feeling" if self.add_feeling else "score"
+        # Combine queries for count total entries, percentage rated, and average rating
         statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
         subqueries = union_all(
             *[(db.session.query(
                 func.count(model.media_id),
-                func.count(getattr(model, rating)),
-                func.coalesce(func.sum(getattr(model, rating)), 0),
+                func.count(model.rating),
+                func.coalesce(func.sum(model.rating), 0),
                 func.coalesce(func.sum(case(*[(~model.status.in_(statuses), 1)], else_=0)), 0)
             ).filter(model.user_id == self.id)) for model in models]
         )
@@ -260,9 +232,9 @@ class User(db.Model):
         results = db.session.execute(subqueries).all()
 
         # Calculation for total media, percent scored, and mean score
-        total_media, total_scored, sum_score, total_media_no_plan_to_x = map(sum, zip(*results))
-        percent_scored = safe_div(total_scored, total_media_no_plan_to_x, percentage=True)
-        mean_score = safe_div(sum_score, total_scored)
+        total_media, total_rated, sum_rated, total_media_no_plan_to_x = map(sum, zip(*results))
+        percent_rated = safe_div(total_rated, total_media_no_plan_to_x, percentage=True)
+        mean_rated = safe_div(sum_rated, total_rated)
 
         data = dict(
             total_hours=int(total_hours),
@@ -270,10 +242,9 @@ class User(db.Model):
             total_media=total_media,
             total_media_no_plan_to_x=total_media_no_plan_to_x,
             time_per_media=time_per_media,
-            total_scored=total_scored,
-            percent_scored=percent_scored,
-            mean_score=mean_score,
-            count_per_feeling=count_per_feeling,
+            total_rated=total_rated,
+            percent_rated=percent_rated,
+            mean_rated=mean_rated,
             media_types=[model.GROUP.value for model in models],
         )
 
@@ -285,10 +256,8 @@ class User(db.Model):
         media_dict = dict(
             media_type=media_type.value,
             specific_total=list_model.get_specific_total(self.id),
-            # count_per_metric=list_model.get_media_count_per_rating(self),
             time_hours=int(self.get_media_setting(media_type).time_spent / 60),
             time_days=int(self.get_media_setting(media_type).time_spent / 1440),
-            # labels=label_model.get_total_and_user_labels(self.id, limit=10),
         )
 
         media_dict.update(list_model.get_media_count_per_status(self.id))

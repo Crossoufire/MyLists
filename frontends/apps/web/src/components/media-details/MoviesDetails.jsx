@@ -30,7 +30,7 @@ export const MoviesDetails = ({ mediaType, mediaData }) => (
                 <div className="flex flex-col gap-y-4">
                     <GenericDetails
                         name="Runtime"
-                        value={formatMinutes(mediaData.duration, { format: "hm" })}
+                        value={formatMinutes(mediaData.duration)}
                     />
                     <GenericDetails
                         name="Budget"

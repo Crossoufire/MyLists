@@ -30,6 +30,13 @@ class Privacy(StrEnum):
     PRIVATE = "private"
 
 
+class RatingSystem(StrEnum):
+    """ Represents the rating system used by the user """
+
+    SCORE = "score"
+    FEELING = "feeling"
+
+
 # --- MEDIA ------------------------------------------------------------------------
 
 

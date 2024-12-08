@@ -133,30 +133,15 @@ def update_rating(data):
     """ Update the media rating entered by a user """
 
     try:
-        payload = float(data["payload"])
-        if current_user.add_feeling:
-            payload = int(payload)
+        rating = float(data["payload"])
     except:
-        payload = None
-
-    if payload:
-        if current_user.add_feeling:
-            if payload > 5 or payload < 0:
-                return abort(400, description="Feeling needs to be between 0 and 5")
-        else:
-            if payload > 10 or payload < 0:
-                return abort(400, description="Score needs to be between 0 and 10")
+        rating = None
 
     media_assoc = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
-
-    if current_user.add_feeling:
-        media_assoc.feeling = payload
-    else:
-        media_assoc.score = payload
+    media_assoc.rating = rating
 
     db.session.commit()
-    current_app.logger.info(f"[{current_user.id}] [{data['media_type'].value}] ID {data['media_id']} "
-                            f"{'feeling' if current_user.add_feeling else 'score'} updated to {payload}")
+    current_app.logger.info(f"[{current_user.id}] [{data['media_type'].value}] ID {data['media_id']} rating updated to {rating}")
 
     return {}, 204
 

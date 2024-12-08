@@ -30,12 +30,11 @@ class StatsManager(metaclass=StatsManagerMeta):
 
     def __init__(self, user: User):
         self.user = user
-        self.data = {"values": {}, "lists": {}, "is_feeling": self.user.add_feeling}
+        self.data = {"values": {}, "lists": {}}
 
         self.media_models = ModelsManager.get_dict_models(self.GROUP, "all")
         self._initialize_media_models()
 
-        self.rating = self.media_list.feeling if self.user.add_feeling else self.media_list.score
         self.common_join = [self.media_list, self.media_list.media_id == self.media.id]
         self.common_filter = []
 
@@ -84,19 +83,18 @@ class StatsManager(metaclass=StatsManagerMeta):
         self.data["values"]["total_labels"] = data or 0
 
     def compute_ratings(self):
-        range_ = list(range(6)) if self.user.add_feeling else [i * 0.5 for i in range(21)]
-        rating_distrib = {str(val): 0 for val in range_}
+        rating_distrib = {str(val): 0 for val in [i * 0.5 for i in range(21)]}
 
         query = (
-            db.session.query(self.rating, func.count(self.rating))
-            .filter(*self.common_filter, self.rating.is_not(None))
-            .group_by(self.rating).order_by(self.rating.asc())
+            db.session.query(self.media_list.rating, func.count(self.media_list.rating))
+            .filter(*self.common_filter, self.media_list.rating.is_not(None))
+            .group_by(self.media_list.rating).order_by(self.media_list.rating.asc())
             .all()
         )
 
         avg_rating = (
-            db.session.query(func.avg(self.rating))
-            .filter(*self.common_filter, self.rating.is_not(None))
+            db.session.query(func.avg(self.media_list.rating))
+            .filter(*self.common_filter, self.media_list.rating.is_not(None))
             .scalar()
         )
 
@@ -172,12 +170,12 @@ class StatsManager(metaclass=StatsManagerMeta):
             filters = []
 
         model_attr = "media_id" if model.TYPE != ModelTypes.MEDIA else "id"
-        query = db.session.query(metric, func.avg(self.rating).label("rating"))
+        query = db.session.query(metric, func.avg(self.media_list.rating).label("rating"))
         if model.TYPE != ModelTypes.LIST:
             query = query.join(self.media_list, self.media_list.media_id == getattr(model, model_attr))
 
         query = (
-            query.filter(*self.common_filter, self.rating.is_not(None), *filters)
+            query.filter(*self.common_filter, self.media_list.rating.is_not(None), *filters)
             .group_by(metric)
             .having((func.count(metric) >= min_))
             .order_by(text("rating desc"))

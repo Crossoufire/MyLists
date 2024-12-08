@@ -3,10 +3,10 @@ from unittest import mock
 
 from flask import current_app
 
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models import UserMediaUpdate
 from backend.api.utils.enums import NotificationType
 from backend.tests.base_test import BaseTest, TEST_USER
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class UserTests(BaseTest):
@@ -293,29 +293,29 @@ class UserTests(BaseTest):
         self.assertEqual(rv.status_code, 401)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
-            "add_feeling": True,
+            "rating_system": "feeling",
             "grid_list_view": True,
             "add_anime": True,
             "add_games": True,
             "add_books": True,
         })
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["data"]["add_feeling"], True)
         self.assertEqual(rv.json["data"]["grid_list_view"], True)
+        self.assertEqual(rv.json["data"]["rating_system"], "feeling")
         self.assertEqual(rv.json["data"]["settings"]["anime"]["active"], True)
         self.assertEqual(rv.json["data"]["settings"]["games"]["active"], True)
         self.assertEqual(rv.json["data"]["settings"]["books"]["active"], True)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
-            "add_feeling": False,
+            "rating_system": "score",
             "grid_list_view": False,
             "add_anime": False,
             "add_games": False,
             "add_books": False,
         })
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json["data"]["add_feeling"], False)
         self.assertEqual(rv.json["data"]["grid_list_view"], False)
+        self.assertEqual(rv.json["data"]["rating_system"], "score")
         self.assertEqual(rv.json["data"]["settings"]["anime"]["active"], False)
         self.assertEqual(rv.json["data"]["settings"]["games"]["active"], False)
         self.assertEqual(rv.json["data"]["settings"]["books"]["active"], False)

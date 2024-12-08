@@ -4,7 +4,7 @@ import {pieTheme} from "@/utils/nivoThemes";
 import {Tooltip} from "@/components/ui/tooltip";
 import {useCollapse} from "@/hooks/useCollapse";
 import {Separator} from "@/components/ui/separator";
-import {getFeelingValues, getMediaColor} from "@/utils/functions";
+import {getFeelingIcon, getMediaColor} from "@/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
@@ -64,63 +64,36 @@ export const GlobalStats = ({ userData, global }) => {
                     </div>
                     <div className="col-span-12 sm:col-span-7 items-center text-center">
                         <div className="flex flex-col gap-6">
-                            {userData.add_feeling ?
-                                <>
-                                    <div className="grid grid-cols-3 font-semibold">
-                                        <Tooltip text={`${global.total_days} days`}>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">Total Time</div>
-                                                <div>{global.total_hours} h</div>
-                                            </div>
-                                        </Tooltip>
-                                        <div>
-                                            <div className="text-neutral-500 text-lg">Total Entries</div>
-                                            <div>{global.total_media}</div>
-                                        </div>
-                                        <Tooltip text={`${global.total_scored}/${global.total_media_no_plan_to_x}`}>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">% Rated</div>
-                                                <div>{global.percent_scored.toFixed(1)} %</div>
-                                            </div>
-                                        </Tooltip>
+                            <div className="grid grid-cols-2 font-semibold">
+                                <Tooltip text={`${global.total_days} days`}>
+                                    <div>
+                                        <div className="text-neutral-500 text-lg">Total Time</div>
+                                        <div>{global.total_hours} h</div>
                                     </div>
-                                    <div className="flex font-semibold items-center justify-around">
-                                        {getFeelingValues().slice(1).reverse().map((f, idx) =>
-                                            <div key={idx} className="space-y-2 text-center">
-                                                <div>{f.icon}</div>
-                                                <div>{global.count_per_feeling[idx]}</div>
-                                            </div>
-                                        )}
+                                </Tooltip>
+                                <div>
+                                    <div className="text-neutral-500 text-lg">Total Entries</div>
+                                    <div>{global.total_media}</div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 font-semibold">
+                                <Tooltip text={`${global.total_rated}/${global.total_media_no_plan_to_x}`}>
+                                    <div>
+                                        <div className="text-neutral-500 text-lg">% Rated</div>
+                                        <div>{global.percent_rated.toFixed(1)} %</div>
                                     </div>
-                                </>
-                                :
-                                <>
-                                    <div className="grid grid-cols-2 font-semibold">
-                                        <Tooltip text={`${global.total_days} days`}>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">Total Time</div>
-                                                <div>{global.total_hours} h</div>
-                                            </div>
-                                        </Tooltip>
-                                        <div>
-                                            <div className="text-neutral-500 text-lg">Total Entries</div>
-                                            <div>{global.total_media}</div>
-                                        </div>
+                                </Tooltip>
+                                <div>
+                                    <div className="text-neutral-500 text-lg">Avg. Rating</div>
+                                    <div className="flex items-center justify-center">
+                                        {userData.rating_system === "score" ?
+                                            `${global.mean_rated.toFixed(2)}/10`
+                                            :
+                                            getFeelingIcon(global.mean_rated, { size: 18, className: "mt-1" })
+                                        }
                                     </div>
-                                    <div className="grid grid-cols-2 font-semibold">
-                                        <Tooltip text={`${global.total_scored}/${global.total_media_no_plan_to_x}`}>
-                                            <div>
-                                                <div className="text-neutral-500 text-lg">% Rated</div>
-                                                <div>{global.percent_scored.toFixed(1)} %</div>
-                                            </div>
-                                        </Tooltip>
-                                        <div>
-                                            <div className="text-neutral-500 text-lg">Mean Score</div>
-                                            <div>{global.mean_score.toFixed(2)}/10</div>
-                                        </div>
-                                    </div>
-                                </>
-                            }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

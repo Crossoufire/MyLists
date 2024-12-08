@@ -2,16 +2,16 @@ import {toast} from "sonner";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {Sidebar} from "@/components/app/Sidebar";
-import {useEffect, useRef, useState} from "react";
+import {createContext, useContext, useEffect, useRef, useState} from "react";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {useAuth} from "@mylists/api/src/useAuthHook";
 import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {statsOptions} from "@mylists/api/src/queryOptions";
+import {LuAward, LuCircleHelp, LuUser} from "react-icons/lu";
 import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
-import {LuAward, LuCircleHelp, LuUser, LuX} from "react-icons/lu";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
@@ -28,7 +28,6 @@ function StatsPage() {
     const { otherUserStats } = simpleMutations();
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
-    const [feelingInfo, setFeelingInfo] = useState(true);
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);
     const [selectedTab, handleTabChange] = useState("Main Statistics");
     const apiData = useSuspenseQuery(statsOptions(mediaType, username)).data;
@@ -71,19 +70,12 @@ function StatsPage() {
                     onTabChange={handleTabChange}
                 />
                 <div>
-                    {(apiData.is_feeling && feelingInfo) &&
-                        <div className="mb-4 p-3 bg-cyan-900/80 rounded-md">
-                            <div role="button" className="relative" onClick={() => setFeelingInfo(false)}>
-                                <LuX className="absolute right-0 opacity-80"/>
-                            </div>
-                            <div className="text-lg font-medium">Feeling rating</div>
-                            <p>The feeling system was converted from 0 to 5 for convenience and clarity</p>
-                        </div>
-                    }
-                    <StatsDisplay
-                        statsData={statsData.find(data => data.sidebarTitle === selectedTab)}
-                        otherUserStatsData={statsDataOtherUser?.find(data => data.sidebarTitle === selectedTab)}
-                    />
+                    <RatingProvider value={{ ratingSystem: apiData.stats.rating_system }}>
+                        <StatsDisplay
+                            statsData={statsData.find(data => data.sidebarTitle === selectedTab)}
+                            otherUserStatsData={statsDataOtherUser?.find(data => data.sidebarTitle === selectedTab)}
+                        />
+                    </RatingProvider>
                 </div>
             </div>
         </PageTitle>
@@ -167,3 +159,14 @@ const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }
         </div>
     );
 };
+
+
+const RatingContext = createContext(null);
+
+const RatingProvider = ({ value, children }) => (
+    <RatingContext.Provider value={value}>
+        {children}
+    </RatingContext.Provider>
+);
+
+export const useRatingSystem = () => useContext(RatingContext);

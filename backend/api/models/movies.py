@@ -99,22 +99,19 @@ class MoviesList(MediaList):
     media = db.relationship("Movies", back_populates="list_info", lazy="joined")
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        del media_dict["feeling"]
-        del media_dict["score"]
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["rating"] = {
-            "type": "feeling" if is_feeling else "score",
-            "value": self.feeling if is_feeling else self.score
-        }
+        media_dict.update({
+            "media_cover": self.media.media_cover,
+            "media_name": self.media.name,
+            "all_status": Status.by(self.GROUP),
+            "rating": {
+                "type": self.user.rating_system,
+                "value": self.rating,
+            }
+        })
 
         return media_dict
 

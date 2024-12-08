@@ -205,7 +205,7 @@ class AchievementManager(metaclass=AchievementManagerMeta):
         base_query = (
             db.session.query(self.media_list.user_id, func.count(self.media_list.media_id).label("value"))
             .join(self.media).join(User, self.media_list.user_id == User.id)
-            .filter(case((User.add_feeling.is_(True), self.media_list.feeling), else_=self.media_list.score).is_not(None))
+            .filter(self.media_list.rating.is_not(None))
         )
 
         subquery = self._filter_and_group_by_users(base_query, user_ids)

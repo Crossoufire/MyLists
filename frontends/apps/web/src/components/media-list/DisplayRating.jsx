@@ -1,9 +1,11 @@
 import {LuStar} from "react-icons/lu";
-import {getFeelingValues} from "@/utils/functions";
+import {getFeelingIcon} from "@/utils/functions";
 
 
 export const DisplayRating = ({ rating }) => {
-    if (rating.type === "score" && rating.value) {
+    if (!rating.value) return null;
+
+    if (rating.type === "score") {
         return (
             <div className="flex items-center gap-1">
                 <LuStar className="text-amber-500"/>
@@ -11,9 +13,6 @@ export const DisplayRating = ({ rating }) => {
             </div>
         );
     }
-    if (rating.type === "feeling" && rating.value) {
-        return getFeelingValues(16).find(f => f.value === rating.value)?.icon;
-    }
-
-    return null;
+    
+    return getFeelingIcon(rating.value, { size: 16 });
 };

@@ -16,7 +16,6 @@ const selectTriggerVariants = cva("flex w-full items-center justify-between whit
                 list: "hover:bg-secondary rounded-none text-sm",
             },
             size: {
-                list: "",
                 details: "h-7 pl-2",
                 editList: "h-9 pl-4",
                 default: "h-9 px-3 py-2",

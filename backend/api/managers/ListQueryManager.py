@@ -34,7 +34,7 @@ class ListQueryManager:
             self.common_ids = self._calculate_common_ids()
 
         self.all_status = Status.by(self.media_type)
-        self.all_sorting = self.media_list.get_available_sorting(self.user.add_feeling)
+        self.all_sorting = self.media_list.get_available_sorting()
 
     def _initialize_media_models(self):
         media_models = ModelsManager.get_dict_models(self.media_type, "all")

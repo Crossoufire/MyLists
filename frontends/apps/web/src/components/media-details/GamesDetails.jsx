@@ -54,15 +54,15 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                     <div className="flex flex-col gap-y-4">
                         <GenericDetails
                             name="HLTB Main"
-                            value={formatMinutes(mediaData.hltb_main_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_main_time * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Extra"
-                            value={formatMinutes(mediaData.hltb_main_and_extra_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_main_and_extra_time * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Total"
-                            value={formatMinutes(mediaData.hltb_total_complete_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_total_complete_time * 60, true)}
                         />
                     </div>
                 </div>

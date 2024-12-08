@@ -1,7 +1,7 @@
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {Card, CardContent} from "@/components/ui/card";
-import {getFeelingValues, zeroPad} from "@/utils/functions.jsx";
+import {getFeelingIcon, zeroPad} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} from "react-icons/lu";
 
@@ -9,7 +9,7 @@ import {LuAlignJustify, LuHeart, LuMessageSquare, LuPlay, LuRotateCw, LuStar} fr
 export const FollowCard = ({ follow, mediaType }) => {
     const formatRating = () => {
         if (follow.rating.type === "feeling") {
-            return getFeelingValues(17).find(data => data.value === follow.rating.value).icon;
+            return getFeelingIcon(follow.rating.value, { size: 17 });
         }
         return follow.rating.value === null ? "--" : follow.rating.value.toFixed(1);
     };

@@ -24,6 +24,7 @@ class MediaTests(BaseTest):
             with open(f"{base_dir}/media/{media_file}") as fp:
                 media_data = json.load(fp)
 
+            # noinspection PyTypeChecker
             api_manager = ApiManager.get_subclass(media_type)()
             api_manager.all_data = media_data
             api_manager.all_data["media_data"]["last_api_update"] = naive_utcnow()
@@ -269,7 +270,7 @@ class MediaTests(BaseTest):
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv.json["settings"][media_type.value]["time_spent"], time)
 
-    def test_update_rating_score(self):
+    def test_update_rating(self):
         headers = self.connexion()
         self.create_all_media()
 
@@ -319,66 +320,6 @@ class MediaTests(BaseTest):
             self.assertEqual(rv.status_code, 204)
             query = model_list.query.filter_by(user_id=1, media_id=1).first()
             self.assertEqual(query.score, None)
-
-    def test_update_rating_feeling(self):
-        headers = self.connexion()
-
-        # Change from score to feeling for user
-        rv = self.client.post("/api/settings/medialist", headers=headers, json={"add_feeling": True})
-        self.assertEqual(rv.status_code, 200)
-
-        self.create_all_media()
-
-        for media_type in MediaType:
-            model_list = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
-
-            self.client.post("/api/add_media", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": "Completed",
-            })
-
-            rv = self.client.post("/api/update_rating", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": 6,
-            })
-            self.assertEqual(rv.status_code, 400)
-
-            rv = self.client.post("/api/update_rating", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": -2,
-            })
-            self.assertEqual(rv.status_code, 400)
-
-            # Round to int
-            rv = self.client.post("/api/update_rating", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": 3.5,
-            })
-            self.assertEqual(rv.status_code, 204)
-            query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            self.assertEqual(query.feeling, "3")
-
-            rv = self.client.post("/api/update_rating", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": 4,
-            })
-            self.assertEqual(rv.status_code, 204)
-            query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            self.assertEqual(query.feeling, "4")
-
-            rv = self.client.post("/api/update_rating", headers=headers, json={
-                "media_id": 1,
-                "media_type": media_type.value,
-                "payload": None,
-            })
-            self.assertEqual(rv.status_code, 204)
-            query = model_list.query.filter_by(user_id=1, media_id=1).first()
-            self.assertEqual(query.feeling, None)
 
     def test_update_redo(self):
 

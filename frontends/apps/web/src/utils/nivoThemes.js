@@ -31,6 +31,7 @@ export const barTheme = {
     },
 };
 
+
 export const pieTheme = {
     labels: {
         text: {
