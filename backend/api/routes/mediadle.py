@@ -1,18 +1,18 @@
-import base64
 import io
 import os
+import base64
 
 from PIL import Image
 from flask import Blueprint, jsonify, abort, current_app
 
 from backend.api import db
-from backend.api.core import token_auth, current_user
 from backend.api.models import Movies
-from backend.api.models.mediadle import DailyMediadle, UserMediadleProgress, MediadleStats
-from backend.api.schemas.mediadle import MediaGuessSchema, MediadleSuggestionsSchema
-from backend.api.utils.decorators import body, arguments
 from backend.api.utils.enums import MediaType
 from backend.api.utils.functions import naive_utcnow
+from backend.api.core import token_auth, current_user
+from backend.api.utils.decorators import body, arguments
+from backend.api.schemas.mediadle import MediaGuessSchema, MediadleSuggestionsSchema
+from backend.api.models.mediadle import DailyMediadle, UserMediadleProgress, MediadleStats
 
 
 mediadle_bp = Blueprint("mediadle", __name__)

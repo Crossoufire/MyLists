@@ -1,7 +1,7 @@
 import {cn} from "@/utils/functions";
 import {useEffect, useState} from "react";
-import {useMakeGuess} from "@mylists/api/src";
 import {Input} from "@/components/ui/input";
+import {useMakeGuess} from "@mylists/api/src";
 import {Button} from "@/components/ui/button";
 import {useDebounce} from "@/hooks/useDebounce";
 import {Progress} from "@/components/ui/progress";
@@ -15,7 +15,7 @@ import {LuAward, LuCrown, LuFlame, LuPartyPopper, LuSigma, LuTarget, LuThumbsDow
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_private/mediadle")({
+export const Route = createLazyFileRoute("/_private/moviedle")({
     component: MediadlePage,
 });
 

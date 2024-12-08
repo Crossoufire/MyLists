@@ -84,8 +84,8 @@ export const Navbar = () => {
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavLink to="/mediadle" className={navStyle()}>
-                                    Mediadle
+                                <NavLink to="/moviedle" className={navStyle()}>
+                                    Moviedle
                                 </NavLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -200,8 +200,8 @@ export const Navbar = () => {
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavLink to="/mediadle" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Mediadle
+                                        <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Moviedle
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
