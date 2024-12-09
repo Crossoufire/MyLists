@@ -5,10 +5,10 @@ from typing import Callable
 
 from flask import abort
 
-from backend.api.core import current_user
 from backend.api.models import User
-from backend.api.schemas.core import FlaskParser
+from backend.api.core import current_user
 from backend.api.utils.enums import Privacy
+from backend.api.schemas.core import FlaskParser
 
 
 use_args = FlaskParser().use_args

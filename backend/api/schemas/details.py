@@ -1,9 +1,9 @@
 from marshmallow import post_load
 
 from backend.api import ma
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
 from backend.api.utils.enums import ModelTypes, MediaType
+from backend.api.managers.ModelsManager import ModelsManager
 
 
 class MediaEditSchema(ma.Schema):

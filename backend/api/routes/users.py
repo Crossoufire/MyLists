@@ -1,19 +1,19 @@
 import json
 
-from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
+from flask import Blueprint, request, jsonify, abort, current_app
 
 from backend.api import db
-from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
-from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.core import current_user, token_auth
 from backend.api.models import UserAchievement, Achievement
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.functions import format_to_download_as_csv, save_picture
+from backend.api.utils.decorators import arguments, body, check_authorization
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector, RatingSystem
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
-from backend.api.utils.decorators import arguments, body, check_authorization
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector, RatingSystem
-from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
 users = Blueprint("api_users", __name__)

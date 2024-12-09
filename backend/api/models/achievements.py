@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from operator import and_
 import random
+from operator import and_
 from typing import Dict, List
 
 from sqlalchemy import case, Case, func

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Optional, List
 
 from backend.api import db
-from backend.api.models import AchievementDifficulty, Achievement, AchievementTier
 from backend.api.utils.enums import MediaType
+from backend.api.models import AchievementDifficulty, Achievement, AchievementTier
 
 
 @dataclass(frozen=True)

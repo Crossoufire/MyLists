@@ -1,9 +1,9 @@
 from marshmallow import post_load
 
 from backend.api import ma
+from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import SplitStringList, EnumField
-from backend.api.utils.enums import MediaType, ModelTypes
 
 
 class MediaListSchema(ma.Schema):

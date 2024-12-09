@@ -7,8 +7,8 @@ from sqlalchemy import func
 
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 from backend.api.utils.enums import MediaType, Status, JobType
+from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 
 
 class Movies(Media):

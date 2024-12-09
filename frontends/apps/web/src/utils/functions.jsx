@@ -139,10 +139,14 @@ export const getLevelColor = (intLevel) => {
 };
 
 
-export const diffColors = (difficulty, bg = false) => {
+export const diffColors = (difficulty, value = "text") => {
     if (!difficulty) return null;
 
     const colors = {
+        "border-bronze": "border-amber-700",
+        "border-silver": "border-slate-400",
+        "border-gold": "border-yellow-600",
+        "border-platinum": "border-teal-600",
         "bg-bronze": "bg-amber-700",
         "bg-silver": "bg-slate-400",
         "bg-gold": "bg-yellow-600",
@@ -153,7 +157,7 @@ export const diffColors = (difficulty, bg = false) => {
         "text-platinum": "text-teal-600",
     };
 
-    return bg ? colors[`bg-${difficulty}`] : colors[`text-${difficulty}`];
+    return colors[`${value}-${difficulty}`];
 };
 
 

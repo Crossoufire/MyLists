@@ -6,13 +6,13 @@ from urllib.request import urlretrieve
 from flask import current_app, request, jsonify, Blueprint, abort
 
 from backend.api import db
-from backend.api.managers.ApiManager import ApiManager
 from backend.api.core import token_auth
 from backend.api.schemas.details import *
 from backend.api.utils.decorators import body
+from backend.api.managers.ApiManager import ApiManager
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
 from backend.api.utils.functions import get, format_datetime, resize_and_save_image
-from backend.api.managers.ModelsManager import ModelsManager
 
 
 details_bp = Blueprint("api_details", __name__)

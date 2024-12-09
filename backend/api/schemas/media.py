@@ -1,8 +1,8 @@
 from marshmallow import post_load, validates, ValidationError
 
 from backend.api import ma
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 
 

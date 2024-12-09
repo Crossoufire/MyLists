@@ -6,8 +6,8 @@ from typing import List, Any, Iterable, Tuple, Dict, Optional
 
 from PIL import Image
 from flask import current_app, abort
-from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 
 
 def get(state: Iterable, *path: Any, default: Any = None):

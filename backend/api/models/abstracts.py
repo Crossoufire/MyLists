@@ -7,11 +7,11 @@ from sqlalchemy import func, desc
 
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers
-from backend.api.utils.enums import ModelTypes, Status, MediaType
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.functions import safe_div, naive_utcnow
+from backend.api.utils.enums import ModelTypes, Status, MediaType
 
 
 class Media(db.Model, UpdateMixin):
