@@ -1,11 +1,11 @@
 import {CirclePlus} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {userMediaMutations} from "@mylists/api/src";
+import {useMediaMutations} from "@mylists/api/src";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 export const QuickAddMedia = ({ mediaType, mediaId, allStatus, queryKey }) => {
-    const { addToList } = userMediaMutations(mediaType, mediaId, queryKey);
+    const { addToList } = useMediaMutations(mediaType, mediaId, queryKey);
 
     const addMediaToUser = (status) => {
         addToList.mutate({ payload: status });

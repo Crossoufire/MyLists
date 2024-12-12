@@ -2,13 +2,13 @@ import {toast} from "sonner";
 import {router} from "@/router";
 import {Button} from "@/components/ui/button";
 import {useNavigate} from "@tanstack/react-router";
-import {simpleMutations, useAuth} from "@mylists/api/src";
+import {useAuth, useSimpleMutations} from "@mylists/api/src";
 
 
 export const DangerForm = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const { deleteAccount } = simpleMutations();
+    const { deleteAccount } = useSimpleMutations();
 
     const onSubmit = async () => {
         if (!window.confirm("Are you really sure?")) return;

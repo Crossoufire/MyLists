@@ -54,7 +54,7 @@ const mutationFunctionsMap = {
 };
 
 
-export const simpleMutations = () => {
+export const useSimpleMutations = () => {
     const resetPassword = useMutation({ mutationFn: mutationFunctionsMap.resetPassword });
     const registerToken = useMutation({ mutationFn: mutationFunctionsMap.registerToken });
     const forgotPassword = useMutation({ mutationFn: mutationFunctionsMap.forgotPassword });

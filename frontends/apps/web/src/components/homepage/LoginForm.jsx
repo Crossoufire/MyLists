@@ -5,7 +5,7 @@ import {Input} from "@/components/ui/input";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
 import {FormButton} from "@/components/app/FormButton";
-import {simpleMutations, useAuth} from "@mylists/api/src";
+import {useAuth, useSimpleMutations} from "@mylists/api/src";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -15,7 +15,7 @@ export const LoginForm = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
-    const { oAuth2Provider } = simpleMutations();
+    const { oAuth2Provider } = useSimpleMutations();
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
     useLayoutEffect(() => {

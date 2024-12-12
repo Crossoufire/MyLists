@@ -3,7 +3,7 @@ import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {FormButton} from "@/components/app/FormButton";
-import {simpleMutations, useAuth} from "@mylists/api/src";
+import {useAuth, useSimpleMutations} from "@mylists/api/src";
 import {ImageCropper} from "@/components/settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -11,7 +11,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const GeneralForm = () => {
-    const { generalSettings } = simpleMutations();
+    const { generalSettings } = useSimpleMutations();
     const { currentUser, setCurrentUser } = useAuth();
     const form = useForm({
         defaultValues: {

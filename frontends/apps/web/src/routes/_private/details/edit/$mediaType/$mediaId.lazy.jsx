@@ -6,7 +6,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
 import {editMediaOptions} from "@mylists/api/src/queryOptions";
-import {simpleMutations} from "@mylists/api/src/simpleMutations";
+import {useSimpleMutations} from "@mylists/api/src/useSimpleMutations";
 import MultipleSelector from "@/components/ui/multiple-selector";
 import {createLazyFileRoute, useRouter} from "@tanstack/react-router";
 import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions";
@@ -21,7 +21,7 @@ export const Route = createLazyFileRoute("/_private/details/edit/$mediaType/$med
 
 function MediaEditPage() {
     const { history } = useRouter();
-    const { editMediaMutation } = simpleMutations();
+    const { editMediaMutation } = useSimpleMutations();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
     const form = useForm({ defaultValues: { genres: genreListsToListsOfDict(apiData.genres) } });

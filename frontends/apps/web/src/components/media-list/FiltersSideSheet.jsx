@@ -11,9 +11,9 @@ import {capitalize, getLangCountryName} from "@/utils/functions";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {filterSearchOptions, smallFiltersOptions} from "@mylists/api/src";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {ChevronDown, CircleHelp, LoaderCircle, MoveRight, Search} from "lucide-react";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
-import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
+import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
@@ -50,6 +50,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     };
 
     const handleOnSubmit = async (ev) => {
+        onClose();
         ev.preventDefault();
         await onFilterApply(localFilters);
     };
@@ -58,11 +59,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
         <Sheet defaultOpen={true} onOpenChange={onClose}>
             <SheetContent className="max-sm:w-full">
                 <SheetHeader>
-                    <SheetTitle>Additional Filters</SheetTitle>
-                    <SheetDescription>
-                        <div className="flex items-center gap-2">
-                            How filters works <FilterInfoPopover/>
-                        </div>
+                    <SheetTitle className="-mb-2">Additional Filters</SheetTitle>
+                    <SheetDescription className="flex items-center gap-1">
+                        How filters works <FilterInfoPopover/>
                     </SheetDescription>
                 </SheetHeader>
                 <Separator/>
@@ -177,11 +176,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                     <Separator/>
                                 </>
                             }
-                            <SheetFooter className="pr-2">
-                                <SheetClose asChild className="w-full">
-                                    <Button type="submit">Apply Filters</Button>
-                                </SheetClose>
-                            </SheetFooter>
+                            <Button type="submit" className="w-full">Apply Filters</Button>
                         </div>
                     }
                 </form>
@@ -316,7 +311,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                     <Badge key={item} className="mt-2 bg-neutral-800 h-8 px-4 text-sm gap-2" variant="outline">
                         {item}
                         <div role="button" className="hover:opacity-80 -mr-1" onClick={() => handleRemoveData(item)}>
-                            <X/>
+                            <X className="h-4 w-4"/>
                         </div>
                     </Badge>
                 )}

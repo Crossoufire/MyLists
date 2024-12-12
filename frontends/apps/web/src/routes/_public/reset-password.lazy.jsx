@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {PageTitle} from "@/components/app/PageTitle";
-import {simpleMutations} from "@mylists/api/src/simpleMutations";
+import {useSimpleMutations} from "@mylists/api/src/useSimpleMutations";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -17,7 +17,7 @@ export const Route = createLazyFileRoute("/_public/reset-password")({
 function ResetPasswordPage() {
     const navigate = useNavigate();
     const { token } = Route.useSearch();
-    const { resetPassword } = simpleMutations();
+    const { resetPassword } = useSimpleMutations();
     const form = useForm({ defaultValues: { new_password: "", confirm_password: "" } });
 
     const onSubmit = (data) => {

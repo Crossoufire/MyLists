@@ -11,7 +11,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/hooks/useDebounce";
 import {allUpdatesOptions, queryKeys} from "@mylists/api/src/queryOptions";
 import {TablePagination} from "@/components/app/TablePagination";
-import {useDeleteUpdateMutation} from "@mylists/api/src/simpleMutations";
+import {useDeleteUpdateMutation} from "@mylists/api/src/useSimpleMutations";
 import {createLazyFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";

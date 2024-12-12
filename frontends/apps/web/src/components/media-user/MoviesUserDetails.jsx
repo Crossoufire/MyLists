@@ -1,4 +1,4 @@
-import {userMediaMutations} from "@mylists/api/src";
+import {useMediaMutations} from "@mylists/api/src";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
@@ -6,7 +6,7 @@ import {RatingComponent} from "@/components/app/RatingComponent";
 
 
 export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRating, updateRedo, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRating, updateRedo, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMedia = (media, status) => ({ ...media, status, redo: 0 });
 

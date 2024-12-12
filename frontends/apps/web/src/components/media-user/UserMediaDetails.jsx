@@ -9,7 +9,7 @@ import {ManageFavorite} from "@/components/media-user/ManageFavorite";
 import {HistoryDetails} from "@/components/media-user/HistoryDetails";
 import {GamesUserDetails} from "@/components/media-user/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media-user/BooksUserDetails";
-import {historyOptions, queryKeys, userMediaMutations} from "@mylists/api/src";
+import {historyOptions, queryKeys, useMediaMutations} from "@mylists/api/src";
 import {MoviesUserDetails} from "@/components/media-user/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
@@ -29,7 +29,7 @@ const mediaComponentMap = (value) => {
 export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
     const MediaUserDetails = mediaComponentMap(mediaType);
     const { data: history } = useQuery(historyOptions(mediaType, userMedia.media_id));
-    const { removeFromList, updateFavorite, updateComment } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { removeFromList, updateFavorite, updateComment } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const handleDeleteMedia = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;

@@ -8,7 +8,7 @@ import {Separator} from "@/components/ui/separator";
 import {useAuth} from "@mylists/api/src/useAuthHook";
 import {FormButton} from "@/components/app/FormButton";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
-import {simpleMutations} from "@mylists/api/src/simpleMutations";
+import {useSimpleMutations} from "@mylists/api/src/useSimpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -16,7 +16,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 export const MediaListForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
-    const { listSettings, downloadListAsCSV } = simpleMutations();
+    const { listSettings, downloadListAsCSV } = useSimpleMutations();
     const [selectedList, setSelectedList] = useState("");
     const form = useForm({
         defaultValues: {

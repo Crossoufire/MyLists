@@ -3,8 +3,5 @@
     "version": "1.0.0",
     "description": "API system abstraction for MyLists",
     "private": true,
-    "main": "src/index.js",
-    "peerDependencies": {
-        "@tanstack/react-query": "^5.62.2"
-    }
+    "main": "src/index.js"
 }

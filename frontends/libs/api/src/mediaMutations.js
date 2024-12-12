@@ -29,27 +29,6 @@ export const mutationFunctionsMap = {
 };
 
 
-export const userMediaMutations = (mediaType, mediaId, queryKey) => {
-    const updateRating = createMediaMutation("update_rating", mediaType, mediaId, queryKey);
-    const updateComment = createMediaMutation("update_comment", mediaType, mediaId, queryKey);
-    const updateFavorite = createMediaMutation("update_favorite", mediaType, mediaId, queryKey);
-    const updateRedo = createMediaMutation("update_redo", mediaType, mediaId, queryKey);
-    const updatePlaytime = createMediaMutation("update_playtime", mediaType, mediaId, queryKey);
-    const updatePage = createMediaMutation("update_page", mediaType, mediaId, queryKey);
-    const updatePlatform = createMediaMutation("update_platform", mediaType, mediaId, queryKey);
-    const updateSeason = createMediaMutation("update_season", mediaType, mediaId, queryKey);
-    const updateEpisode = createMediaMutation("update_episode", mediaType, mediaId, queryKey);
-    const addToList = useAddMediaToList(mediaType, mediaId, queryKey);
-    const removeFromList = useRemoveFromList(mediaType, mediaId, queryKey);
-    const updateStatusFunc = (onSuccessHandler) => useUpdateStatus(mediaType, mediaId, queryKey, onSuccessHandler);
-
-    return {
-        updateRating, updateComment, updateFavorite, updateRedo, updatePlaytime, updatePage, updatePlatform,
-        updateSeason, updateEpisode, addToList, removeFromList, updateStatusFunc,
-    };
-};
-
-
 const createMediaMutation = (url, mediaType, mediaId, queryKey) => {
     const queryClient = useQueryClient();
 
@@ -132,4 +111,25 @@ const useAddMediaToList = (mediaType, mediaId, queryKey) => {
             });
         }
     });
+};
+
+
+export const useMediaMutations = (mediaType, mediaId, queryKey) => {
+    const updateRating = createMediaMutation("update_rating", mediaType, mediaId, queryKey);
+    const updateComment = createMediaMutation("update_comment", mediaType, mediaId, queryKey);
+    const updateFavorite = createMediaMutation("update_favorite", mediaType, mediaId, queryKey);
+    const updateRedo = createMediaMutation("update_redo", mediaType, mediaId, queryKey);
+    const updatePlaytime = createMediaMutation("update_playtime", mediaType, mediaId, queryKey);
+    const updatePage = createMediaMutation("update_page", mediaType, mediaId, queryKey);
+    const updatePlatform = createMediaMutation("update_platform", mediaType, mediaId, queryKey);
+    const updateSeason = createMediaMutation("update_season", mediaType, mediaId, queryKey);
+    const updateEpisode = createMediaMutation("update_episode", mediaType, mediaId, queryKey);
+    const addToList = useAddMediaToList(mediaType, mediaId, queryKey);
+    const removeFromList = useRemoveFromList(mediaType, mediaId, queryKey);
+    const updateStatusFunc = (onSuccessHandler) => useUpdateStatus(mediaType, mediaId, queryKey, onSuccessHandler);
+
+    return {
+        updateRating, updateComment, updateFavorite, updateRedo, updatePlaytime, updatePage, updatePlatform,
+        updateSeason, updateEpisode, addToList, removeFromList, updateStatusFunc,
+    };
 };

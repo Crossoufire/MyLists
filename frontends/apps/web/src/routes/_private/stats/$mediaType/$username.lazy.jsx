@@ -7,7 +7,7 @@ import {MediaIcon} from "@/components/app/MediaIcon";
 import {useAuth} from "@mylists/api/src/useAuthHook";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {statsOptions} from "@mylists/api/src/queryOptions";
-import {simpleMutations} from "@mylists/api/src/simpleMutations";
+import {useSimpleMutations} from "@mylists/api/src/useSimpleMutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
@@ -24,7 +24,7 @@ export const Route = createLazyFileRoute("/_private/stats/$mediaType/$username")
 
 
 function StatsPage() {
-    const { otherUserStats } = simpleMutations();
+    const { otherUserStats } = useSimpleMutations();
     const { mediaType, username } = Route.useParams();
     const [otherUser, setOtherUser] = useState("");
     const [statsDataOtherUser, setStatsDataOtherUser] = useState([]);

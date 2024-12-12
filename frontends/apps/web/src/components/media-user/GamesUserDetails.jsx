@@ -2,7 +2,7 @@ import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {Check, ChevronDown} from "lucide-react";
 import React, {useEffect, useState} from "react";
-import {userMediaMutations} from "@mylists/api/src";
+import {useMediaMutations} from "@mylists/api/src";
 import {Separator} from "@/components/ui/separator";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
@@ -12,7 +12,7 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 
 
 export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMedia = (media, status) => {
         const updatedMedia = { ...media, status };

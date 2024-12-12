@@ -6,7 +6,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {FormButton} from "@/components/app/FormButton";
 import {FollowCard} from "@/components/media-details/FollowCard";
-import {userMediaMutations} from "@mylists/api/src/mediaMutations";
+import {useMediaMutations} from "@mylists/api/src/mediaMutations";
 import {SimilarMedia} from "@/components/media-details/SimilarMedia";
 import {UserMediaDetails} from "@/components/media-user/UserMediaDetails";
 import {MediaDataDetails} from "@/components/media-details/MediaDataDetails";
@@ -26,7 +26,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(detailsOptions(mediaType, mediaId, external)).data;
-    const { addToList } = userMediaMutations(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()));
+    const { addToList } = useMediaMutations(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()));
 
     const handleAddMediaUser = () => {
         addToList.mutate({ payload: undefined });

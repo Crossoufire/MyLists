@@ -5,7 +5,7 @@ import {Button} from "@/components/ui/button";
 import {useEffect, useRef, useState} from "react";
 import {MutedText} from "@/components/app/MutedText";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {mediaLabelsOptions, queryKeys, userLabelsMutations} from "@mylists/api/src";
+import {mediaLabelsOptions, queryKeys, useLabelsMutations} from "@mylists/api/src";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/components/ui/credenza";
 
@@ -20,7 +20,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     const [editingName, setEditingName] = useState("");
     const [newLabelName, setNewLabelName] = useState("");
     const { data: allLabels = [], error, isLoading } = useQuery(mediaLabelsOptions(mediaType, isOpen));
-    const { addLabel, removeLabel, renameLabel, deleteLabel } = userLabelsMutations(mediaType, mediaId);
+    const { addLabel, removeLabel, renameLabel, deleteLabel } = useLabelsMutations(mediaType, mediaId);
 
     useEffect(() => {
         error && showToast("An unexpected error occurred. Please try again later.", "error");

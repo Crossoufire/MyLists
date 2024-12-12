@@ -13,7 +13,7 @@ const mutationFunctionsMap = {
 };
 
 
-export const userLabelsMutations = (mediaType, mediaId) => {
+export const useLabelsMutations = (mediaType, mediaId) => {
     const addLabel = useAddLabelMutation("add_media_to_label", mediaType, mediaId);
     const removeLabel = useRemoveLabelMutation("remove_label_from_media", mediaType, mediaId);
     const renameLabel = useRenameLabelMutation(mediaType);

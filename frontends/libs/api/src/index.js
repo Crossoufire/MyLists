@@ -4,5 +4,5 @@ export * from "./useAuthHook";
 export * from "./queryOptions";
 export * from "./mediaMutations";
 export * from "./labelsMutations";
-export * from "./simpleMutations";
+export * from "./useSimpleMutations";
 export {APIError} from "./apiError";

@@ -1,4 +1,4 @@
-import {userMediaMutations} from "@mylists/api/src";
+import {useMediaMutations} from "@mylists/api/src";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
@@ -7,7 +7,7 @@ import {InputComponent} from "@/components/media-user/InputComponent";
 
 
 export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updatePage, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRedo, updateRating, updatePage, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMedia = (media, status) => {
         const updatedMedia = { ...media, redo: 0, status: status };
