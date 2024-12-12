@@ -114,7 +114,7 @@ export const getMediaColor = (media) => {
         books: "#584c6e",
         games: "#196219",
     };
-    return colors[media];
+    return colors[media] ?? "#216e7d";
 };
 
 

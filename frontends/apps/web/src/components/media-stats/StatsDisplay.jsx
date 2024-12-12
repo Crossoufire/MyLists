@@ -56,7 +56,7 @@ export const StatsDisplay = ({ statsData, otherUserStatsData }) => {
                     })}
                 </div>
             }
-            <div className={cn("grid max-lg:grid-cols-1 max-sm:gap-4 gap-x-6 mt-6",
+            <div className={cn("grid max-lg:grid-cols-1 max-sm:gap-4 gap-6 mt-6",
                 statsData.lists.listsPerRow === 3 ? "grid-cols-3" : "grid-cols-2")}>
                 {statsData.lists.dataList.map((data, idx) =>
                     <div key={idx} className="mt-2">

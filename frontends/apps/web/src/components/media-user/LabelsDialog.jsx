@@ -29,8 +29,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
 
     useEffect(() => {
         if (isEditing) {
-            // noinspection JSUnresolvedReference
-            inputRef.current.focus();
+            inputRef.current?.focus();
         }
     }, [isEditing]);
 

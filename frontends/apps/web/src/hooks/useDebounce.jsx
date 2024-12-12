@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 
 
 export const useDebounceCallback = (value, delay, callback, ...args) => {
-    const [timer, setTimer] = useState(null);
+    const [timer, setTimer] = useState(0);
 
     useEffect(() => {
         clearTimer();
@@ -13,13 +13,10 @@ export const useDebounceCallback = (value, delay, callback, ...args) => {
             }, delay);
             setTimer(newTimer);
         }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const clearTimer = () => {
         if (timer) {
-            // noinspection JSCheckFunctionSignatures
             clearTimeout(timer);
         }
     };

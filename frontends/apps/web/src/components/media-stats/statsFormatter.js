@@ -33,8 +33,6 @@ const getListsData = (data, suffix = "Watched") => {
 
 
 const tvData = (apiData) => {
-    console.log(apiData);
-
     return [
         {
             sidebarTitle: "Main Statistics",

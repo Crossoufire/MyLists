@@ -2,7 +2,6 @@ import {toast} from "sonner";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {Sidebar} from "@/components/app/Sidebar";
-import {createContext, useContext, useEffect, useRef, useState} from "react";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {useAuth} from "@mylists/api/src/useAuthHook";
@@ -15,6 +14,7 @@ import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
+import {createContext, useContext, useEffect, useRef, useState} from "react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 

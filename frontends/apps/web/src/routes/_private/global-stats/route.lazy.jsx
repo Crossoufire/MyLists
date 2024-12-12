@@ -1,13 +1,12 @@
 import {Fragment} from "react";
-import {ResponsiveBar} from "@nivo/bar";
-import {barTheme} from "@/utils/nivoThemes";
 import {Separator} from "@/components/ui/separator";
-import {globalStatsOptions} from "@mylists/api/src/queryOptions";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {createLazyFileRoute} from "@tanstack/react-router";
+import {globalStatsOptions} from "@mylists/api/src/queryOptions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, XAxis, YAxis} from "recharts";
 import {formatNumberWithSpaces, getMediaColor, globalStatsTimeFormat} from "@/utils/functions";
 
 
@@ -21,13 +20,12 @@ function GlobalStatsPage() {
     const apiData = useSuspenseQuery(globalStatsOptions()).data;
 
     const graphData = [
-        { id: "Series", value: apiData.total_time.series, color: getMediaColor("series") },
-        { id: "Anime", value: apiData.total_time.anime, color: getMediaColor("anime") },
-        { id: "Movies", value: apiData.total_time.movies, color: getMediaColor("movies") },
-        { id: "Books", value: apiData.total_time.books, color: getMediaColor("books") },
-        { id: "Games", value: apiData.total_time.games, color: getMediaColor("games") },
+        { label: "Series", value: apiData.total_time.series[0], color: getMediaColor("series") },
+        { label: "Anime", value: apiData.total_time.anime[0], color: getMediaColor("anime") },
+        { label: "Movies", value: apiData.total_time.movies[0], color: getMediaColor("movies") },
+        { label: "Books", value: apiData.total_time.books[0], color: getMediaColor("books") },
+        { label: "Games", value: apiData.total_time.games[0], color: getMediaColor("games") },
     ];
-
     const mediaData = [
         { name: "Series", mediaType: "series", count: apiData.nb_media.series },
         { name: "Anime", mediaType: "anime", count: apiData.nb_media.anime },
@@ -36,6 +34,19 @@ function GlobalStatsPage() {
         { name: "Games", mediaType: "games", count: apiData.nb_media.games },
         { name: "Users", mediaType: "user", count: apiData.nb_users }
     ];
+
+    const renderCustomLabel = ({ x, y, width, height, value }) => {
+        if (height < 17) return null;
+
+        const X = x + width / 2;
+        const Y = y + height / 2;
+
+        return (
+            <text x={X} y={Y} fontWeight={500} textAnchor="middle" dominantBaseline="central" fontSize={height < 20 ? 14 : 16}>
+                {(value / 24 / 365).toFixed(1)}y
+            </text>
+        );
+    };
 
     return (
         <PageTitle title="Global Statistics" subtitle="The global statistics of all the users using MyLists.info">
@@ -79,20 +90,18 @@ function GlobalStatsPage() {
                     </div>
                     <div className="col-span-12 md:col-span-9 lg:col-span-9">
                         <div className="p-2 rounded-md bg-card">
-                            <div className="text-center text-lg font-semibold">Total Time Per Media</div>
-                            <div className="flex items-center h-[300px]">
-                                <ResponsiveBar
-                                    padding={0.35}
-                                    theme={barTheme}
-                                    data={graphData}
-                                    borderRadius={4}
-                                    labelSkipHeight={21}
-                                    isInteractive={false}
-                                    colors={{ datum: "data.color" }}
-                                    axisLeft={{ format: (value) => value / 1000 + "k" }}
-                                    margin={{ top: 10, right: 20, bottom: 40, left: 60 }}
-                                    valueFormat={(data) => formatNumberWithSpaces(data) + " h"}
-                                />
+                            <div className="text-center text-lg font-semibold">Total Hours Spent Per Media Type</div>
+                            <div className="flex items-center justify-center h-[300px] max-sm:h-[200px]">
+                                <ResponsiveContainer>
+                                    <BarChart data={graphData} margin={{ top: 8, right: 5, left: -12, bottom: 0 }}>
+                                        <XAxis dataKey="label" stroke="#e2e2e2"/>
+                                        <YAxis stroke="#e2e2e2" tickFormatter={(v) => v / 1000} unit="k"/>
+                                        <Bar dataKey="value">
+                                            {graphData.map((entry, idx) => (<Cell key={idx} fill={entry.color}/>))}
+                                            <LabelList dataKey="value" position="center" content={renderCustomLabel}/>
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
                     </div>
