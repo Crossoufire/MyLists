@@ -1,7 +1,7 @@
 import {useRef} from "react";
+import {ChevronDown} from "lucide-react";
 import {useAuth} from "@mylists/api/src";
 import {capitalize} from "@/utils/functions";
-import {CaretSortIcon} from "@radix-ui/react-icons";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -25,7 +25,7 @@ export const NavMediaDrop = () => {
                 <PopoverTrigger>
                     <div className="flex items-center gap-2 font-semibold px-1 max-sm:ml-2">
                         MyLists
-                        <CaretSortIcon className="opacity-80"/>
+                        <ChevronDown className="w-3 h-3 opacity-80"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>

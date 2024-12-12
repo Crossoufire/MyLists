@@ -1,5 +1,5 @@
+import {List} from "lucide-react";
 import {cn} from "@/utils/functions";
-import {LuList} from "react-icons/lu";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {StatsList} from "@/components/media-stats/StatsList";
@@ -17,7 +17,7 @@ export const StatsCard = ({ data, otherData }) => {
                         <Popover>
                             <Tooltip text="Details">
                                 <PopoverTrigger>
-                                    <LuList className="opacity-50 hover:opacity-100"/>
+                                    <List className="w-4 h-4 opacity-50 hover:opacity-100"/>
                                 </PopoverTrigger>
                             </Tooltip>
                             <PopoverContent align="end" className="max-h-[500px] overflow-auto">

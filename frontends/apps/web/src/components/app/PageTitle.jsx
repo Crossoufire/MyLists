@@ -1,4 +1,3 @@
-import {Helmet} from "react-helmet";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 
@@ -6,9 +5,7 @@ import {MutedText} from "@/components/app/MutedText";
 export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }) => {
     return (
         <>
-            <Helmet defer={false}>
-                <title>{title} - MyLists</title>
-            </Helmet>
+            <title>{`${title} - MyLists`}</title>
             {onlyHelmet ?
                 children
                 :

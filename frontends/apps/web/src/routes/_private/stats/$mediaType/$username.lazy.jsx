@@ -5,15 +5,14 @@ import {Sidebar} from "@/components/app/Sidebar";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {useAuth} from "@mylists/api/src/useAuthHook";
-import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {statsOptions} from "@mylists/api/src/queryOptions";
-import {LuAward, LuCircleHelp, LuUser} from "react-icons/lu";
 import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {UserComboBox} from "@/components/media-stats/UserComboBox";
 import {dataToLoad} from "@/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/components/media-stats/StatsDisplay";
+import {Award, CircleHelp, EllipsisVertical, User} from "lucide-react";
 import {createContext, useContext, useEffect, useRef, useState} from "react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
@@ -95,19 +94,19 @@ const NavigationButtons = ({ mediaSettings }) => {
         <Popover>
             <PopoverTrigger asChild>
                 <Button variant="filters" className="px-2">
-                    <DotsVerticalIcon/>
+                    <EllipsisVertical className="w-4 h-4"/>
                 </Button>
             </PopoverTrigger>
             <PopoverClose ref={popRef} className="absolute"/>
             <PopoverContent align="end" className="w-full py-1 px-1 text-sm">
                 <Button variant="list" asChild>
                     <Link to={`/profile/${username}`} onClick={closePopover}>
-                        <LuUser className="-ml-2 mr-2"/> User's profile
+                        <User className="-ml-2 mr-2 w-4 h-4"/> User's profile
                     </Link>
                 </Button>
                 <Button variant="list" asChild>
                     <Link to={`/achievements/${username}`}>
-                        <LuAward className="-ml-2 mr-2"/> Achievements
+                        <Award className="-ml-2 mr-2 w-4 h-4"/> Achievements
                     </Link>
                 </Button>
                 {mediaSettings.map(setting =>
@@ -118,7 +117,7 @@ const NavigationButtons = ({ mediaSettings }) => {
                         to={`/stats/${setting.media_type}/${username}`}
                     >
                         <Button variant="list" disabled={setting.media_type === mediaType}>
-                            <MediaIcon mediaType={setting.media_type} className="-ml-2 mr-2"/> {capitalize(setting.media_type)} Stats
+                            <MediaIcon mediaType={setting.media_type} className="-ml-2 mr-2 w-4 h-4"/> {capitalize(setting.media_type)} Stats
                         </Button>
                     </Link>
                 )}
@@ -137,7 +136,7 @@ const ComparisonSelector = ({ users, otherUser, addComparison, resetComparison }
             <span>Compare with</span>
             <Popover>
                 <PopoverTrigger>
-                    <LuCircleHelp/>
+                    <CircleHelp className="w-4 h-4"/>
                 </PopoverTrigger>
                 <PopoverContent align="start">
                     Comparison between users is only based on card statistics, excluding tables and

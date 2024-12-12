@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {cn} from "@/utils/functions";
-import {LuChevronUp} from "react-icons/lu";
+import {ChevronUp} from "lucide-react";
 
 
 export const useCollapse = (defaultOpen = true) => {
@@ -12,7 +12,7 @@ export const useCollapse = (defaultOpen = true) => {
 
     const caret = (
         <div className={cn("transform transition-transform duration-300", isOpen ? "rotate-0" : "rotate-180")}>
-            <LuChevronUp size={21}/>
+            <ChevronUp size={21}/>
         </div>
     );
 

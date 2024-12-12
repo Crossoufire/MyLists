@@ -4,12 +4,12 @@ import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {LoginForm} from "@/components/homepage/LoginForm";
-import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {RainbowButton} from "@/components/ui/rainbow-button";
 import {RegisterForm} from "@/components/homepage/RegisterForm";
+import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {LuArrowRight, LuDollarSign, LuHeart, LuMessageCircle, LuMonitorSmartphone, LuPackageOpen, LuSparkles} from "react-icons/lu";
-import {RainbowButton} from "@/components/ui/rainbow-button";
+import {ArrowRight, DollarSign, Heart, MessageCircle, MonitorSmartphone, PackageOpen, Sparkles} from "lucide-react";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -52,7 +52,7 @@ function HomePage() {
                 <div className="mt-6">
                     <RainbowButton>
                         <Link to="/profile/DemoProfile" className="inline-flex items-center">
-                            View Demo Profile <LuArrowRight className="ml-2"/>
+                            View Demo Profile <ArrowRight className="ml-2"/>
                         </Link>
                     </RainbowButton>
                 </div>
@@ -102,32 +102,32 @@ function HomePage() {
 function FeatureCards() {
     const features = [
         {
-            icon: <LuMonitorSmartphone size={25}/>,
+            icon: <MonitorSmartphone size={25}/>,
             title: "Responsive",
             description: "Fully responsive created with Shadcn/UI. Supports PC, tablets, mobile, and TV."
         },
         {
-            icon: <LuPackageOpen size={25}/>,
+            icon: <PackageOpen size={25}/>,
             title: "Open Source",
             description: "Totally open source, made using Flask and React. You can find the source code on my Github page."
         },
         {
-            icon: <LuDollarSign size={25}/>,
+            icon: <DollarSign size={25}/>,
             title: "No ads - 100% free",
             description: "You will not find any ads, we don't do that here. You only need to create an account to access all the content."
         },
         {
-            icon: <LuMessageCircle size={25}/>,
+            icon: <MessageCircle size={25}/>,
             title: "Found a bug?",
             description: "You can contact me by mail at: contact.us.at.mylists@gmail.com"
         },
         {
-            icon: <LuHeart size={25}/>,
+            icon: <Heart size={25}/>,
             title: "Made by me with ❤️",
             description: "I hope you will like it. If you have any suggestions, do not hesitate to contact me."
         },
         {
-            icon: <LuSparkles size={25}/>,
+            icon: <Sparkles size={25}/>,
             title: "New features coming",
             description: "I still have ideas, just not enough time. Stay tuned!"
         }

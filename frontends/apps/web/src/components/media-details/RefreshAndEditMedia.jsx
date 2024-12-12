@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {Link} from "@tanstack/react-router";
+import {Pencil, RefreshCw} from "lucide-react";
 import {Tooltip} from "@/components/ui/tooltip";
 import {formatDateTime} from "@/utils/functions";
-import {LuPencil, LuRefreshCw} from "react-icons/lu";
 import {queryKeys, useRefreshMutation} from "@mylists/api/src";
 
 
@@ -21,11 +21,11 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }) => {
         <div className="flex items-center gap-3 mt-2">
             <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
                 <div role="button" onClick={handleRefresh}>
-                    <LuRefreshCw size={18} className={refreshMutation.isPending && "animate-spin opacity-30"}/>
+                    <RefreshCw size={18} className={refreshMutation.isPending && "animate-spin opacity-30"}/>
                 </div>
             </Tooltip>
             <Link to={`/details/edit/${mediaType}/${mediaId}`}>
-                <LuPencil className="w-5 h-5"/>
+                <Pencil className="w-5 h-5"/>
             </Link>
         </div>
     );

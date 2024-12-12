@@ -1,9 +1,9 @@
+import {Star} from "lucide-react";
 import {Synopsis} from "@/components/media-details/Synopsis";
-import {EpsPerSeason} from "@/components/media-details/EpsPerSeason";
+import {formatDateTime, formatMinutes} from "@/utils/functions";
 import {MapDetails} from "@/components/media-details/MapDetails";
+import {EpsPerSeason} from "@/components/media-details/EpsPerSeason";
 import {GenericDetails} from "@/components/media-details/GenericDetails";
-import {formatDateTime, formatMinutes} from "@/utils/functions.jsx";
-import {LuStar} from "react-icons/lu";
 
 
 export const TvDetails = ({ mediaData, mediaType }) => {
@@ -17,7 +17,7 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                         <div>
                             <div className="font-semibold text-neutral-500">TMDB Rating</div>
                             <div className="flex items-center gap-1">
-                                <LuStar className="text-amber-500"/> {mediaData.vote_average.toFixed(1)} ({mediaData.vote_count})
+                                <Star className="w-4 h-4 text-amber-500"/> {mediaData.vote_average.toFixed(1)} ({mediaData.vote_count})
                             </div>
                         </div>
                         <MapDetails

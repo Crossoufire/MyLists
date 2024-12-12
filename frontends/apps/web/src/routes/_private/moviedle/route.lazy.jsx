@@ -11,7 +11,7 @@ import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@mylists/api/src/queryOptions";
-import {LuAward, LuCrown, LuFlame, LuPartyPopper, LuSigma, LuTarget, LuThumbsDown, LuTrophy} from "react-icons/lu";
+import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -80,9 +80,9 @@ function MediadlePage() {
                             {mediadleData.completed ?
                                 <div className="animate-fade-up rounded-lg bg-primary/10 text-center p-4 max-w-[400px] mx-auto">
                                     {mediadleData.succeeded ?
-                                        <LuPartyPopper className="w-6 h-6 text-amber-500 mx-auto mb-1"/>
+                                        <PartyPopper className="w-6 h-6 text-amber-500 mx-auto mb-1"/>
                                         :
-                                        <LuThumbsDown className="w-6 h-6 text-red-700 mx-auto mb-1"/>
+                                        <ThumbsDown className="w-6 h-6 text-red-700 mx-auto mb-1"/>
                                     }
                                     <h3 className="font-semibold">
                                         {mediadleData.succeeded ? "Congratulations!" : "Game Over :("}
@@ -142,12 +142,12 @@ function MediadlePage() {
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-2">
-                            <StatsCard icon={LuSigma} label="Total Played" value={mediadleData?.stats?.total_played ?? 0} color="text-blue-600"/>
-                            <StatsCard icon={LuAward} label="Win Rate" value={`${mediadleData?.stats?.win_rate ?? 0.0}%`} color="text-green-600"/>
-                            <StatsCard icon={LuFlame} label="Current Streak" value={mediadleData?.stats?.current_streak ?? 0} color="text-red-600"/>
-                            <StatsCard icon={LuCrown} label="Best Streak" value={mediadleData?.stats?.best_streak ?? 0} color="text-amber-600"/>
-                            <StatsCard icon={LuTarget} label="Avg. Attempts" value={mediadleData?.stats?.average_attempts ?? 0.0} color="text-blue-600"/>
-                            <StatsCard icon={LuTrophy} label="Total Won" value={mediadleData?.stats?.total_won ?? 0} color="text-amber-600"/>
+                            <StatsCard icon={Sigma} label="Total Played" value={mediadleData?.stats?.total_played ?? 0} color="text-blue-600"/>
+                            <StatsCard icon={Award} label="Win Rate" value={`${mediadleData?.stats?.win_rate ?? 0.0}%`} color="text-green-600"/>
+                            <StatsCard icon={Flame} label="Current Streak" value={mediadleData?.stats?.current_streak ?? 0} color="text-red-600"/>
+                            <StatsCard icon={Crown} label="Best Streak" value={mediadleData?.stats?.best_streak ?? 0} color="text-amber-600"/>
+                            <StatsCard icon={Target} label="Avg. Attempts" value={mediadleData?.stats?.average_attempts ?? 0.0} color="text-blue-600"/>
+                            <StatsCard icon={Trophy} label="Total Won" value={mediadleData?.stats?.total_won ?? 0} color="text-amber-600"/>
                         </div>
                     </CardContent>
                 </Card>

@@ -1,4 +1,4 @@
-import {LuSparkles} from "react-icons/lu";
+import {Sparkles} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Card, CardContent} from "@/components/ui/card";
@@ -95,7 +95,7 @@ function FeatureShowcase() {
                                 <h2 className="text-xl font-semibold">{feature.name}</h2>
                                 {feature.isNew &&
                                     <Badge variant="secondary" className="bg-gradient-to-r from-blue-600 to-violet-600">
-                                        <LuSparkles className="w-3 h-3 mr-1"/> New
+                                        <Sparkles className="w-3 h-3 mr-1"/> New
                                     </Badge>
                                 }
                             </div>

@@ -1,4 +1,4 @@
-import {LuArrowRight} from "react-icons/lu";
+import {ArrowRight} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
@@ -61,7 +61,7 @@ export const MediaStats = ({ user, media }) => {
             <Separator className="mt-3 mb-1.5"/>
             <div className="flex items-center justify-end">
                 <Link to={`/stats/${media.media_type}/${user.username}`} className="text-base font-medium hover:underline">
-                    Advanced stats<LuArrowRight className="inline-block ml-1"/>
+                    Advanced stats<ArrowRight className="inline-block ml-1 w-4 h-4"/>
                 </Link>
             </div>
         </div>

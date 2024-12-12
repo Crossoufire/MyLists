@@ -1,7 +1,7 @@
 import {toast} from "sonner";
+import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {LuCircleHelp} from "react-icons/lu";
 import {FormButton} from "@/components/app/FormButton";
 import {simpleMutations, useAuth} from "@mylists/api/src";
 import {ImageCropper} from "@/components/settings/ImageCropper";
@@ -145,7 +145,7 @@ const PrivacyPopover = () => {
     return (
         <Popover>
             <PopoverTrigger className="opacity-50 hover:opacity-80">
-                <LuCircleHelp/>
+                <CircleHelp className="w-4 h-4"/>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
                 <div className="mb-3 text-sm font-medium text-muted-foreground">

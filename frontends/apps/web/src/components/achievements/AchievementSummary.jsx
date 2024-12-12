@@ -1,4 +1,4 @@
-import {LuAward} from "react-icons/lu";
+import {Award} from "lucide-react";
 import {Card, CardContent} from "@/components/ui/card";
 import {capitalize, cn, diffColors} from "@/utils/functions";
 
@@ -13,7 +13,7 @@ export const AchievementSummary = ({ summary }) => {
                         <div className="flex items-center justify-center font-medium">
                             <div key={diff.tier} className="flex items-center gap-3 max-sm:gap-2">
                                 <div className="flex flex-col items-center">
-                                    <LuAward className={cn("h-5 w-5 max-sm:h-4 max-sm:w-4", diffColors(diff.tier))}/>
+                                    <Award className={cn("h-5 w-5 max-sm:h-4 max-sm:w-4", diffColors(diff.tier))}/>
                                     <span className={cn("max-sm:text-sm", diffColors(diff.tier))}>
                                         {capitalize(diff.tier)}
                                     </span>

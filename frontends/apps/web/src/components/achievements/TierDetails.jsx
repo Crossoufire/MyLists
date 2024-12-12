@@ -1,4 +1,4 @@
-import {LuAward} from "react-icons/lu";
+import {Award} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Progress} from "@/components/ui/progress";
 import {capitalize, diffColors} from "@/utils/functions";
@@ -29,7 +29,7 @@ export const TiersDetails = ({ achievement }) => {
                                 <TableRow key={tier.id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
-                                            <LuAward className={`w-4 h-4 ${diffColors(tier.difficulty)}`}/>
+                                            <Award className="w-4 h-4" color={diffColors(tier.difficulty)}/>
                                             {capitalize(tier.difficulty)}
                                         </div>
                                     </TableCell>

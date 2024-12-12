@@ -1,8 +1,8 @@
 import * as React from "react";
 import {cn} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
+import {ArrowLeft, ArrowRight} from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
-import {ArrowLeftIcon, ArrowRightIcon} from "@radix-ui/react-icons";
 
 
 const CarouselContext = React.createContext(null);
@@ -151,7 +151,7 @@ const CarouselPrevious = React.forwardRef(({ className, variant = "outline", siz
                 ? "-left-0 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-100"
                 : "-top-12 left-1/2 -translate-x-1/2 rotate-90", className)}
             {...props}>
-            <ArrowLeftIcon className="h-4 w-4"/>
+            <ArrowLeft className="h-4 w-4"/>
             <span className="sr-only">Previous slide</span>
         </Button>
     );
@@ -173,7 +173,7 @@ const CarouselNext = React.forwardRef(({ className, variant = "outline", size = 
                 ? "-right-0 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-100"
                 : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90", className)}
             {...props}>
-            <ArrowRightIcon className="h-4 w-4"/>
+            <ArrowRight className="h-4 w-4"/>
             <span className="sr-only">Next slide</span>
         </Button>
     );

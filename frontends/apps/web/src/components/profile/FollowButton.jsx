@@ -1,8 +1,8 @@
 import React from "react";
 import {toast} from "sonner";
 import {Button} from "@/components/ui/button";
+import {UserMinus, UserPlus} from "lucide-react";
 import {useParams} from "@tanstack/react-router";
-import {LuUserMinus, LuUserPlus} from "react-icons/lu";
 import {queryKeys, useFollowMutation} from "@mylists/api/src";
 
 
@@ -18,7 +18,7 @@ export const FollowButton = ({ followStatus, followId }) => {
 
     return (
         <Button variant={followStatus ? "destructive" : "outline"} size="xs" onClick={handleFollow} disabled={updateFollowStatus.isPending}>
-            {followStatus ? <><LuUserMinus className="mr-2 h-4 w-4"/>Unfollow</> : <><LuUserPlus className="mr-2 h-4 w-4"/>Follow</>}
+            {followStatus ? <><UserMinus className="mr-2 h-4 w-4"/>Unfollow</> : <><UserPlus className="mr-2 h-4 w-4"/>Follow</>}
         </Button>
     );
 };

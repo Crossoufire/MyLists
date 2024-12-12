@@ -1,8 +1,5 @@
-// noinspection JSDeprecatedSymbols
-
 import * as React from "react";
-import {useEffect} from "react";
-import {LuX} from "react-icons/lu";
+import {X} from "lucide-react";
 import {cn} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Command as CommandPrimitive} from "cmdk";
@@ -12,7 +9,7 @@ import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList,} from "@/
 export function useDebounce(value, delay) {
     const [debouncedValue, setDebouncedValue] = React.useState(value);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
 
         return () => {
@@ -130,13 +127,13 @@ const MultipleSelector = React.forwardRef(
             [selected],
         );
 
-        useEffect(() => {
+        React.useEffect(() => {
             if (value) {
                 setSelected(value);
             }
         }, [value]);
 
-        useEffect(() => {
+        React.useEffect(() => {
             /** If `onSearch` is provided, do not trigger options updated. */
             if (!arrayOptions || onSearch) {
                 return;
@@ -147,7 +144,7 @@ const MultipleSelector = React.forwardRef(
             }
         }, [arrayDefaultOptions, arrayOptions, groupBy, onSearch, options]);
 
-        useEffect(() => {
+        React.useEffect(() => {
             const doSearch = async () => {
                 setIsLoading(true);
                 const res = await onSearch?.(debouncedSearchTerm);
@@ -289,7 +286,7 @@ const MultipleSelector = React.forwardRef(
                                         }}
                                         onClick={() => handleUnselect(option)}
                                     >
-                                        <LuX className="h-3 w-3 text-muted-foreground hover:text-foreground"/>
+                                        <X className="h-3 w-3 text-muted-foreground hover:text-foreground"/>
                                     </button>
                                 </Badge>
                             );

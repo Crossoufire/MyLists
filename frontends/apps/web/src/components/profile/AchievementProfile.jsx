@@ -1,9 +1,9 @@
 import {Link} from "@tanstack/react-router";
-import {cn, diffColors} from "@/utils/functions";
+import {ArrowRight, Award} from "lucide-react";
 import {useCollapse} from "@/hooks/useCollapse";
+import {cn, diffColors} from "@/utils/functions";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
-import {LuArrowRight, LuAward} from "react-icons/lu";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 
@@ -22,9 +22,7 @@ export const AchievementsDisplay = ({ username, achievements: { summary, details
                 <Separator/>
             </CardHeader>
             <CardContent className={contentClasses}>
-                <AchievementSummary
-                    summary={summary}
-                />
+                <AchievementSummary summary={summary}/>
                 <div className="grid grid-cols-3 gap-4">
                     {details.length === 0 ?
                         <MutedText className="col-span-3">No achievements gained yet</MutedText>
@@ -35,7 +33,7 @@ export const AchievementsDisplay = ({ username, achievements: { summary, details
                 <Separator className="mt-3"/>
                 <div className="flex items-center justify-end">
                     <Link to={`/achievements/${username}`} className="font-medium hover:underline">
-                        All achievements<LuArrowRight className="inline-block ml-1"/>
+                        All achievements <ArrowRight className="inline-block ml-1 w-4 h-4"/>
                     </Link>
                 </div>
             </CardContent>
@@ -53,14 +51,14 @@ function AchievementSummary({ summary }) {
                 {summary.length === 0 ?
                     ["bronze", "silver", "gold", "platinum"].map((diff, idx) =>
                         <div key={idx} className="flex items-center gap-1">
-                            <LuAward className={cn("w-5 h-5", diffColors(diff))}/>
+                            <Award className={cn("w-5 h-5", diffColors(diff))}/>
                             <span>0</span>
                         </div>
                     )
                     :
                     summary.map((diff, idx) =>
                         <div key={idx} className="flex items-center gap-1">
-                            <LuAward className={cn("w-5 h-5", diffColors(diff.difficulty))}/>
+                            <Award className={cn("w-5 h-5", diffColors(diff.difficulty))}/>
                             <span>{diff.count}</span>
                         </div>
                     )
@@ -76,7 +74,7 @@ function AchievementCard({ achievement }) {
     return (
         <div className="bg-gray-800 p-3 rounded-md">
             <div className="flex items-center gap-1">
-                <LuAward className={cn("w-5 h-5", diffColors(achievement.difficulty))}/>
+                <Award className={cn("w-5 h-5", diffColors(achievement.difficulty))}/>
                 <div className="text-sm font-semibold truncate w-full">{achievement.name}</div>
             </div>
             <div className="text-xs line-clamp-2 text-muted-foreground">{achievement.description}</div>

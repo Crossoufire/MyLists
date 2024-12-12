@@ -3,10 +3,10 @@ import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
+import {CircleHelp, Download} from "lucide-react";
 import {Separator} from "@/components/ui/separator";
 import {useAuth} from "@mylists/api/src/useAuthHook";
 import {FormButton} from "@/components/app/FormButton";
-import {LuCircleHelp, LuDownload} from "react-icons/lu";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
 import {simpleMutations} from "@mylists/api/src/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -269,7 +269,7 @@ export const MediaListForm = () => {
                         </SelectContent>
                     </Select>
                     <Button onClick={handleDownloadCSV} disabled={!selectedList || listSettings.isPending || downloadListAsCSV.isPending}>
-                        <LuDownload className="mr-2 h-4 w-4"/> Download CSV
+                        <Download className="mr-2 h-4 w-4"/> Download CSV
                     </Button>
                 </div>
             </div>
@@ -282,7 +282,7 @@ function TextPopover({ children }) {
     return (
         <Popover>
             <PopoverTrigger className="opacity-50 hover:opacity-80">
-                <LuCircleHelp/>
+                <CircleHelp className="h-4 w-4"/>
             </PopoverTrigger>
             <PopoverContent>
                 {children}
@@ -291,11 +291,12 @@ function TextPopover({ children }) {
     );
 }
 
+
 const RatingSystemPopover = () => {
     return (
         <Popover>
             <PopoverTrigger className="opacity-50 hover:opacity-80">
-                <LuCircleHelp/>
+                <CircleHelp className="w-4 h-4"/>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
                 <div className="mb-3 text-sm font-medium text-muted-foreground">

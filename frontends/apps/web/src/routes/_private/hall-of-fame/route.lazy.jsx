@@ -1,14 +1,14 @@
 import {useState} from "react";
-import {LuSearch} from "react-icons/lu";
+import {Search} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {hallOfFameOptions} from "@mylists/api/src/queryOptions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MutedText} from "@/components/app/MutedText";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
 import {useDebounceCallback} from "@/hooks/useDebounce";
 import {HoFCard} from "@/components/hall-of-fame/HoFCard";
+import {hallOfFameOptions} from "@mylists/api/src/queryOptions";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -61,10 +61,7 @@ function HallOfFamePage() {
                                 placeholder="Search by username"
                                 onChange={(ev) => setCurrentSearch(ev.target.value)}
                             />
-                            <LuSearch
-                                size={18}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                            />
+                            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"/>
                         </div>
                         {search && <Button size="sm" onClick={resetSearch}>Cancel</Button>}
                     </div>

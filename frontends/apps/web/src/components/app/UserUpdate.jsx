@@ -1,4 +1,4 @@
-import {LuTrash2} from "react-icons/lu";
+import {Trash2} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Payload} from "@/components/app/Payload";
 import {Separator} from "@/components/ui/separator";
@@ -37,7 +37,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         onClick={() => handleDeleteUpdate(update.id)}
                         className="p-0 m-0 h-4 absolute top-2.5 right-0 opacity-0 hover:opacity-100 group-hover:opacity-30 transition-opacity"
                     >
-                        <LuTrash2/>
+                        <Trash2 className="w-4 h-4"/>
                     </Button>
                 }
             </div>

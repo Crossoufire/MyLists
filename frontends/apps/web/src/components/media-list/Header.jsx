@@ -1,12 +1,11 @@
 import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
-import {DotsVerticalIcon} from "@radix-ui/react-icons";
 import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/components/media-list/SearchComponent";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {LuArrowUpDown, LuAward, LuChartLine, LuFilter, LuGrid2X2, LuList, LuUser} from "react-icons/lu";
+import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 
@@ -30,7 +29,7 @@ export const Header = (props) => {
                     onStatusChange={onStatusChange}
                 />
                 <Button variant="filters" onClick={onFilterClick}>
-                    <LuFilter className="w-4 h-4"/> Filters
+                    <Filter className="w-4 h-4"/> Filters
                 </Button>
                 <SortComponent
                     sorting={sorting}
@@ -39,7 +38,7 @@ export const Header = (props) => {
                 />
                 <div className="flex items-center gap-3">
                     <Button variant="filters" onClick={onGridClick}>
-                        {isGrid ? <LuList className="w-4 h-4"/> : <LuGrid2X2 className="w-4 h-4"/>}
+                        {isGrid ? <List className="w-4 h-4"/> : <Grid2X2 className="w-4 h-4"/>}
                     </Button>
                 </div>
                 <DotsOthers/>
@@ -60,7 +59,7 @@ const StatusComponent = ({ allStatus, onStatusChange }) => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="filters">
-                    <LuList className="w-4 h-4"/> Status
+                    <List className="w-4 h-4"/> Status
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -84,7 +83,7 @@ const SortComponent = ({ sorting, allSorting, applySorting }) => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="filters">
-                    <LuArrowUpDown className="w-4 h-4"/> Sort
+                    <ArrowUpDown className="w-4 h-4"/> Sort
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -108,23 +107,23 @@ const DotsOthers = () => {
         <Popover>
             <PopoverTrigger asChild>
                 <Button variant="filters" className="px-2">
-                    <DotsVerticalIcon/>
+                    <EllipsisVertical className="w-4 h-4"/>
                 </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
                 <Button variant="list" asChild>
                     <Link to={`/profile/${username}`}>
-                        <LuUser className="mr-2"/> User's profile
+                        <User className="mr-2 w-4 h-4"/> User's profile
                     </Link>
                 </Button>
                 <Button variant="list" asChild>
                     <Link to={`/stats/${mediaType}/${username}`}>
-                        <LuChartLine className="mr-2"/> Collection Stats
+                        <ChartLine className="mr-2 w-4 h-4"/> Collection Stats
                     </Link>
                 </Button>
                 <Button variant="list" asChild>
                     <Link to={`/achievements/${username}`}>
-                        <LuAward className="mr-2"/> Achievements
+                        <Award className="mr-2 w-4 h-4"/> Achievements
                     </Link>
                 </Button>
             </PopoverContent>

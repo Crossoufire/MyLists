@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
 import {useDebounce} from "@/hooks/useDebounce";
 import {useEffect, useRef, useState} from "react";
-import {LuLoader, LuSearch} from "react-icons/lu";
+import {LoaderCircle, Search} from "lucide-react";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
 import {navSearchOptions, useAuth} from "@mylists/api/src";
@@ -45,7 +45,7 @@ export const SearchBar = () => {
     return (
         <div ref={commandRef}>
             <div className="relative mr-2 ml-2">
-                <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}
                     onChange={handleInputChange}
@@ -74,7 +74,7 @@ export const SearchBar = () => {
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
-                                    <LuLoader className="h-6 w-6 animate-spin"/>
+                                    <LoaderCircle className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
                             {error && (

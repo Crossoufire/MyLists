@@ -2,8 +2,8 @@ import {useState} from "react";
 import {useAuth} from "@mylists/api/src";
 import {Badge} from "@/components/ui/badge";
 import {MediaCard} from "@/components/app/MediaCard";
+import {Heart, RefreshCw, Settings2} from "lucide-react";
 import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
-import {LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
 import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
 import {DisplayRating} from "@/components/media-list/DisplayRating";
 import {CommentPopover} from "@/components/media-list/CommentPopover";
@@ -41,7 +41,7 @@ const MediaItem = ({ isCurrent, isConnected, allStatus, userMedia, queryKey, med
                 <div className="absolute top-2 right-2 z-10">
                     {isCurrent &&
                         <div role="button" onClick={() => setDialogOpen(true)}>
-                            <LuSettings2 className="opacity-70"/>
+                            <Settings2 className="w-4 h-4 opacity-70"/>
                         </div>
                     }
                     {!isCurrent && !userMedia.common && isConnected &&
@@ -74,13 +74,13 @@ const MediaItem = ({ isCurrent, isConnected, allStatus, userMedia, queryKey, med
                         <div className="flex items-center gap-2 flex-shrink-0">
                             {userMedia.favorite &&
                                 <div className="flex items-center gap-1">
-                                    <LuHeart className="text-red-500"/>
+                                    <Heart className="w-4 h-4 text-red-500"/>
                                 </div>
                             }
                             {userMedia.comment && <CommentPopover content={userMedia.comment}/>}
                             {userMedia.redo > 0 &&
                                 <div className="flex items-center gap-1">
-                                    <LuRefreshCw className="w-3.5 h-3.5 text-green-500"/>{userMedia.redo}
+                                    <RefreshCw className="w-3.5 h-3.5 text-green-500"/>{userMedia.redo}
                                 </div>
                             }
                         </div>

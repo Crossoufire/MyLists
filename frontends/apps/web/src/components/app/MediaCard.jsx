@@ -1,5 +1,5 @@
 import {Card} from "@/components/ui/card";
-import {Loading} from "@/components/app/Loading";
+import {LoaderCircle} from "lucide-react";
 import {BlockLink} from "@/components/app/BlockLink";
 
 
@@ -17,7 +17,7 @@ export const MediaCard = ({ children, media, mediaType, isPending = false }) => 
                 {isPending &&
                     <div className="z-50 absolute h-full w-full top-[50%] left-[50%] transform -translate-x-1/2
                     -translate-y-1/2 flex justify-center items-center bg-black opacity-80 rounded-md">
-                        <Loading/>
+                        <LoaderCircle className="h-6 w-6 animate-spin"/>
                     </div>
                 }
                 {children}

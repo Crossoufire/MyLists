@@ -4,16 +4,15 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
 import {useDebounce} from "@/hooks/useDebounce";
-import {Loading} from "@/components/app/Loading";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
 import {useOnClickOutside} from "@/hooks/useClickedOutside";
 import {capitalize, getLangCountryName} from "@/utils/functions";
-import {filterSearchOptions, smallFiltersOptions} from "@mylists/api/src";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {filterSearchOptions, smallFiltersOptions} from "@mylists/api/src";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {ChevronDown, CircleHelp, LoaderCircle, MoveRight, Search} from "lucide-react";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
-import {LuChevronDown, LuChevronUp, LuCircleHelp, LuLoader, LuMoveRight, LuSearch, LuX} from "react-icons/lu";
 import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
@@ -70,7 +69,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                 <form onSubmit={handleOnSubmit}>
                     {isLoading ?
                         <div className="flex items-center justify-center h-[85vh]">
-                            <Loading/>
+                            <LoaderCircle className="h-7 w-7 animate-spin"/>
                         </div>
                         :
                         <div className="mt-3 mb-6 space-y-4">
@@ -143,8 +142,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                             defaultChecked={search.favorite}
                                             onCheckedChange={() => registerChange("favorite", !search.favorite)}
                                         />
-                                        <label htmlFor="favoriteCheck"
-                                               className="text-sm cursor-pointer">Favorites</label>
+                                        <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
@@ -233,9 +231,9 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
             {items.length > initVisibleItems &&
                 <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
                     {showAll ?
-                        <>Show Less <LuChevronUp className="ml-1" size={17}/></>
+                        <>Show Less <ChevronUp className="ml-1" size={17}/></>
                         :
-                        <>Show More <LuChevronDown className="ml-1" size={17}/></>
+                        <>Show More <ChevronDown className="ml-1" size={17}/></>
                     }
                 </Button>
             }
@@ -282,10 +280,10 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
             <h3 className="font-medium">{capitalize(job)}</h3>
             <div ref={commandRef} className="mt-1 w-56 relative">
                 <div className="relative">
-                    <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                    <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                     <Input
                         value={search}
-                        className="w-[280px] pl-8"
+                        className={"w-[280px] pl-8"}
                         onChange={handleInputChange}
                         placeholder={`Search ${job} in this collection`}
                     />
@@ -296,7 +294,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                             <CommandList className="max-h-[300px] overflow-y-auto">
                                 {isLoading &&
                                     <div className="flex items-center justify-center p-4">
-                                        <LuLoader className="h-6 w-6 animate-spin"/>
+                                        <LoaderCircle className="h-6 w-6 animate-spin"/>
                                     </div>
                                 }
                                 {error && <CommandEmpty>An error occurred. Please try again.</CommandEmpty>}
@@ -318,7 +316,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                     <Badge key={item} className="mt-2 bg-neutral-800 h-8 px-4 text-sm gap-2" variant="outline">
                         {item}
                         <div role="button" className="hover:opacity-80 -mr-1" onClick={() => handleRemoveData(item)}>
-                            <LuX/>
+                            <X/>
                         </div>
                     </Badge>
                 )}
@@ -331,7 +329,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 const FilterInfoPopover = () => (
     <Popover>
         <PopoverTrigger>
-            <LuCircleHelp/>
+            <CircleHelp className="w-4 h-4"/>
         </PopoverTrigger>
         <PopoverContent className="w-full space-y-2" align="left">
             <div className="-mt-2 font-medium underline underline-offset-2">
@@ -340,14 +338,14 @@ const FilterInfoPopover = () => (
             <div>
                 Drama + Crime
                 <br/>
-                <LuMoveRight className="inline-block"/>&nbsp;
+                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime)
             </div>
             <div>
                 Drama + Crime + France
                 <br/>
-                <LuMoveRight className="inline-block"/>&nbsp;
+                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime) <b>AND</b> France
             </div>

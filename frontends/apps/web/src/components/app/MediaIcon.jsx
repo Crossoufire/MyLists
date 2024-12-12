@@ -1,14 +1,14 @@
 import {cn} from "@/utils/functions";
-import {LuCat, LuGamepad2, LuLibrary, LuMonitor, LuPopcorn, LuUser} from "react-icons/lu";
+import {Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 
 
 const iconMappings = {
-    series: LuMonitor,
-    anime: LuCat,
-    movies: LuPopcorn,
-    games: LuGamepad2,
-    books: LuLibrary,
-    user: LuUser,
+    series: Monitor,
+    anime: Cat,
+    movies: Popcorn,
+    games: Gamepad2,
+    books: Library,
+    user: User,
 };
 
 

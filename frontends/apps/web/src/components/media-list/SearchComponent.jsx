@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {LuSearch} from "react-icons/lu";
+import {Search} from "lucide-react";
 import {Input} from "@/components/ui/input";
 
 
@@ -15,7 +15,7 @@ export const SearchComponent = ({ onSearchEnter }) => {
 
     return (
         <div className="relative flex items-center">
-            <LuSearch className="absolute h-4 w-4 left-3"/>
+            <Search className="absolute h-4 w-4 left-3"/>
             <Input
                 value={search}
                 className="pl-9"
