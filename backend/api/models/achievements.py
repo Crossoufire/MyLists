@@ -121,6 +121,7 @@ class UserAchievement(db.Model):
     def to_dict(self) -> Dict:
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+    # noinspection PyTypeChecker
     @classmethod
     def get_full_summary(cls, user_id: int) -> Dict:
         """ Return a summary dict counting each media type and difficulty + total """

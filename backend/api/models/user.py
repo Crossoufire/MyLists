@@ -166,10 +166,6 @@ class User(db.Model):
         token.generate()
         return token
 
-    def check_autorization(self, username: str) -> User:
-        user = self.query.filter_by(username=username).first_or_404()
-        return user
-
     def set_view_count(self, user: User, media_type: MediaType):
         if self.id != user.id:
             user.get_media_setting(media_type).views += 1
@@ -429,15 +425,6 @@ class UserMediaUpdate(db.Model):
         else:
             db.session.delete(previous_db_entry)
             db.session.add(new_update)
-
-    @classmethod
-    def get_history(cls, media_id: int, media_type: MediaType) -> List[Dict]:
-        history = (
-            cls.query.filter_by(user_id=current_user.id, media_id=media_id, media_type=media_type)
-            .order_by(cls.timestamp.desc()).all()
-        )
-
-        return [update.to_dict() for update in history]
 
 
 class Notifications(db.Model):

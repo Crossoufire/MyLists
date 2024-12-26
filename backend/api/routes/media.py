@@ -35,12 +35,9 @@ def add_media(data):
     """ Add `media` to the `current_user` and return the new media association data """
 
     media_model, list_model, label_model = data["models"]
+    new_status = data["payload"] if data["payload"] else list_model.DEFAULT_STATUS
 
-    new_status = data["payload"]
-    if new_status is None:
-        new_status = list_model.DEFAULT_STATUS.value
-
-    media = media_model.query.filter_by(id=data["media_id"]).first_or_404()
+    media = media_model.query.get_or_404(data["media_id"])
     media_assoc = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
     if media_assoc:
         return abort(400, description="Media already in your list")

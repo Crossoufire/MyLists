@@ -1,7 +1,7 @@
 from operator import and_
 
+from flask import Blueprint, jsonify
 from sqlalchemy import case, desc, func
-from flask import Blueprint, jsonify, url_for
 
 from backend.api import cache, db, limiter
 from backend.api.core.auth import token_auth
@@ -83,15 +83,3 @@ def hall_of_fame(args):
 def mylists_stats():
     """ Global MyLists stats. Updated every day at 3:00 AM UTC+1 """
     return jsonify(data=GlobalStats().compute_global_stats()), 200
-
-
-@general.route("/levels/profile_borders", methods=["GET"])
-def profile_borders():
-    data = []
-    num_borders = 40
-
-    for i in range(1, num_borders + 1):
-        image_id = f"border_{i}.png"
-        data.append({"level": i, "image": url_for("static", filename=f"img/profile_borders/{image_id}")})
-
-    return jsonify(data=data), 200

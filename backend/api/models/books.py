@@ -108,13 +108,6 @@ class BooksList(MediaList):
 
         return media_dict
 
-    def update_total(self, new_redo: int) -> int:
-        self.redo = new_redo
-        new_total = self.media.pages + (new_redo * self.media.pages)
-        self.total = new_total
-
-        return new_total
-
     def update_status(self, new_status: Status) -> int:
         new_total = self.total
 
@@ -134,6 +127,13 @@ class BooksList(MediaList):
     def update_time_spent(self, old_value: int = 0, new_value: int = 0):
         setting = current_user.get_media_setting(self.GROUP)
         setting.time_spent += (new_value - old_value) * self.TIME_PER_PAGE
+
+    def update_total(self, new_redo: int) -> int:
+        self.redo = new_redo
+        new_total = self.media.pages + (new_redo * self.media.pages)
+        self.total = new_total
+
+        return new_total
 
     @classmethod
     def get_available_sorting(cls) -> Dict:

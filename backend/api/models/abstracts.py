@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import abstractmethod, ABC
 from typing import List, Dict, Optional
 
 from flask import url_for
@@ -11,10 +12,10 @@ from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.functions import safe_div, naive_utcnow
-from backend.api.utils.enums import ModelTypes, Status, MediaType
+from backend.api.utils.enums import ModelTypes, Status, MediaType, JobType
 
 
-class Media(db.Model, UpdateMixin):
+class Media(db.Model, UpdateMixin, ABC):
     __abstract__ = True
 
     TYPE: ModelTypes = ModelTypes.MEDIA
@@ -31,6 +32,28 @@ class Media(db.Model, UpdateMixin):
     lock_status = db.Column(db.Boolean, nullable=False, default=0)
     last_api_update = db.Column(db.DateTime)
 
+    # --- ABSTRACT METHODS ---------------------------------------------------------
+
+    @abstractmethod
+    def to_dict(self) -> Dict:
+        pass
+
+    @abstractmethod
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def form_only() -> List[str]:
+        pass
+
+    # --- PROPERTIES ---------------------------------------------------------------
+
     @property
     def media_cover(self) -> str:
         return url_for("static", filename=f"covers/{self.GROUP.value}_covers/{self.image_cover}")
@@ -39,9 +62,7 @@ class Media(db.Model, UpdateMixin):
     def genres_list(self) -> List[str]:
         return [g.name for g in self.genres[:5]]
 
-    @property
-    def actors_list(self) -> List[str]:
-        return [a.name for a in self.actors]
+    # --- CONCRETE METHODS --------------------------------------------------------
 
     def get_similar(self) -> List[Dict]:
         media_model = self.__class__
@@ -91,12 +112,12 @@ class Media(db.Model, UpdateMixin):
         return user_media
 
 
-class MediaList(db.Model):
+class MediaList(db.Model, ABC):
     __abstract__ = True
 
-    TYPE: ModelTypes = ModelTypes.LIST
     DEFAULT_SORTING = "Title A-Z"
     DEFAULT_STATUS = Status.COMPLETED
+    TYPE: ModelTypes = ModelTypes.LIST
 
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
@@ -104,6 +125,27 @@ class MediaList(db.Model):
     rating = db.Column(db.Float)
     favorite = db.Column(db.Boolean)
     comment = db.Column(db.Text)
+
+    # --- ABSTRACT METHODS ---------------------------------------------------------
+
+    @abstractmethod
+    def to_dict(self) -> Dict:
+        pass
+
+    @abstractmethod
+    def update_status(self, new_status: Status) -> int:
+        pass
+
+    @abstractmethod
+    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def total_user_time_def(cls):
+        pass
+
+    # --- CLASS METHODS ------------------------------------------------------------
 
     @classmethod
     def get_user_media_details(cls, user: User) -> Dict:
@@ -172,7 +214,7 @@ class MediaList(db.Model):
     def get_specific_total(cls, user_id: int) -> int:
         """
         Retrieve a specific aggregate value: either the total count of episodes for TV shows, the total watched
-        count along with the number of rewatched movies for movies, or the total number of pages read for books.
+        count along with the number of re-watched movies for movies, or the total number of pages read for books.
         This behavior is overridden by the <GamesList> class, which doesn't possess an interesting specific aggregate
         value in its SQL table
         """
@@ -235,13 +277,20 @@ class MediaList(db.Model):
         return data
 
 
-class Genres(db.Model):
+class Genres(db.Model, ABC):
     __abstract__ = True
 
     TYPE: ModelTypes = ModelTypes.GENRE
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+    # --- ABSTRACT METHODS ---------------------------------------------------------
+
+    @staticmethod
+    @abstractmethod
+    def get_available_genres() -> List[str]:
+        pass
 
 
 class Actors(db.Model):

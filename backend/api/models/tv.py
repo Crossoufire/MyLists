@@ -44,7 +44,7 @@ class TVModel(Media):
             "media_cover": self.media_cover,
             "eps_per_season": self.eps_seasons_list,
             "networks": [n.name for n in self.networks],
-            "actors": self.actors_list,
+            "actors": [actor.name for actor in self.actors],
             "genres": self.genres_list,
         })
 
