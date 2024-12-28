@@ -34,7 +34,7 @@ If you like this work, you can buy me a coffee! &nbsp;
 
 ## Prerequisites
 
-* Python 3.10+
+* Python 3.11+
 * Poetry (https://python-poetry.org/)
 * (optional) WSL2 recommended for Windows to use cron jobs
 
@@ -90,7 +90,6 @@ IGDB_API_KEY=<igdb-api-key>
 
 - npm > 9.0
 - Node.js > 19.0
-- (optional) WSL2 recommended for Windows
 
 ## Steps
 
@@ -106,8 +105,8 @@ npm install
 
 ```
 VITE_BASE_API_URL=http://localhost:5000
-VITE_REGISTER_CALLBACK=http://localhost:3000/register_token
-VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset_password
+VITE_REGISTER_CALLBACK=http://localhost:3000/register-token
+VITE_RESET_PASSWORD_CALLBACK=http://localhost:3000/reset-password
 VITE_OAUTH2_CALLBACK=http://localhost:3000/oauth2/{provider}/callback
 ```
 
