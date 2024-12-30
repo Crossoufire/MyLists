@@ -99,16 +99,14 @@ class Status(StrEnum):
 
     @classmethod
     def by(cls, media_type: MediaType):
-        if media_type == MediaType.SERIES or media_type == MediaType.ANIME:
-            return cls.tv()
-        elif media_type == MediaType.MOVIES:
-            return cls.movies()
-        elif media_type == MediaType.BOOKS:
-            return cls.books()
-        elif media_type == MediaType.GAMES:
-            return cls.games()
-        else:
-            raise ValueError(f"Invalid media type: {media_type}")
+        mapping = {
+            MediaType.SERIES: cls.tv(),
+            MediaType.ANIME: cls.tv(),
+            MediaType.MOVIES: cls.movies(),
+            MediaType.BOOKS: cls.books(),
+            MediaType.GAMES: cls.games(),
+        }
+        return mapping[media_type]
 
 
 class JobType(StrEnum):
@@ -218,6 +216,12 @@ class UpdateType(StrEnum):
     REDO = "redo"
     STATUS = "status"
     PLAYTIME = "playtime"
+    RATING = "rating"
+    ADD = "add"
+    TIME = "time"
+    DELETE = "delete"
+    FAVORITE = "favorite"
+    COMMENT = "comment"
 
 
 class AchievementDifficulty(StrEnum):

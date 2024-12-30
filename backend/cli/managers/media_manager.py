@@ -1,24 +1,24 @@
 from __future__ import annotations
 
-import json
 import os
-from datetime import timedelta
-from pathlib import Path
-from typing import List, Type, Tuple, Optional, cast
 import sys
+import json
+from pathlib import Path
+from datetime import timedelta
+from typing import List, Type, Tuple, Optional, cast
 
 from flask import current_app
 from rich.progress import track
-from sqlalchemy import func
+from sqlalchemy import func, update
 
 from backend.api import db
 from backend.api.core.errors import log_error
-from backend.api.managers.ApiManager import ApiManager
-from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.user import UserMediaUpdate, Notifications, UserMediaSettings
-from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
 from backend.api.utils.functions import naive_utcnow
 from backend.cli.managers._base import CLIBaseManager
+from backend.api.managers.ApiManager import ApiManager
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
+from backend.api.models.user import UserMediaUpdate, Notifications, UserMediaSettings
 
 
 class CLIMediaManagerMeta(type):
@@ -79,6 +79,12 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
             media_manager()._compute_user_time_spent()
 
     @classmethod
+    def compute_all_users_stats(cls):
+        for media_type in MediaType:
+            media_manager = cls.get_manager(cast(MediaType, media_type))
+            media_manager()._update_all_users_media_stats()
+
+    @classmethod
     def add_all_media_notifications(cls):
         for media_type in MediaType:
             media_manager = cls.get_manager(cast(MediaType, media_type))
@@ -93,6 +99,187 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
 
     def automatic_locking(self) -> Tuple[int, int]:
         raise NotImplementedError("Subclasses must implement this method")
+
+    def _update_all_users_media_stats(self):
+        self._update_all_users_specific_total()
+        self._update_all_users_media_per_status()
+        self._update_all_users_favorites()
+        self._update_all_users_media_rating()
+
+    def _update_all_users_specific_total(self):
+        if self.GROUP == MediaType.GAMES:
+            return
+
+        subq = (
+            db.session.query(self.media_list.user_id, func.sum(self.media_list.total).label("total"))
+            .group_by(self.media_list.user_id).subquery()
+        )
+
+        # Fetch current values of `total_specific` before updating
+        before_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.total_specific.label("old_total_specific"))
+            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+        before_update = {row.user_id: row.old_total_specific for row in before_update}
+
+        # noinspection PyTypeChecker
+        update_stmt = (
+            update(UserMediaSettings)
+            .where(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.GROUP)
+            .values(total_specific=subq.c.total)
+        )
+        db.session.execute(update_stmt)
+        db.session.commit()
+
+        # Fetch new values after updating
+        after_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.total_specific.label("new_total_specific"))
+            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+
+        # Compare and log discrepancies
+        for row in after_update:
+            old_value = before_update.get(row.user_id, 0)
+            new_value = row.new_total_specific
+            discrepancy = new_value - old_value
+            if discrepancy > 0.001:
+                self.log_warning(f"User [ID {row.user_id}] - Before: {old_value}, After: {new_value}, Discrepancy: {discrepancy}")
+
+        self.log_success(f"Total specific '{self.GROUP}' for each user successfully updated")
+
+    def _update_all_users_media_per_status(self):
+        status_counts = (
+            db.session.query(self.media_list.user_id, self.media_list.status, func.count(self.media_list.id).label("count"))
+            .group_by(self.media_list.user_id, self.media_list.status)
+            .all()
+        )
+
+        user_status_counts = {}
+        for user_id, status, count in status_counts:
+            if user_id not in user_status_counts:
+                user_status_counts[user_id] = {status: 0 for status in Status.by(self.GROUP)}
+            user_status_counts[user_id][status] = count
+
+        for user_id, counts in user_status_counts.items():
+            (db.session.query(UserMediaSettings)
+             .filter(UserMediaSettings.user_id == user_id, UserMediaSettings.media_type == self.GROUP)
+             .update({"status_counts": counts}))
+
+        db.session.commit()
+
+        self.log_success(f"media per status '{self.GROUP}' for each user successfully updated")
+
+    def _update_all_users_favorites(self):
+        if self.GROUP == MediaType.GAMES:
+            redo_data = True
+        else:
+            redo_data = func.sum(self.media_list.redo.label("redo_sum"))
+
+        subquery = (
+            db.session.query(
+                self.media_list.user_id,
+                func.count(self.media_list.favorite.label("fav_count")),
+                redo_data,
+                func.count(self.media_list.comment.label("com_count")),
+            ).filter(self.media_list.comment.is_not(None), self.media_list.favorite.is_(True))
+            .group_by(self.media_list.user_id).subquery()
+        )
+
+        if not db.session.query(subquery).all():
+            self.log_success(f"total favorites '{self.GROUP}' for each user successfully updated")
+            self.log_success(f"total redo '{self.GROUP}' for each user successfully updated")
+            self.log_success(f"total comments '{self.GROUP}' for each user successfully updated")
+            return
+
+        # noinspection PyTypeChecker
+        update_stmt = (
+            update(UserMediaSettings)
+            .where(UserMediaSettings.user_id == subquery.c.user_id, UserMediaSettings.media_type == self.GROUP)
+            .values(
+                entries_favorites=subquery.c.fav_count,
+                total_redo=subquery.c.redo_sum,
+                entries_commented=subquery.c.com_count,
+            )
+        )
+        db.session.execute(update_stmt)
+        db.session.commit()
+
+        self.log_success(f"total favorites '{self.GROUP}' for each user successfully updated")
+        self.log_success(f"total redo '{self.GROUP}' for each user successfully updated")
+        self.log_success(f"total comments '{self.GROUP}' for each user successfully updated")
+
+    def _update_all_users_media_rating(self):
+        subquery = (
+            db.session.query(
+                self.media_list.user_id,
+                func.count(self.media_list.rating).label("rating_count"),
+                func.count(self.media_list.media_id).label("media_count"),
+                func.sum(self.media_list.rating).label("sum_rating"),
+            ).group_by(self.media_list.user_id).subquery()
+        )
+
+        # noinspection PyTypeChecker
+        update_stmt = (
+            update(UserMediaSettings)
+            .where(UserMediaSettings.user_id == subquery.c.user_id, UserMediaSettings.media_type == self.GROUP)
+            .values(
+                total_entries=subquery.c.media_count,
+                entries_rated=subquery.c.rating_count,
+                sum_entries_rated=subquery.c.sum_rating,
+                average_rating=subquery.c.sum_rating / subquery.c.rating_count,
+            )
+        )
+        db.session.execute(update_stmt)
+        db.session.commit()
+
+        self.log_success(f"Total entries '{self.GROUP}' for each user successfully updated")
+        self.log_success(f"Entries rated '{self.GROUP}' for each user successfully updated")
+        self.log_success(f"Sum entries rated '{self.GROUP}' for each user successfully updated")
+        self.log_success(f"Average rating '{self.GROUP}' for each user successfully updated")
+
+    def _compute_user_time_spent(self):
+        # Subquery with all users and total `time_spent` per media_type
+        subq = (
+            db.session.query(self.media_list.user_id, self.media_list.total_user_time_def().label("time_spent"))
+            .join(self.media, self.media.id == self.media_list.media_id)
+            .group_by(self.media_list.user_id)
+            .subquery()
+        )
+
+        # Fetch current values of `time_spent` before updating
+        before_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.time_spent.label("old_time_spent"))
+            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.media_list.GROUP)
+            .all()
+        )
+        before_update = {row.user_id: row.old_time_spent for row in before_update}
+
+        # Update `time_spent` for each user
+        db.session.query(UserMediaSettings).filter(
+            UserMediaSettings.user_id == subq.c.user_id,
+            UserMediaSettings.media_type == self.media_list.GROUP,
+        ).update({UserMediaSettings.time_spent: subq.c.time_spent}, synchronize_session=False)
+
+        db.session.commit()
+
+        # Fetch new values after updating
+        after_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.time_spent.label("new_time_spent"))
+            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.media_list.GROUP)
+            .all()
+        )
+
+        # Compare and log discrepancies
+        for row in after_update:
+            old_time = before_update.get(row.user_id, 0)
+            new_time = row.new_time_spent
+            discrepancy = new_time - old_time
+            if discrepancy > 0.001:
+                self.log_warning(f"User [ID {row.user_id}] - Before: {old_time}, After: {new_time}, Discrepancy: {discrepancy}")
+
+        self.log_success(f"Time spent on '{self.GROUP.value}' for each user successfully updated")
 
     def _bulk_media_refresh(self, api_manager: Type[ApiManager]):
         media_type = api_manager.GROUP.value
@@ -187,48 +374,6 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
                 self.log_warning(f"Failed to delete {cover} from the '{self.GROUP.value}' covers")
 
         self.log_success(f"Successfully deleted {deletion_count} old '{self.GROUP.value}' covers")
-
-    def _compute_user_time_spent(self):
-        # Subquery with all users and total `time_spent` per media_type
-        subq = (
-            db.session.query(self.media_list.user_id, self.media_list.total_user_time_def().label("time_spent"))
-            .join(self.media, self.media.id == self.media_list.media_id)
-            .group_by(self.media_list.user_id)
-            .subquery()
-        )
-
-        # Fetch current values of `time_spent` before updating
-        before_update = (
-            db.session.query(UserMediaSettings.user_id, UserMediaSettings.time_spent.label("old_time_spent"))
-            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.media_list.GROUP)
-            .all()
-        )
-        before_update = {row.user_id: row.old_time_spent for row in before_update}
-
-        # Update `time_spent` for each user
-        db.session.query(UserMediaSettings).filter(
-            UserMediaSettings.user_id == subq.c.user_id,
-            UserMediaSettings.media_type == self.media_list.GROUP,
-        ).update({UserMediaSettings.time_spent: subq.c.time_spent}, synchronize_session=False)
-
-        db.session.commit()
-
-        # Fetch new values after updating
-        after_update = (
-            db.session.query(UserMediaSettings.user_id, UserMediaSettings.time_spent.label("new_time_spent"))
-            .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.media_list.GROUP)
-            .all()
-        )
-
-        # Compare and log discrepancies
-        for row in after_update:
-            old_time = before_update.get(row.user_id, 0)
-            new_time = row.new_time_spent
-            discrepancy = new_time - old_time
-            if discrepancy:
-                self.log_warning(f"User [ID {row.user_id}] - Before: {old_time}, After: {new_time}, Discrepancy: {discrepancy}")
-
-        self.log_success(f"Time spent on '{self.GROUP.value}' for each user successfully updated")
 
     def _add_media_notifications(self):
         query = (

@@ -122,10 +122,6 @@ class GamesList(MediaList):
 
         return self.playtime
 
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value)
-
     @classmethod
     def get_specific_total(cls, user_id: int):
         return

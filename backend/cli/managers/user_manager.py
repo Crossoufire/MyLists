@@ -13,6 +13,7 @@ from backend.api.models import User, UserMediaUpdate
 from backend.api.utils.enums import MediaType, Status, Privacy, ModelTypes, UpdateType
 from backend.api.utils.functions import naive_utcnow
 from ..utils.demo_profile import DemoProfile, EntryParams, ProbaGenerator, get_default_params
+from ...api.managers.ListsStatsManager import ListStatsManager
 
 
 class CLIUserManager(CLIBaseManager):
@@ -182,7 +183,9 @@ class CLIUserDemoManager(CLIBaseManager):
         )
 
         user_media = list_model.query.filter_by(user_id=self.user.id, media_id=media.id).first()
-        user_media.update_time_spent(new_value=total)
+
+        list_stats_manager = ListStatsManager.get_manager(media.GROUP)(user=self.user)
+        list_stats_manager.update_media_stats(user_media, UpdateType.TIME, None, total)
 
         if user_media.status in (Status.PLAN_TO_PLAY, Status.PLAN_TO_WATCH, Status.PLAN_TO_READ):
             return
@@ -196,7 +199,7 @@ class CLIUserDemoManager(CLIBaseManager):
         else:
             value = generator.generate_playtime()
             user_media.playtime = value * 60
-            user_media.update_time_spent(old_value=0, new_value=value * 60)
+            list_stats_manager.update_media_stats(user_media, UpdateType.TIME, 0, value * 60)
 
         if user_media.GROUP in (MediaType.SERIES, MediaType.ANIME):
             if user_media.status not in (Status.COMPLETED, Status.RANDOM, Status.PLAN_TO_WATCH):

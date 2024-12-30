@@ -349,9 +349,20 @@ class UserMediaSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     media_type = db.Column(db.Enum(MediaType), nullable=False, index=True)
-    time_spent = db.Column(db.Integer, nullable=False, default=0)
-    views = db.Column(db.Integer, nullable=False, default=0)
     active = db.Column(db.Boolean, nullable=False, default=False)
+
+    # Media List Stats
+    views = db.Column(db.Integer, nullable=False, default=0)
+    time_spent = db.Column(db.Integer, nullable=False, default=0)
+    total_entries = db.Column(db.Integer, nullable=False, default=0)
+    total_redo = db.Column(db.Integer, nullable=False, default=0)
+    entries_rated = db.Column(db.Integer, nullable=False, default=0)
+    sum_entries_rated = db.Column(db.Integer, nullable=False, default=0)
+    entries_commented = db.Column(db.Integer, nullable=False, default=0)
+    entries_favorites = db.Column(db.Integer, nullable=False, default=0)
+    status_counts = db.Column(db.JSON, nullable=False, default={})
+    total_specific = db.Column(db.Integer, nullable=True)
+    average_rating = db.Column(db.Float, nullable=True)
 
     # --- Relationships ----------------------------------------------------------------
     user = db.relationship("User", back_populates="settings", lazy="select")
@@ -361,13 +372,11 @@ class UserMediaSettings(db.Model):
         return compute_level(self.time_spent)
 
     def to_dict(self) -> Dict:
-        return dict(
-            level=self.level,
-            views=self.views,
-            active=self.active,
-            time_spent=self.time_spent,
-            media_type=self.media_type.value,
-        )
+        data_dict = {}
+        if hasattr(self, "__table__"):
+            data_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        data_dict.update({"level": self.level})
+        return data_dict
 
 
 class UserMediaUpdate(db.Model):

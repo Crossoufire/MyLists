@@ -124,10 +124,6 @@ class BooksList(MediaList):
 
         return new_total
 
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value) * self.TIME_PER_PAGE
-
     def update_total(self, new_redo: int) -> int:
         self.redo = new_redo
         new_total = self.media.pages + (new_redo * self.media.pages)

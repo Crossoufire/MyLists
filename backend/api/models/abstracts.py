@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from typing import List, Dict, Optional
 
 from flask import url_for
@@ -15,7 +15,7 @@ from backend.api.utils.functions import safe_div, naive_utcnow
 from backend.api.utils.enums import ModelTypes, Status, MediaType, JobType
 
 
-class Media(db.Model, UpdateMixin, ABC):
+class Media(db.Model, UpdateMixin):
     __abstract__ = True
 
     TYPE: ModelTypes = ModelTypes.MEDIA
@@ -99,9 +99,9 @@ class Media(db.Model, UpdateMixin, ABC):
 
         return data
 
-    def get_user_media_info(self, label_class: Labels) -> Optional[Dict]:
-        media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
-        user_media = media_assoc.to_dict() if media_assoc else None
+    def get_user_media_data(self, label_class: Labels) -> Optional[Dict]:
+        user_media = self.list_info.filter_by(user_id=current_user.id).first()
+        user_media = user_media.to_dict() if user_media else None
 
         if user_media:
             user_media.update(dict(
@@ -112,7 +112,7 @@ class Media(db.Model, UpdateMixin, ABC):
         return user_media
 
 
-class MediaList(db.Model, ABC):
+class MediaList(db.Model):
     __abstract__ = True
 
     DEFAULT_SORTING = "Title A-Z"
@@ -134,10 +134,6 @@ class MediaList(db.Model, ABC):
 
     @abstractmethod
     def update_status(self, new_status: Status) -> int:
-        pass
-
-    @abstractmethod
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
         pass
 
     @classmethod
@@ -277,7 +273,7 @@ class MediaList(db.Model, ABC):
         return data
 
 
-class Genres(db.Model, ABC):
+class Genres(db.Model):
     __abstract__ = True
 
     TYPE: ModelTypes = ModelTypes.GENRE

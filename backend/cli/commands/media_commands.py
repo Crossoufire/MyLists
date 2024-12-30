@@ -44,3 +44,9 @@ def movies_locking():
 def compute_media_time():
     """ Compute time spent. """
     CLIMediaManager.compute_all_time_spent()
+
+
+@media_cli.command()
+def compute_users_stats():
+    """ Compute users lists stats. """
+    CLIMediaManager.compute_all_users_stats()
