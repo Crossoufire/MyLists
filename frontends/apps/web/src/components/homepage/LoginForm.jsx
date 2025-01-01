@@ -1,17 +1,20 @@
 import {toast} from "sonner";
+import {router} from "@/router";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {Link} from "@tanstack/react-router";
+import {queryClient} from "@/libs/queryClient";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
 import {FormButton} from "@/components/app/FormButton";
-import {useAuth, useSimpleMutations} from "@mylists/api/src";
+import {Link, useNavigate} from "@tanstack/react-router";
+import {queryKeys, useAuth, useSimpleMutations} from "@mylists/api/src";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
 
 export const LoginForm = ({ open, onOpenChange }) => {
     const { login } = useAuth();
+    const navigate = useNavigate();
     const { oAuth2Provider } = useSimpleMutations();
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
@@ -27,7 +30,13 @@ export const LoginForm = ({ open, onOpenChange }) => {
                     return toast.error("Your account is not activated yet. Please check your email or contact us.");
                 }
                 toast.error("An error occurred trying to login");
-            }
+            },
+            onSuccess: async () => {
+                await router.invalidate();
+                const currentUser = queryClient.getQueryData(queryKeys.authKey());
+                // noinspection JSCheckFunctionSignatures
+                await navigate({ to: `/profile/${currentUser.username}` });
+            },
         });
     };
 
@@ -40,7 +49,6 @@ export const LoginForm = ({ open, onOpenChange }) => {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-
             <DialogContent className="max-sm:w-full w-[350px] bg-neutral-950">
                 <DialogHeader>
                     <DialogTitle>Login to MyLists</DialogTitle>

@@ -16,7 +16,9 @@ function RootComponent() {
     return (
         <>
             <Toaster/>
-            <SheetProvider><Navbar/></SheetProvider>
+            <SheetProvider>
+                <Navbar/>
+            </SheetProvider>
             <main className="md:max-w-screen-xl container">
                 <ScrollRestoration/>
                 <Outlet/>

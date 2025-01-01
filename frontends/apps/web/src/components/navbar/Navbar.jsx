@@ -3,7 +3,7 @@ import {useAuth} from "@mylists/api/src";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
-import {useLayoutEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {SearchBar} from "@/components/navbar/SearchBar";
 import {LoginForm} from "@/components/homepage/LoginForm";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
@@ -24,14 +24,7 @@ export const Navbar = () => {
     const { sheetOpen, setSheetOpen } = useSheet();
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
-
-    useLayoutEffect(() => {
-        if (!currentUser) return;
-        void router.invalidate();
-        // noinspection JSCheckFunctionSignatures
-        void navigate({ to: `/profile/${currentUser.username}` });
-    }, [currentUser]);
-
+    
     const logoutUser = () => {
         logout.mutate(undefined, {
             onSuccess: async () => {
