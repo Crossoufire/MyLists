@@ -213,7 +213,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593 }
 wheels = [
@@ -476,7 +476,7 @@ wheels = [
 
 [[package]]
 name = "howlongtobeatpy"
-version = "1.0.14"
+version = "1.0.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -485,9 +485,9 @@ dependencies = [
     { name = "fake-useragent" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9a/1c/305cdc05610c2fae3f0acecb2997611a469b56c1ada888f597a71b6a1dff/howlongtobeatpy-1.0.14.tar.gz", hash = "sha256:b49ab9f16af250a4bfd7a3dbc1266223f66776522770e4cb5c66e544ca5d6ef5", size = 14341 }
+sdist = { url = "https://files.pythonhosted.org/packages/be/30/9478b2b246b9091b03bfb1745c284436f2330a930e9a1633a371207c50ef/howlongtobeatpy-1.0.15.tar.gz", hash = "sha256:d881a31c10e5f5213346874e5eb2cd388c511a6fb73239e22cbbf36f1ecdb99a", size = 14343 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/8d/85dbb9cd1382bdb1d15a960982c42391b602fea680bc9c4ffc5b1d41f88b/howlongtobeatpy-1.0.14-py3-none-any.whl", hash = "sha256:e10a14d1414645d06078ebe9d7275206b703e241fa9390354804566923a0af33", size = 11986 },
+    { url = "https://files.pythonhosted.org/packages/12/a4/221a253d3d6e14898e6362671ae4cbe07168fa8b099aa8fb19cc316cea26/howlongtobeatpy-1.0.15-py3-none-any.whl", hash = "sha256:5e4f1a642dc385d955712103e219406b0b0ce724dbcfb07ae10997363aa7382e", size = 11993 },
 ]
 
 [[package]]

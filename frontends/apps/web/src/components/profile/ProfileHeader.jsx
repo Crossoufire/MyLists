@@ -19,7 +19,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                             <img
                                 alt="profile-picture"
                                 src={user.profile_image}
-                                className="rounded-full h-[100px] w-[100px] border-4 border-amber-600"
+                                className="rounded-full h-[100px] w-[100px] border-4 border-amber-600 bg-neutral-500"
                             />
                             <div className="absolute -bottom-2 -right-2 text-xs font-bold px-2 py-1 rounded-full
                             bg-gradient-to-r from-blue-600 to-violet-600">
