@@ -10,8 +10,8 @@ from backend.api import db
 from backend.api.core import current_user
 from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers
+from backend.api.utils.functions import naive_utcnow
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.functions import safe_div, naive_utcnow
 from backend.api.utils.enums import ModelTypes, Status, MediaType, JobType
 
 
@@ -142,91 +142,6 @@ class MediaList(db.Model):
         pass
 
     # --- CLASS METHODS ------------------------------------------------------------
-
-    @classmethod
-    def get_user_media_details(cls, user: User) -> Dict:
-        media_dict = dict(
-            media_type=cls.GROUP,
-            specific_total=cls.get_specific_total(user.id),
-            time_hours=int(user.get_media_setting(cls.GROUP).time_spent / 60),
-            time_days=int(user.get_media_setting(cls.GROUP).time_spent / 1440),
-        )
-
-        media_dict.update(cls.get_media_count_per_status(user.id))
-        media_dict.update(cls.get_favorites_media(user.id, limit=10))
-        media_dict.update(cls.get_media_rating(user.id))
-
-        return media_dict
-
-    @classmethod
-    def get_media_count_per_status(cls, user_id: int) -> Dict:
-        plan_to_x = (Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ)
-
-        media_count = (
-            db.session.query(cls.status, func.count(cls.status))
-            .filter_by(user_id=user_id).group_by(cls.status)
-            .all()
-        )
-
-        status_count = {status.value: {"count": 0, "percent": 0} for status in Status.by(cls.GROUP)}
-        total_media = sum(count for _, count in media_count)
-        total_media_no_plan_to_x = total_media - sum(c for s, c in media_count if s in plan_to_x)
-        no_data = (total_media == 0)
-
-        # Update <status_count> dict with actual values from <media_count> query
-        if media_count:
-            media_dict = {
-                status.value: {"count": count, "percent": safe_div(count, total_media, True)}
-                for status, count in media_count
-            }
-
-            status_count.update(media_dict)
-
-        status_list = [{"status": key, **val} for key, val in status_count.items()]
-
-        data = dict(
-            total_media=total_media,
-            total_media_no_plan_to_x=total_media_no_plan_to_x,
-            no_data=no_data,
-            status_count=status_list
-        )
-
-        return data
-
-    @classmethod
-    def get_media_rating(cls, user_id: int) -> Dict:
-        media_ratings = (
-            db.session.query(func.count(cls.rating), func.count(cls.media_id), func.sum(cls.rating))
-            .filter(cls.user_id == user_id).all()
-        )
-
-        count_rating, count_media, sum_rating = media_ratings[0]
-        percent_rating = safe_div(count_rating, count_media, percentage=True)
-        mean_rating = safe_div(sum_rating, count_rating)
-
-        return dict(media_rated=count_rating, percent_rated=percent_rating, mean_rating=mean_rating)
-
-    @classmethod
-    def get_specific_total(cls, user_id: int) -> int:
-        """
-        Retrieve a specific aggregate value: either the total count of episodes for TV shows, the total watched
-        count along with the number of re-watched movies for movies, or the total number of pages read for books.
-        This behavior is overridden by the <GamesList> class, which doesn't possess an interesting specific aggregate
-        value in its SQL table
-        """
-        return db.session.query(func.sum(cls.total)).filter(cls.user_id == user_id).scalar() or 0
-
-    @classmethod
-    def get_favorites_media(cls, user_id: int, limit: int = 10) -> Dict:
-        favorites_query = cls.query.filter_by(user_id=user_id, favorite=True).order_by(func.random()).all()
-
-        favorites_list = [dict(
-            media_name=favorite.media.name,
-            media_id=favorite.media_id,
-            media_cover=favorite.media.media_cover,
-        ) for favorite in favorites_query[:limit]]
-
-        return dict(favorites=favorites_list, total_favorites=len(favorites_query))
 
     @classmethod
     def get_available_sorting(cls) -> Dict:

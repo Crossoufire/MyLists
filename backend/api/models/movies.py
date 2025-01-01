@@ -46,16 +46,16 @@ class Movies(Media):
         return media_dict
 
     def add_to_user(self, new_status: Status, user_id: int) -> int:
-        total_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
+        total_watched = 1 if new_status == Status.COMPLETED else 0
 
         # noinspection PyArgumentList
-        add_movie = MoviesList(
+        new_entry = MoviesList(
             user_id=user_id,
             media_id=self.id,
             status=new_status,
             total=total_watched,
         )
-        db.session.add(add_movie)
+        db.session.add(new_entry)
 
         return total_watched
 

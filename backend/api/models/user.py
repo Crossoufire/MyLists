@@ -4,17 +4,17 @@ import json
 import secrets
 from time import time
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Any, Type
+from typing import List, Dict, Optional, Any
 
 import jwt
 from flask import url_for, current_app
-from sqlalchemy import desc, func, select, union_all, case
+from sqlalchemy import desc, func, select
 from flask_bcrypt import check_password_hash, generate_password_hash
 
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.utils.functions import compute_level, safe_div, naive_utcnow
-from backend.api.utils.enums import RoleType, MediaType, NotificationType, UpdateType, Privacy, Status, SearchSelector, RatingSystem
+from backend.api.utils.functions import compute_level, naive_utcnow
+from backend.api.utils.enums import RoleType, MediaType, NotificationType, UpdateType, Privacy, SearchSelector, RatingSystem
 
 
 followers = db.Table(
@@ -203,45 +203,6 @@ class User(db.Model):
         )
         return notification_count
 
-    def get_global_media_stats(self, models: List[Type[db.Model]]) -> Dict:
-        # Calculate time per media [hours]
-        time_per_media = [setting.time_spent / 60 for setting in self.settings if setting.active]
-
-        # Total time [hours]
-        total_hours = sum(time_per_media)
-
-        # Combine queries for count total entries, percentage rated, and average rating
-        statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
-        subqueries = union_all(
-            *[(db.session.query(
-                func.count(model.media_id),
-                func.count(model.rating),
-                func.coalesce(func.sum(model.rating), 0),
-                func.coalesce(func.sum(case(*[(~model.status.in_(statuses), 1)], else_=0)), 0)
-            ).filter(model.user_id == self.id)) for model in models]
-        )
-
-        results = db.session.execute(subqueries).all()
-
-        # Calculation for total media, percent rated, and mean rating
-        total_media, total_rated, sum_rated, total_media_no_plan_to_x = map(sum, zip(*results))
-        percent_rated = safe_div(total_rated, total_media_no_plan_to_x, percentage=True)
-        mean_rated = safe_div(sum_rated, total_rated)
-
-        data = dict(
-            total_hours=int(total_hours),
-            total_days=round(total_hours / 24, 0),
-            total_media=total_media,
-            total_media_no_plan_to_x=total_media_no_plan_to_x,
-            time_per_media=time_per_media,
-            total_rated=total_rated,
-            percent_rated=percent_rated,
-            mean_rated=mean_rated,
-            media_types=[model.GROUP.value for model in models],
-        )
-
-        return data
-
     def get_last_updates(self, limit: int) -> List[Dict]:
         return [update.to_dict() for update in self.updates.limit(limit).all()]
 
@@ -360,8 +321,8 @@ class UserMediaSettings(db.Model):
     sum_entries_rated = db.Column(db.Integer, nullable=False, default=0)
     entries_commented = db.Column(db.Integer, nullable=False, default=0)
     entries_favorites = db.Column(db.Integer, nullable=False, default=0)
+    total_specific = db.Column(db.Integer, nullable=False, default=0)
     status_counts = db.Column(db.JSON, nullable=False, default={})
-    total_specific = db.Column(db.Integer, nullable=True)
     average_rating = db.Column(db.Float, nullable=True)
 
     # --- Relationships ----------------------------------------------------------------

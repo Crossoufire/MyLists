@@ -43,20 +43,21 @@ def add_media(data):
     if user_media:
         return abort(400, description="Media already in your list")
 
-    new_total = media.add_to_user(new_status, current_user.id)
+    new_value = media.add_to_user(new_status, current_user.id)
     UserMediaUpdate.set_new_update(media, UpdateType.STATUS, None, new_status)
 
     db.session.commit()
 
     # Get newly created user_media and update stats
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
+
     list_stats_manager = ListStatsManager.get_manager(media.GROUP)(user=current_user)
-    list_stats_manager.on_add_media_update(
+
+    list_stats_manager.on_update(
         user_media=user_media,
-        old_value=0,
-        new_value=new_total,
-        old_status=None,
+        new_value=new_value,
         new_status=new_status,
+        new_entry=1,
     )
 
     db.session.commit()
@@ -76,9 +77,21 @@ def delete_media(data):
     list_model, label_model = data["models"]
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
+    old_total = user_media.total if data["media_type"] != MediaType.GAMES else user_media.playtime
+    old_redo = user_media.redo if data["media_type"] != MediaType.GAMES else 0
+
     # Update user list stats
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.DELETE, None, None)
+    list_stats_manager.on_update(
+        user_media=user_media,
+        old_entry=1,
+        old_value=old_total,
+        old_redo=old_redo,
+        old_rating=user_media.rating,
+        old_status=user_media.status,
+        old_comment=user_media.comment,
+        favorite_value=user_media.favorite,
+    )
 
     db.session.delete(user_media)
 
@@ -99,7 +112,7 @@ def update_favorite(data):
     list_model = data["models"]
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_favorite_update(new_value=data["payload"])
+    list_stats_manager.on_update(user_media=user_media, favorite_value=data["payload"])
     user_media.favorite = data["payload"]
     db.session.commit()
 
@@ -115,18 +128,21 @@ def update_status(data):
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     old_total = user_media.total if data["media_type"] != MediaType.GAMES else user_media.playtime
+    old_redo = user_media.redo if data["media_type"] != MediaType.GAMES else 0
     old_status = user_media.status
     new_total = user_media.update_status(data["payload"])
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.STATUS, old_status, data["payload"])
 
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_status_update(
+    list_stats_manager.on_update(
         user_media=user_media,
         old_status=old_status,
         new_status=data["payload"],
-        old_total=old_total,
-        new_total=new_total,
+        old_value=old_total,
+        new_value=new_total,
+        old_redo=old_redo,
+        new_redo=0,
     )
 
     db.session.commit()
@@ -147,7 +163,7 @@ def update_rating(data):
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.RATING, user_media.rating, rating)
+    list_stats_manager.on_update(user_media=user_media, old_rating=user_media.rating, new_rating=rating)
     user_media.rating = rating
     db.session.commit()
 
@@ -170,9 +186,13 @@ def update_redo(data):
     new_total = user_media.update_total(data["payload"])
 
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.REDO, old_redo, data["payload"])
-    list_stats_manager.update_media_stats(user_media, UpdateType.TIME, old_total, new_total)
-
+    list_stats_manager.on_update(
+        user_media=user_media,
+        old_redo=old_redo,
+        new_redo=data["payload"],
+        old_value=old_total,
+        new_value=new_total,
+    )
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.REDO, old_redo, data["payload"])
 
     db.session.commit()
@@ -188,7 +208,7 @@ def update_comment(data):
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.COMMENT, None, data["payload"])
+    list_stats_manager.on_update(user_media=user_media, old_comment=user_media.comment, new_comment=data["payload"])
     user_media.comment = data["payload"]
     db.session.commit()
 
@@ -204,10 +224,10 @@ def update_playtime(data):
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.PLAYTIME, user_media.playtime, data["payload"])
-
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.TIME, user_media.playtime, data["payload"])
+    list_stats_manager.on_update(user_media=user_media, old_value=user_media.playtime, new_value=data["payload"])
     user_media.playtime = data["payload"]
+
     db.session.commit()
 
     return {}, 204
@@ -255,7 +275,11 @@ def update_season(data):
     )
 
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.TIME, old_total, new_total)
+    list_stats_manager.on_update(
+        user_media=user_media,
+        old_value=old_total,
+        new_value=new_total,
+    )
 
     db.session.commit()
 
@@ -290,7 +314,11 @@ def update_episode(data):
     )
 
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.TIME, old_total, new_total)
+    list_stats_manager.on_update(
+        user_media=user_media,
+        old_value=old_total,
+        new_value=new_total,
+    )
 
     db.session.commit()
 
@@ -318,7 +346,11 @@ def update_page(data):
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.PAGE, old_page, data["payload"])
 
     list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.update_media_stats(user_media, UpdateType.TIME, old_total, new_total)
+    list_stats_manager.on_update(
+        user_media=user_media,
+        old_value=old_total,
+        new_value=new_total,
+    )
 
     db.session.commit()
 

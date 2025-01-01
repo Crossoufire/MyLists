@@ -12,13 +12,16 @@ class CLIMediadleManager(CLIBaseManager):
         )
 
         for stat in stats:
-            table.add_row(
-                stat.user.username,
-                str(stat.average_attempts),
-                str(stat.streak),
-                str(stat.best_streak),
-                str(stat.total_won),
-                str(stat.total_played),
-            )
+            try:
+                table.add_row(
+                    stat.user.username,
+                    str(stat.average_attempts),
+                    str(stat.streak),
+                    str(stat.best_streak),
+                    str(stat.total_won),
+                    str(stat.total_played),
+                )
+            except:
+                pass
 
         self.print_table(table)

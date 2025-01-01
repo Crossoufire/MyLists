@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from typing import Type, Any
-from abc import abstractmethod
+from typing import Type, Callable, Dict, List
 
 from sqlalchemy.orm.attributes import flag_modified
 
-from backend.api import db
-from backend.api.models import User
+from backend.api.utils.functions import safe_div
+from backend.api.models import User, UserMediaSettings
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import MediaType, UpdateType, Status, ModelTypes
+from backend.api.utils.enums import MediaType, Status, ModelTypes
 
 
 class ListStatsManagerMeta(type):
@@ -23,6 +22,7 @@ class ListStatsManagerMeta(type):
 
 class ListStatsManager(metaclass=ListStatsManagerMeta):
     GROUP: MediaType
+    TIME_MULTIPLIER: Callable | float
 
     def __init__(self, user: User):
         self.setting = user.get_media_setting(self.GROUP)
@@ -31,59 +31,126 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
     def get_manager(cls, media_type: MediaType) -> Type[ListStatsManager]:
         return cls.subclasses.get(media_type, cls)
 
-    # --- UPDATES ------------------------------------------------------------
+    @classmethod
+    def compute_media_stats(cls, settings: List[UserMediaSettings]) -> Dict:
+        # Only active settings
+        active_settings = [setting for setting in settings if setting.active]
 
-    def on_add_media_update(self, **kwargs):
-        self.setting.total_entries += 1
+        # Time [h] per media
+        time_per_media = [setting.time_spent / 60 for setting in active_settings]
+
+        # Total media time [h]
+        total_hours = sum(time_per_media)
+
+        # Total entries
+        total_entries = sum(setting.total_entries for setting in active_settings)
+
+        # Total entries - no plan
+        excluded_statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
+        total_entries_no_plan = sum(v for setting in active_settings for k, v in setting.status_counts.items() if k not in excluded_statuses)
+
+        # Total and percentage rated
+        total_rated = sum(setting.entries_rated for setting in active_settings)
+        percent_rated = safe_div(total_rated, total_entries_no_plan, percentage=True)
+
+        # Total avg rating
+        avg_rating = safe_div(sum(setting.sum_entries_rated for setting in active_settings), total_rated)
+
+        data = dict(
+            total_hours=int(total_hours),
+            total_days=round(total_hours / 24, 0),
+            total_media=total_entries,
+            total_media_no_plan_to_x=total_entries_no_plan,
+            time_per_media=time_per_media,
+            total_rated=total_rated,
+            percent_rated=percent_rated,
+            mean_rated=avg_rating,
+            media_types=[setting.media_type for setting in active_settings],
+        )
+
+        return data
+
+    @classmethod
+    def compute_media_summaries(cls, settings: List[UserMediaSettings], limit: int = 10) -> List[Dict]:
+        data = []
+        active_settings = [setting for setting in settings if setting.active]
+        excluded_statuses = {Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ}
+        for setting in active_settings:
+            total_no_plan = sum(c for s, c in setting.status_counts.items() if s not in excluded_statuses)
+
+            list_model = ModelsManager.get_unique_model(setting.media_type, ModelTypes.LIST)
+            favorites_query = list_model.query.filter_by(user_id=setting.user_id, favorite=True).limit(limit).all()
+
+            favorites_list = [dict(
+                media_name=favorite.media.name,
+                media_id=favorite.media_id,
+                media_cover=favorite.media.media_cover,
+            ) for favorite in favorites_query]
+
+            status_list = [{
+                "status": status,
+                "count": count,
+                "percent": safe_div(count, setting.total_entries, True)
+            } for status, count in setting.status_counts.items()]
+
+            media_dict = dict(
+                media_type=setting.media_type,
+                specific_total=setting.total_specific,
+                time_hours=int(setting.time_spent / 60),
+                time_days=int(setting.time_spent / 1440),
+                total_media=setting.total_entries,
+                total_media_no_plan_to_x=total_no_plan,
+                no_data=setting.total_entries == 0,
+                status_count=status_list,
+                favorites=favorites_list,
+                total_favorites=setting.entries_favorites,
+                media_rated=setting.entries_rated,
+                percent_rated=safe_div(setting.entries_rated, total_no_plan, percentage=True),
+                mean_rating=setting.average_rating,
+            )
+            data.append(media_dict)
+
+        return data
+
+    def on_update(self, **kwargs):
+        self._update_entries(**kwargs)
         self._update_time(**kwargs)
+        self._update_redo(**kwargs)
+        self._update_rating(**kwargs)
         self._update_status(**kwargs)
+        self._update_comment(**kwargs)
+        self._update_favorite(**kwargs)
         self._update_specific(**kwargs)
 
-    def on_favorite_update(self, **kwargs):
-        self._update_favorite(**kwargs)
+    def _update_entries(self, **kwargs):
+        """ Update the total number of entries in the list """
+        old_entry, new_entry = kwargs.get("old_entry", 0), kwargs.get("new_entry", 0)
+        self.setting.total_entries += (new_entry - old_entry)
 
-    def on_status_update(self, **kwargs):
-        self._update_status(**kwargs)
-        self._update_time(**kwargs)
+    def _update_comment(self, **kwargs):
+        old_comment, new_comment = kwargs.get("old_comment"), kwargs.get("new_comment")
 
-    def update_on_add(self, user_media, old_value, new_value):
-        self.setting.total_entries += 1
-        self._update_specific(old_value=old_value, new_value=new_value)
+        if old_comment is not None and old_comment.strip() == "":
+            old_comment = None
 
-    def update_on_rating(self, user_media, old_rating, new_rating):
-        """ Update rating related statistics """
+        if new_comment is not None and new_comment.strip() == "":
+            new_comment = None
 
-        if old_rating is None and new_rating is not None:
-            self.setting.entries_rated += 1
-            self.setting.sum_entries_rated += new_rating
+        if old_comment is None and new_comment is not None:
+            self.setting.entries_commented += 1
 
-        if old_rating is not None and new_rating is None:
-            self.setting.entries_rated -= 1
-            self.setting.sum_entries_rated -= old_rating
-
-        if old_rating and new_rating:
-            self.setting.sum_entries_rated += (new_rating - old_rating)
-
-        # Recalculate average rating
-        self.setting.average_rating = self.setting.sum_entries_rated / self.setting.entries_rated \
-            if self.setting.entries_rated > 0 else None
-
-    def update_on_redo(self, user_media, old_value, new_value):
-        self.setting.total_redo += (new_value - old_value)
-        self._update_specific()
+        if old_comment is not None and new_comment is None:
+            self.setting.entries_commented -= 1
 
     def _update_favorite(self, **kwargs):
-        new_value = kwargs.get("new_value")
-        if new_value is True:
+        favorite_value = kwargs.get("favorite_value")
+        if favorite_value is None:
+            return
+
+        if favorite_value is True:
             self.setting.entries_favorites += 1
         else:
             self.setting.entries_favorites -= 1
-
-    def update_on_comment(self, user_media, old_value, new_value):
-        if old_value is None and new_value is not None:
-            self.setting.entries_commented += 1
-        if old_value is not None and new_value is None:
-            self.setting.entries_commented -= 1
 
     def _update_status(self, **kwargs):
         """ Update status distribution counts """
@@ -102,122 +169,60 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
         # Necessary, complex JSON type not tracked by SQLAlchemy
         flag_modified(self.setting, "status_counts")
 
-    @abstractmethod
-    def _update_time(self, **kwargs):
-        pass
+    def _update_redo(self, **kwargs):
+        old_redo, new_redo = kwargs.get("old_redo", 0), kwargs.get("new_redo", 0)
+        self.setting.total_redo += (new_redo - old_redo)
 
-    @abstractmethod
-    def update_on_delete(self, user_media, old_value, new_value):
-        pass
+    def _update_rating(self, **kwargs):
+        old_rating, new_rating = kwargs.get("old_rating"), kwargs.get("new_rating")
 
-    @abstractmethod
+        if old_rating is None and new_rating is not None:
+            self.setting.entries_rated += 1
+            self.setting.sum_entries_rated += new_rating
+
+        if old_rating is not None and new_rating is None:
+            self.setting.entries_rated -= 1
+            self.setting.sum_entries_rated -= old_rating
+
+        if old_rating is not None and new_rating is not None:
+            self.setting.sum_entries_rated += (new_rating - old_rating)
+
+        # Recalculate average rating
+        self.setting.average_rating = self.setting.sum_entries_rated / self.setting.entries_rated \
+            if self.setting.entries_rated > 0 else None
+
     def _update_specific(self, **kwargs):
-        pass
+        if self.GROUP == MediaType.GAMES:
+            return
+        old_value, new_value = kwargs.get("old_value", 0), kwargs.get("new_value", 0)
+        self.setting.total_specific += (new_value - old_value)
 
-    def update_media_stats(self, user_media: db.Model, update_type: UpdateType, old_value: Any, new_value: Any):
-        """ Central function to update all relevant stats """
-
-        updates_map = {
-            UpdateType.ADD: "update_on_add",
-            UpdateType.TIME: "update_on_time",
-            UpdateType.STATUS: "update_on_status",
-            UpdateType.RATING: "update_on_rating",
-            UpdateType.REDO: "update_on_redo",
-            UpdateType.FAVORITE: "update_on_favorite",
-            UpdateType.COMMENT: "update_on_comment",
-            UpdateType.DELETE: "update_on_delete",
-        }
-
-        getattr(self, updates_map[update_type])(user_media, old_value, new_value)
+    def _update_time(self, **kwargs):
+        user_media, old_value, new_value = kwargs.get("user_media"), kwargs.get("old_value", 0), kwargs.get("new_value", 0)
+        mult = self.TIME_MULTIPLIER(user_media) if callable(self.TIME_MULTIPLIER) and user_media else self.TIME_MULTIPLIER
+        self.setting.time_spent += (new_value - old_value) * mult
 
 
 class MoviesListStats(ListStatsManager):
     GROUP = MediaType.MOVIES
-
-    def _update_time(self, **kwargs):
-        old_value, new_value, user_media = kwargs.get("old_value"), kwargs.get("new_value"), kwargs.get("user_media")
-        self.setting.time_spent += (new_value - old_value) * user_media.media.duration
-
-    def update_on_delete(self, user_media, old_value, new_value):
-        self.setting.total_entries -= 1
-        self.update_on_status(None, user_media.status, None)
-        self._update_time(user_media, user_media.total, 0)
-        self.update_on_rating(None, user_media.rating, None)
-        self.update_on_redo(None, user_media.redo, 0)
-        self.update_on_favorite(None, None, False)
-        self.update_on_comment(None, user_media.comment, None)
-        self._update_specific()
-
-    def _update_specific(self, **kwargs):
-        """ Specific total for movies are the total watched with re-watched """
-        old_value, new_value = kwargs.get("old_value", 0), kwargs.get("new_value", 0)
-        old_redo, new_redo = kwargs.get("old_redo", 0), kwargs.get("new_redo", 0)
-        self.setting.total_specific += (new_value - old_value) + (new_redo - old_redo)
+    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration
 
 
 class BooksListStats(ListStatsManager):
     GROUP = MediaType.BOOKS
-
-    def _update_time(self, user_media, old_value, new_value):
-        if not user_media:
-            user_media = ModelsManager.get_unique_model(self.GROUP, ModelTypes.LIST)
-        self.setting.time_spent += (new_value - old_value) * user_media.TIME_PER_PAGE
-
-    def update_on_delete(self, user_media, old_value, new_value):
-        self.setting.total_entries -= 1
-        self.update_on_status(None, user_media.status, None)
-        self.update_on_redo(None, user_media.redo, 0)
-        self._update_time(user_media, user_media.playtime, 0)
-        self.update_on_rating(None, user_media.rating, None)
-        self.update_on_favorite(None, None, False)
-        self.update_on_comment(None, user_media.comment, None)
-        self._update_specific()
-
-    def _update_specific(self, **kwargs):
-        """ Total pages read for books """
-        self.setting.total_specific += (kwargs["new_value"] - kwargs["old_value"])
+    TIME_MULTIPLIER = lambda self, user_media: user_media.TIME_PER_PAGE
 
 
 class GamesListStats(ListStatsManager):
     GROUP = MediaType.GAMES
-
-    def _update_time(self, user_media, old_value, new_value):
-        self.setting.time_spent += (new_value - old_value)
-
-    def update_on_delete(self, user_media, old_value, new_value):
-        self.setting.total_entries -= 1
-        self.update_on_status(None, user_media.status, None)
-        self._update_time(user_media, user_media.playtime, 0)
-        self.update_on_rating(None, user_media.rating, None)
-        self.update_on_favorite(None, None, False)
-        self.update_on_comment(None, user_media.comment, None)
-
-    def _update_specific(self, **kwargs):
-        """ No specific total for games """
-        pass
+    TIME_MULTIPLIER = 1
 
 
-class TvListStats(ListStatsManager):
-    def _update_time(self, user_media, old_value, new_value):
-        self.setting.time_spent += (new_value - old_value) * user_media.media.duration
-
-    def update_on_delete(self, user_media, old_value, new_value):
-        self.setting.total_entries -= 1
-        self.update_on_status(None, user_media.status, None)
-        self._update_time(user_media, user_media.total, 0)
-        self.update_on_rating(None, user_media.rating, None)
-        self.update_on_redo(None, user_media.redo, 0)
-        self.update_on_favorite(None, None, False)
-        self.update_on_comment(None, user_media.comment, None)
-        self._update_specific()
-
-    def _update_specific(self, **kwargs):
-        """ Specific total is total watched episodes """
-
-
-class SeriesListStats(TvListStats):
+class SeriesListStats(ListStatsManager):
     GROUP = MediaType.SERIES
+    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration
 
 
-class AnimeListStats(TvListStats):
+class AnimeListStats(ListStatsManager):
     GROUP = MediaType.ANIME
+    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration

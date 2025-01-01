@@ -7,6 +7,7 @@ from backend.api import db
 from backend.api.core.email import send_email
 from backend.api.core import current_user, token_auth
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.managers.ListsStatsManager import ListStatsManager
 from backend.api.utils.decorators import arguments, body, check_authorization
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
 from backend.api.models import UserAchievement, Achievement, MediadleStats, UserMediadleProgress
@@ -59,17 +60,14 @@ def profile(user: User):
         user.profile_views += 1
         db.session.commit()
 
-    active_media_types = [setting.media_type for setting in user.settings if setting.active]
-    models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
-
     data = dict(
         user_data=user.to_dict(),
         user_updates=user.get_last_updates(limit=6),
         follows=user.get_follows(limit=8),
         follows_updates=user.get_follows_updates(limit=10, as_public=True if not current_user else False),
         is_following=False if not current_user else current_user.is_following(user),
-        media_global=user.get_global_media_stats(models),
-        media_data=[model.get_user_media_details(user) for model in models],
+        media_global=ListStatsManager.compute_media_stats(user.settings),
+        media_data=ListStatsManager.compute_media_summaries(user.settings),
         achievements=dict(
             summary=UserAchievement.get_difficulty_summary(user.id),
             details=Achievement.get_user_achievements(user.id, limit=6),

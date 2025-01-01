@@ -195,7 +195,8 @@ class UserAchievement(db.Model):
             db.session.query(AchievementTier.difficulty, func.count().label("count"))
             .join(subq, (AchievementTier.achievement_id == subq.c.achievement_id) & (tier_order == subq.c.max_tier_order))
             .group_by(AchievementTier.difficulty)
-            .order_by(tier_order).all()
+            .order_by(tier_order)
+            .all()
         )
 
         return [{"difficulty": diff, "count": count} for diff, count in result]

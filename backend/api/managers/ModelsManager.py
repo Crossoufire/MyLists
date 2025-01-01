@@ -55,7 +55,7 @@ class ModelsManager:
                 pass
 
     @classmethod
-    def get_unique_model(cls, media_type: MediaType, model_type: ModelTypes) -> Type[db.Model]:
+    def get_unique_model(cls, media_type: MediaType | str, model_type: ModelTypes) -> Type[db.Model]:
         cls._initialize_caches()
         return cls._model_cache.get((media_type, model_type))
 

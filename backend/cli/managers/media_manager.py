@@ -9,7 +9,7 @@ from typing import List, Type, Tuple, Optional, cast
 
 from flask import current_app
 from rich.progress import track
-from sqlalchemy import func, update
+from sqlalchemy import func, update, case
 
 from backend.api import db
 from backend.api.core.errors import log_error
@@ -101,10 +101,36 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         raise NotImplementedError("Subclasses must implement this method")
 
     def _update_all_users_media_stats(self):
-        self._update_all_users_specific_total()
-        self._update_all_users_media_per_status()
-        self._update_all_users_favorites()
-        self._update_all_users_media_rating()
+        stats_table = self.create_table(
+            None,
+            ["Stat Type", "Status", "Details"],
+        )
+        stats_table.columns[1].justify = "center"
+
+        operations = {
+            "Total Specific": self._update_all_users_specific_total,
+            "Media per Status": self._update_all_users_media_per_status,
+            "Favorites & Comments": self._update_all_users_favorites,
+            "Ratings": self._update_all_users_media_rating,
+        }
+
+        with self.progress as progress:
+            task = progress.add_task(f"[cyan]Updating {self.GROUP} stats...", total=len(operations))
+
+            for op_name, op_func in operations.items():
+                with self.console.capture() as capture:
+                    op_func()
+                details = capture.get() or "No Issues Found"
+                details = details.strip()
+
+                if details != "No Issues Found":
+                    details = self.strip_ansi(details)
+
+                symbol = "[green]✓[/green]" if details == "No Issues Found" else "[yellow]![/yellow]"
+                stats_table.add_row(op_name, symbol, details)
+                progress.advance(task)
+
+        self.print_table(stats_table)
 
     def _update_all_users_specific_total(self):
         if self.GROUP == MediaType.GAMES:
@@ -115,7 +141,7 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
             .group_by(self.media_list.user_id).subquery()
         )
 
-        # Fetch current values of `total_specific` before updating
+        # Fetch `total_specific` values before updating
         before_update = (
             db.session.query(UserMediaSettings.user_id, UserMediaSettings.total_specific.label("old_total_specific"))
             .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.GROUP)
@@ -132,7 +158,7 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         db.session.execute(update_stmt)
         db.session.commit()
 
-        # Fetch new values after updating
+        # Fetch `total_specific` values after updating
         after_update = (
             db.session.query(UserMediaSettings.user_id, UserMediaSettings.total_specific.label("new_total_specific"))
             .filter(UserMediaSettings.user_id == subq.c.user_id, UserMediaSettings.media_type == self.GROUP)
@@ -141,15 +167,21 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
 
         # Compare and log discrepancies
         for row in after_update:
-            old_value = before_update.get(row.user_id, 0)
-            new_value = row.new_total_specific
+            old_value = before_update.get(row.user_id, 0) or 0
+            new_value = row.new_total_specific or 0
             discrepancy = new_value - old_value
-            if discrepancy > 0.001:
-                self.log_warning(f"User [ID {row.user_id}] - Before: {old_value}, After: {new_value}, Discrepancy: {discrepancy}")
-
-        self.log_success(f"Total specific '{self.GROUP}' for each user successfully updated")
+            if abs(discrepancy) > 0.001:
+                self.log_print(f"User ID {row.user_id} - Before: {old_value} | After: {new_value} | Discrepancy: {discrepancy}")
 
     def _update_all_users_media_per_status(self):
+        # Fetch `status_counts` values before updating
+        before_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.status_counts)
+            .filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+        before_update = {row.user_id: row.status_counts for row in before_update}
+
         status_counts = (
             db.session.query(self.media_list.user_id, self.media_list.status, func.count(self.media_list.id).label("count"))
             .group_by(self.media_list.user_id, self.media_list.status)
@@ -169,29 +201,59 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
 
         db.session.commit()
 
-        self.log_success(f"media per status '{self.GROUP}' for each user successfully updated")
+        # Fetch `status_count` values after updating
+        after_update = (
+            db.session.query(UserMediaSettings.user_id, UserMediaSettings.status_counts)
+            .filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+
+        # Compare and log discrepancies
+        for row in after_update:
+            old_counts = before_update.get(row.user_id, {}) or {}
+            new_counts = row.status_counts or {}
+
+            for status in Status.by(self.GROUP):
+                old_value = old_counts.get(status, 0) or 0
+                new_value = new_counts.get(status, 0) or 0
+                discrepancy = new_value - old_value
+                if abs(discrepancy) > 0.001:
+                    self.log_print(f"User ID {row.user_id} - Status '{status}' - Before: {old_value} | After: {new_value} | Discrepancy: {discrepancy}")
 
     def _update_all_users_favorites(self):
-        if self.GROUP == MediaType.GAMES:
-            redo_data = True
-        else:
-            redo_data = func.sum(self.media_list.redo.label("redo_sum"))
+        # Fetch current values before updating
+        before_update = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                UserMediaSettings.entries_favorites,
+                UserMediaSettings.total_redo,
+                UserMediaSettings.entries_commented,
+            ).filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+        before_update = {
+            row.user_id: {
+                "favorites": row.entries_favorites or 0,
+                "redo": row.total_redo or 0,
+                "comments": row.entries_commented or 0
+            } for row in before_update
+        }
 
+        if self.GROUP == MediaType.GAMES:
+            redo_data = func.coalesce(func.sum(0), 0).label("redo_sum")
+        else:
+            redo_data = func.coalesce(func.sum(self.media_list.redo), 0).label("redo_sum")
+
+        # noinspection PyTypeChecker
         subquery = (
             db.session.query(
                 self.media_list.user_id,
-                func.count(self.media_list.favorite.label("fav_count")),
+                func.coalesce(func.sum(case((self.media_list.favorite.is_(True), 1), else_=0)), 0).label("fav_count"),
                 redo_data,
-                func.count(self.media_list.comment.label("com_count")),
-            ).filter(self.media_list.comment.is_not(None), self.media_list.favorite.is_(True))
-            .group_by(self.media_list.user_id).subquery()
+                func.coalesce(func.sum(case((func.trim(self.media_list.comment) != "", 1), else_=0)), 0).label("com_count"),
+            ).group_by(self.media_list.user_id)
+            .subquery()
         )
-
-        if not db.session.query(subquery).all():
-            self.log_success(f"total favorites '{self.GROUP}' for each user successfully updated")
-            self.log_success(f"total redo '{self.GROUP}' for each user successfully updated")
-            self.log_success(f"total comments '{self.GROUP}' for each user successfully updated")
-            return
 
         # noinspection PyTypeChecker
         update_stmt = (
@@ -206,9 +268,30 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         db.session.execute(update_stmt)
         db.session.commit()
 
-        self.log_success(f"total favorites '{self.GROUP}' for each user successfully updated")
-        self.log_success(f"total redo '{self.GROUP}' for each user successfully updated")
-        self.log_success(f"total comments '{self.GROUP}' for each user successfully updated")
+        # Fetch new values after updating
+        after_update = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                UserMediaSettings.entries_favorites,
+                UserMediaSettings.total_redo,
+                UserMediaSettings.entries_commented
+            ).filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+
+        # Compare and log discrepancies
+        for row in after_update:
+            old_values = before_update.get(row.user_id, {"favorites": 0, "redo": 0, "comments": 0})
+            new_values = {
+                "favorites": row.entries_favorites or 0,
+                "redo": row.total_redo or 0,
+                "comments": row.entries_commented or 0
+            }
+
+            for field in ["favorites", "redo", "comments"]:
+                discrepancy = new_values[field] - old_values[field]
+                if abs(discrepancy) > 0.00001:
+                    self.log_print(f"User ID {row.user_id} - {field} - Before: {old_values[field]} | After: {new_values[field]} | Discrepancy: {discrepancy}")
 
     def _update_all_users_media_rating(self):
         subquery = (
@@ -216,9 +299,29 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
                 self.media_list.user_id,
                 func.count(self.media_list.rating).label("rating_count"),
                 func.count(self.media_list.media_id).label("media_count"),
-                func.sum(self.media_list.rating).label("sum_rating"),
+                func.coalesce(func.sum(self.media_list.rating), 0).label("sum_rating"),
             ).group_by(self.media_list.user_id).subquery()
         )
+
+        # Fetch current values before updating
+        before_update = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                UserMediaSettings.total_entries,
+                UserMediaSettings.entries_rated,
+                UserMediaSettings.sum_entries_rated,
+                UserMediaSettings.average_rating
+            ).filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+        before_update = {
+            row.user_id: {
+                "total": row.total_entries or 0,
+                "rated": row.entries_rated or 0,
+                "sum": row.sum_entries_rated or 0,
+                "avg": row.average_rating or 0
+            } for row in before_update
+        }
 
         # noinspection PyTypeChecker
         update_stmt = (
@@ -234,10 +337,32 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         db.session.execute(update_stmt)
         db.session.commit()
 
-        self.log_success(f"Total entries '{self.GROUP}' for each user successfully updated")
-        self.log_success(f"Entries rated '{self.GROUP}' for each user successfully updated")
-        self.log_success(f"Sum entries rated '{self.GROUP}' for each user successfully updated")
-        self.log_success(f"Average rating '{self.GROUP}' for each user successfully updated")
+        # Fetch new values after updating
+        after_update = (
+            db.session.query(
+                UserMediaSettings.user_id,
+                UserMediaSettings.total_entries,
+                UserMediaSettings.entries_rated,
+                UserMediaSettings.sum_entries_rated,
+                UserMediaSettings.average_rating
+            ).filter(UserMediaSettings.media_type == self.GROUP)
+            .all()
+        )
+
+        # Compare and log discrepancies
+        for row in after_update:
+            old_values = before_update.get(row.user_id, {"total": 0, "rated": 0, "sum": 0, "avg": 0})
+            new_values = {
+                "total": row.total_entries or 0,
+                "rated": row.entries_rated or 0,
+                "sum": row.sum_entries_rated or 0,
+                "avg": row.average_rating or 0
+            }
+
+            for field in ["total", "rated", "sum", "avg"]:
+                discrepancy = new_values[field] - old_values[field]
+                if abs(discrepancy) > 0.000001:
+                    self.log_print(f"User ID {row.user_id} - {field} - Before: {old_values[field]} | After: {new_values[field]} | Discrepancy: {discrepancy}")
 
     def _compute_user_time_spent(self):
         # Subquery with all users and total `time_spent` per media_type
@@ -277,7 +402,7 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
             new_time = row.new_time_spent
             discrepancy = new_time - old_time
             if discrepancy > 0.001:
-                self.log_warning(f"User [ID {row.user_id}] - Before: {old_time}, After: {new_time}, Discrepancy: {discrepancy}")
+                self.log_warning(f"User [ID {row.user_id}] - Before: {old_time} | After: {new_time} | Discrepancy: {discrepancy}")
 
         self.log_success(f"Time spent on '{self.GROUP.value}' for each user successfully updated")
 

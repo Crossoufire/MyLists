@@ -5,7 +5,6 @@ from typing import Callable
 
 from flask import abort
 
-from backend.api.models import User
 from backend.api.core import current_user
 from backend.api.utils.enums import Privacy
 from backend.api.schemas.core import FlaskParser
@@ -37,7 +36,7 @@ def timer(func: Callable | int = None, stack_size: int = 1):
                 current_func_name = f"{f.__self__.__class__.__name__}.{current_func_name}"
 
             display_name = " - ".join(stack_info + [current_func_name])
-            print(f"[{display_name}] - Elapsed time: {int((end_time - start_time) * 1000)} ms")
+            print(f"[{display_name}] - Elapsed time: {round((end_time - start_time) * 1000, 1)} ms")
 
             return result
 
@@ -88,6 +87,8 @@ def body(schema, location="json", **kwargs):
 
 def check_authorization(f: Callable):
     """ Check if non-authenticated user can access the route depending on the user's privacy setting """
+
+    from backend.api.models import User
 
     @wraps(f)
     def wrapper(*args, **kwargs):
