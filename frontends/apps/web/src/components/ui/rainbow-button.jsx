@@ -2,7 +2,7 @@ import React from "react";
 import {cn} from "@/utils/functions";
 
 
-export function RainbowButton({ children, ...props }) {
+export function RainbowButton({ children, className, ...props }) {
     return (
         <button
             className={cn("h-11 px-8 py-2 inline-flex items-center justify-center rounded-xl font-medium transition-colors " +
@@ -13,7 +13,7 @@ export function RainbowButton({ children, ...props }) {
                 "before:animate-rainbow before:bg-[linear-gradient(90deg,hsl(var(--color-1)),hsl(var(--color-5)),hsl(var(--color-3)),hsl(var(--color-4)),hsl(var(--color-2)))] " +
                 "before:bg-[length:200%] before:[filter:blur(calc(0.8*1rem))]", "bg-[linear-gradient(#121213,#121213),linear-gradient(#121213_50%,rgba(18,18,19,0.6)_80%,rgba(18,18,19,0)),linear-gradient(90deg,hsl(var(--color-1)),hsl(var(--color-5)),hsl(var(--color-3)),hsl(var(--color-4)),hsl(var(--color-2)))]",
                 " dark:bg-[linear-gradient(#fff,#fff),linear-gradient(#fff_50%,rgba(255,255,255,0.6)_80%,rgba(0,0,0,0)),linear-gradient(90deg,hsl(var(--color-1)),hsl(var(--color-5)),hsl(var(--color-3)),hsl(var(--color-4)),hsl(var(--color-2)))]"
-            )}
+                , className)}
             {...props}>
             {children}
         </button>

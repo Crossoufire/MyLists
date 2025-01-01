@@ -134,7 +134,6 @@ function MediadlePage() {
                         </div>
                     </CardContent>
                 </Card>
-
                 <Card>
                     <CardHeader>
                         <CardTitle>Your Stats</CardTitle>
@@ -143,11 +142,11 @@ function MediadlePage() {
                     <CardContent>
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-2">
                             <StatsCard icon={Sigma} label="Total Played" value={mediadleData?.stats?.total_played ?? 0} color="text-blue-600"/>
+                            <StatsCard icon={Trophy} label="Total Won" value={mediadleData?.stats?.total_won ?? 0} color="text-amber-600"/>
                             <StatsCard icon={Award} label="Win Rate" value={`${mediadleData?.stats?.win_rate ?? 0.0}%`} color="text-green-600"/>
                             <StatsCard icon={Flame} label="Current Streak" value={mediadleData?.stats?.current_streak ?? 0} color="text-red-600"/>
                             <StatsCard icon={Crown} label="Best Streak" value={mediadleData?.stats?.best_streak ?? 0} color="text-amber-600"/>
                             <StatsCard icon={Target} label="Avg. Attempts" value={mediadleData?.stats?.average_attempts ?? 0.0} color="text-blue-600"/>
-                            <StatsCard icon={Trophy} label="Total Won" value={mediadleData?.stats?.total_won ?? 0} color="text-amber-600"/>
                         </div>
                     </CardContent>
                 </Card>

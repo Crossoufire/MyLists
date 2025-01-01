@@ -51,6 +51,7 @@ export const getFeelingList = (size = 20) => {
 
 export const getScoreList = () => {
     return [
+        { value: null, component: "--" },
         { value: 0, component: 0.0.toFixed(1) },
         { value: 1, component: 1.0.toFixed(1) },
         { value: 1.5, component: 1.5.toFixed(1) },

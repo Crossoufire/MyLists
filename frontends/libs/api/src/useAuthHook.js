@@ -30,6 +30,7 @@ export const useAuth = () => {
     const logout = useMutation({
         mutationFn: () => getApiClient().logout(),
         onSuccess: () => {
+            queryClient.clear();
             getApiClient().removeAccessToken();
             setCurrentUser(null);
         },

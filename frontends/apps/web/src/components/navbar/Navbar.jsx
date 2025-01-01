@@ -1,15 +1,16 @@
-import {useRef} from "react";
 import {router} from "@/router";
 import {useAuth} from "@mylists/api/src";
 import {Button} from "@/components/ui/button";
-import {queryClient} from "@/libs/queryClient";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
+import {useLayoutEffect, useRef, useState} from "react";
 import {SearchBar} from "@/components/navbar/SearchBar";
+import {LoginForm} from "@/components/homepage/LoginForm";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
+import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {Notifications} from "@/components/navbar/Notifications";
-import {Link as NavLink, useLocation, useNavigate} from "@tanstack/react-router";
+import {Link as NavLink, useNavigate} from "@tanstack/react-router";
 import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
@@ -19,16 +20,26 @@ import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuLi
 export const Navbar = () => {
     const popRef = useRef();
     const navigate = useNavigate();
-    const location = useLocation();
     const { currentUser, logout } = useAuth();
     const { sheetOpen, setSheetOpen } = useSheet();
+    const [showLogin, setShowLogin] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
+
+    useLayoutEffect(() => {
+        if (!currentUser) return;
+        void router.invalidate();
+        // noinspection JSCheckFunctionSignatures
+        void navigate({ to: `/profile/${currentUser.username}` });
+    }, [currentUser]);
 
     const logoutUser = () => {
         logout.mutate(undefined, {
             onSuccess: async () => {
-                queryClient.clear();
-                await router.invalidate().then(() => {
-                    navigate({ to: "/" });
+                setShowLogin(false);
+                setShowRegister(false);
+                await router.invalidate().then(async () => {
+                    // noinspection JSCheckFunctionSignatures
+                    return navigate({ to: "/" });
                 });
             },
         });
@@ -40,16 +51,16 @@ export const Navbar = () => {
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
-                    {location.pathname !== "/" &&
-                        <div className="space-x-3">
-                            <Button size="sm" asChild>
-                                <NavLink to="/">Login</NavLink>
-                            </Button>
-                            <Button size="sm" variant="secondary" asChild>
-                                <NavLink to="/">Register</NavLink>
-                            </Button>
-                        </div>
-                    }
+                    <div className="space-x-3">
+                        <Button size="sm" onClick={() => setShowLogin(true)}>
+                            Login
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setShowRegister(true)}>
+                            Register
+                        </Button>
+                    </div>
+                    <LoginForm open={showLogin} onOpenChange={setShowLogin}/>
+                    <RegisterForm open={showRegister} onOpenChange={setShowRegister}/>
                 </div>
             </nav>
         );

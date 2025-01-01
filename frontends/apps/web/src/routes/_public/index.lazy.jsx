@@ -1,13 +1,10 @@
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
-import {LoginForm} from "@/components/homepage/LoginForm";
 import {RainbowButton} from "@/components/ui/rainbow-button";
-import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {ArrowRight, DollarSign, Heart, MessageCircle, MonitorSmartphone, PackageOpen, Sparkles} from "lucide-react";
 
@@ -20,7 +17,6 @@ export const Route = createLazyFileRoute("/_public/")({
 
 function HomePage() {
     const search = Route.useSearch();
-    const [activeTab, setActiveTab] = useState("login");
 
     useEffect(() => {
         if (search.message) {
@@ -28,31 +24,17 @@ function HomePage() {
         }
     }, [search]);
 
-    const onTabChange = (newTab) => {
-        setActiveTab(newTab);
-    };
-
     return (
         <PageTitle title="HomePage" onlyHelmet>
-            <div className="relative bg-cover h-[800px] w-[99.7vw] left-[calc(-50vw+50%)]" style={{ backgroundImage: `url(${homeImage})` }}/>
-            <div className="absolute w-1/2 top-32 left-1/4 flex flex-col items-center">
-                <div className="text-4xl md:text-7xl text-center font-semibold mb-14">Welcome to MyLists</div>
-                <Tabs value={activeTab} onValueChange={onTabChange} className="w-[320px]">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="login">Login</TabsTrigger>
-                        <TabsTrigger value="register">Register</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="login">
-                        <LoginForm/>
-                    </TabsContent>
-                    <TabsContent value="register">
-                        <RegisterForm onTabChange={onTabChange}/>
-                    </TabsContent>
-                </Tabs>
-                <div className="mt-6">
+            <div className="relative flex flex-col items-center justify-center bg-cover h-[600px] w-[99.7vw] left-[calc(-50vw+50%)] max-sm:h-[350px]"
+                 style={{ backgroundImage: `url(${homeImage})` }}>
+                <div className="text-7xl text-center font-semibold max-sm:text-5xl">
+                    Welcome to MyLists
+                </div>
+                <div className="mt-8">
                     <RainbowButton>
-                        <Link to="/profile/DemoProfile" className="inline-flex items-center">
-                            View Demo Profile <ArrowRight className="ml-2"/>
+                        <Link to="/profile/DemoProfile" className="flex items-center gap-2">
+                            Demo Profile <ArrowRight/>
                         </Link>
                     </RainbowButton>
                 </div>
