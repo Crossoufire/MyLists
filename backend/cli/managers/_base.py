@@ -1,13 +1,13 @@
-from functools import wraps
 import re
 import sys
 from typing import Optional
+from functools import wraps
 
+from rich.text import Text
+from rich.table import Table
 from flask import current_app
 from rich.console import Console
 from rich.progress import Progress
-from rich.table import Table
-from rich.text import Text
 
 
 console = Console()

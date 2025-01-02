@@ -1,7 +1,7 @@
 import click
 from flask import current_app
 
-from backend.cli.managers.mediadle_manager import CLIMediadleManager
+from backend.cli.managers.mediadle import CLIMediadleManager
 
 
 mediadle_manager = CLIMediadleManager()

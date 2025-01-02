@@ -1,13 +1,13 @@
+from time import time
 from ast import literal_eval
 from datetime import timedelta
-from time import time
 from typing import List, Literal, cast, Tuple
 
-from backend.api.managers.AchievementsManager import AchievementManager
-from backend.api.utils.enums import MediaType, AchievementDifficulty
 from backend.api.utils.functions import naive_utcnow
-from backend.api.utils.seeders import apply_seed_achievements
 from backend.cli.managers._base import CLIBaseManager
+from backend.api.utils.enums import MediaType, AchievementDifficulty
+from backend.api.managers.AchievementsManager import AchievementManager
+from backend.cli.utils.achievements_seeder import apply_seed_achievements
 
 
 class CLIAchievementManager(CLIBaseManager):
@@ -82,7 +82,7 @@ class CLIAchievementManager(CLIBaseManager):
     def calculate_achievements(self, code_names: cnType, user_ids: uiType):
         """ Calculate achievements for users based on `code_names` and `user_ids`. """
 
-        code_names, user_ids = self._process_initial_info(code_names, user_ids)
+        code_names, user_ids = self._process_arguments(code_names, user_ids)
 
         start_time = time()
         self._calculate(code_names, user_ids)
@@ -93,7 +93,7 @@ class CLIAchievementManager(CLIBaseManager):
         AchievementManager.calculate_achievements_rarity()
         self.log_success("Achievements rarities successfully updated.")
 
-    def _process_initial_info(self, code_names: cnType, user_ids: uiType) -> Tuple[List[str] | None, List[int] | None]:
+    def _process_arguments(self, code_names: cnType, user_ids: uiType) -> Tuple[List[str] | None, List[int] | None]:
         if isinstance(code_names, (list, tuple)):
             self.log_info(f"Calculating {len(code_names)} achievement(s): {', '.join(c for c in code_names)}.")
         if isinstance(user_ids, (list, tuple)):
@@ -129,5 +129,5 @@ class CLIAchievementManager(CLIBaseManager):
             with self.progress:
                 for media_type in MediaType:
                     achievement_manager = AchievementManager.get_manager(cast(MediaType, media_type))
-                    task_id = self.progress.add_task(f"[cyan]Processing {media_type.value}...", total=100)
+                    task_id = self.progress.add_task(f"[cyan]Processing {media_type}...", total=100)
                     achievement_manager().calculate_achievements(None, user_ids, update_progress)

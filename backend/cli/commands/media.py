@@ -2,7 +2,7 @@ import click
 from flask import current_app
 
 from backend.api.utils.enums import MediaType
-from backend.cli.managers.media_manager import CLIMediaManager
+from backend.cli.managers.media import CLIMediaManager
 
 
 media_cli = click.Group("media", help="Media management commands")
@@ -11,7 +11,7 @@ current_app.cli.add_command(media_cli)
 
 @media_cli.command()
 def remove_media():
-    """ Remove non-associated media. """
+    """ Remove all non-associated media. """
     CLIMediaManager.remove_all_non_list_media()
 
 

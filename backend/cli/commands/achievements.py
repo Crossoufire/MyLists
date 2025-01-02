@@ -3,7 +3,7 @@ from typing import List
 import click
 from flask import current_app
 
-from backend.cli.managers.ach_manager import CLIAchievementManager
+from backend.cli.managers.achievements import CLIAchievementManager
 
 
 achievement_manager = CLIAchievementManager()

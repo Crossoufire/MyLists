@@ -7,14 +7,14 @@ from rich.progress import track
 
 from backend.api import db
 from ._base import CLIBaseManager
-from .media_manager import CLIMediaManager
+from .media import CLIMediaManager
 from backend.api.core import set_current_user
-from .ach_manager import CLIAchievementManager
+from .achievements import CLIAchievementManager
 from backend.api.models import User, UserMediaUpdate
 from backend.api.utils.functions import naive_utcnow
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, Status, Privacy, ModelTypes, UpdateType
-from ..utils.demo_profile import DemoProfile, EntryParams, ProbaGenerator, get_default_params
+from ..utils.demo_profile_creator import DemoProfile, EntryParams, ProbaGenerator, get_default_params
 
 
 class CLIUserManager(CLIBaseManager):

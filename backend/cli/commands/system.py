@@ -2,9 +2,9 @@ import click
 from flask import current_app
 
 from backend.api.utils.enums import MediaType
-from backend.cli.managers.media_manager import CLIMediaManager
-from backend.cli.managers.system_manager import CLISystemManager
-from backend.cli.managers.user_manager import CLIUserManager
+from backend.cli.managers.media import CLIMediaManager
+from backend.cli.managers.system import CLISystemManager
+from backend.cli.managers.user import CLIUserManager
 
 
 system_manager = CLISystemManager()
@@ -58,6 +58,7 @@ def scheduled_tasks():
     media_manager().automatic_locking()
 
     CLIMediaManager.compute_all_time_spent()
+    CLIMediaManager.compute_all_users_stats()
 
     system_manager.update_global_stats()
     system_manager.vacuum_sqlite_db()

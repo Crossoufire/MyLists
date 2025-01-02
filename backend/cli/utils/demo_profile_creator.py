@@ -1,7 +1,7 @@
+import random
+from math import exp
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from math import exp
-import random
 from typing import Optional, NamedTuple, Dict, List, Tuple
 
 from backend.api.utils.enums import Status, MediaType

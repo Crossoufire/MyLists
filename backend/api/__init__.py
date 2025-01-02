@@ -115,8 +115,8 @@ def create_db_and_setup_pragma(app: Flask):
 def refresh_database():
     """ On app starts execute refreshing functions. """
 
-    from backend.cli.managers.media_manager import CLIMediaManager
-    from backend.cli.managers.system_manager import CLISystemManager
+    from backend.cli.managers.media import CLIMediaManager
+    from backend.cli.managers.system import CLISystemManager
 
     CLIMediaManager.compute_all_time_spent()
     CLIMediaManager.compute_all_users_stats()

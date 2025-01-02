@@ -4,7 +4,7 @@ import click
 from flask import current_app
 
 from backend.api.utils.enums import Privacy
-from backend.cli.managers.user_manager import CLIUserManager, CLIUserDemoManager
+from backend.cli.managers.user import CLIUserManager, CLIUserDemoManager
 
 
 user_manager = CLIUserManager()
