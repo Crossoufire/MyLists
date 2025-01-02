@@ -1,19 +1,20 @@
-from datetime import datetime, timedelta
 from typing import List
+from datetime import datetime, timedelta
 
+from sqlalchemy import func
 from flask import current_app
 from rich.progress import track
-from sqlalchemy import func
 
-from ._base import CLIBaseManager
 from backend.api import db
+from ._base import CLIBaseManager
+from .media_manager import CLIMediaManager
 from backend.api.core import set_current_user
-from backend.api.managers.ModelsManager import ModelsManager
+from .ach_manager import CLIAchievementManager
 from backend.api.models import User, UserMediaUpdate
-from backend.api.utils.enums import MediaType, Status, Privacy, ModelTypes, UpdateType
 from backend.api.utils.functions import naive_utcnow
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import MediaType, Status, Privacy, ModelTypes, UpdateType
 from ..utils.demo_profile import DemoProfile, EntryParams, ProbaGenerator, get_default_params
-from ...api.managers.ListsStatsManager import ListStatsManager
 
 
 class CLIUserManager(CLIBaseManager):
@@ -123,9 +124,10 @@ class CLIUserDemoManager(CLIBaseManager):
     def _cleanup_existing_account(self):
         """ Delete an already existing demo profile """
 
+        from backend.api.routes.users import delete_user_account
+
         demo_profile = User.query.filter_by(username=self.profile.username).first()
         if demo_profile:
-            from backend.api.routes.users import delete_user_account
             self.log_warning(f"Demo profile already existing, deleting '{self.profile.username}' account...")
             delete_user_account(demo_profile.id)
             self.log_success(f"Existing '{self.profile.username}' account successfully deleted")
@@ -158,12 +160,19 @@ class CLIUserDemoManager(CLIBaseManager):
         for params in media_params:
             self._process_media_type(params)
 
+        # Calculate stats for each media type
+        CLIMediaManager.compute_all_time_spent()
+        CLIMediaManager.compute_all_users_stats()
+
+        # Calculate achievements
+        achievement_manager = CLIAchievementManager()
+        achievement_manager.calculate_achievements(code_names="all", user_ids=[self.user.id])
+
         self.log_success(f"'{self.profile.username}' account successfully created")
 
     def _process_media_type(self, params: EntryParams):
         generator = ProbaGenerator(params)
         media_model, list_model = ModelsManager.get_lists_models(params.media_type, [ModelTypes.MEDIA, ModelTypes.LIST])
-
         selected_media = media_model.query.order_by(func.random()).limit(params.total_media).all()
 
         for media in track(selected_media, description=f"Processing {media_model.GROUP.value.capitalize()}..."):
@@ -173,7 +182,7 @@ class CLIUserDemoManager(CLIBaseManager):
 
     def _process_media(self, media, generator: ProbaGenerator, list_model):
         new_status = generator.generate_status()
-        total = media.add_to_user(new_status, self.user.id)
+        _ = media.add_to_user(new_status, self.user.id)
 
         UserMediaUpdate.set_new_update(
             media,
@@ -183,23 +192,17 @@ class CLIUserDemoManager(CLIBaseManager):
         )
 
         user_media = list_model.query.filter_by(user_id=self.user.id, media_id=media.id).first()
-
-        list_stats_manager = ListStatsManager.get_manager(media.GROUP)(user=self.user)
-        list_stats_manager.update_media_stats(user_media, UpdateType.TIME, None, total)
-
         if user_media.status in (Status.PLAN_TO_PLAY, Status.PLAN_TO_WATCH, Status.PLAN_TO_READ):
             return
 
-        user_media.score = generator.generate_score()
+        user_media.rating = generator.generate_rating()
         user_media.favorite = generator.generate_favorite()
         user_media.comment = generator.generate_comment()
 
-        if user_media.GROUP != MediaType.GAMES:
+        if user_media.GROUP != MediaType.GAMES and user_media.status == Status.COMPLETED:
             user_media.redo = generator.generate_redo()
         else:
-            value = generator.generate_playtime()
-            user_media.playtime = value * 60
-            list_stats_manager.update_media_stats(user_media, UpdateType.TIME, 0, value * 60)
+            user_media.playtime = generator.generate_playtime()
 
         if user_media.GROUP in (MediaType.SERIES, MediaType.ANIME):
             if user_media.status not in (Status.COMPLETED, Status.RANDOM, Status.PLAN_TO_WATCH):

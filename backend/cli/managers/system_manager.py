@@ -1,6 +1,6 @@
 import dotenv
-from flask import jsonify, current_app
 from sqlalchemy import text
+from flask import jsonify, current_app
 
 from backend.api import cache, db
 from backend.api.managers.ApiManager import GamesApiManager

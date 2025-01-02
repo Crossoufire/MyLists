@@ -1,26 +1,26 @@
-import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
-from typing import Type
 import sys
+import logging
+from typing import Type
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
 import flask
 from flask import Flask
+from redis import Redis
+from flask_cors import CORS
+from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from flask_caching import Cache
-from flask_cors import CORS
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_mail import Mail
-from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from redis import Redis
+from flask_marshmallow import Marshmallow
+from flask_limiter.util import get_remote_address
 
-from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
-from backend.api.utils.enums import RoleType
 from backend.cli.commands import register_cli_commands
-from backend.config import Config, get_config
+from backend.api.utils.enums import RoleType, MediaType
+from backend.config import Config, get_config, default_db_uri, basedir
+from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 
 
 # Load globally accessible plugins
@@ -83,10 +83,21 @@ def create_mail_handler(logger: logging.Logger, config: flask.Config):
     logger.addHandler(mail_handler)
 
 
-def create_db_and_setup_pragma():
+def create_db_and_setup_pragma(app: Flask):
     """ On app starts: create tables and change pragmas. """
 
     from sqlalchemy import event
+
+    # Ensure `instance` folder exists if default db location used
+    if app.config["SQLALCHEMY_DATABASE_URI"] == default_db_uri:
+        instance_folder = os.path.join(basedir, "instance")
+        os.makedirs(instance_folder, exist_ok=True)
+
+    # Add media type covers folder if not exists
+    covers_dir = os.path.join(basedir, "api", "static", "covers")
+    for media_type in MediaType:
+        covers_folder = os.path.join(covers_dir, f"{media_type}_covers")
+        os.makedirs(covers_folder, exist_ok=True)
 
     db.create_all()
 
@@ -108,6 +119,7 @@ def refresh_database():
     from backend.cli.managers.system_manager import CLISystemManager
 
     CLIMediaManager.compute_all_time_spent()
+    CLIMediaManager.compute_all_users_stats()
     CLISystemManager().update_global_stats()
 
 
@@ -135,7 +147,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
     with app.app_context():
         register_cli_commands()
-        create_db_and_setup_pragma()
+        create_db_and_setup_pragma(app)
         import_blueprints(app.register_blueprint)
 
         if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():

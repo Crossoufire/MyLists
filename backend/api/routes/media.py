@@ -52,7 +52,6 @@ def add_media(data):
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
 
     list_stats_manager = ListStatsManager.get_manager(media.GROUP)(user=current_user)
-
     list_stats_manager.on_update(
         user_media=user_media,
         new_value=new_value,

@@ -84,7 +84,7 @@ class ProbaGenerator:
     def generate_status(self) -> Status:
         return random.choices(list(self.status_weights.keys()), weights=list(self.status_weights.values()))[0]
 
-    def generate_score(self) -> float:
+    def generate_rating(self) -> float:
         return self._apply_gaussian_with_noise(self.params.score_params)
 
     def generate_favorite(self) -> bool:
@@ -107,7 +107,7 @@ class ProbaGenerator:
             7000, 8000, 9000, 10000,
         ]
         weights = [exp(-decay_rate * i) for i in range(len(playtime_values))]
-        return random.choices(playtime_values, weights=weights, k=1)[0]
+        return random.choices(playtime_values, weights=weights, k=1)[0] * 60
 
     @staticmethod
     def generate_datetime(start_date: datetime, end_date: datetime) -> datetime:
