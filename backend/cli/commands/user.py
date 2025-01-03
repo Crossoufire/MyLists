@@ -76,3 +76,9 @@ def delete_users(days: int):
 def toggle_features(active: bool):
     """ Toggle features for users. """
     user_manager.toggle_new_features_flag(active)
+
+
+@user_cli.command()
+def cum_users():
+    """ Cumulative user count over time. """
+    user_manager.get_user_over_time()

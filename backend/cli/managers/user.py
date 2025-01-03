@@ -106,6 +106,60 @@ class CLIUserManager(CLIBaseManager):
 
         self.log_success(f"Deleted {non_activated_user_count} non-activated users ({period_repr})")
 
+    def get_user_over_time(self):
+        from collections import defaultdict
+
+        users = User.query.filter_by(active=True).order_by(User.registered_on).all()
+        user_counts = defaultdict(int)
+
+        for user in users:
+            month_year = user.registered_on.strftime("%Y-%m")
+            user_counts[month_year] += 1
+
+        sorted_counts = sorted(user_counts.items())
+
+        cumulated_data = []
+        user_per_month = []
+        cumulative_count = 0
+        for month_year, count in sorted_counts:
+            cumulative_count += count
+            user_per_month.append((month_year, count))
+            cumulated_data.append((month_year, cumulative_count))
+
+        max_height = 25
+        max_users = max(count for _, count in cumulated_data)
+        max_date, max_user_in_month = max(user_per_month, key=lambda x: x[1])
+        scale = max_users / max_height
+
+        chart_rows = []
+        for level in range(max_height, 0, -1):
+            threshold = level * scale
+            row = ""
+            for _, cumulative_count in cumulated_data:
+                if cumulative_count >= threshold:
+                    row += "█ "
+                else:
+                    row += "  "
+            chart_rows.append(row)
+
+        for row in chart_rows:
+            print(row)
+
+        print("─" * (len(cumulated_data) * 2))
+        labels = [month[2:] for month, _ in cumulated_data]
+        max_label_length = max(len(label) for label in labels)
+
+        for i in range(max_label_length):
+            label_row = ""
+            for label in labels:
+                label_row += (label[i] if i < len(label) else " ") + " "
+            print(label_row)
+
+        print()
+        self.log_info(f"Total of {cumulated_data[-1][1]} activated users")
+        self.log_info(f"Peak of {max_user_in_month} new users in '{max_date}'")
+        print()
+
 
 class CLIUserDemoManager(CLIBaseManager):
     DEMO_PROFILE = DemoProfile(

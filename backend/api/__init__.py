@@ -142,7 +142,8 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     limiter.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=[
-        "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:4173", "http://127.0.0.1:4173",
+        "http://localhost:3000", "http://127.0.0.1:3000",
+        "http://localhost:4173", "http://127.0.0.1:4173",
     ])
 
     with app.app_context():
