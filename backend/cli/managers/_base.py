@@ -29,9 +29,9 @@ def with_console_status(message="Working..."):
 
 class CLIBaseManager:
     def __init__(self):
-        self.is_terminal = sys.stdin.isatty()
         self.console = console
         self.progress = Progress()
+        self.is_terminal = sys.stdin.isatty()
 
     @staticmethod
     def _log_table(rich_table: Table):

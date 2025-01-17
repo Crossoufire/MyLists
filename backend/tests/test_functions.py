@@ -52,13 +52,9 @@ class UtilsFunctionTests(BaseTest):
         self.assertEqual(get(state, "a", "b", "c", default="default_value"), "default_value")
 
     def test_compute_level(self):
-        self.assertAlmostEqual(compute_level(0), 0.00000, places=5)
-        self.assertAlmostEqual(compute_level(1), 0.04772, places=5)
-        self.assertAlmostEqual(compute_level(2), 0.09161, places=5)
-        self.assertAlmostEqual(compute_level(5), 0.20711, places=5)
-        self.assertAlmostEqual(compute_level(1000), 6.58872, places=5)
-        self.assertAlmostEqual(compute_level(100000), 70.21245, places=5)
-        self.assertAlmostEqual(compute_level(10000000), 706.60696, places=5)
+        data = [(0, 0.00000), (1, 0.04772), (2, 0.09161), (5, 0.20711), (1000, 6.58872), (100000, 70.21245), (10000000, 706.60696)]
+        for lvl, expected in data:
+            self.assertAlmostEqual(compute_level(lvl), expected, places=5)
         self.assertRaises(Exception, compute_level, -10)
         self.assertRaises(Exception, compute_level, "toto")
 
@@ -125,42 +121,26 @@ class UtilsFunctionTests(BaseTest):
         with open(self.image_path, "rb") as fp:
             file = FileStorage(fp)
             picture_fn = self._test_save_picture(file, "background_image", False)
-
-            self.assertIs(
-                os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", picture_fn)),
-                True
-            )
-
-            self.assertIs(
-                os.path.isfile(os.path.join(
-                    self.app.root_path,
-                    "static", "background_pics", self.user.background_image)
-                ),
-                False
-            )
-
+            self.assertIs(os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", picture_fn)), True)
+            self.assertIs(os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", self.user.background_image)), False)
             os.remove(os.path.join(self.app.root_path, "static", "background_pics", picture_fn))
 
     def test_safe_div(self):
-        self.assertEqual(safe_div(10, 2), 5)
-        self.assertEqual(safe_div(0, 2), 0)
-        self.assertEqual(safe_div(-10, 2), -5)
-        self.assertEqual(safe_div(10, 0), 0)
-        self.assertEqual(safe_div(0, 2, percentage=True), 0)
-        self.assertEqual(safe_div(5, 2, percentage=True), 250)
-        self.assertEqual(safe_div(-10, 2, percentage=True), -500)
-        self.assertEqual(safe_div(3, 20, percentage=True), 15)
+        data = [(10, 2, 5), (0, 2, 0), (-10, 2, -5), (10, 0, 0)]
+        for a, b, expected in data:
+            self.assertEqual(safe_div(a, b), expected)
+
+        data = [(0, 2, 0), (5, 2, 250), (-10, 2, -500), (3, 20, 15)]
+        for a, b, expected in data:
+            self.assertEqual(safe_div(a, b, percentage=True), expected)
 
     def test_is_latin(self):
-        self.assertIs(is_latin("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), True)
-        self.assertIs(is_latin("1234567890áéíóúñß!@#$%^&*()"), True)
-        self.assertIs(is_latin(""), True)
-        self.assertIs(is_latin(" "), True)
-        self.assertIs(is_latin("你好"), False)
-        self.assertIs(is_latin("مرحبا"), False)
-        self.assertIs(is_latin("こんにちは"), False)
-        self.assertIs(is_latin("नमस्ते"), False)
-        self.assertIs(is_latin("Привет"), False)
+        data = [("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", True), ("1234567890áéíóúñß!@#$%^&*()", True),
+                ("", True), (" ", True), ("你好", False), ("مرحبا", False), ("こんにちは", False), ("नमस्ते", False),
+                ("Привет", False)]
+
+        for text, expected in data:
+            self.assertIs(is_latin(text), expected)
 
     def test_clean_html_text(self):
         self.assertEqual(clean_html_text(" "), " ")
@@ -173,17 +153,11 @@ class UtilsFunctionTests(BaseTest):
         self.assertEqual(clean_html_text("<p>This is <b>bold</b>.<br/>New line</p>"), "This is bold.New line")
 
     def test_int_to_money(self):
-        self.assertEqual(int_to_money(750), "750 $")
-        self.assertEqual(int_to_money(1000), "1 K$")
-        self.assertEqual(int_to_money(1500), "1 K$")
-        self.assertEqual(int_to_money(999999), "999 K$")
-        self.assertEqual(int_to_money(1000000), "1 M$")
-        self.assertEqual(int_to_money(1500000), "1 M$")
-        self.assertEqual(int_to_money(999999999), "999 M$")
-        self.assertEqual(int_to_money(1000000000), "1 B$")
-        self.assertEqual(int_to_money(1500000000), "1 B$")
-        self.assertEqual(int_to_money(999999999999), "999 B$")
-        self.assertEqual(int_to_money(1000000000000), "1000 B$")
+        data = [(750, "750 $"), (1000, "1 K$"), (1500, "1 K$"), (999999, "999 K$"), (1000000, "1 M$"), (1500000, "1 M$"),
+                (999999999, "999 M$"), (1000000000, "1 B$"), (1500000000, "1 B$"), (999999999999, "999 B$"),
+                (1000000000000, "1000 B$")]
+        for value, expected in data:
+            self.assertEqual(int_to_money(value), expected)
 
     def test_reorder_seas_eps(self):
         """ Function returns: last episode watched, current season, total episodes watched """

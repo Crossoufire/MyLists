@@ -123,10 +123,6 @@ class GamesList(MediaList):
         return self.playtime
 
     @classmethod
-    def get_specific_total(cls, user_id: int):
-        return
-
-    @classmethod
     def get_available_sorting(cls) -> Dict[str, ColumnElement]:
         sorting_dict = {
             "Title A-Z": Games.name.asc(),

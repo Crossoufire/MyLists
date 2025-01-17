@@ -1,7 +1,0 @@
-{
-    "name": "@mylists/api",
-    "version": "1.0.0",
-    "description": "API system abstraction for MyLists",
-    "private": true,
-    "main": "src/index.js"
-}
