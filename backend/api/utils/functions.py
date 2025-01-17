@@ -9,6 +9,31 @@ from flask import current_app, abort
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
+from backend.api import MediaType
+
+
+def make_cache_key():
+    """
+    Generate a cache key based on the endpoint and mt parameter.
+    Returns keys in format:
+    - `stats_global`
+    - `stats_<username>`
+    - `stats_global_<mt>`
+    - `stats_<username>_<mt>`
+    """
+
+    from flask import request
+
+    name = request.view_args.get("username", "global")
+    media_type = request.args.get("mt", "").strip().lower()
+    media_type = MediaType(media_type) if media_type else ""
+
+    base_key = f"stats_{name}"
+    if media_type:
+        return f"{base_key}_{media_type}"
+
+    return base_key
+
 
 def get(state: Iterable, *path: Any, default: Any = None):
     """ Take an iterable and check if the path exists """
@@ -28,7 +53,7 @@ def compute_level(total_time: float) -> float:
 
 
 def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = True):
-    """ Save an account picture with better error handling """
+    """ Save an account picture """
 
     try:
         with Image.open(form_picture.stream) as image:
@@ -120,8 +145,24 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
             return last_episode, seas, eps_watched
 
 
-def format_datetime(date) -> Optional[datetime]:
+def format_datetime_from_dict(date_dict: Dict[str, int]) -> Optional[datetime]:
+    """ Format a date dictionary (like {'year': 2013, 'month': 4, 'day': 12}) into a datetime object """
+    try:
+        year = date_dict.get("year")
+        month = date_dict.get("month", 1)
+        day = date_dict.get("day", 1)
+        if year is not None:
+            return datetime(year, month, day)
+    except:
+        pass
+    return None
+
+
+def format_datetime(date: str | Dict[str, int]) -> Optional[datetime]:
     """ Format to a universal datetime format or None if datetime not valid before saving to db """
+
+    if isinstance(date, dict):
+        return format_datetime_from_dict(date)
 
     date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y"]
     for pattern in date_patterns:

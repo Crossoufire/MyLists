@@ -1,16 +1,16 @@
 from operator import and_
 
-from flask import Blueprint, jsonify
 from sqlalchemy import case, desc, func
+from flask import Blueprint, jsonify, request
 
 from backend.api import cache, db, limiter
 from backend.api.core.auth import token_auth
 from backend.api.utils.enums import MediaType
 from backend.api.utils.decorators import arguments
-from backend.api.utils.functions import global_limiter
+from backend.api.utils.functions import global_limiter, make_cache_key
 from backend.api.schemas.general import HallOfFameSchema
 from backend.api.models.user import User, UserMediaSettings
-from backend.api.managers.GlobalStatsManager import GlobalStats
+from backend.api.calculators.stats.stats import MediaStatsService
 from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
 
 
@@ -79,7 +79,20 @@ def hall_of_fame(args):
 
 @general.route("/mylists_stats", methods=["GET"])
 @token_auth.login_required
-@cache.cached(timeout=86400, key_prefix="mylists-stats")
+@cache.cached(timeout=86400, key_prefix=make_cache_key)
 def mylists_stats():
     """ Global MyLists stats. Updated every day at 3:00 AM UTC+1 """
-    return jsonify(data=GlobalStats().compute_global_stats()), 200
+
+    try:
+        media_type = MediaType(request.args.get("mt"))
+    except:
+        media_type = None
+
+    stats = MediaStatsService().get_stats(media_type=media_type)
+    stats["rating_system"] = "score"
+    data = dict(
+        stats=stats,
+        settings=[{"media_type": m} for m in list(MediaType)],
+    )
+
+    return jsonify(data=data), 200

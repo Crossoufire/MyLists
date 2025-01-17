@@ -1,13 +1,14 @@
-from flask import jsonify, Blueprint, abort
+from flask import jsonify, Blueprint, abort, request
 
 from backend.api import db, cache
 from backend.api.schemas.lists import *
 from backend.api.models.user import User
 from backend.api.utils.enums import MediaType
 from backend.api.core import token_auth, current_user
-from backend.api.managers.StatsManager import StatsManager
 from backend.api.utils.decorators import arguments, check_authorization
+from backend.api.calculators.stats.stats import MediaStatsService
 from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
+from backend.api.utils.functions import make_cache_key
 
 
 lists_bp = Blueprint("api_lists", __name__)
@@ -65,21 +66,24 @@ def media_list_search_filters(user: User, args, media_type: MediaType):
     return jsonify(data=filters), 200
 
 
-@lists_bp.route("/stats/<mediatype:media_type>/<username>", methods=["GET"])
+@lists_bp.route("/stats/<username>", methods=["GET"])
 @token_auth.login_required(optional=True)
 @check_authorization
-@cache.cached(timeout=3600)
-def stats_page(user: User, media_type: MediaType):
+@cache.cached(timeout=3600, key_prefix=make_cache_key)
+def stats_page(user: User):
     """ Fetch the stats page for a user """
 
-    stats_manager = StatsManager.get_subclass(media_type)
-    stats = stats_manager(user).create_stats()
+    try:
+        media_type = MediaType(request.args.get("mt"))
+    except:
+        media_type = None
+
+    stats = MediaStatsService().get_stats(user, media_type)
     stats["rating_system"] = user.rating_system
 
     data = dict(
         stats=stats,
         settings=[setting.to_dict() for setting in user.settings if setting.active],
-        users=[{"label": user.username, "value": user.username} for user in User.query.filter(User.active.is_(True)).all()]
     )
 
     return jsonify(data=data), 200

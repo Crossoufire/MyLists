@@ -12,8 +12,7 @@ class ModelsManager:
     ListMoTs = List[ModelTypes] | ModelTypes
     TypeMediaType = List[MediaType] | Literal["all"] | MediaType
     TypeModelType = List[ModelTypes] | Literal["all"] | ModelTypes
-    ReturnModelGroup = (Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model] |
-                        Dict[MediaType, Dict[ModelTypes, db.Model]])
+    ReturnModelGroup = Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model] | Dict[MediaType, Dict[ModelTypes, db.Model]]
 
     _model_cache: Dict[Tuple[MediaType, ModelTypes], Type[db.Model]] = {}
     _media_type_cache: Dict[MediaType, List[Type[db.Model]]] = {}

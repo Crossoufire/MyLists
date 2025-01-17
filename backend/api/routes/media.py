@@ -1,15 +1,16 @@
 from flask import jsonify, Blueprint, abort
 
 from backend.api import db
-from backend.api.managers.ListsStatsManager import ListStatsManager
 from backend.api.schemas.media import *
 from backend.api.utils.decorators import body
 from backend.api.models.user import UserMediaUpdate
 from backend.api.core import token_auth, current_user
+from backend.api.calculators.stats.delta import DeltaStatsService
 from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
 
 
 media_bp = Blueprint("api_media", __name__)
+ds_service = DeltaStatsService()
 
 
 @media_bp.route("/coming_next", methods=["GET"])
@@ -51,8 +52,8 @@ def add_media(data):
     # Get newly created user_media and update stats
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first()
 
-    list_stats_manager = ListStatsManager.get_manager(media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         new_value=new_value,
         new_status=new_status,
@@ -76,12 +77,12 @@ def delete_media(data):
     list_model, label_model = data["models"]
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    old_total = user_media.total if data["media_type"] != MediaType.GAMES else user_media.playtime
     old_redo = user_media.redo if data["media_type"] != MediaType.GAMES else 0
+    old_total = user_media.total if data["media_type"] != MediaType.GAMES else user_media.playtime
 
     # Update user list stats
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_entry=1,
         old_value=old_total,
@@ -110,8 +111,10 @@ def update_favorite(data):
 
     list_model = data["models"]
     user_media = list_model.query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(user_media=user_media, favorite_value=data["payload"])
+
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(user_media=user_media, favorite_value=data["payload"])
+
     user_media.favorite = data["payload"]
     db.session.commit()
 
@@ -133,8 +136,8 @@ def update_status(data):
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.STATUS, old_status, data["payload"])
 
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_status=old_status,
         new_status=data["payload"],
@@ -161,8 +164,10 @@ def update_rating(data):
         rating = None
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(user_media=user_media, old_rating=user_media.rating, new_rating=rating)
+
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(user_media=user_media, old_rating=user_media.rating, new_rating=rating)
+
     user_media.rating = rating
     db.session.commit()
 
@@ -184,16 +189,16 @@ def update_redo(data):
     old_total = user_media.total
     new_total = user_media.update_total(data["payload"])
 
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_redo=old_redo,
         new_redo=data["payload"],
         old_value=old_total,
         new_value=new_total,
     )
-    UserMediaUpdate.set_new_update(user_media.media, UpdateType.REDO, old_redo, data["payload"])
 
+    UserMediaUpdate.set_new_update(user_media.media, UpdateType.REDO, old_redo, data["payload"])
     db.session.commit()
 
     return {}, 204
@@ -206,8 +211,10 @@ def update_comment(data):
     """ Update the media comment for a user """
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(user_media=user_media, old_comment=user_media.comment, new_comment=data["payload"])
+
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(user_media=user_media, old_comment=user_media.comment, new_comment=data["payload"])
+
     user_media.comment = data["payload"]
     db.session.commit()
 
@@ -221,12 +228,12 @@ def update_playtime(data):
     """ Update playtime of an updated game from a user """
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
-
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.PLAYTIME, user_media.playtime, data["payload"])
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(user_media=user_media, old_value=user_media.playtime, new_value=data["payload"])
-    user_media.playtime = data["payload"]
 
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(user_media=user_media, old_value=user_media.playtime, new_value=data["payload"])
+
+    user_media.playtime = data["payload"]
     db.session.commit()
 
     return {}, 204
@@ -273,8 +280,8 @@ def update_season(data):
         (data["payload"], 1),
     )
 
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_value=old_total,
         new_value=new_total,
@@ -312,8 +319,8 @@ def update_episode(data):
         (old_season, data["payload"]),
     )
 
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_value=old_total,
         new_value=new_total,
@@ -344,8 +351,40 @@ def update_page(data):
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.PAGE, old_page, data["payload"])
 
-    list_stats_manager = ListStatsManager.get_manager(user_media.GROUP)(user=current_user)
-    list_stats_manager.on_update(
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
+        user_media=user_media,
+        old_value=old_total,
+        new_value=new_total,
+    )
+
+    db.session.commit()
+
+    return {}, 204
+
+
+@media_bp.route("/update_chapter", methods=["POST"])
+@token_auth.login_required
+@body(UpdateChapterSchema)
+def update_chapter(data):
+    """ Update the chapters read of an updated manga from a user """
+
+    user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
+
+    if data["payload"] > int(user_media.media.chapters):
+        return abort(400, description="Invalid chapter")
+
+    old_chapter = user_media.current_chapter
+    old_total = user_media.total
+
+    user_media.current_chapter = data["payload"]
+    new_total = data["payload"] + (user_media.redo * user_media.media.chapters)
+    user_media.total = new_total
+
+    UserMediaUpdate.set_new_update(user_media.media, UpdateType.CHAPTER, old_chapter, data["payload"])
+
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
         user_media=user_media,
         old_value=old_total,
         new_value=new_total,

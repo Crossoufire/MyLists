@@ -1,38 +1,53 @@
 from __future__ import annotations
 
-from typing import Type, Callable, Dict, List
+from typing import List, Callable
 
 from sqlalchemy.orm.attributes import flag_modified
 
+from backend.api import MediaType
 from backend.api.utils.functions import safe_div
 from backend.api.models import User, UserMediaSettings
+from backend.api.utils.enums import Status, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.enums import MediaType, Status, ModelTypes
+from backend.api.calculators.stats.data_classes import UserGlobalMediaStats, MediaStatsSummary, StatusCount, FavoriteInfo
 
 
-class ListStatsManagerMeta(type):
-    subclasses = {}
+class DeltaStatsService:
+    def __init__(self):
+        self.multipliers = {
+            MediaType.SERIES: lambda self, user_media: user_media.media.duration,
+            MediaType.ANIME: lambda self, user_media: user_media.media.duration,
+            MediaType.MOVIES: lambda self, user_media: user_media.media.duration,
+            MediaType.BOOKS: lambda self, user_media: user_media.TIME_PER_PAGE,
+            MediaType.GAMES: 1,
+            MediaType.MANGA: lambda self, user_media: user_media.TIME_PER_CHAPTER,
+        }
+        self.calculator = DeltaStatsCalculator
 
-    def __new__(cls, name, bases, attrs):
-        new_class = super().__new__(cls, name, bases, attrs)
-        if "GROUP" in attrs:
-            cls.subclasses[attrs["GROUP"]] = new_class
-        return new_class
+    def create(self, media_type: MediaType, user: User) -> DeltaStatsCalculator:
+        """ Create a calculator instance for the given media type """
+
+        if media_type not in self.multipliers:
+            raise ValueError(f"No multiplier registered for media type: {media_type}")
+
+        time_multiplier = self.multipliers[media_type]
+        return self.calculator(user, media_type, time_multiplier)
+
+    def compute_media_stats(self, settings: List[UserMediaSettings]) -> UserGlobalMediaStats:
+        return self.calculator.compute_media_stats(settings)
+
+    def compute_media_summaries(self, settings: List[UserMediaSettings], limit: int = 10) -> List[MediaStatsSummary]:
+        return self.calculator.compute_media_summaries(settings, limit)
 
 
-class ListStatsManager(metaclass=ListStatsManagerMeta):
-    GROUP: MediaType
-    TIME_MULTIPLIER: Callable | float
-
-    def __init__(self, user: User):
-        self.setting = user.get_media_setting(self.GROUP)
+class DeltaStatsCalculator:
+    def __init__(self, user: User, media_type: MediaType, time_multiplier: float | Callable):
+        self.media_type = media_type
+        self.time_multiplier = time_multiplier
+        self.setting = user.get_media_setting(media_type)
 
     @classmethod
-    def get_manager(cls, media_type: MediaType) -> Type[ListStatsManager]:
-        return cls.subclasses.get(media_type, cls)
-
-    @classmethod
-    def compute_media_stats(cls, settings: List[UserMediaSettings]) -> Dict:
+    def compute_media_stats(cls, settings: List[UserMediaSettings]) -> UserGlobalMediaStats:
         # Only active settings
         active_settings = [setting for setting in settings if setting.active]
 
@@ -47,7 +62,8 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
 
         # Total entries - no plan
         excluded_statuses = [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ]
-        total_entries_no_plan = sum(v for setting in active_settings for k, v in setting.status_counts.items() if k not in excluded_statuses)
+        total_entries_no_plan = sum(v for setting in active_settings for k, v in setting.status_counts.items()
+                                    if k not in excluded_statuses)
 
         # Total and percentage rated
         total_rated = sum(setting.entries_rated for setting in active_settings)
@@ -56,7 +72,7 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
         # Total avg rating
         avg_rating = safe_div(sum(setting.sum_entries_rated for setting in active_settings), total_rated)
 
-        data = dict(
+        data = UserGlobalMediaStats(
             total_hours=int(total_hours),
             total_days=round(total_hours / 24, 0),
             total_media=total_entries,
@@ -71,7 +87,7 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
         return data
 
     @classmethod
-    def compute_media_summaries(cls, settings: List[UserMediaSettings], limit: int = 10) -> List[Dict]:
+    def compute_media_summaries(cls, settings: List[UserMediaSettings], limit: int = 10) -> List[MediaStatsSummary]:
         data = []
         active_settings = [setting for setting in settings if setting.active]
         excluded_statuses = {Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ}
@@ -81,19 +97,19 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
             list_model = ModelsManager.get_unique_model(setting.media_type, ModelTypes.LIST)
             favorites_query = list_model.query.filter_by(user_id=setting.user_id, favorite=True).limit(limit).all()
 
-            favorites_list = [dict(
+            status_list = [StatusCount(
+                status=status,
+                count=count,
+                percent=safe_div(count, setting.total_entries, True),
+            ) for status, count in setting.status_counts.items()]
+
+            favorites_list = [FavoriteInfo(
                 media_name=favorite.media.name,
                 media_id=favorite.media_id,
                 media_cover=favorite.media.media_cover,
             ) for favorite in favorites_query]
 
-            status_list = [{
-                "status": status,
-                "count": count,
-                "percent": safe_div(count, setting.total_entries, True)
-            } for status, count in setting.status_counts.items()]
-
-            media_dict = dict(
+            summary = MediaStatsSummary(
                 media_type=setting.media_type,
                 specific_total=setting.total_specific,
                 time_hours=int(setting.time_spent / 60),
@@ -108,7 +124,7 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
                 percent_rated=safe_div(setting.entries_rated, total_no_plan, percentage=True),
                 mean_rating=setting.average_rating,
             )
-            data.append(media_dict)
+            data.append(summary)
 
         return data
 
@@ -159,7 +175,7 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
 
         # Initialize `status_counts` if necessary
         if self.setting.status_counts == {}:
-            self.setting.status_counts = {status: 0 for status in Status.by(self.GROUP)}
+            self.setting.status_counts = {status: 0 for status in Status.by(self.media_type)}
 
         if old_status:
             self.setting.status_counts[old_status] -= 1
@@ -192,37 +208,12 @@ class ListStatsManager(metaclass=ListStatsManagerMeta):
             if self.setting.entries_rated > 0 else None
 
     def _update_specific(self, **kwargs):
-        if self.GROUP == MediaType.GAMES:
+        if self.media_type == MediaType.GAMES:
             return
         old_value, new_value = kwargs.get("old_value", 0), kwargs.get("new_value", 0)
         self.setting.total_specific += (new_value - old_value)
 
     def _update_time(self, **kwargs):
         user_media, old_value, new_value = kwargs.get("user_media"), kwargs.get("old_value", 0), kwargs.get("new_value", 0)
-        mult = self.TIME_MULTIPLIER(user_media) if callable(self.TIME_MULTIPLIER) and user_media else self.TIME_MULTIPLIER
+        mult = self.time_multiplier(user_media) if callable(self.time_multiplier) and user_media else self.time_multiplier
         self.setting.time_spent += (new_value - old_value) * mult
-
-
-class MoviesListStats(ListStatsManager):
-    GROUP = MediaType.MOVIES
-    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration
-
-
-class BooksListStats(ListStatsManager):
-    GROUP = MediaType.BOOKS
-    TIME_MULTIPLIER = lambda self, user_media: user_media.TIME_PER_PAGE
-
-
-class GamesListStats(ListStatsManager):
-    GROUP = MediaType.GAMES
-    TIME_MULTIPLIER = 1
-
-
-class SeriesListStats(ListStatsManager):
-    GROUP = MediaType.SERIES
-    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration
-
-
-class AnimeListStats(ListStatsManager):
-    GROUP = MediaType.ANIME
-    TIME_MULTIPLIER = lambda self, user_media: user_media.media.duration

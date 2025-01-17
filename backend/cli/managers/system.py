@@ -2,18 +2,36 @@ import dotenv
 from sqlalchemy import text
 from flask import jsonify, current_app
 
-from backend.api import cache, db
+from backend.api import cache, db, MediaType
 from backend.api.managers.ApiManager import GamesApiManager
-from backend.api.managers.GlobalStatsManager import GlobalStats
+from backend.api.calculators.stats.stats import MediaStatsService
 from backend.cli.managers._base import CLIBaseManager, with_console_status
 
 
 class CLISystemManager(CLIBaseManager):
     @with_console_status("Updating global stats...")
     def update_global_stats(self):
-        stats = GlobalStats().compute_global_stats()
-        cache.set("mylists-stats", jsonify(data=stats), timeout=86400)
-        self.log_success("Global stats successfully updated")
+        """ Cache key names format taken from `backend.api.utils.functions.make_cache_key` """
+
+        stats_service = MediaStatsService()
+
+        for media_type in MediaType:
+            # noinspection PyTypeChecker
+            stats = stats_service.get_stats(media_type=media_type)
+            stats["rating_system"] = "score"
+            data = dict(stats=stats, settings=[{"media_type": m} for m in list(MediaType)])
+            cache.set(f"stats_global_{media_type}", jsonify(data=data), timeout=86400)
+            self.log_info(f"`stats_global_{media_type}` key successfully updated")
+
+        stats = stats_service.get_stats(media_type=None)
+        stats["rating_system"] = "score"
+        data = dict(
+            stats=stats,
+            settings=[{"media_type": m} for m in list(MediaType)],
+        )
+        cache.set("stats_global", jsonify(data=data), timeout=86400)
+        self.log_info("`stats_global` key successfully updated")
+        self.log_success("Global Stats successfully updated :)")
 
     @with_console_status("Updating IGDB token...")
     def update_igdb_token(self):
