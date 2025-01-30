@@ -51,6 +51,7 @@ class MediaType(StrEnum):
     MOVIES = "movies"
     BOOKS = "books"
     GAMES = "games"
+    MANGA = "manga"
 
     def __lt__(self, other: MediaType):
         order = {mt: idx for (idx, mt) in enumerate(MediaType)}
@@ -105,6 +106,7 @@ class Status(StrEnum):
             MediaType.MOVIES: cls.movies(),
             MediaType.BOOKS: cls.books(),
             MediaType.GAMES: cls.games(),
+            MediaType.MANGA: cls.books(),
         }
         return mapping[media_type]
 
@@ -120,6 +122,7 @@ class JobType(StrEnum):
     ACTOR = "actor"
     CREATOR = "creator"
     PLATFORM = "platform"
+    PUBLISHER = "publisher"
 
 
 class GamesPlatformsEnum(StrEnum):
@@ -208,6 +211,7 @@ class UpdateType(StrEnum):
     - `page`: updates for the books
     - `redo`: updates re-watched / re-read for the series/anime/movies/books
     - `status`: updates for the status of the media (all media concerned)
+    - `chapter`: updates for the chapters of the manga
     - `playtime`: updates for the playtime of the games
     """
 
@@ -215,13 +219,8 @@ class UpdateType(StrEnum):
     PAGE = "page"
     REDO = "redo"
     STATUS = "status"
+    CHAPTER = "chapter"
     PLAYTIME = "playtime"
-    RATING = "rating"
-    ADD = "add"
-    TIME = "time"
-    DELETE = "delete"
-    FAVORITE = "favorite"
-    COMMENT = "comment"
 
 
 class AchievementDifficulty(StrEnum):

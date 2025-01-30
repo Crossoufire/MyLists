@@ -1,5 +1,5 @@
-import {cn, getStatusColor} from "@/utils/functions";
-import {BulletIcon} from "@/components/profile/BulletIcon";
+import {cn} from "@/utils/functions";
+import {StatusBullet} from "@/components/profile/StatusBullet";
 import {StatsList} from "@/components/media-stats/StatsList";
 import {StatsCard} from "@/components/media-stats/StatsCard";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/components/ui/carousel";
@@ -43,7 +43,7 @@ export const StatsDisplay = ({ statsData }) => {
                     <div className="flex flex-wrap gap-x-12 gap-y-6">
                         {statsData.status.map((data, idx) =>
                             <div key={idx} className="flex flex-row items-center justify-start text-lg font-semibold">
-                                <BulletIcon color={getStatusColor(data.name)} className="w-[15px] h-[15px] mr-3"/>
+                                <StatusBullet status={data.name} className="w-[15px] h-[15px] mr-3"/>
                                 <div>
                                     <div>{data.name}</div>
                                     <div className="text-2xl">{data.value}</div>

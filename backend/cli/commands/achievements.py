@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import click
 from flask import current_app
@@ -18,17 +18,16 @@ def seed():
 
 
 @ach_cli.command()
-@click.option("--media_type", "-m", help="show the code names for the selected media type")
-def code_names(media_type: str):
-    """ List the code names. """
-    achievement_manager.get_code_names(media_type)
+def code_names():
+    """ List all the code names. """
+    achievement_manager.get_code_names()
 
 
 @ach_cli.command()
 @click.argument("code_name")
 @click.option("--name", "-n", type=str, help="Updated name")
 @click.option("--description", "-d", type=str, help="Updated description")
-def update_def(code_name: str, name: str = None, description: str = None):
+def update_def(code_name: str, name: Optional[str] = None, description: Optional[str] = None):
     """ Update an achievement def. """
     achievement_manager.update_achievement_definition(code_name, name, description)
 

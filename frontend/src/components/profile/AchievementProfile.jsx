@@ -64,7 +64,7 @@ function AchievementSummary({ summary }) {
                     )
                 }
             </div>
-            <div>Total: {total}/52</div>
+            <div>Total: {total}/63</div>
         </div>
     );
 }
@@ -72,7 +72,7 @@ function AchievementSummary({ summary }) {
 
 function AchievementCard({ achievement }) {
     return (
-        <div className="bg-gray-800 p-3 rounded-md">
+        <div className={cn("bg-gray-800 p-3 rounded-md border-l-4", diffColors(achievement.difficulty, "border"))}>
             <div className="flex items-center gap-1">
                 <Award className={cn("w-5 h-5", diffColors(achievement.difficulty))}/>
                 <div className="text-sm font-semibold truncate w-full">{achievement.name}</div>

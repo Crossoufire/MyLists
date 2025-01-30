@@ -172,6 +172,23 @@ class UpdatePageSchema(BaseMediaSchema):
         return ModelTypes.LIST
 
 
+class UpdateChapterSchema(BaseMediaSchema):
+    payload = ma.Integer(required=True)
+
+    @validates("media_type")
+    def validate_media_type(self, value):
+        if value != MediaType.MANGA:
+            raise ValidationError("Only Manga are supported")
+
+    @validates("payload")
+    def validate_payload(self, value):
+        if value < 0:
+            raise ValidationError("Invalid chapter")
+
+    def get_model_types(self):
+        return ModelTypes.LIST
+
+
 class DeleteUpdatesSchema(ma.Schema):
     update_ids = ma.List(ma.Integer(), required=True)
     return_data = ma.Boolean(load_default=False)

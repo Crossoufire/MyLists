@@ -5,10 +5,12 @@ from backend.api.schemas.lists import *
 from backend.api.models.user import User
 from backend.api.utils.enums import MediaType
 from backend.api.core import token_auth, current_user
-from backend.api.utils.decorators import arguments, check_authorization
-from backend.api.calculators.stats.stats import MediaStatsService
-from backend.api.managers.ListQueryManager import ListQueryManager, ListFiltersManager, SmallListFiltersManager
 from backend.api.utils.functions import make_cache_key
+from backend.api.services.stats.stats import MediaStatsService
+from backend.api.utils.decorators import arguments, check_authorization
+from backend.api.managers.MediaListQuery import MediaListQuery
+from backend.api.managers.MediaListSearchFilters import MediaListSearchFilters
+from backend.api.managers.MediaListSmallFilters import MediaListSmallFilters
 
 
 lists_bp = Blueprint("api_lists", __name__)
@@ -27,12 +29,12 @@ def media_list(user: User, args, media_type: MediaType):
     if current_user:
         current_user.set_view_count(user, media_type)
 
-    media_data, pagination = ListQueryManager(user, media_type, args).return_results()
+    media_data, pagination = MediaListQuery(user, media_type, args).execute()
     db.session.commit()
 
     data = dict(
         user_data=user.to_dict(),
-        media_type=media_type.value,
+        media_type=media_type,
         media_data=media_data,
         pagination=pagination,
     )
@@ -49,7 +51,7 @@ def media_list_filters(user: User, media_type: MediaType):
     if not user.get_media_setting(media_type).active:
         return abort(404, description="MediaType not activated")
 
-    filters = SmallListFiltersManager(user, media_type).return_filters()
+    filters = MediaListSmallFilters(user, media_type).return_filters()
 
     return jsonify(data=filters), 200
 
@@ -60,9 +62,7 @@ def media_list_filters(user: User, media_type: MediaType):
 @arguments(MediaListSearchSchema)
 def media_list_search_filters(user: User, args, media_type: MediaType):
     """ Fetch the list of search filters for a user """
-
-    filters = ListFiltersManager(user, media_type, args).return_filters()
-
+    filters = MediaListSearchFilters(user, media_type, args).return_filters()
     return jsonify(data=filters), 200
 
 

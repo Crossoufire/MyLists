@@ -9,7 +9,7 @@ from backend.api.utils.functions import safe_div
 from backend.api.models import User, UserMediaSettings
 from backend.api.utils.enums import Status, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.calculators.stats.data_classes import UserGlobalMediaStats, MediaStatsSummary, StatusCount, FavoriteInfo
+from backend.api.services.stats.data_classes import UserGlobalMediaStats, MediaStatsSummary, StatusCount, FavoriteInfo
 
 
 class DeltaStatsService:
@@ -19,7 +19,7 @@ class DeltaStatsService:
             MediaType.ANIME: lambda self, user_media: user_media.media.duration,
             MediaType.MOVIES: lambda self, user_media: user_media.media.duration,
             MediaType.BOOKS: lambda self, user_media: user_media.TIME_PER_PAGE,
-            MediaType.GAMES: 1,
+            MediaType.GAMES: lambda self, _: 1,
             MediaType.MANGA: lambda self, user_media: user_media.TIME_PER_CHAPTER,
         }
         self.calculator = DeltaStatsCalculator
@@ -215,5 +215,4 @@ class DeltaStatsCalculator:
 
     def _update_time(self, **kwargs):
         user_media, old_value, new_value = kwargs.get("user_media"), kwargs.get("old_value", 0), kwargs.get("new_value", 0)
-        mult = self.time_multiplier(user_media) if callable(self.time_multiplier) and user_media else self.time_multiplier
-        self.setting.time_spent += (new_value - old_value) * mult
+        self.setting.time_spent += (new_value - old_value) * self.time_multiplier(self, user_media)

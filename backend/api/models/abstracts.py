@@ -18,7 +18,7 @@ from backend.api.utils.enums import ModelTypes, Status, MediaType, JobType
 class Media(db.Model, UpdateMixin):
     __abstract__ = True
 
-    TYPE: ModelTypes = ModelTypes.MEDIA
+    TYPE = ModelTypes.MEDIA
     LOCKING_DAYS: int = 180
     RELEASE_WINDOW: int = 7
     SIMILAR_GENRES: int = 12

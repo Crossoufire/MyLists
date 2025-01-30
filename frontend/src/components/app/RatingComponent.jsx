@@ -3,7 +3,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const RatingComponent = ({ rating, onUpdate }) => {
-    const ratingList = (rating.type === "score") ? getScoreList() : getFeelingList(16);
+    const ratingList = (rating.type === "score") ? getScoreList() : getFeelingList({ size: 16 });
     const ratingValue = (rating.type === "score") ? rating.value : getFeelingIcon(rating.value, { valueOnly: true });
 
     const handleSelectChange = (value) => {

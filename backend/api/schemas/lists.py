@@ -20,10 +20,11 @@ class MediaListSchema(ma.Schema):
     actors = SplitStringList(ma.String(), load_default=["All"])
     authors = SplitStringList(ma.String(), load_default=["All"])
     creators = SplitStringList(ma.String(), load_default=["All"])
+    networks = SplitStringList(ma.String(), load_default=["All"])
     directors = SplitStringList(ma.String(), load_default=["All"])
     platforms = SplitStringList(ma.String(), load_default=["All"])
     companies = SplitStringList(ma.String(), load_default=["All"])
-    networks = SplitStringList(ma.String(), load_default=["All"])
+    publishers = SplitStringList(ma.String(), load_default=["All"])
 
 
 class MediaListSearchSchema(ma.Schema):

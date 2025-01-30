@@ -41,7 +41,7 @@ def get(state: Iterable, *path: Any, default: Any = None):
     try:
         for step in path:
             state = state[step]
-    except LookupError:
+    except (LookupError, TypeError):
         return default
     return state or default
 
@@ -158,12 +158,22 @@ def format_datetime_from_dict(date_dict: Dict[str, int]) -> Optional[datetime]:
     return None
 
 
-def format_datetime(date: str | Dict[str, int]) -> Optional[datetime]:
+def format_datetime(date: Optional[str | Dict[str, int]]) -> Optional[datetime]:
     """ Format to a universal datetime format or None if datetime not valid before saving to db """
+
+    if not date:
+        return None
 
     if isinstance(date, dict):
         return format_datetime_from_dict(date)
 
+    # Try to parse ISO 8601 format directly
+    try:
+        return datetime.fromisoformat(date.replace("Z", "+00:00"))
+    except ValueError:
+        pass
+
+    # Define other date patterns
     date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y"]
     for pattern in date_patterns:
         try:
@@ -179,6 +189,7 @@ def format_datetime(date: str | Dict[str, int]) -> Optional[datetime]:
 
 def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
     with Image.open(input_path) as img:
+        img = img.convert("RGB")
         img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
         img_resized.save(output_path, quality=90)
 

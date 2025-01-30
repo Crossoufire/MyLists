@@ -48,6 +48,7 @@ class ListSettingsSchema(ma.Schema):
     add_anime = ma.Bool(load_default=None)
     add_games = ma.Bool(load_default=None)
     add_books = ma.Bool(load_default=None)
+    add_manga = ma.Bool(load_default=None)
     grid_list_view = ma.Bool(load_default=None)
     rating_system = EnumField(RatingSystem, load_default=None)
     search_selector = EnumField(SearchSelector, load_default=None)

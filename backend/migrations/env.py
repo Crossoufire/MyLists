@@ -1,5 +1,6 @@
 import logging
 from logging.config import fileConfig
+
 from flask import current_app
 from alembic import context
 
@@ -9,36 +10,28 @@ config = context.config
 
 # Interpret config file for Python logging
 fileConfig(config.config_file_name)
-logger = logging.getLogger('alembic.env')
+logger = logging.getLogger("alembic.env")
 
 
 def get_engine():
     try:
         # Flask-SQLAlchemy < 3 and Alchemical
-        return current_app.extensions['migrate'].db.get_engine()
+        return current_app.extensions["migrate"].db.get_engine()
     except (TypeError, AttributeError):
         # Flask-SQLAlchemy >= 3
-        return current_app.extensions['migrate'].db.engine
+        return current_app.extensions["migrate"].db.engine
 
 
 def get_engine_url():
     try:
-        return get_engine().url.render_as_string(hide_password=False).replace(
-            '%', '%%')
+        return get_engine().url.render_as_string(hide_password=False).replace("%", "%%")
     except AttributeError:
-        return str(get_engine().url).replace('%', '%%')
+        return str(get_engine().url).replace("%", "%%")
 
 
 # Add model's MetaData object here for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 config.set_main_option("sqlalchemy.url", get_engine_url())
 target_db = current_app.extensions["migrate"].db
-
-
-# Other values from config, defined by env.py. Can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def get_metadata():

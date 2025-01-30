@@ -83,6 +83,7 @@ export const MediaListForm = () => {
         { label: "MoviesList", value: "movies" },
         { label: "GamesList", value: "games" },
         { label: "BooksList", value: "books" },
+        { label: "MangaList", value: "manga" },
     ];
 
     return (
@@ -146,6 +147,25 @@ export const MediaListForm = () => {
                                     </FormControl>
                                     <div className="leading-none">
                                         <FormLabel>&nbsp; Activate books list</FormLabel>
+                                    </div>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="add_manga"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={(value) => onListChanged(field, value)}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "manga").active}
+                                        />
+                                    </FormControl>
+                                    <div className="leading-none">
+                                        <FormLabel>&nbsp; Activate manga list</FormLabel>
                                     </div>
                                     <FormMessage/>
                                 </FormItem>

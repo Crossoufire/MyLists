@@ -39,6 +39,7 @@ export const dataToLoad = (mediaType, apiData, forUser = false) => {
         movies: moviesData,
         books: booksData,
         games: gamesData,
+        manga: mangaData,
     };
     return mediaData[mediaType](apiData);
 };
@@ -312,6 +313,56 @@ const gamesData = (apiData) => {
             sidebarTitle: "Genres Statistics",
             cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(apiData.genres, "Played") },
             lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(apiData.genres, "Played") },
+        },
+    ];
+};
+
+
+const mangaData = (apiData) => {
+    console.log(apiData);
+    return [
+        {
+            sidebarTitle: "Main Statistics",
+            cards: {
+                ...MAIN_CARDS_CONFIG,
+                dataList: [
+                    createStatCard("Total Entries", apiData.total_media.unique, `And ${apiData.total_media.redo} Re-read`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(apiData.total_hours), `Read ${apiData.total_days} days`),
+                    createRatingStatCard(apiData.rating_system, apiData.avg_rating, apiData.total_rated),
+                    createStatCard("Avg. Chapters", apiData.avg_chapters, "Big manga or small manga?"),
+                    createStatCard("Avg. Updates / Month", apiData.avg_updates, `With ${apiData.total_updates} updates`),
+                    createStatCard("Total Chapters", formatNumberWithSpaces(apiData.total_chapters), "Cumulated chapters"),
+                    createStatCard("Total Favorites", apiData.total_favorites, "The best ones"),
+                    createStatCard("Total Labels", apiData.total_labels, "Order maniac"),
+                    createStatCard("Ecchi", apiData.misc_genres[1].value, ";)"),
+                    createStatCard("Shounen", apiData.misc_genres[0].value, "Friendship Powaaaa!"),
+                ],
+            },
+            lists: {
+                ...MAIN_GRAPHS_CONFIG,
+                dataList: [
+                    createStatList("Published Dates", apiData.release_dates),
+                    createStatList("Chapters", apiData.chapters),
+                    createStatList("Rating", apiData.ratings),
+                    createStatList("Updates / Month", apiData.updates),
+                ],
+            },
+            status: apiData.status_counts,
+        },
+        {
+            sidebarTitle: "Authors Statistics",
+            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(apiData.authors, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(apiData.authors, "Read") },
+        },
+        {
+            sidebarTitle: "Publishers Statistics",
+            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(apiData.publishers, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(apiData.publishers, "Read") },
+        },
+        {
+            sidebarTitle: "Genres Statistics",
+            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(apiData.genres, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(apiData.genres, "Read") },
         },
     ];
 };

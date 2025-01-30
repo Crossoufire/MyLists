@@ -33,7 +33,7 @@ export const AchievementCard = ({ achievement }) => {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                        <Award className="w-4 h-4" color={diffColors(highestTierData?.difficulty)}/>
+                        <Award className={cn("w-6 h-6", diffColors(highestTierData?.difficulty))}/>
                         {achievement.name}
                     </CardTitle>
                     <Badge variant="secondary">{capitalize(achievement.media_type)}</Badge>
@@ -51,7 +51,7 @@ export const AchievementCard = ({ achievement }) => {
                                 {userNextTier.count}/{nextTierData.criteria.count}
                             </p>
                         </div>
-                        <Progress className="w-full" color="bg-neutral-400" value={userNextTier.progress}/>
+                        <Progress className="w-full" color="#bfbfbf" value={userNextTier.progress}/>
                     </div>
                 }
                 {(!fullyCompleted && !userNextTier) &&

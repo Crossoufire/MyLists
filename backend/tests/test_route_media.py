@@ -1,13 +1,17 @@
-import json
 import os
-from datetime import timedelta
+import json
 from typing import Dict
+from datetime import timedelta
 
 from backend.api import db
-from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
-from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.utils.functions import naive_utcnow
 from backend.tests.base_test import BaseTest
+from backend.api.utils.functions import naive_utcnow
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.services.api.factory import ApiServiceFactory
+from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
+
+
+api_s_factory = ApiServiceFactory()
 
 
 class MediaTests(BaseTest):
@@ -15,20 +19,17 @@ class MediaTests(BaseTest):
 
     @staticmethod
     def create_all_media():
-        from backend.api.managers.ApiManager import ApiManager
-
         media_files = ["series.json", "anime.json", "movies.json", "books.json", "games.json"]
         base_dir = os.path.abspath(os.path.dirname(__file__))
 
         for media_type, media_file in zip(MediaType, media_files):
             with open(f"{base_dir}/media/{media_file}") as fp:
-                media_data = json.load(fp)
+                media_dict = json.load(fp)
+                media_dict["last_api_update"] = naive_utcnow()
 
             # noinspection PyTypeChecker
-            api_manager = ApiManager.get_subclass(media_type)()
-            api_manager.all_data = media_data
-            api_manager.all_data["media_data"]["last_api_update"] = naive_utcnow()
-            api_manager._add_data_to_db()
+            api_service = api_s_factory.create(media_type)
+            api_service.save_media_to_db_from_json({"media_data": media_dict})
 
     def _add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:
         self.create_all_media()

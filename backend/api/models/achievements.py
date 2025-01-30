@@ -41,6 +41,7 @@ class Achievement(db.Model):
     name = db.Column(db.String, nullable=False)
     code_name = db.Column(db.String, unique=True, nullable=False)
     description = db.Column(db.String, nullable=False)
+    value = db.Column(db.String, nullable=True)
     media_type = db.Column(db.String)
 
     # --- relationships -----------------------------------------------------------

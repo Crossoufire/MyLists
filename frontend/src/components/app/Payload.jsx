@@ -67,5 +67,5 @@ const PagePayload = ({ payload }) => {
 
 
 const ChapterPayload = ({ payload }) => {
-    return <>chap. {payload.old_value} <MoveRight className="w-4 h-4"/> chap. {payload.new_value}</>;
+    return <>chpt. {payload.old_value} <MoveRight className="w-4 h-4"/> chpt. {payload.new_value}</>;
 };

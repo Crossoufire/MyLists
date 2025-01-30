@@ -11,9 +11,10 @@ export const InputComponent = ({ initValue, total, onUpdate, isEditable = true, 
     }, [initValue]);
 
     const handleOnBlur = (ev) => {
+        console.log(total);
         ev.preventDefault();
         if (currentValue === initValue) return;
-        if (total !== undefined && (currentValue > total || currentValue < 0)) {
+        if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
             return setCurrentValue(initValue);
         }
         onUpdate.mutate({ payload: currentValue });

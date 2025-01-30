@@ -10,8 +10,8 @@ from backend.api.utils.functions import int_to_money
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, Status, ModelTypes, AchievementDifficulty
 from backend.api.models import User, UserMediaSettings, UserAchievement, AchievementTier, UserMediaUpdate
-from backend.api.calculators.stats.data_classes import (MediaStats, MediaTotalStats, TopStats, TMDBStats, TvStats, MoviesStats,
-                                                        BooksStats, GamesStats, GlobalMediaStats, StatsValue)
+from backend.api.services.stats.data_classes import (MediaStats, MediaTotalStats, TopStats, TMDBStats, TvStats, MoviesStats,
+                                                     BooksStats, GamesStats, GlobalMediaStats, StatsValue, MangaStats)
 
 
 class StatScope:
@@ -169,7 +169,7 @@ class GlobalStatsCalculator:
             .group_by(UserMediaSettings.media_type)
             .all()
         )
-        self.stats.time_spent = [StatsValue(name=n, value=v) for (n, v) in sorted(query, key=lambda x: x[0])]
+        self.stats.time_spent = [StatsValue(name=n, value=v / 60) for (n, v) in sorted(query, key=lambda x: x[0])]
 
     def compute_stats(self) -> GlobalMediaStats:
         if self.scope.is_global:
@@ -191,7 +191,7 @@ class BaseStatsCalculator:
     def __init__(self, scope: StatScope):
         self.scope = scope
         self.precomputed_stats = self._get_precomputed_stats()
-        self.stats = MediaStats(total_media=MediaTotalStats(0, 0, 0))
+        self.stats = MangaStats(total_media=MediaTotalStats(0, 0, 0))
 
         self.media_models = ModelsManager.get_dict_models(self.GROUP, "all")
         self._initialize_media_models()
@@ -317,10 +317,8 @@ class BaseStatsCalculator:
 
         self.stats.release_dates = [StatsValue(name=n, value=v) for (n, v) in release_query]
 
-    def compute_genres(self):
+    def compute_genres(self, min_: int = 5):
         """ Compute the genre distribution """
-
-        min_ = 10 if self.GROUP == MediaType.MOVIES else 5
 
         top_values = self._query_top_values(self.media_genre, self.media_genre.name)
         top_rated = self._query_top_rated(self.media_genre, self.media_genre.name, min_=min_)
@@ -510,10 +508,10 @@ class TvStatsCalculator(TMDBStatsCalculator):
             top_favorited=[StatsValue(name=n, value=v) for (n, v) in top_favorited],
         )
 
-    def compute_genres(self):
+    def compute_genres(self, min_: int = 5):
         """ Compute miscellaneous genres and general genre distribution """
 
-        super().compute_genres()
+        super().compute_genres(min_)
         self._query_misc_genres("Documentary")
         self._query_misc_genres("Kids")
 
@@ -609,10 +607,10 @@ class MoviesStatsCalculator(TMDBStatsCalculator):
             top_favorited=[StatsValue(name=n, value=v) for (n, v) in top_favorited],
         )
 
-    def compute_genres(self):
+    def compute_genres(self, min_: int = 5):
         """ Compute miscellaneous genres and general genre distribution """
 
-        super().compute_genres()
+        super().compute_genres(min_)
         self._query_misc_genres("Documentary")
         self._query_misc_genres("Animation")
 
@@ -631,7 +629,7 @@ class MoviesStatsCalculator(TMDBStatsCalculator):
         self.compute_total_money()
         self.compute_durations()
         self.compute_directors()
-        self.compute_genres()
+        self.compute_genres(min_=10)
         self.compute_actors()
         self.compute_languages()
 
@@ -675,10 +673,10 @@ class BooksStatsCalculator(BaseStatsCalculator):
         self.stats.avg_pages = round(avg_pages, 0) if isinstance(avg_pages, float) else None
         self.stats.pages = [StatsValue(name=n, value=v) for (n, v) in pages_distrib]
 
-    def compute_genres(self):
+    def compute_genres(self, min_: int = 5):
         """ Compute miscellaneous genres and general genre distribution """
 
-        super().compute_genres()
+        super().compute_genres(min_)
         self._query_misc_genres("Young adult")
         self._query_misc_genres("Classic")
 
@@ -755,9 +753,9 @@ class GamesStatsCalculator(BaseStatsCalculator):
         self.stats.avg_playtime = round(avg_playtime / 60, 1) if isinstance(avg_playtime, float) else None
         self.stats.playtime = [StatsValue(name=str(n / 60), value=v) for (n, v) in zip(playtime_bins, playtime_distrib)]
 
-    def compute_genres(self):
+    def compute_genres(self, min_: int = 5):
         """ Compute miscellaneous genres and general genre distribution """
-        super().compute_genres()
+        super().compute_genres(min_)
         self._query_misc_genres("Card Game")
         self._query_misc_genres("Stealth")
 
@@ -851,8 +849,6 @@ class GamesStatsCalculator(BaseStatsCalculator):
 class MangaStatsCalculator(BaseStatsCalculator):
     GROUP = MediaType.MANGA
 
-    # TODO: Implement MangaStatsCalculator
-
     def __init__(self, scope: StatScope):
         super().__init__(scope)
 
@@ -860,8 +856,73 @@ class MangaStatsCalculator(BaseStatsCalculator):
 
     def _initialize_media_models(self):
         super()._initialize_media_models()
+        self.media_authors = self.media_models[ModelTypes.AUTHORS]
+
+    def compute_total_chapters(self):
+        """ Already computed in user's pre-computed stats """
+        self.stats.total_chapters = self.precomputed_stats.total_specific
+
+    def compute_chapters(self):
+        """ Compute the chapters distribution, and the average chapters """
+
+        chapters_distrib = (
+            db.session.query(((self.media.chapters // 50) * 50).label("bin"), func.count(self.media_list.media_id))
+            .join(*self.common_join)
+            .filter(*self.user_filter, *self.status_filter)
+            .group_by(text("bin")).order_by(text("bin"))
+            .all()
+        )
+
+        avg_chapters = (
+            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
+            .filter(*self.user_filter, *self.status_filter)
+            .scalar()
+        )
+
+        self.stats.avg_chapters = round(avg_chapters, 0) if isinstance(avg_chapters, float) else None
+        self.stats.chapters = [StatsValue(name=n, value=v) for (n, v) in chapters_distrib]
+
+    def compute_genres(self, min_: int = 5):
+        """ Compute miscellaneous genres and general genre distribution """
+
+        super().compute_genres(min_)
+        self._query_misc_genres("Ecchi")
+        self._query_misc_genres("Shounen")
+
+    def compute_publishers(self):
+        """ Compute the publisher top values, top-rated and top favorited publishers """
+
+        top_values = self._query_top_values(self.media, self.media.publishers)
+        top_rated = self._query_top_rated(self.media, self.media.publishers)
+        top_favorited = self._query_top_favorites(self.media, self.media.publishers)
+
+        self.stats.publishers = TopStats(
+            top_values=[StatsValue(name=n, value=v) for (n, v) in top_values],
+            top_rated=[StatsValue(name=n, value=round(v, 2)) for (n, v) in top_rated],
+            top_favorited=[StatsValue(name=n, value=v) for (n, v) in top_favorited],
+        )
+
+    def compute_authors(self):
+        """ Compute the author top values, top-rated and top favorited authors """
+
+        top_values = self._query_top_values(self.media_authors, self.media_authors.name)
+        top_rated = self._query_top_rated(self.media_authors, self.media_authors.name, min_=2)
+        top_favorited = self._query_top_favorites(self.media_authors, self.media_authors.name)
+
+        self.stats.authors = TopStats(
+            top_values=[StatsValue(name=n, value=v) for (n, v) in top_values],
+            top_rated=[StatsValue(name=n, value=round(v, 2)) for (n, v) in top_rated],
+            top_favorited=[StatsValue(name=n, value=v) for (n, v) in top_favorited],
+        )
 
     def calculate_stats(self) -> MediaStats:
         """ Add specific stats to media """
+
         super().calculate_stats()
+        self.compute_total_chapters()
+        self.compute_chapters()
+        self.compute_genres(min_=3)
+        self.compute_publishers()
+        self.compute_authors()
+
         return self.stats

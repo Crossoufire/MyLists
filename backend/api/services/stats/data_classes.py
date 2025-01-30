@@ -153,3 +153,12 @@ class GamesStats(MediaStats):
     publishers: Optional[TopStats] = None
     perspectives: Optional[TopStats] = None
     playtime: List[StatsValue] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
+class MangaStats(MediaStats):
+    total_chapters: int = 0
+    avg_chapters: Optional[float] = None
+    authors: Optional[TopStats] = None
+    publishers: Optional[TopStats] = None
+    chapters: List[StatsValue] = field(default_factory=list)

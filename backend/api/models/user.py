@@ -87,6 +87,7 @@ class User(db.Model):
     books_list = db.relationship("BooksList", back_populates="user", lazy="select")
     movies_list = db.relationship("MoviesList", back_populates="user", lazy="select")
     series_list = db.relationship("SeriesList", back_populates="user", lazy="select")
+    manga_list = db.relationship("MangaList", back_populates="user", lazy="select")
     settings = db.relationship("UserMediaSettings", back_populates="user", lazy="joined")
     mediadle_stats = db.relationship("MediadleStats", back_populates="user", lazy="select")
     achievements = db.relationship("UserAchievement", back_populates="user", lazy="select")
@@ -237,9 +238,9 @@ class User(db.Model):
         return username
 
     @classmethod
-    def create_search_results(cls, search: str, page: int = 1) -> Dict:
+    def search(cls, query: str, page: int = 1) -> Dict:
         users = db.paginate(
-            db.select(cls).filter(cls.username.like(f"%{search}%"), cls.active.is_(True)),
+            db.select(cls).filter(cls.username.like(f"%{query}%"), cls.active.is_(True)),
             page=page, per_page=8, error_out=True,
         )
 

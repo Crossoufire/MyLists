@@ -1,8 +1,9 @@
 import {ExternalLink} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
-import {getMediaColor} from "@/utils/functions";
 import {Separator} from "@/components/ui/separator";
+
+import {getMediaColor} from "@/utils/functions";
 
 
 export const Sidebar = ({ items, selectedTab, onTabChange, linkItems = [] }) => {
@@ -24,7 +25,7 @@ export const Sidebar = ({ items, selectedTab, onTabChange, linkItems = [] }) => 
                     asChild={true}
                     key={item.sidebarTitle}
                     disabled={item.isSelected}
-                    className={`justify-start text-base`}
+                    className={"justify-start text-base"}
                     variant={item.isSelected ? "secondary" : "ghost"}
                     style={{ backgroundColor: item.isSelected ? getMediaColor(item.mediaType) : "" }}
                 >

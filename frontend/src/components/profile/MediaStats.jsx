@@ -4,7 +4,7 @@ import {Tooltip} from "@/components/ui/tooltip";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 import {BlockLink} from "@/components/app/BlockLink";
-import {BulletIcon} from "@/components/profile/BulletIcon";
+import {StatusBullet} from "@/components/profile/StatusBullet";
 import {getFeelingIcon, getStatusColor} from "@/utils/functions";
 
 
@@ -86,18 +86,21 @@ function MediaStatuses({ media, username }) {
                 {media.no_data ?
                     <span className="flex-grow bg-black"/>
                     :
-                    media.status_count.map(st =>
-                        <Tooltip key={`${st.status}-${media.media_type}`} text={st.status}>
-                            <span className="flex-grow" style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status) }}/>
+                    media.status_count.map((st, idx) =>
+                        <Tooltip key={idx} text={st.status}>
+                            <span
+                                style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status) }}
+                                className={"flex-grow"}
+                            />
                         </Tooltip>
                     )
                 }
             </div>
             <div className="grid grid-cols-2 font-medium gap-y-2 gap-x-8 px-2 max-sm:px-0 max-sm:text-xs">
-                {media.status_count.map(st =>
-                    <div key={`${st.status}-${media.media_type}`} className="flex justify-between">
+                {media.status_count.map((st, idx) =>
+                    <div key={idx} className="flex justify-between">
                         <Link to={`/list/${media.media_type}/${username}`} search={{ status: [st.status] }} className="text-neutral-500">
-                            <BulletIcon color={getStatusColor(st.status)}/> {st.status}
+                            <StatusBullet status={st.status}/> {st.status}
                         </Link>
                         <div>{st.count}</div>
                     </div>

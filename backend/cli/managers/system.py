@@ -3,8 +3,8 @@ from sqlalchemy import text
 from flask import jsonify, current_app
 
 from backend.api import cache, db, MediaType
-from backend.api.managers.ApiManager import GamesApiManager
-from backend.api.calculators.stats.stats import MediaStatsService
+from backend.api.services.api.factory import ApiServiceFactory
+from backend.api.services.stats.stats import MediaStatsService
 from backend.cli.managers._base import CLIBaseManager, with_console_status
 
 
@@ -36,7 +36,9 @@ class CLISystemManager(CLIBaseManager):
     @with_console_status("Updating IGDB token...")
     def update_igdb_token(self):
         with current_app.app_context():
-            new_igdb_token = GamesApiManager().update_api_token()
+            api_s_factory = ApiServiceFactory()
+            api_service = api_s_factory.create(MediaType.GAMES)
+            new_igdb_token = api_service.update_api_token(current_app.config["IGDB_API_KEY"])
             if new_igdb_token is None:
                 self.log_error("IGDB API token could not be updated.")
                 return

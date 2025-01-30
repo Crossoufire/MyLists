@@ -2,7 +2,7 @@ import {Link} from "@tanstack/react-router";
 import {useCollapse} from "@/hooks/useCollapse";
 import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
-import {capitalize, zeroPad} from "@/utils/functions";
+import {capitalize, getMediaColor, zeroPad} from "@/utils/functions";
 import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
@@ -42,7 +42,7 @@ const MediaLevelBar = ({ mediaType, username, level }) => {
 
     return (
         <div className="flex flex-row py-1 gap-4 items-center">
-            <MediaLevelCircle intLevel={intLevel} className="mt-1"/>
+            <MediaLevelCircle className="mt-1" intLevel={intLevel} mediaType={mediaType}/>
             <div className="w-[81%]">
                 <div className="flex justify-between mb-1.5">
                     <div>
@@ -52,7 +52,7 @@ const MediaLevelBar = ({ mediaType, username, level }) => {
                     </div>
                     <div>{zeroPad(percent.toFixed(0))} %</div>
                 </div>
-                <Progress value={percent} color={`bg-${mediaType}`}/>
+                <Progress value={percent} color={getMediaColor(mediaType)}/>
             </div>
         </div>
     );

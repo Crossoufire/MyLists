@@ -24,8 +24,8 @@ class Config:
     USER_ACTIVE_PER_DEFAULT = False
 
     # Demo Profile options
-    DEMO_USERNAME = "DemoProfile"
     DEMO_EMAIL = "demo@demo.com"
+    DEMO_USERNAME = "DemoProfile"
     DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo-password"
 
     # Database options

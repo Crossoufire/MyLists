@@ -9,7 +9,7 @@ from backend.api.core import current_user, token_auth
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.decorators import arguments, body, check_authorization
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
-from backend.api.calculators.stats.delta import DeltaStatsService
+from backend.api.services.stats.delta import DeltaStatsService
 from backend.api.models import UserAchievement, Achievement, MediadleStats, UserMediadleProgress
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector, RatingSystem
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
@@ -222,7 +222,7 @@ def settings_medialist(data):
     if data["grid_list_view"] is not None:
         current_user.grid_list_view = data["grid_list_view"]
 
-    for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS]:
+    for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS, MediaType.MANGA]:
         setting_key = f"add_{media_type.value.lower()}"
         if data[setting_key] is not None:
             setting = current_user.get_media_setting(media_type)

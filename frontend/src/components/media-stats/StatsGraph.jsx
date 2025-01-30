@@ -2,7 +2,7 @@ import {useSearch} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";
 import {useRatingSystem} from "@/providers/RatingProvider";
 import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/utils/functions";
-import {Bar, BarChart, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis} from "recharts";
+import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis} from "recharts";
 
 
 export const StatsGraph = ({ title, dataList }) => {
@@ -34,7 +34,7 @@ export const StatsGraph = ({ title, dataList }) => {
     }
 
     const renderCustomLabel = ({ x, y, width, height, value }) => {
-        if (height < 17 || width < 20) return null;
+        if (height < 17 || width < 28) return null;
 
         const X = x + width / 2;
         const Y = y + height / 2;
@@ -51,15 +51,18 @@ export const StatsGraph = ({ title, dataList }) => {
             <div className="text-2xl font-bold">{title} Distribution <Separator/></div>
             <div className="flex items-center justify-center h-[300px] max-sm:h-[200px]">
                 <ResponsiveContainer>
-                    <BarChart data={newDataList} margin={{ top: 8, right: 15, left: -20, bottom: 5 }}>
+                    <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
                         {title === "Rating" && ratingSystem === "feeling" ?
                             <XAxis dataKey="name" stroke="#e2e2e2" tick={<CustomXAxisTick/>}/>
                             :
                             <XAxis dataKey="name" stroke="#e2e2e2"/>
                         }
                         <YAxis dataKey="value" stroke="#e2e2e2"/>
-                        <RechartsTooltip content={<CustomTooltip/>}/>
+                        <RechartsTooltip cursor={{ fill: "#373535" }} content={<CustomTooltip/>}/>
                         <Bar dataKey="value" fill={getMediaColor(filters.mt)}>
+                            {newDataList.map((entry, idx) =>
+                                <Cell key={idx} fill={getMediaColor(filters.mt ?? entry.name)}/>
+                            )}
                             <LabelList dataKey="value" position="center" content={renderCustomLabel}/>
                         </Bar>
                     </BarChart>
@@ -85,7 +88,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const CustomXAxisTick = ({ x, y, payload }) => {
     const getFeelingComponent = (value) => {
-        const feelings = getFeelingList(18);
+        const feelings = getFeelingList({ size: 18 });
         const feeling = feelings.find((item) => item.value === value);
         return feeling ? feeling.component : "--";
     };

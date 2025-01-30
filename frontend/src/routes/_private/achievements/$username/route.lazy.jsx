@@ -1,4 +1,5 @@
 import {achievementOptions} from "@/api";
+import {capitalize} from "@/utils/functions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -18,36 +19,27 @@ function AchievementPage() {
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(achievementOptions(username)).data;
 
-    const mediaTypes = [
-        { value: "all", label: "All", icon: null },
-        { value: "series", label: "Series", icon: <MediaIcon mediaType="series"/> },
-        { value: "anime", label: "Anime", icon: <MediaIcon mediaType="anime"/> },
-        { value: "movies", label: "Movies", icon: <MediaIcon mediaType="movies"/> },
-        { value: "games", label: "Games", icon: <MediaIcon mediaType="games"/> },
-        { value: "books", label: "Books", icon: <MediaIcon mediaType="books"/> },
-    ];
-
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
             <Tabs defaultValue="all">
                 <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
-                    {mediaTypes.map(mt =>
-                        <TabsTrigger key={mt.value} value={mt.value} className="max-sm:px-2 px-4 flex items-center gap-2">
-                            {mt.icon} {mt.label}
+                    {Object.entries(apiData.summary).map(([mt, _]) =>
+                        <TabsTrigger key={mt} value={mt} className="max-sm:px-2 px-4 flex items-center gap-2">
+                            <MediaIcon mediaType={mt}/> {capitalize(mt)}
                         </TabsTrigger>
                     )}
                 </TabsList>
-                {mediaTypes.map(mt =>
-                    <TabsContent key={mt.value} value={mt.value}>
+                {Object.entries(apiData.summary).map(([mt, summary]) =>
+                    <TabsContent key={mt} value={mt}>
                         <AchievementSummary
-                            mediaType={mt.value}
-                            summary={apiData.summary[mt.value]}
+                            mediaType={mt}
+                            summary={summary}
                         />
                         <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {apiData.result.filter(a => mt.value === "all" || mt.value === a.media_type).map(achievement =>
+                            {apiData.result.filter(a => mt === "all" || mt === a.media_type).map(ach =>
                                 <AchievementCard
-                                    key={achievement.id}
-                                    achievement={achievement}
+                                    key={ach.id}
+                                    achievement={ach}
                                 />
                             )}
                         </div>

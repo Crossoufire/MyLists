@@ -35,7 +35,7 @@ redis = Redis(socket_timeout=15, socket_connect_timeout=15)
 limiter = Limiter(key_func=get_remote_address, default_limits=["5/second"])
 
 
-def import_blueprints(register_bp):
+def import_blueprints(app: Flask):
     from backend.api.routes.tokens import tokens as tokens_bp
     from backend.api.routes.users import users as users_bp
     from backend.api.routes.media import media_bp as media_bp
@@ -50,7 +50,7 @@ def import_blueprints(register_bp):
     api_blueprints = [tokens_bp, users_bp, media_bp, search_bp, general_bp, errors_bp, details_bp,
                       lists_bp, labels_bp, mediadle_bp]
     for blueprint in api_blueprints:
-        register_bp(blueprint, url_prefix="/api")
+        app.register_blueprint(blueprint, url_prefix="/api")
 
 
 def create_file_handler(logger: logging.Logger, root_path: str):
@@ -129,10 +129,10 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     if config_class is None:
         config_class = get_config()
 
-    app.config.from_object(config_class)
     app.url_map.strict_slashes = False
-    app.url_map.converters["mediatype"] = MediaTypeConverter
+    app.config.from_object(config_class)
     app.url_map.converters["jobtype"] = JobTypeConverter
+    app.url_map.converters["mediatype"] = MediaTypeConverter
 
     mail.init_app(app)
     db.init_app(app)
@@ -141,15 +141,12 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     ma.init_app(app)
     limiter.init_app(app)
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
-    cors.init_app(app, supports_credentials=True, origins=[
-        "http://localhost:3000", "http://127.0.0.1:3000",
-        "http://localhost:4173", "http://127.0.0.1:4173",
-    ])
+    cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
     with app.app_context():
         register_cli_commands()
         create_db_and_setup_pragma(app)
-        import_blueprints(app.register_blueprint)
+        import_blueprints(app)
 
         if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
             create_file_handler(app.logger, app.root_path)

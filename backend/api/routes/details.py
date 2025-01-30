@@ -9,13 +9,14 @@ from backend.api import db
 from backend.api.core import token_auth
 from backend.api.schemas.details import *
 from backend.api.utils.decorators import body
-from backend.api.managers.ApiManager import ApiManager
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.services.api.factory import ApiServiceFactory
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
 from backend.api.utils.functions import get, format_datetime, resize_and_save_image
 
 
 details_bp = Blueprint("api_details", __name__)
+api_s_factory = ApiServiceFactory()
 
 
 @details_bp.route("/details/<mediatype:media_type>/<media_id>", methods=["GET"])
@@ -30,8 +31,8 @@ def media_details(media_type: MediaType, media_id: Union[int, str]):
     media = media_model.query.filter_by(**filter_id).first()
 
     if external and not media:
-        api_manager = ApiManager.get_subclass(media_type)
-        media = api_manager(api_id=media_id).save_media_to_db()
+        api_service = api_s_factory.create(media_type)
+        media = api_service.save_media_to_db(api_id=media_id)
         db.session.commit()
     elif not media:
         return abort(404, description="Media not found")
@@ -77,6 +78,7 @@ def job_details(media_type: MediaType, job: JobType, name: str):
         - `creator`: director (movies), tv creator (series/anime), developer (games), or author (books)
         - `actor`: actors (series/anime/movies)
         - `platform`: tv network (series/anime)
+        - `publisher`: publisher (manga)
     """
 
     media_model = ModelsManager.get_unique_model(media_type, ModelTypes.MEDIA)
@@ -113,7 +115,7 @@ def post_details_edit(data):
             urlretrieve(str(updates["image_cover"]), str(picture_path))
             resize_and_save_image(str(picture_path), str(picture_path))
         except:
-            return abort(403, description="This media cover could not be added. Try another one.")
+            return abort(403, description="This cover could not be added. Try another one.")
 
     updates["image_cover"] = picture_fn
     media.lock_status = True
@@ -142,8 +144,8 @@ def refresh_media(data):
     """ Refresh metadata of a media """
 
     media = data["models"].query.filter_by(id=data["media_id"]).first_or_404()
-    api_manager = ApiManager.get_subclass(data["media_type"])
-    api_manager(api_id=media.api_id).update_media_to_db()
+    api_service = api_s_factory.create(data["media_type"])
+    api_service.update_media_to_db(api_id=media.api_id)
     current_app.logger.info(f"[INFO] - Refreshed {data['media_type'].value} with API ID: [{media.api_id}]")
 
     return {}, 204

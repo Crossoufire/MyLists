@@ -13,9 +13,10 @@ from sqlalchemy import func, update, case
 
 from backend.api import db
 from backend.api.core.errors import log_error
+from backend.api.services.api.factory import ApiServiceFactory
+from backend.api.services.api.service import ApiService
 from backend.api.utils.functions import naive_utcnow
 from backend.cli.managers._base import CLIBaseManager
-from backend.api.managers.ApiManager import ApiManager
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
 from backend.api.models.user import UserMediaUpdate, Notifications, UserMediaSettings
@@ -90,12 +91,14 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
             media_manager = cls.get_manager(cast(MediaType, media_type))
             media_manager()._add_media_notifications()
 
+    # noinspection PyTypeChecker
     @classmethod
     def bulk_all_media_refresh(cls):
-        for media_type in [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.GAMES]:
-            api_manager = ApiManager.get_subclass(media_type)
-            media_manager = cls.get_manager(cast(MediaType, media_type))
-            media_manager()._bulk_media_refresh(api_manager)
+        api_s_factory = ApiServiceFactory()
+        for media_type in list(MediaType):
+            api_service = api_s_factory.create(media_type)
+            media_manager = cls.get_manager(media_type)
+            media_manager()._bulk_media_refresh(media_type, api_service)
 
     def automatic_locking(self) -> Tuple[int, int]:
         raise NotImplementedError("Subclasses must implement this method")
@@ -406,17 +409,19 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
 
         self.log_success(f"Time spent on '{self.GROUP.value}' for each user successfully updated")
 
-    def _bulk_media_refresh(self, api_manager: Type[ApiManager]):
-        media_type = api_manager.GROUP.value
-
+    def _bulk_media_refresh(self, media_type: MediaType, api_service: ApiService):
         with self.console.status(f"Fetching the API ids for {media_type}, this can take a minute..."):
-            api_ids_to_refresh = api_manager().get_changed_api_ids()
+            try:
+                api_ids_to_refresh = api_service.changed_api_ids()
+            except Exception as e:
+                self.log_warning(str(e))
+                return
 
         errors = False
         self.log_info(f"There are {len(api_ids_to_refresh)} '{media_type}' API ids to refresh")
         for api_id in api_ids_to_refresh:
             try:
-                api_manager(api_id=api_id).update_media_to_db(bulk=True)
+                api_service.update_media_to_db(api_id=api_id, bulk=True)
                 self.log_success(f"'{media_type}' [API ID {api_id}] successfully refreshed")
             except Exception as e:
                 errors = True
@@ -664,3 +669,17 @@ class CLIGamesManager(CLIMediaManager):
         self.media_companies.query.filter(self.media_companies.media_id.in_(media_ids)).delete()
         db.session.commit()
         self.log_success(f"Non-list 'Games' successfully deleted")
+
+
+class CLIMangaManager(CLIMediaManager):
+    GROUP = MediaType.MANGA
+
+    def _remove_non_list_media(self):
+        media_ids = super()._remove_non_list_media()
+        if not media_ids:
+            return
+        db.session.commit()
+        self.log_success(f"Non-list 'Manga' successfully deleted")
+
+    def _add_media_notifications(self):
+        return

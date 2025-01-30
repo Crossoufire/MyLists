@@ -1,24 +1,25 @@
 import {useAuth} from "@/api";
-import {cn} from "@/utils/functions";
+import {Trophy} from "lucide-react";
 import {Link} from "@tanstack/react-router";
+import {capitalize, cn} from "@/utils/functions";
 import {Card, CardContent} from "@/components/ui/card";
-import {ListItem} from "@/components/hall-of-fame/ListItem";
+import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 
 
 export const HoFCard = ({ user }) => {
     const { currentUser } = useAuth();
 
     return (
-        <Card key={user.username} className={cn("p-2 mb-5 bg-card", currentUser.id === user.id && "bg-teal-950")}>
-            <CardContent className="max-sm:py-5 p-0">
-                <div className="grid grid-cols-12 max-md:gap-8 py-4">
-                    <div className="col-span-3 md:col-span-1">
-                        <div className="flex items-center justify-center text-xl h-full font-medium">
-                            #{user.rank}
+        <Card key={user.username} className={cn("p-2 py-0 mb-3 bg-card", currentUser.id === user.id && "bg-teal-950")}>
+            <CardContent className="p-0">
+                <div className="grid grid-cols-12 py-4">
+                    <div className="col-span-1 max-sm:col-span-2">
+                        <div className="flex items-center ml-2 text-xl h-full font-medium">
+                            {user.rank === 1 ? <Trophy className="text-amber-500 w-6 h-6"/> : <>#{user.rank}</>}
                         </div>
                     </div>
-                    <div className="col-span-9 md:col-span-4">
-                        <div className="flex items-center gap-6">
+                    <div className="col-span-6 max-sm:col-span-10 ml-3">
+                        <div className="flex items-center gap-4 h-full">
                             <img
                                 alt="profile-picture"
                                 src={user.profile_image}
@@ -30,20 +31,26 @@ export const HoFCard = ({ user }) => {
                                         {user.username}
                                     </Link>
                                 </h3>
-                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r from-blue-600 to-violet-600">
+                                <div className="inline-block text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r
+                                from-blue-600 to-violet-600">
                                     Lvl {user.profile_level}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-7 max-md:col-span-12">
-                        <div className="flex justify-center items-center font-medium h-full gap-8 max-md:gap-6">
-                            {user.settings.map(setting =>
-                                <ListItem
-                                    setting={setting}
-                                    key={setting.media_type}
-                                    username={user.username}
-                                />
+                    <div className="col-span-5 -ml-8">
+                        <div className="grid grid-cols-3 gap-2 text-center max-sm:hidden">
+                            {user.settings.map(s =>
+                                <Link key={s.media_type} to={`/list/${s.media_type}/${user.username}`} disabled={!s.active}>
+                                    <MediaLevelCircle
+                                        isActive={s.active}
+                                        mediaType={s.media_type}
+                                        intLevel={parseInt(s.level)}
+                                    />
+                                    <div className="text-xs font-semibold text-gray-400">
+                                        {capitalize(s.media_type)}
+                                    </div>
+                                </Link>
                             )}
                         </div>
                     </div>

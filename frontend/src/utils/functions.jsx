@@ -1,5 +1,6 @@
 import {clsx} from "clsx";
 import {twMerge} from "tailwind-merge";
+import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
@@ -8,21 +9,16 @@ export const cn = (...inputs) => {
 };
 
 
-export const getFeelingIcon = (value, options = {}) => {
+// --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
+
+export const getFeelingIcon = (value, { className, size, valueOnly } = {}) => {
     if (!value || value < 0 || value > 10) return "--";
 
-    const moodMapping = [
-        { value: 0, component: <FaPoop className={options.className} color="saddlebrown" size={options.size}/> },
-        { value: 2, component: <FaAngry className={options.className} color="indianred" size={options.size}/> },
-        { value: 4, component: <FaFrown className={options.className} color="#d0a141" size={options.size}/> },
-        { value: 6, component: <FaSmile className={options.className} color="darkseagreen" size={options.size}/> },
-        { value: 8, component: <FaGrinAlt className={options.className} color="#59a643" size={options.size}/> },
-        { value: 10, component: <FaGrinStars className={options.className} color="#019101" size={options.size}/> }
-    ];
+    const feelValues = getFeelingList({ className, size });
 
-    let closest = moodMapping[0];
-    let smallestDelta = Math.abs(value - moodMapping[0].value);
-    for (const mood of moodMapping) {
+    let closest = feelValues[0];
+    let smallestDelta = Math.abs(value - feelValues[0].value);
+    for (const mood of feelValues) {
         const delta = Math.abs(value - mood.value);
         if (delta < smallestDelta || (delta === smallestDelta && mood.value < closest.value)) {
             closest = mood;
@@ -30,61 +26,106 @@ export const getFeelingIcon = (value, options = {}) => {
         }
     }
 
-    if (options.valueOnly) return closest.value;
+    if (valueOnly) {
+        return closest.value;
+    }
 
     return closest.component;
 };
 
 
-export const getFeelingList = (size = 20) => {
+export const getFeelingList = ({ className, size = 20 }) => {
     return [
         { value: null, component: "--" },
-        { value: 0, component: <FaPoop color="saddlebrown" size={size}/> },
-        { value: 2, component: <FaAngry color="indianred" size={size}/> },
-        { value: 4, component: <FaFrown color="#d0a141" size={size}/> },
-        { value: 6, component: <FaSmile color="darkseagreen" size={size}/> },
-        { value: 8, component: <FaGrinAlt color="#59a643" size={size}/> },
-        { value: 10, component: <FaGrinStars color="#019101" size={size}/> },
+        { value: 0, component: <FaPoop className={className} color="saddlebrown" size={size}/> },
+        { value: 2, component: <FaAngry className={className} color="indianred" size={size}/> },
+        { value: 4, component: <FaFrown className={className} color="#d0a141" size={size}/> },
+        { value: 6, component: <FaSmile className={className} color="darkseagreen" size={size}/> },
+        { value: 8, component: <FaGrinAlt className={className} color="#59a643" size={size}/> },
+        { value: 10, component: <FaGrinStars className={className} color="#019101" size={size}/> },
     ];
 };
 
 
 export const getScoreList = () => {
+    const MIN_SCORE = 0;
+    const MAX_SCORE = 10;
+    const STEP = 0.5;
+
+    // Generation
+    const scores = Array.from(
+        { length: (MAX_SCORE - MIN_SCORE) / STEP + 1 },
+        (_, i) => MIN_SCORE + i * STEP,
+    );
+
     return [
         { value: null, component: "--" },
-        { value: 0, component: 0.0.toFixed(1) },
-        { value: 1, component: 1.0.toFixed(1) },
-        { value: 1.5, component: 1.5.toFixed(1) },
-        { value: 2, component: 2.0.toFixed(1) },
-        { value: 2.5, component: 2.5.toFixed(1) },
-        { value: 3, component: 3.0.toFixed(1) },
-        { value: 3.5, component: 3.5.toFixed(1) },
-        { value: 4, component: 4.0.toFixed(1) },
-        { value: 4.5, component: 4.5.toFixed(1) },
-        { value: 5, component: 5.0.toFixed(1) },
-        { value: 5.5, component: 5.5.toFixed(1) },
-        { value: 6, component: 6.0.toFixed(1) },
-        { value: 6.5, component: 6.5.toFixed(1) },
-        { value: 7, component: 7.0.toFixed(1) },
-        { value: 7.5, component: 7.5.toFixed(1) },
-        { value: 8, component: 8.0.toFixed(1) },
-        { value: 8.5, component: 8.5.toFixed(1) },
-        { value: 9, component: 9.0.toFixed(1) },
-        { value: 9.5, component: 9.5.toFixed(1) },
-        { value: 10, component: 10 },
+        ...scores.map(value => ({
+            value,
+            component: value === MAX_SCORE ? value : value.toFixed(1)
+        }))
     ];
 };
 
 
-export const getPlaytimeList = () => [
-    0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150,
-    175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 4000,
-    5000, 6000, 7000, 8000, 9000, 10000
-];
+export const getPlaytimeList = () => {
+    const ranges = [
+        { start: 0, end: 50, step: 5 },
+        { start: 60, end: 100, step: 10 },
+        { start: 125, end: 300, step: 25 },
+        { start: 350, end: 600, step: 50 },
+        { start: 700, end: 1000, step: 100 },
+        { start: 1500, end: 3000, step: 500 },
+        { start: 4000, end: 10000, step: 1000 }
+    ];
+
+    const specialCases = [0, 2];
+
+    return [
+        ...specialCases,
+        ...ranges.flatMap(({ start, end, step }) =>
+            Array.from(
+                { length: Math.floor((end - start) / step) + 1 },
+                (_, i) => start + i * step,
+            )
+        ).filter(value => !specialCases.includes(value))
+    ];
+};
 
 
 export const getRedoList = () => {
     return [...Array(11).keys()];
+};
+
+
+// --- Icons & Colors ---------------------------------------------------------------------------------------
+
+
+export const getMediaIcon = (mediaType) => {
+    const icons = {
+        user: User,
+        series: Monitor,
+        anime: Cat,
+        movies: Popcorn,
+        games: Gamepad2,
+        books: Library,
+        manga: BookImage,
+    };
+    return icons[mediaType];
+};
+
+
+export const getMediaColor = (mediaType) => {
+    const colors = {
+        user: "#6e6e6e",
+        series: "#267f90",
+        anime: "#ab5e4b",
+        movies: "#a28b27",
+        books: "#6b5c86",
+        games: "#217f21",
+        manga: "#a04646",
+    };
+    return colors[mediaType] ?? "#868686";
 };
 
 
@@ -107,43 +148,8 @@ export const getStatusColor = (status) => {
 };
 
 
-export const getMediaColor = (media) => {
-    const colors = {
-        series: "#216e7d",
-        anime: "#945141",
-        movies: "#8c7821",
-        books: "#584c6e",
-        games: "#196219",
-        manga: "#662424",
-    };
-    return colors[media] ?? "#626262";
-};
-
-
-export const getLevelColor = (intLevel) => {
-    const normalizedLevel = Math.pow(intLevel / 350, 0.75);
-
-    if (normalizedLevel <= 0.2) {
-        return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.4) {
-        return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
-    }
-    else if (normalizedLevel <= 0.6) {
-        return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.8) {
-        return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
-    }
-    else {
-        return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
-    }
-};
-
-
-export const diffColors = (difficulty, value = "text") => {
+export const diffColors = (difficulty, variant = "text") => {
     if (!difficulty) return null;
-
     const colors = {
         "border-bronze": "border-amber-700",
         "border-silver": "border-slate-400",
@@ -158,9 +164,11 @@ export const diffColors = (difficulty, value = "text") => {
         "text-gold": "text-yellow-600",
         "text-platinum": "text-teal-600",
     };
-
-    return colors[`${value}-${difficulty}`];
+    return colors[`${variant}-${difficulty}`];
 };
+
+
+// --- Time Format ------------------------------------------------------------------------------------------
 
 
 export const globalStatsTimeFormat = (minutes) => {
@@ -273,7 +281,7 @@ export const formatNumberWithKM = (value) => {
     else if (value >= 1_000) {
         return (value / 1_000).toFixed(2) + "k";
     }
-    return value.toString();
+    return value.toFixed(0).toString();
 };
 
 

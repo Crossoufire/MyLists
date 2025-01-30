@@ -5,7 +5,7 @@ from backend.api.schemas.media import *
 from backend.api.utils.decorators import body
 from backend.api.models.user import UserMediaUpdate
 from backend.api.core import token_auth, current_user
-from backend.api.calculators.stats.delta import DeltaStatsService
+from backend.api.services.stats.delta import DeltaStatsService
 from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
 
 
@@ -18,7 +18,7 @@ ds_service = DeltaStatsService()
 def coming_next():
     active_media_types = [
         setting.media_type for setting in current_user.settings
-        if setting.active and setting.media_type != MediaType.BOOKS
+        if setting.active and setting.media_type not in (MediaType.BOOKS, MediaType.MANGA)
     ]
     models_list = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
 
@@ -371,14 +371,19 @@ def update_chapter(data):
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    if data["payload"] > int(user_media.media.chapters):
-        return abort(400, description="Invalid chapter")
+    # Non-finished manga have `None` chapters -> Do not check
+    if data["payload"] > 50_000:
+        return abort(400, description="50 000 chapters limit reached. Contact an admin if you need more.")
+
+    if user_media.media.chapters:
+        if data["payload"] > int(user_media.media.chapters):
+            return abort(400, description="Invalid chapter")
 
     old_chapter = user_media.current_chapter
     old_total = user_media.total
 
     user_media.current_chapter = data["payload"]
-    new_total = data["payload"] + (user_media.redo * user_media.media.chapters)
+    new_total = data["payload"] + (user_media.redo * user_media.media.chapters if user_media.media.chapters else 0)
     user_media.total = new_total
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.CHAPTER, old_chapter, data["payload"])
@@ -429,7 +434,7 @@ def media_history(media_type: MediaType, media_id: int):
         .filter(
             UserMediaUpdate.user_id == current_user.id,
             UserMediaUpdate.media_type == media_type,
-            UserMediaUpdate.media_id == media_id
+            UserMediaUpdate.media_id == media_id,
         ).order_by(UserMediaUpdate.timestamp.desc())
         .all()
     )

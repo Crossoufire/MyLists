@@ -193,6 +193,7 @@ function getListSearchFilters(mediaType) {
         "movies": ["actors", "directors"],
         "books": ["authors"],
         "games": ["companies"],
+        "manga": ["authors", "publishers"],
     };
     return mapping[mediaType];
 }
