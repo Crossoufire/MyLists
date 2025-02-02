@@ -8,7 +8,7 @@ import {StatusBullet} from "@/components/profile/StatusBullet";
 import {getFeelingIcon, getStatusColor} from "@/utils/functions";
 
 
-export const MediaStats = ({ user, media }) => {
+export const MediaStats = ({ media, user }) => {
     return (
         <div>
             <div className="flex flex-wrap justify-between text-center font-medium max-sm:text-sm">
@@ -16,23 +16,10 @@ export const MediaStats = ({ user, media }) => {
                     title="Time (d)"
                     value={media.time_days}
                 />
-                {media.media_type === "books" &&
-                    <MediaValues
-                        title="Pages"
-                        value={media.specific_total}
-                    />
-                }
-                {media.media_type === "movies" &&
-                    <MediaValues
-                        title="(Re)Watched"
-                        value={media.specific_total}/>
-                }
-                {["series", "anime"].includes(media.media_type) &&
-                    <MediaValues
-                        title="Tot. Eps."
-                        value={media.specific_total}
-                    />
-                }
+                <SpecificMediaValues
+                    mediaType={media.media_type}
+                    value={media.specific_total}
+                />
                 <MediaValues
                     title="Entries"
                     value={media.total_media}
@@ -75,6 +62,18 @@ function MediaValues({ title, value }) {
             <div className="text-neutral-500">{title}</div>
             <div className="flex items-center justify-center">{value}</div>
         </div>
+    );
+}
+
+
+function SpecificMediaValues({ mediaType, value }) {
+    return (
+        <>
+            {mediaType === "manga" && <MediaValues title="Chapters" value={value}/>}
+            {mediaType === "books" && <MediaValues title="Pages" value={value}/>}
+            {mediaType === "movies" && <MediaValues title="(Re)watched" value={value}/>}
+            {["series", "anime"].includes(mediaType) && <MediaValues title="Episodes" value={value}/>}
+        </>
     );
 }
 

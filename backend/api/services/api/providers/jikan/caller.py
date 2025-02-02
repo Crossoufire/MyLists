@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List
+from typing import Dict
 
 from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
 from backend.api.services.api.providers.base.base_caller import BaseApiCaller
@@ -16,11 +16,3 @@ class MangaApiCaller(BaseApiCaller):
     def details(self, api_id: int | str) -> Dict:
         response = self.call(f"{self.params.main_url}/{api_id}/full")
         return json.loads(response.text)["data"]
-
-    # TODO: IMPLEMENT changed_api_ids
-    def changed_api_ids(self) -> List[int]:
-        pass
-
-    # TODO: IMPLEMENT trending
-    def trending(self) -> Dict:
-        pass

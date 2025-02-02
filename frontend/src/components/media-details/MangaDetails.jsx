@@ -6,7 +6,9 @@ import {capitalize, formatDateTime, formatMinutes} from "@/utils/functions";
 
 
 export const MangaDetails = ({ mediaData, mediaType }) => {
-    console.log(mediaData);
+    const voteCount = mediaData?.vote_count ?? 0;
+    const voteAverage = mediaData?.vote_average?.toFixed(1) ?? "--";
+
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
             <div className="bg-card rounded-md p-4">
@@ -15,7 +17,7 @@ export const MangaDetails = ({ mediaData, mediaType }) => {
                         <div>
                             <div className="font-semibold text-neutral-500">MAL Rating</div>
                             <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-amber-500"/> {mediaData.vote_average.toFixed(1)} ({mediaData.vote_count})
+                                <Star className="w-4 h-4 text-amber-500"/> {voteAverage} ({voteCount})
                             </div>
                         </div>
                         <MapDetails

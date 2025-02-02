@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List
+from typing import Dict
 
 from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
 from backend.api.services.api.providers.base.base_caller import BaseApiCaller
@@ -17,10 +17,3 @@ class BooksApiCaller(BaseApiCaller):
     def details(self, api_id: int | str) -> Dict:
         response = self.call(f"{self.params.main_url}/{api_id}")
         return json.loads(response.text)
-
-    def trending(self) -> Dict:
-        raise NotImplementedError("The Books does not have trending data")
-
-    def changed_api_ids(self) -> List[int]:
-        """ Books does not use the API to fetch the changed API ids """
-        raise NotImplementedError("The Books does not use the API to fetch the changed API ids")

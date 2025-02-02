@@ -1,17 +1,19 @@
+from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 
 from flask import url_for
+from sqlalchemy import or_
 
 from backend.api import MediaType, db
 from backend.api.utils.enums import ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.functions import get, format_datetime, naive_utcnow
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
-from backend.api.services.api.providers.base.base_parser import BaseApiParser
-from backend.api.utils.functions import get, format_datetime, naive_utcnow, clean_html_text
+from backend.api.services.api.providers.base.base_parser import BaseApiParser, ChangedApiIdsParser
 from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ApiSearchResult, ParsedSearch
 
 
-class MangaApiParser(BaseApiParser):
+class MangaApiParser(BaseApiParser, ChangedApiIdsParser):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
@@ -22,7 +24,7 @@ class MangaApiParser(BaseApiParser):
             media_details = ParsedSearchItem(
                 media_type=MediaType.MANGA,
                 api_id=result.get("mal_id"),
-                name=result.get("title_english"),
+                name=result.get("title_english", result.get("title")) or result.get("title"),
                 date=format_datetime(get(result, "published", "from")),
                 image_cover=get(
                     result, "images", "jpg", "image_url",
@@ -44,16 +46,16 @@ class MangaApiParser(BaseApiParser):
             site_url=get(details, "url"),
             volumes=get(details, "volumes"),
             chapters=get(details, "chapters"),
+            synopsis=get(details, "synopsis"),
             prod_status=get(details, "status"),
-            name=get(details, "title_english"),
             vote_average=get(details, "score"),
+            original_name=get(details, "title"),
             vote_count=get(details, "scored_by"),
             popularity=get(details, "popularity"),
             publishers=self._format_publishers(details),
-            original_name=get(details, "title_japanese"),
-            synopsis=clean_html_text(get(details, "synopsis")),
             end_date=format_datetime(get(details, "published", "to")),
             release_date=format_datetime(get(details, "published", "from")),
+            name=get(details, "title_english", default=get(details, "title")),
         )
 
         return dict(
@@ -64,13 +66,6 @@ class MangaApiParser(BaseApiParser):
 
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
         return get(details_data, "images", "jpg", "large_image_url")
-
-    def trending_parser(self, trending_data: Dict) -> List[Dict]:
-        raise NotImplementedError("The Manga does not have trending data")
-
-    # TODO: IMPLEMENT changed_api_ids
-    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
-        raise NotImplementedError("The Manga does not update the api ids")
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)
@@ -97,6 +92,17 @@ class MangaApiParser(BaseApiParser):
             if data_list:
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
+
+    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
+        model = ModelsManager.get_unique_model(self.params.media_type, ModelTypes.MEDIA)
+        query = model.query.with_entities(model.api_id).filter(
+            or_(model.release_date > naive_utcnow(), model.release_date.is_(None)),
+            model.last_api_update < naive_utcnow() - timedelta(days=7),
+            model.prod_status == "Publishing",
+        ).all()
+        return [int(manga_id[0]) for manga_id in query]
+
+    # --- UTILS ------------------------------------------------------------
 
     def _common_add_update(self, data: Dict) -> Tuple[Dict, Dict]:
         models = ModelsManager.get_dict_models(self.params.media_type, "all")

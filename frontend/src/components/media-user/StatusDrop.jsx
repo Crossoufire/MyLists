@@ -1,7 +1,7 @@
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const StatusDrop = ({ status, allStatus, updateStatus }) => {
+export const StatusDrop = ({ status, allStatus, updateStatus, canBeCompleted = true }) => {
     const handleStatus = (status) => {
         updateStatus.mutate({ payload: status });
     };
@@ -14,7 +14,11 @@ export const StatusDrop = ({ status, allStatus, updateStatus }) => {
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {allStatus.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    {allStatus.map(s => (
+                        <SelectItem key={s} value={s} disabled={s === "Completed" && !canBeCompleted}>
+                            {s}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
         </div>

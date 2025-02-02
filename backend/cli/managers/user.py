@@ -14,7 +14,7 @@ from backend.api.models import User, UserMediaUpdate
 from backend.api.utils.functions import naive_utcnow
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, Status, Privacy, ModelTypes, UpdateType
-from ..utils.demo_profile_creator import DemoProfile, EntryParams, ProbaGenerator, get_default_params
+from ..scripts.demo_profile_creator import DemoProfile, EntryParams, ProbaGenerator, get_default_params
 
 
 class CLIUserManager(CLIBaseManager):
@@ -95,14 +95,19 @@ class CLIUserManager(CLIBaseManager):
         self.print_table(table)
 
     def delete_non_activated_users(self, days: int = 7):
+        from backend.api.routes.users import delete_user_account
+
         delta_time = datetime.now() - timedelta(days=days)
-        period_repr = f"< {days} days" if days < 30 else f"< {days // 30} months"
+        period_repr = f"> {days} days" if days < 30 else f"> {days // 30} months"
 
         non_activated_user_count = User.query.filter(User.active.is_(False), User.registered_on <= delta_time).count()
         self.log_info(f"Found {non_activated_user_count} non-activated users to delete...")
 
-        User.query.filter(User.active.is_(False), User.registered_on <= delta_time).delete()
-        db.session.commit()
+        users = User.query.filter(User.active.is_(False), User.registered_on <= delta_time).all()
+        for user in users:
+            self.log_info(f"Deleting '{user.username}' account...")
+            delete_user_account(user.id)
+            db.session.commit()
 
         self.log_success(f"Deleted {non_activated_user_count} non-activated users ({period_repr})")
 

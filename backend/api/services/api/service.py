@@ -11,14 +11,14 @@ from backend.api.services.api.providers.base import BaseApiParser, BaseApiCaller
 class ApiService:
     def __init__(
             self,
-            api_parser: BaseApiParser,
             api_caller: BaseApiCaller,
+            api_parser: BaseApiParser,
             api_extra: Optional[BaseApiExtra] = None,
             change_strategy: Optional[ChangeDetectionStrategy] = None,
     ):
         self.api_extra = api_extra
-        self.api_parser = api_parser
         self.api_caller = api_caller
+        self.api_parser = api_parser
         self.change_strategy = change_strategy
 
     def search(self, query: str, page: int = 1) -> Dict:

@@ -23,6 +23,11 @@ from backend.config import Config, get_config, default_db_uri, basedir
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 
 
+# TODO: Convert CliMediaManager -> CliMediaService with Factory and init it in MediaConfig
+# TODO: Add a media config for each media type (e.g. MoviesConfig) -> DEFAULT_SORTING, DEFAULT_STATUS, DEFAULT_DURATION, etc...
+# TODO: Create a file which contains the steps to add a new media type
+
+
 # Load globally accessible plugins
 mail = Mail()
 db = SQLAlchemy()
@@ -112,6 +117,21 @@ def create_db_and_setup_pragma(app: Flask):
     event.listen(db.engine, "connect", configure_sqlite)
 
 
+def init_media_services():
+    """ Init all media services """
+
+    import inspect
+    from backend.api.services import initializer
+    from backend.api.services.initializer import MediaConfig
+
+    media_configs = [
+        obj for _, obj in inspect.getmembers(initializer)
+        if (inspect.isclass(obj) and issubclass(obj, MediaConfig) and obj != MediaConfig)
+    ]
+    for config_class in media_configs:
+        config_class()
+
+
 def refresh_database():
     """ On app starts execute refreshing functions. """
 
@@ -147,6 +167,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
         register_cli_commands()
         create_db_and_setup_pragma(app)
         import_blueprints(app)
+        init_media_services()
 
         if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
             create_file_handler(app.logger, app.root_path)

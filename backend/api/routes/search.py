@@ -13,7 +13,7 @@ from backend.api.services.api.factory import ApiServiceFactory
 
 
 search_bp = Blueprint("api_search", __name__)
-api_s_factory = ApiServiceFactory()
+api_s_factory = ApiServiceFactory
 
 
 def process_api_search(api_service: ApiService, args: Dict):

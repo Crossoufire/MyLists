@@ -7,9 +7,9 @@ from backend.api import db
 from backend.api.core.email import send_email
 from backend.api.core import current_user, token_auth
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.services.stats.delta import DeltaStatsService
 from backend.api.utils.decorators import arguments, body, check_authorization
 from backend.api.utils.functions import format_to_download_as_csv, save_picture
-from backend.api.services.stats.delta import DeltaStatsService
 from backend.api.models import UserAchievement, Achievement, MediadleStats, UserMediadleProgress
 from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector, RatingSystem
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
@@ -280,26 +280,31 @@ def achievements(user: User):
 
 
 def delete_user_account(user_id: int):
-    Token.query.filter_by(user_id=user_id).delete()
-    User.query.filter_by(id=user_id).delete()
+    try:
+        Token.query.filter_by(user_id=user_id).delete()
+        User.query.filter_by(id=user_id).delete()
 
-    db.session.query(followers).filter(
-        (followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)
-    ).delete()
+        db.session.query(followers).filter(
+            (followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)
+        ).delete()
 
-    UserMediaUpdate.query.filter_by(user_id=user_id).delete()
-    Notifications.query.filter_by(user_id=user_id).delete()
-    UserMediaSettings.query.filter_by(user_id=user_id).delete()
-    MediadleStats.query.filter_by(user_id=user_id).delete()
-    UserMediadleProgress.query.filter_by(user_id=user_id).delete()
+        UserMediaUpdate.query.filter_by(user_id=user_id).delete()
+        Notifications.query.filter_by(user_id=user_id).delete()
+        UserMediaSettings.query.filter_by(user_id=user_id).delete()
+        MediadleStats.query.filter_by(user_id=user_id).delete()
+        UserMediadleProgress.query.filter_by(user_id=user_id).delete()
+        UserAchievement.query.filter_by(user_id=user_id).delete()
 
-    models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
-    for model in models.values():
-        model.query.filter_by(user_id=user_id).delete()
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
+        for model in models.values():
+            model.query.filter_by(user_id=user_id).delete()
 
-    models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
-    for model in models_labels.values():
-        model.query.filter_by(user_id=user_id).delete()
+        models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
+        for model in models_labels.values():
+            model.query.filter_by(user_id=user_id).delete()
 
-    db.session.commit()
-    current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted")
+        db.session.commit()
+        current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted")
+    except:
+        db.session.rollback()
+        current_app.logger.error(f"Failed to delete account [ID = {user_id}]")

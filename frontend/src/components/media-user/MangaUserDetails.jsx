@@ -42,6 +42,7 @@ export const MangaUserDetails = ({ userMedia, mediaType, queryKey }) => {
             <StatusDrop
                 status={userMedia.status}
                 allStatus={userMedia.all_status}
+                canBeCompleted={!!userMedia.total_chapters}
                 updateStatus={updateStatusFunc(onStatusSuccess)}
             />
             {userMedia.status !== "Plan to Read" &&

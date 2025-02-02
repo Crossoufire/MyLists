@@ -2,7 +2,7 @@ from typing import List
 
 from backend.api import MediaType
 from backend.api.utils.enums import AchievementDifficulty
-from backend.api.services.achievements.seeds.data_classes import AchievementData, TierData, CriteriaData
+from backend.api.services.achievements.data_classes import AchievementData, TierData, CriteriaData
 
 
 def manga_achievements() -> List[AchievementData]:

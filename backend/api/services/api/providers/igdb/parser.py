@@ -9,11 +9,11 @@ from backend.api.utils.enums import ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.functions import get, format_datetime, naive_utcnow
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
-from backend.api.services.api.providers.base.base_parser import BaseApiParser
+from backend.api.services.api.providers.base.base_parser import BaseApiParser, ChangedApiIdsParser
 from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ApiSearchResult, ParsedSearch
 
 
-class GamesApiParser(BaseApiParser):
+class GamesApiParser(BaseApiParser, ChangedApiIdsParser):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
@@ -72,21 +72,8 @@ class GamesApiParser(BaseApiParser):
             platforms_data=[{"name": platform["name"]} for platform in get(details, "platforms", default=[])],
         )
 
-    def trending_parser(self, trending_data: Dict) -> List[Dict]:
-        raise NotImplementedError("The Games does not have trending data")
-
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
         return self.params.poster_base_url + get(details_data, "cover", "image_id") + ".jpg"
-
-    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
-        model = ModelsManager.get_unique_model(self.params.media_type, ModelTypes.MEDIA)
-
-        query = model.query.with_entities(model.api_id).filter(
-            or_(model.release_date > naive_utcnow(), model.release_date.is_(None)),
-            model.last_api_update < naive_utcnow() - timedelta(days=7),
-        ).all()
-
-        return [int(game_id[0]) for game_id in query]
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)
@@ -113,6 +100,18 @@ class GamesApiParser(BaseApiParser):
             if data_list:
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
+
+    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
+        model = ModelsManager.get_unique_model(self.params.media_type, ModelTypes.MEDIA)
+
+        query = model.query.with_entities(model.api_id).filter(
+            or_(model.release_date > naive_utcnow(), model.release_date.is_(None)),
+            model.last_api_update < naive_utcnow() - timedelta(days=7),
+        ).all()
+
+        return [int(game_id[0]) for game_id in query]
+
+    # --- UTILS -----------------------------------------------------------------------
 
     def _common_add_update(self, data: Dict) -> Tuple[Dict, Dict]:
         models = ModelsManager.get_dict_models(self.params.media_type, "all")

@@ -11,7 +11,6 @@ export const InputComponent = ({ initValue, total, onUpdate, isEditable = true, 
     }, [initValue]);
 
     const handleOnBlur = (ev) => {
-        console.log(total);
         ev.preventDefault();
         if (currentValue === initValue) return;
         if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
@@ -33,7 +32,7 @@ export const InputComponent = ({ initValue, total, onUpdate, isEditable = true, 
                 :
                 <span>{initValue}</span>
             }
-            {total && <span>{" "}/{" "}{total}</span>}
+            <span>{" "}/{" "}{total ?? "?"}</span>
         </div>
     );
 };

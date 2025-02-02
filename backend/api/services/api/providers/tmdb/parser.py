@@ -8,12 +8,12 @@ from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
-from backend.api.services.api.providers.base.base_parser import BaseApiParser
 from backend.api.utils.functions import get, format_datetime, naive_utcnow, is_latin
 from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ApiSearchResult, ParsedSearch
+from backend.api.services.api.providers.base.base_parser import BaseApiParser, TrendingParser, ChangedApiIdsParser
 
 
-class TMDBApiParser(BaseApiParser):
+class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
     MAX_GENRES: int = 5
     MAX_ACTORS: int = 5
     MAX_NETWORK: int = 4
@@ -57,9 +57,6 @@ class TMDBApiParser(BaseApiParser):
     def trending_parser(self, trending_data: Dict) -> List[Dict]:
         raise NotImplementedError("The specifics must be implemented in the subclasses")
 
-    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
-        raise NotImplementedError("The specifics must be implemented in the subclasses")
-
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
         return self.params.poster_base_url + details_data.get("poster_path")
 
@@ -89,6 +86,11 @@ class TMDBApiParser(BaseApiParser):
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
 
+    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
+        raise NotImplementedError("The specifics must be implemented in the subclasses")
+
+    # --- UTILS ------------------------------------------------------------
+
     def _common_add_update(self, data: Dict) -> Tuple[Dict, Dict]:
         models = ModelsManager.get_dict_models(self.params.media_type, "all")
 
@@ -99,8 +101,6 @@ class TMDBApiParser(BaseApiParser):
             models.get(ModelTypes.NETWORK): data.get("networks_data", []),
         }
         return models, related_data
-
-    # --- OTHER METHODS ------------------------------------------------------------
 
     @staticmethod
     def _process_movie(result: Dict) -> Dict:
@@ -225,7 +225,7 @@ class TVApiParser(TMDBApiParser):
 
     def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
         media_model = ModelsManager.get_unique_model(self.params.media_type, ModelTypes.MEDIA)
-        
+
         query = media_model.query.with_entities(media_model.api_id).filter(
             media_model.api_id.in_(api_ids),
             media_model.lock_status.is_not(True),
@@ -233,6 +233,8 @@ class TVApiParser(TMDBApiParser):
         ).all()
 
         return [api_ids[0] for api_ids in query]
+
+    # --- UTILS ------------------------------------------------------------
 
     def _default_duration(self) -> int:
         return 40 if self.params.media_type == MediaType.SERIES else 24

@@ -1,6 +1,6 @@
 from pathlib import Path
-from typing import Optional, List, Dict
 from dataclasses import dataclass
+from typing import Optional, List, Dict
 
 from backend.api import MediaType
 

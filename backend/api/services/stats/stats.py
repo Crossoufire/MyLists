@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Type
 
 from sqlalchemy import text, ColumnElement, func
 
@@ -10,8 +10,8 @@ from backend.api.utils.functions import int_to_money
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, Status, ModelTypes, AchievementDifficulty
 from backend.api.models import User, UserMediaSettings, UserAchievement, AchievementTier, UserMediaUpdate
-from backend.api.services.stats.data_classes import (MediaStats, MediaTotalStats, TopStats, TMDBStats, TvStats, MoviesStats,
-                                                     BooksStats, GamesStats, GlobalMediaStats, StatsValue, MangaStats)
+from backend.api.services.stats.data_classes import MediaStats, MediaTotalStats, TopStats, TMDBStats, TvStats, MoviesStats, \
+    BooksStats, GamesStats, GlobalMediaStats, StatsValue, MangaStats
 
 
 class StatScope:
@@ -34,16 +34,14 @@ class PreComputedStats:
 
 
 class MediaStatsService:
+    _ms_calculators: Dict[MediaType, Type[BaseStatsCalculator]] = {}
+
     def __init__(self):
         self.gs_calculator = GlobalStatsCalculator
-        self.ms_calculators = {
-            MediaType.SERIES: SeriesStatsCalculator,
-            MediaType.ANIME: AnimeStatsCalculator,
-            MediaType.MOVIES: MoviesStatsCalculator,
-            MediaType.GAMES: GamesStatsCalculator,
-            MediaType.BOOKS: BooksStatsCalculator,
-            MediaType.MANGA: MangaStatsCalculator,
-        }
+
+    @classmethod
+    def init_calculators(cls, media_type: MediaType, calculator: Type[BaseStatsCalculator]):
+        cls._ms_calculators[media_type] = calculator
 
     def get_stats(self, user: Optional[User] = None, media_type: Optional[MediaType] = None) -> Optional[Dict[str, Any]]:
         if media_type:
@@ -56,11 +54,11 @@ class MediaStatsService:
 
         scope = StatScope(user)
 
-        if media_type not in self.ms_calculators.keys():
+        if media_type not in self._ms_calculators.keys():
             raise Exception(f"MediaType `{media_type.upper()}` was not added to the MediaStatsService")
 
         # noinspection PyTypeChecker
-        return asdict(self.ms_calculators[media_type](scope).calculate_stats())
+        return asdict(self._ms_calculators[media_type](scope).calculate_stats())
 
     def _get_aggregated_stats(self, user: Optional[User] = None) -> Dict[str, Any]:
         """ Get aggregated statistics across all media types. For a user or all users """

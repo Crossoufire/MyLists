@@ -123,6 +123,9 @@ class MangaList(MediaList):
         self.status = new_status
         self.redo = 0
         if new_status == Status.COMPLETED:
+            if not self.media.chapters:
+                return abort(400, description="Media has no chapters")
+
             self.current_chapter = self.media.chapters
             self.total = self.media.chapters
             new_total = self.media.chapters

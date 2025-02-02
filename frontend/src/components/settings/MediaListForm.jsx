@@ -15,17 +15,30 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 export const MediaListForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
-    const { listSettings, downloadListAsCSV } = useSimpleMutations();
     const [selectedList, setSelectedList] = useState("");
+    const { listSettings, downloadListAsCSV } = useSimpleMutations();
     const form = useForm({
         defaultValues: {
             search_selector: currentUser.search_selector,
             rating_system: currentUser.rating_system,
+            grid_list_view: currentUser.grid_list_view === true ? "grid" : "table",
         }
     });
 
+    const userMediaLists = [
+        { label: "SeriesList", value: "series" },
+        { label: "AnimeList", value: "anime" },
+        { label: "MoviesList", value: "movies" },
+        { label: "GamesList", value: "games" },
+        { label: "BooksList", value: "books" },
+        { label: "MangaList", value: "manga" },
+    ];
+
     const onSubmit = (data) => {
-        listSettings.mutate({ ...data }, {
+        const newData = { ...data };
+        newData.grid_list_view = (newData.grid_list_view === "grid");
+
+        listSettings.mutate({ ...newData }, {
             onError: () => toast.error("An error occurred while updating the data"),
             onSuccess: (data) => {
                 setCurrentUser(data);
@@ -47,10 +60,15 @@ export const MediaListForm = () => {
 
     const onListChanged = (field, value) => {
         field.onChange(value);
+        // noinspection JSCheckFunctionSignatures
         const searchSelector = form.watch("search_selector");
 
         if (field.name === "add_games" && (searchSelector.value === "igdb" || currentUser.search_selector === "igdb")) {
             form.setValue("search_selector", "tmdb");
+        }
+
+        if (field.name === "add_manga" && (searchSelector.value === "manga" || currentUser.search_selector === "manga")) {
+            form.setValue("search_selector", "manga");
         }
 
         if (field.name === "add_books" && (searchSelector.value === "books" || currentUser.search_selector === "books")) {
@@ -76,15 +94,6 @@ export const MediaListForm = () => {
             }
         });
     };
-
-    const userMediaLists = [
-        { label: "SeriesList", value: "series" },
-        { label: "AnimeList", value: "anime" },
-        { label: "MoviesList", value: "movies" },
-        { label: "GamesList", value: "games" },
-        { label: "BooksList", value: "books" },
-        { label: "MangaList", value: "manga" },
-    ];
 
     return (
         <div>
@@ -199,6 +208,7 @@ export const MediaListForm = () => {
                                             <SelectItem value="tmdb">Media</SelectItem>
                                             <SelectItem value="books" disabled={checkDisabled("add_books")}>Books</SelectItem>
                                             <SelectItem value="igdb" disabled={checkDisabled("add_games")}>Games</SelectItem>
+                                            <SelectItem value="manga" disabled={checkDisabled("add_manga")}>Manga</SelectItem>
                                             <SelectItem value="users">Users</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -246,24 +256,25 @@ export const MediaListForm = () => {
                         <FormField
                             control={form.control}
                             name="grid_list_view"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.grid_list_view}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>Grid Mode (checked) or Table mode (unchecked)</FormLabel>
-                                    </div>
+                            render={({ field }) =>
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="border">
+                                                <SelectValue placeholder="Select a search selector"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="grid">Grid</SelectItem>
+                                            <SelectItem value="table">Table</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage/>
                                 </FormItem>
-                            )}
+                            }
                         />
                     </div>
-                    <FormButton className="mt-5" disabled={listSettings.isPending}>
+                    <FormButton className="mt-3" disabled={listSettings.isPending}>
                         Update
                     </FormButton>
                 </form>

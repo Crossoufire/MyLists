@@ -1,7 +1,6 @@
 import secrets
 from pathlib import Path
 from typing import Union
-from urllib.request import urlretrieve
 
 from flask import current_app, request, jsonify, Blueprint, abort
 
@@ -16,7 +15,7 @@ from backend.api.utils.functions import get, format_datetime, resize_and_save_im
 
 
 details_bp = Blueprint("api_details", __name__)
-api_s_factory = ApiServiceFactory()
+api_s_factory = ApiServiceFactory
 
 
 @details_bp.route("/details/<mediatype:media_type>/<media_id>", methods=["GET"])
@@ -112,8 +111,9 @@ def post_details_edit(data):
         picture_fn = f"{secrets.token_hex(16)}.jpg"
         picture_path = Path(current_app.root_path, f"static/covers/{data['media_type'].value}_covers", picture_fn)
         try:
-            urlretrieve(str(updates["image_cover"]), str(picture_path))
-            resize_and_save_image(str(picture_path), str(picture_path))
+            from backend.api.services.api.providers.base import BaseApiCaller
+            image_data = BaseApiCaller.fetch_cover(str(updates["image_cover"]))
+            resize_and_save_image(image_data, str(picture_path))
         except:
             return abort(403, description="This cover could not be added. Try another one.")
 

@@ -3,17 +3,28 @@ from __future__ import annotations
 from io import BytesIO
 from urllib import request
 from abc import ABC, abstractmethod
-from typing import Literal, Dict, Optional
+from typing import Literal, Dict, Optional, Protocol, List
 
 import requests
 from flask import abort
 from requests import Response
 
-from backend.api import MediaType
 from backend.api.services.api.data_classes import ApiSearchResult, ApiParams
 
 
-class BaseApiCaller(ABC):
+class TrendingCallerProtocol(Protocol):
+    def trending(self) -> Dict: ...
+
+
+class ChangedApiIdsCallerProtocol(Protocol):
+    def changed_api_ids(self) -> List[int]: ...
+
+
+class UpdateTokenCallerProtocol(Protocol):
+    def update_token(self) -> Optional[str]: ...
+
+
+class BaseApiCaller(ABC, TrendingCallerProtocol, ChangedApiIdsCallerProtocol, UpdateTokenCallerProtocol):
     def __init__(self, params: ApiParams):
         self.params = params
 
@@ -24,18 +35,6 @@ class BaseApiCaller(ABC):
     @abstractmethod
     def details(self, api_id: int | str) -> Dict:
         pass
-
-    @abstractmethod
-    def changed_api_ids(self):
-        pass
-
-    @abstractmethod
-    def trending(self) -> Dict:
-        pass
-
-    def update_token(self):
-        if self.params.media_type != MediaType.GAMES:
-            raise NotImplementedError("Only the GamesApiCaller has this method.")
 
     @staticmethod
     def fetch_cover(cover_url: Optional[str]) -> Optional[BytesIO]:
@@ -69,3 +68,21 @@ class BaseApiCaller(ABC):
                 return abort(503, description="Failed to fetch data from external API")
 
         return response
+
+
+class ChangedApiIdsCaller(ABC):
+    @abstractmethod
+    def changed_api_ids(self):
+        pass
+
+
+class UpdateTokenCaller(ABC):
+    @abstractmethod
+    def update_token(self):
+        pass
+
+
+class TrendingCaller(ABC):
+    @abstractmethod
+    def trending(self) -> Dict:
+        pass

@@ -44,15 +44,6 @@ class FilterBuilder:
             MediaType.SERIES: "created_by",
             MediaType.ANIME: "created_by",
         }
-        self.directors_attrs = {
-            MediaType.MOVIES: "director_name",
-        }
-        self.publishers_filter = {
-            MediaType.MANGA: "publishers",
-        }
-        self.platforms_filter = {
-            MediaType.GAMES: "platform",
-        }
 
     def build_base_filter(self, attr: str, model_attr: Any) -> ColumnElement | bool:
         """ Base method for building simple filters """
@@ -100,16 +91,16 @@ class FilterBuilder:
         return getattr(self.models.media, self.creators_attrs[self.media_type]).ilike(f"%{' '.join(self.args['creators'])}%")
 
     def get_directors_filter(self) -> ColumnElement | bool:
-        if self.media_type not in self.directors_attrs.keys():
+        if self.media_type != MediaType.MOVIES:
             self.args["directors"] = []
             return True
-        return self.build_base_filter("directors", getattr(self.models.media, self.directors_attrs[self.media_type]))
+        return self.build_base_filter("directors", self.models.media.director_name)
 
     def get_publishers_filter(self) -> ColumnElement | bool:
-        if self.media_type not in self.publishers_filter.keys():
+        if self.media_type != MediaType.MANGA:
             self.args["publishers"] = []
             return True
-        return self.build_base_filter("publishers", getattr(self.models.media, self.publishers_filter[self.media_type]))
+        return self.build_base_filter("publishers", self.models.media.publishers)
 
     def get_actors_filters(self) -> ColumnElement | bool:
         return True if not self.models.media_actors else self.build_base_filter("actors", self.models.media_actors.name)
@@ -124,10 +115,10 @@ class FilterBuilder:
         return True if not self.models.media_network else self.build_base_filter("networks", self.models.media_network.name)
 
     def get_platforms_filter(self) -> ColumnElement | bool:
-        if self.media_type not in self.platforms_filter or self.args["platforms"][0] == QueryConfig.ALL_VALUE:
+        if self.media_type != MediaType.GAMES or self.args["platforms"][0] == QueryConfig.ALL_VALUE:
             return True
         platforms = [GamesPlatformsEnum(p) for p in self.args["platforms"]]
-        return getattr(self.models.media_list, self.platforms_filter[self.media_type]).in_(platforms)
+        return self.models.media_list.platform.in_(platforms)
 
     def return_all_filters(self, common_ids: List[int]) -> List[ColumnElement | bool]:
         """ Return all filters for the query """

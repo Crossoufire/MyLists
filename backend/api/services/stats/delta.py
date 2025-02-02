@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -13,24 +13,22 @@ from backend.api.services.stats.data_classes import UserGlobalMediaStats, MediaS
 
 
 class DeltaStatsService:
+    _multipliers: Dict[MediaType, Callable] = {}
+
     def __init__(self):
-        self.multipliers = {
-            MediaType.SERIES: lambda self, user_media: user_media.media.duration,
-            MediaType.ANIME: lambda self, user_media: user_media.media.duration,
-            MediaType.MOVIES: lambda self, user_media: user_media.media.duration,
-            MediaType.BOOKS: lambda self, user_media: user_media.TIME_PER_PAGE,
-            MediaType.GAMES: lambda self, _: 1,
-            MediaType.MANGA: lambda self, user_media: user_media.TIME_PER_CHAPTER,
-        }
         self.calculator = DeltaStatsCalculator
+
+    @classmethod
+    def init_multipliers(cls, media_type: MediaType, time_multiplier: Callable):
+        cls._multipliers[media_type] = time_multiplier
 
     def create(self, media_type: MediaType, user: User) -> DeltaStatsCalculator:
         """ Create a calculator instance for the given media type """
 
-        if media_type not in self.multipliers:
+        if media_type not in self._multipliers:
             raise ValueError(f"No multiplier registered for media type: {media_type}")
 
-        time_multiplier = self.multipliers[media_type]
+        time_multiplier = self._multipliers[media_type]
         return self.calculator(user, media_type, time_multiplier)
 
     def compute_media_stats(self, settings: List[UserMediaSettings]) -> UserGlobalMediaStats:

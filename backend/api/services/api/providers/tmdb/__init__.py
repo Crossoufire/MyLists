@@ -1,2 +1,2 @@
-from .caller import TMDBApiCaller
+from .caller import TMDBApiCallerCaller
 from .parser import TVApiParser, MoviesApiParser

@@ -109,16 +109,27 @@ function HallOfFamePage() {
                     <div className="grid grid-cols-2 w-full gap-3">
                         {apiData.user_ranks.map(rank =>
                             <Card key={rank.media_type} className="p-2 max-sm:py-0 bg-card">
-                                <CardContent className="max-sm:py-4 p-2 space-y-1">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="font-semibold text-lg">{capitalize(rank.media_type)}</div>
-                                        <div className="font-semibold text-xl"># {rank.rank}</div>
-                                    </div>
-                                    <Progress value={100 - rank.percent} max={100} className="mt-2" color={getMediaColor(rank.media_type)}/>
-                                    <div className="text-xs font-semibold text-gray-400">
-                                        Top {rank.percent.toFixed(1)}%
-                                    </div>
-                                </CardContent>
+                                {rank.active ?
+                                    <CardContent className="max-sm:py-4 p-2 space-y-1">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="font-semibold text-lg">{capitalize(rank.media_type)}</div>
+                                            <div className="font-semibold text-xl"># {rank.rank}</div>
+                                        </div>
+                                        <Progress value={100 - (rank.percent ? rank.percent : 100)} max={100} className="mt-2" color={getMediaColor(rank.media_type)}/>
+                                        <div className="text-xs font-semibold text-gray-400">
+                                            {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top --</>}
+                                        </div>
+                                    </CardContent>
+                                    :
+                                    <CardContent className="max-sm:py-4 p-2 space-y-1">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="font-semibold text-lg">{capitalize(rank.media_type)}</div>
+                                        </div>
+                                        <div className="text-sm">
+                                            <MutedText>Not Activated</MutedText>
+                                        </div>
+                                    </CardContent>
+                                }
                             </Card>
                         )}
                     </div>

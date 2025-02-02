@@ -5,10 +5,10 @@ from flask import current_app
 
 from backend.api import MediaType, cache
 from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
-from backend.api.services.api.providers.base.base_caller import BaseApiCaller
+from backend.api.services.api.providers.base.base_caller import BaseApiCaller, TrendingCaller, ChangedApiIdsCaller
 
 
-class TMDBApiCaller(BaseApiCaller):
+class TMDBApiCallerCaller(BaseApiCaller, TrendingCaller, ChangedApiIdsCaller):
     def __init__(self, params: ApiParams):
         super().__init__(params)
         self.mt = "movie" if self.params.media_type == MediaType.MOVIES else "tv"

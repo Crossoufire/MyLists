@@ -3,10 +3,10 @@ from typing import Optional, Dict
 
 from backend.api.core.errors import log_error
 from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
-from backend.api.services.api.providers.base.base_caller import BaseApiCaller
+from backend.api.services.api.providers.base.base_caller import BaseApiCaller, UpdateTokenCaller
 
 
-class GamesApiCaller(BaseApiCaller):
+class GamesApiCaller(BaseApiCaller, UpdateTokenCaller):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
@@ -35,13 +35,8 @@ class GamesApiCaller(BaseApiCaller):
         response = self.call(self.params.main_url, "post", data=body, headers=self.headers)
         return json.loads(response.text)[0]
 
-    def trending(self) -> Dict:
-        raise NotImplementedError("The Games does not have trending data")
-
     def update_token(self) -> Optional[str]:
         """ Update the IGDB API Token. Backend needs to restart to update the <env> variable. """
-
-        super().update_token()
 
         try:
             response = self.call(
@@ -51,10 +46,6 @@ class GamesApiCaller(BaseApiCaller):
             )
             data = json.loads(response.text)
             new_igdb_token = data["access_token"]
-
             return new_igdb_token
         except Exception as e:
             log_error(e)
-
-    def changed_api_ids(self):
-        raise NotImplementedError("The Games does not used the API to fetch the changed API ids")

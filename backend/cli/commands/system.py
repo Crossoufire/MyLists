@@ -2,9 +2,10 @@ import click
 from flask import current_app
 
 from backend.api.utils.enums import MediaType
+from backend.cli.managers.user import CLIUserManager
 from backend.cli.managers.media import CLIMediaManager
 from backend.cli.managers.system import CLISystemManager
-from backend.cli.managers.user import CLIUserManager
+from backend.cli.managers.achievements import CLIAchievementManager
 
 
 system_manager = CLISystemManager()
@@ -59,6 +60,9 @@ def scheduled_tasks():
 
     CLIMediaManager.compute_all_time_spent()
     CLIMediaManager.compute_all_users_stats()
+
+    achievement_manager = CLIAchievementManager()
+    achievement_manager.calculate_achievements(code_names="all", user_ids="active")
 
     system_manager.update_global_stats()
     system_manager.vacuum_sqlite_db()

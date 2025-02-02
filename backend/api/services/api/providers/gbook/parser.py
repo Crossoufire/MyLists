@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from flask import url_for
 
@@ -60,18 +60,12 @@ class BooksApiParser(BaseApiParser):
             authors_data=[{"name": author} for author in get(volume_info, "authors", default=[])],
         )
 
-    def trending_parser(self, trending_data: Dict) -> List[Dict]:
-        raise NotImplementedError("The Books does not have trending data")
-
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
         volume_info = details_data.get("volumeInfo")
         cover_url = get(volume_info, "imageLinks", "large")
         if not cover_url:
             cover_url = get(volume_info, "imageLinks", "medium")
         return cover_url
-
-    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
-        raise NotImplementedError("The Books does not update the api ids")
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)
@@ -98,6 +92,8 @@ class BooksApiParser(BaseApiParser):
             if data_list:
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
+
+    # --- UTILS ------------------------------------------------------------
 
     def _common_add_update(self, data: Dict) -> Tuple[Dict, Dict]:
         models = ModelsManager.get_dict_models(self.params.media_type, "all")

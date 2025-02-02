@@ -11,9 +11,6 @@ from backend.api.services.api.factory import ApiServiceFactory
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 
 
-api_s_factory = ApiServiceFactory()
-
-
 class MediaTests(BaseTest):
     TOO_LONG_COMMENT = "test" * 1000
 
@@ -28,7 +25,7 @@ class MediaTests(BaseTest):
                 media_dict["last_api_update"] = naive_utcnow()
 
             # noinspection PyTypeChecker
-            api_service = api_s_factory.create(media_type)
+            api_service = ApiServiceFactory.create(media_type)
             api_service.save_media_to_db_from_json({"media_data": media_dict})
 
     def _add_media(self, media_type: str, media_id: int, status: str, time_spent: float) -> Dict:

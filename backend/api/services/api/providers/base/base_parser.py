@@ -1,7 +1,7 @@
 import secrets
 from io import BytesIO
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Protocol
 
 from backend.api import db
 from backend.api.utils.functions import resize_and_save_image
@@ -9,7 +9,15 @@ from backend.api.services.api.providers.base.base_extra import BaseApiExtra
 from backend.api.services.api.data_classes import ParsedSearch, ApiParams, ApiSearchResult
 
 
-class BaseApiParser(ABC):
+class ChangedApiIdsParserProtocol(Protocol):
+    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]: ...
+
+
+class TrendingParserProtocol(Protocol):
+    def trending_parser(self, trending_data: Dict) -> List[Dict]: ...
+
+
+class BaseApiParser(ABC, ChangedApiIdsParserProtocol, TrendingParserProtocol):
     def __init__(self, params: ApiParams):
         self.params = params
 
@@ -21,11 +29,6 @@ class BaseApiParser(ABC):
     @abstractmethod
     def details_parser(self, details: Dict, cover_name: str, extra: Optional[BaseApiExtra] = None, bulk: bool = False) -> Dict:
         """ Parse the details, with additional cover_name, and extra if any, as a dict """
-        pass
-
-    @abstractmethod
-    def trending_parser(self, trending_data: Dict) -> List[Dict]:
-        """ Parse the trending data as a list of dict """
         pass
 
     @abstractmethod
@@ -42,11 +45,6 @@ class BaseApiParser(ABC):
     def update_to_db(self, api_id: int | str, data: Dict):
         pass
 
-    @abstractmethod
-    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
-        """ Get the ids for update from the database """
-        pass
-
     def save_cover_to_disk(self, image_bytes: Optional[BytesIO]) -> str:
         """ Save the image data to disk and return the saved cover name """
 
@@ -56,3 +54,17 @@ class BaseApiParser(ABC):
 
         resize_and_save_image(image_bytes, f"{self.params.local_cover_path}/{cover_name}")
         return cover_name
+
+
+class ChangedApiIdsParser(ABC):
+    @abstractmethod
+    def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
+        """ Get the ids for update from the database """
+        pass
+
+
+class TrendingParser(ABC):
+    @abstractmethod
+    def trending_parser(self, trending_data: Dict) -> List[Dict]:
+        """ Parse the trending data as a list of dict """
+        pass

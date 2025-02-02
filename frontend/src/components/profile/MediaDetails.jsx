@@ -31,10 +31,10 @@ export const MediaDetails = ({ mediaData, userData }) => {
                             </TabsTrigger>
                         )}
                     </TabsList>
-                    {mediaData.map(mt =>
-                        <TabsContent key={mt.media_type} value={mt.media_type}>
+                    {mediaData.map(media =>
+                        <TabsContent key={media.media_type} value={media.media_type}>
                             <MediaStats
-                                media={mt}
+                                media={media}
                                 user={userData}
                             />
                         </TabsContent>

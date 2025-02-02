@@ -14,7 +14,6 @@ class CLISystemManager(CLIBaseManager):
         """ Cache key names format taken from `backend.api.utils.functions.make_cache_key` """
 
         stats_service = MediaStatsService()
-
         for media_type in MediaType:
             # noinspection PyTypeChecker
             stats = stats_service.get_stats(media_type=media_type)
@@ -25,10 +24,7 @@ class CLISystemManager(CLIBaseManager):
 
         stats = stats_service.get_stats(media_type=None)
         stats["rating_system"] = "score"
-        data = dict(
-            stats=stats,
-            settings=[{"media_type": m} for m in list(MediaType)],
-        )
+        data = dict(stats=stats, settings=[{"media_type": m} for m in list(MediaType)])
         cache.set("stats_global", jsonify(data=data), timeout=86400)
         self.log_info("`stats_global` key successfully updated")
         self.log_success("Global Stats successfully updated :)")
@@ -36,8 +32,7 @@ class CLISystemManager(CLIBaseManager):
     @with_console_status("Updating IGDB token...")
     def update_igdb_token(self):
         with current_app.app_context():
-            api_s_factory = ApiServiceFactory()
-            api_service = api_s_factory.create(MediaType.GAMES)
+            api_service = ApiServiceFactory.create(MediaType.GAMES)
             new_igdb_token = api_service.update_api_token(current_app.config["IGDB_API_KEY"])
             if new_igdb_token is None:
                 self.log_error("IGDB API token could not be updated.")

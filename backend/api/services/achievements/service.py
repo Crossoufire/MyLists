@@ -19,9 +19,6 @@ from backend.api.services.achievements.seeds.series_seed import series_achieveme
 from backend.api.models.achievements import UserAchievement, Achievement, AchievementTier
 
 
-achievement_calc_factory = AchievementCalculatorFactory()
-
-
 class AchievementService:
     def calculate_achievements(self, code_name: Optional[str], user_ids: Optional[List[int]], callback: Optional[Callable] = None):
         query = Achievement.query
@@ -36,7 +33,7 @@ class AchievementService:
                 callback((i + 1) / total_achievements)
 
     def _calculate_achievement(self, achievement: Achievement, user_ids: Optional[List[int]] = None):
-        calculator = achievement_calc_factory.create(achievement.code_name)
+        calculator = AchievementCalculatorFactory.create(achievement.code_name)
         subquery = calculator.calculate(achievement, user_ids)
         self._execute_statements(achievement, subquery)
 
@@ -60,7 +57,7 @@ class AchievementService:
 
     @staticmethod
     def get_code_names() -> Dict[str, MediaType]:
-        return achievement_calc_factory._code_name_to_media_type
+        return AchievementCalculatorFactory._code_name_to_media_type
 
     @staticmethod
     def calculate_achievements_rarity():

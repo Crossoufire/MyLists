@@ -1,5 +1,5 @@
-from sqlalchemy import func, case, and_, select
 from flask import Blueprint, jsonify, request
+from sqlalchemy import func, case, and_, select
 
 from backend.api.core import current_user
 from backend.api import cache, limiter, db
@@ -14,7 +14,7 @@ from backend.api.utils.functions import global_limiter, make_cache_key
 
 
 general = Blueprint("api_general", __name__)
-api_s_factory = ApiServiceFactory()
+api_s_factory = ApiServiceFactory
 
 
 @general.route("/current_trends", methods=["GET"])
@@ -121,7 +121,7 @@ def hall_of_fame(args):
         db.session.query(
             UserMediaSettings.media_type,
             func.count(UserMediaSettings.user_id).label("active_users"),
-        ).filter(UserMediaSettings.time_spent > 0)
+        ).filter(UserMediaSettings.time_spent > 0, UserMediaSettings.active == True)
         .group_by(UserMediaSettings.media_type)
         .all()
     )
@@ -139,11 +139,22 @@ def hall_of_fame(args):
 
     user_ranks = []
     for i, media_type in enumerate(MediaType, start=1):
-        media_type_count = media_type_count_dict.get(media_type, 0)
+        mt_count = media_type_count_dict.get(media_type, 0)
+
+        if mt_count == 0:
+            percent = None
+        elif mt_count == 1 and current_user_ranks[i] == 1:
+            percent = 100
+        elif current_user_ranks[i] > mt_count:
+            percent = None
+        else:
+            percent = (current_user_ranks[i] / mt_count) * 100
+
         user_ranks.append(dict(
             media_type=media_type,
+            active=current_user.get_media_setting(media_type).active,
             rank=current_user_ranks[i],
-            percent=(current_user_ranks[i] / media_type_count) * 100 if media_type_count else 100,
+            percent=percent,
         ))
 
     items = []

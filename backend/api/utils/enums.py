@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict
 from enum import StrEnum
 
 
@@ -83,32 +83,20 @@ class Status(StrEnum):
     PLAN_TO_PLAY = "Plan to Play"
 
     @classmethod
-    def movies(cls):
-        return [cls.COMPLETED, cls.PLAN_TO_WATCH]
-
-    @classmethod
-    def tv(cls):
-        return [cls.WATCHING, cls.COMPLETED, cls.ON_HOLD, cls.RANDOM, cls.DROPPED, cls.PLAN_TO_WATCH]
-
-    @classmethod
-    def books(cls):
-        return [cls.READING, cls.COMPLETED, cls.ON_HOLD, cls.DROPPED, cls.PLAN_TO_READ]
-
-    @classmethod
-    def games(cls):
-        return [cls.PLAYING, cls.COMPLETED, cls.MULTIPLAYER, cls.ENDLESS, cls.DROPPED, cls.PLAN_TO_PLAY]
-
-    @classmethod
     def by(cls, media_type: MediaType):
-        mapping = {
-            MediaType.SERIES: cls.tv(),
-            MediaType.ANIME: cls.tv(),
-            MediaType.MOVIES: cls.movies(),
-            MediaType.BOOKS: cls.books(),
-            MediaType.GAMES: cls.games(),
-            MediaType.MANGA: cls.books(),
-        }
-        return mapping[media_type]
+        return StatusManager.get_status_by_media_type(media_type)
+
+
+class StatusManager:
+    _status_mapping: Dict[MediaType, List[Status]] = {}
+
+    @classmethod
+    def init_status_mapping(cls, media_type: MediaType, status_list: List[Status]):
+        cls._status_mapping[media_type] = status_list
+
+    @classmethod
+    def get_status_by_media_type(cls, media_type: MediaType) -> List[Status]:
+        return cls._status_mapping[media_type]
 
 
 class JobType(StrEnum):
@@ -244,4 +232,5 @@ class SearchSelector(StrEnum):
     TMDB = "tmdb"
     BOOKS = "books"
     IGDB = "igdb"
+    MANGA = "manga"
     USERS = "users"

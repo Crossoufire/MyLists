@@ -5,6 +5,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import timedelta
+import time
 from typing import List, Type, Tuple, Optional, cast
 
 from flask import current_app
@@ -13,11 +14,11 @@ from sqlalchemy import func, update, case
 
 from backend.api import db
 from backend.api.core.errors import log_error
-from backend.api.services.api.factory import ApiServiceFactory
-from backend.api.services.api.service import ApiService
 from backend.api.utils.functions import naive_utcnow
 from backend.cli.managers._base import CLIBaseManager
+from backend.api.services.api.service import ApiService
 from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.services.api.factory import ApiServiceFactory
 from backend.api.utils.enums import MediaType, ModelTypes, NotificationType, Status
 from backend.api.models.user import UserMediaUpdate, Notifications, UserMediaSettings
 
@@ -94,9 +95,8 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
     # noinspection PyTypeChecker
     @classmethod
     def bulk_all_media_refresh(cls):
-        api_s_factory = ApiServiceFactory()
         for media_type in list(MediaType):
-            api_service = api_s_factory.create(media_type)
+            api_service = ApiServiceFactory.create(media_type)
             media_manager = cls.get_manager(media_type)
             media_manager()._bulk_media_refresh(media_type, api_service)
 
@@ -421,6 +421,8 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         self.log_info(f"There are {len(api_ids_to_refresh)} '{media_type}' API ids to refresh")
         for api_id in api_ids_to_refresh:
             try:
+                if media_type == MediaType.MANGA:
+                    time.sleep(0.5)
                 api_service.update_media_to_db(api_id=api_id, bulk=True)
                 self.log_success(f"'{media_type}' [API ID {api_id}] successfully refreshed")
             except Exception as e:
@@ -458,15 +460,10 @@ class CLIMediaManager(CLIBaseManager, metaclass=CLIMediaManagerMeta):
         self.log_info(f"There are {len(media_to_delete)} '{self.GROUP.value}' to delete")
         media_ids = [media.id for media in media_to_delete]
 
+        UserMediaUpdate.query.filter(UserMediaUpdate.media_type == self.GROUP, UserMediaUpdate.media_id.in_(media_ids)).delete()
+        Notifications.query.filter(Notifications.media_type == self.GROUP, Notifications.media_id.in_(media_ids)).delete()
+
         self.media_genre.query.filter(self.media_genre.media_id.in_(media_ids)).delete()
-        UserMediaUpdate.query.filter(
-            UserMediaUpdate.media_type == self.GROUP,
-            UserMediaUpdate.media_id.in_(media_ids)
-        ).delete()
-        Notifications.query.filter(
-            Notifications.media_type == self.GROUP,
-            Notifications.media_id.in_(media_ids)
-        ).delete()
         self.media_label.query.filter(self.media_label.media_id.in_(media_ids)).delete()
         self.media.query.filter(self.media.id.in_(media_ids)).delete()
 
@@ -678,6 +675,7 @@ class CLIMangaManager(CLIMediaManager):
         media_ids = super()._remove_non_list_media()
         if not media_ids:
             return
+        self.media_authors.query.filter(self.media_authors.media_id.in_(media_ids)).delete()
         db.session.commit()
         self.log_success(f"Non-list 'Manga' successfully deleted")
 
