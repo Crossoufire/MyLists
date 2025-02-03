@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify
 
 from backend.api.models.user import User
 from backend.api import limiter, MediaType
-from backend.api.core.auth import token_auth
+from backend.api.core.security import token_auth
 from backend.api.utils.decorators import arguments
 from backend.api.schemas.search import SearchSchema
 from backend.api.utils.functions import global_limiter

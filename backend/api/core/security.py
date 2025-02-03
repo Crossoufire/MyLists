@@ -24,7 +24,7 @@ def get_user_roles(user: User) -> RoleType:
 
 
 @token_auth.verify_token
-def verify_token(access_token: str) -> Optional[str]:
+def verify_token(access_token: str) -> Optional[User]:
     return User.verify_access_token(access_token) if access_token else None
 
 

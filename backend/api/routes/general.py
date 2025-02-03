@@ -3,7 +3,7 @@ from sqlalchemy import func, case, and_, select
 
 from backend.api.core import current_user
 from backend.api import cache, limiter, db
-from backend.api.core.auth import token_auth
+from backend.api.core.security import token_auth
 from backend.api.utils.enums import MediaType
 from backend.api.utils.decorators import arguments
 from backend.api.models import UserMediaSettings, User

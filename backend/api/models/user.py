@@ -278,14 +278,13 @@ class User(db.Model):
         return new_user
 
     @staticmethod
-    def verify_access_token(access_token: str) -> User:
+    def verify_access_token(access_token: str) -> Optional[User]:
         # noinspection PyTypeChecker
         token = db.session.scalar(select(Token).where(Token.access_token == access_token))
-        if token:
-            if token.access_expiration > naive_utcnow():
-                token.user.ping()
-                db.session.commit()
-                return token.user
+        if token and token.access_expiration > naive_utcnow():
+            token.user.ping()
+            db.session.commit()
+            return token.user
 
     @staticmethod
     def verify_refresh_token(refresh_token: str, access_token: str) -> Optional[Token]:
