@@ -176,7 +176,6 @@ class CLIUserDemoManager(CLIBaseManager):
 
     def __init__(self, profile: DemoProfile = DEMO_PROFILE):
         super().__init__()
-
         self.user = None
         self.profile = profile
 

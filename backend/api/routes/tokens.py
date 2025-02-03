@@ -70,9 +70,8 @@ def refresh(data):
     The `access token` must be passed in the request body.
     """
 
-    is_mobile = request.headers.get("X-Is-Mobile")
-    access_token = data["access_token"]
-    refresh_token = request.cookies.get("refresh_token") if is_mobile != "true" else data["refresh_token"]
+    access_token = data.get("access_token")
+    refresh_token = request.cookies.get("refresh_token")
     if not access_token or not refresh_token:
         return abort(401, description="Invalid access or refresh token")
 

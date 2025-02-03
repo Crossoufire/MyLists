@@ -4,7 +4,7 @@ from backend.api import ma
 
 
 class TokenSchema(ma.Schema):
-    access_token = ma.String(required=True)
+    access_token = ma.String(load_default=None)
     refresh_token = ma.String(load_default=None)
 
 

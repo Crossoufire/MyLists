@@ -11,7 +11,7 @@ from backend.api.utils.decorators import body
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.services.api.factory import ApiServiceFactory
 from backend.api.utils.enums import MediaType, RoleType, ModelTypes, JobType
-from backend.api.utils.functions import get, format_datetime, resize_and_save_image
+from backend.api.utils.functions import get, format_datetime, resize_and_save_image, fetch_cover
 
 
 details_bp = Blueprint("api_details", __name__)
@@ -112,7 +112,7 @@ def post_details_edit(data):
         picture_path = Path(current_app.root_path, f"static/covers/{data['media_type'].value}_covers", picture_fn)
         try:
             from backend.api.services.api.providers.base import BaseApiCaller
-            image_data = BaseApiCaller.fetch_cover(str(updates["image_cover"]))
+            image_data = fetch_cover(str(updates["image_cover"]))
             resize_and_save_image(image_data, str(picture_path))
         except:
             return abort(403, description="This cover could not be added. Try another one.")

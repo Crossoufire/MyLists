@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 
 from flask import url_for
-from sqlalchemy import or_
 
 from backend.api import MediaType, db
 from backend.api.utils.enums import ModelTypes
@@ -96,9 +95,8 @@ class MangaApiParser(BaseApiParser, ChangedApiIdsParser):
     def get_ids_for_update(self, api_ids: Optional[List[int]] = None) -> List[int]:
         model = ModelsManager.get_unique_model(self.params.media_type, ModelTypes.MEDIA)
         query = model.query.with_entities(model.api_id).filter(
-            or_(model.release_date > naive_utcnow(), model.release_date.is_(None)),
             model.last_api_update < naive_utcnow() - timedelta(days=7),
-            model.prod_status == "Publishing",
+            model.prod_status.in_(["Publishing", "On Hiatus"]),
         ).all()
         return [int(manga_id[0]) for manga_id in query]
 

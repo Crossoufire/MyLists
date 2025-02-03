@@ -1,7 +1,6 @@
 import click
 from flask import current_app
 
-from backend.api.utils.enums import MediaType
 from backend.cli.managers.user import CLIUserManager
 from backend.cli.managers.media import CLIMediaManager
 from backend.cli.managers.system import CLISystemManager
@@ -54,9 +53,7 @@ def scheduled_tasks():
     CLIMediaManager.remove_all_old_media_covers()
     CLIMediaManager.bulk_all_media_refresh()
     CLIMediaManager.add_all_media_notifications()
-
-    media_manager = CLIMediaManager.get_manager(MediaType.MOVIES)
-    media_manager().automatic_locking()
+    CLIMediaManager.movies_automatic_locking()
 
     CLIMediaManager.compute_all_time_spent()
     CLIMediaManager.compute_all_users_stats()

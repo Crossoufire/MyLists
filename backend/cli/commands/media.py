@@ -42,8 +42,7 @@ def add_notifications():
 @media_cli.command()
 def movies_locking():
     """ Lock old movies. """
-    media_manager = CLIMediaManager.get_manager(MediaType.MOVIES)
-    media_manager().automatic_locking()
+    CLIMediaManager.movies_automatic_locking()
 
 
 @media_cli.command()

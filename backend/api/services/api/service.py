@@ -4,6 +4,7 @@ from dataclasses import asdict
 from typing import Optional, List, Dict
 
 from backend.api import db
+from backend.api.utils.functions import fetch_cover
 from backend.api.services.api.strategies.changes import ChangeDetectionStrategy
 from backend.api.services.api.providers.base import BaseApiParser, BaseApiCaller, BaseApiExtra
 
@@ -68,7 +69,7 @@ class ApiService:
         cover_url = self.api_parser.parse_cover_url(details_data)
 
         # Fetch cover image as bytes
-        image_bytes = self.api_caller.fetch_cover(cover_url)
+        image_bytes = fetch_cover(cover_url)
 
         # Save cover image to disk
         cover_saved_name = self.api_parser.save_cover_to_disk(image_bytes)

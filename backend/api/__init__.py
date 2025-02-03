@@ -88,7 +88,7 @@ def create_mail_handler(logger: logging.Logger, config: flask.Config):
     logger.addHandler(mail_handler)
 
 
-def create_db_and_setup_pragma(app: Flask):
+def setup_app_and_db(app: Flask):
     """ On app starts: create tables and change pragmas. """
 
     from sqlalchemy import event
@@ -104,10 +104,11 @@ def create_db_and_setup_pragma(app: Flask):
         covers_folder = os.path.join(covers_dir, f"{media_type}_covers")
         os.makedirs(covers_folder, exist_ok=True)
 
+    # Create all tables
     db.create_all()
 
     def configure_sqlite(dbapi_connection, _connection_record):
-        """ Configure SQLite database to use WAL mode and NORMAL synchronous mode. """
+        """ Configure SQLite database PRAGMA """
 
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=DELETE")
@@ -133,13 +134,15 @@ def init_media_services():
 
 
 def refresh_database():
-    """ On app starts execute refreshing functions. """
+    """ On app starts execute refreshing functions """
 
     from backend.cli.managers.media import CLIMediaManager
     from backend.cli.managers.system import CLISystemManager
+    from backend.cli.managers.achievements import CLIAchievementManager
 
     CLIMediaManager.compute_all_time_spent()
     CLIMediaManager.compute_all_users_stats()
+    CLIAchievementManager().calculate_achievements(code_names="all", user_ids="all")
     CLISystemManager().update_global_stats()
 
 
@@ -165,7 +168,7 @@ def create_app(config_class: Type[Config] = None) -> Flask:
 
     with app.app_context():
         register_cli_commands()
-        create_db_and_setup_pragma(app)
+        setup_app_and_db(app)
         import_blueprints(app)
         init_media_services()
 
