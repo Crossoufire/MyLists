@@ -153,7 +153,8 @@ def add_manga_settings():
 
     users = User.query.all()
     for user in users:
-        if not user.get_media_setting(MediaType.MANGA):
+        manga_setting = [setting for setting in user.settings if setting.media_type == MediaType.MANGA]
+        if not manga_setting:
             new_user_media_settings = UserMediaSettings(
                 user_id=user.id,
                 media_type=MediaType.MANGA,
