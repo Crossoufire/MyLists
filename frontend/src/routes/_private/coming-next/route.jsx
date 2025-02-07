@@ -1,4 +1,4 @@
-import {upcomingOptions} from "@/api/queryOptions";
+import {upcomingOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

@@ -1,13 +1,13 @@
+import {useMediaMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {EpsSeasonsDrop} from "@/components/media-user/EpsSeasonsDrop";
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updateSeason, updateEpisode, updateStatusFunc } = userMediaMutations(
+    const { updateRedo, updateRating, updateSeason, updateEpisode, updateStatusFunc } = useMediaMutations(
         mediaType, userMedia.media_id, queryKey
     );
 

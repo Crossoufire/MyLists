@@ -24,6 +24,10 @@ main {
     flex: 1;
 }
 
+
+/* --- SCROLLBAR ------------------------------------------------------------------------------------------ */
+
+
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -38,54 +42,6 @@ main {
 
 ::-webkit-scrollbar-track {
     background-color: #3d3d3d;
-}
-
-.text-user {
-    color: #6e6e6e;
-}
-
-.text-series {
-    color: #216e7d;
-}
-
-.text-anime {
-    color: #945141;
-}
-
-.text-movies {
-    color: #8c7821;
-}
-
-.text-books {
-    color: #584c6e;
-}
-
-.text-games {
-    color: #196219;
-}
-
-.bg-user {
-    color: #6e6e6e;
-}
-
-.bg-series {
-    background: #216e7d;
-}
-
-.bg-anime {
-    background: #945141;
-}
-
-.bg-movies {
-    background: #8c7821;
-}
-
-.bg-books {
-    background: #584c6e;
-}
-
-.bg-games {
-    background: #196219;
 }
 
 
@@ -129,24 +85,6 @@ main {
     position: absolute;
 }
 
-@-webkit-keyframes nprogress-spinner {
-    0% {
-        -webkit-transform: rotate(0deg);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-    }
-}
-
-@keyframes nprogress-spinner {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
 
 /* --- TAILWIND ------------------------------------------------------------------------------------------- */
 
@@ -186,8 +124,6 @@ main {
         --foreground: 0 0% 98%;
         --card: 206 18% 10%;
         --card-foreground: 0 0% 89%;
-        /*--card: 0 0% 3.9%;*/
-        /*--card-foreground: 0 0% 98%;*/
         --popover: 0 0% 3.9%;
         --popover-foreground: 0 0% 98%;
         --primary: 0 0% 98%;

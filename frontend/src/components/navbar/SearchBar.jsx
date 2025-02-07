@@ -1,16 +1,15 @@
-import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
-import {useDebounce} from "@/hooks/DebounceHook";
+import {useDebounce} from "@/hooks/useDebounce";
+import {navSearchOptions, useAuth} from "@/api";
 import {useEffect, useRef, useState} from "react";
-import {LuLoader2, LuSearch} from "react-icons/lu";
+import {LoaderCircle, Search} from "lucide-react";
 import {useSheet} from "@/providers/SheetProvider";
-import {navSearchOptions} from "@/api/queryOptions";
 import {Separator} from "@/components/ui/separator";
+import {useOnClickOutside} from "@/hooks/useClickedOutside";
 import {capitalize, formatDateTime} from "@/utils/functions";
-import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -22,7 +21,7 @@ export const SearchBar = () => {
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
-    const [selectDrop, setSelectDrop] = useState(currentUser.search_selector);
+    const [selectDrop, setSelectDrop] = useState(currentUser.search_selector || "tmdb");
     const { data, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
@@ -46,7 +45,7 @@ export const SearchBar = () => {
     return (
         <div ref={commandRef}>
             <div className="relative mr-2 ml-2">
-                <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                 <Input
                     value={search}
                     onChange={handleInputChange}
@@ -60,9 +59,10 @@ export const SearchBar = () => {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {<SelectItem value="tmdb">Media</SelectItem>}
-                                {currentUser.settings.books.active && <SelectItem value="books">Books</SelectItem>}
-                                {currentUser.settings.games.active && <SelectItem value="igdb">Games</SelectItem>}
+                                <SelectItem value="tmdb">Media</SelectItem>
+                                {currentUser.settings.find(s => s.media_type === "books").active && <SelectItem value="books">Books</SelectItem>}
+                                {currentUser.settings.find(s => s.media_type === "games").active && <SelectItem value="igdb">Games</SelectItem>}
+                                {currentUser.settings.find(s => s.media_type === "manga").active && <SelectItem value="manga">Manga</SelectItem>}
                                 <SelectItem value="users">Users</SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -75,7 +75,7 @@ export const SearchBar = () => {
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
                                 <div className="flex items-center justify-center p-4">
-                                    <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                    <LoaderCircle className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
                             {error && (

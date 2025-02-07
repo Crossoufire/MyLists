@@ -1,19 +1,20 @@
 import json
 
-from flask import Blueprint, request, jsonify, abort, current_app
 from flask_bcrypt import generate_password_hash
+from flask import Blueprint, request, jsonify, abort, current_app
 
 from backend.api import db
-from backend.api.core import current_user, token_auth
 from backend.api.core.email import send_email
+from backend.api.core import current_user, token_auth
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models import UserAchievement, Achievement
+from backend.api.services.stats.delta import DeltaStatsService
+from backend.api.utils.decorators import arguments, body, check_authorization
+from backend.api.utils.functions import format_to_download_as_csv, save_picture
+from backend.api.models import UserAchievement, Achievement, MediadleStats, UserMediadleProgress
+from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector, RatingSystem
 from backend.api.models.user import Notifications, User, Token, followers, UserMediaUpdate, UserMediaSettings
 from backend.api.schemas.users import (HistorySchema, UpdateFollowSchema, RegisterUserSchema, PasswordSchema, ListSettingsSchema,
                                        GeneralSettingsSchema)
-from backend.api.utils.decorators import arguments, body, check_authorization
-from backend.api.utils.enums import ModelTypes, NotificationType, MediaType, SearchSelector
-from backend.api.utils.functions import format_to_download_as_csv, save_picture
 
 
 users = Blueprint("api_users", __name__)
@@ -59,26 +60,20 @@ def profile(user: User):
         user.profile_views += 1
         db.session.commit()
 
-    active_media_types = [setting.media_type for setting in user.settings if setting.active]
-    user_updates = user.get_last_updates(limit=6)
-    follows_updates = user.get_follows_updates(limit=10, as_public=True if not current_user else False)
-    list_levels = user.get_list_levels()
-    media_global = user.get_global_media_stats()
-    models = ModelsManager.get_lists_models(active_media_types, ModelTypes.LIST)
-    media_data = [user.get_one_media_details(model.GROUP) for model in models]
-    summary = UserAchievement.get_total_only_summary(user.id)
-    details = Achievement.get_achievements_with_user(user.id, limit=6)
+    ds_service = DeltaStatsService()
 
     data = dict(
         user_data=user.to_dict(),
-        user_updates=user_updates,
+        user_updates=user.get_last_updates(limit=6),
         follows=user.get_follows(limit=8),
-        follows_updates=follows_updates,
+        follows_updates=user.get_follows_updates(limit=10, as_public=True if not current_user else False),
         is_following=False if not current_user else current_user.is_following(user),
-        list_levels=list_levels,
-        media_global=media_global,
-        media_data=media_data,
-        achievements={"summary": summary, "details": details},
+        media_global=ds_service.compute_media_stats(user.settings),
+        media_data=ds_service.compute_media_summaries(user.settings),
+        achievements=dict(
+            summary=UserAchievement.get_difficulty_summary(user.id),
+            details=Achievement.get_user_achievements(user.id, limit=6),
+        ),
     )
 
     return jsonify(data=data), 200
@@ -221,13 +216,13 @@ def settings_medialist(data):
     if data["search_selector"] is not None:
         current_user.search_selector = SearchSelector(data["search_selector"])
 
-    if data["add_feeling"] is not None:
-        current_user.add_feeling = data["add_feeling"]
+    if data["rating_system"] is not None:
+        current_user.rating_system = RatingSystem(data["rating_system"])
 
     if data["grid_list_view"] is not None:
         current_user.grid_list_view = data["grid_list_view"]
 
-    for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS]:
+    for media_type in [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS, MediaType.MANGA]:
         setting_key = f"add_{media_type.value.lower()}"
         if data[setting_key] is not None:
             setting = current_user.get_media_setting(media_type)
@@ -285,24 +280,31 @@ def achievements(user: User):
 
 
 def delete_user_account(user_id: int):
-    Token.query.filter_by(user_id=user_id).delete()
-    User.query.filter_by(id=user_id).delete()
+    try:
+        Token.query.filter_by(user_id=user_id).delete()
+        User.query.filter_by(id=user_id).delete()
 
-    db.session.query(followers).filter(
-        (followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)
-    ).delete()
+        db.session.query(followers).filter(
+            (followers.c.follower_id == user_id) | (followers.c.followed_id == user_id)
+        ).delete()
 
-    UserMediaUpdate.query.filter_by(user_id=user_id).delete()
-    Notifications.query.filter_by(user_id=user_id).delete()
-    UserMediaSettings.query.filter_by(user_id=user_id).delete()
+        UserMediaUpdate.query.filter_by(user_id=user_id).delete()
+        Notifications.query.filter_by(user_id=user_id).delete()
+        UserMediaSettings.query.filter_by(user_id=user_id).delete()
+        MediadleStats.query.filter_by(user_id=user_id).delete()
+        UserMediadleProgress.query.filter_by(user_id=user_id).delete()
+        UserAchievement.query.filter_by(user_id=user_id).delete()
 
-    models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
-    for model in models.values():
-        model.query.filter_by(user_id=user_id).delete()
+        models = ModelsManager.get_dict_models("all", ModelTypes.LIST)
+        for model in models.values():
+            model.query.filter_by(user_id=user_id).delete()
 
-    models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
-    for model in models_labels.values():
-        model.query.filter_by(user_id=user_id).delete()
+        models_labels = ModelsManager.get_dict_models("all", ModelTypes.LABELS)
+        for model in models_labels.values():
+            model.query.filter_by(user_id=user_id).delete()
 
-    db.session.commit()
-    current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted")
+        db.session.commit()
+        current_app.logger.info(f"The account [ID = {user_id}] has been successfully deleted")
+    except:
+        db.session.rollback()
+        current_app.logger.error(f"Failed to delete account [ID = {user_id}]")

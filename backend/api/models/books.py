@@ -6,7 +6,6 @@ from flask import abort
 from sqlalchemy import func
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
@@ -29,11 +28,11 @@ class Books(Media):
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        media_dict.update(dict(
-            media_cover=self.media_cover,
-            authors=[author.name for author in self.authors],
-            genres=self.genres_list,
-        ))
+        media_dict.update({
+            "media_cover": self.media_cover,
+            "authors": [author.name for author in self.authors],
+            "genres": self.genres_list,
+        })
 
         return media_dict
 
@@ -53,7 +52,7 @@ class Books(Media):
         return total_read
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = (
                 cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
@@ -62,14 +61,7 @@ class Books(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(BooksList)
-            .filter(BooksList.user_id == current_user.id, BooksList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:
@@ -91,32 +83,22 @@ class BooksList(MediaList):
     media = db.relationship("Books", back_populates="list_info", lazy="joined")
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        del media_dict["feeling"]
-        del media_dict["score"]
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-        media_dict["total_pages"] = self.media.pages
-        media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["rating"] = {
-            "type": "feeling" if is_feeling else "score",
-            "value": self.feeling if is_feeling else self.score
-        }
+        media_dict.update({
+            "media_cover": self.media.media_cover,
+            "media_name": self.media.name,
+            "total_pages": self.media.pages,
+            "all_status": Status.by(self.GROUP),
+            "rating": {
+                "type": self.user.rating_system,
+                "value": self.rating,
+            }
+        })
 
         return media_dict
-
-    def update_total(self, new_redo: int) -> int:
-        self.redo = new_redo
-        new_total = self.media.pages + (new_redo * self.media.pages)
-        self.total = new_total
-
-        return new_total
 
     def update_status(self, new_status: Status) -> int:
         new_total = self.total
@@ -134,19 +116,22 @@ class BooksList(MediaList):
 
         return new_total
 
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value) * self.TIME_PER_PAGE
+    def update_total(self, new_redo: int) -> int:
+        self.redo = new_redo
+        new_total = self.media.pages + (new_redo * self.media.pages)
+        self.total = new_total
+
+        return new_total
 
     @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict:
+    def get_available_sorting(cls) -> Dict:
         sorting_dict = {
             "Title A-Z": Books.name.asc(),
             "Title Z-A": Books.name.desc(),
             "Published date +": Books.release_date.desc(),
             "Published date -": Books.release_date.asc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "Rating +": cls.rating.desc(),
+            "Rating -": cls.rating.asc(),
             "Re-read": cls.redo.desc(),
         }
         return sorting_dict
@@ -165,17 +150,17 @@ class BooksGenre(Genres):
     media = db.relationship("Books", back_populates="genres", lazy="select")
 
     @classmethod
-    def replace_genres(cls, genres: List[Dict], media_id: int):
+    def replace_genres(cls, genres_list: List[str], media_id: int):
         cls.query.filter_by(media_id=media_id).delete()
-        db.session.add_all([cls(media_id=media_id, name=genre["value"]) for genre in genres])
+        db.session.add_all([cls(media_id=media_id, name=genre) for genre in genres_list])
         db.session.commit()
 
     @staticmethod
     def get_available_genres() -> List[str]:
         return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
-                "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
-                "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
-                "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
+                "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
+                "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
+                "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
 
 
 class BooksAuthors(db.Model):

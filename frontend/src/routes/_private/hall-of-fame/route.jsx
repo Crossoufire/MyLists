@@ -1,4 +1,4 @@
-import {hallOfFameOptions} from "@/api/queryOptions";
+import {hallOfFameOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

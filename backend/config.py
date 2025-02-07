@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from dotenv import load_dotenv
@@ -5,6 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 basedir = os.path.abspath(os.path.dirname(__file__))
+default_db_uri = f"sqlite:///{os.path.join(basedir, 'instance', 'site.db')}"
 
 
 def as_bool(value: str) -> bool:
@@ -21,15 +24,12 @@ class Config:
     USER_ACTIVE_PER_DEFAULT = False
 
     # Demo Profile options
-    DEMO_USERNAME = "DemoProfile"
     DEMO_EMAIL = "demo@demo.com"
+    DEMO_USERNAME = "DemoProfile"
     DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo-password"
 
     # Database options
-    SQLALCHEMY_DATABASE_URI = (
-            os.environ.get("MYLISTS_DATABASE_URI") or
-            f"sqlite:///{os.path.join(basedir + '/instance', 'site.db')}"
-    )
+    SQLALCHEMY_DATABASE_URI = (os.environ.get("MYLISTS_DATABASE_URI") or default_db_uri)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
 

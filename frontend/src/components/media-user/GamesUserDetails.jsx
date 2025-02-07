@@ -1,18 +1,18 @@
 import {cn} from "@/utils/functions";
+import {useMediaMutations} from "@/api";
 import {Button} from "@/components/ui/button";
+import {Check, ChevronDown} from "lucide-react";
 import React, {useEffect, useState} from "react";
 import {Separator} from "@/components/ui/separator";
-import {CaretSortIcon, CheckIcon} from "@radix-ui/react-icons";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {PlaytimeDrop} from "@/components/media-user/PlaytimeDrop";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
 
 export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMedia = (media, status) => {
         const updatedMedia = { ...media, status };
@@ -111,7 +111,7 @@ const PlatformComboBox = ({ resetValue = "", dataList, callback, isPending }) =>
                 bg-transparent border-none font-normal pr-0 hover:bg-transparent"
                         aria-expanded={open} disabled={isPending}>
                     {value ? dataList.find(user => user.value === value)?.label : "--"}
-                    <CaretSortIcon className="ml-2 h-4 w-4 shrink-0"/>
+                    <ChevronDown className="h-3 w-3 opacity-80"/>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[160px] p-0">
@@ -123,7 +123,7 @@ const PlatformComboBox = ({ resetValue = "", dataList, callback, isPending }) =>
                             {dataList.map(user =>
                                 <CommandItem key={user.value} value={user.value} onSelect={() => onSelect(user.value)}>
                                     {user.label}
-                                    <CheckIcon className={cn("ml-auto h-4 w-4", value === user.value ? "opacity-100" : "opacity-0")}/>
+                                    <Check className={cn("ml-auto h-4 w-4", value === user.value ? "opacity-100" : "opacity-0")}/>
                                 </CommandItem>
                             )}
                         </CommandGroup>

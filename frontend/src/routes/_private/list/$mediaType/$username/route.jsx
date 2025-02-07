@@ -1,4 +1,4 @@
-import {listOptions} from "@/api/queryOptions";
+import {listOptions} from "@/api";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

@@ -1,13 +1,12 @@
-import {APIError} from "@/api/apiError";
+import {APIError} from "./apiError";
 
 
-// Base API url from flask backend
-const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
+let api = null;
 
 
 class ApiClient {
-    constructor() {
-        this.base_url = `${BASE_API_URL}/api`;
+    constructor(base_api_url = "") {
+        this.base_url = `${base_api_url}/api`;
     }
 
     isAuthenticated() {
@@ -24,6 +23,14 @@ class ApiClient {
 
     removeAccessToken() {
         localStorage.removeItem("accessToken");
+    }
+
+    getRefreshToken() {
+        return null;
+    }
+
+    includeCredentials() {
+        return true;
     }
 
     filterParams(queryData) {
@@ -47,12 +54,24 @@ class ApiClient {
 
         if ((response.status === 401 || (response.status === 403 && this.isAuthenticated())) && data.url !== "/tokens") {
             let beforeRenewAccessToken = this.getAccessToken();
-            const refreshResponse = await this.put("/tokens", {
-                access_token: this.getAccessToken(),
-            });
+
+            const body = { access_token: this.getAccessToken() };
+
+            // Include refresh token in body for mobile clients
+            if (!this.includeCredentials()) {
+                body.refresh_token = this.getRefreshToken();
+            }
+
+            const refreshResponse = await this.put("/tokens", body);
 
             if (refreshResponse.ok) {
                 this.setAccessToken(refreshResponse.body.access_token);
+
+                // Set refresh token from body for mobile clients
+                if (!this.includeCredentials()) {
+                    this.setRefreshToken(refreshResponse.body.refresh_token);
+                }
+
                 response = await this.requestInternal(data);
             }
 
@@ -74,12 +93,18 @@ class ApiClient {
                 method: data.method,
                 headers: {
                     "Authorization": `Bearer ${this.getAccessToken()}`,
+                    "X-Is-Mobile": !this.includeCredentials(),
                     ...(data.removeContentType ? {} : { "Content-Type": "application/json" }),
                     ...data.headers,
                 },
-                credentials: "include",
                 body: data.body ? data.body instanceof FormData ? data.body : JSON.stringify(data.body) : null,
             };
+
+            // Only include credentials for web clients
+            if (this.includeCredentials()) {
+                body.credentials = "include";
+            }
+
             response = await fetch(this.base_url + data.url + queryArgs, body);
         }
         catch (error) {
@@ -115,6 +140,11 @@ class ApiClient {
             throw new APIError(response.status, response.body.message, response.body.description);
         }
 
+        // Set refresh token from body for mobile clients
+        if (response.ok && !this.includeCredentials()) {
+            this.setRefreshToken(response.body.refresh_token);
+        }
+
         return response;
     };
 
@@ -144,7 +174,7 @@ class ApiClient {
     };
 
     async fetchCurrentUser() {
-        if (api.isAuthenticated()) {
+        if (this.isAuthenticated()) {
             const response = await this.get("/current_user");
             return response.ok ? response.body : null;
         }
@@ -169,4 +199,14 @@ class ApiClient {
 }
 
 
-export const api = new ApiClient();
+export const initApiClient = (baseApiUrl) => {
+    api = new ApiClient(baseApiUrl);
+};
+
+
+export const getApiClient = () => {
+    if (!api) {
+        throw new Error("ApiClient has not been initialized. Please call initApiClient first.");
+    }
+    return api;
+};

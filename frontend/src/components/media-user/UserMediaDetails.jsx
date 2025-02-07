@@ -1,17 +1,17 @@
-import {queryClient} from "@/api/queryClient";
+import {toast} from "sonner";
 import {useQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
-import {historyOptions, queryKeys} from "@/api/queryOptions";
 import {Commentary} from "@/components/media-user/Commentary";
 import {LabelLists} from "@/components/media-user/LabelLists";
-import {userMediaMutations} from "@/api/mutations/mediaMutations";
 import {TvUserDetails} from "@/components/media-user/TvUserDetails";
 import {ManageFavorite} from "@/components/media-user/ManageFavorite";
 import {HistoryDetails} from "@/components/media-user/HistoryDetails";
 import {GamesUserDetails} from "@/components/media-user/GamesUserDetails";
 import {BooksUserDetails} from "@/components/media-user/BooksUserDetails";
+import {MangaUserDetails} from "@/components/media-user/MangaUserDetails";
 import {MoviesUserDetails} from "@/components/media-user/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {historyOptions, queryClient, queryKeys, useMediaMutations} from "@/api";
 
 
 const mediaComponentMap = (value) => {
@@ -21,6 +21,7 @@ const mediaComponentMap = (value) => {
         anime: TvUserDetails,
         games: GamesUserDetails,
         books: BooksUserDetails,
+        manga: MangaUserDetails,
     };
     return components[value];
 };
@@ -29,12 +30,15 @@ const mediaComponentMap = (value) => {
 export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
     const MediaUserDetails = mediaComponentMap(mediaType);
     const { data: history } = useQuery(historyOptions(mediaType, userMedia.media_id));
-    const { removeFromList, updateFavorite, updateComment } = userMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { removeFromList, updateFavorite, updateComment } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const handleDeleteMedia = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;
         removeFromList.mutate(undefined, {
-            onSuccess: () => queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.media_id) }),
+            onSuccess: () => {
+                toast.success("Media removed from your list");
+                queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.media_id) });
+            },
         });
     };
 

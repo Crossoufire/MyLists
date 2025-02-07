@@ -1,4 +1,4 @@
-import {editMediaOptions} from "@/api/queryOptions";
+import {editMediaOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

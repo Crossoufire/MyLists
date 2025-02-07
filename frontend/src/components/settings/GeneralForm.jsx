@@ -1,21 +1,18 @@
 import {toast} from "sonner";
-import React, {useState} from "react";
+import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
-import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
-import {LuHelpCircle} from "react-icons/lu";
+import {useAuth, useSimpleMutations} from "@/api";
 import {FormButton} from "@/components/app/FormButton";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
+import {ImageCropper} from "@/components/settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const GeneralForm = () => {
-    const { generalSettings } = simpleMutations();
+    const { generalSettings } = useSimpleMutations();
     const { currentUser, setCurrentUser } = useAuth();
-    const [profileImage, setProfileImage] = useState("");
-    const [backgroundImage, setBackgroundImage] = useState("");
     const form = useForm({
         defaultValues: {
             username: currentUser.username,
@@ -24,19 +21,14 @@ export const GeneralForm = () => {
     });
 
     const onSubmit = async (data) => {
-        if (data.username === currentUser.username) {
+        if (data.username.trim() === currentUser.username.trim()) {
             delete data.username;
         }
 
         const formData = new FormData();
         Object.keys(data).forEach(key => {
             if (data[key] === undefined) return;
-            if (key === "profile_image" || key === "background_image") {
-                formData.append(key, data[key][0]);
-            }
-            else {
-                formData.append(key, data[key]);
-            }
+            formData.append(key, data[key]);
         });
 
         generalSettings.mutate({ data: formData }, {
@@ -49,12 +41,12 @@ export const GeneralForm = () => {
             onSuccess: (data) => {
                 setCurrentUser(data);
                 toast.success("Settings successfully updated");
-            }
+            },
         });
     };
 
     return (
-        <Form {...form}>
+        <Form {...form} key={JSON.stringify(currentUser)}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full">
                 <div className="space-y-5">
                     <FormField
@@ -68,9 +60,7 @@ export const GeneralForm = () => {
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                    />
+                                    <Input {...field}/>
                                 </FormControl>
                                 <FormMessage/>
                             </FormItem>
@@ -104,21 +94,18 @@ export const GeneralForm = () => {
                         )}
                     />
                     <FormField
-                        control={form.control}
                         name="profile_image"
+                        control={form.control}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Profile image</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="file"
-                                        value={profileImage}
-                                        onChange={(ev) => {
-                                            setProfileImage(ev.target.value);
-                                            field.onChange(ev.target.files);
-                                        }}
-                                        className="file:text-muted-foreground cursor-pointer"
+                                    <ImageCropper
+                                        aspect={1}
+                                        cropShape={"round"}
+                                        fileName={field.name}
+                                        onCropApplied={field.onChange}
+                                        resultClassName="h-[150px] rounded-full"
                                     />
                                 </FormControl>
                                 <FormMessage/>
@@ -126,21 +113,18 @@ export const GeneralForm = () => {
                         )}
                     />
                     <FormField
-                        control={form.control}
                         name="background_image"
+                        control={form.control}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Background Image</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="file"
-                                        value={backgroundImage}
-                                        onChange={(ev) => {
-                                            setBackgroundImage(ev.target.value);
-                                            field.onChange(ev.target.files);
-                                        }}
-                                        className="file:text-muted-foreground cursor-pointer"
+                                    <ImageCropper
+                                        cropShape={"rect"}
+                                        aspect={1304 / 288}
+                                        fileName={field.name}
+                                        onCropApplied={field.onChange}
+                                        resultClassName={"h-[100px] object-contain"}
                                     />
                                 </FormControl>
                                 <FormMessage/>
@@ -160,8 +144,8 @@ export const GeneralForm = () => {
 const PrivacyPopover = () => {
     return (
         <Popover>
-            <PopoverTrigger>
-                <LuHelpCircle/>
+            <PopoverTrigger className="opacity-50 hover:opacity-80">
+                <CircleHelp className="w-4 h-4"/>
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
                 <div className="mb-3 text-sm font-medium text-muted-foreground">

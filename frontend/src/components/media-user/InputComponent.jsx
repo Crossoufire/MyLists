@@ -13,7 +13,7 @@ export const InputComponent = ({ initValue, total, onUpdate, isEditable = true, 
     const handleOnBlur = (ev) => {
         ev.preventDefault();
         if (currentValue === initValue) return;
-        if (total !== undefined && (currentValue > total || currentValue < 0)) {
+        if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
             return setCurrentValue(initValue);
         }
         onUpdate.mutate({ payload: currentValue });
@@ -25,14 +25,14 @@ export const InputComponent = ({ initValue, total, onUpdate, isEditable = true, 
                 <Input
                     value={currentValue}
                     onBlur={handleOnBlur}
-                    className={cn("text-base border-none bg-transparent cursor-pointer inline-block", inputClassName)}
                     disabled={onUpdate.isPending}
                     onChange={(ev) => setCurrentValue(ev.target.value)}
+                    className={cn("text-base border-none bg-transparent cursor-pointer inline-block", inputClassName)}
                 />
                 :
                 <span>{initValue}</span>
             }
-            {total && <span>{" "}/{" "}{total}</span>}
+            <span>{" "}/{" "}{total ?? "?"}</span>
         </div>
     );
 };

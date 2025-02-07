@@ -1,4 +1,4 @@
-import {achievementOptions} from "@/api/queryOptions";
+import {achievementOptions} from "@/api";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

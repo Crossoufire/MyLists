@@ -1,5 +1,5 @@
+import {Heart} from "lucide-react";
 import {cn} from "@/utils/functions";
-import {LuHeart} from "react-icons/lu";
 
 
 export const ManageFavorite = ({ updateFavorite, isFavorite }) => {
@@ -9,13 +9,9 @@ export const ManageFavorite = ({ updateFavorite, isFavorite }) => {
 
     return (
         <div role="button" onClick={handleFavorite}>
-            <LuHeart
+            <Heart
                 title="Favorite"
-                className={cn(
-                    "opacity-100 w-5 h-5 text-white",
-                    isFavorite && "text-red-700",
-                    updateFavorite.isPending && "opacity-20"
-                )}
+                className={cn("opacity-100 w-5 h-5 text-white", isFavorite && "text-red-700", updateFavorite.isPending && "opacity-20")}
             />
         </div>
     );

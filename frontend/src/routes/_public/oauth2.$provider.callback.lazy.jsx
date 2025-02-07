@@ -1,6 +1,6 @@
 import {toast} from "sonner";
+import {useAuth} from "@/api";
 import {useEffect} from "react";
-import {useAuth} from "@/hooks/AuthHook";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 
 

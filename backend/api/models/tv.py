@@ -6,10 +6,9 @@ from flask import abort
 from sqlalchemy import func
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.managers.ModelsManager import ModelsManager
-from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
+from backend.api.models.abstracts import Media, MediaList, Labels, Genres, Actors
 
 
 class TVModel(Media):
@@ -44,7 +43,7 @@ class TVModel(Media):
             "media_cover": self.media_cover,
             "eps_per_season": self.eps_seasons_list,
             "networks": [n.name for n in self.networks],
-            "actors": self.actors_list,
+            "actors": [actor.name for actor in self.actors],
             "genres": self.genres_list,
         })
 
@@ -77,7 +76,7 @@ class TVModel(Media):
         return total_watched
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = cls.query.filter(cls.created_by.ilike(f"%{name}%")).all()
         elif job == JobType.ACTOR:
@@ -89,15 +88,7 @@ class TVModel(Media):
         else:
             return abort(404, description="JobType not found")
 
-        tv_list = eval(f"{cls.__name__}List")
-        media_in_user_list = (
-            db.session.query(tv_list)
-            .filter(tv_list.user_id == current_user.id, tv_list.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:
@@ -116,14 +107,9 @@ class TVListModel(MediaList):
     total = db.Column(db.Integer)
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        del media_dict["feeling"]
-        del media_dict["score"]
 
         media_dict.update({
             "media_cover": self.media.media_cover,
@@ -131,8 +117,8 @@ class TVListModel(MediaList):
             "all_status": Status.by(self.GROUP),
             "eps_per_season": self.media.eps_seasons_list,
             "rating": {
-                "type": "feeling" if is_feeling else "score",
-                "value": self.feeling if is_feeling else self.score,
+                "type": self.user.rating_system,
+                "value": self.rating,
             }
         })
 
@@ -170,10 +156,6 @@ class TVListModel(MediaList):
         self.total = new_total
 
         return new_total
-
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value) * self.media.duration
 
     @classmethod
     def total_user_time_def(cls):

@@ -2,13 +2,11 @@ import {cn} from "@/utils/functions";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {Loading} from "@/components/app/Loading";
 import {useEffect, useRef, useState} from "react";
 import {MutedText} from "@/components/app/MutedText";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {mediaLabelsOptions, queryKeys} from "@/api/queryOptions";
-import {userLabelsMutations} from "@/api/mutations/labelsMutations";
-import {LuAlertTriangle, LuCheckCircle, LuPen, LuPlusCircle, LuTrash2, LuX} from "react-icons/lu";
+import {mediaLabelsOptions, queryKeys, useLabelsMutations} from "@/api";
+import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/components/ui/credenza";
 
 
@@ -22,7 +20,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     const [editingName, setEditingName] = useState("");
     const [newLabelName, setNewLabelName] = useState("");
     const { data: allLabels = [], error, isLoading } = useQuery(mediaLabelsOptions(mediaType, isOpen));
-    const { addLabel, removeLabel, renameLabel, deleteLabel } = userLabelsMutations(mediaType, mediaId);
+    const { addLabel, removeLabel, renameLabel, deleteLabel } = useLabelsMutations(mediaType, mediaId);
 
     useEffect(() => {
         error && showToast("An unexpected error occurred. Please try again later.", "error");
@@ -30,8 +28,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
 
     useEffect(() => {
         if (isEditing) {
-            // noinspection JSUnresolvedReference
-            inputRef.current.focus();
+            inputRef.current?.focus();
         }
     }, [isEditing]);
 
@@ -149,7 +146,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                             onKeyPress={(ev) => ev.key === "Enter" && createLabel()}
                         />
                         <Button size="sm" onClick={createLabel} disabled={addLabel.isPending}>
-                            <LuPlusCircle className="mr-2"/> Create
+                            <CirclePlus className="mr-2 h-4 w-4"/> Create
                         </Button>
                     </div>
                     <div className="space-y-2">
@@ -162,7 +159,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                                     <Badge key={name} variant="label">
                                         {name}
                                         <div role="button" className="ml-2 hover:opacity-60" onClick={() => removeFromMedia(name)}>
-                                            <LuX/>
+                                            <X className="h-4 w-4"/>
                                         </div>
                                     </Badge>
                                 )
@@ -173,7 +170,7 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                         <h4 className="font-medium">All Labels</h4>
                         <ul className="max-h-[200px] overflow-y-auto">
                             {isLoading ?
-                                <Loading/>
+                                <LoaderCircle className="h-6 w-6 animate-spin"/>
                                 :
                                 allLabels.length === 0 ?
                                     <MutedText className="text-sm">No labels created yet</MutedText>
@@ -197,14 +194,14 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
                                                 {!mediaLabels.includes(name) &&
                                                     <Button variant="ghost" size="icon" onClick={() => addLabelToMedia(name)}
                                                             disabled={addLabel.isPending}>
-                                                        <LuPlusCircle/>
+                                                        <CirclePlus className="h-4 w-4"/>
                                                     </Button>
                                                 }
                                                 <Button variant="ghost" size="icon" onClick={() => startEditingLabel(name)}>
-                                                    <LuPen/>
+                                                    <Pen className="h-4 w-4"/>
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => deleteLabelTotally(name)}>
-                                                    <LuTrash2/>
+                                                    <Trash2 className="h-4 w-4"/>
                                                 </Button>
                                             </div>
                                         </li>
@@ -223,11 +220,11 @@ const Toast = ({ message, type, onClose }) => {
         <div className={cn("flex items-center justify-between mt-4 p-2 rounded-md",
             type === "error" ? "bg-rose-500/10" : "bg-green-500/10")}>
             <div className="flex items-center text-sm">
-                {type === "error" ? <LuAlertTriangle className="mr-3"/> : <LuCheckCircle className="mr-3"/>}
+                {type === "error" ? <TriangleAlert className="mr-3 h-4 w-4"/> : <CircleCheck className="mr-3 h-4 w-4"/>}
                 <span>{message}</span>
             </div>
             <div role="button" onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                <LuX/>
+                <X className="h-4 w-4"/>
             </div>
         </div>
     );

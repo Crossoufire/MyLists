@@ -3,18 +3,17 @@ import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useQuery} from "@tanstack/react-query";
-import {useDebounce} from "@/hooks/DebounceHook";
+import {useDebounce} from "@/hooks/useDebounce";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
-import {Loading} from "@/components/app/Loading";
-import {useOnClickOutside} from "@/hooks/ClickedOutsideHook";
+import {useOnClickOutside} from "@/hooks/useClickedOutside";
+import {filterSearchOptions, smallFiltersOptions} from "@/api";
 import {capitalize, getLangCountryName} from "@/utils/functions";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
-import {filterSearchOptions, smallFiltersOptions} from "@/api/queryOptions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
-import {LuChevronDown, LuChevronUp, LuHelpCircle, LuLoader2, LuMoveRight, LuSearch, LuX} from "react-icons/lu";
-import {Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
+import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply }) => {
@@ -51,6 +50,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
     };
 
     const handleOnSubmit = async (ev) => {
+        onClose();
         ev.preventDefault();
         await onFilterApply(localFilters);
     };
@@ -59,18 +59,16 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
         <Sheet defaultOpen={true} onOpenChange={onClose}>
             <SheetContent className="max-sm:w-full">
                 <SheetHeader>
-                    <SheetTitle>Additional Filters</SheetTitle>
-                    <SheetDescription>
-                        <div className="flex items-center gap-2">
-                            How filters works <FilterInfoPopover/>
-                        </div>
+                    <SheetTitle className="-mb-2">Additional Filters</SheetTitle>
+                    <SheetDescription className="flex items-center gap-1">
+                        How filters works <FilterInfoPopover/>
                     </SheetDescription>
                 </SheetHeader>
                 <Separator/>
                 <form onSubmit={handleOnSubmit}>
                     {isLoading ?
                         <div className="flex items-center justify-center h-[85vh]">
-                            <Loading/>
+                            <LoaderCircle className="h-7 w-7 animate-spin"/>
                         </div>
                         :
                         <div className="mt-3 mb-6 space-y-4">
@@ -143,8 +141,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                             defaultChecked={search.favorite}
                                             onCheckedChange={() => registerChange("favorite", !search.favorite)}
                                         />
-                                        <label htmlFor="favoriteCheck"
-                                               className="text-sm cursor-pointer">Favorites</label>
+                                        <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Checkbox
@@ -179,11 +176,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, allStatus, onFilterApply 
                                     <Separator/>
                                 </>
                             }
-                            <SheetFooter className="pr-2">
-                                <SheetClose asChild className="w-full">
-                                    <Button type="submit">Apply Filters</Button>
-                                </SheetClose>
-                            </SheetFooter>
+                            <Button type="submit" className="w-full">Apply Filters</Button>
                         </div>
                     }
                 </form>
@@ -200,6 +193,7 @@ function getListSearchFilters(mediaType) {
         "movies": ["actors", "directors"],
         "books": ["authors"],
         "games": ["companies"],
+        "manga": ["authors", "publishers"],
     };
     return mapping[mediaType];
 }
@@ -233,9 +227,9 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }) => {
             {items.length > initVisibleItems &&
                 <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
                     {showAll ?
-                        <>Show Less <LuChevronUp className="ml-1" size={17}/></>
+                        <>Show Less <ChevronUp className="ml-1" size={17}/></>
                         :
-                        <>Show More <LuChevronDown className="ml-1" size={17}/></>
+                        <>Show More <ChevronDown className="ml-1" size={17}/></>
                     }
                 </Button>
             }
@@ -282,10 +276,10 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
             <h3 className="font-medium">{capitalize(job)}</h3>
             <div ref={commandRef} className="mt-1 w-56 relative">
                 <div className="relative">
-                    <LuSearch size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                    <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                     <Input
                         value={search}
-                        className="w-[280px] pl-8"
+                        className={"w-[280px] pl-8"}
                         onChange={handleInputChange}
                         placeholder={`Search ${job} in this collection`}
                     />
@@ -296,7 +290,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                             <CommandList className="max-h-[300px] overflow-y-auto">
                                 {isLoading &&
                                     <div className="flex items-center justify-center p-4">
-                                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                                        <LoaderCircle className="h-6 w-6 animate-spin"/>
                                     </div>
                                 }
                                 {error && <CommandEmpty>An error occurred. Please try again.</CommandEmpty>}
@@ -318,7 +312,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
                     <Badge key={item} className="mt-2 bg-neutral-800 h-8 px-4 text-sm gap-2" variant="outline">
                         {item}
                         <div role="button" className="hover:opacity-80 -mr-1" onClick={() => handleRemoveData(item)}>
-                            <LuX/>
+                            <X className="h-4 w-4"/>
                         </div>
                     </Badge>
                 )}
@@ -331,7 +325,7 @@ const SearchFilter = ({ job, dataList, registerChange }) => {
 const FilterInfoPopover = () => (
     <Popover>
         <PopoverTrigger>
-            <LuHelpCircle/>
+            <CircleHelp className="w-4 h-4"/>
         </PopoverTrigger>
         <PopoverContent className="w-full space-y-2" align="left">
             <div className="-mt-2 font-medium underline underline-offset-2">
@@ -340,14 +334,14 @@ const FilterInfoPopover = () => (
             <div>
                 Drama + Crime
                 <br/>
-                <LuMoveRight className="inline-block"/>&nbsp;
+                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime)
             </div>
             <div>
                 Drama + Crime + France
                 <br/>
-                <LuMoveRight className="inline-block"/>&nbsp;
+                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
                 <br/>
                 (Drama <b>OR</b> Crime) <b>AND</b> France
             </div>

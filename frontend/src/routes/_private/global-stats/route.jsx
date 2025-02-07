@@ -1,8 +1,9 @@
-import {globalStatsOptions} from "@/api/queryOptions";
+import {globalStatsOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/global-stats")({
-    loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(globalStatsOptions()),
+    loaderDeps: ({ search }) => ({ search }),
+    loader: ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(globalStatsOptions(search)),
 });

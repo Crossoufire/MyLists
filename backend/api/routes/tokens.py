@@ -4,23 +4,26 @@ import secrets
 from urllib.parse import urlencode
 
 import requests
-from flask import Blueprint, request, abort, url_for, current_app, session, jsonify
-from flask_bcrypt import generate_password_hash
 from werkzeug.http import dump_cookie
+from flask_bcrypt import generate_password_hash
+from flask import Blueprint, request, abort, url_for, current_app, session, jsonify
 
 from backend.api import db
-from backend.api.core import basic_auth, current_user, token_auth
+from backend.api.schemas.tokens import *
 from backend.api.core.email import send_email
 from backend.api.models.user import Token, User
-from backend.api.schemas.tokens import *
-from backend.api.utils.decorators import body, arguments
 from backend.api.utils.functions import naive_utcnow
+from backend.api.utils.decorators import body, arguments
+from backend.api.core import basic_auth, current_user, token_auth
 
 
 tokens = Blueprint("api_tokens", __name__)
 
 
 def token_response(token: Token):
+    if request.headers.get("X-Is-Mobile") == "true":
+        return {"access_token": token.access_token, "refresh_token": token.refresh_token}, 200
+
     headers = {
         "Set-Cookie": dump_cookie(
             key="refresh_token",
@@ -32,13 +35,17 @@ def token_response(token: Token):
             max_age=current_app.config["REFRESH_TOKEN_DAYS"] * 24 * 60 * 60,
         ),
     }
-    return {"access_token": token.access_token}, 200, headers
+
+    return {"access_token": token.access_token, "refresh_token": None}, 200, headers
 
 
 @tokens.route("/tokens", methods=["POST"])
 @basic_auth.login_required
 def new_token():
-    """ Create an <access token> and a <refresh token>. The <refresh token> is returned as a hardened cookie """
+    """
+    Create an `access token` and a `refresh token`.
+    The `refresh token` is returned as a hardened cookie or in the body for mobile.
+    """
 
     if not current_user.active:
         return abort(403, description="Account not activated, please check your email address.")
@@ -59,11 +66,11 @@ def new_token():
 def refresh(data):
     """
     Refresh an `access token`.
-    The client needs to pass the `refresh token` in a cookie.
+    The client needs to pass the `refresh token` in a cookie or in the body for mobile.
     The `access token` must be passed in the request body.
     """
 
-    access_token = data["access_token"]
+    access_token = data.get("access_token")
     refresh_token = request.cookies.get("refresh_token")
     if not access_token or not refresh_token:
         return abort(401, description="Invalid access or refresh token")

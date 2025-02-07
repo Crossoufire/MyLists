@@ -1,4 +1,4 @@
-import {allUpdatesOptions} from "@/api/queryOptions";
+import {allUpdatesOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

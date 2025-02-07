@@ -1,4 +1,4 @@
-import {LuStar} from "react-icons/lu";
+import {Star} from "lucide-react";
 import {Separator} from "@/components/ui/separator";
 import {Synopsis} from "@/components/media-details/Synopsis";
 import {formatDateTime, formatMinutes} from "@/utils/functions";
@@ -17,7 +17,7 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                         <div>
                             <div className="font-semibold text-neutral-500">IGDB Rating</div>
                             <div className="flex items-center gap-1">
-                                <LuStar className="text-amber-500"/> {(mediaData.vote_average / 10).toFixed(1)} ({mediaData.vote_count})
+                                <Star className="w-4 h-4 text-amber-500"/> {(mediaData.vote_average / 10).toFixed(1)} ({mediaData.vote_count})
                             </div>
                         </div>
                         <MapDetails
@@ -54,15 +54,15 @@ export const GamesDetails = ({ mediaData, mediaType }) => {
                     <div className="flex flex-col gap-y-4">
                         <GenericDetails
                             name="HLTB Main"
-                            value={formatMinutes(mediaData.hltb_main_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_main_time * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Extra"
-                            value={formatMinutes(mediaData.hltb_main_and_extra_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_main_and_extra_time * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Total"
-                            value={formatMinutes(mediaData.hltb_total_complete_time * 60, { format: "hm", onlyHours: true })}
+                            value={formatMinutes(mediaData.hltb_total_complete_time * 60, true)}
                         />
                     </div>
                 </div>

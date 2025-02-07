@@ -1,4 +1,4 @@
-import {LuMoveRight} from "react-icons/lu";
+import {MoveRight} from "lucide-react";
 import {cn, zeroPad} from "@/utils/functions";
 
 
@@ -22,6 +22,7 @@ const getUpdatePayload = (updateType) => {
         redo: RedoPayload,
         playtime: PlaytimePayload,
         page: PagePayload,
+        chapter: ChapterPayload,
     };
     return choosePayload[updateType];
 };
@@ -31,7 +32,7 @@ const StatusPayload = ({ payload }) => {
     return (
         <>
             {payload.old_value ?
-                <>{payload.old_value} <LuMoveRight/> {payload.new_value}</>
+                <>{payload.old_value} <MoveRight className="w-4 h-4"/> {payload.new_value}</>
                 :
                 payload.new_value
             }
@@ -43,7 +44,7 @@ const StatusPayload = ({ payload }) => {
 const TVPayload = ({ payload }) => {
     return (
         <>
-            S{zeroPad(payload.old_value[0])}.E{zeroPad(payload.old_value[1])} <LuMoveRight/> S{zeroPad(payload.new_value[0])}.E{zeroPad(payload.new_value[1])}
+            S{zeroPad(payload.old_value[0])}.E{zeroPad(payload.old_value[1])} <MoveRight className="w-4 h-4"/> S{zeroPad(payload.new_value[0])}.E{zeroPad(payload.new_value[1])}
         </>
     );
 };
@@ -51,15 +52,20 @@ const TVPayload = ({ payload }) => {
 
 const RedoPayload = ({ payload, mediaType }) => {
     const name = (mediaType === "books") ? "Re-read" : "Re-watched";
-    return <>{name} {payload.old_value}x <LuMoveRight/> {payload.new_value}x</>;
+    return <>{name} {payload.old_value}x <MoveRight className="w-4 h-4"/> {payload.new_value}x</>;
 };
 
 
 const PlaytimePayload = ({ payload }) => {
-    return <>{payload.old_value / 60} h <LuMoveRight/> {payload.new_value / 60} h</>;
+    return <>{payload.old_value / 60} h <MoveRight className="w-4 h-4"/> {payload.new_value / 60} h</>;
 };
 
 
 const PagePayload = ({ payload }) => {
-    return <>p. {payload.old_value} <LuMoveRight/> p. {payload.new_value}</>;
+    return <>p. {payload.old_value} <MoveRight className="w-4 h-4"/> p. {payload.new_value}</>;
+};
+
+
+const ChapterPayload = ({ payload }) => {
+    return <>chpt. {payload.old_value} <MoveRight className="w-4 h-4"/> chpt. {payload.new_value}</>;
 };

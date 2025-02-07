@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, abort, current_app
 
 from backend.api import db
-from backend.api.core import token_auth, current_user
 from backend.api.schemas.labels import *
 from backend.api.utils.decorators import body
+from backend.api.core import token_auth, current_user
 from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 

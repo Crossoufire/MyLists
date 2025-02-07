@@ -1,14 +1,13 @@
 import {toast} from "sonner";
-import React, {useState} from "react";
+import {useState} from "react";
 import {useForm} from "react-hook-form";
-import {useAuth} from "@/hooks/AuthHook";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
+import {CircleHelp, Download} from "lucide-react";
+import {useAuth, useSimpleMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {FormButton} from "@/components/app/FormButton";
-import {LuDownload, LuHelpCircle} from "react-icons/lu";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -16,16 +15,30 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 export const MediaListForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
-    const { listSettings, downloadListAsCSV } = simpleMutations();
     const [selectedList, setSelectedList] = useState("");
+    const { listSettings, downloadListAsCSV } = useSimpleMutations();
     const form = useForm({
         defaultValues: {
             search_selector: currentUser.search_selector,
+            rating_system: currentUser.rating_system,
+            grid_list_view: currentUser.grid_list_view === true ? "grid" : "table",
         }
     });
 
+    const userMediaLists = [
+        { label: "SeriesList", value: "series" },
+        { label: "AnimeList", value: "anime" },
+        { label: "MoviesList", value: "movies" },
+        { label: "GamesList", value: "games" },
+        { label: "BooksList", value: "books" },
+        { label: "MangaList", value: "manga" },
+    ];
+
     const onSubmit = (data) => {
-        listSettings.mutate({ ...data }, {
+        const newData = { ...data };
+        newData.grid_list_view = (newData.grid_list_view === "grid");
+
+        listSettings.mutate({ ...newData }, {
             onError: () => toast.error("An error occurred while updating the data"),
             onSuccess: (data) => {
                 setCurrentUser(data);
@@ -42,15 +55,20 @@ export const MediaListForm = () => {
             return checkForm !== true;
         }
 
-        return !currentUser.settings[value].active;
+        return !currentUser.settings.find(s => s.media_type === value).active;
     };
 
     const onListChanged = (field, value) => {
         field.onChange(value);
+        // noinspection JSCheckFunctionSignatures
         const searchSelector = form.watch("search_selector");
 
         if (field.name === "add_games" && (searchSelector.value === "igdb" || currentUser.search_selector === "igdb")) {
             form.setValue("search_selector", "tmdb");
+        }
+
+        if (field.name === "add_manga" && (searchSelector.value === "manga" || currentUser.search_selector === "manga")) {
+            form.setValue("search_selector", "manga");
         }
 
         if (field.name === "add_books" && (searchSelector.value === "books" || currentUser.search_selector === "books")) {
@@ -77,14 +95,6 @@ export const MediaListForm = () => {
         });
     };
 
-    const userMediaLists = [
-        { label: "SeriesList", value: "series" },
-        { label: "AnimeList", value: "anime" },
-        { label: "MoviesList", value: "movies" },
-        { label: "GamesList", value: "games" },
-        { label: "BooksList", value: "books" },
-    ];
-
     return (
         <div>
             <Form {...form}>
@@ -103,7 +113,7 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.settings.anime.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "anime").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">
@@ -122,7 +132,7 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={(value) => onListChanged(field, value)}
-                                            defaultChecked={currentUser.settings.games.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "games").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">
@@ -141,11 +151,30 @@ export const MediaListForm = () => {
                                         <Switch
                                             checked={field.value}
                                             onCheckedChange={(value) => onListChanged(field, value)}
-                                            defaultChecked={currentUser.settings.books.active}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "books").active}
                                         />
                                     </FormControl>
                                     <div className="leading-none">
                                         <FormLabel>&nbsp; Activate books list</FormLabel>
+                                    </div>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="add_manga"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                    <FormControl>
+                                        <Switch
+                                            checked={field.value}
+                                            onCheckedChange={(value) => onListChanged(field, value)}
+                                            defaultChecked={currentUser.settings.find(s => s.media_type === "manga").active}
+                                        />
+                                    </FormControl>
+                                    <div className="leading-none">
+                                        <FormLabel>&nbsp; Activate manga list</FormLabel>
                                     </div>
                                     <FormMessage/>
                                 </FormItem>
@@ -179,6 +208,7 @@ export const MediaListForm = () => {
                                             <SelectItem value="tmdb">Media</SelectItem>
                                             <SelectItem value="books" disabled={checkDisabled("add_books")}>Books</SelectItem>
                                             <SelectItem value="igdb" disabled={checkDisabled("add_games")}>Games</SelectItem>
+                                            <SelectItem value="manga" disabled={checkDisabled("add_manga")}>Manga</SelectItem>
                                             <SelectItem value="users">Users</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -191,29 +221,26 @@ export const MediaListForm = () => {
                         <h3 className="text-base font-medium">
                             <div className="flex items-center gap-2">
                                 <div>Rating System</div>
-                                <TextPopover>
-                                    Switch between a numerical rating on a scale of 0 to 10 (steps of 0.5)
-                                    to an emoticon-based rating (5 levels) to convey your liking or disliking of a
-                                    media.
-                                </TextPopover>
+                                <RatingSystemPopover/>
                             </div>
                             <Separator/>
                         </h3>
                         <FormField
                             control={form.control}
-                            name="add_feeling"
+                            name="rating_system"
                             render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.add_feeling}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>Score (unchecked) or Feeling (checked)</FormLabel>
-                                    </div>
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="border">
+                                                <SelectValue placeholder="Select a rating system"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="score">Score</SelectItem>
+                                            <SelectItem value="feeling">Feeling</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage/>
                                 </FormItem>
                             )}
@@ -229,24 +256,25 @@ export const MediaListForm = () => {
                         <FormField
                             control={form.control}
                             name="grid_list_view"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            defaultChecked={currentUser.grid_list_view}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>Grid Mode (checked) or Table mode (unchecked)</FormLabel>
-                                    </div>
+                            render={({ field }) =>
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="border">
+                                                <SelectValue placeholder="Select a search selector"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="grid">Grid</SelectItem>
+                                            <SelectItem value="table">Table</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage/>
                                 </FormItem>
-                            )}
+                            }
                         />
                     </div>
-                    <FormButton className="mt-5" disabled={listSettings.isPending}>
+                    <FormButton className="mt-3" disabled={listSettings.isPending}>
                         Update
                     </FormButton>
                 </form>
@@ -271,7 +299,7 @@ export const MediaListForm = () => {
                         </SelectContent>
                     </Select>
                     <Button onClick={handleDownloadCSV} disabled={!selectedList || listSettings.isPending || downloadListAsCSV.isPending}>
-                        <LuDownload className="mr-2 h-4 w-4"/> Download CSV
+                        <Download className="mr-2 h-4 w-4"/> Download CSV
                     </Button>
                 </div>
             </div>
@@ -284,7 +312,7 @@ function TextPopover({ children }) {
     return (
         <Popover>
             <PopoverTrigger className="opacity-50 hover:opacity-80">
-                <LuHelpCircle/>
+                <CircleHelp className="h-4 w-4"/>
             </PopoverTrigger>
             <PopoverContent>
                 {children}
@@ -292,3 +320,29 @@ function TextPopover({ children }) {
         </Popover>
     );
 }
+
+
+const RatingSystemPopover = () => {
+    return (
+        <Popover>
+            <PopoverTrigger className="opacity-50 hover:opacity-80">
+                <CircleHelp className="w-4 h-4"/>
+            </PopoverTrigger>
+            <PopoverContent className="p-5 w-80">
+                <div className="mb-3 text-sm font-medium text-muted-foreground">
+                    Switch between two rating systems to rate your media.
+                </div>
+                <ul className="text-sm list-disc space-y-3 pl-4">
+                    <li>
+                        <span className="font-semibold">Score (default):</span>
+                        {" "}Numerical rating from 0 to 10 in 0.5 increments (21 levels).
+                    </li>
+                    <li>
+                        <span className="font-semibold">Feeling:</span>
+                        {" "}Emoticon-based rating with 6 different levels.
+                    </li>
+                </ul>
+            </PopoverContent>
+        </Popover>
+    );
+};

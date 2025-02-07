@@ -1,4 +1,4 @@
-import {LuAward} from "react-icons/lu";
+import {Award} from "lucide-react";
 import {cn, diffColors} from "@/utils/functions";
 
 
@@ -12,7 +12,7 @@ export const TiersDifficulty = ({ tiers, userData }) => {
 
     return (
         <div className="flex items-center gap-2">
-            {tiers.map((tier, idx) => <LuAward key={idx} className={cn("w-6 h-6", findTier(tier))}/>)}
+            {tiers.map((tier, idx) => <Award key={idx} className={cn("w-6 h-6", findTier(tier))}/>)}
         </div>
     );
 };

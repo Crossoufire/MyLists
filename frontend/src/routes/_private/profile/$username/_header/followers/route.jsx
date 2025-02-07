@@ -1,4 +1,4 @@
-import {followersOptions} from "@/api/queryOptions";
+import {followersOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

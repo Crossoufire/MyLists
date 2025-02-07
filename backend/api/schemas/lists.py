@@ -1,9 +1,9 @@
 from marshmallow import post_load
 
 from backend.api import ma
+from backend.api.utils.enums import MediaType, ModelTypes
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import SplitStringList, EnumField
-from backend.api.utils.enums import MediaType, ModelTypes
 
 
 class MediaListSchema(ma.Schema):
@@ -20,10 +20,11 @@ class MediaListSchema(ma.Schema):
     actors = SplitStringList(ma.String(), load_default=["All"])
     authors = SplitStringList(ma.String(), load_default=["All"])
     creators = SplitStringList(ma.String(), load_default=["All"])
+    networks = SplitStringList(ma.String(), load_default=["All"])
     directors = SplitStringList(ma.String(), load_default=["All"])
     platforms = SplitStringList(ma.String(), load_default=["All"])
     companies = SplitStringList(ma.String(), load_default=["All"])
-    networks = SplitStringList(ma.String(), load_default=["All"])
+    publishers = SplitStringList(ma.String(), load_default=["All"])
 
 
 class MediaListSearchSchema(ma.Schema):

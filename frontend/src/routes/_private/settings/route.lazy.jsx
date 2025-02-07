@@ -1,4 +1,4 @@
-import {useHashTab} from "@/hooks/HashTabHook";
+import {useHashTab} from "@/hooks/useHashTab";
 import {Sidebar} from "@/components/app/Sidebar";
 import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";

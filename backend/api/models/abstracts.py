@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import List, Dict, Optional
 
 from flask import url_for
@@ -7,17 +8,17 @@ from sqlalchemy import func, desc
 
 from backend.api import db
 from backend.api.core import current_user
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.models.mixins import UpdateMixin
 from backend.api.models.user import User, followers
-from backend.api.utils.enums import ModelTypes, Status, MediaType
-from backend.api.utils.functions import safe_div, naive_utcnow
+from backend.api.utils.functions import naive_utcnow
+from backend.api.managers.ModelsManager import ModelsManager
+from backend.api.utils.enums import ModelTypes, Status, MediaType, JobType
 
 
 class Media(db.Model, UpdateMixin):
     __abstract__ = True
 
-    TYPE: ModelTypes = ModelTypes.MEDIA
+    TYPE = ModelTypes.MEDIA
     LOCKING_DAYS: int = 180
     RELEASE_WINDOW: int = 7
     SIMILAR_GENRES: int = 12
@@ -31,6 +32,28 @@ class Media(db.Model, UpdateMixin):
     lock_status = db.Column(db.Boolean, nullable=False, default=0)
     last_api_update = db.Column(db.DateTime)
 
+    # --- ABSTRACT METHODS ---------------------------------------------------------
+
+    @abstractmethod
+    def to_dict(self) -> Dict:
+        pass
+
+    @abstractmethod
+    def add_to_user(self, new_status: Status, user_id: int) -> int:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def form_only() -> List[str]:
+        pass
+
+    # --- PROPERTIES ---------------------------------------------------------------
+
     @property
     def media_cover(self) -> str:
         return url_for("static", filename=f"covers/{self.GROUP.value}_covers/{self.image_cover}")
@@ -39,9 +62,7 @@ class Media(db.Model, UpdateMixin):
     def genres_list(self) -> List[str]:
         return [g.name for g in self.genres[:5]]
 
-    @property
-    def actors_list(self) -> List[str]:
-        return [a.name for a in self.actors]
+    # --- CONCRETE METHODS --------------------------------------------------------
 
     def get_similar(self) -> List[Dict]:
         media_model = self.__class__
@@ -73,15 +94,14 @@ class Media(db.Model, UpdateMixin):
         data = [{
             "username": follow[0].username,
             "profile_image": follow[0].profile_image,
-            "add_feeling": follow[0].add_feeling,
             **follow[1].to_dict(),
         } for follow in in_follows_lists]
 
         return data
 
-    def get_user_media_info(self, label_class: Labels) -> Optional[Dict]:
-        media_assoc = self.list_info.filter_by(user_id=current_user.id).first()
-        user_media = media_assoc.to_dict() if media_assoc else None
+    def get_user_media_data(self, label_class: Labels) -> Optional[Dict]:
+        user_media = self.list_info.filter_by(user_id=current_user.id).first()
+        user_media = user_media.to_dict() if user_media else None
 
         if user_media:
             user_media.update(dict(
@@ -95,109 +115,60 @@ class Media(db.Model, UpdateMixin):
 class MediaList(db.Model):
     __abstract__ = True
 
-    TYPE: ModelTypes = ModelTypes.LIST
     DEFAULT_SORTING = "Title A-Z"
     DEFAULT_STATUS = Status.COMPLETED
+    TYPE: ModelTypes = ModelTypes.LIST
 
     id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     status = db.Column(db.Enum(Status), nullable=False)
-    feeling = db.Column(db.String)
-    score = db.Column(db.Float)
+    rating = db.Column(db.Float)
     favorite = db.Column(db.Boolean)
     comment = db.Column(db.Text)
 
-    @classmethod
-    def get_media_count_per_status(cls, user_id: int) -> Dict:
-        plan_to_x = (Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ)
+    # --- ABSTRACT METHODS ---------------------------------------------------------
 
-        media_count = (
-            db.session.query(cls.status, func.count(cls.status))
-            .filter_by(user_id=user_id).group_by(cls.status)
-            .all()
-        )
+    @abstractmethod
+    def to_dict(self) -> Dict:
+        pass
 
-        status_count = {status.value: {"count": 0, "percent": 0} for status in Status.by(cls.GROUP)}
-        total_media = sum(count for _, count in media_count)
-        total_media_no_plan_to_x = total_media - sum(c for s, c in media_count if s in plan_to_x)
-        no_data = (total_media == 0)
-
-        # Update <status_count> dict with actual values from <media_count> query
-        if media_count:
-            media_dict = {
-                status.value: {"count": count, "percent": safe_div(count, total_media, True)}
-                for status, count in media_count
-            }
-
-            status_count.update(media_dict)
-
-        status_list = [{"status": key, **val} for key, val in status_count.items()]
-
-        data = dict(
-            total_media=total_media,
-            total_media_no_plan_to_x=total_media_no_plan_to_x,
-            no_data=no_data,
-            status_count=status_list
-        )
-
-        return data
+    @abstractmethod
+    def update_status(self, new_status: Status) -> int:
+        pass
 
     @classmethod
-    def get_media_count_per_rating(cls, user: User) -> List[int]:
-        rating = cls.feeling if user.add_feeling else cls.score
-        range_ = list(range(6)) if user.add_feeling else [i * 0.5 for i in range(21)]
+    @abstractmethod
+    def total_user_time_def(cls):
+        pass
 
-        media_count = (
-            db.session.query(rating, func.count(rating))
-            .filter(cls.user_id == user.id, rating.is_not(None))
-            .group_by(rating).order_by(rating).all()
-        )
-
-        metric_counts = {str(val): 0 for val in range_}
-        new_metric = {str(val): count for val, count in media_count}
-        metric_counts.update(new_metric)
-
-        return list(metric_counts.values())
+    # --- CLASS METHODS ------------------------------------------------------------
 
     @classmethod
-    def get_media_rating(cls, user: User) -> Dict:
-        rating = cls.feeling if user.add_feeling else cls.score
+    def media_in_user_list(cls, user_id: int, list_of_media: List[Media]) -> List[Dict]:
+        media_ids = [media.id for media in list_of_media]
 
-        media_ratings = (
-            db.session.query(func.count(rating), func.count(cls.media_id), func.sum(rating))
-            .filter(cls.user_id == user.id).all()
-        )
+        user_media_records = cls.query.filter(cls.user_id == user_id, cls.media_id.in_(media_ids)).all()
 
-        count_rating, count_media, sum_rating = media_ratings[0]
-        percent_rating = safe_div(count_rating, count_media, percentage=True)
-        mean_metric = safe_div(sum_rating, count_rating)
+        # Build set of media IDs in user's list for efficient lookup
+        in_list_ids = {user_media.media_id for user_media in user_media_records}
 
-        return dict(media_metric=count_rating, percent_metric=percent_rating, mean_metric=mean_metric)
+        results = []
+        for media in list_of_media:
+            media_dict = media.to_dict()
 
-    @classmethod
-    def get_specific_total(cls, user_id: int) -> int:
-        """
-        Retrieve a specific aggregate value: either the total count of episodes for TV shows, the total watched
-        count along with the number of rewatched movies for movies, or the total number of pages read for books.
-        This behavior is overridden by the <GamesList> class, which doesn't possess an interesting specific aggregate
-        value in its SQL table
-        """
-        return db.session.query(func.sum(cls.total)).filter(cls.user_id == user_id).scalar() or 0
+            # Rename keys 'id' becomes 'media_id', 'name' becomes 'media_name' -> consistency in frontend
+            media_dict["media_id"] = media_dict.pop("id", None)
+            media_dict["media_name"] = media_dict.pop("name", None)
 
-    @classmethod
-    def get_favorites_media(cls, user_id: int, limit: int = 10) -> Dict:
-        favorites_query = cls.query.filter_by(user_id=user_id, favorite=True).order_by(func.random()).all()
+            # Add "in_list" flag indicating if media ID is user's list
+            media_dict["in_list"] = media.id in in_list_ids
 
-        favorites_list = [dict(
-            media_name=favorite.media.name,
-            media_id=favorite.media_id,
-            media_cover=favorite.media.media_cover,
-        ) for favorite in favorites_query[:limit]]
+            results.append(media_dict)
 
-        return dict(favorites=favorites_list, total_favorites=len(favorites_query))
+        return results
 
     @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict:
+    def get_available_sorting(cls) -> Dict:
         media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {
@@ -205,10 +176,10 @@ class MediaList(db.Model):
             "Title Z-A": media.name.desc(),
             "Release Date +": media.release_date.desc(),
             "Release Date -": media.release_date.asc(),
-            "Score TMDB +": media.vote_average.desc(),
-            "Score TMDB -": media.vote_average.asc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "TMDB Rating +": media.vote_average.desc(),
+            "TMDB Rating -": media.vote_average.asc(),
+            "Rating +": cls.rating.desc(),
+            "Rating -": cls.rating.asc(),
             "Re-watched": cls.redo.desc(),
         }
 
@@ -248,6 +219,13 @@ class Genres(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+    # --- ABSTRACT METHODS ---------------------------------------------------------
+
+    @staticmethod
+    @abstractmethod
+    def get_available_genres() -> List[str]:
+        pass
 
 
 class Actors(db.Model):

@@ -53,11 +53,16 @@ def log_error(error: Exception):
                 url=request.url,
                 method=request.method,
                 headers=dict(request.headers),
-                body=request.get_data(as_text=True),
                 user_id=current_user.id if current_user else None,
                 user_username=current_user.username if current_user else None,
                 timestamp=f"{naive_utcnow().strftime('%d-%b-%Y %H:%M:%S')} UTC",
             ))
+
+            try:
+                del error_context["headers"]["Cookie"]
+                del error_context["headers"]["Authorization"]
+            except:
+                pass
 
         current_app.logger.error(
             f" ### ERROR BEGIN ----------------------------------------------------------\n"

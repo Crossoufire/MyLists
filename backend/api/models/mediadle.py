@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Dict
+from datetime import datetime
 
 from sqlalchemy import func
 
@@ -29,16 +29,14 @@ class DailyMediadle(db.Model):
             cls.query.filter_by(media_type=MediaType.MOVIES)
             .order_by(DailyMediadle.date.desc())
             .with_entities(DailyMediadle.media_id)
-            .limit(730).all()
+            .limit(200).all()
         )
         used_movie_ids = [m.media_id for m in used_movies]
 
-        # Take random movie with more than 500 votes and not in used movies
         available_movie = (
-            Movies.query.filter(
-                Movies.id.not_in(used_movie_ids),
-                Movies.vote_count >= 500,
-            ).order_by(func.random()).first()
+            Movies.query.filter(Movies.id.not_in(used_movie_ids), Movies.vote_count >= 700)
+            .order_by(func.random())
+            .first()
         )
         daily_mediadle = cls(media_type=MediaType.MOVIES, media_id=available_movie.id, date=today)
 

@@ -1,13 +1,40 @@
 import os
 import re
 import secrets
+from io import BytesIO
+from urllib import request
 from datetime import datetime, timezone
 from typing import List, Any, Iterable, Tuple, Dict, Optional
 
 from PIL import Image
 from flask import current_app, abort
-from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
+
+from backend.api import MediaType
+
+
+def make_cache_key():
+    """
+    Generate a cache key based on the endpoint and mt parameter.
+    Returns keys in format:
+    - `stats_global`
+    - `stats_<username>`
+    - `stats_global_<mt>`
+    - `stats_<username>_<mt>`
+    """
+
+    from flask import request
+
+    name = request.view_args.get("username", "global")
+    media_type = request.args.get("mt", "").strip().lower()
+    media_type = MediaType(media_type) if media_type else ""
+
+    base_key = f"stats_{name}"
+    if media_type:
+        return f"{base_key}_{media_type}"
+
+    return base_key
 
 
 def get(state: Iterable, *path: Any, default: Any = None):
@@ -16,7 +43,7 @@ def get(state: Iterable, *path: Any, default: Any = None):
     try:
         for step in path:
             state = state[step]
-    except LookupError:
+    except (LookupError, TypeError):
         return default
     return state or default
 
@@ -28,7 +55,7 @@ def compute_level(total_time: float) -> float:
 
 
 def save_picture(form_picture: FileStorage, old_picture: str, profile: bool = True):
-    """ Save an account picture with better error handling """
+    """ Save an account picture """
 
     try:
         with Image.open(form_picture.stream) as image:
@@ -120,9 +147,35 @@ def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int
             return last_episode, seas, eps_watched
 
 
-def format_datetime(date) -> Optional[datetime]:
+def format_datetime_from_dict(date_dict: Dict[str, int]) -> Optional[datetime]:
+    """ Format a date dictionary (like {'year': 2013, 'month': 4, 'day': 12}) into a datetime object """
+    try:
+        year = date_dict.get("year")
+        month = date_dict.get("month", 1)
+        day = date_dict.get("day", 1)
+        if year is not None:
+            return datetime(year, month, day)
+    except:
+        pass
+    return None
+
+
+def format_datetime(date: Optional[str | Dict[str, int]]) -> Optional[datetime]:
     """ Format to a universal datetime format or None if datetime not valid before saving to db """
 
+    if not date:
+        return None
+
+    if isinstance(date, dict):
+        return format_datetime_from_dict(date)
+
+    # Try to parse ISO 8601 format directly
+    try:
+        return datetime.fromisoformat(date.replace("Z", "+00:00"))
+    except ValueError:
+        pass
+
+    # Define other date patterns
     date_patterns = ["%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y"]
     for pattern in date_patterns:
         try:
@@ -134,12 +187,6 @@ def format_datetime(date) -> Optional[datetime]:
         return datetime.fromtimestamp(int(date))
     except:
         return None
-
-
-def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
-    with Image.open(input_path) as img:
-        img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
-        img_resized.save(output_path, quality=90)
 
 
 def format_to_download_as_csv(media_dict: Dict) -> Dict:
@@ -173,3 +220,31 @@ def aware_utcnow():
 
 def naive_utcnow():
     return aware_utcnow().replace(tzinfo=None)
+
+
+def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
+    with Image.open(input_path) as img:
+        img = img.convert("RGB")
+        img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
+        img_resized.save(output_path, quality=90)
+
+
+def fetch_cover(cover_url: Optional[str]) -> Optional[BytesIO]:
+    """ Fetch image data from a URL and returns it as BytesIO object. """
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+        "Accept-Encoding": "none",
+        "Accept-Language": "en-US,en;q=0.8",
+        "Connection": "keep-alive",
+    }
+
+    try:
+        req = request.Request(url=cover_url, headers=headers)
+        with request.urlopen(req) as response:
+            image_data = response.read()
+        return BytesIO(image_data)
+    except:
+        return None

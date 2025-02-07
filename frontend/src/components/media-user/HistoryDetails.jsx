@@ -1,7 +1,7 @@
 import {useState} from "react";
+import {useDeleteUpdateMutation} from "@/api";
 import {MutedText} from "@/components/app/MutedText";
 import {UserUpdate} from "@/components/app/UserUpdate";
-import {useDeleteUpdateMutation} from "@/api/mutations/simpleMutations";
 
 
 export const HistoryDetails = ({ queryKey, history }) => {

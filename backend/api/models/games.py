@@ -6,7 +6,6 @@ from flask import abort
 from sqlalchemy import func, ColumnElement
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, GamesPlatformsEnum
 
@@ -58,7 +57,7 @@ class Games(Media):
         return 0
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = (
                 cls.query.join(GamesCompanies, GamesCompanies.media_id == cls.id)
@@ -68,14 +67,7 @@ class Games(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(GamesList)
-            .filter(GamesList.user_id == current_user.id, GamesList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:
@@ -97,24 +89,21 @@ class GamesList(MediaList):
     media = db.relationship("Games", back_populates="list_info", lazy="joined")
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        del media_dict["feeling"]
-        del media_dict["score"]
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["platform"] = self.platform.value if self.platform else None
-        media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["all_platforms"] = [platform.value for platform in GamesPlatformsEnum]
-        media_dict["rating"] = {
-            "type": "feeling" if is_feeling else "score",
-            "value": self.feeling if is_feeling else self.score
-        }
+        media_dict.update({
+            "media_name": self.media.name,
+            "media_cover": self.media.media_cover,
+            "platform": self.platform if self.platform else None,
+            "all_status": Status.by(self.GROUP),
+            "all_platforms": list(GamesPlatformsEnum),
+            "rating": {
+                "type": self.user.rating_system,
+                "value": self.rating,
+            }
+        })
 
         return media_dict
 
@@ -125,25 +114,17 @@ class GamesList(MediaList):
 
         return self.playtime
 
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value)
-
     @classmethod
-    def get_specific_total(cls, user_id: int):
-        return
-
-    @classmethod
-    def get_available_sorting(cls, is_feeling: bool) -> Dict[str, ColumnElement]:
+    def get_available_sorting(cls) -> Dict[str, ColumnElement]:
         sorting_dict = {
             "Title A-Z": Games.name.asc(),
             "Title Z-A": Games.name.desc(),
             "Release date +": Games.release_date.desc(),
             "Release date -": Games.release_date.asc(),
-            "Score IGDB +": Games.vote_average.desc(),
-            "Score IGDB -": Games.vote_average.asc(),
-            "Rating +": cls.feeling.desc() if is_feeling else cls.score.desc(),
-            "Rating -": cls.feeling.asc() if is_feeling else cls.score.asc(),
+            "IGDB Rating +": Games.vote_average.desc(),
+            "IGDB Rating -": Games.vote_average.asc(),
+            "Rating +": cls.rating.desc(),
+            "Rating -": cls.rating.asc(),
             "Playtime +": cls.playtime.desc(),
             "Playtime -": cls.playtime.asc(),
         }

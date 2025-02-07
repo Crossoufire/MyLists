@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Dict
 from enum import StrEnum
 
 
@@ -30,6 +30,13 @@ class Privacy(StrEnum):
     PRIVATE = "private"
 
 
+class RatingSystem(StrEnum):
+    """ Represents the rating system used by the user """
+
+    SCORE = "score"
+    FEELING = "feeling"
+
+
 # --- MEDIA ------------------------------------------------------------------------
 
 
@@ -44,6 +51,7 @@ class MediaType(StrEnum):
     MOVIES = "movies"
     BOOKS = "books"
     GAMES = "games"
+    MANGA = "manga"
 
     def __lt__(self, other: MediaType):
         order = {mt: idx for (idx, mt) in enumerate(MediaType)}
@@ -75,33 +83,20 @@ class Status(StrEnum):
     PLAN_TO_PLAY = "Plan to Play"
 
     @classmethod
-    def movies(cls):
-        return [cls.COMPLETED, cls.PLAN_TO_WATCH]
-
-    @classmethod
-    def tv(cls):
-        return [cls.WATCHING, cls.COMPLETED, cls.ON_HOLD, cls.RANDOM, cls.DROPPED, cls.PLAN_TO_WATCH]
-
-    @classmethod
-    def books(cls):
-        return [cls.READING, cls.COMPLETED, cls.ON_HOLD, cls.DROPPED, cls.PLAN_TO_READ]
-
-    @classmethod
-    def games(cls):
-        return [cls.PLAYING, cls.COMPLETED, cls.MULTIPLAYER, cls.ENDLESS, cls.DROPPED, cls.PLAN_TO_PLAY]
-
-    @classmethod
     def by(cls, media_type: MediaType):
-        if media_type == MediaType.SERIES or media_type == MediaType.ANIME:
-            return cls.tv()
-        elif media_type == MediaType.MOVIES:
-            return cls.movies()
-        elif media_type == MediaType.BOOKS:
-            return cls.books()
-        elif media_type == MediaType.GAMES:
-            return cls.games()
-        else:
-            raise ValueError(f"Invalid media type: {media_type}")
+        return StatusManager.get_status_by_media_type(media_type)
+
+
+class StatusManager:
+    _status_mapping: Dict[MediaType, List[Status]] = {}
+
+    @classmethod
+    def init_status_mapping(cls, media_type: MediaType, status_list: List[Status]):
+        cls._status_mapping[media_type] = status_list
+
+    @classmethod
+    def get_status_by_media_type(cls, media_type: MediaType) -> List[Status]:
+        return cls._status_mapping[media_type]
 
 
 class JobType(StrEnum):
@@ -115,6 +110,7 @@ class JobType(StrEnum):
     ACTOR = "actor"
     CREATOR = "creator"
     PLATFORM = "platform"
+    PUBLISHER = "publisher"
 
 
 class GamesPlatformsEnum(StrEnum):
@@ -203,6 +199,7 @@ class UpdateType(StrEnum):
     - `page`: updates for the books
     - `redo`: updates re-watched / re-read for the series/anime/movies/books
     - `status`: updates for the status of the media (all media concerned)
+    - `chapter`: updates for the chapters of the manga
     - `playtime`: updates for the playtime of the games
     """
 
@@ -210,6 +207,7 @@ class UpdateType(StrEnum):
     PAGE = "page"
     REDO = "redo"
     STATUS = "status"
+    CHAPTER = "chapter"
     PLAYTIME = "playtime"
 
 
@@ -234,4 +232,5 @@ class SearchSelector(StrEnum):
     TMDB = "tmdb"
     BOOKS = "books"
     IGDB = "igdb"
+    MANGA = "manga"
     USERS = "users"

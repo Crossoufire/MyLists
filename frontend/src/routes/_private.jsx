@@ -1,4 +1,4 @@
-import {api} from "@/api/apiClient";
+import {getApiClient} from "@/api";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_private")({
         const routeType = ["/profile", "/stats", "/list", "/achievements"].some(path => location.pathname.startsWith(path))
             ? location.pathname.split("/")[1] : "other";
 
-        if (routeType === "other" && (!auth.currentUser || !api.isAuthenticated())) {
+        if (routeType === "other" && (!auth.currentUser || !getApiClient().isAuthenticated())) {
             throw redirect({ to: "/", search: { message: "You need to be logged-in to view this page" } });
         }
     },

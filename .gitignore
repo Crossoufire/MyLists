@@ -76,7 +76,7 @@ celerybeat-schedule
 
 # Environments
 .env
-.venv
+backend/.venv
 env/
 venv/
 ENV/
@@ -100,7 +100,6 @@ venv.bak/
 # BACKEND STUFF
 backend/.env
 backend/.flaskenv
-backend/poetry.lock
 backend/instance/cache/*
 
 backend/api/static/profile_pics/*
@@ -115,14 +114,15 @@ backend/api/static/covers/anime_covers/*
 backend/api/static/covers/movies_covers/*
 backend/api/static/covers/games_covers/*
 backend/api/static/covers/books_covers/*
+backend/api/static/covers/manga_covers/*
 
 # FRONTEND STUFF
 build/*
 dist/*
-/frontend/.env.development
-/frontend/.env.production
-/frontend/node_modules
-/frontend/package-lock.json
-/frontend/src/routeTree.gen.*
+/**/.env.development
+/**/.env.production
+/**/node_modules
+/**/package-lock.json
+/**/routeTree.gen.*
 
 # -------------------------------------------------------------------------------------

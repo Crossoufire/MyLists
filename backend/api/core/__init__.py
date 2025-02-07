@@ -1,6 +1,6 @@
 from flask import g
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.local import LocalProxy
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 
 
 basic_auth = HTTPBasicAuth()

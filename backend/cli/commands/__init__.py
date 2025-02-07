@@ -1,5 +1,5 @@
-from importlib import import_module
 from pathlib import Path
+from importlib import import_module
 
 
 def register_cli_commands():
@@ -8,6 +8,6 @@ def register_cli_commands():
     commands_path = Path(__file__).parent
 
     # Dynamically import all command modules
-    for command_file in commands_path.glob("*_commands.py"):
+    for command_file in commands_path.glob("*.py"):
         module_name = f"backend.cli.commands.{command_file.stem}"
         import_module(module_name)

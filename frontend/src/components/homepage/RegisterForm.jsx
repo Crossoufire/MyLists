@@ -1,13 +1,13 @@
 import {toast} from "sonner";
+import {useAuth} from "@/api";
 import {useForm} from "react-hook-form";
-import {useAuth} from "@/hooks/AuthHook";
 import {Input} from "@/components/ui/input";
 import {FormButton} from "@/components/app/FormButton";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
 
-export const RegisterForm = ({ onTabChange }) => {
+export const RegisterForm = ({ open, onOpenChange }) => {
     const { register } = useAuth();
     const form = useForm({
         defaultValues: {
@@ -45,21 +45,19 @@ export const RegisterForm = ({ onTabChange }) => {
             onSuccess: () => {
                 form.reset();
                 toast.success("Your account has been created. Check your email to activate your account.");
-                onTabChange("login");
             },
         });
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex justify-center">
-                    Create an account
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-sm:w-full w-[320px] bg-neutral-950">
+                <DialogHeader>
+                    <DialogTitle>Register to Mylists</DialogTitle>
+                    <DialogDescription></DialogDescription>
+                </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
                         <div className="space-y-4">
                             <FormField
                                 control={form.control}
@@ -152,7 +150,7 @@ export const RegisterForm = ({ onTabChange }) => {
                         </FormButton>
                     </form>
                 </Form>
-            </CardContent>
-        </Card>
+            </DialogContent>
+        </Dialog>
     );
 };

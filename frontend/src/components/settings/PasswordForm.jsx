@@ -1,13 +1,13 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
+import {useSimpleMutations} from "@/api";
 import {Input} from "@/components/ui/input";
 import {FormButton} from "@/components/app/FormButton";
-import {simpleMutations} from "@/api/mutations/simpleMutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
 export const PasswordForm = () => {
-    const { passwordSettings } = simpleMutations();
+    const { passwordSettings } = useSimpleMutations();
     const form = useForm({
         defaultValues: {
             new_password: "",

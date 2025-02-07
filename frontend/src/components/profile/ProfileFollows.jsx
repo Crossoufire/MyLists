@@ -1,6 +1,6 @@
 import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
-import {useCollapse} from "@/hooks/CollapseHook";
+import {useCollapse} from "@/hooks/useCollapse";
 import {Separator} from "@/components/ui/separator";
 import {BlockLink} from "@/components/app/BlockLink";
 import {MutedText} from "@/components/app/MutedText";

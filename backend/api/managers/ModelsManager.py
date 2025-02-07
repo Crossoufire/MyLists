@@ -12,8 +12,7 @@ class ModelsManager:
     ListMoTs = List[ModelTypes] | ModelTypes
     TypeMediaType = List[MediaType] | Literal["all"] | MediaType
     TypeModelType = List[ModelTypes] | Literal["all"] | ModelTypes
-    ReturnModelGroup = (Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model] |
-                        Dict[MediaType, Dict[ModelTypes, db.Model]])
+    ReturnModelGroup = Dict[ModelTypes, db.Model] | Dict[MediaType, db.Model] | Dict[MediaType, Dict[ModelTypes, db.Model]]
 
     _model_cache: Dict[Tuple[MediaType, ModelTypes], Type[db.Model]] = {}
     _media_type_cache: Dict[MediaType, List[Type[db.Model]]] = {}
@@ -55,7 +54,7 @@ class ModelsManager:
                 pass
 
     @classmethod
-    def get_unique_model(cls, media_type: MediaType, model_type: ModelTypes) -> Type[db.Model]:
+    def get_unique_model(cls, media_type: MediaType | str, model_type: ModelTypes) -> Type[db.Model]:
         cls._initialize_caches()
         return cls._model_cache.get((media_type, model_type))
 
@@ -63,8 +62,7 @@ class ModelsManager:
     def get_lists_models(cls, media_types: ListMeTs, model_types: ListMoTs) -> List[Type[db.Model]]:
         cls._initialize_caches()
 
-        if ((isinstance(media_types, EnumMeta) or isinstance(media_types, MediaType))
-                and isinstance(model_types, ModelTypes)):
+        if (isinstance(media_types, EnumMeta) or isinstance(media_types, MediaType)) and isinstance(model_types, ModelTypes):
             raise Exception("At least one argument needs to be a list")
 
         if isinstance(media_types, list) and isinstance(model_types, list):

@@ -1,11 +1,10 @@
 import {useState} from "react";
-import {useAuth} from "@/hooks/AuthHook";
 import {capitalize} from "@/utils/functions";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Header} from "@/components/media-list/Header";
+import {listOptions, queryKeys, useAuth} from "@/api";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {listOptions, queryKeys} from "@/api/queryOptions";
 import {MediaGrid} from "@/components/media-list/MediaGrid";
 import {MediaTable} from "@/components/media-list/MediaTable";
 import {AppliedFilters} from "@/components/media-list/AppliedFilters";

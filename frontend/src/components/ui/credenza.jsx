@@ -1,10 +1,11 @@
 import {cn} from "@/utils/functions";
-import {useMediaQuery} from "@/hooks/MediaQueryHook";
+import {useMediaQuery} from "@/hooks/useMediaQuery";
 import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger} from "@/components/ui/drawer";
 
 
 const desktop = "(min-width: 768px)";
+
 
 const Credenza = ({ children, ...props }) => {
     const isDesktop = useMediaQuery(desktop);

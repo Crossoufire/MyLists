@@ -1,9 +1,9 @@
 import {useState} from "react";
-import {jobDetailsOptions} from "@/api/queryOptions";
+import {jobDetailsOptions} from "@/api";
 import {MediaCard} from "@/components/app/MediaCard";
+import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
 

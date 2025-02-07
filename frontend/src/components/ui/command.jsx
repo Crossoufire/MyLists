@@ -1,7 +1,7 @@
 import * as React from "react";
+import {Search} from "lucide-react";
 import {cn} from "@/utils/functions";
 import {Command as CommandPrimitive} from "cmdk";
-import {MagnifyingGlassIcon} from "@radix-ui/react-icons";
 import {Dialog, DialogContent} from "@/components/ui/dialog";
 
 
@@ -35,7 +35,7 @@ const CommandDialog = ({ children, ...props }) => {
 
 const CommandInput = React.forwardRef(({ className, ...props }, ref) => (
     <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-        <MagnifyingGlassIcon className="mr-2 h-4 w-4 shrink-0 opacity-50"/>
+        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50"/>
         <CommandPrimitive.Input
             ref={ref}
             className={cn("flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none " +

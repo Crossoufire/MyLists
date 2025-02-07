@@ -6,9 +6,8 @@ from flask import abort
 from sqlalchemy import func
 
 from backend.api import db
-from backend.api.core import current_user
-from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 from backend.api.utils.enums import MediaType, Status, JobType
+from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 
 
 class Movies(Media):
@@ -46,21 +45,21 @@ class Movies(Media):
         return media_dict
 
     def add_to_user(self, new_status: Status, user_id: int) -> int:
-        total_watched = 1 if new_status != Status.PLAN_TO_WATCH else 0
+        total_watched = 1 if new_status == Status.COMPLETED else 0
 
         # noinspection PyArgumentList
-        add_movie = MoviesList(
+        new_entry = MoviesList(
             user_id=user_id,
             media_id=self.id,
             status=new_status,
             total=total_watched,
         )
-        db.session.add(add_movie)
+        db.session.add(new_entry)
 
         return total_watched
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = cls.query.filter(cls.director_name.ilike(f"%{name}%")).all()
         elif job == JobType.ACTOR:
@@ -72,14 +71,7 @@ class Movies(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(MoviesList)
-            .filter(MoviesList.user_id == current_user.id, MoviesList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:
@@ -99,22 +91,19 @@ class MoviesList(MediaList):
     media = db.relationship("Movies", back_populates="list_info", lazy="joined")
 
     def to_dict(self) -> Dict:
-        is_feeling = self.user.add_feeling
-
         media_dict = {}
         if hasattr(self, "__table__"):
             media_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        del media_dict["feeling"]
-        del media_dict["score"]
-
-        media_dict["media_cover"] = self.media.media_cover
-        media_dict["media_name"] = self.media.name
-        media_dict["all_status"] = Status.by(self.GROUP)
-        media_dict["rating"] = {
-            "type": "feeling" if is_feeling else "score",
-            "value": self.feeling if is_feeling else self.score
-        }
+        media_dict.update({
+            "media_cover": self.media.media_cover,
+            "media_name": self.media.name,
+            "all_status": Status.by(self.GROUP),
+            "rating": {
+                "type": self.user.rating_system,
+                "value": self.rating,
+            }
+        })
 
         return media_dict
 
@@ -136,10 +125,6 @@ class MoviesList(MediaList):
             new_total = 0
 
         return new_total
-
-    def update_time_spent(self, old_value: int = 0, new_value: int = 0):
-        setting = current_user.get_media_setting(self.GROUP)
-        setting.time_spent += (new_value - old_value) * self.media.duration
 
     @classmethod
     def total_user_time_def(cls):

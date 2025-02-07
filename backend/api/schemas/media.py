@@ -1,8 +1,8 @@
 from marshmallow import post_load, validates, ValidationError
 
 from backend.api import ma
-from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.schemas.core import EnumField
+from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.enums import MediaType, ModelTypes, Status, GamesPlatformsEnum
 
 
@@ -167,6 +167,23 @@ class UpdatePageSchema(BaseMediaSchema):
     def validate_payload(self, value):
         if value < 0:
             raise ValidationError("Invalid page")
+
+    def get_model_types(self):
+        return ModelTypes.LIST
+
+
+class UpdateChapterSchema(BaseMediaSchema):
+    payload = ma.Integer(required=True)
+
+    @validates("media_type")
+    def validate_media_type(self, value):
+        if value != MediaType.MANGA:
+            raise ValidationError("Only Manga are supported")
+
+    @validates("payload")
+    def validate_payload(self, value):
+        if value < 0:
+            raise ValidationError("Invalid chapter")
 
     def get_model_types(self):
         return ModelTypes.LIST

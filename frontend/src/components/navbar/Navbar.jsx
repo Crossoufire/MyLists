@@ -1,17 +1,17 @@
-import {useRef} from "react";
+import {useAuth} from "@/api";
 import {router} from "@/router";
-import {useAuth} from "@/hooks/AuthHook";
-import {queryClient} from "@/api/queryClient";
+import {useRef, useState} from "react";
 import {Button} from "@/components/ui/button";
 import {useSheet} from "@/providers/SheetProvider";
 import {Separator} from "@/components/ui/separator";
-import {CaretSortIcon} from "@radix-ui/react-icons";
 import {SearchBar} from "@/components/navbar/SearchBar";
+import {LoginForm} from "@/components/homepage/LoginForm";
 import {NavMediaDrop} from "@/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
+import {RegisterForm} from "@/components/homepage/RegisterForm";
 import {Notifications} from "@/components/navbar/Notifications";
-import {Link as NavLink, useLocation, useNavigate} from "@tanstack/react-router";
-import {LuAlignJustify, LuLogOut, LuSettings, LuSparkles, LuUser} from "react-icons/lu";
+import {Link as NavLink, useNavigate} from "@tanstack/react-router";
+import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/components/ui/navigation-menu";
@@ -20,16 +20,19 @@ import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuLi
 export const Navbar = () => {
     const popRef = useRef();
     const navigate = useNavigate();
-    const location = useLocation();
     const { currentUser, logout } = useAuth();
     const { sheetOpen, setSheetOpen } = useSheet();
+    const [showLogin, setShowLogin] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
 
     const logoutUser = () => {
         logout.mutate(undefined, {
             onSuccess: async () => {
-                queryClient.clear();
-                await router.invalidate().then(() => {
-                    navigate({ to: "/" });
+                setShowLogin(false);
+                setShowRegister(false);
+                await router.invalidate().then(async () => {
+                    // noinspection JSCheckFunctionSignatures
+                    return navigate({ to: "/" });
                 });
             },
         });
@@ -41,16 +44,16 @@ export const Navbar = () => {
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
-                    {location.pathname !== "/" &&
-                        <div className="space-x-3">
-                            <Button size="sm" asChild>
-                                <NavLink to="/">Login</NavLink>
-                            </Button>
-                            <Button size="sm" variant="secondary" asChild>
-                                <NavLink to="/">Register</NavLink>
-                            </Button>
-                        </div>
-                    }
+                    <div className="space-x-3">
+                        <Button size="sm" onClick={() => setShowLogin(true)}>
+                            Login
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setShowRegister(true)}>
+                            Register
+                        </Button>
+                    </div>
+                    <LoginForm open={showLogin} onOpenChange={setShowLogin}/>
+                    <RegisterForm open={showRegister} onOpenChange={setShowRegister}/>
                 </div>
             </nav>
         );
@@ -84,8 +87,8 @@ export const Navbar = () => {
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                <NavLink to="/mediadle" className={navStyle()}>
-                                    Mediadle
+                                <NavLink to="/moviedle" className={navStyle()}>
+                                    Moviedle
                                 </NavLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -112,7 +115,7 @@ export const Navbar = () => {
                                                     src={currentUser.profile_image}
                                                     className="h-10 w-10 rounded-full"
                                                 />
-                                                <CaretSortIcon className="opacity-80"/>
+                                                <ChevronDown className="w-3 h-3 opacity-80"/>
                                             </Button>
                                             {currentUser.show_update_modal &&
                                                 <div className="absolute right-5 top-0">
@@ -130,20 +133,20 @@ export const Navbar = () => {
                                             <NavMediaItem
                                                 popRef={popRef}
                                                 text={"Profile"}
-                                                icon={<LuUser/>}
+                                                icon={<User className="w-4 h-4"/>}
                                                 to={`/profile/${currentUser.username}`}
                                             />
                                             <NavMediaItem
                                                 to="/settings"
                                                 text="Settings"
                                                 popRef={popRef}
-                                                icon={<LuSettings/>}
+                                                icon={<Settings className="w-4 h-4"/>}
                                             />
                                             <NavMediaItem
                                                 to="/features"
                                                 text="Features"
                                                 popRef={popRef}
-                                                icon={<LuSparkles/>}
+                                                icon={<Sparkles className="w-4 h-4"/>}
                                             />
                                             <li>
                                                 <NavigationMenuLink asChild>
@@ -152,7 +155,7 @@ export const Navbar = () => {
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
                                                         <div className="flex items-center gap-3">
-                                                            <div>{<LuLogOut className="text-grey"/>}</div>
+                                                            <div><LogOut className="w-4 h-4"/></div>
                                                             <div>Logout</div>
                                                         </div>
                                                     </NavLink>
@@ -168,7 +171,7 @@ export const Navbar = () => {
                 <div className="lg:hidden ml-auto mr-2">
                     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                         <SheetTrigger className="flex items-center">
-                            <LuAlignJustify size={28}/>
+                            <Menu size={28}/>
                         </SheetTrigger>
                         <SheetContent side="left" className="max-sm:w-full">
                             <SheetHeader>
@@ -200,8 +203,8 @@ export const Navbar = () => {
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        <NavLink to="/mediadle" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Mediadle
+                                        <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Moviedle
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
@@ -216,20 +219,20 @@ export const Navbar = () => {
                                     <div className="-mt-3">
                                         <NavMediaItem
                                             text="Profile"
-                                            icon={<LuUser/>}
+                                            icon={<User className="h-4 w-4"/>}
                                             to={`/profile/${currentUser.username}`}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
                                             text="Settings"
-                                            icon={<LuSettings/>}
+                                            icon={<Settings className="h-4 w-4"/>}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/features"
                                             text="Features"
-                                            icon={<LuSparkles/>}
+                                            icon={<Sparkles className="h-4 w-4"/>}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <li>
@@ -239,7 +242,7 @@ export const Navbar = () => {
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">
                                                     <div className="grid grid-cols-3 font-semibold pb-2 items-center">
-                                                        <div>{<LuLogOut/>}</div>
+                                                        <div><LogOut className="w-4 h-4"/></div>
                                                         <div className="col-span-2">Logout</div>
                                                     </div>
                                                 </NavLink>

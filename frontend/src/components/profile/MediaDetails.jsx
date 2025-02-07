@@ -1,5 +1,5 @@
 import {capitalize} from "@/utils/functions";
-import {useCollapse} from "@/hooks/CollapseHook";
+import {useCollapse} from "@/hooks/useCollapse";
 import {Separator} from "@/components/ui/separator";
 import {MediaStats} from "@/components/profile/MediaStats";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -31,10 +31,10 @@ export const MediaDetails = ({ mediaData, userData }) => {
                             </TabsTrigger>
                         )}
                     </TabsList>
-                    {mediaData.map(mt =>
-                        <TabsContent key={mt.media_type} value={mt.media_type}>
+                    {mediaData.map(media =>
+                        <TabsContent key={media.media_type} value={media.media_type}>
                             <MediaStats
-                                media={mt}
+                                media={media}
                                 user={userData}
                             />
                         </TabsContent>

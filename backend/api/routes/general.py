@@ -1,20 +1,20 @@
-from operator import and_
+from flask import Blueprint, jsonify, request
+from sqlalchemy import func, case, and_, select
 
-from sqlalchemy import case, desc, func
-from flask import Blueprint, jsonify, url_for
-
-from backend.api import cache, db, limiter
-from backend.api.core.auth import token_auth
+from backend.api.core import current_user
+from backend.api import cache, limiter, db
+from backend.api.core.security import token_auth
 from backend.api.utils.enums import MediaType
 from backend.api.utils.decorators import arguments
-from backend.api.utils.functions import global_limiter
+from backend.api.models import UserMediaSettings, User
 from backend.api.schemas.general import HallOfFameSchema
-from backend.api.models.user import User, UserMediaSettings
-from backend.api.managers.GlobalStatsManager import GlobalStats
-from backend.api.managers.ApiManager import MoviesApiManager, SeriesApiManager
+from backend.api.services.api.factory import ApiServiceFactory
+from backend.api.services.stats.stats import MediaStatsService
+from backend.api.utils.functions import global_limiter, make_cache_key
 
 
 general = Blueprint("api_general", __name__)
+api_s_factory = ApiServiceFactory
 
 
 @general.route("/current_trends", methods=["GET"])
@@ -23,8 +23,13 @@ general = Blueprint("api_general", __name__)
 @cache.cached(timeout=3600)
 def current_trends():
     """ Fetch the current WEEK trends for TV and Movies using the TMDB API. Function cached for an hour. """
-    tv_trends = SeriesApiManager().fetch_and_format_trending()
-    movies_trends = MoviesApiManager().fetch_and_format_trending()
+
+    movies_api_service = api_s_factory.create(MediaType.MOVIES)
+    movies_trends = movies_api_service.trending()
+
+    tv_api_service = api_s_factory.create(MediaType.SERIES)
+    tv_trends = tv_api_service.trending()
+
     return jsonify(data=dict(tv_trends=tv_trends, movies_trends=movies_trends)), 200
 
 
@@ -32,46 +37,138 @@ def current_trends():
 @token_auth.login_required
 @arguments(HallOfFameSchema)
 def hall_of_fame(args):
-    if args["sorting"] == "profile":
-        ranking = (
-            db.session.query(
-                UserMediaSettings.user_id,
-                func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0)).label("time_spent")
-            ).group_by(UserMediaSettings.user_id)
-            .order_by(desc("time_spent")).subquery()
+    if args["sorting"] == "normalized":
+        sorting = "total_rank"
+    elif args["sorting"] == "profile":
+        sorting = "total_rank_time"
+    else:
+        sorting = f"{args["sorting"]}_rank"
+
+    def get_normalized_scores():
+        max_queries = {}
+        normalized_scores = {}
+        for media_type in MediaType:
+            max_queries[media_type] = (
+                db.session.query(func.max(UserMediaSettings.time_spent))
+                .filter(UserMediaSettings.active == True, UserMediaSettings.media_type == media_type)
+                .scalar_subquery()
+            )
+
+            # noinspection PyTypeChecker
+            normalized_scores[media_type] = case(
+                (max_queries[media_type] == 0, 0),
+                else_=func.sum(
+                    case(
+                        (and_(UserMediaSettings.active == True, UserMediaSettings.media_type == media_type),
+                         UserMediaSettings.time_spent / max_queries[media_type]), else_=0
+                    )
+                ),
+            ).label(f"{media_type}_score")
+
+        return normalized_scores
+
+    n_scores = get_normalized_scores()
+
+    # Base query
+    base_sub = (
+        db.session.query(
+            User.id,
+            User.username,
+            User.image_file,
+            *n_scores.values(),
+            sum(n_scores.values()).label("total_score"),
+            func.sum(case((UserMediaSettings.active, UserMediaSettings.time_spent), else_=0)).label("total_time"),
+        )
+        .join(UserMediaSettings, User.id == UserMediaSettings.user_id)
+        .group_by(User)
+        .subquery()
+    )
+
+    all_users_ranked = (
+        select(
+            base_sub.c.id,
+            base_sub.c.username,
+            base_sub.c.image_file,
+            base_sub.c.total_score,
+            func.row_number().over(order_by=base_sub.c.total_score.desc()).label("total_rank"),
+            *(
+                func.row_number().over(order_by=getattr(base_sub.c, f"{media_type}_score").desc())
+                .label(f"{media_type}_rank") for media_type in MediaType
+            ),
+            func.row_number().over(order_by=base_sub.c.total_time.desc()).label("total_rank_time"),
+        ).cte("all_users_ranked")
+    )
+
+    if args["search"]:
+        final_query = (
+            db.session.query(all_users_ranked)
+            .filter(func.lower(all_users_ranked.c.username).ilike(f"%{args['search'].lower()}%"))
+            .order_by(getattr(all_users_ranked.c, sorting))
         )
     else:
-        ranking = (
-            db.session.query(
-                UserMediaSettings.user_id,
-                func.sum(case((
-                    and_(UserMediaSettings.media_type == MediaType(args["sorting"]), UserMediaSettings.active),
-                    UserMediaSettings.time_spent), else_=0)
-                ).label("time_spent")
-            ).group_by(UserMediaSettings.user_id)
-            .order_by(desc("time_spent")).subquery()
-        )
+        final_query = db.session.query(all_users_ranked).order_by(getattr(all_users_ranked.c, sorting))
 
-    ranked_users = (
-        db.session.query(User.id, func.rank().over(order_by=ranking.c.time_spent.desc()).label("rank"))
-        .outerjoin(ranking, User.id == ranking.c.user_id).cte()
+    final_query = final_query.paginate(page=args["page"], per_page=10, error_out=True)
+
+    # Extract user IDs from paginated ranked results
+    user_ids = [user_row.id for user_row in final_query.items]
+
+    # Fetch full User objects in one query
+    users = User.query.filter(User.id.in_(user_ids)).all()
+    user_dict = {user.id: user for user in users}
+
+    media_type_counts = (
+        db.session.query(
+            UserMediaSettings.media_type,
+            func.count(UserMediaSettings.user_id).label("active_users"),
+        ).filter(UserMediaSettings.time_spent > 0, UserMediaSettings.active == True)
+        .group_by(UserMediaSettings.media_type)
+        .all()
+    )
+    media_type_count_dict = {mt.media_type: mt.active_users for mt in media_type_counts}
+
+    current_user_ranks = (
+        db.session.query(
+            all_users_ranked.c.total_rank,
+            *(getattr(all_users_ranked.c, f"{media_type}_rank") for media_type in MediaType),
+            all_users_ranked.c.total_rank_time,
+        ).select_from(all_users_ranked)
+        .filter(all_users_ranked.c.id == current_user.id)
+        .first()
     )
 
-    users_data = (
-        User.query.with_entities(User, ranked_users.c.rank)
-        .outerjoin(ranked_users, User.id == ranked_users.c.id)
-        .filter(User.active.is_(True), User.username.ilike(f"%{args['search']}%"))
-        .order_by(ranked_users.c.rank)
-        .paginate(page=args["page"], per_page=10, error_out=True)
-    )
+    user_ranks = []
+    for i, media_type in enumerate(MediaType, start=1):
+        mt_count = media_type_count_dict.get(media_type, 0)
 
-    users = [{**user.to_dict(), "rank": rank} for user, rank in users_data]
+        if mt_count == 0:
+            percent = None
+        elif mt_count == 1 and current_user_ranks[i] == 1:
+            percent = 100
+        elif current_user_ranks[i] > mt_count:
+            percent = None
+        else:
+            percent = (current_user_ranks[i] / mt_count) * 100
+
+        user_ranks.append(dict(
+            media_type=media_type,
+            active=current_user.get_media_setting(media_type).active,
+            rank=current_user_ranks[i],
+            percent=percent,
+        ))
+
+    items = []
+    for row in final_query.items:
+        user = user_dict.get(row.id).to_dict()
+        user["rank"] = getattr(row, sorting)
+        items.append(user)
 
     data = dict(
-        items=users,
-        page=users_data.page,
-        pages=users_data.pages,
-        total=users_data.total,
+        items=items,
+        page=final_query.page,
+        pages=final_query.pages,
+        total=final_query.total,
+        user_ranks=user_ranks,
     )
 
     return jsonify(data=data), 200
@@ -79,19 +176,20 @@ def hall_of_fame(args):
 
 @general.route("/mylists_stats", methods=["GET"])
 @token_auth.login_required
-@cache.cached(timeout=86400, key_prefix="mylists-stats")
+@cache.cached(timeout=86400, key_prefix=make_cache_key)
 def mylists_stats():
     """ Global MyLists stats. Updated every day at 3:00 AM UTC+1 """
-    return jsonify(data=GlobalStats().compute_global_stats()), 200
 
+    try:
+        media_type = MediaType(request.args.get("mt"))
+    except:
+        media_type = None
 
-@general.route("/levels/profile_borders", methods=["GET"])
-def profile_borders():
-    data = []
-    num_borders = 40
-
-    for i in range(1, num_borders + 1):
-        image_id = f"border_{i}.png"
-        data.append({"level": i, "image": url_for("static", filename=f"img/profile_borders/{image_id}")})
+    stats = MediaStatsService().get_stats(media_type=media_type)
+    stats["rating_system"] = "score"
+    data = dict(
+        stats=stats,
+        settings=[{"media_type": m} for m in list(MediaType)],
+    )
 
     return jsonify(data=data), 200

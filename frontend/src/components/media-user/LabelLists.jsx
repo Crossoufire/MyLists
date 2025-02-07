@@ -1,5 +1,5 @@
+import {useAuth} from "@/api";
 import {Fragment} from "react";
-import {useAuth} from "@/hooks/AuthHook";
 import {Badge} from "@/components/ui/badge";
 import {Link} from "@tanstack/react-router";
 import {Separator} from "@/components/ui/separator";

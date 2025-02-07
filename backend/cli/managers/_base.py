@@ -1,11 +1,13 @@
-from functools import wraps
+import re
 import sys
+from typing import Optional
+from functools import wraps
 
+from rich.text import Text
+from rich.table import Table
 from flask import current_app
 from rich.console import Console
 from rich.progress import Progress
-from rich.table import Table
-from rich.text import Text
 
 
 console = Console()
@@ -27,9 +29,9 @@ def with_console_status(message="Working..."):
 
 class CLIBaseManager:
     def __init__(self):
-        self.is_terminal = sys.stdin.isatty()
         self.console = console
         self.progress = Progress()
+        self.is_terminal = sys.stdin.isatty()
 
     @staticmethod
     def _log_table(rich_table: Table):
@@ -40,17 +42,28 @@ class CLIBaseManager:
         return Text.from_ansi(capture.get())
 
     @staticmethod
-    def create_table(title: str, columns: list) -> Table:
-        table = Table(title=title)
+    def create_table(title: Optional[str], columns: list, **kwargs) -> Table:
+        table = Table(title=title, **kwargs)
         for column in columns:
             table.add_column(column)
         return table
+
+    @staticmethod
+    def strip_ansi(text: str):
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
 
     def print_table(self, table: Table):
         if self.is_terminal:
             console.print(table)
         else:
             current_app.logger.info(f"\n{self._log_table(table)}")
+
+    def log_print(self, message: str):
+        if self.is_terminal:
+            console.print(message)
+        else:
+            current_app.logger.info(message)
 
     def log_success(self, message: str):
         if self.is_terminal:

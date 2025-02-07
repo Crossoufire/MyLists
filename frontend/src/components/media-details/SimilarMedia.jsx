@@ -1,8 +1,8 @@
 import {Link} from "@tanstack/react-router";
+import {capitalize} from "@/utils/functions";
 import {Tooltip} from "@/components/ui/tooltip";
 import {MutedText} from "@/components/app/MutedText";
 import {MediaTitle} from "@/components/media-details/MediaTitle";
-import {capitalize} from "@/utils/functions.jsx";
 
 
 export const SimilarMedia = ({ mediaType, similarMedia }) => {

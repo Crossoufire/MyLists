@@ -1,14 +1,14 @@
-import {LuArrowRight} from "react-icons/lu";
+import {ArrowRight} from "lucide-react";
+import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/components/ui/tooltip";
-import {getStatusColor} from "@/utils/functions";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 import {BlockLink} from "@/components/app/BlockLink";
-import {Link} from "@tanstack/react-router";
-import {BulletIcon} from "@/components/profile/BulletIcon";
+import {StatusBullet} from "@/components/profile/StatusBullet";
+import {getFeelingIcon, getStatusColor} from "@/utils/functions";
 
 
-export const MediaStats = ({ user, media }) => {
+export const MediaStats = ({ media, user }) => {
     return (
         <div>
             <div className="flex flex-wrap justify-between text-center font-medium max-sm:text-sm">
@@ -16,34 +16,25 @@ export const MediaStats = ({ user, media }) => {
                     title="Time (d)"
                     value={media.time_days}
                 />
-                {media.media_type === "books" &&
-                    <MediaValues
-                        title="Pages"
-                        value={media.specific_total}
-                    />
-                }
-                {media.media_type === "movies" &&
-                    <MediaValues
-                        title="Watched"
-                        value={media.specific_total}/>
-                }
-                {["series", "anime"].includes(media.media_type) &&
-                    <MediaValues
-                        title="Episodes"
-                        value={media.specific_total}/>
-                }
+                <SpecificMediaValues
+                    mediaType={media.media_type}
+                    value={media.specific_total}
+                />
                 <MediaValues
                     title="Entries"
                     value={media.total_media}
                 />
-                {!user.add_feeling &&
-                    <MediaValues
-                        title="Rating"
-                        value={media.mean_metric.toFixed(2)}/>
-                }
                 <MediaValues
-                    title="Scored"
-                    value={`${media.media_metric}/${media.total_media_no_plan_to_x}`}
+                    title="Avg. Rating"
+                    value={user.rating_system === "score" ?
+                        media.media_rated === 0 ? "--" : `${media.mean_rating.toFixed(2)}`
+                        :
+                        getFeelingIcon(media.mean_rating, { size: 16, className: "mt-1" })
+                    }
+                />
+                <MediaValues
+                    title="Rated"
+                    value={`${media.media_rated}/${media.total_media_no_plan_to_x}`}
                 />
             </div>
             <MediaStatuses
@@ -56,8 +47,8 @@ export const MediaStats = ({ user, media }) => {
             />
             <Separator className="mt-3 mb-1.5"/>
             <div className="flex items-center justify-end">
-                <Link to={`/stats/${media.media_type}/${user.username}`} className="text-base font-medium hover:underline">
-                    Advanced stats<LuArrowRight className="inline-block ml-1"/>
+                <Link to={`/stats/${user.username}`} className="text-base font-medium hover:underline">
+                    Advanced stats<ArrowRight className="inline-block ml-1 w-4 h-4"/>
                 </Link>
             </div>
         </div>
@@ -69,8 +60,20 @@ function MediaValues({ title, value }) {
     return (
         <div>
             <div className="text-neutral-500">{title}</div>
-            <div>{value}</div>
+            <div className="flex items-center justify-center">{value}</div>
         </div>
+    );
+}
+
+
+function SpecificMediaValues({ mediaType, value }) {
+    return (
+        <>
+            {mediaType === "manga" && <MediaValues title="Chapters" value={value}/>}
+            {mediaType === "books" && <MediaValues title="Pages" value={value}/>}
+            {mediaType === "movies" && <MediaValues title="(Re)watched" value={value}/>}
+            {["series", "anime"].includes(mediaType) && <MediaValues title="Episodes" value={value}/>}
+        </>
     );
 }
 
@@ -82,18 +85,21 @@ function MediaStatuses({ media, username }) {
                 {media.no_data ?
                     <span className="flex-grow bg-black"/>
                     :
-                    media.status_count.map(st =>
-                        <Tooltip key={`${st.status}-${media.media_type}`} text={st.status}>
-                            <span className="flex-grow" style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status) }}/>
+                    media.status_count.map((st, idx) =>
+                        <Tooltip key={idx} text={st.status}>
+                            <span
+                                style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status) }}
+                                className={"flex-grow"}
+                            />
                         </Tooltip>
                     )
                 }
             </div>
             <div className="grid grid-cols-2 font-medium gap-y-2 gap-x-8 px-2 max-sm:px-0 max-sm:text-xs">
-                {media.status_count.map(st =>
-                    <div key={`${st.status}-${media.media_type}`} className="flex justify-between">
+                {media.status_count.map((st, idx) =>
+                    <div key={idx} className="flex justify-between">
                         <Link to={`/list/${media.media_type}/${username}`} search={{ status: [st.status] }} className="text-neutral-500">
-                            <BulletIcon color={getStatusColor(st.status)}/> {st.status}
+                            <StatusBullet status={st.status}/> {st.status}
                         </Link>
                         <div>{st.count}</div>
                     </div>

@@ -1,4 +1,4 @@
-import {jobDetailsOptions} from "@/api/queryOptions";
+import {jobDetailsOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

@@ -1,6 +1,6 @@
-import {profileOptions} from "@/api/queryOptions";
-import {useSuspenseQuery} from "@tanstack/react-query";
+import {profileOptions} from "@/api";
 import {PageTitle} from "@/components/app/PageTitle";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {ProfileHeader} from "@/components/profile/ProfileHeader";
 import {createLazyFileRoute, Outlet} from "@tanstack/react-router";
 

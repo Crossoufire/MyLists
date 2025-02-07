@@ -1,4 +1,4 @@
-import {followersOptions} from "@/api/queryOptions";
+import {followersOptions} from "@/api";
 import {BlockLink} from "@/components/app/BlockLink";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";

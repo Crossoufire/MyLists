@@ -1,3 +1,46 @@
+## CHANGELOG v2.3.0
+---
+
+### Under the Hood
+
+- Removed `react-helmet`
+- Updated `React 18` to `React 19`
+- Added the `react-compiler` for better performance
+- Cleaned package.json dependencies
+- Refactored js colors functions and some utils js functions
+- Added "atomic/delta" updates for some stats calculations
+- Cleaned `radix-icons` and only use `lucide-icons` now (except for emoticons still font-awesome)
+- Added abstract methods in the SQLAlchemy models
+- Refactored ListStatsManager (delta + live stats calculations)
+- Better app initialization: automatically create the /instance and the media type covers directories
+- Consolidated feeling/score to one rating column system
+- Replaced `Nivo` charts with `Recharts` (for react 19)
+
+### Features
+
+- Added user setting to change the default media search selector on navbar
+- Added manga as a new media type and list
+- Users can now crop their image profile and image background in the settings
+- The global stats page and the user's stats page now have an "overall" section
+
+### UI Modifications
+
+- Added personal ranks in the HoF page
+- Changed the HoF page to take into account the new manga list
+- Changed the main ranking system of the HoF to be a normalized ranking system
+- Remade the global stats page to be like the user's stats page
+- Changed the frontend page with Login/Register on navbar only
+- Tweaked the achievement cards in /achievements
+- Changed "Mediadle" name to "Moviedle"
+
+### Fixes
+
+- Fixed rating showing nothing instead of '--'
+- Fixed remove moviedle user data on account deletion
+- Fixed demoProfile with no achievements
+- Anime in TV trends will now correctly be assigned to anime instead of /series in /details
+- Removed the user comparison in the /stats page (will be re-thought later)
+
 ## CHANGELOG v2.2.0
 ---
 

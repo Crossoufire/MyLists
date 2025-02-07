@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from operator import and_
 import random
+from operator import and_
 from typing import Dict, List
 
 from sqlalchemy import case, Case, func
@@ -41,6 +41,7 @@ class Achievement(db.Model):
     name = db.Column(db.String, nullable=False)
     code_name = db.Column(db.String, unique=True, nullable=False)
     description = db.Column(db.String, nullable=False)
+    value = db.Column(db.String, nullable=True)
     media_type = db.Column(db.String)
 
     # --- relationships -----------------------------------------------------------
@@ -75,8 +76,8 @@ class Achievement(db.Model):
         return result
 
     @classmethod
-    def get_achievements_with_user(cls, user_id: int, limit: int = 6) -> List[Dict]:
-        """ Get only N randomized achievements for the user (for profile page) """
+    def get_user_achievements(cls, user_id: int, limit: int = 6) -> List[Dict]:
+        """ Get only `limit` randomized achievements for the user (profile page) """
 
         achievements = (
             cls.query
@@ -121,6 +122,7 @@ class UserAchievement(db.Model):
     def to_dict(self) -> Dict:
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+    # noinspection PyTypeChecker
     @classmethod
     def get_full_summary(cls, user_id: int) -> Dict:
         """ Return a summary dict counting each media type and difficulty + total """
@@ -177,7 +179,7 @@ class UserAchievement(db.Model):
         return results
 
     @classmethod
-    def get_total_only_summary(cls, user_id: int) -> List[Dict]:
+    def get_difficulty_summary(cls, user_id: int) -> List[Dict]:
         """ Return a list of dict containing the count for each difficulty tier """
 
         tier_order = get_difficulty_case()
@@ -194,7 +196,8 @@ class UserAchievement(db.Model):
             db.session.query(AchievementTier.difficulty, func.count().label("count"))
             .join(subq, (AchievementTier.achievement_id == subq.c.achievement_id) & (tier_order == subq.c.max_tier_order))
             .group_by(AchievementTier.difficulty)
-            .order_by(tier_order).all()
+            .order_by(tier_order)
+            .all()
         )
 
-        return [{"difficulty": difficulty, "count": count} for difficulty, count in result]
+        return [{"difficulty": diff, "count": count} for diff, count in result]

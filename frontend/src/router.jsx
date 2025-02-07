@@ -1,6 +1,6 @@
 import NProgress from "nprogress";
+import {queryClient} from "@/api";
 import {routeTree} from "@/routeTree.gen";
-import {queryClient} from "@/api/queryClient";
 import {createRouter} from "@tanstack/react-router";
 import {ErrorComponent} from "@/components/app/ErrorComponent";
 

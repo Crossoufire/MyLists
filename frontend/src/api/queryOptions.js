@@ -1,39 +1,39 @@
-import {api} from "@/api/apiClient";
-import {fetcher} from "@/api/fetcher";
+import {fetcher} from "./utils";
+import {getApiClient} from "./apiClient";
 import {queryOptions} from "@tanstack/react-query";
 
 
 export const queryKeys = {
+    achievementPageKey: (username) => ["achievementPage", username],
     authKey: () => ["currentUser"],
-    historyKey: (mediaType, mediaId) => ["onOpenHistory", mediaType, mediaId],
-    detailsKey: (mediaType, mediaId) => ["details", mediaType, mediaId],
-    profileKey: (username) => ["profile", username],
     allUpdatesKey: (username, filters) => ["allUpdates", username, filters],
-    trendsKey: () => ["trends"],
-    upcomingKey: () => ["upcoming"],
-    globalStatsKey: () => ["globalStats"],
-    jobDetailsKey: (mediaType, job, name) => ["jobDetails", mediaType, job, name],
+    dailyMediadleKey: () => ["dailyMediadle"],
+    detailsKey: (mediaType, mediaId) => ["details", mediaType, mediaId],
     editDetailsKey: (mediaType, mediaId) => ["editDetails", mediaType, mediaId],
-    userListKey: (mediaType, username, search) => ["userList", mediaType, username, search],
+    filterSearchKey: (mediaType, username, query, job) => ["filterSearch", mediaType, username, query, job],
     followersKey: (username) => ["followers", username],
     followsKey: (username) => ["follows", username],
-    statsKey: (mediaType, username) => ["stats", mediaType, username],
+    globalStatsKey: (search) => ["globalStats", search],
+    historyKey: (mediaType, mediaId) => ["onOpenHistory", mediaType, mediaId],
     hofKey: (search) => ["hof", search],
-    smallFiltersKey: (mediaType, username) => ["smallFilters", mediaType, username],
+    jobDetailsKey: (mediaType, job, name) => ["jobDetails", mediaType, job, name],
     labelsKey: (mediaType) => ["labels", mediaType],
     navSearchKey: (query, page, selector) => ["navSearch", query, page, selector],
     notificationCountKey: () => ["notificationCount"],
     notificationsKey: () => ["notifications"],
-    filterSearchKey: (mediaType, username, query, job) => ["filterSearch", mediaType, username, query, job],
-    achievementPageKey: (username) => ["achievementPage", username],
-    dailyMediadleKey: () => ["dailyMediadle"],
     mediadleSuggestionsKey: (query) => ["mediadleSuggestions", query],
+    profileKey: (username) => ["profile", username],
+    smallFiltersKey: (mediaType, username) => ["smallFilters", mediaType, username],
+    statsKey: (username, search) => ["stats", username, search],
+    trendsKey: () => ["trends"],
+    upcomingKey: () => ["upcoming"],
+    userListKey: (mediaType, username, search) => ["userList", mediaType, username, search],
 };
 
 
 export const authOptions = () => queryOptions({
     queryKey: queryKeys.authKey(),
-    queryFn: () => api.fetchCurrentUser(),
+    queryFn: () => getApiClient().fetchCurrentUser(),
     staleTime: Infinity,
 });
 
@@ -78,9 +78,9 @@ export const upcomingOptions = () => queryOptions({
 });
 
 
-export const globalStatsOptions = () => queryOptions({
-    queryKey: queryKeys.globalStatsKey(),
-    queryFn: () => fetcher({ url: "/mylists_stats" }),
+export const globalStatsOptions = (search) => queryOptions({
+    queryKey: queryKeys.globalStatsKey(search),
+    queryFn: () => fetcher({ url: "/mylists_stats", queryOrData: search }),
 });
 
 
@@ -116,9 +116,9 @@ export const followsOptions = (username) => queryOptions({
 });
 
 
-export const statsOptions = (mediaType, username) => queryOptions({
-    queryKey: queryKeys.statsKey(mediaType, username),
-    queryFn: () => fetcher({ url: `/stats/${mediaType}/${username}` }),
+export const statsOptions = (username, search) => queryOptions({
+    queryKey: queryKeys.statsKey(username, search),
+    queryFn: () => fetcher({ url: `/stats/${username}`, queryOrData: search }),
 });
 
 

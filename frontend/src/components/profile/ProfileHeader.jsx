@@ -1,7 +1,7 @@
-import {useAuth} from "@/hooks/AuthHook";
+import {useAuth} from "@/api";
 import {Link} from "@tanstack/react-router";
 import {formatDateTime} from "@/utils/functions";
-import {LuCalendarDays, LuUsers} from "react-icons/lu";
+import {CalendarDays, Users} from "lucide-react";
 import {FollowButton} from "@/components/profile/FollowButton";
 
 
@@ -19,7 +19,7 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                             <img
                                 alt="profile-picture"
                                 src={user.profile_image}
-                                className="rounded-full h-[100px] w-[100px] border-4 border-amber-600"
+                                className="rounded-full h-[100px] w-[100px] border-4 border-amber-600 bg-neutral-500"
                             />
                             <div className="absolute -bottom-2 -right-2 text-xs font-bold px-2 py-1 rounded-full
                             bg-gradient-to-r from-blue-600 to-violet-600">
@@ -39,11 +39,11 @@ export const ProfileHeader = ({ user, followStatus, followId }) => {
                             </div>
                             <div className="text-gray-300 text-sm font-medium space-y-1 max-sm:min-w-[220px]">
                                 <div className="flex items-center">
-                                    <LuCalendarDays className="w-4 h-4 mr-2"/>
+                                    <CalendarDays className="w-4 h-4 mr-2"/>
                                     <div>Joined: {formatDateTime(user.registered_on)}</div>
                                 </div>
                                 <div className="flex items-center">
-                                    <LuUsers className="w-4 h-4 mr-2"/>
+                                    <Users className="w-4 h-4 mr-2"/>
                                     <Link to={`/profile/${user.username}/followers`}>
                                         <div className="hover:underline">Followers: {user.followers_count}</div>
                                     </Link>

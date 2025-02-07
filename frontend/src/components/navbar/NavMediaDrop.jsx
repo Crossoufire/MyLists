@@ -1,10 +1,10 @@
 import {useRef} from "react";
-import {capitalize} from "@/utils/functions.jsx";
-import {CaretSortIcon} from "@radix-ui/react-icons";
+import {useAuth} from "@/api";
+import {ChevronDown} from "lucide-react";
+import {capitalize} from "@/utils/functions";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {NavMediaItem} from "@/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {useAuth} from "@/hooks/AuthHook.jsx";
 
 
 export const NavMediaDrop = () => {
@@ -13,10 +13,11 @@ export const NavMediaDrop = () => {
 
     const menuItems = [
         { url: `/list/series`, media: "series" },
-        { url: `/list/anime`, media: "anime", cond: currentUser.settings.anime.active },
+        { url: `/list/anime`, media: "anime", cond: currentUser.settings.find(s => s.media_type === "anime").active },
         { url: `/list/movies`, media: "movies" },
-        { url: `/list/books`, media: "books", cond: currentUser.settings.books.active },
-        { url: `/list/games`, media: "games", cond: currentUser.settings.games.active }
+        { url: `/list/books`, media: "books", cond: currentUser.settings.find(s => s.media_type === "books").active },
+        { url: `/list/games`, media: "games", cond: currentUser.settings.find(s => s.media_type === "games").active },
+        { url: `/list/manga`, media: "manga", cond: currentUser.settings.find(s => s.media_type === "manga")?.active },
     ];
 
     return (
@@ -25,7 +26,7 @@ export const NavMediaDrop = () => {
                 <PopoverTrigger>
                     <div className="flex items-center gap-2 font-semibold px-1 max-sm:ml-2">
                         MyLists
-                        <CaretSortIcon className="opacity-80"/>
+                        <ChevronDown className="w-3 h-3 opacity-80"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>

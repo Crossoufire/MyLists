@@ -1,14 +1,14 @@
+import {useAuth} from "@/api";
 import {useMemo, useState} from "react";
-import {useAuth} from "@/hooks/AuthHook";
 import {BlockLink} from "@/components/app/BlockLink";
 import {TablePagination} from "@/components/app/TablePagination";
 import {DisplayRating} from "@/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
+import {CircleCheck, Heart, RefreshCw, Settings2} from "lucide-react";
 import {CommentPopover} from "@/components/media-list/CommentPopover";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
-import {LuCheckCircle2, LuHeart, LuRefreshCw, LuSettings2} from "react-icons/lu";
 import {SpecificUserMediaData} from "@/components/media-list/SpecificUserMediaData";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
@@ -33,7 +33,7 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                     <BlockLink to={`/details/${mediaType}/${row.original.media_id}`}>
                         <div className="flex items-center gap-3">
                             {row.original.media_name}
-                            {!isCurrent && row.original.common && <LuCheckCircle2 className="h-4 w-4 text-green-500"/>}
+                            {!isCurrent && row.original.common && <CircleCheck className="h-4 w-4 text-green-500"/>}
                         </div>
                     </BlockLink>
                 );
@@ -61,10 +61,10 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                         <DisplayRating rating={row.original.rating}/>
                         {row.original.redo > 0 &&
                             <div className="flex items-center gap-1">
-                                <LuRefreshCw className="text-green-500"/> {row.original.redo}
+                                <RefreshCw className="w-4 h-4 text-green-500"/> {row.original.redo}
                             </div>
                         }
-                        {row.original.favorite && <LuHeart className="text-red-500"/>}
+                        {row.original.favorite && <Heart className="w-4 h-4 text-red-500"/>}
                         {row.original.comment && <CommentPopover content={row.original.comment}/>}
                     </div>
                 );
@@ -80,7 +80,7 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                             setDialogOpen(true);
                             setEditingId(row.original.media_id);
                         }}>
-                            <LuSettings2 className="opacity-70"/>
+                            <Settings2 className="w-4 h-4 opacity-70"/>
                         </div>
                     );
                 }

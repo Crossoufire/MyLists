@@ -1,63 +1,29 @@
-import {LuStar} from "react-icons/lu";
-import {getFeelingValues, getScoreValues} from "@/utils/functions";
+import {getFeelingIcon, getFeelingList, getScoreList} from "@/utils/functions";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
-export const RatingComponent = ({ rating, onUpdate, isEditable = true, inline = false }) => {
-    const ratingValues = (rating.type === "feeling") ? getFeelingValues(16) : getScoreValues();
+export const RatingComponent = ({ rating, onUpdate }) => {
+    const ratingList = (rating.type === "score") ? getScoreList() : getFeelingList({ size: 16 });
+    const ratingValue = (rating.type === "score") ? rating.value : getFeelingIcon(rating.value, { valueOnly: true });
 
-    const selectItems = ratingValues.map(val => {
-        if (rating.type === "feeling") {
-            return <SelectItem key={val.value} value={val.value}>{val.icon}</SelectItem>;
-        }
-        return <SelectItem key={val} value={val}>{typeof val === "number" ? val.toFixed(1) : "--"}</SelectItem>;
-    });
-
-    const handleSelectChange = (newRating) => {
-        onUpdate.mutate({ payload: newRating });
+    const handleSelectChange = (value) => {
+        onUpdate.mutate({ payload: value });
     };
 
-    const ratingContent = isEditable ?
-        <RatingSelect
-            items={selectItems}
-            value={rating.value}
-            onChange={handleSelectChange}
-            isPending={onUpdate.isPending}
-            size={inline ? "list" : "details"}
-            className={inline ? "w-[30px]" : "w-[130px]"}
-        />
-        :
-        <RatingDisplay
-            type={rating.type}
-            value={rating.value}
-            ratingValues={ratingValues}
-        />;
-
     return (
-        <div className={`flex ${inline ? "items-center gap-2" : "justify-between items-center"}`} title="Rating">
-            {inline && <LuStar/>}
-            {ratingContent}
+        <div className="flex justify-between items-center">
+            <Select value={ratingValue} onValueChange={handleSelectChange} disabled={onUpdate.isPending}>
+                <SelectTrigger className="w-[130px]" size="details">
+                    <SelectValue/>
+                </SelectTrigger>
+                <SelectContent>
+                    {ratingList.map(rating =>
+                        <SelectItem key={rating.value} value={rating.value}>
+                            {rating.component}
+                        </SelectItem>
+                    )}
+                </SelectContent>
+            </Select>
         </div>
     );
-};
-
-
-const RatingSelect = ({ value, onChange, isPending, items, className = "w-[130px]", size = "details" }) => (
-    <Select value={value} onValueChange={onChange} disabled={isPending}>
-        <SelectTrigger className={className} size={size} variant={size === "details" ? "" : "noIcon"}>
-            <SelectValue/>
-        </SelectTrigger>
-        <SelectContent>
-            {items}
-        </SelectContent>
-    </Select>
-);
-
-
-const RatingDisplay = ({ type, value, ratingValues }) => {
-    if (type === "feeling") {
-        const selectedRating = ratingValues.find(r => r.value === value);
-        return <span>{selectedRating ? selectedRating.icon : "--"}</span>;
-    }
-    return <span>{typeof value === "number" ? value.toFixed(1) : "--"}</span>;
 };

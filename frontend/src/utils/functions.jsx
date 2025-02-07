@@ -1,5 +1,6 @@
 import {clsx} from "clsx";
 import {twMerge} from "tailwind-merge";
+import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
@@ -7,29 +8,126 @@ export const cn = (...inputs) => {
     return twMerge(clsx(inputs));
 };
 
-export const getScoreValues = () => {
-    return [null, 0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+
+// --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
+
+export const getFeelingIcon = (value, { className, size, valueOnly } = {}) => {
+    if (!value || value < 0 || value > 10) return "--";
+
+    const feelValues = getFeelingList({ className, size });
+
+    let closest = feelValues[0];
+    let smallestDelta = Math.abs(value - feelValues[0].value);
+    for (const mood of feelValues) {
+        const delta = Math.abs(value - mood.value);
+        if (delta < smallestDelta || (delta === smallestDelta && mood.value < closest.value)) {
+            closest = mood;
+            smallestDelta = delta;
+        }
+    }
+
+    if (valueOnly) {
+        return closest.value;
+    }
+
+    return closest.component;
 };
 
-export const getFeelingValues = (size = 20) => {
+
+export const getFeelingList = ({ className, size = 20 }) => {
     return [
-        { value: null, icon: "--" },
-        { value: 0, icon: <FaPoop color="saddlebrown" size={size}/> },
-        { value: 1, icon: <FaAngry color="indianred" size={size}/> },
-        { value: 2, icon: <FaFrown color="#d0a141" size={size}/> },
-        { value: 3, icon: <FaSmile color="darkseagreen" size={size}/> },
-        { value: 4, icon: <FaGrinAlt color="#59a643" size={size}/> },
-        { value: 5, icon: <FaGrinStars color="#019101" size={size}/> },
+        { value: null, component: "--" },
+        { value: 0, component: <FaPoop className={className} color="saddlebrown" size={size}/> },
+        { value: 2, component: <FaAngry className={className} color="indianred" size={size}/> },
+        { value: 4, component: <FaFrown className={className} color="#d0a141" size={size}/> },
+        { value: 6, component: <FaSmile className={className} color="darkseagreen" size={size}/> },
+        { value: 8, component: <FaGrinAlt className={className} color="#59a643" size={size}/> },
+        { value: 10, component: <FaGrinStars className={className} color="#019101" size={size}/> },
     ];
 };
 
-export const getPlaytimeValues = () => [0, 2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150,
-    175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 4000,
-    5000, 6000, 7000, 8000, 9000, 10000];
 
-export const getRedoValues = () => {
+export const getScoreList = () => {
+    const MIN_SCORE = 0;
+    const MAX_SCORE = 10;
+    const STEP = 0.5;
+
+    // Generation
+    const scores = Array.from(
+        { length: (MAX_SCORE - MIN_SCORE) / STEP + 1 },
+        (_, i) => MIN_SCORE + i * STEP,
+    );
+
+    return [
+        { value: null, component: "--" },
+        ...scores.map(value => ({
+            value,
+            component: value === MAX_SCORE ? value : value.toFixed(1)
+        }))
+    ];
+};
+
+
+export const getPlaytimeList = () => {
+    const ranges = [
+        { start: 0, end: 50, step: 5 },
+        { start: 60, end: 100, step: 10 },
+        { start: 125, end: 300, step: 25 },
+        { start: 350, end: 600, step: 50 },
+        { start: 700, end: 1000, step: 100 },
+        { start: 1500, end: 3000, step: 500 },
+        { start: 4000, end: 10000, step: 1000 }
+    ];
+
+    const specialCases = [0, 2];
+
+    return [
+        ...specialCases,
+        ...ranges.flatMap(({ start, end, step }) =>
+            Array.from(
+                { length: Math.floor((end - start) / step) + 1 },
+                (_, i) => start + i * step,
+            )
+        ).filter(value => !specialCases.includes(value))
+    ];
+};
+
+
+export const getRedoList = () => {
     return [...Array(11).keys()];
 };
+
+
+// --- Icons & Colors ---------------------------------------------------------------------------------------
+
+
+export const getMediaIcon = (mediaType) => {
+    const icons = {
+        user: User,
+        series: Monitor,
+        anime: Cat,
+        movies: Popcorn,
+        games: Gamepad2,
+        books: Library,
+        manga: BookImage,
+    };
+    return icons[mediaType];
+};
+
+
+export const getMediaColor = (mediaType) => {
+    const colors = {
+        user: "#6e6e6e",
+        series: "#267f90",
+        anime: "#ab5e4b",
+        movies: "#a28b27",
+        books: "#6b5c86",
+        games: "#217f21",
+        manga: "#a04646",
+    };
+    return colors[mediaType] ?? "#868686";
+};
+
 
 export const getStatusColor = (status) => {
     const colors = {
@@ -49,90 +147,29 @@ export const getStatusColor = (status) => {
     return colors[status];
 };
 
-export const genreListsToListsOfDict = (stringList) => {
-    if (!Array.isArray(stringList)) {
-        return [];
-    }
 
-    const listDict = [];
-
-    stringList.forEach((str) => {
-        if (str === "All") return;
-        const dict = { value: str, label: str };
-        listDict.push(dict);
-    });
-
-    return listDict;
-};
-
-export const sliceIntoParts = (arr, n) => {
-    const len = arr.length;
-    const partSize = Math.floor(len / n);
-    const remainder = len % n;
-
-    const result = [];
-    let start = 0;
-
-    for (let i = 0; i < n; i++) {
-        const end = start + partSize + (i < remainder ? 1 : 0);
-        result.push(arr.slice(start, end));
-        start = end;
-    }
-
-    return result;
-};
-
-export const getLangCountryName = (name, type) => {
-    let languageNames = new Intl.DisplayNames(["en"], { type });
-    if (name === "cn") return "Chinese";
-    return languageNames.of(name.trim());
-};
-
-export const zeroPad = (value) => {
-    if (value) return String(value).padStart(2, "0");
-    return "00";
-};
-
-export const capitalize = (str) => {
-    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
-    return str;
-};
-
-export const getMediaColor = (media) => {
+export const diffColors = (difficulty, variant = "text") => {
+    if (!difficulty) return null;
     const colors = {
-        series: "#216e7d",
-        anime: "#945141",
-        movies: "#8c7821",
-        books: "#584c6e",
-        games: "#196219",
+        "border-bronze": "border-amber-700",
+        "border-silver": "border-slate-400",
+        "border-gold": "border-yellow-600",
+        "border-platinum": "border-teal-600",
+        "bg-bronze": "bg-amber-700",
+        "bg-silver": "bg-slate-400",
+        "bg-gold": "bg-yellow-600",
+        "bg-platinum": "bg-teal-600",
+        "text-bronze": "text-amber-700",
+        "text-silver": "text-slate-400",
+        "text-gold": "text-yellow-600",
+        "text-platinum": "text-teal-600",
     };
-    return colors[media];
+    return colors[`${variant}-${difficulty}`];
 };
 
-export const formatNumberWithSpaces = (value) => {
-    if (value < 10000) return value;
-    return value.toLocaleString().replace(/,/g, " ");
-};
 
-export const getLevelColor = (intLevel) => {
-    const normalizedLevel = Math.pow(intLevel / 350, 0.75);
+// --- Time Format ------------------------------------------------------------------------------------------
 
-    if (normalizedLevel <= 0.2) {
-        return `hsl(150, 60%, ${70 - normalizedLevel * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.4) {
-        return `hsl(${150 - (normalizedLevel - 0.2) * 375}, 60%, 60%)`;
-    }
-    else if (normalizedLevel <= 0.6) {
-        return `hsl(75, 60%, ${60 - (normalizedLevel - 0.4) * 50}%)`;
-    }
-    else if (normalizedLevel <= 0.8) {
-        return `hsl(${75 - (normalizedLevel - 0.6) * 375}, 60%, 55%)`;
-    }
-    else {
-        return `hsl(0, 60%, ${55 - (normalizedLevel - 0.8) * 25}%)`;
-    }
-};
 
 export const globalStatsTimeFormat = (minutes) => {
     const MINUTES_PER_HOUR = 60;
@@ -168,52 +205,101 @@ export const globalStatsTimeFormat = (minutes) => {
     return parts.join(", ") + ", and " + lastPart;
 };
 
-export const formatMinutes = (minutes, options = {}) => {
-    if (isNaN(minutes) || !minutes) {
-        return "--";
+
+export const formatMinutes = (minutes, onlyHours = false) => {
+    if (isNaN(minutes) || !minutes) return "--";
+
+    let hours = Math.floor(minutes / 60);
+    let remainingMinutes = minutes % 60;
+
+    if (onlyHours) {
+        return `${String(hours).padStart(2, "0")} h`;
     }
 
-    const conversions = {
-        hours: 60,
-        days: 1440,
-    };
-
-    if (options.to && conversions[options.to]) {
-        const divisor = conversions[options.to];
-        const result = minutes / divisor;
-        return options.asInt ? Math.floor(result) : result;
-    }
-
-    if (options.format === "hm") {
-        let hours = Math.floor(minutes / 60);
-        let remainingMinutes = minutes % 60;
-
-        if (options.onlyHours) {
-            return `${String(hours).padStart(2, "0")} h`;
-        }
-
-        return `${String(hours).padStart(2, "0")} h ${String(Math.floor(remainingMinutes)).padStart(2, "0")}`;
-    }
-
-    return minutes;
+    return `${String(hours).padStart(2, "0")} h ${String(Math.floor(remainingMinutes)).padStart(2, "0")}`;
 };
 
-export const formatDateTime = (dateInput, options = {}) => {
-    if (!dateInput) {
-        return "--";
+
+// --- GENERIC FUNCTIONS -------------------------------------------------------------------------------------
+
+
+export const genreListsToListsOfDict = (stringList) => {
+    if (!Array.isArray(stringList)) return [];
+
+    const listDict = [];
+    stringList.forEach((str) => {
+        if (str === "All") return;
+        const dict = { value: str, label: str };
+        listDict.push(dict);
+    });
+
+    return listDict;
+};
+
+
+export const sliceIntoParts = (array, slices) => {
+    const len = array.length;
+    const partSize = Math.floor(len / slices);
+    const remainder = len % slices;
+
+    const result = [];
+    let start = 0;
+
+    for (let i = 0; i < slices; i++) {
+        const end = start + partSize + (i < remainder ? 1 : 0);
+        result.push(array.slice(start, end));
+        start = end;
     }
 
-    let date;
+    return result;
+};
+
+
+export const getLangCountryName = (name, type) => {
+    let languageNames = new Intl.DisplayNames(["en"], { type });
+    if (name === "cn") return "Chinese";
+    return languageNames.of(name.trim());
+};
+
+
+export const zeroPad = (value) => {
+    if (value) return String(value).padStart(2, "0");
+    return "00";
+};
+
+
+export const capitalize = (str) => {
+    if (str) return str.charAt(0).toUpperCase() + str.slice(1);
+    return str;
+};
+
+
+export const formatNumberWithKM = (value) => {
+    if (value >= 1_000_000) {
+        return (value / 1_000_000).toFixed(2) + "M";
+    }
+    else if (value >= 1_000) {
+        return (value / 1_000).toFixed(2) + "k";
+    }
+    return value.toFixed(0).toString();
+};
+
+
+export const formatNumberWithSpaces = (value) => {
+    if (value < 10000) return value;
+    return value.toLocaleString().replace(/,/g, " ");
+};
+
+
+export const formatDateTime = (dateInput, options = {}) => {
+    if (!dateInput) return "--";
+
+    let date = new Date(dateInput);
     if (typeof dateInput === "number" && dateInput.toString().length === 10) {
         date = new Date(dateInput * 1000);
     }
-    else {
-        date = new Date(dateInput);
-    }
 
-    if (isNaN(date.getTime())) {
-        return "--";
-    }
+    if (isNaN(date.getTime())) return "--";
 
     const formatOptions = {
         timeZone: options.useLocalTz ? new Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
@@ -232,6 +318,7 @@ export const formatDateTime = (dateInput, options = {}) => {
     return new Intl.DateTimeFormat("en-En", formatOptions).format(date);
 };
 
+
 export function downloadFile(data, filename, mimeType) {
     const blob = new Blob([data], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -244,6 +331,7 @@ export function downloadFile(data, filename, mimeType) {
     URL.revokeObjectURL(url);
 }
 
+
 export function jsonToCsv(items) {
     if (!items || !items.length) return "";
     const header = Object.keys(items[0]);
@@ -254,23 +342,3 @@ export function jsonToCsv(items) {
     );
     return [headerString, ...rowItems].join("\r\n");
 }
-
-export const diffColors = (difficulty, bg = false) => {
-    if (!difficulty) return null;
-
-    const bgColors = {
-        bronze: "bg-amber-700",
-        silver: "bg-slate-400",
-        gold: "bg-yellow-600",
-        platinum: "bg-teal-600",
-    };
-
-    const textColors = {
-        bronze: "text-amber-700",
-        silver: "text-slate-400",
-        gold: "text-yellow-600",
-        platinum: "text-teal-600",
-    };
-
-    return bg ? bgColors[difficulty] : textColors[difficulty];
-};

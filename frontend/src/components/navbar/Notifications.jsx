@@ -10,8 +10,8 @@ import {cn, formatDateTime} from "@/utils/functions";
 import {MutedText} from "@/components/app/MutedText";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {notifPollingInterval} from "@/utils/constants";
-import {LuBell, LuLoader2, LuMoveRight} from "react-icons/lu";
-import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/api/queryOptions";
+import {Bell, LoaderCircle, MoveRight} from "lucide-react";
+import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/api";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
@@ -45,7 +45,7 @@ export const Notifications = ({ isMobile }) => {
             <PopoverTrigger asChild>
                 <div className="flex items-center">
                     <Button variant="ghost" size="sm" className="mr-3 px-1.5" onClick={handleOnClickOpen}>
-                        <LuBell className={cn("w-5 h-5 mr-0.5", isMobile && "w-4 h-4 ml-2")}/>
+                        <Bell className={cn("w-5 h-5 mr-0.5", isMobile && "w-4 h-4 ml-2")}/>
                         {isMobile && <div className="text-base ml-2 mr-3">Notifications</div>}
                         <Badge variant="notif" className={cn(notifCount > 0 && "bg-destructive")}>
                             {notifCount}
@@ -57,16 +57,16 @@ export const Notifications = ({ isMobile }) => {
             <PopoverContent className="p-0 w-[280px] max-h-[390px] overflow-y-auto max-sm:max-h-[350px]" align={isMobile ? "start" : "end"}>
                 {isLoading ?
                     <div className="flex items-center justify-center p-4">
-                        <LuLoader2 className="h-6 w-6 animate-spin"/>
+                        <LoaderCircle className="h-6 w-6 animate-spin"/>
                     </div>
                     :
                     notifs.length === 0 ?
                         <MutedText className="p-3 text-center">No notifications to display</MutedText>
                         :
-                        notifs.map(data =>
+                        notifs.map((data, idx) =>
                             <NotificationItem
+                                key={idx}
                                 data={data}
-                                key={data.timestamp}
                                 handlePopoverClose={handlePopoverClose}
                             />
                         )
@@ -112,7 +112,7 @@ const NotificationItem = ({ data, handlePopoverClose }) => {
                                         <div>Release</div>
                                     }
                                 </div>
-                                <div><LuMoveRight size={17}/></div>
+                                <div><MoveRight size={17}/></div>
                                 <div>{formatDateTime(data.payload.release_date)}</div>
                             </>
                         }

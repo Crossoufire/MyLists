@@ -1,4 +1,4 @@
-import {trendsOptions} from "@/api/queryOptions";
+import {trendsOptions} from "@/api";
 import {createFileRoute} from "@tanstack/react-router";
 
 

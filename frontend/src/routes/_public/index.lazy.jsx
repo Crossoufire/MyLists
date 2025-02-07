@@ -1,15 +1,12 @@
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import homeImage from "@/images/home1.jpg";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
-import {LoginForm} from "@/components/homepage/LoginForm";
-import {createLazyFileRoute, Link} from "@tanstack/react-router";
-import {RegisterForm} from "@/components/homepage/RegisterForm";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {LuArrowRight, LuDollarSign, LuHeart, LuMessageCircle, LuMonitorSmartphone, LuPackageOpen, LuSparkles} from "react-icons/lu";
 import {RainbowButton} from "@/components/ui/rainbow-button";
+import {createLazyFileRoute, Link} from "@tanstack/react-router";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {ArrowRight, DollarSign, Heart, MessageCircle, MonitorSmartphone, PackageOpen, Sparkles} from "lucide-react";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
@@ -20,7 +17,6 @@ export const Route = createLazyFileRoute("/_public/")({
 
 function HomePage() {
     const search = Route.useSearch();
-    const [activeTab, setActiveTab] = useState("login");
 
     useEffect(() => {
         if (search.message) {
@@ -28,31 +24,17 @@ function HomePage() {
         }
     }, [search]);
 
-    const onTabChange = (newTab) => {
-        setActiveTab(newTab);
-    };
-
     return (
         <PageTitle title="HomePage" onlyHelmet>
-            <div className="relative bg-cover h-[800px] w-[99.7vw] left-[calc(-50vw+50%)]" style={{ backgroundImage: `url(${homeImage})` }}/>
-            <div className="absolute w-1/2 top-32 left-1/4 flex flex-col items-center">
-                <div className="text-4xl md:text-7xl text-center font-semibold mb-14">Welcome to MyLists</div>
-                <Tabs value={activeTab} onValueChange={onTabChange} className="w-[320px]">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="login">Login</TabsTrigger>
-                        <TabsTrigger value="register">Register</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="login">
-                        <LoginForm/>
-                    </TabsContent>
-                    <TabsContent value="register">
-                        <RegisterForm onTabChange={onTabChange}/>
-                    </TabsContent>
-                </Tabs>
-                <div className="mt-6">
+            <div className="relative flex flex-col items-center justify-center bg-cover h-[600px] w-[99.7vw] left-[calc(-50vw+50%)] max-sm:h-[350px]"
+                 style={{ backgroundImage: `url(${homeImage})` }}>
+                <div className="text-7xl text-center font-semibold max-sm:text-5xl">
+                    Welcome to MyLists
+                </div>
+                <div className="mt-8">
                     <RainbowButton>
-                        <Link to="/profile/DemoProfile" className="inline-flex items-center">
-                            View Demo Profile <LuArrowRight className="ml-2"/>
+                        <Link to="/profile/DemoProfile" className="flex items-center gap-2">
+                            Demo Profile <ArrowRight/>
                         </Link>
                     </RainbowButton>
                 </div>
@@ -102,32 +84,32 @@ function HomePage() {
 function FeatureCards() {
     const features = [
         {
-            icon: <LuMonitorSmartphone size={25}/>,
+            icon: <MonitorSmartphone size={25}/>,
             title: "Responsive",
             description: "Fully responsive created with Shadcn/UI. Supports PC, tablets, mobile, and TV."
         },
         {
-            icon: <LuPackageOpen size={25}/>,
+            icon: <PackageOpen size={25}/>,
             title: "Open Source",
             description: "Totally open source, made using Flask and React. You can find the source code on my Github page."
         },
         {
-            icon: <LuDollarSign size={25}/>,
+            icon: <DollarSign size={25}/>,
             title: "No ads - 100% free",
             description: "You will not find any ads, we don't do that here. You only need to create an account to access all the content."
         },
         {
-            icon: <LuMessageCircle size={25}/>,
+            icon: <MessageCircle size={25}/>,
             title: "Found a bug?",
             description: "You can contact me by mail at: contact.us.at.mylists@gmail.com"
         },
         {
-            icon: <LuHeart size={25}/>,
+            icon: <Heart size={25}/>,
             title: "Made by me with ❤️",
             description: "I hope you will like it. If you have any suggestions, do not hesitate to contact me."
         },
         {
-            icon: <LuSparkles size={25}/>,
+            icon: <Sparkles size={25}/>,
             title: "New features coming",
             description: "I still have ideas, just not enough time. Stay tuned!"
         }

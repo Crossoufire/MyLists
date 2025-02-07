@@ -19,10 +19,8 @@ const buttonVariants = cva("inline-flex items-center justify-center whitespace-n
                 ghost: "hover:bg-accent hover:text-accent-foreground",
                 link: "text-primary underline-offset-4 hover:underline",
                 invisible: "",
-                list: "flex justify-start items-center w-full rounded-md font-normal hover:bg-accent " +
-                    "hover:text-accent-foreground",
-                filters: "flex items-center gap-2 border-gray-700 hover:bg-gray-800 border border-input " +
-                    "shadow-sm hover:bg-accent hover:text-accent-foreground"
+                list: "flex justify-start items-center w-full rounded-md font-normal hover:bg-accent hover:text-accent-foreground",
+                filters: "flex items-center gap-2 border-gray-700 hover:bg-gray-800 border border-input shadow-sm hover:bg-accent hover:text-accent-foreground"
             },
             size: {
                 default: "h-9 px-4 py-2",

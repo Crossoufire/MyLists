@@ -1,4 +1,3 @@
-import React from "react";
 import {Link} from "@tanstack/react-router";
 import {capitalize} from "@/utils/functions";
 import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";

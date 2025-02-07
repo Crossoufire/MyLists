@@ -1,4 +1,4 @@
-import {LuX} from "react-icons/lu";
+import {X} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {capitalize} from "@/utils/functions";
 import {MutedText} from "@/components/app/MutedText";
@@ -47,7 +47,7 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
                             <Badge key={`${key}-${val}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
                                 {val}
                                 <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key, val)}>
-                                    <LuX/>
+                                    <X className="w-4 h-4"/>
                                 </div>
                             </Badge>
                         )
@@ -60,7 +60,7 @@ export const AppliedFilters = ({ total, onFilterRemove }) => {
                             }
                             <div role="button" className="hover:opacity-80 -mr-1"
                                  onClick={() => removeFilter(key, value)}>
-                                <LuX/>
+                                <X className="w-4 h-4"/>
                             </div>
                         </Badge>
                 )}
