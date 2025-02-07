@@ -76,7 +76,7 @@ celerybeat-schedule
 
 # Environments
 .env
-.venv
+backend/.venv
 env/
 venv/
 ENV/

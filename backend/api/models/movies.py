@@ -6,7 +6,6 @@ from flask import abort
 from sqlalchemy import func
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.utils.enums import MediaType, Status, JobType
 from backend.api.models.abstracts import Media, MediaList, Genres, Actors, Labels
 
@@ -60,7 +59,7 @@ class Movies(Media):
         return total_watched
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = cls.query.filter(cls.director_name.ilike(f"%{name}%")).all()
         elif job == JobType.ACTOR:
@@ -72,14 +71,7 @@ class Movies(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(MoviesList)
-            .filter(MoviesList.user_id == current_user.id, MoviesList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:

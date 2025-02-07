@@ -6,7 +6,6 @@ from flask import abort
 from sqlalchemy import func, ColumnElement
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Platforms, Labels
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType, GamesPlatformsEnum
 
@@ -58,7 +57,7 @@ class Games(Media):
         return 0
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = (
                 cls.query.join(GamesCompanies, GamesCompanies.media_id == cls.id)
@@ -68,14 +67,7 @@ class Games(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(GamesList)
-            .filter(GamesList.user_id == current_user.id, GamesList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:

@@ -14,6 +14,26 @@ export const Route = createLazyFileRoute("/_universal/features")({
 function FeatureShowcase() {
     const features = [
         {
+            name: "New Manga List!",
+            description: "You can now add manga to your list! (Need to be activated in settings)",
+            isNew: true,
+        },
+        {
+            name: "New Global Stats Page",
+            description: "The global stats page has been revamped, with a new 'Overall' section more stats.",
+            isNew: true,
+        },
+        {
+            name: "Cropping Pictures",
+            description: "You can now crop your profile picture and back picture (on upload).",
+            isNew: true,
+        },
+        {
+            name: "New HoF Ranking system/UI",
+            description: "The HoF page has been revamped.",
+            isNew: true,
+        },
+        {
             name: "Updates in /lists",
             description: "You can now update everything about a media directly from the /list page.",
             isNew: true,
@@ -26,22 +46,18 @@ function FeatureShowcase() {
         {
             name: "Moviedle game",
             description: "A Wordle-like game where you guess the movie from a pixelated cover.",
-            isNew: true,
         },
         {
             name: "Privacy Mode",
             description: "Adjust your privacy settings to control who can view your profile, lists, stats, and media updates.",
-            isNew: true,
         },
         {
             name: "Media Update Removal",
             description: "Add the possibility to delete your media updates.",
-            isNew: true,
         },
         {
             name: "CSV Export",
             description: "Download your media list as a CSV file.",
-            isNew: true,
         },
         {
             name: "Game Platform",

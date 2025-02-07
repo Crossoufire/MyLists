@@ -6,7 +6,6 @@ from flask import abort
 from sqlalchemy import func
 
 from backend.api import db
-from backend.api.core import current_user
 from backend.api.models.abstracts import Media, MediaList, Genres, Labels
 from backend.api.utils.enums import MediaType, Status, ModelTypes, JobType
 
@@ -53,7 +52,7 @@ class Books(Media):
         return total_read
 
     @classmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         if job == JobType.CREATOR:
             query = (
                 cls.query.join(BooksAuthors, BooksAuthors.media_id == cls.id)
@@ -62,14 +61,7 @@ class Books(Media):
         else:
             return abort(404, description="JobType not found")
 
-        media_in_user_list = (
-            db.session.query(BooksList)
-            .filter(BooksList.user_id == current_user.id, BooksList.media_id.in_([media.id for media in query]))
-            .all()
-        )
-        user_media_ids = [media.media_id for media in media_in_user_list]
-
-        return [{**media.to_dict(), "in_list": media.id in user_media_ids} for media in query]
+        return query
 
     @staticmethod
     def form_only() -> List[str]:
@@ -158,17 +150,17 @@ class BooksGenre(Genres):
     media = db.relationship("Books", back_populates="genres", lazy="select")
 
     @classmethod
-    def replace_genres(cls, genres: List[Dict], media_id: int):
+    def replace_genres(cls, genres_list: List[str], media_id: int):
         cls.query.filter_by(media_id=media_id).delete()
-        db.session.add_all([cls(media_id=media_id, name=genre["value"]) for genre in genres])
+        db.session.add_all([cls(media_id=media_id, name=genre) for genre in genres_list])
         db.session.commit()
 
     @staticmethod
     def get_available_genres() -> List[str]:
         return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
-                "Dystopian", "Essay", "Fantastic", "Fantasy", "History", "Humor", "Horror", "Literary Novel",
-                "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science", "Science-Fiction",
-                "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
+                "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
+                "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
+                "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"]
 
 
 class BooksAuthors(db.Model):

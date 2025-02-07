@@ -44,7 +44,7 @@ class Media(db.Model, UpdateMixin):
 
     @classmethod
     @abstractmethod
-    def get_associated_media(cls, job: JobType, name: str) -> List[Dict]:
+    def get_associated_media(cls, job: JobType, name: str) -> List[Media]:
         pass
 
     @staticmethod
@@ -142,6 +142,30 @@ class MediaList(db.Model):
         pass
 
     # --- CLASS METHODS ------------------------------------------------------------
+
+    @classmethod
+    def media_in_user_list(cls, user_id: int, list_of_media: List[Media]) -> List[Dict]:
+        media_ids = [media.id for media in list_of_media]
+
+        user_media_records = cls.query.filter(cls.user_id == user_id, cls.media_id.in_(media_ids)).all()
+
+        # Build set of media IDs in user's list for efficient lookup
+        in_list_ids = {user_media.media_id for user_media in user_media_records}
+
+        results = []
+        for media in list_of_media:
+            media_dict = media.to_dict()
+
+            # Rename keys 'id' becomes 'media_id', 'name' becomes 'media_name' -> consistency in frontend
+            media_dict["media_id"] = media_dict.pop("id", None)
+            media_dict["media_name"] = media_dict.pop("name", None)
+
+            # Add "in_list" flag indicating if media ID is user's list
+            media_dict["in_list"] = media.id in in_list_ids
+
+            results.append(media_dict)
+
+        return results
 
     @classmethod
     def get_available_sorting(cls) -> Dict:

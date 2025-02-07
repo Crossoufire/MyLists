@@ -1,14 +1,14 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
 import {editMediaOptions, useSimpleMutations} from "@/api";
-import MultipleSelector from "@/components/ui/multiple-selector";
+import {capitalize, sliceIntoParts} from "@/utils/functions";
 import {createLazyFileRoute, useRouter} from "@tanstack/react-router";
-import {capitalize, genreListsToListsOfDict, sliceIntoParts} from "@/utils/functions";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
 
@@ -20,10 +20,10 @@ export const Route = createLazyFileRoute("/_private/details/edit/$mediaType/$med
 
 function MediaEditPage() {
     const { history } = useRouter();
-    const { editMediaMutation } = useSimpleMutations();
     const { mediaType, mediaId } = Route.useParams();
+    const { editMediaMutation } = useSimpleMutations();
     const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
-    const form = useForm({ defaultValues: { genres: genreListsToListsOfDict(apiData.genres) } });
+    const form = useForm({ defaultValues: { genres: apiData.genres } });
     const parts = sliceIntoParts(apiData.fields, 3);
 
     const onSubmit = (data) => {
@@ -78,33 +78,7 @@ function MediaEditPage() {
                                     </FormItem>
                                 )}
                             />
-                            {apiData.genres &&
-                                <FormField
-                                    name="genres"
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Genres (Select up to 5)</FormLabel>
-                                            <FormControl>
-                                                <MultipleSelector
-                                                    maxSelected={5}
-                                                    className={"mb-0"}
-                                                    value={field.value}
-                                                    onChange={field.onChange}
-                                                    placeholder={"Select Genres..."}
-                                                    defaultOptions={genreListsToListsOfDict(apiData.all_genres)}
-                                                    emptyIndicator={
-                                                        <p className="text-center text-lg text-gray-400">
-                                                            No genres found
-                                                        </p>
-                                                    }
-                                                />
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                            }
+
                             {apiData.authors &&
                                 <FormField
                                     name="authors"
@@ -125,7 +99,28 @@ function MediaEditPage() {
                             }
                             {parts[0].map(arr => renderField(form, arr))}
                         </div>
-                        <div className="space-y-4">{parts[1].map(arr => renderField(form, arr))}</div>
+                        <div className="space-y-4">
+                            {parts[1].map(arr => renderField(form, arr))}
+                            {apiData.genres &&
+                                <FormField
+                                    name="genres"
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Genres (Select up to 5)</FormLabel>
+                                            <FormControl>
+                                                <GenreSelector
+                                                    selectedGenres={field.value}
+                                                    genresList={apiData.all_genres}
+                                                    setSelectedGenres={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                            }
+                        </div>
                         <div className="space-y-4">{parts[2].map(arr => renderField(form, arr))}</div>
                     </div>
                     <div className="flex justify-end">
@@ -136,5 +131,31 @@ function MediaEditPage() {
                 </form>
             </Form>
         </PageTitle>
+    );
+}
+
+
+function GenreSelector({ genresList, selectedGenres, setSelectedGenres }) {
+    const toggleGenre = (ev, genre) => {
+        ev.preventDefault();
+
+        if (selectedGenres.includes(genre)) {
+            setSelectedGenres(selectedGenres.filter(l => l !== genre));
+        }
+        else {
+            if (selectedGenres.length >= 5) return;
+            setSelectedGenres([...selectedGenres, genre]);
+        }
+    };
+
+    return (
+        <div className="flex flex-wrap items-center justify-start gap-2">
+            {genresList.map(genre =>
+                <Button key={genre} variant={selectedGenres.includes(genre) ? "default" : "outline"}
+                        onClick={(ev) => toggleGenre(ev, genre)} className="text-sm rounded-full px-3">
+                    {genre}
+                </Button>
+            )}
+        </div>
     );
 }

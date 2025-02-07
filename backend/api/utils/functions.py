@@ -189,13 +189,6 @@ def format_datetime(date: Optional[str | Dict[str, int]]) -> Optional[datetime]:
         return None
 
 
-def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
-    with Image.open(input_path) as img:
-        img = img.convert("RGB")
-        img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
-        img_resized.save(output_path, quality=90)
-
-
 def format_to_download_as_csv(media_dict: Dict) -> Dict:
     """ Format the media assoc data to be downloaded as CSV """
 
@@ -227,6 +220,13 @@ def aware_utcnow():
 
 def naive_utcnow():
     return aware_utcnow().replace(tzinfo=None)
+
+
+def resize_and_save_image(input_path: Any, output_path: str, size: Tuple[int, int] = (300, 450)):
+    with Image.open(input_path) as img:
+        img = img.convert("RGB")
+        img_resized = img.resize(size, resample=Image.Resampling.LANCZOS)
+        img_resized.save(output_path, quality=90)
 
 
 def fetch_cover(cover_url: Optional[str]) -> Optional[BytesIO]:

@@ -7,8 +7,8 @@ from backend.api.managers.ModelsManager import ModelsManager
 
 
 class MediaEditSchema(ma.Schema):
-    media_id = ma.Integer(required=True)
     payload = ma.Dict(load_default={})
+    media_id = ma.Integer(required=True)
     media_type = EnumField(MediaType, required=True)
 
     # noinspection PyUnusedLocal
