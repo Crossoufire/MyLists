@@ -1,8 +1,8 @@
 # MyLists
 
-[MyLists](https://mylists.info) is your go-to platform for organizing your favorite series, anime, movies, games, and books.
+[MyLists](https://mylists.info) is your go-to platform for organizing your favorite series, anime, movies, games, books and now manga.
 With a clean and user-friendly interface, it regroups the functionalities of multiple sites into one.
-MyLists integrates features such as total viewing time, comments, favorites, and more.
+MyLists integrates features such as total viewing time, comments, favorites, rating, and more.
 
 Live version here: [https://mylists.info](https://mylists.info)
 
@@ -11,12 +11,11 @@ contact: <contact.us.at.mylists@gmail.com>
 
 # Key Features
 
-* Build your lists for all your series, anime, movies, games and books.
-* Level up your Profile and lists with the leveling systems, and climb up the Hall of Fame!
-* Get detailed statistics about your entertainment habits (time spent, number of episodes watched, preferred genres, rating distribution, etc...).
+* Build your lists for all your series, anime, movies, games books, and manga.
+* Level up your profile and lists with the leveling systems, and climb up the Hall of Fame!
+* Get detailed statistics like: time spent, number of episodes watched, preferred genres, rating distribution, and more!
 * Stay informed about upcoming episodes in your series/anime, along with new movies.
 * Follow your friends and get updates on their lists.
-* Compare your lists with other users.
 * Notifications system.
 * And more to come!
 
@@ -35,7 +34,7 @@ If you like this work, you can buy me a coffee! &nbsp;
 ## Prerequisites
 
 * Python 3.11+
-* Poetry (https://python-poetry.org/)
+* uv ([https://docs.astral.sh/uv/](https://docs.astral.sh/uv/))
 * (optional) WSL2 recommended for Windows to use cron jobs
 
 ## Steps
@@ -45,7 +44,7 @@ If you like this work, you can buy me a coffee! &nbsp;
 ```
 git clone https://www.github.com/Crossoufire/MyLists.git
 cd MyLists/backend
-poetry install
+uv sync
 ```
 
 3. Set up the `.flaskenv` file
@@ -79,7 +78,7 @@ SECRET_IGDB=<igdb-secret>
 IGDB_API_KEY=<igdb-api-key>
 ```
 
-5. Run the command `poetry run python server.py` inside the `MyLists/backend` folder.
+5. Run the command `uv run python server.py` inside the `MyLists/backend` folder.
    The backend will be served by default at `localhost:5000`.
 
 ---
