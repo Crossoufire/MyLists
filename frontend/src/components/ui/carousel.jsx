@@ -17,8 +17,9 @@ function useCarousel() {
 }
 
 
-const Carousel = React.forwardRef((
+const Carousel = (
     {
+        ref,
         orientation = "horizontal",
         opts,
         setApi,
@@ -26,8 +27,7 @@ const Carousel = React.forwardRef((
         className,
         children,
         ...props
-    },
-    ref
+    }
 ) => {
     const [carouselRef, api] = useEmblaCarousel({
         ...opts,
@@ -100,11 +100,17 @@ const Carousel = React.forwardRef((
             </div>
         </CarouselContext>)
     );
-});
+};
 Carousel.displayName = "Carousel";
 
 
-const CarouselContent = React.forwardRef(({ className, ...props }, ref) => {
+const CarouselContent = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => {
     const { carouselRef, orientation } = useCarousel();
 
     return (
@@ -116,11 +122,17 @@ const CarouselContent = React.forwardRef(({ className, ...props }, ref) => {
             />
         </div>
     );
-});
+};
 CarouselContent.displayName = "CarouselContent";
 
 
-const CarouselItem = React.forwardRef(({ className, ...props }, ref) => {
+const CarouselItem = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => {
     const { orientation } = useCarousel();
 
     return (
@@ -133,11 +145,19 @@ const CarouselItem = React.forwardRef(({ className, ...props }, ref) => {
             {...props}
         />
     );
-});
+};
 CarouselItem.displayName = "CarouselItem";
 
 
-const CarouselPrevious = React.forwardRef(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselPrevious = (
+    {
+        ref,
+        className,
+        variant = "outline",
+        size = "icon",
+        ...props
+    }
+) => {
     const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
     return (
@@ -155,11 +175,19 @@ const CarouselPrevious = React.forwardRef(({ className, variant = "outline", siz
             <span className="sr-only">Previous slide</span>
         </Button>
     );
-});
+};
 CarouselPrevious.displayName = "CarouselPrevious";
 
 
-const CarouselNext = React.forwardRef(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselNext = (
+    {
+        ref,
+        className,
+        variant = "outline",
+        size = "icon",
+        ...props
+    }
+) => {
     const { orientation, scrollNext, canScrollNext } = useCarousel();
 
     return (
@@ -177,7 +205,7 @@ const CarouselNext = React.forwardRef(({ className, variant = "outline", size = 
             <span className="sr-only">Next slide</span>
         </Button>
     );
-});
+};
 CarouselNext.displayName = "CarouselNext";
 
 

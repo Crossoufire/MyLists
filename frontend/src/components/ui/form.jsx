@@ -44,7 +44,13 @@ const useFormField = () => {
 };
 
 
-const FormItem = React.forwardRef(({ className, ...props }, ref) => {
+const FormItem = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => {
     const id = React.useId();
 
     return (
@@ -52,11 +58,17 @@ const FormItem = React.forwardRef(({ className, ...props }, ref) => {
             <div ref={ref} className={cn("space-y-2", className)} {...props}/>
         </FormItemContext>)
     );
-});
+};
 FormItem.displayName = "FormItem";
 
 
-const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
+const FormLabel = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => {
     const { formItemId } = useFormField();
 
     return (
@@ -67,11 +79,16 @@ const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
             {...props}
         />
     );
-});
+};
 FormLabel.displayName = "FormLabel";
 
 
-const FormControl = React.forwardRef(({ ...props }, ref) => {
+const FormControl = (
+    {
+        ref,
+        ...props
+    }
+) => {
     const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
     return (
@@ -84,11 +101,17 @@ const FormControl = React.forwardRef(({ ...props }, ref) => {
             {...props}
         />
     );
-});
+};
 FormControl.displayName = "FormControl";
 
 
-const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
+const FormDescription = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => {
     const { formDescriptionId } = useFormField();
 
     return (
@@ -99,11 +122,18 @@ const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
             {...props}
         />
     );
-});
+};
 FormDescription.displayName = "FormDescription";
 
 
-const FormMessage = React.forwardRef(({ className, children, ...props }, ref) => {
+const FormMessage = (
+    {
+        ref,
+        className,
+        children,
+        ...props
+    }
+) => {
     const { error, formMessageId } = useFormField();
     const body = error ? String(error?.message) : children;
 
@@ -118,7 +148,7 @@ const FormMessage = React.forwardRef(({ className, children, ...props }, ref) =>
             {body}
         </p>
     );
-});
+};
 FormMessage.displayName = "FormMessage";
 
 
