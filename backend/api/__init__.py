@@ -23,11 +23,6 @@ from backend.config import Config, get_config, default_db_uri, basedir
 from backend.api.utils.converters import MediaTypeConverter, JobTypeConverter
 
 
-# TODO: Convert CliMediaManager -> CliMediaService with Factory and init it in MediaConfig
-# TODO: Add a media config for each media type (e.g. MoviesConfig) -> DEFAULT_SORTING, DEFAULT_STATUS, DEFAULT_DURATION, etc...
-# TODO: Create a file which contains the steps to add a new media type
-
-
 # Load globally accessible plugins
 mail = Mail()
 db = SQLAlchemy()
