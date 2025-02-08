@@ -54,37 +54,31 @@ class CLIBaseManager:
         return ansi_escape.sub("", text)
 
     def print_table(self, table: Table):
+        current_app.logger.info(f"\n{self._log_table(table)}")
         if self.is_terminal:
             console.print(table)
-        else:
-            current_app.logger.info(f"\n{self._log_table(table)}")
 
     def log_print(self, message: str):
+        current_app.logger.info(message)
         if self.is_terminal:
             console.print(message)
-        else:
-            current_app.logger.info(message)
 
     def log_success(self, message: str):
+        current_app.logger.info(f"SUCCESS: {message}")
         if self.is_terminal:
             console.print(f"[green]✓[/green] {message}")
-        else:
-            current_app.logger.info(f"SUCCESS: {message}")
 
     def log_info(self, message: str):
+        current_app.logger.info(message)
         if self.is_terminal:
             console.print(f"[blue]i[/blue] {message}")
-        else:
-            current_app.logger.info(message)
 
     def log_error(self, message: str):
+        current_app.logger.error(message)
         if self.is_terminal:
             console.print(f"[red]✗[/red] {message}")
-        else:
-            current_app.logger.error(message)
 
     def log_warning(self, message: str):
+        current_app.logger.warning(message)
         if self.is_terminal:
             console.print(f"[yellow]![/yellow] {message}")
-        else:
-            current_app.logger.warning(message)
