@@ -11,6 +11,7 @@ NProgress.configure({ showSpinner: false, parent: "body" });
 
 export const router = createRouter({
     routeTree,
+    scrollRestoration: true,
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: ErrorComponent,
     context: { queryClient: queryClient, auth: undefined },
