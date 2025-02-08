@@ -1,12 +1,13 @@
 import {toast} from "sonner";
+import {editMediaOptions} from "@/api";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
 import {PageTitle} from "@/components/app/PageTitle";
+import {useEditMediaMutation} from "@/api/mutations";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
-import {editMediaOptions, useSimpleMutations} from "@/api";
 import {capitalize, sliceIntoParts} from "@/utils/functions";
 import {createLazyFileRoute, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -21,7 +22,8 @@ export const Route = createLazyFileRoute("/_private/details/edit/$mediaType/$med
 function MediaEditPage() {
     const { history } = useRouter();
     const { mediaType, mediaId } = Route.useParams();
-    const { editMediaMutation } = useSimpleMutations();
+    const editMediaMutation = useEditMediaMutation();
+
     const apiData = useSuspenseQuery(editMediaOptions(mediaType, mediaId)).data;
     const form = useForm({ defaultValues: { genres: apiData.genres } });
     const parts = sliceIntoParts(apiData.fields, 3);

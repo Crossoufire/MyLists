@@ -6,10 +6,11 @@ import {useDebounce} from "@/hooks/useDebounce";
 import {Progress} from "@/components/ui/progress";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
+import {useMoviedleGuessMutation} from "@/api/mutations";
 import {createLazyFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/api";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {dailyMediadleOptions, mediadleSuggestionsOptions, useMakeGuess} from "@/api";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
 
 
@@ -20,7 +21,7 @@ export const Route = createLazyFileRoute("/_private/moviedle")({
 
 
 function MediadlePage() {
-    const makeGuess = useMakeGuess();
+    const makeGuess = useMoviedleGuessMutation();
     const [guess, setGuess] = useState("");
     const [debouncedSearch] = useDebounce(guess, 350);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;

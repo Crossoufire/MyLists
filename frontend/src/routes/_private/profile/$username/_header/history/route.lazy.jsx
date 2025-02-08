@@ -7,11 +7,12 @@ import {Checkbox} from "@/components/ui/checkbox";
 import {MediaIcon} from "@/components/app/MediaIcon";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {useDeleteUpdateMutation} from "@/api/mutations";
 import {useDebounceCallback} from "@/hooks/useDebounce";
+import {allUpdatesOptions, queryKeys, useAuth} from "@/api";
 import {TablePagination} from "@/components/app/TablePagination";
 import {createLazyFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
-import {allUpdatesOptions, queryKeys, useAuth, useDeleteUpdateMutation} from "@/api";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
 

@@ -1,9 +1,10 @@
 import {toast} from "sonner";
+import {useAuth} from "@/api";
 import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
-import {useAuth, useSimpleMutations} from "@/api";
 import {FormButton} from "@/components/app/FormButton";
+import {useGeneralSettingsMutation} from "@/api/mutations";
 import {ImageCropper} from "@/components/settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -11,8 +12,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 
 export const GeneralForm = () => {
-    const { generalSettings } = useSimpleMutations();
     const { currentUser, setCurrentUser } = useAuth();
+    const generalSettings = useGeneralSettingsMutation();
     const form = useForm({
         defaultValues: {
             username: currentUser.username,

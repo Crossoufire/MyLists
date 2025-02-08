@@ -1,5 +1,4 @@
 import {cn} from "@/utils/functions";
-import {useMediaMutations} from "@/api";
 import {Button} from "@/components/ui/button";
 import {Check, ChevronDown} from "lucide-react";
 import React, {useEffect, useState} from "react";
@@ -7,12 +6,14 @@ import {Separator} from "@/components/ui/separator";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {PlaytimeDrop} from "@/components/media-user/PlaytimeDrop";
+import {useUpdateStatusMutation, useUserMediaMutations} from "@/api/mutations";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/command";
 
 
 export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRating, updatePlaytime, updatePlatform, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRating, updatePlaytime, updatePlatform } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
 
     const updateMedia = (media, status) => {
         const updatedMedia = { ...media, status };
@@ -22,7 +23,7 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
         return updatedMedia;
     };
 
-    const onStatusSuccess = (oldData, variables) => {
+    function onStatusSuccess(oldData, variables) {
         const status = variables.payload;
 
         if (queryKey[0] === "details") {
@@ -35,14 +36,14 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }) => {
                 m.media_id === userMedia.media_id ? updateMedia(m, status) : m
             )
         };
-    };
+    }
 
     return (
         <>
             <StatusDrop
                 status={userMedia.status}
+                updateStatus={updateStatus}
                 allStatus={userMedia.all_status}
-                updateStatus={updateStatusFunc(onStatusSuccess)}
             />
             <PlatformDrop
                 platform={userMedia.platform}

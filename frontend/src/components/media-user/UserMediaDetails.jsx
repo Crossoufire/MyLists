@@ -1,6 +1,7 @@
 import {toast} from "sonner";
 import {useQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
+import {historyOptions, queryClient, queryKeys} from "@/api";
 import {Commentary} from "@/components/media-user/Commentary";
 import {LabelLists} from "@/components/media-user/LabelLists";
 import {TvUserDetails} from "@/components/media-user/TvUserDetails";
@@ -11,7 +12,7 @@ import {BooksUserDetails} from "@/components/media-user/BooksUserDetails";
 import {MangaUserDetails} from "@/components/media-user/MangaUserDetails";
 import {MoviesUserDetails} from "@/components/media-user/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {historyOptions, queryClient, queryKeys, useMediaMutations} from "@/api";
+import {useRemoveMediaFromListMutation, useUserMediaMutations} from "@/api/mutations";
 
 
 const mediaComponentMap = (value) => {
@@ -30,7 +31,8 @@ const mediaComponentMap = (value) => {
 export const UserMediaDetails = ({ userMedia, mediaType, queryKey }) => {
     const MediaUserDetails = mediaComponentMap(mediaType);
     const { data: history } = useQuery(historyOptions(mediaType, userMedia.media_id));
-    const { removeFromList, updateFavorite, updateComment } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const removeFromList = useRemoveMediaFromListMutation(mediaType, userMedia.media_id, queryKey);
+    const { updateFavorite, updateComment } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const handleDeleteMedia = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;
