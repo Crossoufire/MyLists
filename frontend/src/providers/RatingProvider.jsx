@@ -1,14 +1,14 @@
-import {createContext, useContext} from "react";
+import {createContext, use} from "react";
 
 
 const RatingContext = createContext(null);
 
 
 export const RatingProvider = ({ value, children }) => (
-    <RatingContext.Provider value={value}>
+    <RatingContext value={value}>
         {children}
-    </RatingContext.Provider>
+    </RatingContext>
 );
 
 
-export const useRatingSystem = () => useContext(RatingContext);
+export const useRatingSystem = () => use(RatingContext);

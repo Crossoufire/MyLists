@@ -1,8 +1,9 @@
 import {toast} from "sonner";
+import {queryKeys} from "@/api";
 import {Button} from "@/components/ui/button";
 import {UserMinus, UserPlus} from "lucide-react";
 import {useParams} from "@tanstack/react-router";
-import {queryKeys, useFollowMutation} from "@/api";
+import {useFollowMutation} from "@/api/mutations";
 
 
 export const FollowButton = ({ followStatus, followId }) => {

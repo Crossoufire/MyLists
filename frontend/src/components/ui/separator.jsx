@@ -1,4 +1,3 @@
-import {forwardRef} from "react";
 import {cn} from "@/utils/functions";
 import {cva} from "class-variance-authority";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
@@ -20,15 +19,21 @@ const separatorVariants = cva("shrink-0 bg-border w-full",
 );
 
 
-const Separator = forwardRef(({ className, variant, orientation = "horizontal", ...props }, ref) => (
-    <SeparatorPrimitive.Root
-        ref={ref}
-        decorative
-        orientation={orientation}
-        className={cn(separatorVariants({ variant, className }))}
-        {...props}
-    />
-));
+const Separator = (
+    {
+        ref,
+        className,
+        variant,
+        orientation = "horizontal",
+        ...props
+    }
+) => (<SeparatorPrimitive.Root
+    ref={ref}
+    decorative
+    orientation={orientation}
+    className={cn(separatorVariants({ variant, className }))}
+    {...props}
+/>);
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 

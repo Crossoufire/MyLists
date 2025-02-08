@@ -1,15 +1,14 @@
-import {useMediaMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {EpsSeasonsDrop} from "@/components/media-user/EpsSeasonsDrop";
+import {useUpdateStatusMutation, useUserMediaMutations} from "@/api/mutations";
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updateSeason, updateEpisode, updateStatusFunc } = useMediaMutations(
-        mediaType, userMedia.media_id, queryKey
-    );
+    const { updateRedo, updateRating, updateSeason, updateEpisode } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
 
     const updateMediaData = (media, status) => {
         const updatedMedia = { ...media, redo: 0, status: status };
@@ -50,16 +49,16 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
         };
     };
 
-    const onStatusChanged = (oldData, variables) => {
+    function onStatusSuccess(oldData, variables) {
         return queryKey[0] === "details" ? onStatusDetailsSuccess(oldData, variables) : onStatusListSuccess(oldData, variables);
-    };
+    }
 
     return (
         <>
             <StatusDrop
                 status={userMedia.status}
+                updateStatus={updateStatus}
                 allStatus={userMedia.all_status}
-                updateStatus={updateStatusFunc(onStatusChanged)}
             />
             {(userMedia.status !== "Plan to Watch" && userMedia.status !== "Random") &&
                 <EpsSeasonsDrop

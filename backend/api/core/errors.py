@@ -62,6 +62,7 @@ def log_error(error: Exception):
                 del error_context["headers"]["Cookie"]
                 del error_context["headers"]["Authorization"]
             except:
+                current_app.logger.warning(f"Failed to delete cookie and authorization headers: {error_context}")
                 pass
 
         current_app.logger.error(

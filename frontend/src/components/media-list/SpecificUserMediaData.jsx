@@ -13,6 +13,10 @@ export const SpecificUserMediaData = ({ userMedia, mediaType }) => {
     if (mediaType === "books" && userMedia.status !== "Plan to Read") {
         return <PagesInfo actualPage={userMedia.actual_page} totalPages={userMedia.total_pages}/>;
     }
+
+    if (mediaType === "manga" && userMedia.status !== "Plan to Read") {
+        return <PagesInfo actualPage={userMedia.current_chapter} totalPages={userMedia.total_chapters ?? "?"}/>;
+    }
 };
 
 

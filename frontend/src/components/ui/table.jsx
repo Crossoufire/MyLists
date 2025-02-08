@@ -2,86 +2,118 @@ import * as React from "react";
 import {cn} from "@/utils/functions";
 
 
-const Table = React.forwardRef(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-        <table
-            ref={ref}
-            className={cn("w-full caption-bottom text-sm", className)}
-            {...props}
-        />
-    </div>
-));
+const Table = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<div className="relative w-full overflow-auto">
+    <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+    />
+</div>);
 Table.displayName = "Table";
 
 
-const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
-    <thead
-        ref={ref}
-        className={cn("[&_tr]:border-b", className)}
-        {...props}
-    />
-));
+const TableHeader = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<thead
+    ref={ref}
+    className={cn("[&_tr]:border-b", className)}
+    {...props}
+/>);
 TableHeader.displayName = "TableHeader";
 
 
-const TableBody = React.forwardRef(({ className, ...props }, ref) => (
-    <tbody
-        ref={ref}
-        className={cn("[&_tr:last-child]:border-0", className)}
-        {...props}
-    />
-));
+const TableBody = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<tbody
+    ref={ref}
+    className={cn("[&_tr:last-child]:border-0", className)}
+    {...props}
+/>);
 TableBody.displayName = "TableBody";
 
 
-const TableFooter = React.forwardRef(({ className, ...props }, ref) => (
-    <tfoot
-        ref={ref}
-        className={cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className)}
-        {...props}
-    />
-));
+const TableFooter = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<tfoot
+    ref={ref}
+    className={cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className)}
+    {...props}
+/>);
 TableFooter.displayName = "TableFooter";
 
 
-const TableRow = React.forwardRef(({ className, ...props }, ref) => (
-    <tr
-        ref={ref}
-        className={cn("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className)}
-        {...props}
-    />
-));
+const TableRow = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<tr
+    ref={ref}
+    className={cn("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className)}
+    {...props}
+/>);
 TableRow.displayName = "TableRow";
 
 
-const TableHead = React.forwardRef(({ className, ...props }, ref) => (
-    <th
-        ref={ref}
-        className={cn("h-10 px-2 text-left align-middle font-medium text-muted-foreground " +
-            "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]", className)}
-        {...props}
-    />
-));
+const TableHead = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<th
+    ref={ref}
+    className={cn("h-10 px-2 text-left align-middle font-medium text-muted-foreground " +
+        "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]", className)}
+    {...props}
+/>);
 TableHead.displayName = "TableHead";
 
 
-const TableCell = React.forwardRef(({ className, ...props }, ref) => (
-    <td
-        ref={ref}
-        className={cn("p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]", className)}
-        {...props}
-    />
-));
+const TableCell = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<td
+    ref={ref}
+    className={cn("p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]", className)}
+    {...props}
+/>);
 TableCell.displayName = "TableCell";
 
 
-const TableCaption = React.forwardRef(({ className, ...props }, ref) => (
-    <caption
-        ref={ref}
-        className={cn("mt-4 text-sm text-muted-foreground", className)}
-        {...props}
-    />
-));
+const TableCaption = (
+    {
+        ref,
+        className,
+        ...props
+    }
+) => (<caption
+    ref={ref}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    {...props}
+/>);
 TableCaption.displayName = "TableCaption";
 
 

@@ -31,7 +31,6 @@ export const Navbar = () => {
                 setShowLogin(false);
                 setShowRegister(false);
                 await router.invalidate().then(async () => {
-                    // noinspection JSCheckFunctionSignatures
                     return navigate({ to: "/" });
                 });
             },

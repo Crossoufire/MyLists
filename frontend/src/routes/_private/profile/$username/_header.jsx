@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_private/profile/$username/_header")({
         }
         catch (error) {
             if (error.status === 403) {
-                throw redirect({
-                    to: "/",
-                    search: { message: "You need to be logged-in to view this profile" },
-                });
+                throw redirect({ to: "/", search: { message: "You need to be logged-in to view this profile" } });
             }
         }
     }

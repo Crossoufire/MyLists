@@ -11,6 +11,7 @@ NProgress.configure({ showSpinner: false, parent: "body" });
 
 export const router = createRouter({
     routeTree,
+    scrollRestoration: true,
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: ErrorComponent,
     context: { queryClient: queryClient, auth: undefined },
@@ -23,7 +24,7 @@ export const router = createRouter({
 
 
 router.subscribe("onBeforeLoad", (event) => {
-    if (event.fromLocation.pathname === event.toLocation.pathname && event.fromLocation.hash !== event.toLocation.hash) return;
+    if (event?.fromLocation?.pathname === event.toLocation.pathname && event.fromLocation.hash !== event.toLocation.hash) return;
     // noinspection JSUnresolvedReference
     NProgress.start();
 });

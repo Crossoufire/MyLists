@@ -1,10 +1,11 @@
 import {useState} from "react";
+import {queryKeys, useAuth} from "@/api";
 import {useCollapse} from "@/hooks/useCollapse";
 import {Separator} from "@/components/ui/separator";
 import {MutedText} from "@/components/app/MutedText";
 import {Link, useParams} from "@tanstack/react-router";
 import {UserUpdate} from "@/components/app/UserUpdate";
-import {queryKeys, useAuth, useDeleteUpdateMutation} from "@/api";
+import {useDeleteUpdateMutation} from "@/api/mutations";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 
 

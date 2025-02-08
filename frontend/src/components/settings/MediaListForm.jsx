@@ -1,22 +1,26 @@
 import {toast} from "sonner";
+import {useAuth} from "@/api";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {Button} from "@/components/ui/button";
 import {Switch} from "@/components/ui/switch";
 import {CircleHelp, Download} from "lucide-react";
-import {useAuth, useSimpleMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {FormButton} from "@/components/app/FormButton";
 import {downloadFile, jsonToCsv} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/api/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 
 export const MediaListForm = () => {
+    const listSettings = useListSettingsMutation();
     const { currentUser, setCurrentUser } = useAuth();
+    const downloadListAsCSV = useDownloadListAsCSVMutation();
     const [selectedList, setSelectedList] = useState("");
-    const { listSettings, downloadListAsCSV } = useSimpleMutations();
+
+
     const form = useForm({
         defaultValues: {
             search_selector: currentUser.search_selector,

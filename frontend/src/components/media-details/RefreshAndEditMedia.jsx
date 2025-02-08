@@ -1,9 +1,10 @@
 import {toast} from "sonner";
+import {queryKeys} from "@/api";
 import {Link} from "@tanstack/react-router";
 import {Pencil, RefreshCw} from "lucide-react";
 import {Tooltip} from "@/components/ui/tooltip";
 import {formatDateTime} from "@/utils/functions";
-import {queryKeys, useRefreshMutation} from "@/api";
+import {useRefreshMutation} from "@/api/mutations";
 
 
 export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }) => {

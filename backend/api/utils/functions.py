@@ -172,7 +172,7 @@ def format_datetime(date: Optional[str | Dict[str, int]]) -> Optional[datetime]:
     # Try to parse ISO 8601 format directly
     try:
         return datetime.fromisoformat(date.replace("Z", "+00:00"))
-    except ValueError:
+    except:
         pass
 
     # Define other date patterns

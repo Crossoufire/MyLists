@@ -1,13 +1,14 @@
-import {useMediaMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
 import {InputComponent} from "@/components/media-user/InputComponent";
+import {useUpdateStatusMutation, useUserMediaMutations} from "@/api/mutations";
 
 
 export const MangaUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updateChapter, updateStatusFunc } = useMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const { updateRedo, updateRating, updateChapter } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
+    const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
 
     const updateMedia = (media, status) => {
         const updatedMedia = { ...media, redo: 0, status: status };
@@ -22,7 +23,7 @@ export const MangaUserDetails = ({ userMedia, mediaType, queryKey }) => {
         return updatedMedia;
     };
 
-    const onStatusSuccess = (oldData, variables) => {
+    function onStatusSuccess(oldData, variables) {
         const status = variables.payload;
 
         if (queryKey[0] === "details") {
@@ -35,15 +36,15 @@ export const MangaUserDetails = ({ userMedia, mediaType, queryKey }) => {
                 m.media_id === userMedia.media_id ? updateMedia(m, status) : m
             )
         };
-    };
+    }
 
     return (
         <>
             <StatusDrop
                 status={userMedia.status}
+                updateStatus={updateStatus}
                 allStatus={userMedia.all_status}
                 canBeCompleted={!!userMedia.total_chapters}
-                updateStatus={updateStatusFunc(onStatusSuccess)}
             />
             {userMedia.status !== "Plan to Read" &&
                 <>

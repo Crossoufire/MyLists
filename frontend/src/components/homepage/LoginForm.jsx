@@ -1,13 +1,14 @@
 import {toast} from "sonner";
 import {router} from "@/router";
 import {useForm} from "react-hook-form";
+import {queryKeys, useAuth} from "@/api";
 import {Input} from "@/components/ui/input";
 import {queryClient} from "@/api/queryClient";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {Separator} from "@/components/ui/separator";
 import {FormButton} from "@/components/app/FormButton";
 import {Link, useNavigate} from "@tanstack/react-router";
-import {queryKeys, useAuth, useSimpleMutations} from "@/api";
+import {useOAuth2ProviderMutation} from "@/api/mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
@@ -15,7 +16,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 export const LoginForm = ({ open, onOpenChange }) => {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const { oAuth2Provider } = useSimpleMutations();
+    const oAuth2Provider = useOAuth2ProviderMutation();
     const form = useForm({ defaultValues: { username: "", password: "" }, shouldFocusError: false });
 
     const onSubmit = (data) => {
@@ -34,14 +35,15 @@ export const LoginForm = ({ open, onOpenChange }) => {
             onSuccess: async () => {
                 await router.invalidate();
                 const currentUser = queryClient.getQueryData(queryKeys.authKey());
-                // noinspection JSCheckFunctionSignatures
                 await navigate({ to: `/profile/${currentUser.username}` });
             },
         });
     };
 
     const withProvider = (provider) => {
-        oAuth2Provider.mutate({ provider, callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider) }, {
+        const callback = import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider);
+
+        oAuth2Provider.mutate({ provider, callback }, {
             onError: () => toast.error("An error occurred with the provider"),
             onSuccess: async (data) => window.location.replace(data.redirect_url),
         });

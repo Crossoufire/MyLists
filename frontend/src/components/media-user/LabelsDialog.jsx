@@ -3,10 +3,11 @@ import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {useEffect, useRef, useState} from "react";
+import {mediaLabelsOptions, queryKeys} from "@/api";
 import {MutedText} from "@/components/app/MutedText";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {mediaLabelsOptions, queryKeys, useLabelsMutations} from "@/api";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
+import {useAddLabelMutation, useDeleteLabelMutation, useRemoveLabelMutation, useRenameLabelMutation} from "@/api/mutations";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/components/ui/credenza";
 
 
@@ -20,7 +21,11 @@ export const LabelsDialog = ({ mediaId, mediaType, mediaLabels, updateMediaLabel
     const [editingName, setEditingName] = useState("");
     const [newLabelName, setNewLabelName] = useState("");
     const { data: allLabels = [], error, isLoading } = useQuery(mediaLabelsOptions(mediaType, isOpen));
-    const { addLabel, removeLabel, renameLabel, deleteLabel } = useLabelsMutations(mediaType, mediaId);
+    const renameLabel = useRenameLabelMutation(mediaType);
+    const deleteLabel = useDeleteLabelMutation(mediaType);
+    const addLabel = useAddLabelMutation(mediaType, mediaId);
+    const removeLabel = useRemoveLabelMutation(mediaType, mediaId);
+
 
     useEffect(() => {
         error && showToast("An unexpected error occurred. Please try again later.", "error");

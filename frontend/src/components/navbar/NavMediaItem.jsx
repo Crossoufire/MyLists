@@ -1,15 +1,16 @@
 import React from "react";
+import {useAuth} from "@/api";
 import {cn} from "@/utils/functions";
 import {Link} from "@tanstack/react-router";
-import {useAuth, useModalMutation} from "@/api";
 import {useSheet} from "@/providers/SheetProvider";
+import {useUpdateModalMutation} from "@/api/mutations";
 import {NavigationMenuLink} from "@/components/ui/navigation-menu";
 
 
 export const NavMediaItem = ({ to, icon, text, className, popRef }) => {
     const { currentUser } = useAuth();
     const { setSheetOpen } = useSheet();
-    const modalUpdate = useModalMutation();
+    const modalUpdate = useUpdateModalMutation();
 
     const handleClosePopover = () => {
         popRef?.current?.click();

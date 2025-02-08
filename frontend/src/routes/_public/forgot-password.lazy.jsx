@@ -1,9 +1,9 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
-import {useSimpleMutations} from "@/api";
 import {Input} from "@/components/ui/input";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormButton} from "@/components/app/FormButton";
+import {useForgotPasswordMutation} from "@/api/mutations";
 import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 
@@ -16,7 +16,7 @@ export const Route = createLazyFileRoute("/_public/forgot-password")({
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
-    const { forgotPassword } = useSimpleMutations();
+    const forgotPassword = useForgotPasswordMutation();
     const form = useForm({ defaultValues: { email: "" } });
 
     const onSubmit = (data) => {

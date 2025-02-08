@@ -1,8 +1,9 @@
-import {detailsOptions, queryKeys, useAuth, useMediaMutations} from "@/api";
 import {Separator} from "@/components/ui/separator";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {FormButton} from "@/components/app/FormButton";
+import {detailsOptions, queryKeys, useAuth} from "@/api";
+import {useAddMediaToListMutation} from "@/api/mutations";
 import {createLazyFileRoute} from "@tanstack/react-router";
 import AvatarCircles from "@/components/ui/avatar-circles";
 import {FollowCard} from "@/components/media-details/FollowCard";
@@ -24,7 +25,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(detailsOptions(mediaType, mediaId, external)).data;
-    const { addToList } = useMediaMutations(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()));
+    const addToList = useAddMediaToListMutation(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()));
 
     const handleAddMediaUser = () => {
         addToList.mutate({ payload: undefined });

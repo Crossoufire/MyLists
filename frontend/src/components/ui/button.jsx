@@ -38,7 +38,7 @@ const buttonVariants = cva("inline-flex items-center justify-center whitespace-n
 );
 
 
-const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+const Button = ({ ref, className, variant, size, asChild = false, ...props }) => {
     const Comp = asChild ? Slot : "button";
     return (
         <Comp
@@ -47,7 +47,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
             {...props}
         />
     );
-});
+};
 Button.displayName = "Button";
 
 

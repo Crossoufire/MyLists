@@ -1,14 +1,15 @@
 import {toast} from "sonner";
 import {router} from "@/router";
+import {queryClient, useAuth} from "@/api";
 import {Button} from "@/components/ui/button";
 import {useNavigate} from "@tanstack/react-router";
-import {queryClient, useAuth, useSimpleMutations} from "@/api";
+import {useDeleteAccountMutation} from "@/api/mutations";
 
 
 export const DangerForm = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const { deleteAccount } = useSimpleMutations();
+    const deleteAccount = useDeleteAccountMutation();
 
     const onSubmit = async () => {
         const firstConfirm = window.confirm("Are you really sure?");
