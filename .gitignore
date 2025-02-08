@@ -101,6 +101,7 @@ venv.bak/
 backend/.env
 backend/.flaskenv
 backend/instance/cache/*
+backend/uv.lock
 
 backend/api/static/profile_pics/*
 !backend/api/static/profile_pics/default.jpg
