@@ -78,7 +78,7 @@ const Carousel = React.forwardRef((
     }, [api, onSelect]);
 
     return (
-        <CarouselContext.Provider
+        (<CarouselContext
             value={{
                 carouselRef,
                 api: api,
@@ -98,7 +98,7 @@ const Carousel = React.forwardRef((
                 {...props}>
                 {children}
             </div>
-        </CarouselContext.Provider>
+        </CarouselContext>)
     );
 });
 Carousel.displayName = "Carousel";

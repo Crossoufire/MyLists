@@ -5,9 +5,9 @@ const RatingContext = createContext(null);
 
 
 export const RatingProvider = ({ value, children }) => (
-    <RatingContext.Provider value={value}>
+    <RatingContext value={value}>
         {children}
-    </RatingContext.Provider>
+    </RatingContext>
 );
 
 

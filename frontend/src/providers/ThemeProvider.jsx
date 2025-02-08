@@ -33,9 +33,9 @@ export function ThemeProvider({ children, defaultTheme = "dark", storageKey = "v
 
     // noinspection JSValidateTypes
     return (
-        <ThemeProviderContext.Provider {...props} value={value}>
+        (<ThemeProviderContext {...props} value={value}>
             {children}
-        </ThemeProviderContext.Provider>
+        </ThemeProviderContext>)
     );
 }
 

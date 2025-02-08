@@ -14,9 +14,9 @@ const FormItemContext = React.createContext({});
 
 const FormField = ({ ...props }) => {
     return (
-        <FormFieldContext.Provider value={{ name: props.name }}>
+        (<FormFieldContext value={{ name: props.name }}>
             <Controller {...props}/>
-        </FormFieldContext.Provider>
+        </FormFieldContext>)
     );
 };
 
@@ -48,9 +48,9 @@ const FormItem = React.forwardRef(({ className, ...props }, ref) => {
     const id = React.useId();
 
     return (
-        <FormItemContext.Provider value={{ id }}>
+        (<FormItemContext value={{ id }}>
             <div ref={ref} className={cn("space-y-2", className)} {...props}/>
-        </FormItemContext.Provider>
+        </FormItemContext>)
     );
 });
 FormItem.displayName = "FormItem";

@@ -8,9 +8,9 @@ export const SheetProvider = ({ children }) => {
     const [sheetOpen, setSheetOpen] = useState(false);
 
     return (
-        <SheetContext.Provider value={{ sheetOpen, setSheetOpen }}>
+        (<SheetContext value={{ sheetOpen, setSheetOpen }}>
             {children}
-        </SheetContext.Provider>
+        </SheetContext>)
     );
 };
 
