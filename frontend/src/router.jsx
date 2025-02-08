@@ -23,7 +23,7 @@ export const router = createRouter({
 
 
 router.subscribe("onBeforeLoad", (event) => {
-    if (event.fromLocation.pathname === event.toLocation.pathname && event.fromLocation.hash !== event.toLocation.hash) return;
+    if (event?.fromLocation?.pathname === event.toLocation.pathname && event.fromLocation.hash !== event.toLocation.hash) return;
     // noinspection JSUnresolvedReference
     NProgress.start();
 });

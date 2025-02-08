@@ -35,14 +35,15 @@ export const LoginForm = ({ open, onOpenChange }) => {
             onSuccess: async () => {
                 await router.invalidate();
                 const currentUser = queryClient.getQueryData(queryKeys.authKey());
-                // noinspection JSCheckFunctionSignatures
                 await navigate({ to: `/profile/${currentUser.username}` });
             },
         });
     };
 
     const withProvider = (provider) => {
-        oAuth2Provider.mutate({ provider, callback: import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider) }, {
+        const callback = import.meta.env.VITE_OAUTH2_CALLBACK.replace("{provider}", provider);
+
+        oAuth2Provider.mutate({ provider, callback }, {
             onError: () => toast.error("An error occurred with the provider"),
             onSuccess: async (data) => window.location.replace(data.redirect_url),
         });

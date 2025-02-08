@@ -25,14 +25,6 @@ class ApiClient {
         localStorage.removeItem("accessToken");
     }
 
-    getRefreshToken() {
-        return null;
-    }
-
-    includeCredentials() {
-        return true;
-    }
-
     filterParams(queryData) {
         const filteredParams = Object.entries(queryData || {})
             .filter(([_, value]) => value !== undefined && value !== "null" && value !== null)
@@ -55,23 +47,9 @@ class ApiClient {
         if ((response.status === 401 || (response.status === 403 && this.isAuthenticated())) && data.url !== "/tokens") {
             let beforeRenewAccessToken = this.getAccessToken();
 
-            const body = { access_token: this.getAccessToken() };
-
-            // Include refresh token in body for mobile clients
-            if (!this.includeCredentials()) {
-                body.refresh_token = this.getRefreshToken();
-            }
-
-            const refreshResponse = await this.put("/tokens", body);
-
+            const refreshResponse = await this.put("/tokens", { access_token: this.getAccessToken() });
             if (refreshResponse.ok) {
                 this.setAccessToken(refreshResponse.body.access_token);
-
-                // Set refresh token from body for mobile clients
-                if (!this.includeCredentials()) {
-                    this.setRefreshToken(refreshResponse.body.refresh_token);
-                }
-
                 response = await this.requestInternal(data);
             }
 
@@ -86,25 +64,19 @@ class ApiClient {
 
     async requestInternal(data) {
         const queryArgs = this.filterParams(data.query);
-        let response;
 
+        let response;
         try {
             let body = {
                 method: data.method,
                 headers: {
                     "Authorization": `Bearer ${this.getAccessToken()}`,
-                    "X-Is-Mobile": !this.includeCredentials(),
                     ...(data.removeContentType ? {} : { "Content-Type": "application/json" }),
                     ...data.headers,
                 },
+                credentials: "include",
                 body: data.body ? data.body instanceof FormData ? data.body : JSON.stringify(data.body) : null,
             };
-
-            // Only include credentials for web clients
-            if (this.includeCredentials()) {
-                body.credentials = "include";
-            }
-
             response = await fetch(this.base_url + data.url + queryArgs, body);
         }
         catch (error) {
@@ -138,11 +110,6 @@ class ApiClient {
 
         if (!response.ok) {
             throw new APIError(response.status, response.body.message, response.body.description);
-        }
-
-        // Set refresh token from body for mobile clients
-        if (response.ok && !this.includeCredentials()) {
-            this.setRefreshToken(response.body.refresh_token);
         }
 
         return response;

@@ -43,9 +43,11 @@ export const useForgotPasswordMutation = () => {
 };
 
 
-export const useOAuth2ProviderMutation = (provider, callback) => {
-    return fetcher({
-        url: authUrls.oauth2Provider(provider),
-        queryOrData: { callback },
+export const useOAuth2ProviderMutation = () => {
+    return useMutation({
+        mutationFn: ({ provider, callback }) => fetcher({
+            url: authUrls.oauth2Provider(provider),
+            queryOrData: { callback },
+        }),
     });
 };
