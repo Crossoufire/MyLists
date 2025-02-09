@@ -63,4 +63,4 @@ def scheduled_tasks():
 
     system_manager.update_global_stats()
     system_manager.vacuum_sqlite_db()
-    system_manager.vacuum_sqlite_db()
+    system_manager.analyze_sqlite_db()
