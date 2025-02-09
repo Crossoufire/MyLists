@@ -17,54 +17,61 @@ def as_bool(value: str) -> bool:
 
 
 class Config:
+    # Flask options
     DEBUG = False
     TESTING = False
+
+    # Handlers options
     CREATE_FILE_LOGGER = True
     CREATE_MAIL_HANDLER = True
+
+    # SQLite options
+    SQLITE_JOURNAL_MODE = "WAL"
+    SQLITE_SYNCHRONOUS = "NORMAL"
+
+    # Database options
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
+    SQLALCHEMY_DATABASE_URI = (os.environ.get("MYLISTS_DATABASE_URI") or default_db_uri)
+
+    # Security options
     USER_ACTIVE_PER_DEFAULT = False
+    MAX_CONTENT_LENGTH = 25 * 1024 * 1024
+    SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")
+    REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS") or "7")
+    RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
+    ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
+
+    # Admin e-mail options
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
+    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
+    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
+
+    # Media API keys
+    CLIENT_IGDB = os.environ.get("CLIENT_IGDB")
+    SECRET_IGDB = os.environ.get("SECRET_IGDB")
+    IGDB_API_KEY = os.environ.get("IGDB_API_KEY")
+    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY")
+    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY")
+
+    # Flask-Caching
+    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "RedisCache"
+    CACHE_REDIS_DB = int(os.environ.get("CACHE_REDIS_DB") or "0")
+    CACHE_REDIS_HOST = os.environ.get("CACHE_REDIS_HOST") or "localhost"
+    CACHE_REDIS_PORT = int(os.environ.get("CACHE_REDIS_PORT") or "6379")
+    CACHE_KEY_PREFIX = os.environ.get("CACHE_KEY_PREFIX") or "mylists_cache_"
+
+    # Flask-Limiter
+    RATELIMIT_KEY_PREFIX = os.environ.get("RATELIMIT_KEY_PREFIX") or "mylists_limiter_"
+    RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI") or "redis://localhost:6379/0"
 
     # Demo Profile options
     DEMO_EMAIL = "demo@demo.com"
     DEMO_USERNAME = "DemoProfile"
     DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo-password"
-
-    # Database options
-    SQLALCHEMY_DATABASE_URI = (os.environ.get("MYLISTS_DATABASE_URI") or default_db_uri)
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {"connect_args": {"timeout": 20}}
-
-    # Security options
-    SECRET_KEY = os.environ.get("SECRET_KEY", "top-secret!")
-    ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES") or "15")
-    REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS") or "7")
-    RESET_TOKEN_MINUTES = int(os.environ.get("RESET_TOKEN_MINUTES") or "15")
-    MAX_CONTENT_LENGTH = 8 * 1024 * 1024
-
-    # Email options
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "localhost")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT") or "25")
-    MAIL_USE_TLS = as_bool(os.environ.get("MAIL_USE_TLS") or "True")
-    MAIL_USE_SSL = as_bool(os.environ.get("MAIL_USE_SSL") or "False")
-
-    # API keys
-    THEMOVIEDB_API_KEY = os.environ.get("THEMOVIEDB_API_KEY")
-    GOOGLE_BOOKS_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY")
-    CLIENT_IGDB = os.environ.get("CLIENT_IGDB")
-    SECRET_IGDB = os.environ.get("SECRET_IGDB")
-    IGDB_API_KEY = os.environ.get("IGDB_API_KEY")
-
-    # Flask-Caching
-    CACHE_TYPE = os.environ.get("CACHE_TYPE") or "RedisCache"
-    CACHE_REDIS_HOST = os.environ.get("CACHE_REDIS_HOST") or "localhost"
-    CACHE_REDIS_PORT = int(os.environ.get("CACHE_REDIS_PORT") or "6379")
-    CACHE_REDIS_DB = int(os.environ.get("CACHE_REDIS_DB") or "0")
-    CACHE_KEY_PREFIX = os.environ.get("CACHE_KEY_PREFIX") or "mylists_cache_"
-
-    # Flask-Limiter
-    RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI") or "redis://localhost:6379/0"
-    RATELIMIT_KEY_PREFIX = os.environ.get("RATELIMIT_KEY_PREFIX") or "mylists_limiter_"
 
     # OAuth2
     OAUTH2_PROVIDERS = {
@@ -96,24 +103,51 @@ class Config:
 
 
 class DevConfig(Config):
+    # Flask options
     DEBUG = True
+    TESTING = False
+
+    # Handlers options
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
+
+    # SQLite options
+    SQLITE_JOURNAL_MODE = "DELETE"
+    SQLITE_SYNCHRONOUS = "FULL"
+
+    # Security options
     USER_ACTIVE_PER_DEFAULT = False
-    CACHE_TYPE = "SimpleCache"
-    RATELIMIT_STORAGE_URI = "memory://"
     ACCESS_TOKEN_MINUTES = int("15")
+
+    # Flask-Caching
+    CACHE_TYPE = "SimpleCache"
+
+    # Flask-Limiter
+    RATELIMIT_STORAGE_URI = "memory://"
 
 
 class TestConfig(Config):
+    # Flask options
+    DEBUG = False
     TESTING = True
-    RATELIMIT_ENABLED = False
+    SERVER_NAME = "localhost:5000"
+
+    # Handlers options
     CREATE_FILE_LOGGER = False
     CREATE_MAIL_HANDLER = False
-    USER_ACTIVE_PER_DEFAULT = True
-    CACHE_TYPE = "SimpleCache"
-    SERVER_NAME = "localhost:5000"
+
+    # Database options
     SQLALCHEMY_DATABASE_URI = "sqlite://"
+
+    # Security options
+    USER_ACTIVE_PER_DEFAULT = True
+
+    # Flask-Caching
+    CACHE_TYPE = "SimpleCache"
+
+    # Flask-Limiter
+    RATELIMIT_ENABLED = False
+
     OAUTH2_PROVIDERS = {
         "foo": {
             "client_id": "foo-id",
@@ -130,9 +164,12 @@ class TestConfig(Config):
 
 
 def get_config():
-    env = os.getenv("FLASK_ENV", "production")
+    """ Get the config class based on the FLASK_ENV environment variable or default to Config (production) """
+
+    env = os.getenv("FLASK_ENV", "production").lower()
     if env == "development":
         return DevConfig
     elif env == "testing":
         return TestConfig
+
     return Config

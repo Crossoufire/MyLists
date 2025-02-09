@@ -4,7 +4,6 @@ import logging
 from typing import Type
 from logging.handlers import SMTPHandler, RotatingFileHandler
 
-import flask
 from flask import Flask
 from redis import Redis
 from flask_cors import CORS
@@ -53,40 +52,64 @@ def import_blueprints(app: Flask):
         app.register_blueprint(blueprint, url_prefix="/api")
 
 
-def create_file_handler(logger: logging.Logger, root_path: str):
-    """ Create a File Handler depending on the environment and config """
+def create_file_handler(app: Flask):
+    """ Create a RotatingFileHandler """
 
-    log_file_path = os.path.join(os.path.dirname(root_path), "logs", "mylists.log")
+    import socket
+    import platform
+
+    log_file_path = os.path.join(os.path.dirname(app.root_path), "logs", "mylists.log")
     os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
 
     handler = RotatingFileHandler(log_file_path, maxBytes=3000000, backupCount=15)
     handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     handler.setLevel(logging.INFO)
 
-    logger.addHandler(handler)
-    logger.info("MyLists is starting up...")
+    env = os.getenv("FLASK_ENV", "production").lower() or "production"
+
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
+
+    app.logger.info(
+        f"MyLists starting up... "
+        f"[ENV: {env}, DEBUG: {app.debug}, Python: {platform.python_version()}, Host: {socket.gethostname()}]"
+    )
 
 
-def create_mail_handler(logger: logging.Logger, config: flask.Config):
-    """ Create a TLS only mail handler for the app logger which send email when errors occurs """
+def create_mail_handler(app: Flask):
+    """ Create a TLS only mail handler set on ERRORS added to the app logger """
 
     mail_handler = SMTPHandler(
-        mailhost=(config["MAIL_SERVER"], config["MAIL_PORT"]),
-        fromaddr=config["MAIL_USERNAME"],
-        toaddrs=config["MAIL_USERNAME"],
+        mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
+        fromaddr=app.config["MAIL_USERNAME"],
+        toaddrs=app.config["MAIL_USERNAME"],
         subject="MyLists - Exceptions occurred",
-        credentials=(config["MAIL_USERNAME"], config["MAIL_PASSWORD"]),
+        credentials=(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"]),
         secure=(),
     )
 
     mail_handler.setLevel(logging.ERROR)
-    logger.addHandler(mail_handler)
+    app.logger.addHandler(mail_handler)
 
 
 def setup_app_and_db(app: Flask):
-    """ On app starts: create tables and change pragmas. """
+    """
+    On app starts:
+    - Create `instance` folder if default db location used
+    - Add media type covers folder if they don't exist
+    - Create all the tables
+    - Set up the pragmas for SQLite
+    - Initialize the media services
+    - Refresh and update the database (only in production)
+    """
 
-    from sqlalchemy import event
+    import inspect
+    from sqlalchemy import text
+    from backend.api.services import initializer
+    from backend.cli.managers.media import CLIMediaManager
+    from backend.api.services.initializer import MediaConfig
+    from backend.cli.managers.system import CLISystemManager
+    from backend.cli.managers.achievements import CLIAchievementManager
 
     # Ensure `instance` folder exists if default db location used
     if app.config["SQLALCHEMY_DATABASE_URI"] == default_db_uri:
@@ -99,27 +122,21 @@ def setup_app_and_db(app: Flask):
         covers_folder = os.path.join(covers_dir, f"{media_type}_covers")
         os.makedirs(covers_folder, exist_ok=True)
 
+    # Configure SQLite database PRAGMA
+    engine = db.session.get_bind()
+    with engine.connect() as conn:
+        pragmas_values = [app.config["SQLITE_JOURNAL_MODE"], app.config["SQLITE_SYNCHRONOUS"]]
+        pragmas_to_check = ["journal_mode", "synchronous"]
+        for pn, pv in zip(pragmas_to_check, pragmas_values):
+            conn.execute(text(f"PRAGMA {pn}={pv}"))
+            value = conn.execute(text(f"PRAGMA {pn}")).scalar()
+            if app.config["CREATE_FILE_LOGGER"]:
+                app.logger.info(f"SQLITE PRAGMA {pn.upper()}: {value.upper() if isinstance(value, str) else value}")
+
     # Create all tables
     db.create_all()
 
-    def configure_sqlite(dbapi_connection, _connection_record):
-        """ Configure SQLite database PRAGMA """
-
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=DELETE")
-        cursor.execute("PRAGMA synchronous=FULL")
-        cursor.close()
-
-    event.listen(db.engine, "connect", configure_sqlite)
-
-
-def init_media_services():
-    """ Init all media services """
-
-    import inspect
-    from backend.api.services import initializer
-    from backend.api.services.initializer import MediaConfig
-
+    # Initialize all media services
     media_configs = [
         obj for _, obj in inspect.getmembers(initializer)
         if (inspect.isclass(obj) and issubclass(obj, MediaConfig) and obj != MediaConfig)
@@ -127,31 +144,24 @@ def init_media_services():
     for config_class in media_configs:
         config_class()
 
-
-def refresh_database():
-    """ On app starts execute refreshing functions """
-
-    from backend.cli.managers.media import CLIMediaManager
-    from backend.cli.managers.system import CLISystemManager
-    from backend.cli.managers.achievements import CLIAchievementManager
-
-    CLIMediaManager.compute_all_time_spent()
-    CLIMediaManager.compute_all_users_stats()
-    CLIAchievementManager().calculate_achievements(code_names="all", user_ids="all")
-    CLISystemManager().update_global_stats()
+    # Refresh database on app starts but not when using CLI or in dev mode
+    if not sys.stdin.isatty() and not app.debug:
+        CLIMediaManager.compute_all_time_spent()
+        CLIMediaManager.compute_all_users_stats()
+        CLIAchievementManager().calculate_achievements(code_names="all", user_ids="all")
+        CLISystemManager().update_global_stats()
 
 
 def create_app(config_class: Type[Config] = None) -> Flask:
     app = Flask(__name__, static_url_path="/api/static")
 
-    if config_class is None:
-        config_class = get_config()
-
+    # Configure app
     app.url_map.strict_slashes = False
-    app.config.from_object(config_class)
+    app.config.from_object(config_class or get_config())
     app.url_map.converters["jobtype"] = JobTypeConverter
     app.url_map.converters["mediatype"] = MediaTypeConverter
 
+    # Initialize extensions
     mail.init_app(app)
     db.init_app(app)
     bcrypt.init_app(app)
@@ -161,19 +171,17 @@ def create_app(config_class: Type[Config] = None) -> Flask:
     migrate.init_app(app, db, compare_type=False, render_as_batch=True)
     cors.init_app(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:3000"])
 
+    # Setup app and db
     with app.app_context():
+        # No logs in terminal when using CLI
+        if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
+            create_file_handler(app)
+
+        if app.config["CREATE_MAIL_HANDLER"]:
+            create_mail_handler(app)
+
         register_cli_commands()
         setup_app_and_db(app)
         import_blueprints(app)
-        init_media_services()
 
-        if app.config["CREATE_FILE_LOGGER"] and not sys.stdin.isatty():
-            create_file_handler(app.logger, app.root_path)
-
-        if app.config["CREATE_MAIL_HANDLER"]:
-            create_mail_handler(app.logger, app.config)
-
-        if not sys.stdin.isatty() and not app.debug:
-            refresh_database()
-
-        return app
+    return app
