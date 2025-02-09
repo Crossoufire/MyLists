@@ -3,11 +3,11 @@ from typing import Dict
 
 from flask_bcrypt import generate_password_hash
 
+from backend.config import TestConfig
 from backend.api import create_app, db
 from backend.api.models import UserMediaSettings
-from backend.api.utils.enums import RoleType, MediaType
 from backend.api.utils.functions import naive_utcnow
-from backend.config import TestConfig
+from backend.api.utils.enums import RoleType, MediaType
 
 
 TEST_USER = {

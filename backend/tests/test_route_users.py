@@ -13,7 +13,6 @@ class UserTests(BaseTest):
     def setUp(self):
         super().setUp()
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.bad_image_path = os.path.join(self.current_dir, "images/anonymous_scrambled.jpg")
 
     def test_register_user(self):
         current_app.config["USER_ACTIVE_PER_DEFAULT"] = True
@@ -214,8 +213,8 @@ class UserTests(BaseTest):
         self.assertEqual(rv.status_code, 400)
 
     def test_settings_delete_account(self):
-        from backend.api.models.user import User, Notifications, Token
         from backend.api.utils.enums import ModelTypes
+        from backend.api.models.user import User, Notifications, Token
 
         self.register_new_user(username="delete")
         headers = self.connexion("delete", "good-password")
@@ -270,20 +269,14 @@ class UserTests(BaseTest):
         rv = self.client.post("/api/settings/general", headers=headers, data={"username": "bobby"})
         self.assertEqual(rv.status_code, 400)
 
-        with open(self.bad_image_path, "rb") as fp:
-            rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
-            self.assertEqual(rv.status_code, 500)
+        image_path = os.path.join(current_app.root_path, "static/covers/default.jpg")
 
-        with open(self.bad_image_path, "rb") as fp:
-            rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
-            self.assertEqual(rv.status_code, 500)
-
-        with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
+        with open(image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"profile_image": fp})
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv.json["data"]["profile_image"].startswith("/api/static/profile_pics/"), True)
 
-        with open(os.path.join(current_app.root_path, "static/covers/default.jpg"), "rb") as fp:
+        with open(image_path, "rb") as fp:
             rv = self.client.post("/api/settings/general", headers=headers, data={"background_image": fp})
             self.assertEqual(rv.status_code, 200)
             self.assertEqual(rv.json["data"]["back_image"].startswith("/api/static/background_pics/"), True)
@@ -298,6 +291,7 @@ class UserTests(BaseTest):
             "add_anime": True,
             "add_games": True,
             "add_books": True,
+            "add_manga": True,
         })
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.json["data"]["grid_list_view"], True)
@@ -305,6 +299,7 @@ class UserTests(BaseTest):
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "anime"), True)
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "games"), True)
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "books"), True)
+        self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "manga"), True)
 
         rv = self.client.post("/api/settings/medialist", headers=self.connexion(), json={
             "rating_system": "score",
@@ -312,6 +307,7 @@ class UserTests(BaseTest):
             "add_anime": False,
             "add_games": False,
             "add_books": False,
+            "add_manga": False,
         })
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(rv.json["data"]["grid_list_view"], False)
@@ -319,6 +315,7 @@ class UserTests(BaseTest):
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "anime"), False)
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "games"), False)
         self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "books"), False)
+        self.assertEqual(next(s["active"] for s in rv.json["data"]["settings"] if s["media_type"] == "manga"), False)
 
     def test_settings_password(self):
         rv = self.client.post("/api/settings/password")

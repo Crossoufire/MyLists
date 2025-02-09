@@ -1,8 +1,8 @@
 from backend.api import db
-from backend.api.models.user import Token, User
-from backend.api.utils.enums import RoleType, MediaType
-from backend.api.utils.functions import compute_level
 from backend.tests.base_test import BaseTest
+from backend.api.models.user import Token, User
+from backend.api.utils.functions import compute_level
+from backend.api.utils.enums import RoleType, MediaType
 
 
 class UserModelTests(BaseTest):
