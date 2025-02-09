@@ -319,7 +319,6 @@ const gamesData = (apiData) => {
 
 
 const mangaData = (apiData) => {
-    console.log(apiData);
     return [
         {
             sidebarTitle: "Main Statistics",

@@ -5,8 +5,8 @@ from typing import List, Dict, Optional, Protocol
 
 from backend.api import db
 from backend.api.utils.functions import resize_and_save_image
+from backend.api.services.api.data_classes import ParsedSearch, ApiParams
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
-from backend.api.services.api.data_classes import ParsedSearch, ApiParams, ApiSearchResult
 
 
 class ChangedApiIdsParserProtocol(Protocol):
@@ -22,7 +22,7 @@ class BaseApiParser(ABC, ChangedApiIdsParserProtocol, TrendingParserProtocol):
         self.params = params
 
     @abstractmethod
-    def search_parser(self, search_results: ApiSearchResult) -> ParsedSearch:
+    def search_parser(self, search_results: Dict) -> ParsedSearch:
         """ Parse the search results as ParsedSearch object """
         pass
 

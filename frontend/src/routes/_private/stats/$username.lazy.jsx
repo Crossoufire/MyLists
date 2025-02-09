@@ -23,8 +23,6 @@ function StatsPage() {
     const [selectedTab, setSelectedTab] = useState("Main Statistics");
     const statsData = dataToLoad(filters.mt, apiData.stats, true);
 
-    console.log(statsData);
-
     useEffect(() => {
         setSelectedTab(statsData[0].sidebarTitle);
     }, [filters.mt]);

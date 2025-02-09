@@ -7,7 +7,7 @@ import requests
 from flask import abort
 from requests import Response
 
-from backend.api.services.api.data_classes import ApiSearchResult, ApiParams
+from backend.api.services.api.data_classes import ApiParams
 
 
 class TrendingCallerProtocol(Protocol):
@@ -27,7 +27,7 @@ class BaseApiCaller(ABC, TrendingCallerProtocol, ChangedApiIdsCallerProtocol, Up
         self.params = params
 
     @abstractmethod
-    def search(self, query: str, page: int = 1) -> ApiSearchResult:
+    def search(self, query: str, page: int = 1) -> Dict:
         pass
 
     @abstractmethod

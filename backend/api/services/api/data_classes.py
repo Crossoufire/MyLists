@@ -1,6 +1,6 @@
 from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional, List, Dict
+from typing import Optional, List
 
 from backend.api import MediaType
 
@@ -31,12 +31,6 @@ class ParsedSearch:
     items: List[ParsedSearchItem]
     total: int
     pages: int
-
-
-@dataclass
-class ApiSearchResult:
-    total: int
-    results: List[Dict]
 
 
 @dataclass(kw_only=True)
