@@ -8,7 +8,7 @@ from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
 from backend.api.services.api.providers.base.base_parser import BaseApiParser
 from backend.api.utils.functions import get, format_datetime, naive_utcnow, clean_html_text
-from backend.api.services.api.data_classes import ApiParams, BooksParsedSearchItem, ParsedSearch, ApiSearchResult
+from backend.api.services.api.data_classes import ApiParams, BooksParsedSearchItem, ParsedSearch
 
 
 class BooksApiParser(BaseApiParser):
@@ -17,9 +17,9 @@ class BooksApiParser(BaseApiParser):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
-    def search_parser(self, search_results: ApiSearchResult) -> ParsedSearch:
+    def search_parser(self, search_results: Dict) -> ParsedSearch:
         media_results = []
-        results = get(search_results.results, "items", default=[])
+        results = get(search_results, "items", default=[])
         for result in results:
             info = result["volumeInfo"]
 
@@ -34,7 +34,7 @@ class BooksApiParser(BaseApiParser):
 
             media_results.append(media_details)
 
-        total = get(search_results.results, "totalItems", default=0)
+        total = get(search_results, "totalItems", default=0)
         pages = total // self.params.results_per_page
 
         return ParsedSearch(items=media_results, total=total, pages=pages)

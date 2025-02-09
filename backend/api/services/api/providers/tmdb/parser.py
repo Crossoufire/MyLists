@@ -9,7 +9,7 @@ from backend.api.utils.enums import ModelTypes, MediaType
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
 from backend.api.utils.functions import get, format_datetime, naive_utcnow, is_latin
-from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ApiSearchResult, ParsedSearch
+from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ParsedSearch
 from backend.api.services.api.providers.base.base_parser import BaseApiParser, TrendingParser, ChangedApiIdsParser
 
 
@@ -22,9 +22,9 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
-    def search_parser(self, search_results: ApiSearchResult) -> ParsedSearch:
+    def search_parser(self, search_results: Dict) -> ParsedSearch:
         s_results = []
-        results = get(search_results.results, "results", default=[])
+        results = get(search_results, "results", default=[])
         for result in results:
             if result.get("known_for_department"):
                 continue
@@ -38,15 +38,13 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
                 media_info["image_cover"] = self.params.poster_base_url + result.get("poster_path")
 
             if result.get("media_type") == "tv":
-                # noinspection PyUnresolvedReferences
                 media_info.update(self._process_tv(result))
             elif result.get("media_type") == "movie":
-                # noinspection PyUnresolvedReferences
                 media_info.update(self._process_movie(result))
 
             s_results.append(ParsedSearchItem(**media_info))
 
-        total = 0
+        total = search_results.get("total_pages", 1)
         pages = (total // self.params.results_per_page) + 1
 
         return ParsedSearch(items=s_results, total=total, pages=pages)

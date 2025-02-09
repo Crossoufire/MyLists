@@ -10,16 +10,16 @@ from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.utils.functions import get, format_datetime, naive_utcnow
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
 from backend.api.services.api.providers.base.base_parser import BaseApiParser, ChangedApiIdsParser
-from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ApiSearchResult, ParsedSearch
+from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ParsedSearch
 
 
 class GamesApiParser(BaseApiParser, ChangedApiIdsParser):
     def __init__(self, params: ApiParams):
         super().__init__(params)
 
-    def search_parser(self, search_results: ApiSearchResult) -> ParsedSearch:
+    def search_parser(self, search_results: Dict) -> ParsedSearch:
         results = []
-        for result in search_results.results:
+        for result in search_results["results"]:
             if len(results) >= self.params.results_per_page or result == "message":
                 break
 
@@ -37,11 +37,10 @@ class GamesApiParser(BaseApiParser, ChangedApiIdsParser):
 
             results.append(media_details)
 
-        return ParsedSearch(
-            items=results,
-            total=search_results.total,
-            pages=search_results.total // self.params.results_per_page,
-        )
+        total = search_results["total"]
+        pages = (search_results["total"] // self.params.results_per_page) + 1
+
+        return ParsedSearch(items=results, total=total, pages=pages)
 
     def details_parser(self, details: Dict, cover_name: str, extra: Optional[BaseApiExtra] = None, bulk: bool = False) -> Dict:
         media_details = dict(

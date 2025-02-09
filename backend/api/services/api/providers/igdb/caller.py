@@ -2,7 +2,7 @@ import json
 from typing import Optional, Dict
 
 from backend.api.core.errors import log_error
-from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
+from backend.api.services.api.data_classes import ApiParams
 from backend.api.services.api.providers.base.base_caller import BaseApiCaller, UpdateTokenCaller
 
 
@@ -12,18 +12,17 @@ class GamesApiCaller(BaseApiCaller, UpdateTokenCaller):
 
         self.headers = {"Client-ID": self.params.client_id, "Authorization": f"Bearer {self.params.api_key}"}
 
-    def search(self, query: str, page: int = 1) -> ApiSearchResult:
+    def search(self, query: str, page: int = 1) -> Dict:
         data = (
             f'fields id, name, cover.image_id, first_release_date; limit 10; '
             f'offset {(page - 1) * self.params.results_per_page}; search "{query}";'
         )
-
         response = self.call(self.params.main_url, method="post", data=data, headers=self.headers)
-
-        return ApiSearchResult(
+        data = dict(
             results=json.loads(response.text),
-            total=int(response.headers.get("X-Count", 0))
+            total=int(response.headers.get("X-Count", 0)),
         )
+        return data
 
     def details(self, api_id: int | str) -> Dict:
         body = (

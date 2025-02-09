@@ -71,16 +71,13 @@ const CommandList = (
 CommandList.displayName = CommandPrimitive.List.displayName;
 
 
-const CommandEmpty = (
-    {
-        ref,
-        ...props
-    }
-) => (<CommandPrimitive.Empty
-    ref={ref}
-    className="py-2 text-center text-sm"
-    {...props}
-/>);
+const CommandEmpty = ({ ref, ...props }) => (
+    <CommandPrimitive.Empty
+        ref={ref}
+        className="py-2 text-center text-sm"
+        {...props}
+    />
+);
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
 

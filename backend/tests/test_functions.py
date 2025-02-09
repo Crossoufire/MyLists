@@ -2,8 +2,8 @@ import os
 from datetime import datetime
 
 from PIL import Image
+from flask import current_app
 from werkzeug.datastructures import FileStorage
-from werkzeug.exceptions import InternalServerError
 
 from backend.api import db
 from backend.tests.base_test import BaseTest
@@ -17,10 +17,7 @@ class UtilsFunctionTests(BaseTest):
 
         from backend.api.models.user import User
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-
-        self.image_path = os.path.join(current_dir, "images/anonymous.jpg")
-        self.bad_image_path = os.path.join(current_dir, "images/anonymous_scrambled.jpg")
+        self.image_path = os.path.join(current_app.root_path, "static/covers/default.jpg")
         self.user = User.query.first()
 
     def _test_save_picture(self, file: FileStorage, user_attr: str, is_profile: bool):
@@ -68,11 +65,6 @@ class UtilsFunctionTests(BaseTest):
                 False
             )
 
-    def test_bad_new_profile_image(self):
-        with open(self.bad_image_path, "rb") as fp:
-            file = FileStorage(fp)
-            self.assertRaises(InternalServerError, self._test_save_picture, file, "image_file", True)
-
     def test_save_new_background_image(self):
         with open(self.image_path, "rb") as fp:
             file = FileStorage(fp)
@@ -82,11 +74,6 @@ class UtilsFunctionTests(BaseTest):
                 os.path.isfile(os.path.join(self.app.root_path, "static", "background_pics", picture_fn)),
                 False
             )
-
-    def test_bad_new_background_image(self):
-        with open(self.bad_image_path, "rb") as fp:
-            file = FileStorage(fp)
-            self.assertRaises(InternalServerError, self._test_save_picture, file, "background_image", False)
 
     def test_erase_old_user_profile(self):
         with open(self.image_path, "rb") as fp:

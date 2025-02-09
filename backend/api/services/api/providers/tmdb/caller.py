@@ -4,7 +4,7 @@ from typing import Dict, List
 from flask import current_app
 
 from backend.api import MediaType, cache
-from backend.api.services.api.data_classes import ApiParams, ApiSearchResult
+from backend.api.services.api.data_classes import ApiParams
 from backend.api.services.api.providers.base.base_caller import BaseApiCaller, TrendingCaller, ChangedApiIdsCaller
 
 
@@ -13,9 +13,9 @@ class TMDBApiCallerCaller(BaseApiCaller, TrendingCaller, ChangedApiIdsCaller):
         super().__init__(params)
         self.mt = "movie" if self.params.media_type == MediaType.MOVIES else "tv"
 
-    def search(self, query: str, page: int = 1) -> ApiSearchResult:
+    def search(self, query: str, page: int = 1) -> Dict:
         response = self.call(f"{self.params.main_url}/search/multi?api_key={self.params.api_key}&query={query}&page={page}")
-        return ApiSearchResult(results=response.json(), total=0)
+        return response.json()
 
     def details(self, api_id: int | str) -> Dict:
         response = self.call(f"{self.params.main_url}/{self.mt}/{api_id}?api_key={self.params.api_key}&append_to_response=credits")
