@@ -41,8 +41,11 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
                 media_info.update(self._process_tv(result))
             elif result.get("media_type") == "movie":
                 media_info.update(self._process_movie(result))
-
-            s_results.append(ParsedSearchItem(**media_info))
+            
+            try:
+                s_results.append(ParsedSearchItem(**media_info))
+            except:
+                pass
 
         total = search_results.get("total_pages", 1)
         pages = (total // self.params.results_per_page) + 1
