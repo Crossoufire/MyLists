@@ -41,7 +41,7 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
                 media_info.update(self._process_tv(result))
             elif result.get("media_type") == "movie":
                 media_info.update(self._process_movie(result))
-            
+
             try:
                 s_results.append(ParsedSearchItem(**media_info))
             except:
@@ -59,7 +59,10 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
         raise NotImplementedError("The specifics must be implemented in the subclasses")
 
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
-        return self.params.poster_base_url + details_data.get("poster_path")
+        try:
+            return self.params.poster_base_url + details_data.get("poster_path")
+        except:
+            return None
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)

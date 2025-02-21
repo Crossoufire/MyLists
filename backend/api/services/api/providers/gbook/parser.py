@@ -61,11 +61,14 @@ class BooksApiParser(BaseApiParser):
         )
 
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
-        volume_info = details_data.get("volumeInfo")
-        cover_url = get(volume_info, "imageLinks", "large")
-        if not cover_url:
-            cover_url = get(volume_info, "imageLinks", "medium")
-        return cover_url
+        try:
+            volume_info = details_data.get("volumeInfo")
+            cover_url = get(volume_info, "imageLinks", "large")
+            if not cover_url:
+                cover_url = get(volume_info, "imageLinks", "medium")
+            return cover_url
+        except:
+            return None
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)

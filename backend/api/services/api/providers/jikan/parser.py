@@ -65,7 +65,10 @@ class MangaApiParser(BaseApiParser, ChangedApiIdsParser):
         )
 
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
-        return get(details_data, "images", "jpg", "large_image_url")
+        try:
+            return get(details_data, "images", "jpg", "large_image_url")
+        except:
+            return None
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)

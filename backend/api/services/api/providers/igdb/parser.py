@@ -72,7 +72,10 @@ class GamesApiParser(BaseApiParser, ChangedApiIdsParser):
         )
 
     def parse_cover_url(self, details_data: Dict) -> Optional[str]:
-        return self.params.poster_base_url + get(details_data, "cover", "image_id") + ".jpg"
+        try:
+            return self.params.poster_base_url + get(details_data, "cover", "image_id") + ".jpg"
+        except:
+            return None
 
     def add_to_db(self, data: Dict) -> db.Model:
         models, related_data = self._common_add_update(data)
