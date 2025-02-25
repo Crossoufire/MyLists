@@ -23,6 +23,7 @@ const userMediaUrls = {
     // Series and Anime
     updateSeason: () => "/update_season",
     updateEpisode: () => "/update_episode",
+    updateRedoTv: () => "/update_redo_tv",
 
     // Games
     updatePlaytime: () => "/update_playtime",
@@ -245,4 +246,14 @@ export const useUserMediaMutations = (mediaType, mediaId, queryKey) => {
         updateRedo, updateRating, updateComment, updateFavorite, updateSeason, updateEpisode,
         updatePlaytime, updatePlatform, updatePage, updateChapter,
     };
+};
+
+
+export const useRedoTvMutation = (mediaType, mediaId) => {
+    return useMutation({
+        mutationFn: ({ payload }) => postFetcher({
+            url: userMediaUrls.updateRedoTv(),
+            data: { media_id: mediaId, media_type: mediaType, payload },
+        }),
+    });
 };

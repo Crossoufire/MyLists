@@ -1,10 +1,11 @@
 import {useAuth} from "@/api";
 import {useMemo, useState} from "react";
 import {BlockLink} from "@/components/app/BlockLink";
+import {CircleCheck, Heart, Settings2} from "lucide-react";
+import {RedoSystem} from "@/components/media-list/MediaGrid";
 import {TablePagination} from "@/components/app/TablePagination";
 import {DisplayRating} from "@/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
-import {CircleCheck, Heart, RefreshCw, Settings2} from "lucide-react";
 import {CommentPopover} from "@/components/media-list/CommentPopover";
 import {Route} from "@/routes/_private/list/$mediaType/$username/route";
 import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
@@ -39,10 +40,7 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                 );
             },
         },
-        {
-            accessorKey: "status",
-            header: "Status",
-        },
+        { accessorKey: "status", header: "Status" },
         ...(mediaType === "movies" ? [] : [
             {
                 header: "Progress",
@@ -59,11 +57,10 @@ export const MediaTable = ({ isCurrent, mediaType, mediaList, pagination, queryK
                 return (
                     <div className="flex items-center gap-3">
                         <DisplayRating rating={row.original.rating}/>
-                        {row.original.redo > 0 &&
-                            <div className="flex items-center gap-1">
-                                <RefreshCw className="w-4 h-4 text-green-500"/> {row.original.redo}
-                            </div>
-                        }
+                        <RedoSystem
+                            userMedia={row.original}
+                            mediaType={mediaType}
+                        />
                         {row.original.favorite && <Heart className="w-4 h-4 text-red-500"/>}
                         {row.original.comment && <CommentPopover content={row.original.comment}/>}
                     </div>
@@ -176,7 +173,7 @@ function getColumnWidth(colId) {
         "Name": "auto",
         "status": "auto",
         "Progress": "auto",
-        "Information": "auto",
+        "Information": "250px",
         "actions": "80px",
     };
 

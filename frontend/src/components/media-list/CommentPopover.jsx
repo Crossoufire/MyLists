@@ -8,7 +8,7 @@ export const CommentPopover = ({ content }) => {
             <PopoverTrigger>
                 <MessageCircle className="text-blue-500 h-4 w-4"/>
             </PopoverTrigger>
-            <PopoverContent align="center" side="top">
+            <PopoverContent align="center" side="top" className="max-h-[200px] overflow-y-auto">
                 {content}
             </PopoverContent>
         </Popover>

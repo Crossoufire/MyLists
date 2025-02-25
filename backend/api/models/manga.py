@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from flask import abort
 from sqlalchemy import func, ColumnElement
@@ -109,26 +109,31 @@ class MangaList(MediaList):
 
         return media_dict
 
-    def update_status(self, new_status: Status) -> int:
+    def update_status(self, new_status: Status) -> Tuple[int, int]:
+        new_redo = self.redo
         new_total = self.total
 
         self.status = new_status
-        self.redo = 0
+
         if new_status == Status.COMPLETED:
             if not self.media.chapters:
                 return abort(400, description="Media has no chapters")
-
             self.current_chapter = self.media.chapters
             self.total = self.media.chapters
             new_total = self.media.chapters
         elif new_status == Status.PLAN_TO_READ:
             self.current_chapter = 0
             self.total = 0
+            self.redo = 0
+            new_redo = 0
             new_total = 0
 
-        return new_total
+        return new_total, new_redo
 
     def update_total(self, new_redo: int) -> int:
+        if not self.media.chapters:
+            return abort(400, description="Can't add re-read, because the manga has no total chapters.")
+
         self.redo = new_redo
         new_total = self.media.chapters + (new_redo * self.media.chapters)
         self.total = new_total

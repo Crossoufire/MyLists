@@ -28,9 +28,9 @@ const CredenzaClose = ({ className, children, ...props }) => {
 const CredenzaContent = ({ className, children, ...props }) => {
     const isDesktop = useMediaQuery(desktop);
     const desktopStyle = isDesktop ?
-        "w-[400px] min-h-[530px] max-h-[600px] overflow-y-auto overflow-x-hidden"
+        "w-[425px] max-h-[600px] overflow-y-auto overflow-x-hidden"
         :
-        "min-h-[583px]";
+        "min-h-[500px] max-h-[600px]";
     const CredenzaContent = isDesktop ? DialogContent : DrawerContent;
     return <CredenzaContent className={cn(desktopStyle, className)} {...props}>{children}</CredenzaContent>;
 };

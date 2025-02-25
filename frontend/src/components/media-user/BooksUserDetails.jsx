@@ -7,17 +7,18 @@ import {useUpdateStatusMutation, useUserMediaMutations} from "@/api/mutations";
 
 
 export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updatePage } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
     const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
+    const { updateRedo, updateRating, updatePage } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMedia = (media, status) => {
-        const updatedMedia = { ...media, redo: 0, status: status };
+        const updatedMedia = { ...media, status: status };
 
         if (status === "Completed") {
             updatedMedia.actual_page = userMedia.total_pages;
         }
         if (status === "Plan to Read") {
             updatedMedia.actual_page = 0;
+            updatedMedia.redo = 0;
         }
 
         return updatedMedia;
@@ -67,7 +68,7 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryKey }) => {
                     </div>
                 </>
             }
-            {userMedia.status === "Completed" &&
+            {userMedia.status !== "Plan to Read" &&
                 <RedoDrop
                     name={"Re-read"}
                     redo={userMedia.redo}

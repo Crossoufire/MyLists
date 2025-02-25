@@ -480,8 +480,7 @@ class TvStatsCalculator(TMDBStatsCalculator):
         )
 
         avg_duration = (
-            db.session.query(
-                func.avg((self.media.duration * (self.media_list.total / (self.media_list.redo + 1)))))
+            db.session.query(func.avg((self.media.duration * self.media_list.total)))
             .join(*self.common_join)
             .filter(*self.user_filter, *self.status_filter, self.media_list.status != Status.RANDOM)
             .scalar()
@@ -663,7 +662,7 @@ class BooksStatsCalculator(BaseStatsCalculator):
         )
 
         avg_pages = (
-            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
+            db.session.query(func.avg(self.media_list.total))
             .filter(*self.user_filter, *self.status_filter)
             .scalar()
         )
@@ -872,7 +871,7 @@ class MangaStatsCalculator(BaseStatsCalculator):
         )
 
         avg_chapters = (
-            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
+            db.session.query(func.avg(self.media_list.total))
             .filter(*self.user_filter, *self.status_filter)
             .scalar()
         )

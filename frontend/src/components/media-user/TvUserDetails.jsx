@@ -1,17 +1,17 @@
 import {Separator} from "@/components/ui/separator";
-import {RedoDrop} from "@/components/media-user/RedoDrop";
 import {StatusDrop} from "@/components/media-user/StatusDrop";
 import {RatingComponent} from "@/components/app/RatingComponent";
+import {TvRedoSystem} from "@/components/media-user/TvRedoSystem";
 import {EpsSeasonsDrop} from "@/components/media-user/EpsSeasonsDrop";
 import {useUpdateStatusMutation, useUserMediaMutations} from "@/api/mutations";
 
 
 export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
-    const { updateRedo, updateRating, updateSeason, updateEpisode } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
     const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
+    const { updateRating, updateSeason, updateEpisode } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
 
     const updateMediaData = (media, status) => {
-        const updatedMedia = { ...media, redo: 0, status: status };
+        const updatedMedia = { ...media, status: status };
 
         if (userMedia.last_episode_watched === 0 && !["Plan to Watch", "Random"].includes(status)) {
             updatedMedia.last_episode_watched = 1;
@@ -20,6 +20,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
         if (["Plan to Watch", "Random"].includes(status)) {
             updatedMedia.current_season = 1;
             updatedMedia.last_episode_watched = 1;
+            updatedMedia.redo2 = Array(userMedia.eps_per_season.length).fill(0);
         }
 
         if (status === "Completed") {
@@ -81,12 +82,15 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }) => {
                     />
                 </div>
             }
-            {userMedia.status === "Completed" &&
-                <RedoDrop
-                    name={"Re-watched"}
-                    redo={userMedia.redo}
-                    updateRedo={updateRedo}
-                />
+            {!(userMedia.status === "Plan to Watch" || userMedia.status === "Random") &&
+                <div className="flex justify-between items-center h-7">
+                    <div>Re-watched</div>
+                    <TvRedoSystem
+                        mediaType={mediaType}
+                        mediaId={userMedia.media_id}
+                        initRedoList={userMedia.redo2}
+                    />
+                </div>
             }
         </>
     );

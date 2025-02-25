@@ -52,7 +52,16 @@ const TVPayload = ({ payload }) => {
 
 const RedoPayload = ({ payload, mediaType }) => {
     const name = (mediaType === "books") ? "Re-read" : "Re-watched";
-    return <>{name} {payload.old_value}x <MoveRight className="w-4 h-4"/> {payload.new_value}x</>;
+
+    if (["series", "anime"].includes(mediaType)) {
+        return (
+            <>{name} {payload.old_value}x S. <MoveRight className="w-4 h-4"/> {payload.new_value}x S.</>
+        );
+    }
+
+    return (
+        <>{name} {payload.old_value}x <MoveRight className="w-4 h-4"/> {payload.new_value}x</>
+    );
 };
 
 
