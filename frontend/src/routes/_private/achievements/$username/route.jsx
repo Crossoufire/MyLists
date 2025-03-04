@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_private/achievements/$username")({
         }
         catch (error) {
             if (error.status === 403) {
-                throw redirect({
-                    to: "/",
-                    search: { message: "You need to be logged-in to view the achievements" },
-                });
+                throw redirect({ to: "/", search: { message: "You need to be logged-in to view the achievements" } });
             }
         }
     },

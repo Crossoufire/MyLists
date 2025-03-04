@@ -5,7 +5,7 @@ import {Card, CardContent} from "@/components/ui/card";
 import {createLazyFileRoute} from "@tanstack/react-router";
 
 
-// noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
+// noinspection JSCheckFunctionSignatures
 export const Route = createLazyFileRoute("/_universal/features")({
     component: FeatureShowcase,
 });

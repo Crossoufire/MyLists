@@ -3,7 +3,7 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {createLazyFileRoute} from "@tanstack/react-router";
 
 
-// noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
+// noinspection JSCheckFunctionSignatures
 export const Route = createLazyFileRoute("/_universal/about")({
     component: AboutPage,
 });

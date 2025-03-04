@@ -2,7 +2,7 @@ import {getApiClient} from "@/api";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 
-// noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
+// noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private")({
     beforeLoad: ({ context: { auth }, location }) => {
         const routeType = ["/profile", "/stats", "/list", "/achievements"].some(path => location.pathname.startsWith(path))
