@@ -1,11 +1,11 @@
 import {toast} from "sonner";
 import {useEffect} from "react";
 import {useRegisterTokenMutation} from "@/api/mutations";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_public/register-token")({
+export const Route = createFileRoute("/_public/register-token")({
     component: RegisterTokenPage,
 });
 
@@ -30,7 +30,9 @@ function RegisterTokenPage() {
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
-            <div className="text-xl mb-2 font-semibold">Registration In Progress...</div>
+            <div className="text-xl mb-2 font-semibold">
+                Registration In Progress...
+            </div>
         </div>
     );
 }

@@ -4,12 +4,12 @@ import {Input} from "@/components/ui/input";
 import {PageTitle} from "@/components/app/PageTitle";
 import {FormButton} from "@/components/app/FormButton";
 import {useForgotPasswordMutation} from "@/api/mutations";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createLazyFileRoute("/_public/forgot-password")({
+export const Route = createFileRoute("/_public/forgot-password")({
     component: ForgotPasswordPage,
 });
 
@@ -26,10 +26,10 @@ function ForgotPasswordPage() {
                     const message = error.errors.json.email[0];
                     return form.setError("email", { type: "manual", message: message });
                 }
-                toast.error("An error occurred while sending your reset password email");
+                toast.error("An error occurred while sending your reset password email",);
             },
             onSuccess: async () => {
-                toast.success("An email has been sent to your account to reset your password");
+                toast.success("An email has been sent to your account to reset your password",);
                 await navigate({ to: "/" });
             },
             onSettled: () => form.reset(),
@@ -59,9 +59,7 @@ function ForgotPasswordPage() {
                                 </FormItem>
                             )}
                         />
-                        <FormButton disabled={forgotPassword.isPending}>
-                            Submit
-                        </FormButton>
+                        <FormButton disabled={forgotPassword.isPending}>Submit</FormButton>
                     </form>
                 </Form>
             </div>

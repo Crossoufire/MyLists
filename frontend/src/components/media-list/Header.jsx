@@ -3,7 +3,7 @@ import {capitalize} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {MediaLevelCircle} from "@/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/components/media-list/SearchComponent";
-import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {Route} from "@/routes/_private/list/$mediaType/$username.route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";

@@ -4,12 +4,12 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useResetPasswordMutation} from "@/api/mutations";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage,} from "@/components/ui/form";
 
 
 // noinspection JSCheckFunctionSignatures,JSUnusedGlobalSymbols
-export const Route = createLazyFileRoute("/_public/reset-password")({
+export const Route = createFileRoute("/_public/reset-password")({
     component: ResetPasswordPage,
 });
 
@@ -74,7 +74,7 @@ function ResetPasswordPage() {
                                         if (form.watch("new_password") !== val) {
                                             return "The passwords do not match.";
                                         }
-                                    }
+                                    },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>

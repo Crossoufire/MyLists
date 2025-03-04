@@ -8,12 +8,26 @@ import {Pagination} from "@/components/app/Pagination";
 import {MediaGrid} from "@/components/media-list/MediaGrid";
 import {MediaTable} from "@/components/media-list/MediaTable";
 import {AppliedFilters} from "@/components/media-list/AppliedFilters";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
 import {FiltersSideSheet} from "@/components/media-list/FiltersSideSheet";
+import {createFileRoute, redirect, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_private/list/$mediaType/$username")({
+export const Route = createFileRoute("/_private/list/$mediaType/$username")({
+    loaderDeps: ({ search }) => ({ search }),
+    loader: async ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
+        try {
+            await queryClient.ensureQueryData(listOptions(mediaType, username, search));
+        }
+        catch (error) {
+            if (error.status === 403) {
+                throw redirect({
+                    to: "/",
+                    search: { message: "You need to be logged-in to view this collection" },
+                });
+            }
+        }
+    },
     component: MediaList,
 });
 

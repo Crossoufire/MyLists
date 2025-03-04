@@ -2,11 +2,11 @@ import {Sparkles} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Card, CardContent} from "@/components/ui/card";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_universal/features")({
+export const Route = createFileRoute("/_universal/features")({
     component: FeatureShowcase,
 });
 

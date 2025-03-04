@@ -39,7 +39,7 @@ export const TvRedoSystem = ({ initRedoList, mediaId, mediaType }) => {
     return (
         <>
             <div className="w-[130px] text-start flex items-center justify-between">
-                <div className="ml-1.5 text-sm">{totalRedo} Seasons</div>
+                <div className="ml-1.5 text-sm">{totalRedo} Seas.</div>
                 <Pencil role="button" className="w-4 h-4 text-gray-400" onClick={() => setOpen(true)}/>
             </div>
             <Credenza open={open} onOpenChange={setOpen}>

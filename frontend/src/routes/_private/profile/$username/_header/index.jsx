@@ -1,6 +1,6 @@
 import {profileOptions} from "@/api";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {MediaLevels} from "@/components/profile/MediaLevels";
 import {UserUpdates} from "@/components/profile/UserUpdates";
 import {GlobalStats} from "@/components/profile/GlobalStats";
@@ -11,7 +11,7 @@ import {AchievementsDisplay} from "@/components/profile/AchievementProfile";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_private/profile/$username/_header/")({
+export const Route = createFileRoute("/_private/profile/$username/_header/")({
     component: ProfileMain,
 });
 

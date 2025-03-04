@@ -1,10 +1,10 @@
 import {mail} from "@/utils/constants";
 import {PageTitle} from "@/components/app/PageTitle";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_universal/about")({
+export const Route = createFileRoute("/_universal/about")({
     component: AboutPage,
 });
 

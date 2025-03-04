@@ -9,7 +9,7 @@ import {Separator} from "@/components/ui/separator";
 import {useOnClickOutside} from "@/hooks/useClickedOutside";
 import {filterSearchOptions, smallFiltersOptions} from "@/api";
 import {capitalize, getLangCountryName} from "@/utils/functions";
-import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {Route} from "@/routes/_private/list/$mediaType/$username.route";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/components/ui/command";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";

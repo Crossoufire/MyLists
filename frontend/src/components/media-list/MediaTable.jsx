@@ -7,7 +7,7 @@ import {TablePagination} from "@/components/app/TablePagination";
 import {DisplayRating} from "@/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/components/media-list/QuickAddMedia";
 import {CommentPopover} from "@/components/media-list/CommentPopover";
-import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {Route} from "@/routes/_private/list/$mediaType/$username.route";
 import {UserMediaEditDialog} from "@/components/media-list/UserMediaEditDialog";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {SpecificUserMediaData} from "@/components/media-list/SpecificUserMediaData";

@@ -1,7 +1,7 @@
 import {useHashTab} from "@/hooks/useHashTab";
 import {Sidebar} from "@/components/app/Sidebar";
 import {PageTitle} from "@/components/app/PageTitle";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {DangerForm} from "@/components/settings/DangerForm";
 import {GeneralForm} from "@/components/settings/GeneralForm";
 import {PasswordForm} from "@/components/settings/PasswordForm";
@@ -9,7 +9,7 @@ import {MediaListForm} from "@/components/settings/MediaListForm";
 
 
 // noinspection JSUnusedGlobalSymbols,JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_private/settings")({
+export const Route = createFileRoute("/_private/settings")({
     component: SettingsPage,
 });
 
