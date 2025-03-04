@@ -73,7 +73,7 @@ export const StatsGraph = ({ title, dataList }) => {
 };
 
 
-const CustomTooltip = ({ active, payload, label }) => {
+export const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-gray-800 p-2 rounded-md">

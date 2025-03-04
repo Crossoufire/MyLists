@@ -34,6 +34,15 @@ def get_daily_mediadle():
     pixelation_level = min(daily_mediadle.pixelation_levels, user_progress.attempts + 1)
 
     mediadle_stats = MediadleStats.query.filter_by(user_id=current_user.id).first()
+    stats = mediadle_stats.to_dict() if mediadle_stats else None
+    if stats:
+        attempts_data = (
+            db.session.query(UserMediadleProgress.completion_time, UserMediadleProgress.attempts)
+            .filter(UserMediadleProgress.user_id == current_user.id, UserMediadleProgress.completion_time.is_not(None))
+            .order_by(UserMediadleProgress.completion_time)
+            .all()
+        )
+        stats["attempts_list"] = [{"date": row[0].strftime("%d-%b-%Y"), "attempts": row[1]} for row in attempts_data]
 
     data = dict(
         mediadle_id=daily_mediadle.id,
@@ -44,7 +53,7 @@ def get_daily_mediadle():
         max_attempts=daily_mediadle.pixelation_levels,
         pixelated_cover=pixelate_image(selected_movie.media_cover, pixelation_level),
         non_pixelated_cover=selected_movie.media_cover if user_progress.completed else None,
-        stats=mediadle_stats.to_dict() if mediadle_stats else None,
+        stats=stats,
     )
 
     return jsonify(data=data), 200
@@ -102,7 +111,15 @@ def make_guess(data):
 def get_suggestions(args):
     if len(args["q"]) < 2:
         return jsonify(data=[]), 200
-    suggestions = Movies.query.filter(Movies.name.ilike(f"%{args['q']}%")).with_entities(Movies.name).limit(20).all()
+
+    suggestions = (
+        Movies.query.filter(Movies.name.ilike(f"%{args['q']}%"))
+        .with_entities(Movies.name)
+        .order_by(Movies.name)
+        .limit(20)
+        .all()
+    )
+
     return jsonify(data=[s.name for s in suggestions]), 200
 
 

@@ -9,8 +9,10 @@ import {PageTitle} from "@/components/app/PageTitle";
 import {useMoviedleGuessMutation} from "@/api/mutations";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
+import {CustomTooltip} from "@/components/media-stats/StatsGraph";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/api";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy,} from "lucide-react";
 
 
@@ -141,8 +143,8 @@ function MediadlePage() {
                         <CardTitle>Your Stats</CardTitle>
                         <Separator/>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-2">
+                    <CardContent className="space-y-8">
+                        <div className="grid gap-4 max-sm:grid-cols-2 grid-cols-3 mt-2">
                             <StatsCard
                                 icon={Sigma}
                                 label="Total Played"
@@ -180,12 +182,33 @@ function MediadlePage() {
                                 color="text-blue-600"
                             />
                         </div>
+                        <div className="h-[350px]">
+                            <AttemptsGraph
+                                attemptsData={mediadleData?.stats?.attempts_list ?? []}
+                                avgAttempts={mediadleData?.stats?.average_attempts ?? 0}
+                            />
+                        </div>
                     </CardContent>
                 </Card>
             </div>
         </PageTitle>
     );
 }
+
+
+const AttemptsGraph = ({ attemptsData, avgAttempts }) => {
+    return (
+        <ResponsiveContainer>
+            <LineChart data={attemptsData} margin={{ left: -40, top: 5, right: 5, bottom: 5 }}>
+                <XAxis dataKey="date" tick={{ fill: "#e2e2e2" }}/>
+                <YAxis domain={[0, 6]} ticks={[0, 1, 2, 3, 4, 5, 6]} tick={{ fill: "#e2e2e2" }}/>
+                <Tooltip cursor={{ fill: "#373535" }} content={<CustomTooltip/>}/>
+                <Line dataKey="attempts" dot={{ fill: "#74c4ef", stroke: "#74c4ef", strokeWidth: 1, r: 2 }}/>
+                <ReferenceLine y={avgAttempts} stroke="red" strokeDasharray="6 2"/>
+            </LineChart>
+        </ResponsiveContainer>
+    );
+};
 
 
 const StatsCard = ({ icon: Icon, label, value, color }) => {
