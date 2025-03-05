@@ -3,15 +3,13 @@ import {Search} from "lucide-react";
 import {hallOfFameOptions} from "@/api";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {Progress} from "@/components/ui/progress";
 import {PageTitle} from "@/components/app/PageTitle";
 import {MutedText} from "@/components/app/MutedText";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Card, CardContent} from "@/components/ui/card";
 import {Pagination} from "@/components/app/Pagination";
 import {useDebounceCallback} from "@/hooks/useDebounce";
 import {HoFCard} from "@/components/hall-of-fame/HoFCard";
-import {capitalize, getMediaColor} from "@/utils/functions";
+import {HofRanking} from "@/components/hall-of-fame/HofRanking";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
 
@@ -114,47 +112,9 @@ function HallOfFamePage() {
                     />
                 </div>
                 <div className="col-span-5 max-sm:col-span-1 mt-[28px] max-sm:mt-4 max-sm:order-1">
-                    <div className="text-xl font-semibold mb-3">My Rankings</div>
-                    <div className="grid grid-cols-2 w-full gap-3">
-                        {apiData.user_ranks.map((rank) => (
-                            <Card key={rank.media_type} className="p-2 max-sm:py-0 bg-card">
-                                {rank.active ? (
-                                    <CardContent className="max-sm:py-4 p-2 space-y-1">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="font-semibold text-lg">
-                                                {capitalize(rank.media_type)}
-                                            </div>
-                                            <div className="font-semibold text-xl"># {rank.rank}</div>
-                                        </div>
-                                        <Progress
-                                            max={100}
-                                            className="mt-2"
-                                            color={getMediaColor(rank.media_type)}
-                                            value={100 - (rank.percent ? rank.percent : 100)}
-                                        />
-                                        <div className="text-xs font-semibold text-gray-400">
-                                            {rank.percent ? (
-                                                <>Top {rank.percent.toFixed(1)}%</>
-                                            ) : (
-                                                <>Top --</>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                ) : (
-                                    <CardContent className="max-sm:py-4 p-2 space-y-1">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="font-semibold text-lg">
-                                                {capitalize(rank.media_type)}
-                                            </div>
-                                        </div>
-                                        <div className="text-sm">
-                                            <MutedText>Not Activated</MutedText>
-                                        </div>
-                                    </CardContent>
-                                )}
-                            </Card>
-                        ))}
-                    </div>
+                    <HofRanking
+                        userRanks={apiData.user_ranks}
+                    />
                 </div>
             </div>
         </PageTitle>

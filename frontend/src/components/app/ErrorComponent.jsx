@@ -7,6 +7,7 @@ export const ErrorComponent = ({ statusCode = 404, message = "Looks like you're 
     if (statusCode === 401) {
         message = "You need to be logged-in to access this page";
     }
+    
     return (
         <div className="flex items-center justify-center mt-12">
             <div className="text-center px-4">
