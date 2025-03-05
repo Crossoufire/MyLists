@@ -70,7 +70,7 @@ class ApiClient {
             const oldToken = this.getAccessToken();
             const refreshSuccessful = await this.refreshToken();
 
-            // Only reissue request if token was refreshed (or updated externally) to avoid infinite loop
+            // Only redo request if token was refreshed (or updated externally) to avoid infinite loop
             if (refreshSuccessful && oldToken !== this.getAccessToken()) {
                 response = await this.requestInternal(data);
             }
@@ -91,21 +91,21 @@ class ApiClient {
         };
 
         // Prepare request body
-        const requestBody = ((body === undefined) || (body === null)) ? null : body instanceof FormData ? body : JSON.stringify(body);
+        const reqBody = ((body === undefined) || (body === null)) ? null : body instanceof FormData ? body : JSON.stringify(body);
 
         try {
             const response = await fetch(this.baseUrl + url + queryArgs, {
                 method,
                 headers: mergedHeaders,
                 credentials: "include",
-                body: requestBody,
+                body: reqBody,
                 ...options,
             });
 
             return {
                 ok: response.ok,
                 status: response.status,
-                body: response.status === 204 ? null : await response.json()
+                body: response.status === 204 ? null : await response.json(),
             };
         }
         catch (error) {
