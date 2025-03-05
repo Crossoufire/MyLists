@@ -1,5 +1,4 @@
 {
-    "formatter": false,
     "autoCodeSplitting": true,
     "target": "react",
     "quoteStyle": "double",
