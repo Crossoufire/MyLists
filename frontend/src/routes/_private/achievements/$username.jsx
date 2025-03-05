@@ -43,8 +43,7 @@ function AchievementPage() {
                     <TabsContent key={mt} value={mt}>
                         <AchievementSummary mediaType={mt} summary={summary}/>
                         <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {apiData.result
-                                .filter((a) => mt === "all" || mt === a.media_type)
+                            {apiData.result.filter((a) => mt === "all" || mt === a.media_type)
                                 .map((ach) => (
                                     <AchievementCard key={ach.id} achievement={ach}/>
                                 ))}

@@ -8,71 +8,67 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 
 
 export const AchievementCard = ({ achievement }) => {
-    const getUserHighestTier = useMemo(() => (userData) => {
-        return userData.filter(tier => tier.completed).sort((a, b) => b.tier_id - a.tier_id)[0];
-    }, [achievement]);
+    const { name, media_type, description, tiers, user_data: userData } = achievement;
 
-    const getUserNextTier = useMemo(() => (userData) => {
-        return userData.filter(tier => !tier.completed).sort((a, b) => a.tier_id - b.tier_id)[0];
-    }, [achievement]);
+    const fullyCompleted = useMemo(() => userData.length > 0 && userData.every((tier) => tier.completed), [userData]);
+    const userHighestTier = useMemo(() => {
+        const completed = userData.filter((tier) => tier.completed);
+        return completed.sort((a, b) => b.tier_id - a.tier_id)[0];
+    }, [userData]);
+    const userNextTier = useMemo(() => {
+        const pending = userData.filter((tier) => !tier.completed);
+        return pending.sort((a, b) => a.tier_id - b.tier_id)[0];
+    }, [userData]);
 
-    const isFullyCompleted = useMemo(() => (userData) => {
-        if (userData.length === 0) return false;
-        return userData.every(tier => tier.completed);
-    }, [achievement]);
+    const highestTierData = tiers.find((tier) => tier.id === userHighestTier?.tier_id);
+    const nextTierData = userNextTier ? tiers.find((tier) => tier.id === userNextTier.tier_id) : tiers[0];
 
-    const fullyCompleted = isFullyCompleted(achievement.user_data);
-    const userNextTier = getUserNextTier(achievement.user_data);
-    const userHighestTier = getUserHighestTier(achievement.user_data);
+    const iconColorClass = diffColors(highestTierData?.difficulty);
+    const borderColorClass = diffColors(highestTierData?.difficulty, "border");
 
-    const nextTierData = achievement.tiers.find(tier => tier.id === userNextTier?.tier_id);
-    const highestTierData = achievement.tiers.find(tier => tier.id === userHighestTier?.tier_id);
+    const currentCount = userNextTier ? userNextTier.count : 0;
+    const criteriaCount = userNextTier ? nextTierData.criteria.count : tiers[0].criteria.count;
+    const nextTierDifficulty = userNextTier ? nextTierData.difficulty : "bronze";
+    const nextTierBgColor = diffColors(nextTierDifficulty, "bg");
 
     return (
-        <Card className={cn("relative px-2 py-1 border-l-8", diffColors(highestTierData?.difficulty, "border"))}>
+        <Card className={cn("relative px-2 py-1 border-l-8", borderColorClass)}>
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                        <Award className={cn("w-6 h-6", diffColors(highestTierData?.difficulty))}/>
-                        {achievement.name}
+                        <Award className={cn("w-6 h-6", iconColorClass)}/>
+                        {name}
                     </CardTitle>
-                    <Badge variant="secondary">{capitalize(achievement.media_type)}</Badge>
+                    <Badge variant="secondary">{capitalize(media_type)}</Badge>
                 </div>
-                <CardDescription className="line-clamp-2" title={achievement.description}>
-                    {achievement.description}
+                <CardDescription className="line-clamp-2" title={description}>
+                    {description}
                 </CardDescription>
             </CardHeader>
             <CardContent className="mt-1 space-y-4">
-                {(!fullyCompleted && userNextTier) &&
+                {!fullyCompleted && (
                     <div className="mt-2">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium">Next tier - {capitalize(nextTierData.difficulty)}</span>
-                            <p className={cn("text-sm rounded-md px-1.5 py-0.5", diffColors(nextTierData?.difficulty, "bg"))}>
-                                {userNextTier.count}/{nextTierData.criteria.count}
+                            <span className="font-medium">
+                                Next tier - {capitalize(nextTierDifficulty)}
+                            </span>
+                            <p className={cn("text-sm rounded-md px-1.5 py-0.5", nextTierBgColor)}>
+                                {currentCount}/{criteriaCount}
                             </p>
                         </div>
-                        <Progress className="w-full" color="#bfbfbf" value={userNextTier.progress}/>
+                        <Progress
+                            className="w-full"
+                            color={userNextTier ? "#bfbfbf" : "bg-neutral-400"}
+                            {...(userNextTier ? { value: userNextTier.progress } : {})}
+                        />
                     </div>
-                }
-                {(!fullyCompleted && !userNextTier) &&
-                    <div className="mt-2">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium">Next tier - Bronze</span>
-                            <p className={cn("text-sm rounded-md px-1.5 py-0.5", diffColors("Bronze", "bg"))}>
-                                0/{achievement.tiers[0].criteria.count}
-                            </p>
-                        </div>
-                        <Progress className="w-full" color="bg-neutral-400"/>
+                )}
+                {fullyCompleted && (
+                    <div className="flex items-center justify-center gap-2 h-12">
+                        <CircleCheck className="w-5 h-5 text-green-500"/>
+                        <span className="font-semibold">Achievement Completed!</span>
                     </div>
-                }
-                {fullyCompleted &&
-                    <>
-                        <div className="flex items-center justify-center gap-2 h-12">
-                            <CircleCheck className="w-5 h-5 text-green-500"/>
-                            <span className="font-semibold">Achievement Completed!</span>
-                        </div>
-                    </>
-                }
+                )}
                 <TiersDetails achievement={achievement}/>
             </CardContent>
         </Card>

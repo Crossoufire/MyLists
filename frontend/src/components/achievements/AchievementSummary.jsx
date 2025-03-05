@@ -5,8 +5,8 @@ import {capitalize, cn, diffColors} from "@/utils/functions";
 
 export const AchievementSummary = ({ summary }) => {
     return (
-        <div className="grid grid-cols-5 gap-6 w-[80%] mx-auto mb-6 max-lg:w-[95%] max-sm:grid-cols-3 max-sm:w-full max-sm:gap-2
-        max-sm:mb-4">
+        <div className="grid grid-cols-5 gap-6 w-[80%] mx-auto mb-6 max-lg:w-[95%] max-sm:grid-cols-3
+        max-sm:w-full max-sm:gap-2 max-sm:mb-4">
             {summary.map(diff =>
                 <Card key={diff.tier}>
                     <CardContent className="p-4 max-sm:p-3">

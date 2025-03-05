@@ -1,7 +1,7 @@
 import {Award} from "lucide-react";
+import {capitalize, cn, diffColors} from "@/utils/functions";
 import {Button} from "@/components/ui/button";
 import {Progress} from "@/components/ui/progress";
-import {capitalize, diffColors} from "@/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
@@ -25,11 +25,13 @@ export const TiersDetails = ({ achievement }) => {
                     <TableBody>
                         {achievement.tiers.map(tier => {
                             const userData = achievement.user_data.find(data => data.tier_id === tier.id);
+                            const iconColorClass = diffColors(tier.difficulty);
+
                             return (
                                 <TableRow key={tier.id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
-                                            <Award className="w-4 h-4" color={diffColors(tier.difficulty)}/>
+                                            <Award className={cn("w-4 h-4", iconColorClass)}/>
                                             {capitalize(tier.difficulty)}
                                         </div>
                                     </TableCell>
