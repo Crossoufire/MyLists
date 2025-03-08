@@ -93,7 +93,7 @@ const tvData = (apiData) => {
             cards: {
                 ...MAIN_CARDS_CONFIG,
                 dataList: [
-                    createStatCard("Total Entries", apiData.total_media.unique, `And ${apiData.total_media.redo} Re-watched`),
+                    createStatCard("Total Entries", apiData.total_media.unique, `With ${apiData.total_media.redo} Seasons Re-watched`),
                     createStatCard("Time Spent (h)", formatNumberWithKM(apiData.total_hours), `Watched ${apiData.total_days} days`),
                     createRatingStatCard(apiData.rating_system, apiData.avg_rating, apiData.total_rated),
                     createStatCard("Avg. Duration", apiData.avg_duration, "Duration in hours"),

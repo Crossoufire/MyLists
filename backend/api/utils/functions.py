@@ -133,8 +133,9 @@ def int_to_money(value: int):
     return f"{int(value)} {suffixes[exp]}$"
 
 
-def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Tuple[int, int, int]:
-    """ Reorder the seasons and episodes. If eps_watched > sum(list_of_episodes) => last episode and last season """
+def reorder_seas_eps(eps_watched: int, list_of_episodes: List[int]) -> Optional[Tuple[int, int, int]]:
+    """ Reorder the seasons and episodes. If `eps_watched` > sum(list_of_episodes) => last episode and last season.
+     return `last_episode`, `last_season`, `new_total` """
 
     if eps_watched > sum(list_of_episodes):
         return list_of_episodes[-1], len(list_of_episodes), sum(list_of_episodes)

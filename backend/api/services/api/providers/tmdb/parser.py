@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 
@@ -8,8 +9,8 @@ from backend.api import db
 from backend.api.utils.enums import ModelTypes, MediaType
 from backend.api.managers.ModelsManager import ModelsManager
 from backend.api.services.api.providers.base.base_extra import BaseApiExtra
-from backend.api.utils.functions import get, format_datetime, naive_utcnow, is_latin
 from backend.api.services.api.data_classes import ApiParams, ParsedSearchItem, ParsedSearch
+from backend.api.utils.functions import get, format_datetime, naive_utcnow, is_latin, reorder_seas_eps
 from backend.api.services.api.providers.base.base_parser import BaseApiParser, TrendingParser, ChangedApiIdsParser
 
 
@@ -86,7 +87,9 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
         media.update(data["media_data"])
 
         for model, data_list in related_data.items():
-            if data_list:
+            if model == models.get(ModelTypes.EPS) and data_list:
+                self._update_episodes_and_seasons(model, media, data_list)
+            elif data_list:
                 model.query.filter_by(media_id=media.id).delete()
                 db.session.add_all([model(**{**item, "media_id": media.id}) for item in data_list])
 
@@ -130,6 +133,52 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
             media_info["media_type"] = MediaType.ANIME
 
         return media_info
+
+    @staticmethod
+    def _update_episodes_and_seasons(model: db.Model, media: db.Model, data_list: List[Dict]):
+        """ Update `current_season` and `last_episode_watched` for each user that have watched the media, in case the number of
+        episodes or seasons have changed. Also update the redo2 system which needs to be a list the size of the number
+        of seasons. """
+
+        new_seasons_data = [s["episodes"] for s in data_list]
+        old_seasons_data = [s.episodes for s in media.eps_per_season]
+
+        if new_seasons_data == old_seasons_data:
+            return
+
+        all_user_media = media.list_info.filter_by(media_id=media.id).all()
+        for user_media in all_user_media:
+            tot_eps_watched = sum(old_seasons_data[:user_media.current_season - 1]) + user_media.last_episode_watched
+            last_episode, last_season, new_total = reorder_seas_eps(tot_eps_watched, new_seasons_data)
+            user_media.current_season = last_season
+            user_media.last_episode_watched = last_episode
+
+            old_len = len(old_seasons_data)
+            new_len = len(new_seasons_data)
+
+            # Get redo2 values before updating
+            old_redo2 = deepcopy(user_media.redo2)
+            new_redo2 = deepcopy(user_media.redo2)
+
+            # Increase list size if more seasons
+            if new_len > old_len:
+                new_redo2 += [0] * (new_len - old_len)
+
+            # Decrease list size if less seasons
+            if new_len < old_len:
+                new_redo2 = new_redo2[:new_len]
+
+            # Update total
+            old_redo2_total = sum([old_redo2[i] * old_seasons_data[i] for i in range(old_len)])
+            new_redo2_total = sum([new_redo2[i] * new_seasons_data[i] for i in range(new_len)])
+            user_media.total += (new_redo2_total - old_redo2_total)
+
+            # Update redo2
+            user_media.redo2 = new_redo2
+
+        # Delete all seasons and add all new seasons
+        model.query.filter_by(media_id=media.id).delete()
+        db.session.add_all([model(media_id=media.id, season=s, episodes=e) for s, e in enumerate(new_seasons_data, start=1)])
 
     def _format_actors(self, details: Dict) -> List[Dict]:
         """ Get the <MAX_ACTORS> actors for series, anime and movies """

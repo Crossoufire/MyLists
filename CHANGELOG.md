@@ -1,3 +1,30 @@
+## CHANGELOG v2.4.0
+---
+
+### Under the Hood
+
+- Run codemod for react 19
+- Removed some unused code and tests
+- Removed deprecated `ScrollRestoration` in Tanstack Router
+- Refactored Tanstack query mutations per category (user, media, auth...)
+- Remove `routes.lazy.jsx` to use the `AutoCodeSplitting` feature of Tanstack Router
+
+### Features
+
+- Change the re-watched system for Series and Anime to be per season! (instead of per Series/Anime)
+
+### UI Modifications
+
+- Refresh the follows cards look in `/details`
+- Add a new chart with number of tries per day for `/moviedle`
+
+### Fixes
+
+- Fix search in navbar
+- Fix too long comments in `/list`
+- Fib a concatenation bug for the IGDB Search
+- Fix a division by zero error in the `/stats` page
+
 ## CHANGELOG v2.3.0
 ---
 

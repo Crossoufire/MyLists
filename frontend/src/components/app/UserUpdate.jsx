@@ -24,10 +24,17 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                             {update.media_name}
                         </div>
                     </BlockLink>
-                    <Payload update={update} className="text-neutral-300"/>
+                    <Payload
+                        update={update}
+                        className="text-neutral-300"
+                    />
                     <div className="text-sm text-muted-foreground">
                         {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}
-                        {username && <> by <BlockLink to={`/profile/${username}`} className="text-blue-500">{username}</BlockLink></>}
+                        {username &&
+                            <> by <BlockLink to={`/profile/${username}`} className="text-blue-500">
+                                {username}
+                            </BlockLink></>
+                        }
                     </div>
                 </div>
                 {canDelete &&

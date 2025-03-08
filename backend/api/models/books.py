@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from flask import abort
 from sqlalchemy import func
@@ -100,11 +100,11 @@ class BooksList(MediaList):
 
         return media_dict
 
-    def update_status(self, new_status: Status) -> int:
+    def update_status(self, new_status: Status) -> Tuple[int, int]:
+        new_redo = self.redo
         new_total = self.total
 
         self.status = new_status
-        self.redo = 0
         if new_status == Status.COMPLETED:
             self.actual_page = self.media.pages
             self.total = self.media.pages
@@ -112,9 +112,11 @@ class BooksList(MediaList):
         elif new_status == Status.PLAN_TO_READ:
             self.actual_page = 0
             self.total = 0
+            self.redo = 0
             new_total = 0
+            new_redo = 0
 
-        return new_total
+        return new_total, new_redo
 
     def update_total(self, new_redo: int) -> int:
         self.redo = new_redo

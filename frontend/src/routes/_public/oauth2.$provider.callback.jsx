@@ -1,11 +1,11 @@
 import {toast} from "sonner";
 import {useAuth} from "@/api";
 import {useEffect} from "react";
-import {createLazyFileRoute, useNavigate} from "@tanstack/react-router";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_public/oauth2/$provider/callback")({
+export const Route = createFileRoute("/_public/oauth2/$provider/callback")({
     component: OAuth2CallbackPage,
 });
 
@@ -44,7 +44,9 @@ function OAuth2CallbackPage() {
 
     return (
         <div className="flex flex-col justify-center items-center h-[calc(100vh_-_64px_-290px)]">
-            <div className="text-xl mb-2 font-semibold">Authentication in progress...</div>
+            <div className="text-xl mb-2 font-semibold">
+                Authentication in progress...
+            </div>
         </div>
     );
 }

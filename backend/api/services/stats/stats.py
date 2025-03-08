@@ -101,9 +101,12 @@ class GlobalStatsCalculator:
         self.stats.total_favorites = query[0][3]
         self.stats.total_commented = query[0][4]
         self.stats.total_redo = query[0][5]
-        self.stats.avg_rating = round(query[0][6] / self.stats.total_rated, 2) if self.stats.total_entries > 0 else None
+        
+        self.stats.avg_rating = None
+        if self.stats.total_rated > 0 and self.stats.total_entries > 0:
+            self.stats.avg_rating = round(query[0][6] / self.stats.total_rated, 2)
 
-        divider = self.stats.total_users
+        divider = self.stats.total_users or 1
         if self.scope.user_id:
             divider = sum(1 for s in self.scope.user.settings if s.active)
 
@@ -480,8 +483,7 @@ class TvStatsCalculator(TMDBStatsCalculator):
         )
 
         avg_duration = (
-            db.session.query(
-                func.avg((self.media.duration * (self.media_list.total / (self.media_list.redo + 1)))))
+            db.session.query(func.avg((self.media.duration * self.media_list.total)))
             .join(*self.common_join)
             .filter(*self.user_filter, *self.status_filter, self.media_list.status != Status.RANDOM)
             .scalar()
@@ -663,7 +665,7 @@ class BooksStatsCalculator(BaseStatsCalculator):
         )
 
         avg_pages = (
-            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
+            db.session.query(func.avg(self.media_list.total))
             .filter(*self.user_filter, *self.status_filter)
             .scalar()
         )
@@ -872,7 +874,7 @@ class MangaStatsCalculator(BaseStatsCalculator):
         )
 
         avg_chapters = (
-            db.session.query(func.avg((self.media_list.total / (self.media_list.redo + 1))))
+            db.session.query(func.avg(self.media_list.total))
             .filter(*self.user_filter, *self.status_filter)
             .scalar()
         )

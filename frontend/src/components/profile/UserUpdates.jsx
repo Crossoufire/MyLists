@@ -15,7 +15,7 @@ export const UserUpdates = ({ updates, followers = false }) => {
     const { caret, toggleCollapse, contentClasses } = useCollapse();
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState();
     const deleteUserUpdates = useDeleteUpdateMutation(queryKeys.profileKey(username));
-
+    
     const deleteUpdate = (updateId) => {
         setMediaIdBeingDeleted(updateId);
         deleteUserUpdates.mutate({ updateIds: [updateId], returnData: true });

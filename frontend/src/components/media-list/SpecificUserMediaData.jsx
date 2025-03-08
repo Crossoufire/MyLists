@@ -23,7 +23,7 @@ export const SpecificUserMediaData = ({ userMedia, mediaType }) => {
 const EpsAndSeasons = ({ currentSeason, currentEpisode }) => {
     return (
         <div className="flex justify-center items-center h-[28px]">
-            <div>S{zeroPad(currentSeason)}{" "}|{" "}E{zeroPad(currentEpisode)}</div>
+            <div>S{zeroPad(currentSeason)} - E{zeroPad(currentEpisode)}</div>
         </div>
     );
 };

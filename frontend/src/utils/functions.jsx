@@ -164,7 +164,7 @@ export const diffColors = (difficulty, variant = "text") => {
         "text-gold": "text-yellow-600",
         "text-platinum": "text-teal-600",
     };
-    return colors[`${variant}-${difficulty}`];
+    return colors[`${variant}-${difficulty.toLowerCase()}`];
 };
 
 

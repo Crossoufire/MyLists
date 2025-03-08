@@ -16,7 +16,6 @@ export default defineConfig({
         },
     },
     server: {
-        open: true,
         port: 3000,
         proxy: {
             "/api": {
@@ -26,6 +25,7 @@ export default defineConfig({
         }
     },
     build: {
+        chunkSizeWarningLimit: 700,
         rollupOptions: {
             output: {
                 manualChunks: {

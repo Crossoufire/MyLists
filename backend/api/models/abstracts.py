@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 
 from flask import url_for
 from sqlalchemy import func, desc
@@ -133,7 +133,8 @@ class MediaList(db.Model):
         pass
 
     @abstractmethod
-    def update_status(self, new_status: Status) -> int:
+    def update_status(self, new_status: Status) -> Tuple[int, int]:
+        """ Return the new total and the new redo value """
         pass
 
     @classmethod
@@ -169,6 +170,8 @@ class MediaList(db.Model):
 
     @classmethod
     def get_available_sorting(cls) -> Dict:
+        """ Available sorting options for Movies, overridden by other media """
+
         media = ModelsManager.get_unique_model(cls.GROUP, ModelTypes.MEDIA)
 
         sorting_dict = {

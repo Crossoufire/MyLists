@@ -4,12 +4,15 @@ import {MediaCard} from "@/components/app/MediaCard";
 import {PageTitle} from "@/components/app/PageTitle";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Pagination} from "@/components/app/Pagination";
-import {createLazyFileRoute} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {MediaInfoCorner} from "@/components/app/MediaInfoCorner";
 
 
 // noinspection JSCheckFunctionSignatures
-export const Route = createLazyFileRoute("/_private/details/$mediaType/$job/$name")({
+export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
+    loader: ({ context: { queryClient }, params: { mediaType, job, name }, }) => {
+        return queryClient.ensureQueryData(jobDetailsOptions(mediaType, job, name));
+    },
     component: InfoPage,
 });
 
@@ -33,13 +36,13 @@ function InfoPage() {
     return (
         <PageTitle title={`${name}'s ${mediaType} (${apiData.total})`}>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
-                {currentItems.map(media =>
+                {currentItems.map((media) => (
                     <div key={media.media_id} className="col-span-1">
                         <MediaCard media={media} mediaType={mediaType}>
                             {media.in_list && <MediaInfoCorner isCommon={media.in_list}/>}
                         </MediaCard>
                     </div>
-                )}
+                ))}
             </div>
             <Pagination
                 currentPage={currentPage}

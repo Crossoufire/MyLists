@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, abort
+from flask import jsonify, Blueprint, abort, request
 
 from backend.api import db
 from backend.api.schemas.media import *
@@ -6,7 +6,7 @@ from backend.api.utils.decorators import body
 from backend.api.models.user import UserMediaUpdate
 from backend.api.core import token_auth, current_user
 from backend.api.services.stats.delta import DeltaStatsService
-from backend.api.utils.enums import MediaType, Status, ModelTypes, UpdateType
+from backend.api.utils.enums import MediaType, ModelTypes, UpdateType
 
 
 media_bp = Blueprint("api_media", __name__)
@@ -128,23 +128,33 @@ def update_status(data):
     """ Update the media status of a user """
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
+    new_status = data["payload"]
+
+    old_status = user_media.status
+
+    if data["media_type"] == MediaType.GAMES:
+        old_redo = 0
+    elif data["media_type"] in (MediaType.SERIES, MediaType.ANIME):
+        old_redo = sum(user_media.redo2)
+    else:
+        old_redo = user_media.redo
 
     old_total = user_media.total if data["media_type"] != MediaType.GAMES else user_media.playtime
-    old_redo = user_media.redo if data["media_type"] != MediaType.GAMES else 0
-    old_status = user_media.status
-    new_total = user_media.update_status(data["payload"])
 
-    UserMediaUpdate.set_new_update(user_media.media, UpdateType.STATUS, old_status, data["payload"])
+    # Update status and get new redo value (or sum of redo for series/anime)
+    new_total, new_redo = user_media.update_status(new_status)
+
+    UserMediaUpdate.set_new_update(user_media.media, UpdateType.STATUS, old_status, new_status)
 
     ds_calculator = ds_service.create(user_media.GROUP, current_user)
     ds_calculator.on_update(
         user_media=user_media,
         old_status=old_status,
-        new_status=data["payload"],
+        new_status=new_status,
         old_value=old_total,
         new_value=new_total,
         old_redo=old_redo,
-        new_redo=0,
+        new_redo=new_redo,
     )
 
     db.session.commit()
@@ -182,9 +192,6 @@ def update_redo(data):
 
     user_media = data["models"].query.filter_by(user_id=current_user.id, media_id=data["media_id"]).first_or_404()
 
-    if user_media.status != Status.COMPLETED:
-        return abort(400, description="Media status is not `Completed`")
-
     old_redo = user_media.redo
     old_total = user_media.total
     new_total = user_media.update_total(data["payload"])
@@ -199,6 +206,42 @@ def update_redo(data):
     )
 
     UserMediaUpdate.set_new_update(user_media.media, UpdateType.REDO, old_redo, data["payload"])
+    db.session.commit()
+
+    return {}, 204
+
+
+@media_bp.route("/update_redo_tv", methods=["POST"])
+@token_auth.login_required
+def update_redo_tv():
+    """ Update the tv redo (specific to Anime/Series) --> uses redo per season """
+
+    try:
+        data = request.get_json()
+        media_id = data["media_id"]
+        season_redo = data["payload"]
+        media_type = MediaType(data["media_type"])
+    except:
+        return abort(400, description="Invalid request")
+
+    list_model = ModelsManager.get_unique_model(media_type, ModelTypes.LIST)
+    user_media = list_model.query.filter_by(user_id=current_user.id, media_id=media_id).first_or_404()
+
+    old_total = user_media.total
+    old_redo = sum(user_media.redo2)
+    new_total = user_media.update_total(season_redo)
+    new_redo = sum(season_redo)
+
+    ds_calculator = ds_service.create(user_media.GROUP, current_user)
+    ds_calculator.on_update(
+        user_media=user_media,
+        old_redo=old_redo,
+        new_redo=new_redo,
+        old_value=old_total,
+        new_value=new_total,
+    )
+
+    UserMediaUpdate.set_new_update(user_media.media, UpdateType.REDO, old_redo, new_redo)
     db.session.commit()
 
     return {}, 204
@@ -270,7 +313,8 @@ def update_season(data):
     new_watched = sum(user_media.media.eps_seasons_list[:data["payload"] - 1]) + 1
     user_media.current_season = data["payload"]
     user_media.last_episode_watched = 1
-    new_total = new_watched + (user_media.redo * sum(user_media.media.eps_seasons_list))
+    new_total = new_watched + sum([user_media.redo2[i] * user_media.media.eps_seasons_list[i]
+                                   for i in range(len(user_media.media.eps_seasons_list))])
     user_media.total = new_total
 
     UserMediaUpdate.set_new_update(
@@ -307,7 +351,8 @@ def update_episode(data):
     old_episode = user_media.last_episode_watched
     old_total = user_media.total
     new_watched = sum(user_media.media.eps_seasons_list[:old_season - 1]) + data["payload"]
-    new_total = new_watched + (user_media.redo * sum(user_media.media.eps_seasons_list))
+    new_total = new_watched + sum([user_media.redo2[i] * user_media.media.eps_seasons_list[i]
+                                   for i in range(len(user_media.media.eps_seasons_list))])
 
     user_media.last_episode_watched = data["payload"]
     user_media.total = new_total

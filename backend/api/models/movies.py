@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from flask import abort
 from sqlalchemy import func
@@ -114,7 +114,7 @@ class MoviesList(MediaList):
 
         return new_total
 
-    def update_status(self, new_status: Status) -> int:
+    def update_status(self, new_status: Status) -> Tuple[int, int]:
         self.status = new_status
         self.redo = 0
         if new_status == Status.COMPLETED:
@@ -124,7 +124,7 @@ class MoviesList(MediaList):
             self.total = 0
             new_total = 0
 
-        return new_total
+        return new_total, 0
 
     @classmethod
     def total_user_time_def(cls):

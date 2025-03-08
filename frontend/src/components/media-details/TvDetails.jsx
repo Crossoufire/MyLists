@@ -2,7 +2,7 @@ import {Star} from "lucide-react";
 import {Synopsis} from "@/components/media-details/Synopsis";
 import {formatDateTime, formatMinutes} from "@/utils/functions";
 import {MapDetails} from "@/components/media-details/MapDetails";
-import {EpsPerSeason} from "@/components/media-details/EpsPerSeason";
+import {MediaTitle} from "@/components/media-details/MediaTitle";
 import {GenericDetails} from "@/components/media-details/GenericDetails";
 
 
@@ -95,9 +95,26 @@ export const TvDetails = ({ mediaData, mediaType }) => {
                 synopsis={mediaData.synopsis}
             />
             <EpsPerSeason
-                epsPerSeason={mediaData.eps_per_season}
                 epsDuration={mediaData.duration}
+                epsPerSeason={mediaData.eps_per_season}
             />
         </div>
     );
 };
+
+
+function EpsPerSeason({ epsPerSeason }) {
+    return (
+        <div>
+            <MediaTitle>Episodes/Seasons</MediaTitle>
+            <div className="grid grid-cols-12 gap-3 pr-2 overflow-y-auto max-h-[224px]">
+                {epsPerSeason.map((val, idx) =>
+                    <div key={idx} className="col-span-4 md:col-span-2 p-2 bg-cyan-900 rounded-md">
+                        <div className="font-medium">Season {idx + 1}</div>
+                        <div>{val} Eps</div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from flask import abort
 from sqlalchemy import func, ColumnElement
@@ -107,12 +107,12 @@ class GamesList(MediaList):
 
         return media_dict
 
-    def update_status(self, new_status: Status) -> int:
+    def update_status(self, new_status: Status) -> Tuple[int, int]:
         self.status = new_status
         if new_status == Status.PLAN_TO_PLAY:
             self.playtime = 0
 
-        return self.playtime
+        return self.playtime, 0
 
     @classmethod
     def get_available_sorting(cls) -> Dict[str, ColumnElement]:

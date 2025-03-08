@@ -2,7 +2,7 @@ import {X} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {capitalize} from "@/utils/functions";
 import {MutedText} from "@/components/app/MutedText";
-import {Route} from "@/routes/_private/list/$mediaType/$username/route";
+import {Route} from "@/routes/_private/list/$mediaType/$username.route";
 
 
 export const AppliedFilters = ({ total, onFilterRemove }) => {
