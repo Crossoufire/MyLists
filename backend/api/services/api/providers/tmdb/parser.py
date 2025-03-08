@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 
@@ -150,8 +151,8 @@ class TMDBApiParser(BaseApiParser, ChangedApiIdsParser, TrendingParser):
             new_len = len(new_seasons_data)
 
             # Get redo2 values before updating
-            old_redo2 = user_media.redo2
-            new_redo2 = user_media.redo2
+            old_redo2 = deepcopy(user_media.redo2)
+            new_redo2 = deepcopy(user_media.redo2)
 
             # Increase list size if more seasons
             if new_len > old_len:

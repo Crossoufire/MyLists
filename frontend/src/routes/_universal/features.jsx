@@ -3,6 +3,7 @@ import {Badge} from "@/components/ui/badge";
 import {PageTitle} from "@/components/app/PageTitle";
 import {Card, CardContent} from "@/components/ui/card";
 import {createFileRoute} from "@tanstack/react-router";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -13,6 +14,15 @@ export const Route = createFileRoute("/_universal/features")({
 
 function FeatureShowcase() {
     const features = [
+        {
+            name: "New Re-watch System TV!",
+            description: "You can now add re-watch information per season, instead of per Series/Anime.",
+            isNew: true,
+            popover:
+                "Your rewatch data for Series and Anime has been redistributed to the individual seasons. " +
+                "Previously, if you had rewatched a series 5 times, it was counted as 5 rewatches for all seasons. " +
+                "You can now adjust the rewatch count for each season independently!",
+        },
         {
             name: "New Manga List!",
             description: "You can now add manga to your list! (Need to be activated in settings)",
@@ -41,7 +51,6 @@ function FeatureShowcase() {
         {
             name: "Achievements system",
             description: "Each media type has now achievements, with 4 levels of difficulty.",
-            isNew: true,
         },
         {
             name: "Moviedle game",
@@ -115,7 +124,19 @@ function FeatureShowcase() {
                                     </Badge>
                                 }
                             </div>
-                            <p className="text-muted-foreground">{feature.description}</p>
+                            <p className="text-muted-foreground">
+                                {feature.description} &nbsp;
+                                {feature.popover &&
+                                    <Popover>
+                                        <PopoverTrigger>
+                                            <div className="hover:underline font-semibold text-cyan-600">More Info</div>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-72">
+                                            {feature.popover}
+                                        </PopoverContent>
+                                    </Popover>
+                                }
+                            </p>
                         </CardContent>
                     </Card>
                 )}
