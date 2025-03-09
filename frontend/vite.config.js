@@ -7,7 +7,14 @@ import {TanStackRouterVite} from "@tanstack/router-plugin/vite";
 /** @type {import("vite").UserConfig} */
 export default defineConfig({
     plugins: [
-        TanStackRouterVite(),
+        TanStackRouterVite({
+            autoCodeSplitting: true,
+            target: "react",
+            quoteStyle: "double",
+            disableTypes: true,
+            disableManifestGeneration: true,
+            semicolons: true,
+        }),
         react({ babel: { plugins: [["babel-plugin-react-compiler"]] } }),
     ],
     resolve: {
