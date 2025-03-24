@@ -1,4 +1,4 @@
-import {auth} from "@/lib/server/auth/auth";
+import {auth} from "@/lib/server/auth";
 import {createMiddleware} from "@tanstack/react-start";
 import {getWebRequest, setResponseStatus} from "@tanstack/react-start/server";
 

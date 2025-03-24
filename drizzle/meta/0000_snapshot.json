@@ -1,0 +1,4184 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {
+    "followers": {
+      "name": "followers",
+      "columns": {
+        "follower_id": {
+          "autoincrement": false,
+          "name": "follower_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "followed_id": {
+          "autoincrement": false,
+          "name": "followed_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "followers_followed_id_user_12345_id_fk": {
+          "name": "followers_followed_id_user_12345_id_fk",
+          "tableFrom": "followers",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "followed_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "followers_follower_id_user_12345_id_fk": {
+          "name": "followers_follower_id_user_12345_id_fk",
+          "tableFrom": "followers",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "follower_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_actors": {
+      "name": "anime_actors",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_episodes_per_season": {
+      "name": "anime_episodes_per_season",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "season": {
+          "autoincrement": false,
+          "name": "season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "episodes": {
+          "autoincrement": false,
+          "name": "episodes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "anime_episodes_per_season_media_id_anime_id_fk": {
+          "name": "anime_episodes_per_season_media_id_anime_id_fk",
+          "tableFrom": "anime_episodes_per_season",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies_actors": {
+      "name": "movies_actors",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_actors": {
+      "name": "series_actors",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_episodes_per_season": {
+      "name": "series_episodes_per_season",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "season": {
+          "autoincrement": false,
+          "name": "season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "episodes": {
+          "autoincrement": false,
+          "name": "episodes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "series_episodes_per_season_media_id_series_id_fk": {
+          "name": "series_episodes_per_season_media_id_series_id_fk",
+          "tableFrom": "series_episodes_per_season",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games_platforms": {
+      "name": "games_platforms",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(150)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "games_platforms_media_id_games_id_fk": {
+          "name": "games_platforms_media_id_games_id_fk",
+          "tableFrom": "games_platforms",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games_companies": {
+      "name": "games_companies",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publisher": {
+          "autoincrement": false,
+          "name": "publisher",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "developer": {
+          "autoincrement": false,
+          "name": "developer",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "games_companies_media_id_games_id_fk": {
+          "name": "games_companies_media_id_games_id_fk",
+          "tableFrom": "games_companies",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "books_authors": {
+      "name": "books_authors",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(150)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "books_authors_media_id_books_id_fk": {
+          "name": "books_authors_media_id_books_id_fk",
+          "tableFrom": "books_authors",
+          "tableTo": "books",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "user_media_update": {
+      "name": "user_media_update",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_name": {
+          "autoincrement": false,
+          "name": "media_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "update_type": {
+          "autoincrement": false,
+          "name": "update_type",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "autoincrement": false,
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "autoincrement": false,
+          "name": "timestamp",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_user_media_update_media_id": {
+          "name": "ix_user_media_update_media_id",
+          "columns": [
+            "media_id"
+          ],
+          "isUnique": false
+        },
+        "ix_user_media_update_timestamp": {
+          "name": "ix_user_media_update_timestamp",
+          "columns": [
+            "timestamp"
+          ],
+          "isUnique": false
+        },
+        "ix_user_media_update_media_type": {
+          "name": "ix_user_media_update_media_type",
+          "columns": [
+            "media_type"
+          ],
+          "isUnique": false
+        },
+        "ix_user_media_update_user_id": {
+          "name": "ix_user_media_update_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_media_update_user_id_user_12345_id_fk": {
+          "name": "user_media_update_user_id_user_12345_id_fk",
+          "tableFrom": "user_media_update",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "token": {
+      "name": "token",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "access_token": {
+          "autoincrement": false,
+          "name": "access_token",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "access_expiration": {
+          "autoincrement": false,
+          "name": "access_expiration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_token": {
+          "autoincrement": false,
+          "name": "refresh_token",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_expiration": {
+          "autoincrement": false,
+          "name": "refresh_expiration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_token_user_id": {
+          "name": "ix_token_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_token_access_token": {
+          "name": "ix_token_access_token",
+          "columns": [
+            "access_token"
+          ],
+          "isUnique": false
+        },
+        "ix_token_refresh_token": {
+          "name": "ix_token_refresh_token",
+          "columns": [
+            "refresh_token"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "token_user_id_user_12345_id_fk": {
+          "name": "token_user_id_user_12345_id_fk",
+          "tableFrom": "token",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "books": {
+      "name": "books",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pages": {
+          "autoincrement": false,
+          "name": "pages",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "language": {
+          "autoincrement": false,
+          "name": "language",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publishers": {
+          "autoincrement": false,
+          "name": "publishers",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lock_status": {
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_genre": {
+      "name": "series_genre",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "series_genre_media_id_series_id_fk": {
+          "name": "series_genre_media_id_series_id_fk",
+          "tableFrom": "series_genre",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_genre": {
+      "name": "anime_genre",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "anime_genre_media_id_anime_id_fk": {
+          "name": "anime_genre_media_id_anime_id_fk",
+          "tableFrom": "anime_genre",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies_genre": {
+      "name": "movies_genre",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "movies_genre_media_id_movies_id_fk": {
+          "name": "movies_genre_media_id_movies_id_fk",
+          "tableFrom": "movies_genre",
+          "tableTo": "movies",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games_genre": {
+      "name": "games_genre",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "games_genre_media_id_games_id_fk": {
+          "name": "games_genre_media_id_games_id_fk",
+          "tableFrom": "games_genre",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "books_genre": {
+      "name": "books_genre",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "books_genre_media_id_books_id_fk": {
+          "name": "books_genre_media_id_books_id_fk",
+          "tableFrom": "books_genre",
+          "tableTo": "books",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_labels": {
+      "name": "series_labels",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "series_labels_media_id_series_id_fk": {
+          "name": "series_labels_media_id_series_id_fk",
+          "tableFrom": "series_labels",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "series_labels_user_id_user_12345_id_fk": {
+          "name": "series_labels_user_id_user_12345_id_fk",
+          "tableFrom": "series_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_labels": {
+      "name": "anime_labels",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "anime_labels_user_id_user_12345_id_fk": {
+          "name": "anime_labels_user_id_user_12345_id_fk",
+          "tableFrom": "anime_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "anime_labels_media_id_anime_id_fk": {
+          "name": "anime_labels_media_id_anime_id_fk",
+          "tableFrom": "anime_labels",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies_labels": {
+      "name": "movies_labels",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "movies_labels_user_id_user_12345_id_fk": {
+          "name": "movies_labels_user_id_user_12345_id_fk",
+          "tableFrom": "movies_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movies_labels_media_id_movies_id_fk": {
+          "name": "movies_labels_media_id_movies_id_fk",
+          "tableFrom": "movies_labels",
+          "tableTo": "movies",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games_labels": {
+      "name": "games_labels",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "games_labels_media_id_games_id_fk": {
+          "name": "games_labels_media_id_games_id_fk",
+          "tableFrom": "games_labels",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "games_labels_user_id_user_12345_id_fk": {
+          "name": "games_labels_user_id_user_12345_id_fk",
+          "tableFrom": "games_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "books_labels": {
+      "name": "books_labels",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "books_labels_user_id_user_12345_id_fk": {
+          "name": "books_labels_user_id_user_12345_id_fk",
+          "tableFrom": "books_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "books_labels_media_id_books_id_fk": {
+          "name": "books_labels_media_id_books_id_fk",
+          "tableFrom": "books_labels",
+          "tableTo": "books",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "notifications": {
+      "name": "notifications",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "autoincrement": false,
+          "name": "payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timestamp": {
+          "autoincrement": false,
+          "name": "timestamp",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notification_type": {
+          "autoincrement": false,
+          "name": "notification_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_notifications_timestamp": {
+          "name": "ix_notifications_timestamp",
+          "columns": [
+            "timestamp"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "notifications_user_id_user_12345_id_fk": {
+          "name": "notifications_user_id_user_12345_id_fk",
+          "tableFrom": "notifications",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series": {
+      "name": "series",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_name": {
+          "autoincrement": false,
+          "name": "original_name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_air_date": {
+          "autoincrement": false,
+          "name": "last_air_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "homepage": {
+          "autoincrement": false,
+          "name": "homepage",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "autoincrement": false,
+          "name": "created_by",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration": {
+          "autoincrement": false,
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_seasons": {
+          "autoincrement": false,
+          "name": "total_seasons",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_episodes": {
+          "autoincrement": false,
+          "name": "total_episodes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin_country": {
+          "autoincrement": false,
+          "name": "origin_country",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prod_status": {
+          "autoincrement": false,
+          "name": "prod_status",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "popularity": {
+          "autoincrement": false,
+          "name": "popularity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lock_status": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "episode_to_air": {
+          "autoincrement": false,
+          "name": "episode_to_air",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "season_to_air": {
+          "autoincrement": false,
+          "name": "season_to_air",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_episode_to_air": {
+          "autoincrement": false,
+          "name": "next_episode_to_air",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_network": {
+      "name": "series_network",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(150)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "series_network_media_id_series_id_fk": {
+          "name": "series_network_media_id_series_id_fk",
+          "tableFrom": "series_network",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime": {
+      "name": "anime",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_name": {
+          "autoincrement": false,
+          "name": "original_name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_air_date": {
+          "autoincrement": false,
+          "name": "last_air_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "homepage": {
+          "autoincrement": false,
+          "name": "homepage",
+          "type": "text(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "autoincrement": false,
+          "name": "created_by",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration": {
+          "autoincrement": false,
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_seasons": {
+          "autoincrement": false,
+          "name": "total_seasons",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_episodes": {
+          "autoincrement": false,
+          "name": "total_episodes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin_country": {
+          "autoincrement": false,
+          "name": "origin_country",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prod_status": {
+          "autoincrement": false,
+          "name": "prod_status",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "popularity": {
+          "autoincrement": false,
+          "name": "popularity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lock_status": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "season_to_air": {
+          "autoincrement": false,
+          "name": "season_to_air",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "episode_to_air": {
+          "autoincrement": false,
+          "name": "episode_to_air",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_episode_to_air": {
+          "autoincrement": false,
+          "name": "next_episode_to_air",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_network": {
+      "name": "anime_network",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(150)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "anime_network_media_id_anime_id_fk": {
+          "name": "anime_network_media_id_anime_id_fk",
+          "tableFrom": "anime_network",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games": {
+      "name": "games",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "game_engine": {
+          "autoincrement": false,
+          "name": "game_engine",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "game_modes": {
+          "autoincrement": false,
+          "name": "game_modes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_perspective": {
+          "autoincrement": false,
+          "name": "player_perspective",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "IGDB_url": {
+          "autoincrement": false,
+          "name": "IGDB_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hltb_main_time": {
+          "autoincrement": false,
+          "name": "hltb_main_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hltb_main_and_extra_time": {
+          "autoincrement": false,
+          "name": "hltb_main_and_extra_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hltb_total_complete_time": {
+          "autoincrement": false,
+          "name": "hltb_total_complete_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lock_status": {
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "achievement": {
+      "name": "achievement",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code_name": {
+          "autoincrement": false,
+          "name": "code_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "autoincrement": false,
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "value": {
+          "autoincrement": false,
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "daily_mediadle": {
+      "name": "daily_mediadle",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "autoincrement": false,
+          "name": "date",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pixelation_levels": {
+          "autoincrement": false,
+          "name": "pixelation_levels",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "mediadle_stats": {
+      "name": "mediadle_stats",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_played": {
+          "autoincrement": false,
+          "name": "total_played",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_won": {
+          "autoincrement": false,
+          "name": "total_won",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "average_attempts": {
+          "autoincrement": false,
+          "name": "average_attempts",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "streak": {
+          "autoincrement": false,
+          "name": "streak",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "best_streak": {
+          "autoincrement": false,
+          "name": "best_streak",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "mediadle_stats_user_id_user_12345_id_fk": {
+          "name": "mediadle_stats_user_id_user_12345_id_fk",
+          "tableFrom": "mediadle_stats",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "achievement_tier": {
+      "name": "achievement_tier",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "achievement_id": {
+          "autoincrement": false,
+          "name": "achievement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "difficulty": {
+          "autoincrement": false,
+          "name": "difficulty",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criteria": {
+          "autoincrement": false,
+          "name": "criteria",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rarity": {
+          "autoincrement": false,
+          "name": "rarity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "achievement_tier_achievement_id_achievement_id_fk": {
+          "name": "achievement_tier_achievement_id_achievement_id_fk",
+          "tableFrom": "achievement_tier",
+          "tableTo": "achievement",
+          "columnsFrom": [
+            "achievement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "user_mediadle_progress": {
+      "name": "user_mediadle_progress",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "daily_mediadle_id": {
+          "autoincrement": false,
+          "name": "daily_mediadle_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempts": {
+          "autoincrement": false,
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed": {
+          "autoincrement": false,
+          "name": "completed",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "succeeded": {
+          "autoincrement": false,
+          "name": "succeeded",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completion_time": {
+          "autoincrement": false,
+          "name": "completion_time",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "user_mediadle_progress_daily_mediadle_id_daily_mediadle_id_fk": {
+          "name": "user_mediadle_progress_daily_mediadle_id_daily_mediadle_id_fk",
+          "tableFrom": "user_mediadle_progress",
+          "tableTo": "daily_mediadle",
+          "columnsFrom": [
+            "daily_mediadle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_mediadle_progress_user_id_user_12345_id_fk": {
+          "name": "user_mediadle_progress_user_id_user_12345_id_fk",
+          "tableFrom": "user_mediadle_progress",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "user_achievement": {
+      "name": "user_achievement",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "achievement_id": {
+          "autoincrement": false,
+          "name": "achievement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tier_id": {
+          "autoincrement": false,
+          "name": "tier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "progress": {
+          "autoincrement": false,
+          "name": "progress",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "count": {
+          "autoincrement": false,
+          "name": "count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed": {
+          "autoincrement": false,
+          "name": "completed",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "autoincrement": false,
+          "name": "completed_at",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_calculated_at": {
+          "autoincrement": false,
+          "name": "last_calculated_at",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "user_achievement_tier_id_achievement_tier_id_fk": {
+          "name": "user_achievement_tier_id_achievement_tier_id_fk",
+          "tableFrom": "user_achievement",
+          "tableTo": "achievement_tier",
+          "columnsFrom": [
+            "tier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_achievement_achievement_id_achievement_id_fk": {
+          "name": "user_achievement_achievement_id_achievement_id_fk",
+          "tableFrom": "user_achievement",
+          "tableTo": "achievement",
+          "columnsFrom": [
+            "achievement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_achievement_user_id_user_12345_id_fk": {
+          "name": "user_achievement_user_id_user_12345_id_fk",
+          "tableFrom": "user_achievement",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "manga": {
+      "name": "manga",
+      "columns": {
+        "original_name": {
+          "autoincrement": false,
+          "name": "original_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chapters": {
+          "autoincrement": false,
+          "name": "chapters",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prod_status": {
+          "autoincrement": false,
+          "name": "prod_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "site_url": {
+          "autoincrement": false,
+          "name": "site_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_date": {
+          "autoincrement": false,
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volumes": {
+          "autoincrement": false,
+          "name": "volumes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "popularity": {
+          "autoincrement": false,
+          "name": "popularity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publishers": {
+          "autoincrement": false,
+          "name": "publishers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lock_status": {
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "manga_list": {
+      "name": "manga_list",
+      "columns": {
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_chapter": {
+          "autoincrement": false,
+          "name": "current_chapter",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redo": {
+          "autoincrement": false,
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total": {
+          "autoincrement": false,
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(13)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_manga_list_user_id": {
+          "name": "ix_manga_list_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_manga_list_id": {
+          "name": "ix_manga_list_id",
+          "columns": [
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "manga_list_user_id_user_12345_id_fk": {
+          "name": "manga_list_user_id_user_12345_id_fk",
+          "tableFrom": "manga_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "manga_list_media_id_manga_id_fk": {
+          "name": "manga_list_media_id_manga_id_fk",
+          "tableFrom": "manga_list",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "manga_authors": {
+      "name": "manga_authors",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "manga_authors_media_id_manga_id_fk": {
+          "name": "manga_authors_media_id_manga_id_fk",
+          "tableFrom": "manga_authors",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "manga_genre": {
+      "name": "manga_genre",
+      "columns": {
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "manga_genre_media_id_manga_id_fk": {
+          "name": "manga_genre_media_id_manga_id_fk",
+          "tableFrom": "manga_genre",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "manga_labels": {
+      "name": "manga_labels",
+      "columns": {
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_manga_labels_user_id": {
+          "name": "ix_manga_labels_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "manga_labels_user_id_user_12345_id_fk": {
+          "name": "manga_labels_user_id_user_12345_id_fk",
+          "tableFrom": "manga_labels",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "manga_labels_media_id_manga_id_fk": {
+          "name": "manga_labels_media_id_manga_id_fk",
+          "tableFrom": "manga_labels",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies_list": {
+      "name": "movies_list",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redo": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total": {
+          "autoincrement": false,
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "movies_list_media_id_movies_id_fk": {
+          "name": "movies_list_media_id_movies_id_fk",
+          "tableFrom": "movies_list",
+          "tableTo": "movies",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "movies_list_user_id_user_12345_id_fk": {
+          "name": "movies_list_user_id_user_12345_id_fk",
+          "tableFrom": "movies_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "games_list": {
+      "name": "games_list",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(13)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "playtime": {
+          "autoincrement": false,
+          "name": "playtime",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "platform": {
+          "autoincrement": false,
+          "name": "platform",
+          "type": "text(150)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "games_list_user_id_user_12345_id_fk": {
+          "name": "games_list_user_id_user_12345_id_fk",
+          "tableFrom": "games_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "games_list_media_id_games_id_fk": {
+          "name": "games_list_media_id_games_id_fk",
+          "tableFrom": "games_list",
+          "tableTo": "games",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "books_list": {
+      "name": "books_list",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redo": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_page": {
+          "autoincrement": false,
+          "name": "actual_page",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total": {
+          "autoincrement": false,
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "books_list_user_id_user_12345_id_fk": {
+          "name": "books_list_user_id_user_12345_id_fk",
+          "tableFrom": "books_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "books_list_media_id_books_id_fk": {
+          "name": "books_list_media_id_books_id_fk",
+          "tableFrom": "books_list",
+          "tableTo": "books",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "user_media_settings": {
+      "name": "user_media_settings",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_type": {
+          "autoincrement": false,
+          "name": "media_type",
+          "type": "text(6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_spent": {
+          "autoincrement": false,
+          "name": "time_spent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "views": {
+          "autoincrement": false,
+          "name": "views",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "autoincrement": false,
+          "name": "active",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_entries": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "total_entries",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_redo": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "total_redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entries_rated": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "entries_rated",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sum_entries_rated": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "sum_entries_rated",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entries_commented": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "entries_commented",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entries_favorites": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "entries_favorites",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_specific": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "total_specific",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_counts": {
+          "default": "'{}'",
+          "autoincrement": false,
+          "name": "status_counts",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "average_rating": {
+          "autoincrement": false,
+          "name": "average_rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "ix_user_media_settings_user_id": {
+          "name": "ix_user_media_settings_user_id",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "ix_user_media_settings_media_type": {
+          "name": "ix_user_media_settings_media_type",
+          "columns": [
+            "media_type"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "user_media_settings_user_id_user_12345_id_fk": {
+          "name": "user_media_settings_user_id_user_12345_id_fk",
+          "tableFrom": "user_media_settings",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "anime_list": {
+      "name": "anime_list",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_season": {
+          "autoincrement": false,
+          "name": "current_season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_episode_watched": {
+          "autoincrement": false,
+          "name": "last_episode_watched",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redo": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total": {
+          "autoincrement": false,
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redo2": {
+          "default": "'[]'",
+          "autoincrement": false,
+          "name": "redo2",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "anime_list_media_id_anime_id_fk": {
+          "name": "anime_list_media_id_anime_id_fk",
+          "tableFrom": "anime_list",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "anime_list_user_id_user_12345_id_fk": {
+          "name": "anime_list_user_id_user_12345_id_fk",
+          "tableFrom": "anime_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "series_list": {
+      "name": "series_list",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "autoincrement": false,
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "media_id": {
+          "autoincrement": false,
+          "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_season": {
+          "autoincrement": false,
+          "name": "current_season",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_episode_watched": {
+          "autoincrement": false,
+          "name": "last_episode_watched",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "autoincrement": false,
+          "name": "status",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "favorite": {
+          "autoincrement": false,
+          "name": "favorite",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redo": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "redo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comment": {
+          "autoincrement": false,
+          "name": "comment",
+          "type": "text(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total": {
+          "autoincrement": false,
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rating": {
+          "autoincrement": false,
+          "name": "rating",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "redo2": {
+          "default": "'[]'",
+          "autoincrement": false,
+          "name": "redo2",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {
+        "series_list_user_id_user_12345_id_fk": {
+          "name": "series_list_user_id_user_12345_id_fk",
+          "tableFrom": "series_list",
+          "tableTo": "user_12345",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "series_list_media_id_series_id_fk": {
+          "name": "series_list_media_id_series_id_fk",
+          "tableFrom": "series_list",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies": {
+      "name": "movies",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_name": {
+          "autoincrement": false,
+          "name": "original_name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "homepage": {
+          "autoincrement": false,
+          "name": "homepage",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration": {
+          "autoincrement": false,
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "original_language": {
+          "autoincrement": false,
+          "name": "original_language",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "popularity": {
+          "autoincrement": false,
+          "name": "popularity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "budget": {
+          "autoincrement": false,
+          "name": "budget",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revenue": {
+          "autoincrement": false,
+          "name": "revenue",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tagline": {
+          "autoincrement": false,
+          "name": "tagline",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "collection_id": {
+          "autoincrement": false,
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "director_name": {
+          "autoincrement": false,
+          "name": "director_name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "compositor_name": {
+          "autoincrement": false,
+          "name": "compositor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lock_status": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "user_12345": {
+      "name": "user_12345",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "username": {
+          "autoincrement": false,
+          "name": "username",
+          "type": "text(15)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "text(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "registered_on": {
+          "autoincrement": false,
+          "name": "registered_on",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "autoincrement": false,
+          "name": "password",
+          "type": "text(60)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_file": {
+          "default": "'default.jpg'",
+          "autoincrement": false,
+          "name": "image_file",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "autoincrement": false,
+          "name": "active",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transition_email": {
+          "autoincrement": false,
+          "name": "transition_email",
+          "type": "text(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activated_on": {
+          "autoincrement": false,
+          "name": "activated_on",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "profile_views": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "profile_views",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "autoincrement": false,
+          "name": "role",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "background_image": {
+          "default": "'default.jpg'",
+          "autoincrement": false,
+          "name": "background_image",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_notif_read_time": {
+          "autoincrement": false,
+          "name": "last_notif_read_time",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_seen": {
+          "autoincrement": false,
+          "name": "last_seen",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_update_modal": {
+          "autoincrement": false,
+          "name": "show_update_modal",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "grid_list_view": {
+          "default": 1,
+          "autoincrement": false,
+          "name": "grid_list_view",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "privacy": {
+          "default": "'RESTRICTED'",
+          "autoincrement": false,
+          "name": "privacy",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_selector": {
+          "default": "'TMDB'",
+          "autoincrement": false,
+          "name": "search_selector",
+          "type": "text(5)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating_system": {
+          "default": "'SCORE'",
+          "autoincrement": false,
+          "name": "rating_system",
+          "type": "text(7)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

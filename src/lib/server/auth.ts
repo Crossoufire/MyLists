@@ -1,0 +1,131 @@
+import bcrypt from "bcrypt";
+import {db} from "./database/db";
+import {betterAuth} from "better-auth";
+import {sendEmail} from "@/lib/server/utils/mail-sender";
+import {drizzleAdapter} from "better-auth/adapters/drizzle";
+
+
+export const auth = betterAuth({
+    appName: "MyLists",
+    baseURL: process.env.VITE_BASE_URL,
+    secret: process.env.BETTER_AUTH_SECRET,
+    database: drizzleAdapter(db, {
+        provider: "sqlite",
+    }),
+    user: {
+        additionalFields: {
+            profileViews: {
+                type: "number",
+                defaultValue: 0,
+                returned: true,
+                input: false,
+            },
+            backgroundImage: {
+                type: "string",
+                defaultValue: "default.jpg",
+                returned: true,
+                input: false,
+            },
+            role: {
+                type: "string",
+                defaultValue: "user",
+                returned: true,
+                input: false,
+            },
+            lastNotifReadTime: {
+                type: "date",
+                returned: true,
+                input: false,
+            },
+            showUpdateModal: {
+                type: "boolean",
+                defaultValue: true,
+                returned: true,
+                input: false,
+            },
+            gridListView: {
+                type: "boolean",
+                defaultValue: true,
+                returned: true,
+                input: false,
+            },
+            privacy: {
+                type: "string",
+                defaultValue: "RESTRICTED",
+                returned: true,
+                input: false,
+            },
+            searchSelector: {
+                type: "string",
+                defaultValue: "TMDB",
+                returned: true,
+                input: false,
+            },
+            ratingSystem: {
+                type: "string",
+                defaultValue: "SCORE",
+                returned: true,
+                input: false,
+            },
+        }
+    },
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 5 * 60,
+        },
+    },
+    socialProviders: {
+        github: {
+            clientId: process.env.GITHUB_CLIENT_ID!,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        },
+        google: {
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        },
+    },
+    emailAndPassword: {
+        enabled: true,
+        autoSignIn: false,
+        minPasswordLength: 8,
+        maxPasswordLength: 128,
+        requireEmailVerification: true,
+        resetPasswordTokenExpiresIn: 3600,
+        sendResetPassword: async ({ user, url }) => {
+            await sendEmail({
+                link: url,
+                to: user.email,
+                username: user.name,
+                template: "password_reset",
+                subject: "MyLists - Reset your password",
+            });
+        },
+        password: {
+            hash: async (password: string) => {
+                return bcrypt.hash(password, 12);
+            },
+            verify: async ({ hash, password }) => {
+                return bcrypt.compare(password, hash);
+            },
+        },
+    },
+    emailVerification: {
+        sendOnSignUp: true,
+        autoSignInAfterVerification: false,
+        expiresIn: 3600,
+        sendVerificationEmail: async ({ user, url }) => {
+            await sendEmail({
+                link: url,
+                to: user.email,
+                username: user.name,
+                template: "register",
+                subject: "MyLists - Verify your email address",
+            });
+        },
+    },
+    advanced: {
+        generateId: false,
+        cookiePrefix: "mylists",
+    },
+});

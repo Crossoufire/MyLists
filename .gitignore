@@ -20,3 +20,4 @@ dist
 
 .idea
 **/site.db
+/instance/**
