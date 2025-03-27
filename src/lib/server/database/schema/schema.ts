@@ -436,7 +436,7 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
         entriesFavorites: integer("entries_favorites").default(0).notNull(),
         totalSpecific: integer("total_specific").default(0).notNull(),
         //@ts-ignore
-        statusCounts: numeric("status_counts").default({}).notNull(),
+        statusCounts: text("status_counts").default({}).notNull(),
         averageRating: real("average_rating"),
     },
     (table) => [

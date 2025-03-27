@@ -1,16 +1,19 @@
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
 import appCss from "@/lib/styles/app.css?url";
-import {getUser} from "@/lib/server/functions/user";
+import {Footer} from "@/lib/components/Footer";
+import {getCurrentUser} from "@/lib/server/functions/user";
+import {Navbar} from "@/lib/components/navbar/Navbar";
 import type {QueryClient} from "@tanstack/react-query";
+import {SheetProvider} from "@/lib/providers/SheetProvider";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient; user: Awaited<ReturnType<typeof getUser>> }>()({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient; user: Awaited<ReturnType<typeof getCurrentUser>> }>()({
     beforeLoad: async ({ context }) => {
         const user = await context.queryClient.fetchQuery({
             queryKey: ["user"],
-            queryFn: ({ signal }) => getUser({ signal }),
+            queryFn: ({ signal }) => getCurrentUser({ signal }),
         });
         return { user };
     },
@@ -45,13 +48,13 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
 
         <div id="root">
             <Toaster/>
-            {/*<SheetProvider>*/}
-            {/*    <Navbar/>*/}
-            {/*</SheetProvider>*/}
-            <main className="md:max-w-screen-xl container">
+            <SheetProvider>
+                <Navbar/>
+            </SheetProvider>
+            <main className="md:max-w-screen-xl container mx-auto">
                 {children}
             </main>
-            {/*<Footer/>*/}
+            <Footer/>
             {import.meta.env.DEV && <ReactQueryDevtools/>}
             {import.meta.env.DEV && <TanStackRouterDevtools/>}
         </div>

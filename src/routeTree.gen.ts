@@ -11,24 +11,12 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SigninImport } from './routes/signin'
-import { Route as DashboardRouteImport } from './routes/dashboard/route'
 import { Route as IndexImport } from './routes/index'
-import { Route as DashboardIndexImport } from './routes/dashboard/index'
+import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/privacy-policy'
+import { Route as UniversalFeaturesImport } from './routes/_universal/features'
+import { Route as UniversalAboutImport } from './routes/_universal/about'
 
 // Create/Update Routes
-
-const SigninRoute = SigninImport.update({
-  id: '/signin',
-  path: '/signin',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const DashboardRouteRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -36,10 +24,22 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DashboardIndexRoute = DashboardIndexImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRouteRoute,
+const UniversalPrivacyPolicyRoute = UniversalPrivacyPolicyImport.update({
+  id: '/_universal/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UniversalFeaturesRoute = UniversalFeaturesImport.update({
+  id: '/_universal/features',
+  path: '/features',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UniversalAboutRoute = UniversalAboutImport.update({
+  id: '/_universal/about',
+  path: '/about',
+  getParentRoute: () => rootRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -53,84 +53,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/_universal/about': {
+      id: '/_universal/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof UniversalAboutImport
       parentRoute: typeof rootRoute
     }
-    '/signin': {
-      id: '/signin'
-      path: '/signin'
-      fullPath: '/signin'
-      preLoaderRoute: typeof SigninImport
+    '/_universal/features': {
+      id: '/_universal/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof UniversalFeaturesImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexImport
-      parentRoute: typeof DashboardRouteImport
+    '/_universal/privacy-policy': {
+      id: '/_universal/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof UniversalPrivacyPolicyImport
+      parentRoute: typeof rootRoute
     }
   }
 }
 
 // Create and export the route tree
 
-interface DashboardRouteRouteChildren {
-  DashboardIndexRoute: typeof DashboardIndexRoute
-}
-
-const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardIndexRoute: DashboardIndexRoute,
-}
-
-const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
-  DashboardRouteRouteChildren,
-)
-
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/signin': typeof SigninRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/about': typeof UniversalAboutRoute
+  '/features': typeof UniversalFeaturesRoute
+  '/privacy-policy': typeof UniversalPrivacyPolicyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/signin': typeof SigninRoute
-  '/dashboard': typeof DashboardIndexRoute
+  '/about': typeof UniversalAboutRoute
+  '/features': typeof UniversalFeaturesRoute
+  '/privacy-policy': typeof UniversalPrivacyPolicyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/signin': typeof SigninRoute
-  '/dashboard/': typeof DashboardIndexRoute
+  '/_universal/about': typeof UniversalAboutRoute
+  '/_universal/features': typeof UniversalFeaturesRoute
+  '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/signin' | '/dashboard/'
+  fullPaths: '/' | '/about' | '/features' | '/privacy-policy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/dashboard'
-  id: '__root__' | '/' | '/dashboard' | '/signin' | '/dashboard/'
+  to: '/' | '/about' | '/features' | '/privacy-policy'
+  id:
+    | '__root__'
+    | '/'
+    | '/_universal/about'
+    | '/_universal/features'
+    | '/_universal/privacy-policy'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
-  SigninRoute: typeof SigninRoute
+  UniversalAboutRoute: typeof UniversalAboutRoute
+  UniversalFeaturesRoute: typeof UniversalFeaturesRoute
+  UniversalPrivacyPolicyRoute: typeof UniversalPrivacyPolicyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
-  SigninRoute: SigninRoute,
+  UniversalAboutRoute: UniversalAboutRoute,
+  UniversalFeaturesRoute: UniversalFeaturesRoute,
+  UniversalPrivacyPolicyRoute: UniversalPrivacyPolicyRoute,
 }
 
 export const routeTree = rootRoute
@@ -144,25 +140,22 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/dashboard",
-        "/signin"
+        "/_universal/about",
+        "/_universal/features",
+        "/_universal/privacy-policy"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/dashboard": {
-      "filePath": "dashboard/route.tsx",
-      "children": [
-        "/dashboard/"
-      ]
+    "/_universal/about": {
+      "filePath": "_universal/about.tsx"
     },
-    "/signin": {
-      "filePath": "signin.tsx"
+    "/_universal/features": {
+      "filePath": "_universal/features.tsx"
     },
-    "/dashboard/": {
-      "filePath": "dashboard/index.tsx",
-      "parent": "/dashboard"
+    "/_universal/privacy-policy": {
+      "filePath": "_universal/privacy-policy.tsx"
     }
   }
 }
