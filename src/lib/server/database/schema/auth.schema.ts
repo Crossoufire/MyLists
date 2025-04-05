@@ -1,28 +1,34 @@
-import {integer, sqliteTable, text,} from "drizzle-orm/sqlite-core";
+import {imageUrl} from "@/lib/server/database/custom-types";
+import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
+
+
+const BASE_PROFILE_PATH = `${process.env.VITE_BASE_URL}/static/profile-covers`;
+const BASE_BACK_IMAGE_PATH = `${process.env.VITE_BASE_URL}/static/back-covers`;
 
 
 export const user = sqliteTable("user", {
-    id: integer("id").primaryKey(),
+    id: integer("id").$type<number>().primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
-    image: text("image").default("default.jpg"),
+    image: imageUrl("image", BASE_PROFILE_PATH).default("default.jpg"),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
     profileViews: integer("profile_views").default(0),
-    backgroundImage: text('background_image').default("default.jpg"),
-    role: text("role").default("USER"),
+    backgroundImage: imageUrl("background_image", BASE_BACK_IMAGE_PATH).default("default.jpg"),
+    role: text("role").$type<RoleType>().default(RoleType.USER),
     lastNotifReadTime: text("last_notif_read_time"),
     showUpdateModal: integer("show_update_modal", { mode: "boolean" }),
     gridListView: integer("grid_list_view", { mode: "boolean" }),
-    privacy: text("privacy").default("RESTRICTED"),
-    searchSelector: text("search_selector").default("TMDB"),
-    ratingSystem: text("rating_system").default("SCORE"),
+    privacy: text("privacy").$type<PrivacyType>().default(PrivacyType.RESTRICTED),
+    searchSelector: text("search_selector").$type<ApiProviderType>().default(ApiProviderType.TMDB),
+    ratingSystem: text("rating_system").$type<RatingSystemType>().default(RatingSystemType.SCORE),
 });
 
 
 export const session = sqliteTable("session", {
-    id: integer("id").primaryKey(),
+    id: integer("id").$type<number>().primaryKey(),
     expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
     token: text("token").notNull().unique(),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
@@ -34,7 +40,7 @@ export const session = sqliteTable("session", {
 
 
 export const account = sqliteTable("account", {
-    id: integer("id").primaryKey(),
+    id: integer("id").$type<number>().primaryKey(),
     accountId: integer("account_id"),
     providerId: text("provider_id"),
     userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -51,7 +57,7 @@ export const account = sqliteTable("account", {
 
 
 export const verification = sqliteTable("verification", {
-    id: integer("id").primaryKey(),
+    id: integer("id").$type<number>().primaryKey(),
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
     expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),

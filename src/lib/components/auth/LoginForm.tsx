@@ -5,9 +5,9 @@ import {Input} from "@/lib/components/ui/input";
 import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
-import {Link, useRouter} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {queryKeys} from "@/lib/react-query/query-options";
+import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 
@@ -20,6 +20,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
     const router = useRouter();
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const form = useForm({
         shouldFocusError: false,
@@ -47,7 +48,7 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
 
         await router.invalidate();
         await queryClient.setQueryData(queryKeys.authKey(), data.user);
-        // await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
+        await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
     };
 
     const withProvider = async (provider: "google" | "github") => {

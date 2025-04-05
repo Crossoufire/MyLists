@@ -119,7 +119,8 @@ export const getMediaColor = (mediaType: MediaType) => {
         games: "#217f21",
         manga: "#a04646",
     };
-    return colors[mediaType] ?? "#868686";
+    // @ts-ignore
+    return colors[mediaType.toLowerCase()] ?? "#868686";
 };
 
 
@@ -200,7 +201,7 @@ export const globalStatsTimeFormat = (minutes: number) => {
 };
 
 
-export const formatMinutes = (minutes: number, onlyHours = false) => {
+export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
     if (isNaN(minutes) || !minutes) return "--";
 
     let hours = Math.floor(minutes / 60);
@@ -215,6 +216,12 @@ export const formatMinutes = (minutes: number, onlyHours = false) => {
 
 
 // --- GENERIC FUNCTIONS -------------------------------------------------------------------------------------
+
+
+export const computeLevel = (totalTime: number) => {
+    return (Math.sqrt(400 + 80 * totalTime) - 20) / 40;
+}
+
 
 export const genreListsToListsOfDict = (stringList: string[]) => {
     if (!Array.isArray(stringList)) return [];
@@ -256,7 +263,7 @@ export const getLangCountryName = (name: string, type: LangType) => {
 };
 
 
-export const zeroPad = (value: number | undefined) => {
+export const zeroPad = (value: number | string | undefined) => {
     if (value) return String(value).padStart(2, "0");
     return "00";
 };

@@ -21,3 +21,16 @@ dist
 .idea
 **/site.db
 /instance/**
+
+**/public/static/covers
+**/public/static/profile-covers
+**/public/static/back-covers
+
+!**/public/static/covers/series-covers/default.jpg
+!**/public/static/covers/anime-covers/default.jpg
+!**/public/static/covers/movies-covers/default.jpg
+!**/public/static/covers/games-covers/default.jpg
+!**/public/static/covers/books-covers/default.jpg
+!**/public/static/covers/manga-covers/default.jpg
+!**/public/static/profile-covers/default.jpg
+!**/public/static/back-covers/default.jpg

@@ -1,26 +1,33 @@
-import { container } from "@/lib/server/container";
-import { createServerFn } from "@tanstack/react-start";
-import { authorizationMiddleware } from "@/lib/server/middlewares/authorization";
-import { UserUpdatesService } from "@/lib/server/services/user/user-updates.service";
+import {container} from "@/lib/server/container";
+import {createServerFn} from "@tanstack/react-start";
+import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 
 export const getUserProfile = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
+    .validator((data: any) => data)
     .handler(async ({ context: { currentUser, user, userService } }) => {
-        const userId = user.id.toString();
+        const profileOwnerId = user.id;
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
+        const achievementsService = container.services.achievements;
 
-        if (currentUser && currentUser.id !== userId) {
-            await userService.incrementProfileView(userId);
+        // @ts-expect-error
+        if (currentUser && currentUser.id !== profileOwnerId) {
+            await userService.incrementProfileView(profileOwnerId);
         }
 
-        const userFollows = await userService.getUserFollows(userId);
-        const userUpdates = await userUpdatesService.getUserUpdates(userId);
-        const followsUpdates = await userUpdatesService.getFollowsUpdates(userId);
-        const isFollowing = currentUser ? "check_using_a_function_here()" : false;
-        const mediaGlobalSummary = await userStatsService.getGlobalStats(userId);
-        const perMediaSummary = await userStatsService.getSummaryStats(userId);
+        const userFollows = await userService.getUserFollows(profileOwnerId);
+        const userUpdates = await userUpdatesService.getUserUpdates(profileOwnerId);
+        const followsUpdates = await userUpdatesService.getFollowsUpdates(profileOwnerId, !currentUser);
+        // @ts-expect-error
+        const isFollowing = currentUser ? await userService.isFollowing(currentUser.id, profileOwnerId) : false;
+        const mediaGlobalSummary = await userStatsService.getGlobalStats(profileOwnerId);
+        const perMediaSummary = await userStatsService.getSummaryStats(profileOwnerId);
+        const achievements = {
+            summary: await achievementsService.getDifficultySummary(profileOwnerId),
+            details: await achievementsService.getAchievementsDetails(profileOwnerId),
+        };
 
         const data = {
             userData: user,
@@ -30,7 +37,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
             isFollowing,
             mediaGlobalSummary,
             perMediaSummary,
-            achievements: [],
+            achievements,
         }
 
         return data;

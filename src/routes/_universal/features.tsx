@@ -1,6 +1,6 @@
 import {Sparkles} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
-import {PageTitle} from "@/lib/components/PageTitle";
+import {PageTitle} from "@/lib/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";

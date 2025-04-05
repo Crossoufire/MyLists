@@ -2,7 +2,7 @@ import React from "react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
-import {useSheet} from "@/lib/providers/SheetProvider";
+import {useSheet} from "@/lib/contexts/sheet-context";
 import {NavigationMenuLink} from "@/lib/components/ui/navigation-menu";
 
 

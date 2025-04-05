@@ -1,7 +1,8 @@
+import {SearchBar} from "./SearchBar";
 import {useAuth} from "@/lib/hooks/use-auth";
 import React, {useRef, useState} from "react";
 import {Button} from "@/lib/components/ui/button";
-import {useSheet} from "@/lib/providers/SheetProvider";
+import {useSheet} from "@/lib/contexts/sheet-context";
 import {Link as NavLink} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {LoginForm} from "@/lib/components/auth/LoginForm";
@@ -30,7 +31,6 @@ export const Navbar = () => {
         return (
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="md:max-w-screen-xl flex w-full justify-between items-center container mx-auto">
-                    {/*//@ts-ignore*/}
                     <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
                     <div className="space-x-3">
                         <Button size="sm" onClick={() => setShowLogin(true)}>
@@ -49,7 +49,7 @@ export const Navbar = () => {
 
     return (
         <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-            <div className="md:max-w-screen-xl flex w-full justify-between items-center container">
+            <div className="mx-auto md:max-w-screen-xl flex w-full justify-between items-center container">
                 <div className="hidden lg:block">
                     <NavigationMenu>
                         <NavigationMenuList>
@@ -57,7 +57,7 @@ export const Navbar = () => {
                                 <NavMediaDrop/>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<SearchBar/>*/}
+                                <SearchBar/>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 {/*<NavLink to="/hall-of-fame" className={navStyle()}>*/}

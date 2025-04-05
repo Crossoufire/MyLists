@@ -8,20 +8,43 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as IndexImport } from './routes/index'
+import { Route as PublicImport } from './routes/_public'
+import { Route as PrivateImport } from './routes/_private'
+import { Route as PublicIndexImport } from './routes/_public/index'
 import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/privacy-policy'
 import { Route as UniversalFeaturesImport } from './routes/_universal/features'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
+import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
+import { Route as PrivateDetailsMediaTypeMediaIdImport } from './routes/_private/details/$mediaType/$mediaId'
+import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_private/profile/$username/_header/index'
+
+// Create Virtual Routes
+
+const PrivateProfileUsernameImport = createFileRoute(
+  '/_private/profile/$username',
+)()
 
 // Create/Update Routes
 
-const IndexRoute = IndexImport.update({
+const PublicRoute = PublicImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PrivateRoute = PrivateImport.update({
+  id: '/_private',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PublicIndexRoute = PublicIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => PublicRoute,
 } as any)
 
 const UniversalPrivacyPolicyRoute = UniversalPrivacyPolicyImport.update({
@@ -42,15 +65,48 @@ const UniversalAboutRoute = UniversalAboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PrivateProfileUsernameRoute = PrivateProfileUsernameImport.update({
+  id: '/profile/$username',
+  path: '/profile/$username',
+  getParentRoute: () => PrivateRoute,
+} as any)
+
+const PrivateProfileUsernameHeaderRoute =
+  PrivateProfileUsernameHeaderImport.update({
+    id: '/_header',
+    getParentRoute: () => PrivateProfileUsernameRoute,
+  } as any)
+
+const PrivateDetailsMediaTypeMediaIdRoute =
+  PrivateDetailsMediaTypeMediaIdImport.update({
+    id: '/details/$mediaType/$mediaId',
+    path: '/details/$mediaType/$mediaId',
+    getParentRoute: () => PrivateRoute,
+  } as any)
+
+const PrivateProfileUsernameHeaderIndexRoute =
+  PrivateProfileUsernameHeaderIndexImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
+    '/_private': {
+      id: '/_private'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PrivateImport
+      parentRoute: typeof rootRoute
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicImport
       parentRoute: typeof rootRoute
     }
     '/_universal/about': {
@@ -74,56 +130,181 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UniversalPrivacyPolicyImport
       parentRoute: typeof rootRoute
     }
+    '/_public/': {
+      id: '/_public/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof PublicIndexImport
+      parentRoute: typeof PublicImport
+    }
+    '/_private/details/$mediaType/$mediaId': {
+      id: '/_private/details/$mediaType/$mediaId'
+      path: '/details/$mediaType/$mediaId'
+      fullPath: '/details/$mediaType/$mediaId'
+      preLoaderRoute: typeof PrivateDetailsMediaTypeMediaIdImport
+      parentRoute: typeof PrivateImport
+    }
+    '/_private/profile/$username': {
+      id: '/_private/profile/$username'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof PrivateProfileUsernameImport
+      parentRoute: typeof PrivateImport
+    }
+    '/_private/profile/$username/_header': {
+      id: '/_private/profile/$username/_header'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof PrivateProfileUsernameHeaderImport
+      parentRoute: typeof PrivateProfileUsernameRoute
+    }
+    '/_private/profile/$username/_header/': {
+      id: '/_private/profile/$username/_header/'
+      path: '/'
+      fullPath: '/profile/$username/'
+      preLoaderRoute: typeof PrivateProfileUsernameHeaderIndexImport
+      parentRoute: typeof PrivateProfileUsernameHeaderImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface PrivateProfileUsernameHeaderRouteChildren {
+  PrivateProfileUsernameHeaderIndexRoute: typeof PrivateProfileUsernameHeaderIndexRoute
+}
+
+const PrivateProfileUsernameHeaderRouteChildren: PrivateProfileUsernameHeaderRouteChildren =
+  {
+    PrivateProfileUsernameHeaderIndexRoute:
+      PrivateProfileUsernameHeaderIndexRoute,
+  }
+
+const PrivateProfileUsernameHeaderRouteWithChildren =
+  PrivateProfileUsernameHeaderRoute._addFileChildren(
+    PrivateProfileUsernameHeaderRouteChildren,
+  )
+
+interface PrivateProfileUsernameRouteChildren {
+  PrivateProfileUsernameHeaderRoute: typeof PrivateProfileUsernameHeaderRouteWithChildren
+}
+
+const PrivateProfileUsernameRouteChildren: PrivateProfileUsernameRouteChildren =
+  {
+    PrivateProfileUsernameHeaderRoute:
+      PrivateProfileUsernameHeaderRouteWithChildren,
+  }
+
+const PrivateProfileUsernameRouteWithChildren =
+  PrivateProfileUsernameRoute._addFileChildren(
+    PrivateProfileUsernameRouteChildren,
+  )
+
+interface PrivateRouteChildren {
+  PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
+  PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren
+}
+
+const PrivateRouteChildren: PrivateRouteChildren = {
+  PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
+  PrivateProfileUsernameRoute: PrivateProfileUsernameRouteWithChildren,
+}
+
+const PrivateRouteWithChildren =
+  PrivateRoute._addFileChildren(PrivateRouteChildren)
+
+interface PublicRouteChildren {
+  PublicIndexRoute: typeof PublicIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicIndexRoute: PublicIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '': typeof PublicRouteWithChildren
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
+  '/': typeof PublicIndexRoute
+  '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
+  '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/profile/$username/': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '': typeof PrivateRouteWithChildren
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
+  '/': typeof PublicIndexRoute
+  '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
+  '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
+  '/_private': typeof PrivateRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
   '/_universal/about': typeof UniversalAboutRoute
   '/_universal/features': typeof UniversalFeaturesRoute
   '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
+  '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
+  '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/_private/profile/$username/_header/': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/features' | '/privacy-policy'
+  fullPaths:
+    | ''
+    | '/about'
+    | '/features'
+    | '/privacy-policy'
+    | '/'
+    | '/details/$mediaType/$mediaId'
+    | '/profile/$username'
+    | '/profile/$username/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/features' | '/privacy-policy'
+  to:
+    | ''
+    | '/about'
+    | '/features'
+    | '/privacy-policy'
+    | '/'
+    | '/details/$mediaType/$mediaId'
+    | '/profile/$username'
   id:
     | '__root__'
-    | '/'
+    | '/_private'
+    | '/_public'
     | '/_universal/about'
     | '/_universal/features'
     | '/_universal/privacy-policy'
+    | '/_public/'
+    | '/_private/details/$mediaType/$mediaId'
+    | '/_private/profile/$username'
+    | '/_private/profile/$username/_header'
+    | '/_private/profile/$username/_header/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  PrivateRoute: typeof PrivateRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
   UniversalAboutRoute: typeof UniversalAboutRoute
   UniversalFeaturesRoute: typeof UniversalFeaturesRoute
   UniversalPrivacyPolicyRoute: typeof UniversalPrivacyPolicyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  PrivateRoute: PrivateRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
   UniversalAboutRoute: UniversalAboutRoute,
   UniversalFeaturesRoute: UniversalFeaturesRoute,
   UniversalPrivacyPolicyRoute: UniversalPrivacyPolicyRoute,
@@ -139,14 +320,25 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
+        "/_private",
+        "/_public",
         "/_universal/about",
         "/_universal/features",
         "/_universal/privacy-policy"
       ]
     },
-    "/": {
-      "filePath": "index.tsx"
+    "/_private": {
+      "filePath": "_private.tsx",
+      "children": [
+        "/_private/details/$mediaType/$mediaId",
+        "/_private/profile/$username"
+      ]
+    },
+    "/_public": {
+      "filePath": "_public.tsx",
+      "children": [
+        "/_public/"
+      ]
     },
     "/_universal/about": {
       "filePath": "_universal/about.tsx"
@@ -156,6 +348,32 @@ export const routeTree = rootRoute
     },
     "/_universal/privacy-policy": {
       "filePath": "_universal/privacy-policy.tsx"
+    },
+    "/_public/": {
+      "filePath": "_public/index.tsx",
+      "parent": "/_public"
+    },
+    "/_private/details/$mediaType/$mediaId": {
+      "filePath": "_private/details/$mediaType/$mediaId.tsx",
+      "parent": "/_private"
+    },
+    "/_private/profile/$username": {
+      "filePath": "_private/profile/$username",
+      "parent": "/_private",
+      "children": [
+        "/_private/profile/$username/_header"
+      ]
+    },
+    "/_private/profile/$username/_header": {
+      "filePath": "_private/profile/$username/_header.tsx",
+      "parent": "/_private/profile/$username",
+      "children": [
+        "/_private/profile/$username/_header/"
+      ]
+    },
+    "/_private/profile/$username/_header/": {
+      "filePath": "_private/profile/$username/_header/index.tsx",
+      "parent": "/_private/profile/$username/_header"
     }
   }
 }

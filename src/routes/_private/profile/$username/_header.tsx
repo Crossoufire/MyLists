@@ -1,0 +1,30 @@
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {PageTitle} from "@/lib/components/app/PageTitle";
+import {profileOptions} from "@/lib/react-query/query-options";
+import {ProfileHeader} from "@/lib/components/profile/ProfileHeader";
+import {createFileRoute, Outlet} from "@tanstack/react-router";
+
+
+export const Route = createFileRoute("/_private/profile/$username/_header")({
+    loader: async ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(profileOptions(username));
+    },
+    component: ProfileTop,
+});
+
+
+function ProfileTop() {
+    const { username } = Route.useParams();
+    const apiData = useSuspenseQuery(profileOptions(username)).data;
+
+    return (
+        <PageTitle title={`${username} Profile`} onlyHelmet>
+            <ProfileHeader
+                user={apiData.userData}
+                followId={apiData.userData.id}
+                followStatus={apiData.isFollowing}
+            />
+            <Outlet/>
+        </PageTitle>
+    );
+}

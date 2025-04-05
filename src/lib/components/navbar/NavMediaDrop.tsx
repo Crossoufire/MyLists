@@ -1,8 +1,9 @@
 import {useRef} from "react";
 import {ChevronDown} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
-import {MediaIcon} from "@/lib/components/MediaIcon";
-import {capitalize, MediaType} from "@/lib/utils/functions";
+import {capitalize} from "@/lib/utils/functions";
+import {MediaType} from "@/lib/server/utils/enums";
+import {MediaIcon} from "@/lib/components/app/MediaIcon";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
@@ -12,16 +13,12 @@ export const NavMediaDrop = () => {
     const popRef = useRef<HTMLButtonElement>(null);
 
     const menuItems = [
-        { url: `/list/series`, media: "series" },
-        //@ts-ignore
-        { url: `/list/anime`, media: "anime", cond: currentUser.settings.find(s => s.mediaType === "anime").active },
-        { url: `/list/movies`, media: "movies" },
-        //@ts-ignore
-        { url: `/list/books`, media: "books", cond: currentUser.settings.find(s => s.mediaType === "books").active },
-        //@ts-ignore
-        { url: `/list/games`, media: "games", cond: currentUser.settings.find(s => s.mediaType === "games").active },
-        //@ts-ignore
-        { url: `/list/manga`, media: "manga", cond: currentUser.settings.find(s => s.mediaType === "manga")?.active },
+        { url: `/list/series`, media: MediaType.SERIES },
+        { url: `/list/anime`, media: MediaType.ANIME, cond: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active },
+        { url: `/list/movies`, media: MediaType.MOVIES },
+        { url: `/list/books`, media: MediaType.BOOKS, cond: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active },
+        { url: `/list/games`, media: MediaType.GAMES, cond: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active },
+        { url: `/list/manga`, media: MediaType.MANGA, cond: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active },
     ];
 
     return (
@@ -36,13 +33,13 @@ export const NavMediaDrop = () => {
                 <PopoverClose ref={popRef}/>
                 <PopoverContent className="w-full px-2 py-2" align="start">
                     <ul>
-                        {menuItems.filter(item => item.cond !== false).map(item =>
+                        {menuItems.filter(item => !!item.cond).map(item =>
                             <NavMediaItem
                                 key={item.url}
                                 popRef={popRef}
                                 text={`${capitalize(item.media)}List`}
                                 to={`${item.url}/${currentUser?.name}`}
-                                icon={<MediaIcon mediaType={item.media as MediaType} size={16}/>}
+                                icon={<MediaIcon mediaType={item.media} size={16}/>}
                             />
                         )}
                     </ul>

@@ -1,21 +1,19 @@
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
 import appCss from "@/lib/styles/app.css?url";
-import {Footer} from "@/lib/components/Footer";
-import {getCurrentUser} from "@/lib/server/functions/user";
+import {Footer} from "@/lib/components/app/Footer";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import type {QueryClient} from "@tanstack/react-query";
-import {SheetProvider} from "@/lib/providers/SheetProvider";
+import {getCurrentUser} from "@/lib/server/functions/user";
+import {authOptions} from "@/lib/react-query/query-options";
+import {SheetProvider} from "@/lib/contexts/sheet-context";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient; user: Awaited<ReturnType<typeof getCurrentUser>> }>()({
     beforeLoad: async ({ context }) => {
-        const user = await context.queryClient.fetchQuery({
-            queryKey: ["user"],
-            queryFn: ({ signal }) => getCurrentUser({ signal }),
-        });
-        return { user };
+        const currentUser = await context.queryClient.fetchQuery(authOptions());
+        return { currentUser };
     },
     head: () => ({
         meta: [
@@ -26,6 +24,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; user
         links: [{ rel: "stylesheet", href: appCss }],
     }),
     component: RootComponent,
+    ssr: false,
 });
 
 

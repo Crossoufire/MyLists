@@ -1,5 +1,9 @@
 import {queryOptions} from "@tanstack/react-query";
+import {ApiProviderType} from "../server/utils/enums";
 import {getCurrentUser} from "@/lib/server/functions/user";
+import {getUserProfile} from "@/lib/server/functions/profile";
+import {getSearchResults} from "@/lib/server/functions/search";
+import {getMediaDetails} from "@/lib/server/functions/media-details";
 
 
 type Page = number;
@@ -76,4 +80,25 @@ export const authOptions = () => queryOptions({
     queryKey: queryKeys.authKey(),
     queryFn: () => getCurrentUser(),
     staleTime: 5 * 60 * 1000,
+});
+
+
+export const profileOptions = (username: string) => queryOptions({
+    queryKey: queryKeys.profileKey(username),
+    queryFn: () => getUserProfile({ data: username }),
+});
+
+
+export const navSearchOptions = (query: string, page: number, apiProvider: ApiProviderType) => queryOptions({
+    queryKey: queryKeys.navSearchKey(query, page, apiProvider),
+    queryFn: () => getSearchResults({ data: { query, page, apiProvider } }),
+    staleTime: 1000 * 60 * 2,
+    enabled: query.length >= 2,
+});
+
+
+export const mediaDetailsOptions = (mediaType: MediaType, mediaId: MediaId, external: boolean) => queryOptions({
+    queryKey: queryKeys.detailsKey(mediaType, mediaId),
+    queryFn: () => getMediaDetails({ data: { mediaType, mediaId, external } }),
+    staleTime: 3 * 1000,
 });

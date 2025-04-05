@@ -1,15 +1,18 @@
-import { MediaType, Status } from "@/lib/server/utils/enums";
-import { MediaRegistry } from "@/lib/server/registries/media.registry";
-import { UserStatsRepository } from "@/lib/server/repositories/user/user-stats.repository";
+import {Status} from "@/lib/server/utils/enums";
+import {MediaRepoRegistry} from "@/lib/server/registries/media-repo.registry";
+import {UserStatsRepository} from "@/lib/server/repositories/user/user-stats.repository";
 
 
 export class UserStatsService {
     constructor(
         private userStatsRepository: typeof UserStatsRepository,
-        private mediaRegistry: typeof MediaRegistry
-    ) { }
+        private mediaRegistry: typeof MediaRepoRegistry,
+    ) {
+        this.mediaRegistry = mediaRegistry;
+        this.userStatsRepository = userStatsRepository;
+    }
 
-    async getGlobalStats(userId: string) {
+    async getGlobalStats(userId: number) {
         const activeSettings = await this.userStatsRepository.getActiveSettings(userId);
 
         // Time [h] per media
@@ -25,16 +28,11 @@ export class UserStatsService {
         const excludedStatuses = Status.getNoPlanTo();
         const totalEntriesNoPlan = activeSettings.reduce((sum, setting) => {
             let settingSum = 0;
-            //@ts-ignore
-            for (const k in setting.statusCounts) {
-                //@ts-ignore
-                // noinspection JSUnfilteredForInLoop
-                if (!excludedStatuses.includes(k as Status)) {
-                    //@ts-ignore
-                    // noinspection JSUnfilteredForInLoop
-                    settingSum += setting.statusCounts[k];
+            Object.entries(setting.statusCounts).forEach(([status, count]) => {
+                if (!excludedStatuses.includes(status as Status)) {
+                    settingSum += count;
                 }
-            }
+            });
             return sum + settingSum;
         }, 0);
 
@@ -54,43 +52,30 @@ export class UserStatsService {
             totalRated,
             percentRated,
             avgRated,
-            mediaTypes: activeSettings.map((setting) => setting.mediaType as MediaType),
+            mediaTypes: activeSettings.map((setting) => setting.mediaType),
         };
 
         return data;
     }
 
-    async getSummaryStats(userId: string, limit = 10) {
-        const activeSettings = await this.userStatsRepository.getActiveSettings(userId);
+    async getSummaryStats(userId: number, limit = 10) {
         const excludedStatuses = Status.getNoPlanTo();
+        const activeSettings = await this.userStatsRepository.getActiveSettings(userId);
 
         const data = [];
         for (const setting of activeSettings) {
             let totalNoPlan = 0;
-            // @ts-ignore
-            for (const status in setting.statusCounts) {
-                //@ts-ignore
-                if (!excludedStatuses.includes(status)) {
-                    //@ts-ignore
-                    totalNoPlan += setting.statusCounts[status];
+            Object.entries(setting.statusCounts).forEach(([status, count]) => {
+                if (!excludedStatuses.includes(status as Status)) {
+                    totalNoPlan += count;
                 }
-            }
+            });
 
-            const mediaRepository = this.mediaRegistry.getRepository(setting.mediaType as MediaType);
-            // @ts-ignore
+            const mediaRepository = this.mediaRegistry.getRepository(setting.mediaType);
             const favoritesMedia = await mediaRepository.getUserFavorites(userId, limit);
 
             const statusList = Object.entries(setting.statusCounts).map(([status, count]) =>
-                // @ts-ignore
-                ({ status, count, percent: count / setting.totalEntries })
-            );
-
-            const favoritesList = favoritesMedia.map(
-                (favorite: any) => ({
-                    mediaName: favorite.media.name,
-                    mediaId: favorite.mediaId,
-                    mediaCover: favorite.media.mediaCover,
-                })
+                ({ status, count, percent: (count / setting.totalEntries) * 100 })
             );
 
             const summary = {
@@ -102,7 +87,7 @@ export class UserStatsService {
                 totalNoPlan: totalNoPlan,
                 noData: setting.totalEntries === 0,
                 statusList: statusList,
-                favoritesList: favoritesList,
+                favoritesList: favoritesMedia,
                 EntriesFavorites: setting.entriesFavorites,
                 entriesRated: setting.entriesRated,
                 percentRated: setting.entriesRated / totalNoPlan,

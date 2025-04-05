@@ -1,5 +1,16 @@
+import {sql} from "drizzle-orm";
 import {user} from "./auth.schema";
+import {customJson, imageUrl} from "@/lib/server/database/custom-types";
 import {index, integer, numeric, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
+import {AchievementDifficulty, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
+
+
+const BASE_SERIES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/series-covers`;
+const BASE_ANIME_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/anime-covers`;
+const BASE_MOVIES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/movies-covers`;
+const BASE_GAMES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/games-covers`;
+const BASE_BOOKS_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/books-covers`;
+const BASE_MANGA_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/manga-covers`;
 
 
 export const followers = sqliteTable("followers", {
@@ -9,8 +20,8 @@ export const followers = sqliteTable("followers", {
 
 export const animeActors = sqliteTable("anime_actors", {
     id: integer().primaryKey().notNull(),
-    mediaId: integer("media_id").notNull(),
-    name: text({ length: 100 }),
+    mediaId: integer("media_id").notNull().references(() => anime.id),
+    name: text(),
 });
 
 export const animeEpisodesPerSeason = sqliteTable("anime_episodes_per_season", {
@@ -22,14 +33,14 @@ export const animeEpisodesPerSeason = sqliteTable("anime_episodes_per_season", {
 
 export const moviesActors = sqliteTable("movies_actors", {
     id: integer().primaryKey().notNull(),
-    mediaId: integer("media_id").notNull(),
-    name: text({ length: 100 }),
+    mediaId: integer("media_id").notNull().references(() => movies.id),
+    name: text(),
 });
 
 export const seriesActors = sqliteTable("series_actors", {
     id: integer().primaryKey().notNull(),
-    mediaId: integer("media_id").notNull(),
-    name: text({ length: 100 }),
+    mediaId: integer("media_id").notNull().references(() => series.id),
+    name: text(),
 });
 
 export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season", {
@@ -42,13 +53,13 @@ export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season",
 export const gamesPlatforms = sqliteTable("games_platforms", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => games.id),
-    name: text({ length: 150 }),
+    name: text(),
 });
 
 export const gamesCompanies = sqliteTable("games_companies", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => games.id),
-    name: text({ length: 100 }),
+    name: text(),
     publisher: numeric(),
     developer: numeric(),
 });
@@ -56,7 +67,7 @@ export const gamesCompanies = sqliteTable("games_companies", {
 export const booksAuthors = sqliteTable("books_authors", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => books.id),
-    name: text({ length: 150 }),
+    name: text(),
 });
 
 export const userMediaUpdate = sqliteTable("user_media_update", {
@@ -64,9 +75,9 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
         userId: integer("user_id").notNull().references(() => user.id),
         mediaId: integer("media_id").notNull(),
         mediaName: text("media_name").notNull(),
-        mediaType: text("media_type", { length: 6 }).notNull(),
-        updateType: text("update_type", { length: 8 }).notNull(),
-        payload: text().notNull(),
+        mediaType: text("media_type").$type<MediaType>().notNull(),
+        updateType: text("update_type").$type<UpdateType>().notNull(),
+        payload: customJson<Record<string, any>>("payload"),
         timestamp: numeric().notNull(),
     },
     (table) => [
@@ -79,9 +90,9 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
 export const token = sqliteTable("token", {
         id: integer().primaryKey().notNull(),
         userId: integer("user_id").references(() => user.id),
-        accessToken: text("access_token", { length: 64 }).notNull(),
+        accessToken: text("access_token").notNull(),
         accessExpiration: numeric("access_expiration").notNull(),
-        refreshToken: text("refresh_token", { length: 64 }).notNull(),
+        refreshToken: text("refresh_token").notNull(),
         refreshExpiration: numeric("refresh_expiration").notNull(),
     },
     (table) => [
@@ -92,13 +103,13 @@ export const token = sqliteTable("token", {
 
 export const books = sqliteTable("books", {
     id: integer().primaryKey().notNull(),
-    name: text({ length: 50 }).notNull(),
-    releaseDate: text("release_date", { length: 30 }),
+    name: text().notNull(),
+    releaseDate: text("release_date"),
     pages: integer().notNull(),
-    language: text({ length: 20 }),
-    publishers: text({ length: 50 }),
+    language: text(),
+    publishers: text(),
     synopsis: text(),
-    imageCover: text("image_cover", { length: 100 }).notNull(),
+    imageCover: imageUrl("image_cover", BASE_BOOKS_COVERS_PATH).notNull(),
     apiId: text("api_id"),
     lockStatus: numeric("lock_status"),
     lastApiUpdate: numeric("last_api_update"),
@@ -107,76 +118,76 @@ export const books = sqliteTable("books", {
 export const seriesGenre = sqliteTable("series_genre", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => series.id),
-    name: text({ length: 100 }).notNull(),
+    name: text().notNull(),
 });
 
 export const animeGenre = sqliteTable("anime_genre", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => anime.id),
-    name: text({ length: 100 }).notNull(),
+    name: text().notNull(),
 });
 
 export const moviesGenre = sqliteTable("movies_genre", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => movies.id),
-    name: text({ length: 100 }).notNull(),
+    name: text().notNull(),
 });
 
 export const gamesGenre = sqliteTable("games_genre", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => games.id),
-    name: text({ length: 100 }).notNull(),
+    name: text().notNull(),
 });
 
 export const booksGenre = sqliteTable("books_genre", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => books.id),
-    name: text({ length: 100 }).notNull(),
+    name: text().notNull(),
 });
 
 export const seriesLabels = sqliteTable("series_labels", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => series.id),
-    name: text({ length: 64 }).notNull(),
+    name: text().notNull(),
 });
 
 export const animeLabels = sqliteTable("anime_labels", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => anime.id),
-    name: text({ length: 64 }).notNull(),
+    name: text().notNull(),
 });
 
 export const moviesLabels = sqliteTable("movies_labels", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => movies.id),
-    name: text({ length: 64 }).notNull(),
+    name: text().notNull(),
 });
 
 export const gamesLabels = sqliteTable("games_labels", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => games.id),
-    name: text({ length: 64 }).notNull(),
+    name: text().notNull(),
 });
 
 export const booksLabels = sqliteTable("books_labels", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => books.id),
-    name: text({ length: 64 }).notNull(),
+    name: text().notNull(),
 });
 
 export const notifications = sqliteTable("notifications", {
         id: integer().primaryKey().notNull(),
         userId: integer("user_id").references(() => user.id),
-        mediaType: text("media_type", { length: 6 }),
+        mediaType: text("media_type").$type<MediaType>(),
         mediaId: integer("media_id"),
         payload: text(),
         timestamp: numeric(),
-        notificationType: text("notification_type", { length: 6 }),
+        notificationType: text("notification_type").$type<NotificationType>(),
     },
     (table) => [
         index("ix_notifications_timestamp").on(table.timestamp),
@@ -184,72 +195,72 @@ export const notifications = sqliteTable("notifications", {
 
 export const series = sqliteTable("series", {
     id: integer().primaryKey().notNull(),
-    name: text({ length: 50 }).notNull(),
-    originalName: text("original_name", { length: 50 }),
-    releaseDate: text("release_date", { length: 30 }),
-    lastAirDate: text("last_air_date", { length: 30 }),
-    homepage: text({ length: 200 }),
-    createdBy: text("created_by", { length: 30 }),
+    name: text().notNull(),
+    originalName: text("original_name"),
+    releaseDate: text("release_date"),
+    lastAirDate: text("last_air_date"),
+    homepage: text(),
+    createdBy: text("created_by"),
     duration: integer(),
     totalSeasons: integer("total_seasons"),
     totalEpisodes: integer("total_episodes"),
-    originCountry: text("origin_country", { length: 20 }),
-    prodStatus: text("prod_status", { length: 50 }),
+    originCountry: text("origin_country"),
+    prodStatus: text("prod_status"),
     voteAverage: real("vote_average"),
     voteCount: real("vote_count"),
     synopsis: text(),
     popularity: real(),
-    imageCover: text("image_cover", { length: 100 }).notNull(),
+    imageCover: imageUrl("image_cover", BASE_SERIES_COVERS_PATH).notNull(),
     apiId: text("api_id").notNull(),
     lockStatus: numeric("lock_status"),
     episodeToAir: integer("episode_to_air"),
     seasonToAir: integer("season_to_air"),
-    nextEpisodeToAir: text("next_episode_to_air", { length: 50 }),
+    nextEpisodeToAir: text("next_episode_to_air"),
     lastApiUpdate: numeric("last_api_update"),
 });
 
 export const seriesNetwork = sqliteTable("series_network", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => series.id),
-    name: text({ length: 150 }).notNull(),
+    name: text().notNull(),
 });
 
 export const anime = sqliteTable("anime", {
     id: integer().primaryKey().notNull(),
-    name: text({ length: 50 }).notNull(),
-    originalName: text("original_name", { length: 50 }),
-    releaseDate: text("release_date", { length: 30 }),
-    lastAirDate: text("last_air_date", { length: 30 }),
-    homepage: text({ length: 200 }),
-    createdBy: text("created_by", { length: 30 }),
+    name: text().notNull(),
+    originalName: text("original_name"),
+    releaseDate: text("release_date"),
+    lastAirDate: text("last_air_date"),
+    homepage: text(),
+    createdBy: text("created_by"),
     duration: integer(),
     totalSeasons: integer("total_seasons"),
     totalEpisodes: integer("total_episodes"),
-    originCountry: text("origin_country", { length: 20 }),
-    prodStatus: text("prod_status", { length: 50 }),
+    originCountry: text("origin_country"),
+    prodStatus: text("prod_status"),
     voteAverage: real("vote_average"),
     voteCount: real("vote_count"),
     synopsis: text(),
     popularity: real(),
-    imageCover: text("image_cover", { length: 100 }).notNull(),
+    imageCover: imageUrl("image_cover", BASE_ANIME_COVERS_PATH).notNull(),
     apiId: text("api_id").notNull(),
     lockStatus: numeric("lock_status"),
     seasonToAir: integer("season_to_air"),
     episodeToAir: integer("episode_to_air"),
-    nextEpisodeToAir: text("next_episode_to_air", { length: 50 }),
+    nextEpisodeToAir: text("next_episode_to_air"),
     lastApiUpdate: numeric("last_api_update"),
 });
 
 export const animeNetwork = sqliteTable("anime_network", {
     id: integer().primaryKey().notNull(),
     mediaId: integer("media_id").notNull().references(() => anime.id),
-    name: text({ length: 150 }).notNull(),
+    name: text().notNull(),
 });
 
 export const games = sqliteTable("games", {
     id: integer().primaryKey().notNull(),
     name: text(),
-    imageCover: text("image_cover"),
+    imageCover: imageUrl("image_cover", BASE_GAMES_COVERS_PATH).notNull(),
     gameEngine: text("game_engine"),
     gameModes: text("game_modes"),
     playerPerspective: text("player_perspective"),
@@ -271,13 +282,13 @@ export const achievement = sqliteTable("achievement", {
     name: text().notNull(),
     codeName: text("code_name").notNull(),
     description: text().notNull(),
-    mediaType: text("media_type"),
+    mediaType: text("media_type").$type<MediaType>(),
     value: text(),
 });
 
 export const dailyMediadle = sqliteTable("daily_mediadle", {
     id: integer().primaryKey().notNull(),
-    mediaType: text("media_type", { length: 6 }).notNull(),
+    mediaType: text("media_type").$type<MediaType>().notNull(),
     mediaId: integer("media_id").notNull(),
     date: numeric().notNull(),
     pixelationLevels: integer("pixelation_levels"),
@@ -286,7 +297,7 @@ export const dailyMediadle = sqliteTable("daily_mediadle", {
 export const mediadleStats = sqliteTable("mediadle_stats", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
-    mediaType: text("media_type", { length: 6 }).notNull(),
+    mediaType: text("media_type").$type<MediaType>().notNull(),
     totalPlayed: integer("total_played"),
     totalWon: integer("total_won"),
     averageAttempts: real("average_attempts"),
@@ -297,7 +308,7 @@ export const mediadleStats = sqliteTable("mediadle_stats", {
 export const achievementTier = sqliteTable("achievement_tier", {
     id: integer().primaryKey().notNull(),
     achievementId: integer("achievement_id").notNull().references(() => achievement.id),
-    difficulty: text({ length: 8 }).notNull(),
+    difficulty: text().$type<AchievementDifficulty>().notNull(),
     criteria: numeric().notNull(),
     rarity: real(),
 });
@@ -319,7 +330,7 @@ export const userAchievement = sqliteTable("user_achievement", {
     tierId: integer("tier_id").references(() => achievementTier.id),
     progress: real(),
     count: real(),
-    completed: numeric(),
+    completed: integer({ mode: "boolean" }),
     completedAt: numeric("completed_at"),
     lastCalculatedAt: numeric("last_calculated_at"),
 });
@@ -339,7 +350,7 @@ export const manga = sqliteTable("manga", {
     name: text().notNull(),
     synopsis: text(),
     releaseDate: text("release_date"),
-    imageCover: text("image_cover").notNull(),
+    imageCover: imageUrl("image_cover", BASE_MANGA_COVERS_PATH).notNull(),
     apiId: text("api_id").notNull(),
     lockStatus: numeric("lock_status").notNull(),
     lastApiUpdate: numeric("last_api_update"),
@@ -352,9 +363,9 @@ export const mangaList = sqliteTable("manga_list", {
         total: integer(),
         id: integer().primaryKey().notNull(),
         userId: integer("user_id").notNull().references(() => user.id),
-        status: text({ length: 13 }).notNull(),
+        status: text().$type<Status>().notNull(),
         rating: real(),
-        favorite: numeric(),
+        favorite: integer({ mode: "boolean" }),
         comment: text(),
     },
     (table) => [
@@ -380,18 +391,16 @@ export const mangaLabels = sqliteTable("manga_labels", {
         userId: integer("user_id").notNull().references(() => user.id),
         name: text().notNull(),
     },
-    (table) => [
-        index("ix_manga_labels_user_id").on(table.userId),
-    ]);
+    (table) => [index("ix_manga_labels_user_id").on(table.userId)]);
 
 export const moviesList = sqliteTable("movies_list", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => movies.id),
-    status: text({ length: 100 }).notNull(),
-    favorite: numeric(),
+    status: text("status").$type<Status>().notNull(),
+    favorite: integer({ mode: "boolean" }),
     redo: integer().default(0),
-    comment: text({ length: 500 }),
+    comment: text(),
     total: integer(),
     rating: real(),
 });
@@ -400,11 +409,11 @@ export const gamesList = sqliteTable("games_list", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => games.id),
-    status: text({ length: 13 }).notNull(),
+    status: text().$type<Status>().notNull(),
     playtime: integer(),
-    favorite: numeric(),
+    favorite: integer({ mode: "boolean" }),
     comment: text(),
-    platform: text({ length: 150 }),
+    platform: text(),
     rating: real(),
 });
 
@@ -412,22 +421,23 @@ export const booksList = sqliteTable("books_list", {
     id: integer().primaryKey().notNull(),
     userId: integer("user_id").notNull().references(() => user.id),
     mediaId: integer("media_id").notNull().references(() => books.id),
-    status: text({ length: 100 }).notNull(),
+    status: text().$type<Status>().notNull(),
     redo: integer().default(0),
     actualPage: integer("actual_page"),
     total: integer(),
-    favorite: numeric(),
+    favorite: integer({ mode: "boolean" }),
     comment: text(),
     rating: real(),
 });
 
+
 export const userMediaSettings = sqliteTable("user_media_settings", {
         id: integer().primaryKey().notNull(),
         userId: integer("user_id").notNull().references(() => user.id),
-        mediaType: text("media_type", { length: 6 }).notNull(),
+        mediaType: text("media_type").$type<MediaType>().notNull(),
         timeSpent: integer("time_spent").notNull(),
         views: integer().notNull(),
-        active: numeric().notNull(),
+        active: integer("active", { mode: "boolean" }).notNull(),
         totalEntries: integer("total_entries").default(0).notNull(),
         totalRedo: integer("total_redo").default(0).notNull(),
         entriesRated: integer("entries_rated").default(0).notNull(),
@@ -435,8 +445,7 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
         entriesCommented: integer("entries_commented").default(0).notNull(),
         entriesFavorites: integer("entries_favorites").default(0).notNull(),
         totalSpecific: integer("total_specific").default(0).notNull(),
-        //@ts-ignore
-        statusCounts: text("status_counts").default({}).notNull(),
+        statusCounts: customJson<Record<Partial<Status>, number>>("status_counts").default(sql`'{}'`).notNull(),
         averageRating: real("average_rating"),
     },
     (table) => [
@@ -450,14 +459,13 @@ export const animeList = sqliteTable("anime_list", {
     mediaId: integer("media_id").notNull().references(() => anime.id),
     currentSeason: integer("current_season").notNull(),
     lastEpisodeWatched: integer("last_episode_watched").notNull(),
-    status: text({ length: 100 }).notNull(),
-    favorite: numeric(),
+    status: text().$type<Status>().notNull(),
+    favorite: integer({ mode: "boolean" }),
     redo: integer().default(0),
-    comment: text({ length: 500 }),
+    comment: text(),
     total: integer(),
     rating: real(),
-    //@ts-ignore
-    redo2: numeric().default([]).notNull(),
+    redo2: numeric().default(sql`'[]'`).notNull(),
 });
 
 export const seriesList = sqliteTable("series_list", {
@@ -466,35 +474,34 @@ export const seriesList = sqliteTable("series_list", {
     mediaId: integer("media_id").notNull().references(() => series.id),
     currentSeason: integer("current_season").notNull(),
     lastEpisodeWatched: integer("last_episode_watched").notNull(),
-    status: text({ length: 100 }).notNull(),
-    favorite: numeric(),
+    status: text().$type<Status>().notNull(),
+    favorite: integer({ mode: "boolean" }),
     redo: integer().default(0),
-    comment: text({ length: 500 }),
+    comment: text(),
     total: integer(),
     rating: real(),
-    //@ts-ignore
-    redo2: numeric().default([]).notNull(),
+    redo2: numeric().default(sql`'[]'`).notNull(),
 });
 
 export const movies = sqliteTable("movies", {
     id: integer().primaryKey().notNull(),
-    name: text({ length: 50 }).notNull(),
-    originalName: text("original_name", { length: 50 }),
-    releaseDate: text("release_date", { length: 30 }),
-    homepage: text({ length: 100 }),
+    name: text().notNull(),
+    originalName: text("original_name"),
+    releaseDate: text("release_date"),
+    homepage: text(),
     duration: integer(),
-    originalLanguage: text("original_language", { length: 20 }),
+    originalLanguage: text("original_language"),
     synopsis: text(),
     voteAverage: real("vote_average"),
     voteCount: real("vote_count"),
     popularity: real(),
     budget: real(),
     revenue: real(),
-    tagline: text({ length: 30 }),
-    imageCover: text("image_cover", { length: 100 }).notNull(),
+    tagline: text(),
+    imageCover: imageUrl("image_cover", BASE_MOVIES_COVERS_PATH).notNull(),
     apiId: text("api_id").notNull(),
     collectionId: text("collection_id"),
-    directorName: text("director_name", { length: 100 }),
+    directorName: text("director_name"),
     compositorName: text("compositor_name"),
     lockStatus: numeric("lock_status"),
     lastApiUpdate: numeric("last_api_update"),

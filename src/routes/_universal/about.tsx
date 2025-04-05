@@ -1,5 +1,5 @@
 import {mail} from "@/lib/utils/helpers";
-import {PageTitle} from "@/lib/components/PageTitle";
+import {PageTitle} from "@/lib/components/app/PageTitle";
 import {createFileRoute} from "@tanstack/react-router";
 
 

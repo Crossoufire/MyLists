@@ -1,17 +1,17 @@
-import { auth } from "@/lib/server/auth";
-import { container } from "../container";
-import { Privacy } from "@/lib/server/utils/enums";
-import { createMiddleware } from "@tanstack/react-start";
-import { notFound, redirect } from "@tanstack/react-router";
-import { getWebRequest } from "@tanstack/react-start/server";
+import {auth} from "@/lib/server/auth";
+import {container} from "../container";
+import {createMiddleware} from "@tanstack/react-start";
+import {notFound, redirect} from "@tanstack/react-router";
+import {getWebRequest} from "@tanstack/react-start/server";
 
 
 export const authorizationMiddleware = createMiddleware()
     .server(async ({ next, data }) => {
         const userService = container.services.user;
 
-        // @ts-ignore
-        const user = await userService.getUserByUsername(data?.name);
+        if (!data) throw notFound();
+
+        const user = await userService.getUserByUsername(data as string);
         if (!user) throw notFound()
 
         const { headers } = getWebRequest()!;

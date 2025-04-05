@@ -1,21 +1,12 @@
 import {routeTree} from "./routeTree.gen";
-import {QueryClient} from "@tanstack/react-query";
-import {NotFound} from "@/lib/components/NotFound";
+import {NotFound} from "@/lib/components/app/NotFound";
+import {queryClient} from "@/lib/react-query/query-client";
 import {routerWithQueryClient} from "@tanstack/react-router-with-query";
-import {DefaultCatchBoundary} from "@/lib/components/DefaultCatchBoundary";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";
+import {DefaultCatchBoundary} from "@/lib/components/app/DefaultCatchBoundary";
 
 
 export function createRouter() {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: {
-                refetchOnWindowFocus: false,
-                staleTime: 1000 * 60,
-            },
-        },
-    });
-
     return routerWithQueryClient(
         createTanStackRouter({
             routeTree,

@@ -3,6 +3,7 @@ import {db} from "./database/db";
 import {betterAuth} from "better-auth";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
+import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
 
 
 export const auth = betterAuth({
@@ -28,7 +29,7 @@ export const auth = betterAuth({
             },
             role: {
                 type: "string",
-                defaultValue: "user",
+                defaultValue: RoleType.USER,
                 returned: true,
                 input: false,
             },
@@ -51,19 +52,19 @@ export const auth = betterAuth({
             },
             privacy: {
                 type: "string",
-                defaultValue: "RESTRICTED",
+                defaultValue: PrivacyType.RESTRICTED,
                 returned: true,
                 input: false,
             },
             searchSelector: {
                 type: "string",
-                defaultValue: "TMDB",
+                defaultValue: ApiProviderType.TMDB,
                 returned: true,
                 input: false,
             },
             ratingSystem: {
                 type: "string",
-                defaultValue: "SCORE",
+                defaultValue: RatingSystemType.SCORE,
                 returned: true,
                 input: false,
             },

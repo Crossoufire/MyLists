@@ -1,6 +1,3 @@
-/**
- * Registry for user-related services
- */
 export class UserRegistry {
     private static services: Record<string, any> = {};
 

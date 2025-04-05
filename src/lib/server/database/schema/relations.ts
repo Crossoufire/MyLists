@@ -29,6 +29,7 @@ import {
     mangaList,
     mediadleStats,
     movies,
+    moviesActors,
     moviesGenre,
     moviesLabels,
     moviesList,
@@ -48,44 +49,44 @@ import {
 
 
 export const followersRelations = relations(followers, ({ one }) => ({
-    user12345_followedId: one(user, {
+    user_followedId: one(user, {
         fields: [followers.followedId],
         references: [user.id],
-        relationName: "followers_followedId_user12345_id"
+        relationName: "followers_followedId_user_id"
     }),
-    user12345_followerId: one(user, {
+    user_followerId: one(user, {
         fields: [followers.followerId],
         references: [user.id],
-        relationName: "followers_followerId_user12345_id"
+        relationName: "followers_followerId_user_id"
     }),
 }));
 
-export const user12345Relations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
     followers_followedId: many(followers, {
-        relationName: "followers_followedId_user12345_id"
+        relationName: "followers_followedId_user_id"
     }),
     followers_followerId: many(followers, {
-        relationName: "followers_followerId_user12345_id"
+        relationName: "followers_followerId_user_id"
     }),
-    userMediaUpdates: many(userMediaUpdate),
     tokens: many(token),
+    userMediaUpdates: many(userMediaUpdate),
     seriesLabels: many(seriesLabels),
     animeLabels: many(animeLabels),
     moviesLabels: many(moviesLabels),
     gamesLabels: many(gamesLabels),
     booksLabels: many(booksLabels),
-    notifications: many(notifications),
-    mediadleStats: many(mediadleStats),
-    userMediadleProgresses: many(userMediadleProgress),
-    userAchievements: many(userAchievement),
-    mangaLists: many(mangaList),
     mangaLabels: many(mangaLabels),
+    mangaLists: many(mangaList),
     moviesLists: many(moviesList),
     gamesLists: many(gamesList),
     booksLists: many(booksList),
-    userMediaSettings: many(userMediaSettings),
     animeLists: many(animeList),
     seriesLists: many(seriesList),
+    notifications: many(notifications),
+    mediadleStats: many(mediadleStats),
+    userAchievements: many(userAchievement),
+    userMediaSettings: many(userMediaSettings),
+    userMediadleProgresses: many(userMediadleProgress),
 }));
 
 export const animeEpisodesPerSeasonRelations = relations(animeEpisodesPerSeason, ({ one }) => ({
@@ -189,10 +190,18 @@ export const moviesGenreRelations = relations(moviesGenre, ({ one }) => ({
     }),
 }));
 
+export const moviesActorsRelations = relations(moviesActors, ({ one }) => ({
+    movie: one(movies, {
+        fields: [moviesActors.mediaId],
+        references: [movies.id]
+    }),
+}));
+
 export const moviesRelations = relations(movies, ({ many }) => ({
     moviesGenres: many(moviesGenre),
     moviesLabels: many(moviesLabels),
     moviesLists: many(moviesList),
+    moviesActors: many(moviesActors),
 }));
 
 export const gamesGenreRelations = relations(gamesGenre, ({ one }) => ({
