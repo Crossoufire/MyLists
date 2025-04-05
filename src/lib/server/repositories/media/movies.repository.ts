@@ -11,7 +11,7 @@ export class MoviesRepository extends BaseRepository<typeof movies, typeof movie
         super(movies, moviesList);
     }
 
-    async findByApiId(apiId: string) {
+    async findByApiId(apiId: number) {
         return await db.query.movies.findFirst({ where: (movies, { eq }) => eq(movies.apiId, apiId) });
     }
 

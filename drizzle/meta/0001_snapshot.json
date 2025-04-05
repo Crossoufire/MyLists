@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5107b253-9854-4c93-b45a-414ec81fb6de",
+  "id": "cf7de8b3-242a-4e0f-8f8c-c4f5cdfff74f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -9,28 +9,28 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
         "account_id": {
           "name": "account_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "provider_id": {
           "name": "provider_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -124,7 +124,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -173,7 +173,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -212,7 +212,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -282,7 +282,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'USER'"
+          "default": "'user'"
         },
         "last_notif_read_time": {
           "name": "last_notif_read_time",
@@ -311,7 +311,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'RESTRICTED'"
+          "default": "'restricted'"
         },
         "search_selector": {
           "name": "search_selector",
@@ -319,7 +319,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'TMDB'"
+          "default": "'tmdb'"
         },
         "rating_system": {
           "name": "rating_system",
@@ -327,7 +327,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'SCORE'"
+          "default": "'score'"
         }
       },
       "indexes": {
@@ -349,7 +349,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -446,16 +446,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "achievement_tier": {
       "name": "achievement_tier",
@@ -476,7 +467,7 @@
         },
         "difficulty": {
           "name": "difficulty",
-          "type": "text(8)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -514,16 +505,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime": {
       "name": "anime",
@@ -537,42 +519,42 @@
         },
         "name": {
           "name": "name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "original_name": {
           "name": "original_name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "release_date": {
           "name": "release_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_air_date": {
           "name": "last_air_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "homepage": {
           "name": "homepage",
-          "type": "text(200)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "created_by": {
           "name": "created_by",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -600,14 +582,14 @@
         },
         "origin_country": {
           "name": "origin_country",
-          "type": "text(20)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "prod_status": {
           "name": "prod_status",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -642,49 +624,49 @@
         },
         "image_cover": {
           "name": "image_cover",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "api_id": {
           "name": "api_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "lock_status": {
           "name": "lock_status",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "season_to_air": {
           "name": "season_to_air",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "episode_to_air": {
           "name": "episode_to_air",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "next_episode_to_air": {
           "name": "next_episode_to_air",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -694,16 +676,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_actors": {
       "name": "anime_actors",
@@ -724,26 +697,31 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "anime_actors_media_id_anime_id_fk": {
+          "name": "anime_actors_media_id_anime_id_fk",
+          "tableFrom": "anime_actors",
+          "tableTo": "anime",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_episodes_per_season": {
       "name": "anime_episodes_per_season",
@@ -795,16 +773,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_genre": {
       "name": "anime_genre",
@@ -825,7 +794,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -849,16 +818,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_labels": {
       "name": "anime_labels",
@@ -886,7 +846,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(64)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -894,10 +854,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "anime_labels_user_id_user_12345_id_fk": {
-          "name": "anime_labels_user_id_user_12345_id_fk",
+        "anime_labels_user_id_user_id_fk": {
+          "name": "anime_labels_user_id_user_id_fk",
           "tableFrom": "anime_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -923,16 +883,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_list": {
       "name": "anime_list",
@@ -974,14 +925,14 @@
         },
         "status": {
           "name": "status",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "favorite": {
           "name": "favorite",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -996,7 +947,7 @@
         },
         "comment": {
           "name": "comment",
-          "type": "text(500)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1006,7 +957,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "rating": {
           "name": "rating",
@@ -1017,7 +969,7 @@
         },
         "redo2": {
           "name": "redo2",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -1026,10 +978,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "anime_list_user_id_user_12345_id_fk": {
-          "name": "anime_list_user_id_user_12345_id_fk",
+        "anime_list_user_id_user_id_fk": {
+          "name": "anime_list_user_id_user_id_fk",
           "tableFrom": "anime_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1055,16 +1007,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "anime_network": {
       "name": "anime_network",
@@ -1085,7 +1028,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(150)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1109,16 +1052,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "books": {
       "name": "books",
@@ -1132,14 +1066,14 @@
         },
         "name": {
           "name": "name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "release_date": {
           "name": "release_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1153,14 +1087,14 @@
         },
         "language": {
           "name": "language",
-          "type": "text(20)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "publishers": {
           "name": "publishers",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1174,7 +1108,7 @@
         },
         "image_cover": {
           "name": "image_cover",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1188,14 +1122,14 @@
         },
         "lock_status": {
           "name": "lock_status",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1205,16 +1139,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "books_authors": {
       "name": "books_authors",
@@ -1235,9 +1160,9 @@
         },
         "name": {
           "name": "name",
-          "type": "text(150)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -1259,16 +1184,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "books_genre": {
       "name": "books_genre",
@@ -1289,7 +1205,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1313,16 +1229,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "books_labels": {
       "name": "books_labels",
@@ -1350,7 +1257,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(64)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1358,10 +1265,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "books_labels_user_id_user_12345_id_fk": {
-          "name": "books_labels_user_id_user_12345_id_fk",
+        "books_labels_user_id_user_id_fk": {
+          "name": "books_labels_user_id_user_id_fk",
           "tableFrom": "books_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1387,16 +1294,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "books_list": {
       "name": "books_list",
@@ -1424,7 +1322,7 @@
         },
         "status": {
           "name": "status",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1449,14 +1347,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
-        },
-        "favorite": {
-          "name": "favorite",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "comment": {
           "name": "comment",
@@ -1471,14 +1363,21 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "favorite": {
+          "name": "favorite",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "books_list_user_id_user_12345_id_fk": {
-          "name": "books_list_user_id_user_12345_id_fk",
+        "books_list_user_id_user_id_fk": {
+          "name": "books_list_user_id_user_id_fk",
           "tableFrom": "books_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1504,16 +1403,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "daily_mediadle": {
       "name": "daily_mediadle",
@@ -1527,7 +1417,7 @@
         },
         "media_type": {
           "name": "media_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1541,7 +1431,7 @@
         },
         "date": {
           "name": "date",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1558,16 +1448,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "followers": {
       "name": "followers",
@@ -1589,10 +1470,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "followers_follower_id_user_12345_id_fk": {
-          "name": "followers_follower_id_user_12345_id_fk",
+        "followers_follower_id_user_id_fk": {
+          "name": "followers_follower_id_user_id_fk",
           "tableFrom": "followers",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "follower_id"
           ],
@@ -1602,10 +1483,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "followers_followed_id_user_12345_id_fk": {
-          "name": "followers_followed_id_user_12345_id_fk",
+        "followers_followed_id_user_id_fk": {
+          "name": "followers_followed_id_user_id_fk",
           "tableFrom": "followers",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "followed_id"
           ],
@@ -1618,16 +1499,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games": {
       "name": "games",
@@ -1650,7 +1522,7 @@
           "name": "image_cover",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "game_engine": {
@@ -1690,7 +1562,7 @@
         },
         "release_date": {
           "name": "release_date",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1702,8 +1574,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "IGDB_url": {
-          "name": "IGDB_url",
+        "igdb_url": {
+          "name": "igdb_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1711,28 +1583,28 @@
         },
         "hltb_main_time": {
           "name": "hltb_main_time",
-          "type": "text",
+          "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "hltb_main_and_extra_time": {
           "name": "hltb_main_and_extra_time",
-          "type": "text",
+          "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "hltb_total_complete_time": {
           "name": "hltb_total_complete_time",
-          "type": "text",
+          "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "api_id": {
           "name": "api_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1746,7 +1618,7 @@
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1756,16 +1628,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games_companies": {
       "name": "games_companies",
@@ -1786,21 +1649,21 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "publisher": {
           "name": "publisher",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "developer": {
           "name": "developer",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1824,16 +1687,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games_genre": {
       "name": "games_genre",
@@ -1854,7 +1708,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1878,16 +1732,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games_labels": {
       "name": "games_labels",
@@ -1915,7 +1760,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(64)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1923,10 +1768,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "games_labels_user_id_user_12345_id_fk": {
-          "name": "games_labels_user_id_user_12345_id_fk",
+        "games_labels_user_id_user_id_fk": {
+          "name": "games_labels_user_id_user_id_fk",
           "tableFrom": "games_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1952,16 +1797,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games_list": {
       "name": "games_list",
@@ -1989,7 +1825,7 @@
         },
         "status": {
           "name": "status",
-          "type": "text(13)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1999,11 +1835,12 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "favorite": {
           "name": "favorite",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2017,7 +1854,7 @@
         },
         "platform": {
           "name": "platform",
-          "type": "text(150)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2032,10 +1869,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "games_list_user_id_user_12345_id_fk": {
-          "name": "games_list_user_id_user_12345_id_fk",
+        "games_list_user_id_user_id_fk": {
+          "name": "games_list_user_id_user_id_fk",
           "tableFrom": "games_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -2061,16 +1898,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "games_platforms": {
       "name": "games_platforms",
@@ -2091,9 +1919,9 @@
         },
         "name": {
           "name": "name",
-          "type": "text(150)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -2115,20 +1943,18 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "manga": {
       "name": "manga",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "original_name": {
           "name": "original_name",
           "type": "text",
@@ -2199,13 +2025,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -2236,21 +2055,21 @@
         },
         "api_id": {
           "name": "api_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "lock_status": {
           "name": "lock_status",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2260,16 +2079,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "manga_authors": {
       "name": "manga_authors",
@@ -2314,16 +2124,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "manga_genre": {
       "name": "manga_genre",
@@ -2368,16 +2169,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "manga_labels": {
       "name": "manga_labels",
@@ -2434,10 +2226,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "manga_labels_user_id_user_12345_id_fk": {
-          "name": "manga_labels_user_id_user_12345_id_fk",
+        "manga_labels_user_id_user_id_fk": {
+          "name": "manga_labels_user_id_user_id_fk",
           "tableFrom": "manga_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -2450,22 +2242,27 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "manga_list": {
       "name": "manga_list",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "media_id": {
           "name": "media_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -2478,13 +2275,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "redo": {
-          "name": "redo",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "total": {
           "name": "total",
           "type": "integer",
@@ -2492,15 +2282,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
+        "redo": {
+          "name": "redo",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -2508,7 +2291,7 @@
         },
         "status": {
           "name": "status",
-          "type": "text(13)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -2522,7 +2305,7 @@
         },
         "favorite": {
           "name": "favorite",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2565,10 +2348,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "manga_list_user_id_user_12345_id_fk": {
-          "name": "manga_list_user_id_user_12345_id_fk",
+        "manga_list_user_id_user_id_fk": {
+          "name": "manga_list_user_id_user_id_fk",
           "tableFrom": "manga_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -2581,16 +2364,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "mediadle_stats": {
       "name": "mediadle_stats",
@@ -2611,7 +2385,7 @@
         },
         "media_type": {
           "name": "media_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -2654,10 +2428,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "mediadle_stats_user_id_user_12345_id_fk": {
-          "name": "mediadle_stats_user_id_user_12345_id_fk",
+        "mediadle_stats_user_id_user_id_fk": {
+          "name": "mediadle_stats_user_id_user_id_fk",
           "tableFrom": "mediadle_stats",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -2670,16 +2444,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "movies": {
       "name": "movies",
@@ -2693,28 +2458,28 @@
         },
         "name": {
           "name": "name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "original_name": {
           "name": "original_name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "release_date": {
           "name": "release_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "homepage": {
           "name": "homepage",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2728,7 +2493,7 @@
         },
         "original_language": {
           "name": "original_language",
-          "type": "text(20)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2777,35 +2542,35 @@
         },
         "tagline": {
           "name": "tagline",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "image_cover": {
           "name": "image_cover",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "api_id": {
           "name": "api_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "collection_id": {
           "name": "collection_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "director_name": {
           "name": "director_name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2819,14 +2584,14 @@
         },
         "lock_status": {
           "name": "lock_status",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2836,16 +2601,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "movies_actors": {
       "name": "movies_actors",
@@ -2866,26 +2622,31 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "movies_actors_media_id_movies_id_fk": {
+          "name": "movies_actors_media_id_movies_id_fk",
+          "tableFrom": "movies_actors",
+          "tableTo": "movies",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "movies_genre": {
       "name": "movies_genre",
@@ -2906,7 +2667,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -2930,16 +2691,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "movies_labels": {
       "name": "movies_labels",
@@ -2967,7 +2719,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(64)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -2975,10 +2727,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "movies_labels_user_id_user_12345_id_fk": {
-          "name": "movies_labels_user_id_user_12345_id_fk",
+        "movies_labels_user_id_user_id_fk": {
+          "name": "movies_labels_user_id_user_id_fk",
           "tableFrom": "movies_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -3004,16 +2756,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "movies_list": {
       "name": "movies_list",
@@ -3041,16 +2784,9 @@
         },
         "status": {
           "name": "status",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "favorite": {
-          "name": "favorite",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "redo": {
@@ -3063,7 +2799,7 @@
         },
         "comment": {
           "name": "comment",
-          "type": "text(500)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3073,7 +2809,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "rating": {
           "name": "rating",
@@ -3081,14 +2818,21 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "favorite": {
+          "name": "favorite",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "movies_list_user_id_user_12345_id_fk": {
-          "name": "movies_list_user_id_user_12345_id_fk",
+        "movies_list_user_id_user_id_fk": {
+          "name": "movies_list_user_id_user_id_fk",
           "tableFrom": "movies_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -3114,16 +2858,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "notifications": {
       "name": "notifications",
@@ -3144,7 +2879,7 @@
         },
         "media_type": {
           "name": "media_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3165,14 +2900,14 @@
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "notification_type": {
           "name": "notification_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3188,10 +2923,10 @@
         }
       },
       "foreignKeys": {
-        "notifications_user_id_user_12345_id_fk": {
-          "name": "notifications_user_id_user_12345_id_fk",
+        "notifications_user_id_user_id_fk": {
+          "name": "notifications_user_id_user_id_fk",
           "tableFrom": "notifications",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -3204,16 +2939,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series": {
       "name": "series",
@@ -3227,42 +2953,42 @@
         },
         "name": {
           "name": "name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "original_name": {
           "name": "original_name",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "release_date": {
           "name": "release_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_air_date": {
           "name": "last_air_date",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "homepage": {
           "name": "homepage",
-          "type": "text(200)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "created_by": {
           "name": "created_by",
-          "type": "text(30)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3290,14 +3016,14 @@
         },
         "origin_country": {
           "name": "origin_country",
-          "type": "text(20)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "prod_status": {
           "name": "prod_status",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3332,49 +3058,49 @@
         },
         "image_cover": {
           "name": "image_cover",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "api_id": {
           "name": "api_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "lock_status": {
           "name": "lock_status",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "episode_to_air": {
           "name": "episode_to_air",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "season_to_air": {
           "name": "season_to_air",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "next_episode_to_air": {
           "name": "next_episode_to_air",
-          "type": "text(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_api_update": {
           "name": "last_api_update",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3384,16 +3110,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_actors": {
       "name": "series_actors",
@@ -3414,26 +3131,31 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "series_actors_media_id_series_id_fk": {
+          "name": "series_actors_media_id_series_id_fk",
+          "tableFrom": "series_actors",
+          "tableTo": "series",
+          "columnsFrom": [
+            "media_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_episodes_per_season": {
       "name": "series_episodes_per_season",
@@ -3485,16 +3207,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_genre": {
       "name": "series_genre",
@@ -3515,7 +3228,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -3539,16 +3252,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_labels": {
       "name": "series_labels",
@@ -3576,7 +3280,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(64)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -3584,10 +3288,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "series_labels_user_id_user_12345_id_fk": {
-          "name": "series_labels_user_id_user_12345_id_fk",
+        "series_labels_user_id_user_id_fk": {
+          "name": "series_labels_user_id_user_id_fk",
           "tableFrom": "series_labels",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -3613,16 +3317,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_list": {
       "name": "series_list",
@@ -3664,14 +3359,14 @@
         },
         "status": {
           "name": "status",
-          "type": "text(100)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "favorite": {
           "name": "favorite",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3686,7 +3381,7 @@
         },
         "comment": {
           "name": "comment",
-          "type": "text(500)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -3696,7 +3391,8 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "rating": {
           "name": "rating",
@@ -3707,7 +3403,7 @@
         },
         "redo2": {
           "name": "redo2",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -3716,10 +3412,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "series_list_user_id_user_12345_id_fk": {
-          "name": "series_list_user_id_user_12345_id_fk",
+        "series_list_user_id_user_id_fk": {
+          "name": "series_list_user_id_user_id_fk",
           "tableFrom": "series_list",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -3745,16 +3441,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "series_network": {
       "name": "series_network",
@@ -3775,7 +3462,7 @@
         },
         "name": {
           "name": "name",
-          "type": "text(150)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -3799,272 +3486,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
-    "token": {
-      "name": "token",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "access_token": {
-          "name": "access_token",
-          "type": "text(64)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "access_expiration": {
-          "name": "access_expiration",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "text(64)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "refresh_expiration": {
-          "name": "refresh_expiration",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "ix_token_user_id": {
-          "name": "ix_token_user_id",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "ix_token_access_token": {
-          "name": "ix_token_access_token",
-          "columns": [
-            "access_token"
-          ],
-          "isUnique": false
-        },
-        "ix_token_refresh_token": {
-          "name": "ix_token_refresh_token",
-          "columns": [
-            "refresh_token"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "token_user_id_user_12345_id_fk": {
-          "name": "token_user_id_user_12345_id_fk",
-          "tableFrom": "token",
-          "tableTo": "user_12345",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
-    "user_12345": {
-      "name": "user_12345",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "username": {
-          "name": "username",
-          "type": "text(15)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "email": {
-          "name": "email",
-          "type": "text(120)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "registered_on": {
-          "name": "registered_on",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "password": {
-          "name": "password",
-          "type": "text(60)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "image_file": {
-          "name": "image_file",
-          "type": "text(20)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'default.jpg'"
-        },
-        "active": {
-          "name": "active",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "transition_email": {
-          "name": "transition_email",
-          "type": "text(120)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "activated_on": {
-          "name": "activated_on",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "profile_views": {
-          "name": "profile_views",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
-        },
-        "role": {
-          "name": "role",
-          "type": "text(50)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "background_image": {
-          "name": "background_image",
-          "type": "text(50)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'default.jpg'"
-        },
-        "last_notif_read_time": {
-          "name": "last_notif_read_time",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "last_seen": {
-          "name": "last_seen",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "show_update_modal": {
-          "name": "show_update_modal",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "grid_list_view": {
-          "name": "grid_list_view",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "privacy": {
-          "name": "privacy",
-          "type": "text(10)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'RESTRICTED'"
-        },
-        "search_selector": {
-          "name": "search_selector",
-          "type": "text(5)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'TMDB'"
-        },
-        "rating_system": {
-          "name": "rating_system",
-          "type": "text(7)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'SCORE'"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "user_achievement": {
       "name": "user_achievement",
@@ -4113,21 +3535,21 @@
         },
         "completed": {
           "name": "completed",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "completed_at": {
           "name": "completed_at",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "last_calculated_at": {
           "name": "last_calculated_at",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -4135,10 +3557,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_achievement_user_id_user_12345_id_fk": {
-          "name": "user_achievement_user_id_user_12345_id_fk",
+        "user_achievement_user_id_user_id_fk": {
+          "name": "user_achievement_user_id_user_id_fk",
           "tableFrom": "user_achievement",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -4177,16 +3599,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "user_media_settings": {
       "name": "user_media_settings",
@@ -4207,7 +3620,7 @@
         },
         "media_type": {
           "name": "media_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -4228,7 +3641,7 @@
         },
         "active": {
           "name": "active",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -4291,7 +3704,7 @@
         },
         "status_counts": {
           "name": "status_counts",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -4322,10 +3735,10 @@
         }
       },
       "foreignKeys": {
-        "user_media_settings_user_id_user_12345_id_fk": {
-          "name": "user_media_settings_user_id_user_12345_id_fk",
+        "user_media_settings_user_id_user_id_fk": {
+          "name": "user_media_settings_user_id_user_id_fk",
           "tableFrom": "user_media_settings",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -4338,16 +3751,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "user_media_update": {
       "name": "user_media_update",
@@ -4382,14 +3786,14 @@
         },
         "media_type": {
           "name": "media_type",
-          "type": "text(6)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "update_type": {
           "name": "update_type",
-          "type": "text(8)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -4398,12 +3802,12 @@
           "name": "payload",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "timestamp": {
           "name": "timestamp",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -4440,10 +3844,10 @@
         }
       },
       "foreignKeys": {
-        "user_media_update_user_id_user_12345_id_fk": {
-          "name": "user_media_update_user_id_user_12345_id_fk",
+        "user_media_update_user_id_user_id_fk": {
+          "name": "user_media_update_user_id_user_id_fk",
           "tableFrom": "user_media_update",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -4456,16 +3860,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     },
     "user_mediadle_progress": {
       "name": "user_mediadle_progress",
@@ -4500,21 +3895,21 @@
         },
         "completed": {
           "name": "completed",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "succeeded": {
           "name": "succeeded",
-          "type": "numeric",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "completion_time": {
           "name": "completion_time",
-          "type": "numeric",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -4522,10 +3917,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_mediadle_progress_user_id_user_12345_id_fk": {
-          "name": "user_mediadle_progress_user_id_user_12345_id_fk",
+        "user_mediadle_progress_user_id_user_id_fk": {
+          "name": "user_mediadle_progress_user_id_user_id_fk",
           "tableFrom": "user_mediadle_progress",
-          "tableTo": "user_12345",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -4551,16 +3946,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
+      "checkConstraints": {}
     }
   },
   "views": {},
@@ -4568,7 +3954,9 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"games\".\"IGDB_url\"": "\"games\".\"igdb_url\""
+    }
   },
   "internal": {
     "indexes": {}

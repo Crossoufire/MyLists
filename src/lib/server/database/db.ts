@@ -10,4 +10,4 @@ dotenv.config();
 const client = createClient({ url: process.env.DATABASE_URL as string });
 
 
-export const db = drizzle({ client, schema });
+export const db = drizzle({ client, schema, casing: "snake_case" });

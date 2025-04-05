@@ -7,8 +7,8 @@ export class MoviesService {
     ) {
     }
 
-    async getMediaDetails(mediaId: number | string, external: boolean, strategy: any) {
-        const media = external ? await this.repository.findByApiId(mediaId as string) : await this.repository.findById(mediaId as number);
+    async getMediaDetails(mediaId: number, external: boolean, strategy: any) {
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 
         let mediaWithDetails;
         let internalMediaId = media?.id;

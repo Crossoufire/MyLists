@@ -40,7 +40,6 @@ import {
     seriesLabels,
     seriesList,
     seriesNetwork,
-    token,
     userAchievement,
     userMediadleProgress,
     userMediaSettings,
@@ -68,7 +67,6 @@ export const userRelations = relations(user, ({ many }) => ({
     followers_followerId: many(followers, {
         relationName: "followers_followerId_user_id"
     }),
-    tokens: many(token),
     userMediaUpdates: many(userMediaUpdate),
     seriesLabels: many(seriesLabels),
     animeLabels: many(animeLabels),
@@ -158,13 +156,6 @@ export const booksRelations = relations(books, ({ many }) => ({
 export const userMediaUpdateRelations = relations(userMediaUpdate, ({ one }) => ({
     user: one(user, {
         fields: [userMediaUpdate.userId],
-        references: [user.id]
-    }),
-}));
-
-export const tokenRelations = relations(token, ({ one }) => ({
-    user: one(user, {
-        fields: [token.userId],
         references: [user.id]
     }),
 }));
