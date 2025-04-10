@@ -35,6 +35,7 @@ import {
     moviesList,
     notifications,
     series,
+    seriesActors,
     seriesEpisodesPerSeason,
     seriesGenre,
     seriesLabels,
@@ -109,12 +110,20 @@ export const seriesEpisodesPerSeasonRelations = relations(seriesEpisodesPerSeaso
     }),
 }));
 
+export const seriesActorsRelations = relations(seriesActors, ({ one }) => ({
+    series: one(series, {
+        fields: [seriesActors.mediaId],
+        references: [series.id]
+    }),
+}));
+
 export const seriesRelations = relations(series, ({ many }) => ({
     seriesEpisodesPerSeasons: many(seriesEpisodesPerSeason),
     seriesGenres: many(seriesGenre),
     seriesLabels: many(seriesLabels),
     seriesNetworks: many(seriesNetwork),
     seriesLists: many(seriesList),
+    seriesActors: many(seriesActors),
 }));
 
 export const gamesPlatformsRelations = relations(gamesPlatforms, ({ one }) => ({

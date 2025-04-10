@@ -20,32 +20,15 @@ export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
     validateSearch: (search) => ({ external: Boolean(search?.external ?? false) }),
     params: {
         parse: (params) => {
-            return { mediaType: params.mediaType as MediaType, mediaId: params.mediaId }
+            return {
+                mediaId: params.mediaId,
+                mediaType: params.mediaType as MediaType,
+            }
         }
     },
     loaderDeps: ({ search: { external } }) => ({ external }),
     loader: async ({ context: { queryClient }, params: { mediaType, mediaId }, deps: { external } }) => {
         return queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
-        // if (!external) {
-        //     const cacheData = queryClient.getQueryData(queryKeys.detailsKey(mediaType, mediaId));
-        //     if (cacheData) return cacheData;
-        // }
-        //
-        // const data = await queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
-        // queryClient.setQueryData(queryKeys.detailsKey(mediaType, data.media.id), data);
-        //
-        // console.log({ mediaType, mediaId, external })
-        //
-        // if (external) {
-        //     throw redirect({
-        //         to: "/details/$mediaType/$mediaId",
-        //         //@ts-expect-error
-        //         params: { mediaType, mediaId: data.media.id },
-        //         replace: true,
-        //     });
-        // }
-
-        // return data;
     },
 
     component: MediaDetailsPage,
@@ -57,9 +40,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
-    // const addToList = useAddMediaToListMutation(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId.toString()),);
-
-    console.log(apiData)
+    // const addToList = useAddMediaToListMutation(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId));
 
     const handleAddMediaUser = () => {
         // addToList.mutate({ payload: undefined });

@@ -13,18 +13,13 @@ export const getMediaDetails = createServerFn({ method: "GET" })
         //@ts-expect-error
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        // Get media details (core details, actors, developers, collections, etc.)
+        //@ts-expect-error
         const mediaDetails = await mediaService.getMediaDetails(mediaId, external, mediaStrategy);
-
-        // TODO optimization: if media was just added using mediaStrategy don't fetch
-        //  user media details nor follows data (they can't exist yet)
         //@ts-expect-error
         const userMediaDetails = await mediaService.getUserMediaDetails(currentUser.id, mediaDetails.id);
-
-        //@ts-expect-error
+        //@ts-expect-error 
         const followsData = await mediaService.getUserFollowsMediaData(currentUser.id, mediaDetails.id);
-
-        const similarMedia = await mediaService.getSimilarMedia(mediaDetails.id);
+        const similarMedia = await mediaService.findSimilarMedia(mediaDetails.id);
 
         const data = {
             media: mediaDetails,

@@ -1,33 +1,28 @@
 /**
- * Wire every service, repository, registry, strategy, and coordinator.
+ * Wire services, repositories, registries, and strategies.
  * Used for internal use as well as with the media providers.
  * This allows for easy dependency injection.
  */
 
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserRegistry} from "@/lib/server/registries/user.registry";
-import {UserService} from "@/lib/server/services/user/user.service";
-import {GamesRepository} from "./repositories/media/games.repository";
-import {UserUpdatesService} from "./services/user/user-updates.service";
-import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
-import {UserRepository} from "@/lib/server/repositories/user/user.repository";
-import {UserStatsService} from "@/lib/server/services/user/user-stats.service";
-import {MangaRepository} from "@/lib/server/repositories/media/manga.repository";
-import {AnimeRepository} from "@/lib/server/repositories/media/anime.repository";
-import {BooksRepository} from "@/lib/server/repositories/media/books.repository";
-import {AchievementsRegistry} from "@/lib/server/registries/achievements.registry";
-import {MoviesRepository} from "@/lib/server/repositories/media/movies.repository";
-import {SeriesRepository} from "@/lib/server/repositories/media/series.repository";
-import {AchievementsService} from "@/lib/server/services/user/achievements.service";
-import {UserStatsRepository} from "@/lib/server/repositories/user/user-stats.repository";
-import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
-import {UserUpdatesRepository} from "@/lib/server/repositories/user/user-updates.repository";
-import {AchievementsRepository} from "@/lib/server/repositories/user/achievements.repository";
-import {ProviderServiceRegistry} from "./media-providers/registries/provider-service.registry";
-import {MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/registries/media-repo.registry";
-import {ProviderStrategyRegistry} from "@/lib/server/media-providers/registries/provider-strategy.registry";
-import {MoviesService} from "@/lib/server/services/media/movies.service";
-import {TmdbMoviesStrategy} from "@/lib/server/media-providers/strategies/tmdb-movies.strategy";
+import {UserService} from "@/lib/server/domain/user/services/user.service";
+import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {UserRegistry} from "@/lib/server/domain/user/registries/user.registry";
+import {TmdbClient} from "@/lib/server/domain/media-providers/clients/tmdb.client";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
+import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
+import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
+import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
+import {AchievementsRegistry} from "@/lib/server/domain/user/registries/achievements.registry";
+import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
+import {MediaRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/base/base.registry";
+import {TmdbTransformer} from "@/lib/server/domain/media-providers/transformers/tmdb.transformer";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+import {TmdbMoviesStrategy} from "@/lib/server/domain/media-providers/strategies/tmdb-movies.strategy";
+import {ProviderServiceRegistry} from "@/lib/server/domain/media-providers/registries/provider-service.registry";
+import {ProviderStrategyRegistry} from "@/lib/server/domain/media-providers/registries/provider-strategy.registry";
 
 
 // Initialize user repositories
@@ -37,24 +32,14 @@ const userUpdatesRepository = UserUpdatesRepository;
 const achievementsRepository = AchievementsRepository;
 
 // Initialize media repositories
-const seriesRepository = new SeriesRepository();
-const animeRepository = new AnimeRepository();
 const moviesRepository = new MoviesRepository();
-const gamesRepository = new GamesRepository();
-const booksRepository = new BooksRepository();
-const mangaRepository = new MangaRepository();
 
 // Register media repositories
-MediaRepoRegistry.registerRepository(MediaType.SERIES, seriesRepository);
-MediaRepoRegistry.registerRepository(MediaType.ANIME, animeRepository);
-MediaRepoRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
-MediaRepoRegistry.registerRepository(MediaType.GAMES, gamesRepository);
-MediaRepoRegistry.registerRepository(MediaType.BOOKS, booksRepository);
-MediaRepoRegistry.registerRepository(MediaType.MANGA, mangaRepository);
+MediaRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
 
 // Initialize user services
 const userService = new UserService(userRepository);
-const userStatsService = new UserStatsService(userStatsRepository, MediaRepoRegistry);
+const userStatsService = new UserStatsService(userStatsRepository, MediaRegistry, achievementsRepository, userUpdatesRepository);
 const userUpdatesService = new UserUpdatesService(userUpdatesRepository);
 const achievementsService = new AchievementsService(achievementsRepository);
 
@@ -62,10 +47,10 @@ const achievementsService = new AchievementsService(achievementsRepository);
 const moviesService = new MoviesService(moviesRepository);
 
 // Register services
-UserRegistry.registerService('user', userService);
-UserRegistry.registerService('userStats', userStatsService);
-UserRegistry.registerService('userUpdates', userUpdatesService);
-AchievementsRegistry.registerService('achievements', achievementsService);
+UserRegistry.registerService("user", userService);
+UserRegistry.registerService("userStats", userStatsService);
+UserRegistry.registerService("userUpdates", userUpdatesService);
+AchievementsRegistry.registerService("achievements", achievementsService);
 
 MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
 
@@ -107,12 +92,7 @@ export const container = {
     // Repositories
     repositories: {
         user: userRepository,
-        series: seriesRepository,
-        anime: animeRepository,
         movies: moviesRepository,
-        books: booksRepository,
-        manga: mangaRepository,
-        games: gamesRepository,
         userStats: userStatsRepository,
         userUpdates: userUpdatesRepository,
         achievements: achievementsRepository
@@ -129,7 +109,7 @@ export const container = {
     // Registries
     registries: {
         user: UserRegistry,
-        mediaRepo: MediaRepoRegistry,
+        mediaRepo: MediaRegistry,
         mediaService: MediaServiceRegistry,
         achievements: AchievementsRegistry,
         provider: ProviderServiceRegistry,

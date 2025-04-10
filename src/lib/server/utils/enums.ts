@@ -4,7 +4,6 @@ export const RoleType = {
     MANAGER: "manager",
     USER: "user",
 } as const;
-export type RoleType = (typeof RoleType)[keyof typeof RoleType];
 
 
 export const PrivacyType = {
@@ -12,14 +11,12 @@ export const PrivacyType = {
     RESTRICTED: "restricted",
     PRIVATE: "private",
 } as const;
-export type PrivacyType = (typeof PrivacyType)[keyof typeof PrivacyType];
 
 
 export const RatingSystemType = {
     SCORE: "score",
     FEELING: "feeling",
 } as const;
-export type RatingSystemType = (typeof RatingSystemType)[keyof typeof RatingSystemType];
 
 
 // --- MEDIA ------------------------------------------------------------------------
@@ -33,7 +30,6 @@ export const MediaType = {
     BOOKS: "books",
     MANGA: "manga",
 } as const;
-export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 
 
 export const Status = {
@@ -50,10 +46,22 @@ export const Status = {
     PLAN_TO_PLAY: "Plan to Play",
     PLAN_TO_READ: "Plan to Read",
     getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
+    byMediaType: (mediaType: MediaType) => {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return [Status.WATCHING, Status.COMPLETED, Status.ON_HOLD, Status.RANDOM, Status.DROPPED, Status.PLAN_TO_WATCH];
+            case MediaType.MOVIES:
+                return [Status.COMPLETED, Status.PLAN_TO_WATCH];
+            case MediaType.GAMES:
+                return [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.DROPPED, Status.PLAN_TO_PLAY];
+            case MediaType.BOOKS:
+                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
+            case MediaType.MANGA:
+                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
+        }
+    },
 } as const;
-type StatusWithoutFn = Omit<typeof Status, "getNoPlanTo">;
-type StatusValues<T> = T[keyof T];
-export type Status = StatusValues<StatusWithoutFn>;
 
 
 export const JobType = {
@@ -62,8 +70,22 @@ export const JobType = {
     PLATFORM: "platform",
     PUBLISHER: "publisher",
     COMPOSITOR: "compositor",
+    byMediaType: (mediaType: MediaType) => {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return [JobType.ACTOR, JobType.CREATOR, JobType.PLATFORM];
+            case MediaType.MOVIES:
+                return [JobType.ACTOR, JobType.CREATOR, JobType.COMPOSITOR];
+            case MediaType.GAMES:
+                return [JobType.CREATOR];
+            case MediaType.BOOKS:
+                return [JobType.CREATOR];
+            case MediaType.MANGA:
+                return [JobType.CREATOR, JobType.PUBLISHER];
+        }
+    },
 } as const;
-export type JobType = (typeof JobType)[keyof typeof JobType];
 
 
 export const GamesPlatformsEnum = {
@@ -98,7 +120,6 @@ export const GamesPlatformsEnum = {
     OLD_ATARI_CONSOLE: "Old Atari",
     OTHER: "Other",
 } as const;
-export type GamesPlatformsEnum = (typeof GamesPlatformsEnum)[keyof typeof GamesPlatformsEnum];
 
 
 // --- OTHER ------------------------------------------------------------------------
@@ -108,7 +129,6 @@ export const NotificationType = {
     MEDIA: "media",
     FOLLOW: "follow",
 } as const;
-export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
 
 export const UpdateType = {
@@ -119,7 +139,6 @@ export const UpdateType = {
     CHAPTER: "chapter",
     PLAYTIME: "playtime",
 } as const;
-export type UpdateType = (typeof UpdateType)[keyof typeof UpdateType];
 
 
 export const AchievementDifficulty = {
@@ -128,7 +147,6 @@ export const AchievementDifficulty = {
     GOLD: "gold",
     PLATINUM: "platinum",
 } as const;
-export type AchievementDifficulty = (typeof AchievementDifficulty)[keyof typeof AchievementDifficulty];
 
 
 export const ApiProviderType = {
@@ -138,4 +156,30 @@ export const ApiProviderType = {
     MANGA: "manga",
     USERS: "users",
 } as const;
+
+
+export type UpdateType = (typeof UpdateType)[keyof typeof UpdateType];
+
+export type AchievementDifficulty = (typeof AchievementDifficulty)[keyof typeof AchievementDifficulty];
+
 export type ApiProviderType = (typeof ApiProviderType)[keyof typeof ApiProviderType];
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+
+export type GamesPlatformsEnum = (typeof GamesPlatformsEnum)[keyof typeof GamesPlatformsEnum];
+
+type JobTypeWithoutFn = Omit<typeof JobType, "byMediaType">;
+type JobTypeValues<T> = T[keyof T];
+export type JobType = JobTypeValues<JobTypeWithoutFn>;
+
+type StatusWithoutFn = Omit<typeof Status, "getNoPlanTo" | "byMediaType">;
+type StatusValues<T> = T[keyof T];
+export type Status = StatusValues<StatusWithoutFn>;
+
+export type MediaType = (typeof MediaType)[keyof typeof MediaType];
+
+export type RatingSystemType = (typeof RatingSystemType)[keyof typeof RatingSystemType];
+
+export type PrivacyType = (typeof PrivacyType)[keyof typeof PrivacyType];
+
+export type RoleType = (typeof RoleType)[keyof typeof RoleType];

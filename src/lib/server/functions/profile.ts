@@ -5,9 +5,10 @@ import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 export const getUserProfile = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator((data: any) => data)
-    .handler(async ({ context: { currentUser, user, userService } }) => {
+    .handler(async ({ context: { currentUser, user }, data }) => {
         const profileOwnerId = user.id;
+        const toto = data;
+        const userService = container.services.user;
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const achievementsService = container.services.achievements;
@@ -29,7 +30,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
             details: await achievementsService.getAchievementsDetails(profileOwnerId),
         };
 
-        const data = {
+        return {
             userData: user,
             userUpdates,
             userFollows,
@@ -38,7 +39,5 @@ export const getUserProfile = createServerFn({ method: "GET" })
             mediaGlobalSummary,
             perMediaSummary,
             achievements,
-        }
-
-        return data;
+        };
     });

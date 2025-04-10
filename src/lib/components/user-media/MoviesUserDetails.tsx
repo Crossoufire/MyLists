@@ -1,9 +1,10 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {UpdateRedo} from "@/lib/components/user-media/UpdateRedo";
-import {UpdateStatus} from "@/lib/components/user-media/UpdateStatus";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options";
+import {UpdateStatus} from "@/lib/components/user-media/UpdateStatus";
 import {UpdateRating} from "@/lib/components/user-media/UpdateRating";
+import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface MoviesUserDetailsProps {
@@ -14,8 +15,8 @@ interface MoviesUserDetailsProps {
 
 
 export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUserDetailsProps) => {
-    // const { updateRedo, updateRating } = useUserMediaMutations(mediaType, userMedia.media_id, queryKey);
-    // const updateStatus = useUpdateStatusMutation(mediaType, userMedia.media_id, queryKey, onStatusSuccess);
+    const mediaId = userMedia?.mediaId!;
+    const updateRedoMutation = useUpdateRedoMutation(mediaType, mediaId, queryKey);
 
     const updateMedia = (media: any, status: Status) => ({ ...media, status, redo: 0 });
 
@@ -28,7 +29,7 @@ export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUser
 
         return {
             ...oldData, mediaData: oldData.mediaData.map((media: any) =>
-                media.mediaId === userMedia.mediaId ? updateMedia(media, status) : media
+                media.mediaId === userMedia?.mediaId ? updateMedia(media, status) : media
             )
         };
     }
@@ -36,24 +37,24 @@ export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUser
     return (
         <>
             <UpdateStatus
-                status={userMedia.status}
+                status={userMedia?.status}
                 // updateStatus={updateStatus}
                 // allStatus={userMedia.allStatus}
             />
-            {userMedia.status !== Status.PLAN_TO_WATCH &&
+            {userMedia?.status !== Status.PLAN_TO_WATCH &&
                 <>
                     <Separator/>
                     <div className="flex justify-between items-center">
                         <div>Rating</div>
                         <UpdateRating
                             // onUpdate={updateRating}
-                            rating={userMedia.rating}
+                            rating={userMedia?.rating}
                         />
                     </div>
                     <UpdateRedo
                         name={"Re-watched"}
-                        redo={userMedia.redo}
-                        // updateRedo={updateRedo}
+                        redo={userMedia?.redo}
+                        updateRedo={updateRedoMutation}
                     />
                 </>
             }

@@ -1,20 +1,19 @@
 import {queryOptions} from "@tanstack/react-query";
-import {ApiProviderType} from "../server/utils/enums";
 import {getCurrentUser} from "@/lib/server/functions/user";
 import {getUserProfile} from "@/lib/server/functions/profile";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
+import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
+import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 
 
 type Page = number;
 type Query = string;
-type JobType = string;
 type Username = string;
 type Selector = string;
 type MediaId = string | number;
 type Search = Record<string, any>;
 type Filters = Record<string, any>;
-type MediaType = "series" | "anime" | "movies" | "games" | "books" | "manga";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -40,7 +39,7 @@ type QueryKeys = {
     notificationsKey: QueryKeyFunction<[]>;
     mediadleSuggestionsKey: QueryKeyFunction<[Query]>;
     profileKey: QueryKeyFunction<[Username]>;
-    smallFiltersKey: QueryKeyFunction<[MediaType, Username]>;
+    listFiltersKey: QueryKeyFunction<[MediaType, Username]>;
     statsKey: QueryKeyFunction<[Username, Search]>;
     trendsKey: QueryKeyFunction<[]>;
     upcomingKey: QueryKeyFunction<[]>;
@@ -68,7 +67,7 @@ export const queryKeys: QueryKeys = {
     notificationsKey: () => ["notifications"],
     mediadleSuggestionsKey: (query) => ["mediadleSuggestions", query],
     profileKey: (username) => ["profile", username],
-    smallFiltersKey: (mediaType, username) => ["smallFilters", mediaType, username],
+    listFiltersKey: (mediaType, username) => ["listFilters", mediaType, username],
     statsKey: (username, search) => ["stats", username, search],
     trendsKey: () => ["trends"],
     upcomingKey: () => ["upcoming"],
@@ -82,12 +81,10 @@ export const authOptions = () => queryOptions({
     staleTime: 5 * 60 * 1000,
 });
 
-
 export const profileOptions = (username: string) => queryOptions({
     queryKey: queryKeys.profileKey(username),
-    queryFn: () => getUserProfile({ data: username }),
+    queryFn: () => getUserProfile({ data: { username } }),
 });
-
 
 export const navSearchOptions = (query: string, page: number, apiProvider: ApiProviderType) => queryOptions({
     queryKey: queryKeys.navSearchKey(query, page, apiProvider),
@@ -96,9 +93,26 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
     enabled: query.length >= 2,
 });
 
-
 export const mediaDetailsOptions = (mediaType: MediaType, mediaId: MediaId, external: boolean) => queryOptions({
     queryKey: queryKeys.detailsKey(mediaType, mediaId),
     queryFn: () => getMediaDetails({ data: { mediaType, mediaId, external } }),
     staleTime: 3 * 1000,
+});
+
+export const mediaListOptions = (mediaType: MediaType, username: string, search: Record<string, any>) => queryOptions({
+    queryKey: queryKeys.userListKey(mediaType, username, search),
+    queryFn: () => serverGetMediaList({ data: { mediaType, username, args: search } }),
+});
+
+export const listFiltersOptions = (mediaType: MediaType, username: string) => queryOptions({
+    queryKey: queryKeys.listFiltersKey(mediaType, username),
+    queryFn: () => getMediaListFilters({ data: { mediaType, username } }),
+    staleTime: Infinity,
+});
+
+export const filterSearchOptions = (mediaType: MediaType, username: string, query: string, job: JobType) => queryOptions({
+    queryKey: queryKeys.filterSearchKey(mediaType, username, query, job),
+    queryFn: () => getMediaListSearchFilters({ data: { mediaType, username, query, job } }),
+    staleTime: 2 * 60 * 1000,
+    enabled: query.length >= 2,
 });

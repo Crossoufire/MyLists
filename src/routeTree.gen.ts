@@ -21,6 +21,7 @@ import { Route as UniversalFeaturesImport } from './routes/_universal/features'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
 import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
 import { Route as PrivateDetailsMediaTypeMediaIdImport } from './routes/_private/details/$mediaType/$mediaId'
+import { Route as PrivateListMediaTypeUsernameRouteImport } from './routes/_private/list/$mediaType/$username.route'
 import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_private/profile/$username/_header/index'
 
 // Create Virtual Routes
@@ -84,6 +85,13 @@ const PrivateDetailsMediaTypeMediaIdRoute =
     getParentRoute: () => PrivateRoute,
   } as any)
 
+const PrivateListMediaTypeUsernameRouteRoute =
+  PrivateListMediaTypeUsernameRouteImport.update({
+    id: '/list/$mediaType/$username',
+    path: '/list/$mediaType/$username',
+    getParentRoute: () => PrivateRoute,
+  } as any)
+
 const PrivateProfileUsernameHeaderIndexRoute =
   PrivateProfileUsernameHeaderIndexImport.update({
     id: '/',
@@ -136,6 +144,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexImport
       parentRoute: typeof PublicImport
+    }
+    '/_private/list/$mediaType/$username': {
+      id: '/_private/list/$mediaType/$username'
+      path: '/list/$mediaType/$username'
+      fullPath: '/list/$mediaType/$username'
+      preLoaderRoute: typeof PrivateListMediaTypeUsernameRouteImport
+      parentRoute: typeof PrivateImport
     }
     '/_private/details/$mediaType/$mediaId': {
       id: '/_private/details/$mediaType/$mediaId'
@@ -201,11 +216,14 @@ const PrivateProfileUsernameRouteWithChildren =
   )
 
 interface PrivateRouteChildren {
+  PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute
   PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
   PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren
 }
 
 const PrivateRouteChildren: PrivateRouteChildren = {
+  PrivateListMediaTypeUsernameRouteRoute:
+    PrivateListMediaTypeUsernameRouteRoute,
   PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
   PrivateProfileUsernameRoute: PrivateProfileUsernameRouteWithChildren,
 }
@@ -230,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/': typeof PublicIndexRoute
+  '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
   '/profile/$username/': typeof PrivateProfileUsernameHeaderIndexRoute
@@ -241,6 +260,7 @@ export interface FileRoutesByTo {
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/': typeof PublicIndexRoute
+  '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
 }
@@ -253,6 +273,7 @@ export interface FileRoutesById {
   '/_universal/features': typeof UniversalFeaturesRoute
   '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/_public/': typeof PublicIndexRoute
+  '/_private/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
   '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
@@ -267,6 +288,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/privacy-policy'
     | '/'
+    | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
     | '/profile/$username/'
@@ -277,6 +299,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/privacy-policy'
     | '/'
+    | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
   id:
@@ -287,6 +310,7 @@ export interface FileRouteTypes {
     | '/_universal/features'
     | '/_universal/privacy-policy'
     | '/_public/'
+    | '/_private/list/$mediaType/$username'
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
     | '/_private/profile/$username/_header'
@@ -330,6 +354,7 @@ export const routeTree = rootRoute
     "/_private": {
       "filePath": "_private.tsx",
       "children": [
+        "/_private/list/$mediaType/$username",
         "/_private/details/$mediaType/$mediaId",
         "/_private/profile/$username"
       ]
@@ -352,6 +377,10 @@ export const routeTree = rootRoute
     "/_public/": {
       "filePath": "_public/index.tsx",
       "parent": "/_public"
+    },
+    "/_private/list/$mediaType/$username": {
+      "filePath": "_private/list/$mediaType/$username.route.tsx",
+      "parent": "/_private"
     },
     "/_private/details/$mediaType/$mediaId": {
       "filePath": "_private/details/$mediaType/$mediaId.tsx",

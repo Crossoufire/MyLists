@@ -1,8 +1,8 @@
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
-import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
 import {LabelLists} from "@/lib/components/user-media/LabelLists";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options";
+import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
 import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
 import {MoviesUserDetails} from "@/lib/components/user-media/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
@@ -55,7 +55,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                     </div>
                     <UpdateFavorite
                         // updateFavorite={updateFavorite}
-                        isFavorite={userMedia.favorite}
+                        isFavorite={userMedia?.favorite}
                     />
                 </TabsList>
                 <TabsContent value="yourInfo">
@@ -66,14 +66,14 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                             mediaType={mediaType}
                         />
                         <UpdateComment
-                            content={userMedia.comment}
+                            content={userMedia?.comment}
                             // updateComment={updateComment}
                         />
                         <LabelLists
                             queryKey={queryKey}
                             mediaType={mediaType}
-                            mediaId={userMedia.mediaId}
-                            mediaLabels={userMedia.labels ?? []}
+                            mediaId={userMedia?.mediaId}
+                            mediaLabels={userMedia?.labels ?? []}
                         />
                     </div>
                 </TabsContent>

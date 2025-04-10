@@ -53,7 +53,6 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
 
     const withProvider = async (provider: "google" | "github") => {
         const { data, error } = await authClient.signIn.social({ provider })
-        console.log(data, error);
     };
 
     return (
