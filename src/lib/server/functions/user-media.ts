@@ -1,13 +1,15 @@
 import {notFound} from "@tanstack/react-router";
 import {container} from "@/lib/server/container";
-import {UpdateType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
+import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator((data: any) => data)
+    .validator((data: any) => {
+        return data as { mediaType: MediaType, mediaId: number, payload: Record<string, any>, updateType: UpdateType };
+    })
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload, updateType } = data;
 
@@ -18,12 +20,14 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const mediaDetails = await mediaService.getMinimalMediaDetails(mediaId);
         if (!mediaDetails) throw notFound();
 
+        //@ts-expect-error
         const oldState = await mediaService.getUserMediaDetails(currentUser.id, mediaId);
+        //@ts-expect-error
         const newState = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
-        const delta = await mediaService.calculateDeltaStats(oldState, newState, mediaDetails);
+        const delta = mediaService.calculateDeltaStats(oldState, newState, mediaDetails);
 
         //@ts-expect-error
-        await userStatsService.updateUserStats({ mediaType, userId: currentUser.id, delta });
+        await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
 
         const { oldValue, newValue } = logValueExtractors[updateType as UpdateType](oldState, newState);
 

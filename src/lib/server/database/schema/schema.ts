@@ -61,8 +61,8 @@ export const gamesCompanies = sqliteTable("games_companies", {
     id: integer().primaryKey().notNull(),
     mediaId: integer().notNull().references(() => games.id),
     name: text().notNull(),
-    publisher: integer({ mode: "boolean" }),
-    developer: integer({ mode: "boolean" }),
+    publisher: integer({mode: "boolean"}),
+    developer: integer({mode: "boolean"}),
 });
 
 export const booksAuthors = sqliteTable("books_authors", {
@@ -98,7 +98,7 @@ export const books = sqliteTable("books", {
     synopsis: text(),
     imageCover: imageUrl("image_cover", BASE_BOOKS_COVERS_PATH).notNull(),
     apiId: text(),
-    lockStatus: integer({ mode: "boolean" }),
+    lockStatus: integer({mode: "boolean"}),
     lastApiUpdate: text(),
 });
 
@@ -197,7 +197,7 @@ export const series = sqliteTable("series", {
     popularity: real(),
     imageCover: imageUrl("image_cover", BASE_SERIES_COVERS_PATH).notNull(),
     apiId: integer().notNull(),
-    lockStatus: integer({ mode: "boolean" }),
+    lockStatus: integer({mode: "boolean"}),
     episodeToAir: text(),
     seasonToAir: text(),
     nextEpisodeToAir: text(),
@@ -229,7 +229,7 @@ export const anime = sqliteTable("anime", {
     popularity: real(),
     imageCover: imageUrl("image_cover", BASE_ANIME_COVERS_PATH).notNull(),
     apiId: integer().notNull(),
-    lockStatus: integer({ mode: "boolean" }),
+    lockStatus: integer({mode: "boolean"}),
     seasonToAir: text(),
     episodeToAir: text(),
     nextEpisodeToAir: text(),
@@ -257,8 +257,8 @@ export const games = sqliteTable("games", {
     hltbMainTime: real(),
     hltbMainAndExtraTime: real(),
     hltbTotalCompleteTime: real(),
-    apiId: integer({ mode: "boolean" }),
-    lockStatus: integer({ mode: "boolean" }),
+    apiId: integer({mode: "boolean"}),
+    lockStatus: integer({mode: "boolean"}),
     lastApiUpdate: text(),
 });
 
@@ -303,8 +303,8 @@ export const userMediadleProgress = sqliteTable("user_mediadle_progress", {
     userId: integer().notNull().references(() => user.id),
     dailyMediadleId: integer().notNull().references(() => dailyMediadle.id),
     attempts: integer(),
-    completed: integer({ mode: "boolean" }),
-    succeeded: integer({ mode: "boolean" }),
+    completed: integer({mode: "boolean"}),
+    succeeded: integer({mode: "boolean"}),
     completionTime: text(),
 });
 
@@ -315,7 +315,7 @@ export const userAchievement = sqliteTable("user_achievement", {
     tierId: integer().references(() => achievementTier.id),
     progress: real(),
     count: real(),
-    completed: integer({ mode: "boolean" }),
+    completed: integer({mode: "boolean"}),
     completedAt: text(),
     lastCalculatedAt: text(),
 });
@@ -337,7 +337,7 @@ export const manga = sqliteTable("manga", {
     releaseDate: text(),
     imageCover: imageUrl("image_cover", BASE_MANGA_COVERS_PATH).notNull(),
     apiId: integer().notNull(),
-    lockStatus: integer({ mode: "boolean" }),
+    lockStatus: integer({mode: "boolean"}),
     lastApiUpdate: text(),
 });
 
@@ -350,7 +350,7 @@ export const mangaList = sqliteTable("manga_list", {
         redo: integer().notNull(),
         status: text().$type<Status>().notNull(),
         rating: real(),
-        favorite: integer({ mode: "boolean" }),
+        favorite: integer({mode: "boolean"}),
         comment: text(),
     },
     (table) => [
@@ -387,7 +387,7 @@ export const moviesList = sqliteTable("movies_list", {
     comment: text(),
     total: integer().default(0),
     rating: real(),
-    favorite: integer({ mode: "boolean" }),
+    favorite: integer({mode: "boolean"}),
 });
 
 export const gamesList = sqliteTable("games_list", {
@@ -396,7 +396,7 @@ export const gamesList = sqliteTable("games_list", {
     mediaId: integer().notNull().references(() => games.id),
     status: text().$type<Status>().notNull(),
     playtime: integer().default(0),
-    favorite: integer({ mode: "boolean" }),
+    favorite: integer({mode: "boolean"}),
     comment: text(),
     platform: text(),
     rating: real(),
@@ -412,7 +412,7 @@ export const booksList = sqliteTable("books_list", {
     total: integer().default(0),
     comment: text(),
     rating: real(),
-    favorite: integer({ mode: "boolean" }),
+    favorite: integer({mode: "boolean"}),
 });
 
 
@@ -422,7 +422,7 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
         mediaType: text().$type<MediaType>().notNull(),
         timeSpent: integer().notNull(),
         views: integer().notNull(),
-        active: integer({ mode: "boolean" }).notNull(),
+        active: integer({mode: "boolean"}).notNull(),
         totalEntries: integer().default(0).notNull(),
         totalRedo: integer().default(0).notNull(),
         entriesRated: integer().default(0).notNull(),
@@ -445,7 +445,7 @@ export const animeList = sqliteTable("anime_list", {
     currentSeason: integer().notNull(),
     lastEpisodeWatched: integer().notNull(),
     status: text().$type<Status>().notNull(),
-    favorite: integer({ mode: "boolean" }),
+    favorite: integer({mode: "boolean"}),
     redo: integer().default(0),
     comment: text(),
     total: integer().default(0),
@@ -460,7 +460,7 @@ export const seriesList = sqliteTable("series_list", {
     currentSeason: integer().notNull(),
     lastEpisodeWatched: integer().notNull(),
     status: text().$type<Status>().notNull(),
-    favorite: integer({ mode: "boolean" }),
+    favorite: integer({mode: "boolean"}),
     redo: integer().default(0),
     comment: text(),
     total: integer().default(0),
@@ -488,6 +488,6 @@ export const movies = sqliteTable("movies", {
     collectionId: integer(),
     directorName: text(),
     compositorName: text(),
-    lockStatus: integer({ mode: "boolean" }),
+    lockStatus: integer({mode: "boolean"}),
     lastApiUpdate: text(),
 });

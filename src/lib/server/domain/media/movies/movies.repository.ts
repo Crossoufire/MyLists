@@ -1,13 +1,19 @@
 import {db} from "@/lib/server/database/db";
-import {JobType} from "@/lib/server/utils/enums";
-import {MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {and, asc, avg, countDistinct, eq, inArray, like, ne, sum} from "drizzle-orm";
-import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
+import {and, asc, eq, inArray, isNotNull, like, ne, sql} from "drizzle-orm";
+import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
+import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema";
 
 
-export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
+export class MoviesRepository extends BaseRepository<
+    typeof movies,
+    typeof moviesList,
+    typeof moviesGenre,
+    typeof moviesLabels,
+    MovieSchemaConfig
+> {
     constructor() {
         super(moviesConfig, createMoviesFilters);
     }
@@ -113,60 +119,47 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return result;
     }
 
-    async calculateDetailedStats(userId: number) {
-        const baseQuery = db
+    async calculateSpecificStats(userId: number) {
+        const ratings = await this.computeRatingStats(userId);
+        const totalLabels = await this.getTotalMediaLabel(userId);
+        const releaseDates = await this.computeReleaseDateStats(userId);
+        const genresStats = await this.computeGenresStats(userId);
+
+        const [{ totalBudget, totalRevenue }] = await db
             .select({
-                duration: movies.duration,
-                budget: movies.budget,
-                revenue: movies.revenue,
-                director: movies.directorName,
-                compositor: movies.compositorName,
-                language: movies.originalLanguage,
+                totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)::numeric`.as("total_budget"),
+                totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)::numeric`.as("total_revenue"),
             })
-            .from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-            .where(eq(moviesList.userId, userId))
-            .as("userMovies");
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH)));
 
-        const genreQuery = db
-            .select({ name: moviesGenre.name })
-            .from(moviesList)
-            .innerJoin(moviesGenre, eq(moviesList.mediaId, moviesGenre.mediaId))
-            .where(eq(moviesList.userId, userId))
-            .as("userGenres");
+        const durationDistribution = await db
+            .select({
+                name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
+                value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
+            .groupBy(sql<number>`floor(${movies.duration} / 30.0) * 30`)
+            .orderBy(asc(sql<number>`floor(${movies.duration} / 30.0) * 30`));
 
-        const actorQuery = db
-            .select({ name: moviesActors.name })
-            .from(moviesList)
-            .innerJoin(moviesActors, eq(moviesList.mediaId, moviesActors.mediaId))
-            .where(eq(moviesList.userId, userId))
-            .as("userActors");
-
-        const [baseAggregations, genreAggregations, actorAggregations] =
-            await Promise.all([
-                db.select({
-                    totalBudget: sum(baseQuery.budget),
-                    totalRevenue: sum(baseQuery.revenue),
-                    totalDurationMinutes: sum(baseQuery.duration),
-                    averageDurationMinutes: avg(baseQuery.duration),
-                    distinctDirectorsCount: countDistinct(baseQuery.director),
-                    distinctLanguagesCount: countDistinct(baseQuery.language),
-                    distinctCompositorsCount: countDistinct(baseQuery.compositor),
-                }).from(baseQuery),
-                db.select({ distinctGenresCount: countDistinct(genreQuery.name) }).from(genreQuery),
-                db.select({ distinctActorsCount: countDistinct(actorQuery.name) }).from(actorQuery),
-            ]);
+        const [avgDuration] = await db
+            .select({ average: sql<number | null>`cast(avg(${movies.duration}) as numeric)`.as("avg_duration") })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)));
 
         return {
-            totalDurationMinutes: baseAggregations[0]?.totalDurationMinutes ?? 0,
-            averageDurationMinutes: baseAggregations[0]?.averageDurationMinutes ?? null,
-            totalBudget: baseAggregations[0]?.totalBudget ?? 0,
-            totalRevenue: baseAggregations[0]?.totalRevenue ?? 0,
-            directorsCount: baseAggregations[0]?.distinctDirectorsCount ?? 0,
-            compositorsCount: baseAggregations[0]?.distinctCompositorsCount ?? 0,
-            languagesCount: baseAggregations[0]?.distinctLanguagesCount ?? 0,
-            genresCount: genreAggregations[0]?.distinctGenresCount ?? 0,
-            actorsCount: actorAggregations[0]?.distinctActorsCount ?? 0,
+            ratings,
+            totalLabels,
+            releaseDates,
+            genresStats,
+            totalBudget,
+            totalRevenue,
+            avgDuration: avgDuration?.average,
+            durationDistribution,
         };
     }
 }
@@ -177,17 +170,17 @@ const createMoviesFilters = (config: MovieSchemaConfig) => {
 
     return {
         directors: {
-            isActive: (args: any) => isValidFilter(args.directors),
-            getCondition: (args: any) => inArray(mediaTable.directorName, args.directors!),
+            isActive: (args: MediaListArgs) => isValidFilter(args.directors),
+            getCondition: (args: MediaListArgs) => inArray(mediaTable.directorName, args.directors!),
         },
         languages: {
-            isActive: (args: any) => isValidFilter(args.langs),
-            getCondition: (args: any) => inArray(mediaTable.originalLanguage, args.langs!),
+            isActive: (args: MediaListArgs) => isValidFilter(args.langs),
+            getCondition: (args: MediaListArgs) => inArray(mediaTable.originalLanguage, args.langs!),
         },
         actors: {
-            isActive: (args: any) => isValidFilter(args.actors),
-            applyJoin: (qb: any, _args: any) => applyJoin(qb, actorConfig),
-            getCondition: (args: any) => inArray(actorConfig.filterColumnInEntity, args.actors!),
+            isActive: (args: MediaListArgs) => isValidFilter(args.actors),
+            applyJoin: (qb: any, _args: MediaListArgs) => applyJoin(qb, actorConfig),
+            getCondition: (args: MediaListArgs) => inArray(actorConfig.filterColumnInEntity, args.actors!),
         },
     }
 }

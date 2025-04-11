@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
-import {PrivacyType} from "@/lib/server/utils/enums";
-import {and, count, desc, eq, getTableColumns, inArray, sql} from "drizzle-orm";
+import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
+import {and, count, desc, eq, getTableColumns, inArray, sql} from "drizzle-orm";
 
 
 export class UserUpdatesRepository {
@@ -67,4 +67,34 @@ export class UserUpdatesRepository {
 
         return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
     }
+
+    static async getMediaUpdatesCountPerMonth(userId: number, mediaType: MediaType) {
+        const monthlyCountsQuery = db
+            .select({
+                month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
+                count: count(userMediaUpdate.mediaId).as("count"),
+            })
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), eq(userMediaUpdate.mediaType, mediaType)))
+            .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+            .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+
+        const results = await monthlyCountsQuery.execute();
+
+        const updatesPerMonth: Record<string, number> = {};
+        let totalUpdates = 0;
+        let numberOfMonths = 0;
+        results.forEach((row) => {
+            if (row.month && typeof row.count === "number") {
+                updatesPerMonth[row.month] = row.count;
+                totalUpdates += row.count;
+                numberOfMonths++;
+            }
+        });
+
+        const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
+
+        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
+    }
+
 }

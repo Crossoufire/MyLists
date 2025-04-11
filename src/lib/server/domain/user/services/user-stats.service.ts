@@ -1,16 +1,9 @@
+import {StatsDelta} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaRegistry} from "@/lib/server/domain/media/base/base.registry";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-
-
-interface UpdateUserStatsParams {
-    delta: any;
-    newState: any;
-    userId: number;
-    mediaType: MediaType;
-}
 
 
 export class UserStatsService {
@@ -116,8 +109,8 @@ export class UserStatsService {
         return data;
     }
 
-    async updateUserStats({ userId, mediaType, delta }: UpdateUserStatsParams) {
-        await this.repository.updateUserStats(userId, mediaType, delta);
+    async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
+        await this.repository.updateDeltaUserStats(userId, mediaType, delta);
     }
 
     async getUserMediaStats(userId: number) {
@@ -133,16 +126,43 @@ export class UserStatsService {
         const labelCounts = await Promise.all(labelCountPromises);
         const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
 
-        return {
-            ...statsFromSettings,
-            totalLabels,
-            platinumAchievements,
-            updatesPerMonth,
-        };
+        return { ...statsFromSettings, totalLabels, platinumAchievements, updatesPerMonth };
     }
 
-    async getSpecificMediaTypeStats(_userId: number, _mediaType: MediaType) {
-        // TODO: Calculate generic stats from user media settings and call the appropriate media repo
-        //  to get the specific stats for the media type
+    async getSpecificMediaTypeStats(userId: number, mediaType: MediaType) {
+        //@ts-expect-error
+        const mediaRepository = this.mediaRepoRegistry.getRepository(mediaType);
+
+        const commonStats = await this.computeCommonMediaStats(userId, mediaType);
+        const updatesStats = await this.userUpdatesRepository.getMediaUpdatesCountPerMonth(userId, mediaType);
+        const specificStats = await mediaRepository.calculateSpecificStats(userId);
+
+        return { ...commonStats, ...updatesStats, ...specificStats };
+    }
+
+    private async computeCommonMediaStats(userId: number, mediaType: MediaType) {
+        const setting = await this.repository.getSpecificSetting(userId, mediaType);
+
+        const totalEntries = setting.totalEntries;
+        const totalRedo = setting.totalRedo;
+        const timeSpentHours = setting.timeSpent / 60
+        const timeSpentDays = Math.round(timeSpentHours / 24);
+        const totalRated = setting.entriesRated;
+        const avgRated = totalRated === 0 ? 0 : setting.sumEntriesRated / totalRated;
+        const totalFavorites = setting.entriesFavorites;
+        const totalComments = setting.entriesCommented;
+
+        // TODO: add statuses
+
+        return {
+            totalEntries,
+            totalRedo,
+            timeSpentHours,
+            timeSpentDays,
+            totalRated,
+            avgRated,
+            totalFavorites,
+            totalComments,
+        };
     }
 }

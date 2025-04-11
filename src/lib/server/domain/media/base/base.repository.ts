@@ -1,8 +1,8 @@
 import {db} from "@/lib/server/database/db";
-import {followers, user} from "@/lib/server/database/schema";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {and, asc, count, desc, eq, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
+import {and, asc, count, desc, eq, inArray, isNotNull, like, ne, notInArray, sql, Table} from "drizzle-orm";
+import {followers, movies, moviesGenre, moviesLabels, moviesList, user} from "@/lib/server/database/schema";
 
 
 const ALL_VALUE = "All";
@@ -10,12 +10,52 @@ const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
 
 
-export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>> {
+export interface BaseMediaTableColumns {
+    id: typeof movies.id;
+    name: typeof movies.name;
+    apiId: typeof movies.apiId;
+    imageCover: typeof movies.imageCover;
+    releaseDate: typeof movies.releaseDate;
+}
+
+
+interface BaseListTableColumns {
+    userId: typeof moviesList.userId;
+    rating: typeof moviesList.rating;
+    status: typeof moviesList.status;
+    comment: typeof moviesList.comment;
+    mediaId: typeof moviesList.mediaId;
+    favorite: typeof moviesList.favorite;
+}
+
+
+interface BaseGenreTableColumns {
+    name: typeof moviesGenre.name;
+    mediaId: typeof moviesGenre.mediaId;
+}
+
+
+interface BaseLabelTableColumns {
+    id: typeof moviesLabels.id;
+    name: typeof moviesLabels.name;
+    userId: typeof moviesLabels.userId;
+    mediaId: typeof moviesLabels.mediaId;
+}
+
+
+export class BaseRepository<
+    TMediaTable extends Table & BaseMediaTableColumns,
+    TListTable extends Table & BaseListTableColumns,
+    TGenreTable extends Table & BaseGenreTableColumns,
+    TLabelTable extends Table & BaseLabelTableColumns,
+    TConfig extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable>
+> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefinitions: FilterDefinitions;
     protected readonly specificFilterDefinitions: FilterDefinitions;
 
-    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions) {
+    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions,
+    ) {
         this.config = config;
         this.baseFilterDefinitions = this.createBaseFilterDefinitions();
         this.specificFilterDefinitions = specificFilterFactory ? specificFilterFactory(this.config) : {};
@@ -92,7 +132,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(genreTable)
             .where(eq(genreTable.mediaId, mediaId));
 
-        const similarSubQuery = db
+        const similarSub = db
             .select({ movieId: genreTable.mediaId, commonGenreCount: count(genreTable.name).as("common_genre_count") })
             .from(genreTable)
             .where(and(ne(genreTable.mediaId, mediaId), inArray(genreTable.name, targetGenresSubQuery)))
@@ -106,11 +146,12 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
                 mediaCover: mediaTable.imageCover,
-                commonGenreCount: similarSubQuery.commonGenreCount,
+                commonGenreCount: similarSub.commonGenreCount,
             })
-            .from(similarSubQuery)
-            .innerJoin(mediaTable, eq(mediaTable.id, similarSubQuery.movieId))
-            .orderBy(desc(similarSubQuery.commonGenreCount));
+            .from(similarSub)
+            //@ts-expect-error
+            .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
+            .orderBy(desc(similarSub.commonGenreCount));
 
         return results;
 
@@ -292,6 +333,54 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 sorting: sortKeyName,
             },
         };
+    }
+
+    async computeRatingStats(userId: number) {
+        const { listTable } = this.config;
+
+        const ratingDistribution: { [key: string]: number } = {};
+        for (let i = 0; i <= 20; i++) {
+            ratingDistribution[(i * 0.5).toFixed(1)] = 0;
+        }
+
+        const ratingQuery = await db
+            .select({ rating: listTable.rating, count: count(listTable.rating) })
+            .from(listTable)
+            .where(and(eq(listTable.userId, userId), isNotNull(listTable.rating)))
+            .groupBy(listTable.rating)
+            .orderBy(asc(listTable.rating))
+            .execute();
+
+        ratingQuery.forEach((result) => {
+            const ratingKey = result?.rating?.toFixed(1);
+            if (ratingKey) ratingDistribution[ratingKey] = result.count;
+        });
+
+        const ratings = Object.entries(ratingDistribution).map(([name, value]) => ({ name, value }));
+        return ratings.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+    }
+
+    async computeReleaseDateStats(userId: number) {
+        const { mediaTable, listTable } = this.config;
+
+        const releaseDates = await db
+            .select({
+                name: sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`,
+                value: sql<number>`cast(count(${mediaTable.releaseDate}) as int)`.as("count"),
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.releaseDate)))
+            .groupBy(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`)
+            .orderBy(asc(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`))
+            .execute();
+
+        return releaseDates;
+    }
+
+    async computeGenresStats(_userId: number) {
+        // TODO: implement
+        return [];
     }
 }
 

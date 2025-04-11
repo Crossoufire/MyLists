@@ -1,17 +1,11 @@
 import {SQL} from "drizzle-orm";
-
-
-interface FilterConditionArgs {
-    userId: number;
-    [key: string]: any;
-    currentUserId?: number;
-}
+import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 
 
 interface FilterDefinition {
-    isActive: (args: FilterConditionArgs) => boolean;
-    applyJoin?: (qb: any, args: FilterConditionArgs) => any;
-    getCondition: (args: FilterConditionArgs) => SQL | undefined;
+    isActive: (args: MediaListArgs) => boolean;
+    applyJoin?: (qb: any, args: MediaListArgs) => any;
+    getCondition: (args: MediaListArgs) => SQL | undefined;
 }
 
 

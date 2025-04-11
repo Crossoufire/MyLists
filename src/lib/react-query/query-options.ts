@@ -7,43 +7,34 @@ import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 
 
-type Page = number;
-type Query = string;
-type Username = string;
-type Selector = string;
-type MediaId = string | number;
-type Search = Record<string, any>;
-type Filters = Record<string, any>;
-
-
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
 
 
 type QueryKeys = {
-    achievementPageKey: QueryKeyFunction<[Username]>;
+    achievementPageKey: QueryKeyFunction<[string]>;
     authKey: QueryKeyFunction<[]>;
-    allUpdatesKey: QueryKeyFunction<[Username, Filters]>;
+    allUpdatesKey: QueryKeyFunction<[string, Record<string, any>]>;
     dailyMediadleKey: QueryKeyFunction<[]>;
-    detailsKey: QueryKeyFunction<[MediaType, MediaId]>;
-    editDetailsKey: QueryKeyFunction<[MediaType, MediaId]>;
-    filterSearchKey: QueryKeyFunction<[MediaType, Username, Query, JobType]>;
-    followersKey: QueryKeyFunction<[Username]>;
-    followsKey: QueryKeyFunction<[Username]>;
-    globalStatsKey: QueryKeyFunction<[Search]>;
-    historyKey: QueryKeyFunction<[MediaType, MediaId]>;
-    hofKey: QueryKeyFunction<[Search]>;
-    jobDetailsKey: QueryKeyFunction<[MediaType, JobType, string, Search]>;
+    detailsKey: QueryKeyFunction<[MediaType, string | number]>;
+    editDetailsKey: QueryKeyFunction<[MediaType, string | number]>;
+    filterSearchKey: QueryKeyFunction<[MediaType, string, string, JobType]>;
+    followersKey: QueryKeyFunction<[string]>;
+    followsKey: QueryKeyFunction<[string]>;
+    globalStatsKey: QueryKeyFunction<[Record<string, any>]>;
+    historyKey: QueryKeyFunction<[MediaType, string | number]>;
+    hofKey: QueryKeyFunction<[Record<string, any>]>;
+    jobDetailsKey: QueryKeyFunction<[MediaType, JobType, string, Record<string, any>]>;
     labelsKey: QueryKeyFunction<[MediaType]>;
-    navSearchKey: QueryKeyFunction<[Query, Page, Selector]>;
+    navSearchKey: QueryKeyFunction<[string, number, string]>;
     notificationCountKey: QueryKeyFunction<[]>;
     notificationsKey: QueryKeyFunction<[]>;
-    mediadleSuggestionsKey: QueryKeyFunction<[Query]>;
-    profileKey: QueryKeyFunction<[Username]>;
-    listFiltersKey: QueryKeyFunction<[MediaType, Username]>;
-    statsKey: QueryKeyFunction<[Username, Search]>;
+    mediadleSuggestionsKey: QueryKeyFunction<[string]>;
+    profileKey: QueryKeyFunction<[string]>;
+    listFiltersKey: QueryKeyFunction<[MediaType, string]>;
+    statsKey: QueryKeyFunction<[string, Record<string, any>]>;
     trendsKey: QueryKeyFunction<[]>;
     upcomingKey: QueryKeyFunction<[]>;
-    userListKey: QueryKeyFunction<[MediaType, Username, Search]>;
+    userListKey: QueryKeyFunction<[MediaType, string, Record<string, any>]>;
 };
 
 
@@ -93,7 +84,7 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
     enabled: query.length >= 2,
 });
 
-export const mediaDetailsOptions = (mediaType: MediaType, mediaId: MediaId, external: boolean) => queryOptions({
+export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | string, external: boolean) => queryOptions({
     queryKey: queryKeys.detailsKey(mediaType, mediaId),
     queryFn: () => getMediaDetails({ data: { mediaType, mediaId, external } }),
     staleTime: 3 * 1000,

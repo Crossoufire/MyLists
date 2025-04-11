@@ -13,7 +13,7 @@ export class UserStatsRepository {
         return settings;
     }
 
-    static async updateUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
+    static async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
         const setUpdates: Record<string, any> = {};
 
         const numericFields: (keyof StatsDelta)[] = [
@@ -58,5 +58,13 @@ export class UserStatsRepository {
             .update(userMediaSettings)
             .set(setUpdates)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+    }
+
+    static async getSpecificSetting(userId: number, mediaType: MediaType) {
+        const setting = await db.query.userMediaSettings.findFirst({
+            where: and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)),
+        });
+
+        return setting!;
     }
 }
