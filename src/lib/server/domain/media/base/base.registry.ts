@@ -13,7 +13,7 @@ interface MediaServiceMap {
 }
 
 
-export class MediaRegistry {
+export class MediaRepoRegistry {
     private static repositories: MediaRepoMap;
 
     static registerRepository<T extends keyof MediaRepoMap>(mediaType: T, repository: MediaRepoMap[T]) {

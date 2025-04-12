@@ -1,6 +1,6 @@
 import {StatsDelta} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {MediaRegistry} from "@/lib/server/domain/media/base/base.registry";
+import {MediaRepoRegistry} from "@/lib/server/domain/media/base/base.registry";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
@@ -9,7 +9,7 @@ import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achi
 export class UserStatsService {
     constructor(
         private repository: typeof UserStatsRepository,
-        private mediaRepoRegistry: typeof MediaRegistry,
+        private mediaRepoRegistry: typeof MediaRepoRegistry,
         private achievementsRepository: typeof AchievementsRepository,
         private userUpdatesRepository: typeof UserUpdatesRepository,
     ) {

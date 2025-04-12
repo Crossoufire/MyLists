@@ -11,7 +11,6 @@ export const getSearchResults = createServerFn({ method: "GET" })
         const tmdbClient = container.clients.tmdb;
         const userService = container.services.user;
         const tmdbTransformer = container.transformers.tmdb;
-        const providerRegistry = container.registries.provider;
 
         if (apiProvider === ApiProviderType.USERS) {
             return userService.searchUsers(query, page);
@@ -21,7 +20,4 @@ export const getSearchResults = createServerFn({ method: "GET" })
             const rawResults = await tmdbClient.search(query, page);
             return tmdbTransformer.transformSearchResults(rawResults);
         }
-
-        const providerService = providerRegistry.getService(apiProvider);
-        return providerService.search(query, page);
     });

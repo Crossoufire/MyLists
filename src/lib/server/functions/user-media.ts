@@ -15,6 +15,8 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
+        
+        //@ts-expect-error
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const mediaDetails = await mediaService.getMinimalMediaDetails(mediaId);

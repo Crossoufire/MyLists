@@ -4,12 +4,12 @@ import {createServerFn} from "@tanstack/react-start";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 
 
-export const getMediaDetails = createServerFn({method: "GET"})
+export const getMediaDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .validator((data: any): { mediaType: MediaType, mediaId: number | string, external: boolean } => data)
-    .handler(async ({data: {mediaType, mediaId, external}, context: {currentUser}}) => {
+    .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         //@ts-expect-error
-        const mediaStrategy = container.registries.strategy.getStrategy(mediaType);
+        const mediaStrategy = container.registries.mediaStrategy.getStrategy(mediaType);
         //@ts-expect-error
         const mediaService = container.registries.mediaService.getService(mediaType);
 
