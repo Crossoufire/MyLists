@@ -6,8 +6,8 @@ import {MutedText} from "@/lib/components/app/MutedText";
 
 
 interface CommentaryProps {
-    content: string | null | undefined;
     updateComment?: any;
+    content: string | null | undefined;
 }
 
 
@@ -42,8 +42,8 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
             {commentInput ?
                 <>
                     <Textarea
-                        value={updatedContent}
                         className={"w-full h-20"}
+                        value={updatedContent ?? ""}
                         disabled={updateComment.isPending}
                         placeholder={"Enter your comment..."}
                         onChange={(ev) => setUpdatedContent(ev.target.value)}

@@ -5,9 +5,9 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 import {profileOptions} from "@/lib/react-query/query-options";
+import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {StatusBullet} from "@/lib/components/user-profile/StatusBullet";
-import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 
 
 interface MediaStatsProps {
@@ -108,11 +108,8 @@ function MediaStatuses({ media, username }: { media: any, username: string }) {
                 {media.statusList.map((st: any, idx: number) =>
                     <div key={idx} className="flex justify-between">
                         <Link
-                            //@ts-expect-error
                             to={"/list/$mediaType/$username"}
-                            //@ts-expect-error
                             params={{ mediaType: media.mediaType, username }}
-                            //@ts-expect-error
                             search={{ status: [st.status] }}
                             className="text-neutral-500"
                         >
@@ -131,11 +128,8 @@ function MediaFavorites({ media, username }: { media: any, username: string }) {
     return (
         <div className="mt-4">
             <Link
-                //@ts-expect-error
                 to={"/list/$mediaType/$username"}
-                //@ts-expect-error
                 params={{ mediaType: media.mediaType, username }}
-                //@ts-expect-error
                 search={{ favorite: true }}
                 className="text-lg font-medium hover:underline"
             >

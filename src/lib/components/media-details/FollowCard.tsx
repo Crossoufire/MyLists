@@ -113,7 +113,9 @@ const RedoInfo = ({ follow, mediaType }: RedoInfoProps) => {
         return null;
     }
     else if (["series", "anime"].includes(mediaType)) {
+        //@ts-expect-error
         const maxCount = Math.max(...follow.mediaList.redo2);
+        //@ts-expect-error
         const totalRedo = follow.mediaList.redo2.reduce((a, b) => a + b, 0);
 
         if (maxCount === 0) {
@@ -136,6 +138,7 @@ const RedoInfo = ({ follow, mediaType }: RedoInfoProps) => {
                 <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">
                     <div className=" grid gap-3">
                         <div className="space-y-2">
+                            {/*//@ts-expect-error*/}
                             {follow.mediaList.redo2.map((season, idx) => (
                                 <div key={idx} className="flex gap-3 items-center justify-between">
                                     <div className="text-sm font-medium leading-none">
@@ -175,6 +178,7 @@ const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
             return (
                 <div className="flex gap-x-2 items-center">
                     <Play size={16} className="mt-0.5"/>
+                    {/*//@ts-expect-error*/}
                     S{zeroPad(follow.mediaList.currentSeason)} - E{zeroPad(follow.mediaList.lastEpisodeWatched)}
                 </div>
             );
@@ -183,6 +187,7 @@ const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
     else if (mediaType === "books" && follow.mediaList.status !== "Plan to Read") {
         return (
             <div className="flex gap-x-2 items-center">
+                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Pages {follow.mediaList.actualPage}/{follow.mediaList.totalPages}
             </div>
         );
@@ -190,6 +195,7 @@ const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
     else if (mediaType === "games" && follow.mediaList.status !== "Plan to Play") {
         return (
             <div className="flex gap-x-2 items-center">
+                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Played {follow.mediaList.playtime / 60} h
             </div>
         );
@@ -197,6 +203,7 @@ const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
     else if (mediaType === "manga" && follow.mediaList.status !== "Plan to Read") {
         return (
             <div className="flex gap-x-2 items-center">
+                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Chpt. {follow.mediaList.currentChapter}/{follow?.mediaList.totalChapters ?? "?"}
             </div>
         );

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 import {Command} from "commander";
-import {registerAllCommands} from "~/cli/commands";
+import {registerAllCommands} from "./commands";
 
 
 const program = new Command();
 
 
 program
-    .name("famiglia-cli")
-    .description("CLI tool for Famiglia Recipe")
+    .name("mylists-cli")
+    .description("CLI tool for MyLists")
     .version("0.0.1");
 
 

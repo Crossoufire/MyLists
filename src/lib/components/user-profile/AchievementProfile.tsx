@@ -36,7 +36,7 @@ export const AchievementsDisplay = ({ username, achievements: { summary, details
                     {details.length === 0 ?
                         <MutedText className="col-span-3">No achievements gained yet</MutedText>
                         :
-                        details.map((ach, idx) => <AchievementCard key={idx} achievement={ach}/>)
+                        details.map((ach: any, idx: number) => <AchievementCard key={idx} achievement={ach}/>)
                     }
                 </div>
                 <Separator className="mt-3"/>
@@ -58,7 +58,7 @@ interface AchievementSummaryProps {
 
 
 function AchievementSummary({ summary }: AchievementSummaryProps) {
-    const total = summary.reduce((acc, curr) => acc + curr.count, 0);
+    const total = summary.reduce((acc: any, curr: any) => acc + curr.count, 0);
 
     return (
         <div className="flex items-center justify-between font-bold mb-4">
@@ -71,7 +71,7 @@ function AchievementSummary({ summary }: AchievementSummaryProps) {
                         </div>,
                     )
                     :
-                    summary.map((diff, idx) =>
+                    summary.map((diff: any, idx: number) =>
                         <div key={idx} className="flex items-center gap-1">
                             <Award className={cn("w-5 h-5", diffColors(diff.difficulty))}/>
                             <span>{diff.count}</span>

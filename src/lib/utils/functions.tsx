@@ -202,16 +202,24 @@ export const globalStatsTimeFormat = (minutes: number) => {
 
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
-    if (isNaN(minutes) || !minutes) return "--";
+    if (minutes === null || minutes === undefined) {
+        return "--";
+    }
 
-    let hours = Math.floor(minutes / 60);
-    let remainingMinutes = minutes % 60;
+    const minutesAsNumber = Number(minutes);
+
+    if (isNaN(minutesAsNumber) || minutesAsNumber <= 0) {
+        return "--";
+    }
+
+    const hours = Math.floor(minutesAsNumber / 60);
+    const displayMinutes = Math.floor(minutesAsNumber % 60);
 
     if (onlyHours) {
         return `${String(hours).padStart(2, "0")} h`;
     }
 
-    return `${String(hours).padStart(2, "0")} h ${String(Math.floor(remainingMinutes)).padStart(2, "0")}`;
+    return `${String(hours).padStart(2, "0")} h ${String(displayMinutes).padStart(2, "0")}`;
 };
 
 

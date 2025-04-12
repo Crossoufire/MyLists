@@ -55,11 +55,8 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
                     mediaLabels.map(label =>
                         <Link
                             key={label.id}
-                            //@ts-expect-error
                             to="/list/$mediaType/$username"
-                            //@ts-expect-error
-                            params={{ mediaType, username: currentUser?.name }}
-                            //@ts-expect-error
+                            params={{ mediaType, username: currentUser!.name }}
                             search={{ labels: [label.name] }}
                         >
                             <Badge key={label.id}>
