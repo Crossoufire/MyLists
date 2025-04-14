@@ -19,6 +19,14 @@ export class UserService {
         return this.userRepository.findByUsername(username);
     }
 
+    async getUserById(userId: number) {
+        return this.userRepository.findById(userId);
+    }
+
+    async updateFollowStatus(userId: number, followedId: number) {
+        return this.userRepository.updateFollowStatus(userId, followedId);
+    }
+
     async incrementProfileView(userId: number) {
         return this.userRepository.incrementProfileView(userId);
     }

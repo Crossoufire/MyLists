@@ -13,10 +13,12 @@ import {UserRepository} from "@/lib/server/domain/user/repositories/user.reposit
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
+import {NotificationsRepository} from "./domain/user/repositories/notifications.repository";
+import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/base/base.registry";
 import {TmdbTransformer} from "@/lib/server/domain/media-providers/transformers/tmdb.transformer";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/base/base.registry";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {TmdbMoviesStrategy} from "@/lib/server/domain/media-providers/strategies/tmdb-movies.strategy";
 import {ProviderStrategyRegistry} from "@/lib/server/domain/media-providers/registries/provider-strategy.registry";
@@ -27,6 +29,7 @@ const userRepository = UserRepository;
 const userStatsRepository = UserStatsRepository;
 const userUpdatesRepository = UserUpdatesRepository;
 const achievementsRepository = AchievementsRepository;
+const notificationsRepository = NotificationsRepository;
 
 // Initialize media repositories
 const moviesRepository = new MoviesRepository();
@@ -37,6 +40,7 @@ const userService = new UserService(userRepository);
 const userStatsService = new UserStatsService(userStatsRepository, MediaRepoRegistry, achievementsRepository, userUpdatesRepository);
 const userUpdatesService = new UserUpdatesService(userUpdatesRepository);
 const achievementsService = new AchievementsService(achievementsRepository);
+const notificationsService = new NotificationsService(notificationsRepository);
 
 // initialize media services
 const moviesService = new MoviesService(moviesRepository);
@@ -56,22 +60,24 @@ ProviderStrategyRegistry.registerStrategy(MediaType.MOVIES, tmdbMovieStrategy);
 
 export const container = {
     clients: {
-        tmdb: tmdbClient
+        tmdb: tmdbClient,
     },
     transformers: {
-        tmdb: tmdbTransformer
+        tmdb: tmdbTransformer,
     },
     repositories: {
         user: userRepository,
         userStats: userStatsRepository,
         userUpdates: userUpdatesRepository,
-        achievements: achievementsRepository
+        achievements: achievementsRepository,
+        notifications: notificationsRepository,
     },
     services: {
         user: userService,
         userStats: userStatsService,
         userUpdates: userUpdatesService,
-        achievements: achievementsService
+        achievements: achievementsService,
+        notifications: notificationsService,
     },
     registries: {
         mediaRepo: MediaRepoRegistry,

@@ -1,16 +1,11 @@
 import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
-import {profileOptions} from "@/lib/react-query/query-options";
+import {UserDataType} from "@/routes/_private/profile/$username/_header/index";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
-interface ProfileMiscInfoProps {
-    userData: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userData"];
-}
-
-
-export const ProfileMiscInfo = ({ userData }: ProfileMiscInfoProps) => {
+export const ProfileMiscInfo = ({ userData }: { userData: UserDataType }) => {
     const { caret, toggleCollapse, contentClasses } = useCollapse();
 
     return (

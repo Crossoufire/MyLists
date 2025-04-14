@@ -2,14 +2,14 @@ import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaStats} from "@/lib/components/user-profile/MediaStats";
-import {profileOptions} from "@/lib/react-query/query-options";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
+import {PerMediaSummaryType, UserDataType} from "@/routes/_private/profile/$username/_header/index";
 
 
 interface MediaDetailsProps {
-    userData: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userData"];
-    mediaData: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["perMediaSummary"];
+    userData: UserDataType;
+    mediaData: PerMediaSummaryType;
 }
 
 

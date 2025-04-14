@@ -8,15 +8,17 @@ import {MutedText} from "@/lib/components/app/MutedText";
 import {profileOptions} from "@/lib/react-query/query-options";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {AchievementsType} from "@/routes/_private/profile/$username/_header/index";
 
 
 interface AchievementsProps {
     username: string;
-    achievements: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["achievements"];
+    achievements: AchievementsType;
 }
 
 
-export const AchievementsDisplay = ({ username, achievements: { summary, details } }: AchievementsProps) => {
+export const AchievementsDisplay = ({ username, achievements }: AchievementsProps) => {
+    const { summary, details } = achievements;
     const { caret, toggleCollapse, contentClasses } = useCollapse();
 
     return (
@@ -42,7 +44,7 @@ export const AchievementsDisplay = ({ username, achievements: { summary, details
                 <Separator className="mt-3"/>
                 <div className="flex items-center justify-end">
                     {/*//@ts-expect-error*/}
-                    <Link to={`/achievements/$username`} params={{ username }} className="font-medium hover:underline">
+                    <Link to="/achievements/$username" params={{ username }} className="font-medium hover:underline">
                         All achievements <ArrowRight className="inline-block ml-1 w-4 h-4"/>
                     </Link>
                 </div>

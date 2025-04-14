@@ -19,10 +19,12 @@ import { Route as PublicIndexImport } from './routes/_public/index'
 import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/privacy-policy'
 import { Route as UniversalFeaturesImport } from './routes/_universal/features'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
+import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-password'
 import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
 import { Route as PrivateDetailsMediaTypeMediaIdImport } from './routes/_private/details/$mediaType/$mediaId'
 import { Route as PrivateListMediaTypeUsernameRouteImport } from './routes/_private/list/$mediaType/$username.route'
 import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_private/profile/$username/_header/index'
+import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
 
 // Create Virtual Routes
 
@@ -66,6 +68,12 @@ const UniversalAboutRoute = UniversalAboutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const PublicForgotPasswordRoute = PublicForgotPasswordImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => PublicRoute,
+} as any)
+
 const PrivateProfileUsernameRoute = PrivateProfileUsernameImport.update({
   id: '/profile/$username',
   path: '/profile/$username',
@@ -99,6 +107,13 @@ const PrivateProfileUsernameHeaderIndexRoute =
     getParentRoute: () => PrivateProfileUsernameHeaderRoute,
   } as any)
 
+const PrivateProfileUsernameHeaderFollowersRoute =
+  PrivateProfileUsernameHeaderFollowersImport.update({
+    id: '/followers',
+    path: '/followers',
+    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -116,6 +131,13 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof PublicImport
       parentRoute: typeof rootRoute
+    }
+    '/_public/forgot-password': {
+      id: '/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicForgotPasswordImport
+      parentRoute: typeof PublicImport
     }
     '/_universal/about': {
       id: '/_universal/about'
@@ -173,6 +195,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateProfileUsernameHeaderImport
       parentRoute: typeof PrivateProfileUsernameRoute
     }
+    '/_private/profile/$username/_header/followers': {
+      id: '/_private/profile/$username/_header/followers'
+      path: '/followers'
+      fullPath: '/profile/$username/followers'
+      preLoaderRoute: typeof PrivateProfileUsernameHeaderFollowersImport
+      parentRoute: typeof PrivateProfileUsernameHeaderImport
+    }
     '/_private/profile/$username/_header/': {
       id: '/_private/profile/$username/_header/'
       path: '/'
@@ -186,11 +215,14 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface PrivateProfileUsernameHeaderRouteChildren {
+  PrivateProfileUsernameHeaderFollowersRoute: typeof PrivateProfileUsernameHeaderFollowersRoute
   PrivateProfileUsernameHeaderIndexRoute: typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
 const PrivateProfileUsernameHeaderRouteChildren: PrivateProfileUsernameHeaderRouteChildren =
   {
+    PrivateProfileUsernameHeaderFollowersRoute:
+      PrivateProfileUsernameHeaderFollowersRoute,
     PrivateProfileUsernameHeaderIndexRoute:
       PrivateProfileUsernameHeaderIndexRoute,
   }
@@ -232,10 +264,12 @@ const PrivateRouteWithChildren =
   PrivateRoute._addFileChildren(PrivateRouteChildren)
 
 interface PublicRouteChildren {
+  PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicForgotPasswordRoute: PublicForgotPasswordRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
@@ -244,6 +278,7 @@ const PublicRouteWithChildren =
 
 export interface FileRoutesByFullPath {
   '': typeof PublicRouteWithChildren
+  '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -251,11 +286,13 @@ export interface FileRoutesByFullPath {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/profile/$username/': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
 export interface FileRoutesByTo {
   '': typeof PrivateRouteWithChildren
+  '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -263,12 +300,14 @@ export interface FileRoutesByTo {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
+  '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_private': typeof PrivateRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_universal/about': typeof UniversalAboutRoute
   '/_universal/features': typeof UniversalFeaturesRoute
   '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -277,6 +316,7 @@ export interface FileRoutesById {
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
   '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/_private/profile/$username/_header/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/_private/profile/$username/_header/': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 
@@ -284,6 +324,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
+    | '/forgot-password'
     | '/about'
     | '/features'
     | '/privacy-policy'
@@ -291,10 +332,12 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/profile/$username/followers'
     | '/profile/$username/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
+    | '/forgot-password'
     | '/about'
     | '/features'
     | '/privacy-policy'
@@ -302,10 +345,12 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/profile/$username/followers'
   id:
     | '__root__'
     | '/_private'
     | '/_public'
+    | '/_public/forgot-password'
     | '/_universal/about'
     | '/_universal/features'
     | '/_universal/privacy-policy'
@@ -314,6 +359,7 @@ export interface FileRouteTypes {
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
     | '/_private/profile/$username/_header'
+    | '/_private/profile/$username/_header/followers'
     | '/_private/profile/$username/_header/'
   fileRoutesById: FileRoutesById
 }
@@ -362,8 +408,13 @@ export const routeTree = rootRoute
     "/_public": {
       "filePath": "_public.tsx",
       "children": [
+        "/_public/forgot-password",
         "/_public/"
       ]
+    },
+    "/_public/forgot-password": {
+      "filePath": "_public/forgot-password.tsx",
+      "parent": "/_public"
     },
     "/_universal/about": {
       "filePath": "_universal/about.tsx"
@@ -397,8 +448,13 @@ export const routeTree = rootRoute
       "filePath": "_private/profile/$username/_header.tsx",
       "parent": "/_private/profile/$username",
       "children": [
+        "/_private/profile/$username/_header/followers",
         "/_private/profile/$username/_header/"
       ]
+    },
+    "/_private/profile/$username/_header/followers": {
+      "filePath": "_private/profile/$username/_header/followers.tsx",
+      "parent": "/_private/profile/$username/_header"
     },
     "/_private/profile/$username/_header/": {
       "filePath": "_private/profile/$username/_header/index.tsx",

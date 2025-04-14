@@ -34,3 +34,4 @@ dist
 !**/public/static/covers/manga-covers/default.jpg
 !**/public/static/profile-covers/default.jpg
 !**/public/static/back-covers/default.jpg
+tsconfig.tsbuildinfo

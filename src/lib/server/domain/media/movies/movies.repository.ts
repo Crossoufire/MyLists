@@ -3,17 +3,11 @@ import {JobType, Status} from "@/lib/server/utils/enums";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {and, asc, eq, inArray, isNotNull, like, ne, sql} from "drizzle-orm";
 import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
-import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema";
 
 
-export class MoviesRepository extends BaseRepository<
-    typeof movies,
-    typeof moviesList,
-    typeof moviesGenre,
-    typeof moviesLabels,
-    MovieSchemaConfig
-> {
+export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     constructor() {
         super(moviesConfig, createMoviesFilters);
     }
@@ -125,6 +119,31 @@ export class MoviesRepository extends BaseRepository<
         const releaseDates = await this.computeReleaseDateStats(userId);
         const genresStats = await this.computeGenresStats(userId);
 
+        const directorsConfig = {
+            metricTable: movies,
+            metricNameColumn: movies.directorName,
+            metricIdColumn: movies.id,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const actorsConfig = {
+            metricTable: moviesActors,
+            metricNameColumn: moviesActors.name,
+            metricIdColumn: moviesActors.mediaId,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const languagesConfig = {
+            metricTable: movies,
+            metricNameColumn: movies.originalLanguage,
+            metricIdColumn: movies.id,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const languagesStats = await this.topMetricStatsQueries(userId, languagesConfig);
+        const directorsStats = await this.topMetricStatsQueries(userId, directorsConfig);
+        const actorsStats = await this.topMetricStatsQueries(userId, actorsConfig);
+
         const [{ totalBudget, totalRevenue }] = await db
             .select({
                 totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)::numeric`.as("total_budget"),
@@ -156,6 +175,9 @@ export class MoviesRepository extends BaseRepository<
             totalLabels,
             releaseDates,
             genresStats,
+            directorsStats,
+            languagesStats,
+            actorsStats,
             totalBudget,
             totalRevenue,
             avgDuration: avgDuration?.average,

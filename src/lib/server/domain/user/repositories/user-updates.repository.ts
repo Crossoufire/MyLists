@@ -97,4 +97,21 @@ export class UserUpdatesRepository {
         return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
     }
 
+    static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        await db
+            .delete(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)))
+            .execute();
+
+        if (returnData) {
+            const newUpdateToReturn = await db
+                .select()
+                .from(userMediaUpdate)
+                .where(eq(userMediaUpdate.userId, userId))
+                .orderBy(desc(userMediaUpdate.timestamp))
+                .limit(8)
+                .execute();
+            return newUpdateToReturn?.at(-1) ?? null;
+        }
+    }
 }

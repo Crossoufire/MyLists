@@ -1,5 +1,5 @@
 import {db} from "@/lib/server/database/db";
-import {and, asc, eq, like, sql} from "drizzle-orm";
+import {and, asc, count, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {ProviderSearchResults} from "@/lib/server/domain/media-providers/interfaces/types";
@@ -15,12 +15,36 @@ export class UserRepository {
         if (!userResult) return null;
 
         const followersCount = await db
-            .select({ count: sql<number>`count(*)` })
+            .select({ count: count() })
             .from(followers)
-            .where(eq(followers.followerId, userResult.id))
+            .where(eq(followers.followedId, userResult.id))
             .execute();
 
         return { ...userResult, followersCount: followersCount[0]?.count || 0 };
+    }
+
+    static async findById(userId: number) {
+        const userResult = await db.query.user.findFirst({
+            where: eq(user.id, userId),
+            with: { userMediaSettings: true }
+        });
+
+        if (!userResult) return null;
+
+        return userResult;
+    }
+
+    static async updateFollowStatus(userId: number, followedId: number) {
+        const currentFollow = await db.query.followers.findFirst({
+            where: and(eq(followers.followerId, userId), eq(followers.followedId, followedId)),
+        });
+
+        if (!currentFollow) {
+            await db.insert(followers).values({ followerId: userId, followedId: followedId });
+        }
+        else {
+            await db.delete(followers).where(and(eq(followers.followerId, userId), eq(followers.followedId, followedId)));
+        }
     }
 
     static async hasActiveMediaType(userId: number, mediaType: MediaType) {
@@ -41,11 +65,12 @@ export class UserRepository {
             eq(userMediaSettings.mediaType, mediaType),
         ));
     }
-    
+
     static async isFollowing(userId: number, followedId: number) {
-        return !!db.query.followers.findFirst({
+        const result = await db.query.followers.findFirst({
             where: and(eq(followers.followerId, userId), eq(followers.followedId, followedId)),
         });
+        return !!result;
     }
 
     static async incrementProfileView(userId: number) {

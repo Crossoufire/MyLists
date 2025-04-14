@@ -14,7 +14,7 @@ interface MediaServiceMap {
 
 
 export class MediaRepoRegistry {
-    private static repositories: MediaRepoMap;
+    private static repositories: Partial<MediaRepoMap> = {};
 
     static registerRepository<T extends keyof MediaRepoMap>(mediaType: T, repository: MediaRepoMap[T]) {
         this.repositories[mediaType] = repository;

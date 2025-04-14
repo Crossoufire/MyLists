@@ -1,8 +1,7 @@
+import {queryKeys} from "@/lib/react-query/query-options";
+import {CurrentUser} from "@/lib/server/types/base.types";
 import {createFileRoute, redirect} from "@tanstack/react-router";
-import {authOptions, queryKeys} from "@/lib/react-query/query-options";
 
-
-type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
 
 export const Route = createFileRoute("/_public")({
     beforeLoad: ({ context: { queryClient } }) => {
@@ -11,5 +10,4 @@ export const Route = createFileRoute("/_public")({
             throw redirect({ to: "/profile/$username", params: { username: currentUser.name } });
         }
     },
-    ssr: false,
 });

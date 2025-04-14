@@ -70,3 +70,13 @@ function ProfileMain() {
         </div>
     );
 }
+
+
+type ProfileOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>;
+export type UserDataType = ProfileOptionsType["userData"];
+export type UserFollowsType = ProfileOptionsType["userFollows"];
+export type UserUpdatesType = ProfileOptionsType["userUpdates"];
+export type AchievementsType = ProfileOptionsType["achievements"];
+export type PerMediaSummaryType = ProfileOptionsType["perMediaSummary"];
+export type MediaGlobalSummaryType = ProfileOptionsType["mediaGlobalSummary"];
+export type UserSettingsType = ProfileOptionsType["userData"]["userMediaSettings"];

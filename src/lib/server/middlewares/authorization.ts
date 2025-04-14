@@ -14,16 +14,25 @@ export interface BaseDataWithUsername {
 
 export const authorizationMiddleware = createMiddleware()
     .validator((rawData: any): BaseDataWithUsername => {
-        if (typeof rawData !== "object" || rawData === null) throw new Error("Bad request");
+        if (typeof rawData !== "object" || rawData === null) {
+            throw new Error("Bad request");
+        }
+
         const data = rawData as Record<string, any>;
-        if (!data.username) throw notFound();
+
+        if (!data.username) {
+            throw notFound();
+        }
+
         return data as BaseDataWithUsername;
     })
     .server(async ({ next, data: { username } }) => {
         const userService = container.services.user;
 
         const user = await userService.getUserByUsername(username);
-        if (!user) throw notFound();
+        if (!user) {
+            throw notFound();
+        }
 
         const { headers } = getWebRequest()!;
         const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });

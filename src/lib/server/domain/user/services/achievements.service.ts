@@ -2,14 +2,14 @@ import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achi
 
 
 export class AchievementsService {
-    constructor(private achievementsRepository: typeof AchievementsRepository) {
+    constructor(private repository: typeof AchievementsRepository) {
     }
 
     async getDifficultySummary(userId: number) {
-        return this.achievementsRepository.getDifficultySummary(userId);
+        return this.repository.getDifficultySummary(userId);
     }
 
     async getAchievementsDetails(userId: number, limit = 6) {
-        return this.achievementsRepository.getAchievementsDetails(userId, limit);
+        return this.repository.getAchievementsDetails(userId, limit);
     }
 }

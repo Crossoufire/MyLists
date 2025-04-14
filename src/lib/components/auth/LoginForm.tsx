@@ -91,7 +91,6 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                                         <FormItem>
                                             <div className="flex items-center justify-between">
                                                 <FormLabel>Password</FormLabel>
-                                                {/*//@ts-ignore*/}
                                                 <Link to="/forgot-password" className="text-sm underline" tabIndex={-1}
                                                       onClick={() => onOpenChange(false)}>
                                                     Forgot password?
@@ -114,8 +113,7 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                             </Button>
                         </form>
                     </Form>
-                    {/*//@ts-ignore*/}
-                    <Separator className="mt-3" variant="large"/>
+                    <Separator className="mt-3"/>
                     <div className="mt-3 flex-col space-y-2">
                         <Button variant="secondary" onClick={() => withProvider("google")}>
                             <FaGoogle size={20} className="mr-2"/> Connexion via Google

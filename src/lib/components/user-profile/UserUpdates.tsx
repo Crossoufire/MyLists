@@ -5,14 +5,16 @@ import {Link, useParams} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {UserUpdate} from "@/lib/components/app/UserUpdate";
-import {profileOptions} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options";
+import {UserUpdatesType} from "@/routes/_private/profile/$username/_header/index";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {useDeleteUpdatesMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface UserUpdatesProps {
     username: string;
     followers?: boolean;
-    updates: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userUpdates"];
+    updates: UserUpdatesType;
 }
 
 
@@ -20,12 +22,12 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
     const { currentUser } = useAuth();
     const { caret, toggleCollapse, contentClasses } = useCollapse();
     const { username } = useParams({ from: "/_private/profile/$username" });
-    // const deleteUserUpdates = useDeleteUpdateMutation(queryKeys.profileKey(username));
+    const deleteUpdatesMutation = useDeleteUpdatesMutation(queryKeys.profileKey(username));
     const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<undefined | number>();
 
     const deleteUpdate = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);
-        // deleteUserUpdates.mutate({ updateIds: [updateId], returnData: true });
+        deleteUpdatesMutation.mutate({ updateIds: [updateId], returnData: true });
     };
 
     return (
@@ -41,7 +43,7 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                         </div>
                         {!followers &&
                             //@ts-expect-error
-                            <Link to={`/profile/$username/history`} params={{ username }}>
+                            <Link to="/profile/$username/history" params={{ username }}>
                                 <MutedText className="mt-1 text-sm hover:underline">All</MutedText>
                             </Link>
                         }
@@ -58,10 +60,10 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                             key={update.id}
                             update={update}
                             onDelete={deleteUpdate}
-                            // isPending={deleteUserUpdates.isPending}
                             //@ts-expect-error
                             username={followers && update?.username}
                             mediaIdBeingDeleted={mediaIdBeingDeleted}
+                            isPending={deleteUpdatesMutation.isPending}
                             //@ts-expect-error
                             canDelete={(currentUser?.id === update.userId) && !followers}
                         />

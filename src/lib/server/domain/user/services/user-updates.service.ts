@@ -15,6 +15,9 @@ interface LogUpdateParams {
 }
 
 
+type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: any; newValue: any };
+
+
 export class UserUpdatesService {
     private readonly updateThreshold = 300
 
@@ -27,6 +30,10 @@ export class UserUpdatesService {
 
     async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
         return this.userUpdatesRepository.getFollowsUpdates(userId, asPublic, limit);
+    }
+
+    async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        return this.userUpdatesRepository.deleteUserUpdates(userId, updateIds, returnData);
     }
 
     async logUpdate({ userId, mediaType, media, updateType, oldValue, newValue }: LogUpdateParams) {
@@ -62,5 +69,20 @@ export class UserUpdatesService {
             await db.delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
             await db.insert(userMediaUpdate).values(newUpdateData).execute();
         }
+    }
+
+    extractLogValues(updateType: UpdateType) {
+        const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
+            redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
+            status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
+            page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
+            chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
+            playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
+            tv: (os, ns) => ({
+                oldValue: { season: os?.season ?? null, episode: os?.episode ?? null },
+                newValue: { season: ns.season, episode: ns.episode },
+            }),
+        }
+        return logValueExtractors[updateType];
     }
 }

@@ -16,5 +16,9 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
     // @ts-expect-error
     const settings = await db.query.userMediaSettings.findMany({ where: eq(userMediaSettings.userId, session.user.id) });
 
-    return { ...session.user, searchSelector: session.user.searchSelector as ApiProviderType, settings };
+    return {
+        ...session.user,
+        searchSelector: session.user.searchSelector as ApiProviderType,
+        settings,
+    };
 });

@@ -1,15 +1,15 @@
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {CalendarDays, Users} from "lucide-react";
-import {profileOptions} from "@/lib/react-query/query-options";
 import {computeLevel, formatDateTime} from "@/lib/utils/functions";
 import {FollowButton} from "@/lib/components/user-profile/FollowButton";
+import {UserDataType} from "@/routes/_private/profile/$username/_header/index";
 
 
 interface ProfileHeaderProps {
     followId: number;
+    user: UserDataType;
     followStatus: boolean;
-    user: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userData"];
 }
 
 
@@ -54,8 +54,7 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                                 </div>
                                 <div className="flex items-center">
                                     <Users className="w-4 h-4 mr-2"/>
-                                    {/*//@ts-expect-error*/}
-                                    <Link to={`/profile/$username/followers`} params={{ username: user.name }}>
+                                    <Link to="/profile/$username/followers" params={{ username: user.name }}>
                                         <div className="hover:underline">Followers: {user.followersCount}</div>
                                     </Link>
                                 </div>

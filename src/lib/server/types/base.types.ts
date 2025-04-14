@@ -1,4 +1,5 @@
 import {SQL} from "drizzle-orm";
+import {authOptions} from "@/lib/react-query/query-options";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 
 
@@ -10,3 +11,6 @@ interface FilterDefinition {
 
 
 export type FilterDefinitions = Record<string, FilterDefinition>;
+
+
+export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];

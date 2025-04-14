@@ -2,14 +2,14 @@ import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {Cell, LabelList, Pie, PieChart} from "recharts";
-import {profileOptions} from "@/lib/react-query/query-options";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {MediaGlobalSummaryType, UserDataType} from "@/routes/_private/profile/$username/_header/index";
 
 
 interface GlobalStatsProps {
-    userData: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userData"];
-    global: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["mediaGlobalSummary"];
+    userData: UserDataType;
+    global: MediaGlobalSummaryType;
 }
 
 
@@ -28,8 +28,7 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
         }));
     }
 
-    // @ts-ignore
-    const renderCustomLabel = ({ cx, cy, viewBox, value }) => {
+    const renderCustomLabel = ({ cx, cy, viewBox, value }: any) => {
         // No render if angle is less than |20°|
         if (Math.abs(viewBox.endAngle - viewBox.startAngle) <= 20) return null;
 
@@ -69,7 +68,6 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                     )}
                                     <LabelList
                                         dataKey="percent"
-                                        //@ts-ignore
                                         content={renderCustomLabel}
                                     />
                                 </Pie>

@@ -1,8 +1,9 @@
 import {db} from "@/lib/server/database/db";
+import {Status} from "@/lib/server/utils/enums";
+import {followers, user} from "@/lib/server/database/schema";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {and, asc, count, desc, eq, inArray, isNotNull, like, ne, notInArray, sql, Table} from "drizzle-orm";
-import {followers, movies, moviesGenre, moviesLabels, moviesList, user} from "@/lib/server/database/schema";
+import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 
 
 const ALL_VALUE = "All";
@@ -10,45 +11,40 @@ const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
 
 
-export interface BaseMediaTableColumns {
-    id: typeof movies.id;
-    name: typeof movies.name;
-    apiId: typeof movies.apiId;
-    imageCover: typeof movies.imageCover;
-    releaseDate: typeof movies.releaseDate;
-}
+// interface BaseMediaTableColumns {
+//     id: typeof movies.id;
+//     name: typeof movies.name;
+//     apiId: typeof movies.apiId;
+//     imageCover: typeof movies.imageCover;
+//     releaseDate: typeof movies.releaseDate;
+// }
 
 
-interface BaseListTableColumns {
-    userId: typeof moviesList.userId;
-    rating: typeof moviesList.rating;
-    status: typeof moviesList.status;
-    comment: typeof moviesList.comment;
-    mediaId: typeof moviesList.mediaId;
-    favorite: typeof moviesList.favorite;
-}
+// interface BaseListTableColumns {
+//     userId: typeof moviesList.userId;
+//     rating: typeof moviesList.rating;
+//     status: typeof moviesList.status;
+//     comment: typeof moviesList.comment;
+//     mediaId: typeof moviesList.mediaId;
+//     favorite: typeof moviesList.favorite;
+// }
 
 
-interface BaseGenreTableColumns {
-    name: typeof moviesGenre.name;
-    mediaId: typeof moviesGenre.mediaId;
-}
+// interface BaseGenreTableColumns {
+//     name: typeof moviesGenre.name;
+//     mediaId: typeof moviesGenre.mediaId;
+// }
 
 
-interface BaseLabelTableColumns {
-    id: typeof moviesLabels.id;
-    name: typeof moviesLabels.name;
-    userId: typeof moviesLabels.userId;
-    mediaId: typeof moviesLabels.mediaId;
-}
+// interface BaseLabelTableColumns {
+//     id: typeof moviesLabels.id;
+//     name: typeof moviesLabels.name;
+//     userId: typeof moviesLabels.userId;
+//     mediaId: typeof moviesLabels.mediaId;
+// }
 
 
-export class BaseRepository<
-    TMediaTable extends Table & BaseMediaTableColumns,
-    TListTable extends Table & BaseListTableColumns,
-    TGenreTable extends Table & BaseGenreTableColumns,
-    TLabelTable extends Table & BaseLabelTableColumns,
-    TConfig extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable>
+export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
 > {
     protected readonly config: TConfig;
     protected readonly baseFilterDefinitions: FilterDefinitions;
@@ -149,7 +145,6 @@ export class BaseRepository<
                 commonGenreCount: similarSub.commonGenreCount,
             })
             .from(similarSub)
-            //@ts-expect-error
             .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
             .orderBy(desc(similarSub.commonGenreCount));
 
@@ -335,6 +330,74 @@ export class BaseRepository<
         };
     }
 
+    async topMetricStatsQueries(userId: number, statsConfig: Record<string, any>) {
+        const limit = statsConfig?.limit ?? 10;
+        const { mediaTable, listTable } = this.config;
+        const minRatingCount = statsConfig?.minRatingCount ?? 5;
+        const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, statusFilters } = statsConfig;
+
+        const countAlias = sql<number>`countDistinct(${metricNameColumn})`
+        const topValuesQuery = db
+            .select({ name: metricNameColumn, value: countAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                notInArray(listTable.status, statusFilters)
+            ))
+            .groupBy(metricNameColumn)
+            .orderBy(asc(countAlias))
+            .limit(limit)
+
+        const avgRatingAlias = sql<number>`avgDistinct(${metricNameColumn})`;
+        const ratingCountAlias = sql<number>`count(${listTable.rating})`;
+        const topRatedQuery = db
+            .select({ name: metricNameColumn, value: avgRatingAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                isNotNull(listTable.rating), notInArray(listTable.status, statusFilters),
+            ))
+            .groupBy(metricNameColumn)
+            .having(gte(ratingCountAlias, minRatingCount))
+            .orderBy(asc(avgRatingAlias))
+            .limit(limit);
+
+        const topFavoritedQuery = db
+            .select({ name: metricNameColumn, value: countAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                eq(listTable.isFavorite, true), notInArray(listTable.status, statusFilters),
+            ))
+            .groupBy(metricNameColumn)
+            .orderBy(asc(countAlias))
+            .limit(limit);
+
+        const [topValuesResult, topRatedResult, topFavoritedResult] =
+            await Promise.all([topValuesQuery.execute(), topRatedQuery.execute(), topFavoritedQuery.execute()]);
+
+        return {
+            topValues: topValuesResult.map((row: any) => ({
+                name: row.name,
+                value: Number(row.value) || 0,
+            })),
+            topRated: topRatedResult.map((row: any) => ({
+                name: row.name,
+                value: Math.round((Number(row.value) || 0) * 100) / 100,
+            })),
+            topFavorited: topFavoritedResult.map((row: any) => ({
+                name: row.name,
+                value: Number(row.value) || 0,
+            })),
+        };
+    }
+
     async computeRatingStats(userId: number) {
         const { listTable } = this.config;
 
@@ -378,9 +441,18 @@ export class BaseRepository<
         return releaseDates;
     }
 
-    async computeGenresStats(_userId: number) {
-        // TODO: implement
-        return [];
+    async computeGenresStats(userId: number) {
+        const { genreTable, listTable } = this.config;
+
+        const metricStatsConfig = {
+            metricTable: genreTable,
+            metricNameColumn: genreTable.name,
+            metricIdColumn: genreTable.mediaId,
+            mediaLinkColumn: listTable.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+
+        return await this.topMetricStatsQueries(userId, metricStatsConfig);
     }
 }
 

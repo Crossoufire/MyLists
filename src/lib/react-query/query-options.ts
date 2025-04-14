@@ -1,9 +1,9 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/user";
-import {getUserProfile} from "@/lib/server/functions/profile";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
+import {getUserProfile, getUsersFollowers} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 
 
@@ -69,7 +69,7 @@ export const queryKeys: QueryKeys = {
 export const authOptions = () => queryOptions({
     queryKey: queryKeys.authKey(),
     queryFn: () => getCurrentUser(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
 });
 
 export const profileOptions = (username: string) => queryOptions({
@@ -106,4 +106,9 @@ export const filterSearchOptions = (mediaType: MediaType, username: string, quer
     queryFn: () => getMediaListSearchFilters({ data: { mediaType, username, query, job } }),
     staleTime: 2 * 60 * 1000,
     enabled: query.length >= 2,
+});
+
+export const followersOptions = (username: string) => queryOptions({
+    queryKey: queryKeys.followersKey(username),
+    queryFn: () => getUsersFollowers({ data: { username } }),
 });

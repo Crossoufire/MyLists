@@ -4,13 +4,13 @@ import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {profileOptions} from "@/lib/react-query/query-options";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {UserFollowsType} from "@/routes/_private/profile/$username/_header/index";
 
 
 interface ProfileFollowsProps {
     username: string;
-    follows: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userFollows"];
+    follows: UserFollowsType;
 }
 
 
@@ -40,8 +40,12 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                         <div className="text-muted-foreground italic">No follows to display yet</div>
                         :
                         follows.follows.map(follow =>
-                            <BlockLink key={follow.username} to={`/profile/${follow.username}`} privacy={follow.privacy}>
-                                {/*//@ts-ignore*/}
+                            <BlockLink
+                                key={follow.username}
+                                privacy={follow.privacy}
+                                to={"/profile/$username"}
+                                params={{ username: follow.username }}
+                            >
                                 <Tooltip text={follow.username}>
                                     <img
                                         className="w-14 h-14 bg-neutral-500 rounded-full"

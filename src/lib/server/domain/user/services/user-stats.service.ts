@@ -12,12 +12,7 @@ export class UserStatsService {
         private mediaRepoRegistry: typeof MediaRepoRegistry,
         private achievementsRepository: typeof AchievementsRepository,
         private userUpdatesRepository: typeof UserUpdatesRepository,
-    ) {
-        this.repository = repository;
-        this.mediaRepoRegistry = mediaRepoRegistry;
-        this.userUpdatesRepository = userUpdatesRepository;
-        this.achievementsRepository = achievementsRepository;
-    }
+    ) {}
 
     async getGlobalStats(userId: number) {
         const activeSettings = await this.repository.getActiveSettings(userId);
@@ -151,8 +146,7 @@ export class UserStatsService {
         const avgRated = totalRated === 0 ? 0 : setting.sumEntriesRated / totalRated;
         const totalFavorites = setting.entriesFavorites;
         const totalComments = setting.entriesCommented;
-
-        // TODO: add statuses
+        const statusesCounts = Object.entries(setting.statusCounts).map(([status, count]) => ({ status, count }));
 
         return {
             totalEntries,
@@ -163,6 +157,7 @@ export class UserStatsService {
             avgRated,
             totalFavorites,
             totalComments,
+            statusesCounts
         };
     }
 }

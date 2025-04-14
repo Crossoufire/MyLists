@@ -15,7 +15,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
-        
+
         //@ts-expect-error
         const mediaService = container.registries.mediaService.getService(mediaType);
 
@@ -31,7 +31,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         //@ts-expect-error
         await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
 
-        const { oldValue, newValue } = logValueExtractors[updateType as UpdateType](oldState, newState);
+        const { oldValue, newValue } = userUpdatesService.extractLogValues(updateType)(oldState, newState);
 
         await userUpdatesService.logUpdate({
             //@ts-expect-error
@@ -45,16 +45,11 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
     });
 
 
-type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: any; newValue: any };
-
-const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
-    redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
-    status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
-    page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
-    chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
-    playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
-    tv: (os, ns) => ({
-        oldValue: { season: os?.season ?? null, episode: os?.episode ?? null },
-        newValue: { season: ns.season, episode: ns.episode },
-    }),
-}
+export const postDeleteUserUpdates = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .validator((data: any) => data as { updateIds: number[], returnData: boolean })
+    .handler(async ({ data: { updateIds, returnData }, context: { currentUser } }) => {
+        const userUpdatesService = container.services.userUpdates;
+        //@ts-expect-error
+        return userUpdatesService.deleteUserUpdates(currentUser.id, updateIds, returnData);
+    });

@@ -2,13 +2,15 @@ import {SearchBar} from "./SearchBar";
 import {useAuth} from "@/lib/hooks/use-auth";
 import React, {useRef, useState} from "react";
 import {Button} from "@/lib/components/ui/button";
+import {useQueryClient} from "@tanstack/react-query";
 import {useSheet} from "@/lib/contexts/sheet-context";
-import {Link as NavLink} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {LoginForm} from "@/lib/components/auth/LoginForm";
+import {queryKeys} from "@/lib/react-query/query-options";
 import {RegisterForm} from "@/lib/components/auth/RegisterForm";
 import {NavMediaDrop} from "@/lib/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
+import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
@@ -16,14 +18,19 @@ import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuLi
 
 
 export const Navbar = () => {
+    const router = useRouter();
+    const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const queryClient = useQueryClient();
     const popRef = useRef<HTMLButtonElement>(null);
     const { sheetOpen, setSheetOpen } = useSheet();
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
 
-    const logoutUser = () => {
-        // TODO - logout
+    const logoutUser = async () => {
+        await router.invalidate();
+        await queryClient.setQueryData(queryKeys.authKey(), null);
+        await navigate({ to: "/", replace: true });
     };
 
     // Login page and public pages when not logged
