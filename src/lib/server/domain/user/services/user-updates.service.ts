@@ -28,6 +28,10 @@ export class UserUpdatesService {
         return this.userUpdatesRepository.getUserUpdates(userId, limit);
     }
 
+    async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
+        return this.userUpdatesRepository.getUserUpdatesPaginated(userId, filters)
+    }
+
     async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
         return this.userUpdatesRepository.getFollowsUpdates(userId, asPublic, limit);
     }

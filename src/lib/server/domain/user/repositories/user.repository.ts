@@ -77,6 +77,30 @@ export class UserRepository {
         return db.update(user).set({ profileViews: sql`${user.profileViews} + 1` }).where(eq(user.id, userId));
     }
 
+    static async getUserFollowers({ userId, limit = 8 }: { userId: number, limit?: number }) {
+        const totalCountResult = await db
+            .select({ value: sql<number>`count()` })
+            .from(followers)
+            .where(eq(followers.followedId, userId));
+
+        const total = totalCountResult[0]?.value ?? 0;
+
+        const followersUsers = await db
+            .select({
+                id: user.id,
+                username: user.name,
+                image: user.image,
+                privacy: user.privacy,
+            })
+            .from(followers)
+            .innerJoin(user, eq(followers.followerId, user.id))
+            .where(eq(followers.followedId, userId))
+            .orderBy(asc(user.name))
+            .limit(limit);
+
+        return { total: total, followers: followersUsers };
+    }
+
     static async getUserFollows({ userId, limit = 8 }: { userId: number, limit?: number }) {
         const totalCountResult = await db
             .select({ value: sql<number>`count()` })

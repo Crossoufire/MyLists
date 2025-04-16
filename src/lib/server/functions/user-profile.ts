@@ -77,5 +77,22 @@ export const getUsersFollowers = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user } }) => {
         const userService = container.services.user;
-        return userService.getUserFollows(user.id, undefined);
+        return userService.getUserFollowers(user.id, 999999);
+    });
+
+
+export const getUsersFollows = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .handler(async ({ context: { user } }) => {
+        const userService = container.services.user;
+        return userService.getUserFollows(user.id, 999999);
+    });
+
+
+export const getAllUpdatesHistory = createServerFn({ method: "GET" })
+    .middleware([authorizationMiddleware])
+    .validator((data: any) => data)
+    .handler(async ({ context: { user }, data }) => {
+        const userUpdatesService = container.services.userUpdates;
+        return userUpdatesService.getUserUpdatesPaginated(user.id, { ...data.filters });
     });

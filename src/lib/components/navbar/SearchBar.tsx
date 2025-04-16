@@ -67,13 +67,13 @@ export const SearchBar = () => {
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value={ApiProviderType.TMDB}>Media</SelectItem>
-                                {currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active &&
+                                {currentUser?.settings?.find(s => s.mediaType === MediaType.BOOKS)?.active &&
                                     <SelectItem value={ApiProviderType.BOOKS}>Books</SelectItem>
                                 }
-                                {currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active &&
+                                {currentUser?.settings?.find(s => s.mediaType === MediaType.GAMES)?.active &&
                                     <SelectItem value={ApiProviderType.IGDB}>Games</SelectItem>
                                 }
-                                {currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active &&
+                                {currentUser?.settings?.find(s => s.mediaType === MediaType.MANGA)?.active &&
                                     <SelectItem value={ApiProviderType.MANGA}>Manga</SelectItem>
                                 }
                                 <SelectItem value={ApiProviderType.USERS}>Users</SelectItem>

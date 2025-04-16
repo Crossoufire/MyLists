@@ -58,28 +58,28 @@ main {
     height: 3px;
 }
 
-/*#nprogress .peg {*/
-/*    display: block;*/
-/*    position: absolute;*/
-/*    right: 0;*/
-/*    width: 100px;*/
-/*    height: 100%;*/
-/*    box-shadow: 0 0 10px hsl(var(--primary)),*/
-/*    0 0 5px hsl(var(--primary));*/
-/*    opacity: 1;*/
-/*    -webkit-transform: rotate(3deg) translate(0px, -4px);*/
-/*    -ms-transform: rotate(3deg) translate(0px, -4px);*/
-/*    transform: rotate(3deg) translate(0px, -4px);*/
-/*}*/
+#nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 10px hsl(var(--primary)),
+    0 0 5px hsl(var(--primary));
+    opacity: 1;
+    -webkit-transform: rotate(3deg) translate(0px, -4px);
+    -ms-transform: rotate(3deg) translate(0px, -4px);
+    transform: rotate(3deg) translate(0px, -4px);
+}
 
-/*.nprogress-custom-parent {*/
-/*    overflow: hidden;*/
-/*    position: relative;*/
-/*}*/
+.nprogress-custom-parent {
+    overflow: hidden;
+    position: relative;
+}
 
-/*.nprogress-custom-parent #nprogress .bar {*/
-/*    position: absolute;*/
-/*}*/
+.nprogress-custom-parent #nprogress .bar {
+    position: absolute;
+}
 
 
 /* --- TAILWIND --------------------------------------------------------------------------- */
@@ -136,11 +136,6 @@ main {
     --color-input: var(--input);
     --color-ring: var(--ring);
 
-    --color-1: var(--color-1);
-    --color-2: var(--color-2);
-    --color-3: var(--color-3);
-    --color-4: var(--color-4);
-    --color-5: var(--color-5);
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -149,8 +144,25 @@ main {
 
 
 @layer base {
+    dialog {
+        margin: auto;
+    }
+    
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+
     * {
-        @apply border-border outline-ring/50;
+        @apply border-border;
     }
 
     body {

@@ -2,24 +2,24 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {BlockLink} from "@/lib/components/app/BlockLink";
-import {followersOptions} from "@/lib/react-query/query-options";
+import {followsOptions} from "@/lib/react-query/query-options";
 
 
-export const Route = createFileRoute("/_private/profile/$username/_header/followers")({
+export const Route = createFileRoute("/_private/profile/$username/_header/follows")({
     loader: ({ context: { queryClient }, params: { username } }) =>
-        queryClient.ensureQueryData(followersOptions(username)),
-    component: ProfileFollowers,
+        queryClient.ensureQueryData(followsOptions(username)),
+    component: ProfileFollows,
 })
 
 
-function ProfileFollowers() {
+function ProfileFollows() {
     const { username } = Route.useParams();
-    const apiData = useSuspenseQuery(followersOptions(username)).data;
+    const apiData = useSuspenseQuery(followsOptions(username)).data;
 
     return (
-        <PageTitle title="Followers">
+        <PageTitle title="Follows">
             <div className="flex justify-start flex-wrap gap-11">
-                {apiData.followers.map(user =>
+                {apiData.follows.map(user =>
                     <BlockLink
                         key={user.id}
                         privacy={user.privacy}

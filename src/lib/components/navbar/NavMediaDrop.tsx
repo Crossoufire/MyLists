@@ -14,11 +14,11 @@ export const NavMediaDrop = () => {
 
     const menuItems = [
         { url: `/list/series`, media: MediaType.SERIES, cond: true },
-        { url: `/list/anime`, media: MediaType.ANIME, cond: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active },
+        { url: `/list/anime`, media: MediaType.ANIME, cond: currentUser?.settings?.find(s => s.mediaType === MediaType.ANIME)?.active },
         { url: `/list/movies`, media: MediaType.MOVIES, cond: true },
-        { url: `/list/books`, media: MediaType.BOOKS, cond: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active },
-        { url: `/list/games`, media: MediaType.GAMES, cond: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active },
-        { url: `/list/manga`, media: MediaType.MANGA, cond: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active },
+        { url: `/list/books`, media: MediaType.BOOKS, cond: currentUser?.settings?.find(s => s.mediaType === MediaType.BOOKS)?.active },
+        { url: `/list/games`, media: MediaType.GAMES, cond: currentUser?.settings?.find(s => s.mediaType === MediaType.GAMES)?.active },
+        { url: `/list/manga`, media: MediaType.MANGA, cond: currentUser?.settings?.find(s => s.mediaType === MediaType.MANGA)?.active },
     ];
 
     return (

@@ -35,6 +35,10 @@ export class UserService {
         return this.userRepository.incrementMediaTypeView(userId, mediaType);
     }
 
+    async getUserFollowers(userId: number, limit = 8) {
+        return this.userRepository.getUserFollowers({ userId, limit });
+    }
+
     async getUserFollows(userId: number, limit = 8) {
         return this.userRepository.getUserFollows({ userId, limit });
     }

@@ -46,8 +46,8 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
             return;
         }
 
+        await queryClient.fetchQuery({ queryKey: queryKeys.authKey() });
         await router.invalidate();
-        await queryClient.setQueryData(queryKeys.authKey(), data.user);
         await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
     };
 

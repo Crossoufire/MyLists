@@ -1,10 +1,11 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/user";
 import {getSearchResults} from "@/lib/server/functions/search";
+import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
-import {getUserProfile, getUsersFollowers} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
+import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -111,4 +112,19 @@ export const filterSearchOptions = (mediaType: MediaType, username: string, quer
 export const followersOptions = (username: string) => queryOptions({
     queryKey: queryKeys.followersKey(username),
     queryFn: () => getUsersFollowers({ data: { username } }),
+});
+
+export const followsOptions = (username: string) => queryOptions({
+    queryKey: queryKeys.followsKey(username),
+    queryFn: () => getUsersFollows({ data: { username } }),
+});
+
+export const allUpdatesOptions = (username: string, filters: Record<string, any>) => queryOptions({
+    queryKey: queryKeys.allUpdatesKey(username, filters),
+    queryFn: () => getAllUpdatesHistory({ data: { username, filters } }),
+});
+
+export const hallOfFameOptions = (search: Record<string, any>) => queryOptions({
+    queryKey: queryKeys.hofKey(search),
+    queryFn: () => getHallOfFame({ data: search }),
 });

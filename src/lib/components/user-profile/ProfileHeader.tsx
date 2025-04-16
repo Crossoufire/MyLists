@@ -16,8 +16,7 @@ interface ProfileHeaderProps {
 export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderProps) => {
     const { currentUser } = useAuth();
     const isConnected = (!!currentUser);
-    // @ts-expect-error
-    const isCurrent = (currentUser?.id === user.id);
+    const isCurrent = (currentUser?.id === user.id.toString());
     const userLevel = computeLevel(user.userMediaSettings.reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0));
 
     return (
@@ -29,7 +28,7 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                             <img
                                 src={user.image!}
                                 alt="profile-picture"
-                                className="rounded-full h-[100px] w-[100px] border-[4px] border-amber-600 bg-neutral-500"
+                                className="rounded-full h-[100px] w-[100px] border-4 border-amber-600 bg-neutral-500"
                             />
                             <div className="absolute -bottom-2 -right-2 text-xs font-bold px-2 py-1 rounded-full
                             bg-gradient-to-r from-blue-600 to-violet-600">

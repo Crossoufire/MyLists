@@ -1,6 +1,7 @@
 import {SearchBar} from "./SearchBar";
 import {useAuth} from "@/lib/hooks/use-auth";
 import React, {useRef, useState} from "react";
+import authClient from "@/lib/utils/auth-client";
 import {Button} from "@/lib/components/ui/button";
 import {useQueryClient} from "@tanstack/react-query";
 import {useSheet} from "@/lib/contexts/sheet-context";
@@ -14,7 +15,7 @@ import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
-import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList} from "@/lib/components/ui/navigation-menu";
+import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
 
 
 export const Navbar = () => {
@@ -28,9 +29,11 @@ export const Navbar = () => {
     const [showRegister, setShowRegister] = useState(false);
 
     const logoutUser = async () => {
+        await authClient.signOut();
         await router.invalidate();
-        await queryClient.setQueryData(queryKeys.authKey(), null);
+        queryClient.setQueryData(queryKeys.authKey(), null);
         await navigate({ to: "/", replace: true });
+        queryClient.removeQueries();
     };
 
     // Login page and public pages when not logged
@@ -67,9 +70,9 @@ export const Navbar = () => {
                                 <SearchBar/>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<NavLink to="/hall-of-fame" className={navStyle()}>*/}
-                                {/*    HoF*/}
-                                {/*</NavLink>*/}
+                                <NavLink to="/hall-of-fame" className={navStyle()}>
+                                    HoF
+                                </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 {/*<NavLink to="/global-stats" className={navStyle()}>*/}

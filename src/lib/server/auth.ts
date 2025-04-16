@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import {db} from "./database/db";
 import {betterAuth} from "better-auth";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
+import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
 
@@ -68,7 +69,8 @@ export const auth = betterAuth({
                 returned: true,
                 input: false,
             },
-        }
+        },
+
     },
     session: {
         cookieCache: {
@@ -127,7 +129,13 @@ export const auth = betterAuth({
         },
     },
     advanced: {
-        generateId: false,
         cookiePrefix: "mylists",
+        database: {
+            useNumberId: true,
+            generateId: false,
+        },
     },
+    plugins: [
+        reactStartCookies(),
+    ]
 });

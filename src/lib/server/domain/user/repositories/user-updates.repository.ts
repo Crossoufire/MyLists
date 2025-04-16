@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
 import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
-import {and, count, desc, eq, getTableColumns, inArray, sql} from "drizzle-orm";
+import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
 
 
 export class UserUpdatesRepository {
@@ -11,6 +11,29 @@ export class UserUpdatesRepository {
             orderBy: [desc(userMediaUpdate.timestamp)],
             limit: limit,
         });
+    }
+
+    static async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
+        const pageIndex = filters?.pageIndex ?? 0;
+        const limit = filters?.pageSize ?? 25;
+        const search = filters?.search ?? "";
+        const offset = pageIndex * limit;
+
+        const totalCountResult = await db
+            .select({ count: sql<number>`count()` })
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+
+        const historyResult = await db
+            .select()
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .offset(offset)
+            .limit(limit)
+            .execute();
+
+        return { total: totalCountResult[0]?.count ?? 0, items: historyResult };
     }
 
     static async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
