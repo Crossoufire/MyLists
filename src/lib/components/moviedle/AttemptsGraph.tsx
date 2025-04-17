@@ -13,7 +13,7 @@ export const AttemptsGraph = ({ attemptsData, avgAttempts }: AttemptsGraphProps)
         <ResponsiveContainer>
             <LineChart data={attemptsData} margin={{ left: -40, top: 5, right: 5, bottom: 5 }}>
                 <XAxis
-                    dataKey="date"
+                    dataKey="completionTime"
                     tick={{ fill: "#e2e2e2" }}
                 />
                 <YAxis

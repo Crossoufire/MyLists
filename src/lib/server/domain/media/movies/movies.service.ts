@@ -7,6 +7,10 @@ export class MoviesService {
     constructor(private repository: MoviesRepository) {
     }
 
+    async getById(mediaId: number) {
+        return this.repository.findById(mediaId);
+    }
+
     async getMediaDetails(mediaId: number, external: boolean, strategy: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 

@@ -13,7 +13,7 @@ import {dailyMediadleOptions} from "@/lib/react-query/query-options";
 import {AttemptsGraph} from "@/lib/components/moviedle/AttemptsGraph";
 import {CountdownTimer} from "@/lib/components/moviedle/CountdownTimer";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy,} from "lucide-react";
+import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
 
 
 // noinspection JSCheckFunctionSignatures
@@ -66,7 +66,7 @@ function MediadlePage() {
                                 {mediadleData.nonPixelatedCover ?
                                     <Link
                                         to="/details/$mediaType/$mediaId"
-                                        params={{ mediaType: MediaType.MOVIES, mediaId: mediadleData.mediaId }}
+                                        params={{ mediaType: MediaType.MOVIES, mediaId: mediadleData.mediaId.toString() }}
                                         search={{ external: false }}
                                     >
                                         <img
@@ -111,20 +111,20 @@ function MediadlePage() {
                                                 disabled={mediadleData.completed}
                                                 placeholder={"Guess the movie title..."}
                                             />
-                                            {showSuggestions && data.length > 0 && (
-                                                <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg max-h-[150px] overflow-y-auto">
-                                                    {data.map((suggestion, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            role="button"
-                                                            className="px-4 py-2 hover:bg-gray-700"
-                                                            onClick={() => onClickSuggestion(suggestion)}
-                                                        >
-                                                            {suggestion}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            {/*{showSuggestions && data.length > 0 && (*/}
+                                            {/*    <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg max-h-[150px] overflow-y-auto">*/}
+                                            {/*        {data.map((suggestion, idx) => (*/}
+                                            {/*            <div*/}
+                                            {/*                key={idx}*/}
+                                            {/*                role="button"*/}
+                                            {/*                className="px-4 py-2 hover:bg-gray-700"*/}
+                                            {/*                onClick={() => onClickSuggestion(suggestion)}*/}
+                                            {/*            >*/}
+                                            {/*                {suggestion}*/}
+                                            {/*            </div>*/}
+                                            {/*        ))}*/}
+                                            {/*    </div>*/}
+                                            {/*)}*/}
                                         </div>
                                         <Button className="w-full" onClick={onClickGuess} disabled={!guess}>
                                             Submit Guess
@@ -164,7 +164,7 @@ function MediadlePage() {
                             <StatsCard
                                 icon={Award}
                                 label="Win Rate"
-                                value={`${mediadleData?.stats?.winRate ?? 0.0}%`}
+                                value={`${mediadleData?.stats?.winRate?.toFixed(1) ?? 0.0}%`}
                                 color="text-green-600"
                             />
                             <StatsCard
@@ -182,13 +182,13 @@ function MediadlePage() {
                             <StatsCard
                                 icon={Target}
                                 label="Avg. Attempts"
-                                value={mediadleData?.stats?.averageAttempts ?? 0.0}
                                 color="text-blue-600"
+                                value={mediadleData?.stats?.averageAttempts?.toFixed(2) ?? 0.0}
                             />
                         </div>
                         <div className="h-[350px]">
                             <AttemptsGraph
-                                attemptsData={mediadleData?.stats?.attemptsList ?? []}
+                                attemptsData={mediadleData?.stats?.attempts ?? []}
                                 avgAttempts={mediadleData?.stats?.averageAttempts ?? 0}
                             />
                         </div>

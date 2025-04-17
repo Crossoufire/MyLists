@@ -107,8 +107,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .select()
             .from(mediaTable)
             .where(eq(mediaTable.id, mediaId))
-            .limit(1)
-            .then((results) => results[0] ?? null);
+            .get()
     }
 
     async findByApiId(apiId: number) {

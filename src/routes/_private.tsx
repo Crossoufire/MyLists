@@ -9,8 +9,6 @@ export const Route = createFileRoute("/_private")({
             .some(path => location.pathname.startsWith(path)) ? location.pathname.split("/")[1] : "other";
 
         const currentUser = queryClient.getQueryData(queryKeys.authKey()) as CurrentUser;
-        console.log("PRIVATE", currentUser, new Date().toISOString());
-
 
         if (routeType === "other" && !currentUser) {
             throw redirect({ to: "/" });

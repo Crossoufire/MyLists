@@ -6,7 +6,6 @@ import {createFileRoute, redirect} from "@tanstack/react-router";
 export const Route = createFileRoute("/_public")({
     beforeLoad: ({ context: { queryClient } }) => {
         const currentUser = queryClient.getQueryData(queryKeys.authKey()) as CurrentUser;
-        console.log("PUBLIC", currentUser, new Date().toISOString());
 
         if (currentUser) {
             throw redirect({ to: "/profile/$username", params: { username: currentUser.name } });

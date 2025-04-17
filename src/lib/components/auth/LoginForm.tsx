@@ -6,7 +6,7 @@ import authClient from "@/lib/utils/auth-client";
 import {FaGithub, FaGoogle} from "react-icons/fa";
 import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
-import {queryKeys} from "@/lib/react-query/query-options";
+import {authOptions} from "@/lib/react-query/query-options";
 import {Link, useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
@@ -46,7 +46,7 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
             return;
         }
 
-        await queryClient.fetchQuery({ queryKey: queryKeys.authKey() });
+        await queryClient.fetchQuery(authOptions());
         await router.invalidate();
         await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
     };
