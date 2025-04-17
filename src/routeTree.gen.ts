@@ -23,6 +23,7 @@ import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-pas
 import { Route as PrivateMoviedleRouteImport } from './routes/_private/moviedle/route'
 import { Route as PrivateHallOfFameRouteImport } from './routes/_private/hall-of-fame/route'
 import { Route as PrivateComingNextRouteImport } from './routes/_private/coming-next/route'
+import { Route as PrivateAchievementsUsernameImport } from './routes/_private/achievements/$username'
 import { Route as PrivateProfileUsernameHeaderImport } from './routes/_private/profile/$username/_header'
 import { Route as PrivateDetailsMediaTypeMediaIdImport } from './routes/_private/details/$mediaType/$mediaId'
 import { Route as PrivateListMediaTypeUsernameRouteImport } from './routes/_private/list/$mediaType/$username.route'
@@ -102,6 +103,13 @@ const PrivateProfileUsernameRoute = PrivateProfileUsernameImport.update({
   path: '/profile/$username',
   getParentRoute: () => PrivateRoute,
 } as any)
+
+const PrivateAchievementsUsernameRoute =
+  PrivateAchievementsUsernameImport.update({
+    id: '/achievements/$username',
+    path: '/achievements/$username',
+    getParentRoute: () => PrivateRoute,
+  } as any)
 
 const PrivateProfileUsernameHeaderRoute =
   PrivateProfileUsernameHeaderImport.update({
@@ -225,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexImport
       parentRoute: typeof PublicImport
     }
+    '/_private/achievements/$username': {
+      id: '/_private/achievements/$username'
+      path: '/achievements/$username'
+      fullPath: '/achievements/$username'
+      preLoaderRoute: typeof PrivateAchievementsUsernameImport
+      parentRoute: typeof PrivateImport
+    }
     '/_private/list/$mediaType/$username': {
       id: '/_private/list/$mediaType/$username'
       path: '/list/$mediaType/$username'
@@ -329,6 +344,7 @@ interface PrivateRouteChildren {
   PrivateComingNextRouteRoute: typeof PrivateComingNextRouteRoute
   PrivateHallOfFameRouteRoute: typeof PrivateHallOfFameRouteRoute
   PrivateMoviedleRouteRoute: typeof PrivateMoviedleRouteRoute
+  PrivateAchievementsUsernameRoute: typeof PrivateAchievementsUsernameRoute
   PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute
   PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
   PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren
@@ -338,6 +354,7 @@ const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateComingNextRouteRoute: PrivateComingNextRouteRoute,
   PrivateHallOfFameRouteRoute: PrivateHallOfFameRouteRoute,
   PrivateMoviedleRouteRoute: PrivateMoviedleRouteRoute,
+  PrivateAchievementsUsernameRoute: PrivateAchievementsUsernameRoute,
   PrivateListMediaTypeUsernameRouteRoute:
     PrivateListMediaTypeUsernameRouteRoute,
   PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
@@ -370,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/': typeof PublicIndexRoute
+  '/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
@@ -389,6 +407,7 @@ export interface FileRoutesByTo {
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/': typeof PublicIndexRoute
+  '/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
@@ -409,6 +428,7 @@ export interface FileRoutesById {
   '/_universal/features': typeof UniversalFeaturesRoute
   '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/_public/': typeof PublicIndexRoute
+  '/_private/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/_private/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
@@ -431,6 +451,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/privacy-policy'
     | '/'
+    | '/achievements/$username'
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
@@ -449,6 +470,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/privacy-policy'
     | '/'
+    | '/achievements/$username'
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
@@ -467,6 +489,7 @@ export interface FileRouteTypes {
     | '/_universal/features'
     | '/_universal/privacy-policy'
     | '/_public/'
+    | '/_private/achievements/$username'
     | '/_private/list/$mediaType/$username'
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
@@ -517,6 +540,7 @@ export const routeTree = rootRoute
         "/_private/coming-next",
         "/_private/hall-of-fame",
         "/_private/moviedle",
+        "/_private/achievements/$username",
         "/_private/list/$mediaType/$username",
         "/_private/details/$mediaType/$mediaId",
         "/_private/profile/$username"
@@ -557,6 +581,10 @@ export const routeTree = rootRoute
     "/_public/": {
       "filePath": "_public/index.tsx",
       "parent": "/_public"
+    },
+    "/_private/achievements/$username": {
+      "filePath": "_private/achievements/$username.tsx",
+      "parent": "/_private"
     },
     "/_private/list/$mediaType/$username": {
       "filePath": "_private/list/$mediaType/$username.route.tsx",

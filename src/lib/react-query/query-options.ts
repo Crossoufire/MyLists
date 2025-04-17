@@ -1,10 +1,11 @@
 import {queryOptions} from "@tanstack/react-query";
-import {getCurrentUser} from "@/lib/server/functions/user";
+import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
+import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
@@ -160,4 +161,9 @@ export const notificationsOptions = () => queryOptions({
     queryFn: () => getNotifications(),
     meta: { errorMessage: "An error occurred fetching the notifications" },
     enabled: false,
+});
+
+export const achievementOptions = (username: string) => queryOptions({
+    queryKey: queryKeys.achievementPageKey(username),
+    queryFn: () => getUserAchievements({ data: { username } }),
 });
