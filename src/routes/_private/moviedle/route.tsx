@@ -4,15 +4,15 @@ import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Progress} from "@/lib/components/ui/progress";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {StatsCard} from "@/lib/components/moviedle/StatsCard";
-import {dailyMediadleOptions} from "@/lib/react-query/query-options";
+import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {AttemptsGraph} from "@/lib/components/moviedle/AttemptsGraph";
 import {CountdownTimer} from "@/lib/components/moviedle/CountdownTimer";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-query/query-options";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
 
 
@@ -29,15 +29,15 @@ function MediadlePage() {
     const [debouncedSearch] = useDebounce(guess, 350);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
-    // const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
+    const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 
     const onInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setGuess(ev.target.value);
         setShowSuggestions(true);
     };
 
-    const onClickSuggestion = (suggestion: string) => {
-        setGuess(suggestion);
+    const onClickSuggestion = (suggestionName: string) => {
+        setGuess(suggestionName);
         setShowSuggestions(false);
     };
 
@@ -111,20 +111,21 @@ function MediadlePage() {
                                                 disabled={mediadleData.completed}
                                                 placeholder={"Guess the movie title..."}
                                             />
-                                            {/*{showSuggestions && data.length > 0 && (*/}
-                                            {/*    <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg max-h-[150px] overflow-y-auto">*/}
-                                            {/*        {data.map((suggestion, idx) => (*/}
-                                            {/*            <div*/}
-                                            {/*                key={idx}*/}
-                                            {/*                role="button"*/}
-                                            {/*                className="px-4 py-2 hover:bg-gray-700"*/}
-                                            {/*                onClick={() => onClickSuggestion(suggestion)}*/}
-                                            {/*            >*/}
-                                            {/*                {suggestion}*/}
-                                            {/*            </div>*/}
-                                            {/*        ))}*/}
-                                            {/*    </div>*/}
-                                            {/*)}*/}
+                                            {showSuggestions && data.length > 0 && (
+                                                <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg
+                                                max-h-[150px] overflow-y-auto">
+                                                    {data.map((suggestion, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            role="button"
+                                                            className="px-4 py-2 hover:bg-gray-700"
+                                                            onClick={() => onClickSuggestion(suggestion.name)}
+                                                        >
+                                                            {suggestion.name}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                         <Button className="w-full" onClick={onClickGuess} disabled={!guess}>
                                             Submit Guess

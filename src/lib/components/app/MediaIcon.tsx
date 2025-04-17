@@ -5,7 +5,7 @@ import {getMediaColor, getMediaIcon} from "@/lib/utils/functions";
 interface MediaIconProps {
     size?: number;
     className?: string;
-    mediaType: MediaType;
+    mediaType: MediaType | "user";
 }
 
 

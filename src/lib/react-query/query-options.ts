@@ -1,11 +1,12 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/user";
 import {getSearchResults} from "@/lib/server/functions/search";
-import {getDailyMediadle} from "@/lib/server/functions/moviedle";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
+import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
+import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 
@@ -139,4 +140,24 @@ export const upcomingOptions = () => queryOptions({
 export const dailyMediadleOptions = () => queryOptions({
     queryKey: queryKeys.dailyMediadleKey(),
     queryFn: () => getDailyMediadle(),
+});
+
+export const mediadleSuggestionsOptions = (query: string) => queryOptions({
+    queryKey: queryKeys.mediadleSuggestionsKey(query),
+    queryFn: () => getMediadleSuggestions({ data: { query } }),
+    staleTime: 2 * 60 * 1000,
+    enabled: query.length >= 2,
+});
+
+export const notificationsCountOptions = () => queryOptions({
+    queryKey: queryKeys.notificationCountKey(),
+    queryFn: () => getNotificationsCount(),
+    meta: { errorMessage: "An error occurred fetching the notifications count" },
+});
+
+export const notificationsOptions = () => queryOptions({
+    queryKey: queryKeys.notificationsKey(),
+    queryFn: () => getNotifications(),
+    meta: { errorMessage: "An error occurred fetching the notifications" },
+    enabled: false,
 });

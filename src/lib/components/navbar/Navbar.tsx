@@ -11,6 +11,7 @@ import {queryKeys} from "@/lib/react-query/query-options";
 import {RegisterForm} from "@/lib/components/auth/RegisterForm";
 import {NavMediaDrop} from "@/lib/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
+import {Notifications} from "@/lib/components/navbar/Notifications";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
@@ -101,7 +102,7 @@ export const Navbar = () => {
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<Notifications/>*/}
+                                <Notifications/>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 <Popover>
@@ -213,7 +214,7 @@ export const Navbar = () => {
                                     </NavigationMenuItem>
                                     <Separator/>
                                     <NavigationMenuItem>
-                                        {/*<Notifications isMobile/>*/}
+                                        <Notifications isMobile/>
                                     </NavigationMenuItem>
                                     <div className="-mt-3">
                                         <NavMediaItem

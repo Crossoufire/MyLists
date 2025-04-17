@@ -11,6 +11,10 @@ export class MoviesService {
         return this.repository.findById(mediaId);
     }
 
+    async searchByName(query: string) {
+        return this.repository.searchByName(query);
+    }
+
     async getMediaDetails(mediaId: number, external: boolean, strategy: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 

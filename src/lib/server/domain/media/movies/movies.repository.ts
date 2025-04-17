@@ -34,6 +34,16 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return comingNext;
     }
 
+    async searchByName(query: string) {
+        return db
+            .select({ name: movies.name })
+            .from(movies)
+            .where(like(movies.name, `%${query}%`))
+            .orderBy(movies.name)
+            .limit(20)
+            .execute();
+    }
+
     async findAllAssociatedDetails(mediaId: number) {
         const mainData = await db.query.movies.findFirst({
             where: eq(movies.id, mediaId),

@@ -95,7 +95,7 @@ export const getRedoList = () => {
 // --- Icons & Colors ---------------------------------------------------------------------------------------
 
 
-export const getMediaIcon = (mediaType: MediaType) => {
+export const getMediaIcon = (mediaType: MediaType | "user") => {
     const icons = {
         user: User,
         series: Monitor,
@@ -109,7 +109,7 @@ export const getMediaIcon = (mediaType: MediaType) => {
 };
 
 
-export const getMediaColor = (mediaType: MediaType) => {
+export const getMediaColor = (mediaType: MediaType | "user") => {
     const colors = {
         user: "#6e6e6e",
         series: "#267f90",

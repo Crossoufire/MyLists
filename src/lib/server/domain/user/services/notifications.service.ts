@@ -9,4 +9,12 @@ export class NotificationsService {
     async sendNotification(userId: number, notificationType: NotificationType, payload: Record<string, any>) {
         return this.repository.sendNotification(userId, notificationType, payload);
     }
+
+    async getLastNotifications(userId: number, limit = 8) {
+        return this.repository.getLastNotifications(userId, limit);
+    }
+
+    async countUnreadNotifications(userId: number, lastReadTime: string | null) {
+        return this.repository.countUnreadNotifications(userId, lastReadTime);
+    }
 }

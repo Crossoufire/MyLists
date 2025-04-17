@@ -11,6 +11,10 @@ export class UserService {
         return this.userRepository.isFollowing(userId, followedId);
     }
 
+    async updateNotificationsReadTime(userId: number) {
+        return this.userRepository.updateNotificationsReadTime(userId);
+    }
+
     async hasActiveMediaType(userId: number, mediaType: MediaType) {
         return this.userRepository.hasActiveMediaType(userId, mediaType);
     }

@@ -23,6 +23,10 @@ export class UserRepository {
         return { ...userResult, followersCount: followersCount[0]?.count || 0 };
     }
 
+    static async updateNotificationsReadTime(userId: number) {
+        return db.update(user).set({ lastNotifReadTime: sql`now()` }).where(eq(user.id, userId)).execute();
+    }
+    
     static async findById(userId: number) {
         const userResult = await db.query.user.findFirst({
             where: eq(user.id, userId),
