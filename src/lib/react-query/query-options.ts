@@ -1,8 +1,10 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/user";
 import {getSearchResults} from "@/lib/server/functions/search";
+import {getDailyMediadle} from "@/lib/server/functions/moviedle";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
+import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
@@ -127,4 +129,14 @@ export const allUpdatesOptions = (username: string, filters: Record<string, any>
 export const hallOfFameOptions = (search: Record<string, any>) => queryOptions({
     queryKey: queryKeys.hofKey(search),
     queryFn: () => getHallOfFame({ data: search }),
+});
+
+export const upcomingOptions = () => queryOptions({
+    queryKey: queryKeys.upcomingKey(),
+    queryFn: () => getComingNextMedia(),
+});
+
+export const dailyMediadleOptions = () => queryOptions({
+    queryKey: queryKeys.dailyMediadleKey(),
+    queryFn: () => getDailyMediadle(),
 });

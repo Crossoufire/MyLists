@@ -1,8 +1,8 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {and, asc, eq, inArray, isNotNull, like, ne, sql} from "drizzle-orm";
 import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {and, asc, eq, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
 
@@ -10,6 +10,28 @@ import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/medi
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     constructor() {
         super(moviesConfig, createMoviesFilters);
+    }
+
+    async getComingNext(userId: number) {
+        const comingNext = await db
+            .select({
+                mediaId: movies.id,
+                mediaName: movies.name,
+                date: movies.releaseDate,
+                imageCover: movies.imageCover,
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(
+                eq(moviesList.userId, userId),
+                notInArray(moviesList.status, [Status.DROPPED, Status.RANDOM]),
+                sql`${movies.releaseDate} >= datetime('now')`,
+            ))
+            .groupBy(movies.originalLanguage)
+            .orderBy(asc(movies.releaseDate))
+            .execute();
+
+        return comingNext;
     }
 
     async findAllAssociatedDetails(mediaId: number) {

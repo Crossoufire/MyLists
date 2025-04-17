@@ -29,5 +29,5 @@ export const useHashTab = (defaultTab: string | undefined) => {
         window.history.pushState(null, "", `#${tab}`);
     };
 
-    return [selectedTab, handleTabChange];
+    return [selectedTab, handleTabChange] as [string, (tab: string) => void];
 };

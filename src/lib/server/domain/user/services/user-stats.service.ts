@@ -12,7 +12,8 @@ export class UserStatsService {
         private mediaRepoRegistry: typeof MediaRepoRegistry,
         private achievementsRepository: typeof AchievementsRepository,
         private userUpdatesRepository: typeof UserUpdatesRepository,
-    ) {}
+    ) {
+    }
 
     async getGlobalStats(userId: number) {
         const activeSettings = await this.repository.getActiveSettings(userId);
@@ -159,5 +160,59 @@ export class UserStatsService {
             totalComments,
             statusesCounts
         };
+    }
+
+    async getHallOfFameData(data: Record<string, any>, currentUserId: number) {
+        const {
+            mediaTypes,
+            currentUserRankData,
+            mediaTypeCountMap,
+            currentUserActiveSettings,
+            rankedUsers,
+            userSettingsMap,
+            rankSelectionColName,
+            page, pages, total,
+        } = await this.repository.getHallOfFameData(data, currentUserId);
+
+        // Calculate Current User's Percentile Ranks
+        const userRanks = [];
+        for (const mediaType of mediaTypes) {
+            const rankKey = `${mediaType}Rank` as keyof typeof currentUserRankData;
+            const rank = (currentUserRankData[rankKey] as number) ?? null;
+            const mtCount = mediaTypeCountMap.get(mediaType) ?? 0;
+            const active = currentUserActiveSettings.has(mediaType);
+            let percent: number | null = null;
+
+            if (rank !== null && active) {
+                if (mtCount === 0) {
+                    percent = null;
+                }
+                else if (mtCount === 1 && rank === 1) {
+                    percent = 100;
+                }
+                else if (rank > mtCount) {
+                    percent = null;
+                }
+                else {
+                    percent = (rank / mtCount) * 100;
+                }
+            }
+
+            userRanks.push({ rank, active, mediaType, percent });
+        }
+
+        // Format Final Results
+        const items = rankedUsers.map((row) => {
+            return {
+                id: row.id,
+                name: row.name,
+                image: row.image,
+                totalTime: row.totalTime,
+                settings: userSettingsMap.get(row.id) ?? [],
+                rank: (row[rankSelectionColName as keyof typeof row] as number) ?? null,
+            }
+        });
+
+        return { items, page, pages, total, userRanks }
     }
 }

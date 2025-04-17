@@ -85,9 +85,9 @@ export const Navbar = () => {
                                 {/*</NavLink>*/}
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<NavLink to="/moviedle" className={navStyle()}>*/}
-                                {/*    Moviedle*/}
-                                {/*</NavLink>*/}
+                                <NavLink to="/moviedle" className={navStyle()}>
+                                    Moviedle
+                                </NavLink>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
@@ -96,9 +96,9 @@ export const Navbar = () => {
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
-                                {/*<NavLink to="/coming-next" className={navStyle()}>*/}
-                                {/*    Coming Next*/}
-                                {/*</NavLink>*/}
+                                <NavLink to="/coming-next" className={navStyle()}>
+                                    Coming Next
+                                </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 {/*<Notifications/>*/}
@@ -148,7 +148,7 @@ export const Navbar = () => {
                                             />
                                             <li>
                                                 <NavigationMenuLink asChild>
-                                                    {/*//@ts-ignore*/}
+                                                    {/*//@ts-expect-error*/}
                                                     <NavLink to="#" onClick={logoutUser} className="block select-none
                                                     space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
@@ -187,9 +187,9 @@ export const Navbar = () => {
                                     </NavigationMenuItem>
                                     <Separator/>
                                     <NavigationMenuItem>
-                                        {/*<NavLink to="/hall-of-fame" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
-                                        {/*    HoF*/}
-                                        {/*</NavLink>*/}
+                                        <NavLink to="/hall-of-fame" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            HoF
+                                        </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
                                         {/*<NavLink to="/global-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
@@ -202,14 +202,14 @@ export const Navbar = () => {
                                         {/*</NavLink>*/}
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        {/*<NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
-                                        {/*    Moviedle*/}
-                                        {/*</NavLink>*/}
+                                        <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Moviedle
+                                        </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        {/*<NavLink to="/coming-next" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
-                                        {/*    Coming Next*/}
-                                        {/*</NavLink>*/}
+                                        <NavLink to="/coming-next" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Coming Next
+                                        </NavLink>
                                     </NavigationMenuItem>
                                     <Separator/>
                                     <NavigationMenuItem>
@@ -236,7 +236,7 @@ export const Navbar = () => {
                                         />
                                         <li>
                                             <NavigationMenuLink asChild>
-                                                {/*// @ts-ignore*/}
+                                                {/*// @ts-expect-error*/}
                                                 <NavLink to="#" onClick={logoutUser} className="block select-none
                                                 space-y-1 rounded-md p-3 leading-none no-underline outline-none
                                                 transition-colors hover:bg-accent hover:text-accent-foreground

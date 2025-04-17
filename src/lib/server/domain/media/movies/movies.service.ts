@@ -1,5 +1,5 @@
-import {JobType, Status} from "@/lib/server/utils/enums";
 import type {StatsDelta} from "@/lib/server/types/stats.types";
+import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 
 
@@ -60,6 +60,11 @@ export class MoviesService {
 
     async updateUserMediaDetails(userId: number, mediaId: number, updateData: any) {
         return this.repository.updateUserMediaDetails(userId, mediaId, updateData);
+    }
+
+    async getComingNext(userId: number) {
+        const comingNextData = await this.repository.getComingNext(userId);
+        return { items: comingNextData, mediaType: MediaType.MOVIES };
     }
 
     calculateDeltaStats(oldState: any | null, newState: any, mediaDetails: any) {

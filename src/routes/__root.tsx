@@ -1,15 +1,18 @@
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
-import {useAuth} from "@/lib/hooks/use-auth";
 import appCSS from "@/lib/styles/app.css?url";
 import {Footer} from "@/lib/components/app/Footer";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import type {QueryClient} from "@tanstack/react-query";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
+import {authOptions} from "@/lib/react-query/query-options";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+    beforeLoad: async ({ context: { queryClient } }) => {
+        return queryClient.fetchQuery(authOptions())
+    },
     head: () => ({
         meta: [
             { charSet: "utf-8" },
@@ -32,12 +35,6 @@ function RootComponent() {
 
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
-    const { isLoading } = useAuth();
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
     return (
         <html suppressHydrationWarning>
         <head>
