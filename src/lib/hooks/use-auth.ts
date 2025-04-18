@@ -1,8 +1,14 @@
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {authOptions} from "@/lib/react-query/query-options";
+import {authOptions, queryKeys} from "@/lib/react-query/query-options";
+import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
 
 
 export const useAuth = () => {
+    const queryClient = useQueryClient();
     const { data: currentUser, isLoading, isPending } = useSuspenseQuery(authOptions());
-    return { currentUser, isLoading, isPending };
+
+    const setCurrentUser = (userData: Record<string, any> | null | undefined) => {
+        queryClient.setQueryData(queryKeys.authKey(), userData);
+    };
+
+    return { currentUser, setCurrentUser, isLoading, isPending };
 };

@@ -4,38 +4,41 @@ import {Badge} from "@/lib/components/ui/badge";
 import {Award, CircleCheck} from "lucide-react";
 import {Progress} from "@/lib/components/ui/progress";
 import {capitalize, diffColors} from "@/lib/utils/functions";
+import {AchievementDifficulty} from "@/lib/server/utils/enums";
+import {achievementOptions} from "@/lib/react-query/query-options";
 import {TiersDetails} from "@/lib/components/achievements/TierDetails";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface AchievementCardProps {
-    achievement: any;
+    achievement: Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["result"][0];
 }
 
 
 export const AchievementCard = ({ achievement }: AchievementCardProps) => {
-    const { name, mediType, description, tiers, userData } = achievement;
+    const { name, mediaType, description, tiers } = achievement;
 
-    const fullyCompleted = useMemo(() => userData.length > 0 && userData.every((tier) => tier.completed), [userData]);
-    const userHighestTier = useMemo(() => {
-        const completed = userData.filter((tier) => tier.completed);
-        return completed.sort((a, b) => b.tier_id - a.tier_id)[0];
-    }, [userData]);
-    const userNextTier = useMemo(() => {
-        const pending = userData.filter((tier) => !tier.completed);
-        return pending.sort((a, b) => a.tier_id - b.tier_id)[0];
-    }, [userData]);
+    const fullyCompleted = useMemo(() => tiers.length > 0 && tiers.every((tier) => tier.completed), [tiers]);
 
-    const highestTierData = tiers.find((tier) => tier.id === userHighestTier?.tier_id);
-    const nextTierData = userNextTier ? tiers.find((tier) => tier.id === userNextTier.tier_id) : tiers[0];
+    const highestCompletedTier = useMemo(() => {
+        const completed = tiers.filter((tier) => tier.completed);
+        return completed.length > 0 ? completed[completed.length - 1] : undefined;
+    }, [tiers]);
 
-    const iconColorClass = diffColors(highestTierData?.difficulty);
-    const borderColorClass = diffColors(highestTierData?.difficulty, "border");
+    const nextTier = useMemo(() => {
+        if (fullyCompleted) return undefined;
+        return tiers.find((tier) => !tier.completed);
+    }, [tiers, fullyCompleted]);
 
-    const currentCount = userNextTier ? userNextTier.count : 0;
-    const criteriaCount = userNextTier ? nextTierData.criteria.count : tiers[0].criteria.count;
-    const nextTierDifficulty = userNextTier ? nextTierData.difficulty : "bronze";
+    const displayDifficulty = highestCompletedTier?.difficulty ?? tiers[0]?.difficulty ?? AchievementDifficulty.BRONZE;
+    const iconColorClass = diffColors(displayDifficulty);
+    const borderColorClass = diffColors(displayDifficulty, "border");
+    const tierForProgressDisplay = nextTier ?? tiers[0];
+    const currentCount = tierForProgressDisplay?.count ?? 0;
+    const criteriaCount = tierForProgressDisplay?.criteria.count ?? 0;
+    const nextTierDifficulty = tierForProgressDisplay?.difficulty ?? AchievementDifficulty.BRONZE;
     const nextTierBgColor = diffColors(nextTierDifficulty, "bg");
+    const progressValue = tierForProgressDisplay?.progress ?? 0;
 
     return (
         <Card className={cn("relative px-2 py-1 border-l-8", borderColorClass)}>
@@ -47,12 +50,14 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                     </CardTitle>
                     <Badge variant="secondary">{capitalize(mediaType)}</Badge>
                 </div>
-                <CardDescription className="line-clamp-2" title={description}>
-                    {description}
-                </CardDescription>
+                {description && (
+                    <CardDescription className="line-clamp-2" title={description}>
+                        {description}
+                    </CardDescription>
+                )}
             </CardHeader>
             <CardContent className="mt-1 space-y-4">
-                {!fullyCompleted && (
+                {!fullyCompleted && tierForProgressDisplay && (
                     <div className="mt-2">
                         <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">
@@ -62,11 +67,7 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                                 {currentCount}/{criteriaCount}
                             </p>
                         </div>
-                        <Progress
-                            className="w-full"
-                            color={userNextTier ? "#bfbfbf" : "bg-neutral-400"}
-                            {...(userNextTier ? { value: userNextTier.progress } : {})}
-                        />
+                        <Progress className="w-full" value={progressValue}/>
                     </div>
                 )}
                 {fullyCompleted && (

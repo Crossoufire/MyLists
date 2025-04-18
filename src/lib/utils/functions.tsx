@@ -1,4 +1,4 @@
-import {MediaType, Status} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType, Status} from "@/lib/server/utils/enums";
 import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
@@ -109,7 +109,7 @@ export const getMediaIcon = (mediaType: MediaType | "user") => {
 };
 
 
-export const getMediaColor = (mediaType: MediaType | "user") => {
+export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
     const colors = {
         user: "#6e6e6e",
         series: "#267f90",
@@ -143,7 +143,7 @@ export const getStatusColor = (status: Status) => {
 };
 
 
-export const diffColors = (difficulty: Difficulty, variant: Variant = "text") => {
+export const diffColors = (difficulty: AchievementDifficulty | "total", variant: Variant = "text") => {
     if (!difficulty) return null;
     const colors: { [key: string]: string } = {
         "border-bronze": "border-amber-700",
@@ -159,7 +159,7 @@ export const diffColors = (difficulty: Difficulty, variant: Variant = "text") =>
         "text-gold": "text-yellow-600",
         "text-platinum": "text-teal-600",
     };
-    return colors[`${variant}-${difficulty.toLowerCase()}`];
+    return colors[`${variant}-${difficulty}`];
 };
 
 
@@ -353,9 +353,10 @@ export function jsonToCsv(items: any[]) {
 }
 
 
-export type Difficulty = "bronze" | "silver" | "gold" | "platinum";
-export type Variant = "text" | "border" | "bg";
-export type LangType = "language" | "region" | "script" | "currency"
+type Variant = "text" | "border" | "bg";
+
+
+type LangType = "language" | "region" | "script" | "currency"
 
 
 interface FormatDateTimeOptions {

@@ -11,7 +11,6 @@ import {capitalize, formatDateTime, zeroPad} from "@/lib/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 
 
-// noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/coming-next")({
     loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(upcomingOptions()),
     component: ComingNextPage,
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/_private/coming-next")({
 
 function ComingNextPage() {
     const apiData = useSuspenseQuery(upcomingOptions()).data;
-    const [selectedTab, handleTabChange] = useHashTab(MediaType.SERIES);
+    const [selectedTab, handleTabChange] = useHashTab<MediaType>(MediaType.SERIES);
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 
 
-export const useHashTab = (defaultTab: string | undefined) => {
+export const useHashTab = <T>(defaultTab: T) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab ?? "");
 
     useEffect(() => {

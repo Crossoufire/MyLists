@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {user} from "./auth.schema";
 import {customJson, imageUrl} from "@/lib/server/database/custom-types";
-import {index, integer, numeric, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
+import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
 import {AchievementDifficulty, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
 
 
@@ -294,7 +294,7 @@ export const achievementTier = sqliteTable("achievement_tier", {
     id: integer().primaryKey().notNull(),
     achievementId: integer().notNull().references(() => achievement.id),
     difficulty: text().$type<AchievementDifficulty>().notNull(),
-    criteria: numeric().notNull(),
+    criteria: customJson<{ count: number }>("criteria").notNull(),
     rarity: real(),
 });
 

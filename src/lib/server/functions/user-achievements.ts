@@ -8,8 +8,8 @@ export const getUserAchievements = createServerFn({ method: "GET" })
     .handler(async ({ context: { user } }) => {
         const achievementsService = container.services.achievements;
 
-        const result = await achievementsService.getAchievementsDetails(user.id);
-        const summary = await achievementsService.getDifficultySummary(user.id);
+        const result = await achievementsService.getAllUserAchievements(user.id);
+        const summary = await achievementsService.getUserAchievementStats(user.id);
 
         return { result, summary };
     });

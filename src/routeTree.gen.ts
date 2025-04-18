@@ -20,6 +20,7 @@ import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/priva
 import { Route as UniversalFeaturesImport } from './routes/_universal/features'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
 import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-password'
+import { Route as PrivateSettingsRouteImport } from './routes/_private/settings/route'
 import { Route as PrivateMoviedleRouteImport } from './routes/_private/moviedle/route'
 import { Route as PrivateHallOfFameRouteImport } from './routes/_private/hall-of-fame/route'
 import { Route as PrivateComingNextRouteImport } from './routes/_private/coming-next/route'
@@ -78,6 +79,12 @@ const PublicForgotPasswordRoute = PublicForgotPasswordImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => PublicRoute,
+} as any)
+
+const PrivateSettingsRouteRoute = PrivateSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PrivateRoute,
 } as any)
 
 const PrivateMoviedleRouteRoute = PrivateMoviedleRouteImport.update({
@@ -196,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/moviedle'
       fullPath: '/moviedle'
       preLoaderRoute: typeof PrivateMoviedleRouteImport
+      parentRoute: typeof PrivateImport
+    }
+    '/_private/settings': {
+      id: '/_private/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof PrivateSettingsRouteImport
       parentRoute: typeof PrivateImport
     }
     '/_public/forgot-password': {
@@ -344,6 +358,7 @@ interface PrivateRouteChildren {
   PrivateComingNextRouteRoute: typeof PrivateComingNextRouteRoute
   PrivateHallOfFameRouteRoute: typeof PrivateHallOfFameRouteRoute
   PrivateMoviedleRouteRoute: typeof PrivateMoviedleRouteRoute
+  PrivateSettingsRouteRoute: typeof PrivateSettingsRouteRoute
   PrivateAchievementsUsernameRoute: typeof PrivateAchievementsUsernameRoute
   PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute
   PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
@@ -354,6 +369,7 @@ const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateComingNextRouteRoute: PrivateComingNextRouteRoute,
   PrivateHallOfFameRouteRoute: PrivateHallOfFameRouteRoute,
   PrivateMoviedleRouteRoute: PrivateMoviedleRouteRoute,
+  PrivateSettingsRouteRoute: PrivateSettingsRouteRoute,
   PrivateAchievementsUsernameRoute: PrivateAchievementsUsernameRoute,
   PrivateListMediaTypeUsernameRouteRoute:
     PrivateListMediaTypeUsernameRouteRoute,
@@ -382,6 +398,7 @@ export interface FileRoutesByFullPath {
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
+  '/settings': typeof PrivateSettingsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
@@ -402,6 +419,7 @@ export interface FileRoutesByTo {
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
+  '/settings': typeof PrivateSettingsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
@@ -423,6 +441,7 @@ export interface FileRoutesById {
   '/_private/coming-next': typeof PrivateComingNextRouteRoute
   '/_private/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/_private/moviedle': typeof PrivateMoviedleRouteRoute
+  '/_private/settings': typeof PrivateSettingsRouteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_universal/about': typeof UniversalAboutRoute
   '/_universal/features': typeof UniversalFeaturesRoute
@@ -446,6 +465,7 @@ export interface FileRouteTypes {
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'
+    | '/settings'
     | '/forgot-password'
     | '/about'
     | '/features'
@@ -465,6 +485,7 @@ export interface FileRouteTypes {
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'
+    | '/settings'
     | '/forgot-password'
     | '/about'
     | '/features'
@@ -484,6 +505,7 @@ export interface FileRouteTypes {
     | '/_private/coming-next'
     | '/_private/hall-of-fame'
     | '/_private/moviedle'
+    | '/_private/settings'
     | '/_public/forgot-password'
     | '/_universal/about'
     | '/_universal/features'
@@ -540,6 +562,7 @@ export const routeTree = rootRoute
         "/_private/coming-next",
         "/_private/hall-of-fame",
         "/_private/moviedle",
+        "/_private/settings",
         "/_private/achievements/$username",
         "/_private/list/$mediaType/$username",
         "/_private/details/$mediaType/$mediaId",
@@ -563,6 +586,10 @@ export const routeTree = rootRoute
     },
     "/_private/moviedle": {
       "filePath": "_private/moviedle/route.tsx",
+      "parent": "/_private"
+    },
+    "/_private/settings": {
+      "filePath": "_private/settings/route.tsx",
       "parent": "/_private"
     },
     "/_public/forgot-password": {

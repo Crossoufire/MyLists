@@ -2,14 +2,15 @@ import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {capitalize, diffColors} from "@/lib/utils/functions";
+import {AchievementDifficulty} from "@/lib/server/utils/enums";
 
 
-interface AchievementSummaryProps {
-    summary: any;
+interface SummaryProps {
+    summary: { count: string | number, tier: AchievementDifficulty | "total" }[];
 }
 
 
-export const AchievementSummary = ({ summary }: AchievementSummaryProps) => {
+export const AchievementSummary = ({ summary }: SummaryProps) => {
     return (
         <div className="grid grid-cols-5 gap-6 w-[80%] mx-auto mb-6 max-lg:w-[95%] max-sm:grid-cols-3
         max-sm:w-full max-sm:gap-2 max-sm:mb-4">

@@ -181,7 +181,7 @@ export const Navbar = () => {
                             <NavigationMenu className="mt-3">
                                 <NavigationMenuList className="flex flex-col items-start gap-3">
                                     <NavigationMenuItem className="mt-4">
-                                        {/*<SearchBar/>*/}
+                                        <SearchBar/>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
                                         <NavMediaDrop/>

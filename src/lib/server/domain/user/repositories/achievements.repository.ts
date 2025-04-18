@@ -77,4 +77,56 @@ export class AchievementsRepository {
 
         return result[0]?.count ?? 0;
     }
+
+    static async getUserAchievementStats(userId: number) {
+        const tierOrder = this.getSQLTierOrdering();
+
+        const subq = db
+            .select({
+                mediaType: achievement.mediaType,
+                achievementId: userAchievement.achievementId,
+                maxTierOrder: max(tierOrder).as("maxTierOrder"),
+            })
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .innerJoin(achievement, eq(userAchievement.achievementId, achievement.id))
+            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
+            .groupBy(achievement.mediaType, userAchievement.achievementId)
+            .as("subq");
+
+        const completedResult = await db
+            .select({
+                mediaType: subq.mediaType,
+                count: count().as("count"),
+                difficulty: achievementTier.difficulty,
+            })
+            .from(achievementTier)
+            .innerJoin(subq, and(eq(achievementTier.achievementId, subq.achievementId), eq(tierOrder, subq.maxTierOrder)))
+            .groupBy(subq.mediaType, achievementTier.difficulty)
+            .orderBy(subq.mediaType, tierOrder);
+
+        const totalAchievementsResult = await db
+            .select({ total: count().as("total"), mediaType: achievement.mediaType })
+            .from(achievement)
+            .groupBy(achievement.mediaType);
+
+        return { completedResult, totalAchievementsResult };
+    }
+
+    static async getAllUserAchievements(userId: number) {
+        const tierOrder = this.getSQLTierOrdering();
+
+        const results = await db
+            .select({
+                tier: achievementTier,
+                achievement: achievement,
+                userProgress: userAchievement,
+            })
+            .from(achievement)
+            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
+            .leftJoin(userAchievement, and(eq(achievementTier.id, userAchievement.tierId), eq(userAchievement.userId, userId)))
+            .orderBy(achievement.id, tierOrder);
+
+        return results;
+    }
 }

@@ -2,8 +2,8 @@ import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {and, asc, eq, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
+import {and, asc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
 
 
@@ -25,7 +25,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(
                 eq(moviesList.userId, userId),
                 notInArray(moviesList.status, [Status.DROPPED, Status.RANDOM]),
-                sql`${movies.releaseDate} >= datetime('now')`,
+                gte(movies.releaseDate, sql`datetime('now')`),
             ))
             .groupBy(movies.originalLanguage)
             .orderBy(asc(movies.releaseDate))
