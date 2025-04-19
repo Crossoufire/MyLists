@@ -9,11 +9,10 @@
 - Search -> DONE
 - Features -> DONE
 - Achievements -> DONE
+- Moviedle -> DONE
 
 ## Logic (GET and mutations) to implement
 
-- Moviedle ->
-    - Add guess mutation
 - Media Details ->
     - Add history GET and mutation
     - Add status mutation

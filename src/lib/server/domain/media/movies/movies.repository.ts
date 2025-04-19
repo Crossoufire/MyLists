@@ -74,7 +74,9 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
                 .values(mediaData)
                 .returning()
 
-            if (!media) throw new Error();
+            if (!media) {
+                throw new Error("Failed to store the media details");
+            }
 
             const mediaId = media.id;
 
@@ -91,7 +93,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             return mediaId;
         });
 
-        return result;
+        return result
     }
 
     async getListFilters(userId: number) {

@@ -171,7 +171,7 @@ export class UserStatsRepository {
         // Get Total Count for Pagination
         const totalCounter = db.with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
         if (search) totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
-        const totalResult = await totalCounter.get();
+        const totalResult = totalCounter.get();
 
         const total = totalResult?.count ?? 0;
         const pages = Math.ceil(total / perPage);
@@ -220,7 +220,7 @@ export class UserStatsRepository {
         });
 
         // Get Current User's Ranks
-        const currentUserRankData = await db
+        const currentUserRankData = db
             .with(allUsersRanked)
             .select()
             .from(allUsersRanked)

@@ -1,5 +1,5 @@
-import {db} from "@/lib/server/database/db";
 import {MediaType} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {and, eq, gte, isNotNull, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, userMediadleProgress} from "@/lib/server/database/schema";
 
@@ -7,7 +7,7 @@ import {dailyMediadle, mediadleStats, movies, userMediadleProgress} from "@/lib/
 export class MediadleRepository {
     static async getTodayMoviedle() {
         const today = new Date().toISOString().slice(0, 10);
-        return db
+        return getDbClient()
             .select()
             .from(dailyMediadle)
             .where(sql`${dailyMediadle.date} >= ${today}`)
@@ -15,15 +15,15 @@ export class MediadleRepository {
     }
 
     static async createDailyMoviedle() {
-        const alreadyUsedMovies = await db
+        const alreadyUsedMovies = await getDbClient()
             .select({ mediaId: dailyMediadle.mediaId })
             .from(dailyMediadle)
             .where(eq(dailyMediadle.mediaType, MediaType.MOVIES))
             .limit(200)
             .execute();
-        const alreadyUsedMoviesIds = alreadyUsedMovies.map(row => row.mediaId);
+        const alreadyUsedMoviesIds = alreadyUsedMovies.map((row: any) => row.mediaId);
 
-        const selectedMovie = await db
+        const selectedMovie = getDbClient()
             .select()
             .from(movies)
             .where(and(notInArray(movies.id, alreadyUsedMoviesIds), gte(movies.voteCount, 700)))
@@ -34,7 +34,7 @@ export class MediadleRepository {
             throw new Error("No new movies found to create a daily mediadle.");
         }
 
-        const [newMoviedle] = await db
+        const [newMoviedle] = await getDbClient()
             .insert(dailyMediadle)
             .values({
                 mediaId: selectedMovie.id,
@@ -47,7 +47,7 @@ export class MediadleRepository {
     }
 
     static async getUserProgress(userId: number, mediadleId: number) {
-        return db
+        return getDbClient()
             .select()
             .from(userMediadleProgress)
             .where(and(eq(userMediadleProgress.userId, userId), eq(userMediadleProgress.dailyMediadleId, mediadleId)))
@@ -55,7 +55,7 @@ export class MediadleRepository {
     }
 
     static async createUserProgress(userId: number, mediadleId: number) {
-        const [newUserProgress] = await db
+        const [newUserProgress] = await getDbClient()
             .insert(userMediadleProgress)
             .values({
                 userId,
@@ -70,7 +70,7 @@ export class MediadleRepository {
     }
 
     static async updateUserProgress(userId: number, mediadleId: number, attempts: number, completed: boolean, succeeded: boolean) {
-        const [updatedProgress] = await db
+        const [updatedProgress] = await getDbClient()
             .update(userMediadleProgress)
             .set({
                 attempts,
@@ -85,7 +85,7 @@ export class MediadleRepository {
     }
 
     static async getUserMediadleStats(userId: number) {
-        return db
+        return getDbClient()
             .select({
                 id: mediadleStats.id,
                 totalWon: mediadleStats.totalWon,
@@ -107,7 +107,7 @@ export class MediadleRepository {
     }
 
     static async createMediadleStats(userId: number, mediaType: MediaType) {
-        const [newStats] = await db
+        const [newStats] = await getDbClient()
             .insert(mediadleStats)
             .values({
                 userId,
@@ -137,22 +137,43 @@ export class MediadleRepository {
         return newStats!;
     }
 
-    static async updateMediadleStats(
-        statsId: number,
-        totalPlayed: number,
-        totalWon: number,
-        streak: number,
-        bestStreak: number,
-        averageAttempts: number
-    ) {
-        const [updatedStats] = await db
+    static async updateMediadleStats(statsId: number, isCompleted: boolean, isCorrect: boolean, attempts: number) {
+        const [updatedStats] = await getDbClient()
             .update(mediadleStats)
             .set({
-                totalPlayed,
-                totalWon,
-                streak,
-                bestStreak,
-                averageAttempts,
+                totalPlayed: sql`CASE 
+                    WHEN ${isCompleted} THEN ${mediadleStats.totalPlayed} + 1 
+                    ELSE ${mediadleStats.totalPlayed} 
+                END`,
+                totalWon: sql`CASE 
+                    WHEN ${isCorrect} THEN ${mediadleStats.totalWon} + 1 
+                    ELSE ${mediadleStats.totalWon} 
+                END`,
+                streak: sql`CASE 
+                    WHEN ${isCompleted} THEN
+                        CASE 
+                            WHEN ${isCorrect} THEN ${mediadleStats.streak} + 1
+                            ELSE 0
+                        END
+                    ELSE ${mediadleStats.streak}
+                END`,
+                bestStreak: sql`CASE 
+                    WHEN ${isCompleted} AND ${isCorrect} AND ${mediadleStats.streak} + 1 > ${mediadleStats.bestStreak} 
+                    THEN ${mediadleStats.streak} + 1
+                    ELSE 
+                        CASE
+                            WHEN ${mediadleStats.bestStreak} > ${mediadleStats.streak} THEN ${mediadleStats.bestStreak}
+                            ELSE ${mediadleStats.streak}
+                        END
+                END`,
+                averageAttempts: sql`CASE 
+                    WHEN ${isCompleted} THEN
+                        CASE 
+                            WHEN ${mediadleStats.totalPlayed} = 0 THEN ${attempts}
+                            ELSE ((${mediadleStats.averageAttempts} * ${mediadleStats.totalPlayed} + ${attempts}) / (${mediadleStats.totalPlayed} + 1))
+                        END
+                    ELSE ${mediadleStats.averageAttempts}
+                END`,
             })
             .where(eq(mediadleStats.id, statsId))
             .returning();
@@ -160,8 +181,8 @@ export class MediadleRepository {
         return updatedStats!;
     }
 
-    static async getUserAttemptsData(userId: number) {
-        return db
+    static async getUserAttempts(userId: number) {
+        return getDbClient()
             .select({
                 attempts: userMediadleProgress.attempts,
                 completionTime: sql<string>`strftime('%d-%m-%Y', ${userMediadleProgress.completionTime})`,
@@ -170,5 +191,24 @@ export class MediadleRepository {
             .where(and(eq(userMediadleProgress.userId, userId), isNotNull(userMediadleProgress.completionTime)))
             .orderBy(userMediadleProgress.completionTime)
             .execute();
+    }
+
+    static async incrementUserAttempts(userId: number, mediadleId: number, isCompleted: boolean, isSucceeded: boolean) {
+        const [updatedProgress] = await getDbClient()
+            .update(userMediadleProgress)
+            .set({
+                completed: isCompleted,
+                succeeded: isSucceeded,
+                attempts: sql`${userMediadleProgress.attempts} + 1`,
+                completionTime: isCompleted ? sql`CURRENT_TIMESTAMP` : undefined,
+            })
+            .where(and(
+                eq(userMediadleProgress.userId, userId),
+                eq(userMediadleProgress.dailyMediadleId, mediadleId),
+                eq(userMediadleProgress.completed, false), // Only update if not already completed
+            ))
+            .returning();
+
+        return updatedProgress!;
     }
 }

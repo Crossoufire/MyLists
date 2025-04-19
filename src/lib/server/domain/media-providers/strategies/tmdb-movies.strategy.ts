@@ -21,8 +21,8 @@ export class TmdbMoviesStrategy {
             return null;
         }
     }
-    
-    async processAndRefreshMedia(apiId: number) {
+
+    async processAndRefreshMedia(_apiId: number) {
         // TODO: Implement refreshing of media details
     }
 }

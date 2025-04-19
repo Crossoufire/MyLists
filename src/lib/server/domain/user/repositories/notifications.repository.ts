@@ -22,12 +22,12 @@ export class NotificationsRepository {
     static async countUnreadNotifications(userId: number, lastReadTime: string | null) {
         const lastNotifReadTime = lastReadTime ? lastReadTime : new Date(1900, 0, 1);
 
-        const notificationsCount = await db
+        const notificationsCount = db
             .select({ count: count() })
             .from(notifications)
             .where(and(eq(notifications.userId, userId), sql`${notifications.timestamp} >= ${lastNotifReadTime}`))
             .get();
-        
+
         return notificationsCount?.count || 0;
     }
 }

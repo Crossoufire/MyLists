@@ -2,10 +2,11 @@ import {container} from "@/lib/server/container";
 import {MediaType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 
 
 export const getDailyMediadle = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const mediadleService = container.services.mediadle;
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
@@ -16,7 +17,7 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
 
 
 export const getMediadleSuggestions = createServerFn({ method: "GET" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { query: string })
     .handler(async ({ data: { query } }) => {
         if (query.length < 2) {
@@ -29,17 +30,12 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
 
 
 export const postAddMediadleGuess = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { guess: string })
     .handler(async ({ data: { guess }, context: { currentUser } }) => {
         const mediadleService = container.services.mediadle;
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
 
-        try {
-            // @ts-expect-error
-            const result = await mediadleService.addMediadleGuess(currentUser.id, guess, moviesService);
-            return result;
-        } catch (error: any) {
-            throw new Error(error.message);
-        }
+        // @ts-expect-error
+        return mediadleService.addMediadleGuess(currentUser.id, guess, moviesService);
     });
