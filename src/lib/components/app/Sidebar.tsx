@@ -13,6 +13,12 @@ interface SidebarItem {
 }
 
 
+interface SidebarItem2 {
+    sidebarTitle: string;
+    [key: string]: any;
+}
+
+
 interface SidebarLinkItem {
     to: string;
     external?: boolean;
@@ -24,9 +30,9 @@ interface SidebarLinkItem {
 
 interface SidebarProps {
     selectedTab: string;
-    items: readonly SidebarItem[];
     linkItems?: SidebarLinkItem[];
     onTabChange: (tab: string) => void;
+    items: readonly SidebarItem[] | SidebarItem2[];
 }
 
 

@@ -56,30 +56,22 @@ function MediaList() {
                         valueOrArray === false || valueOrArray === null ||
                         (Array.isArray(valueOrArray) && valueOrArray.length === 0)
                     ) {
-                        //@ts-expect-error
                         delete updatedSearch[key];
                     }
-                    //@ts-expect-error
                     else if (Array.isArray(prev[key])) {
-                        //@ts-expect-error
                         const oldSet = new Set(prev[key]);
                         //@ts-expect-error
                         const newSet = new Set(valueOrArray);
                         //@ts-expect-error
                         const toAdd = valueOrArray.filter((item: any) => !oldSet.has(item));
-                        //@ts-expect-error
                         const toKeep = prev[key].filter((item) => !newSet.has(item));
-                        //@ts-expect-error
                         updatedSearch[key] = [...toKeep, ...toAdd];
 
-                        //@ts-expect-error
                         if (updatedSearch[key].length === 0) {
-                            //@ts-expect-error
                             delete updatedSearch[key];
                         }
                     }
                     else {
-                        //@ts-expect-error
                         updatedSearch[key] = valueOrArray;
                     }
                 });

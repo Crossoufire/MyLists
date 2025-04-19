@@ -1,7 +1,6 @@
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {LabelLists} from "@/lib/components/user-media/LabelLists";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options";
 import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
 import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
 import {MoviesUserDetails} from "@/lib/components/user-media/MoviesUserDetails";
@@ -11,7 +10,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs
 interface UserMediaDetailsProps {
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
+    userMedia: any //Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
 }
 
 

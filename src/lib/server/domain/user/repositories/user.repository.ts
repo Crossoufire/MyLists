@@ -24,9 +24,9 @@ export class UserRepository {
     }
 
     static async updateNotificationsReadTime(userId: number) {
-        return db.update(user).set({ lastNotifReadTime: sql`now()` }).where(eq(user.id, userId)).execute();
+        return db.update(user).set({ lastNotifReadTime: sql`CURRENT_TIMESTAMP` }).where(eq(user.id, userId)).execute();
     }
-    
+
     static async findById(userId: number) {
         const userResult = await db.query.user.findFirst({
             where: eq(user.id, userId),

@@ -1,5 +1,6 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/auth";
+import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getMediaDetails} from "@/lib/server/functions/media-details";
@@ -36,7 +37,7 @@ type QueryKeys = {
     mediadleSuggestionsKey: QueryKeyFunction<[string]>;
     profileKey: QueryKeyFunction<[string]>;
     listFiltersKey: QueryKeyFunction<[MediaType, string]>;
-    statsKey: QueryKeyFunction<[string, Record<string, any>]>;
+    userStatsKey: QueryKeyFunction<[string, Record<string, any>]>;
     trendsKey: QueryKeyFunction<[]>;
     upcomingKey: QueryKeyFunction<[]>;
     userListKey: QueryKeyFunction<[MediaType, string, Record<string, any>]>;
@@ -58,16 +59,16 @@ export const queryKeys: QueryKeys = {
     hofKey: (search) => ["hof", search],
     jobDetailsKey: (mediaType, job, name, search) => ["jobDetails", mediaType, job, name, search],
     labelsKey: (mediaType) => ["labels", mediaType],
+    listFiltersKey: (mediaType, username) => ["listFilters", mediaType, username],
+    mediadleSuggestionsKey: (query) => ["mediadleSuggestions", query],
     navSearchKey: (query, page, selector) => ["navSearch", query, page, selector],
     notificationCountKey: () => ["notificationCount"],
     notificationsKey: () => ["notifications"],
-    mediadleSuggestionsKey: (query) => ["mediadleSuggestions", query],
     profileKey: (username) => ["profile", username],
-    listFiltersKey: (mediaType, username) => ["listFilters", mediaType, username],
-    statsKey: (username, search) => ["stats", username, search],
     trendsKey: () => ["trends"],
     upcomingKey: () => ["upcoming"],
     userListKey: (mediaType, username, search) => ["userList", mediaType, username, search],
+    userStatsKey: (username, search) => ["userStats", username, search],
 };
 
 
@@ -166,4 +167,9 @@ export const notificationsOptions = () => queryOptions({
 export const achievementOptions = (username: string) => queryOptions({
     queryKey: queryKeys.achievementPageKey(username),
     queryFn: () => getUserAchievements({ data: { username } }),
+});
+
+export const userStatsOptions = (username: string, search: Record<string, any>) => queryOptions({
+    queryKey: queryKeys.userStatsKey(username, search),
+    queryFn: () => getUserStats({ data: { username, search } }),
 });

@@ -43,7 +43,6 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
                 </div>
                 <Separator className="mt-3"/>
                 <div className="flex items-center justify-end">
-                    {/*//@ts-expect-error*/}
                     <Link to="/achievements/$username" params={{ username }} className="font-medium hover:underline">
                         All achievements <ArrowRight className="inline-block ml-1 w-4 h-4"/>
                     </Link>

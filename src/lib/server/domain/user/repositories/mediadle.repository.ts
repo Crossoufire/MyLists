@@ -69,9 +69,25 @@ export class MediadleRepository {
         return newUserProgress!;
     }
 
+    static async updateUserProgress(userId: number, mediadleId: number, attempts: number, completed: boolean, succeeded: boolean) {
+        const [updatedProgress] = await db
+            .update(userMediadleProgress)
+            .set({
+                attempts,
+                completed,
+                succeeded,
+                completionTime: completed ? sql`CURRENT_TIMESTAMP` : undefined,
+            })
+            .where(and(eq(userMediadleProgress.userId, userId), eq(userMediadleProgress.dailyMediadleId, mediadleId)))
+            .returning();
+
+        return updatedProgress!;
+    }
+
     static async getUserMediadleStats(userId: number) {
         return db
             .select({
+                id: mediadleStats.id,
                 totalWon: mediadleStats.totalWon,
                 currentStreak: mediadleStats.streak,
                 bestStreak: mediadleStats.bestStreak,
@@ -88,6 +104,60 @@ export class MediadleRepository {
             .from(mediadleStats)
             .where(eq(mediadleStats.userId, userId))
             .get();
+    }
+
+    static async createMediadleStats(userId: number, mediaType: MediaType) {
+        const [newStats] = await db
+            .insert(mediadleStats)
+            .values({
+                userId,
+                mediaType,
+                streak: 0,
+                totalWon: 0,
+                bestStreak: 0,
+                totalPlayed: 0,
+                averageAttempts: 0,
+            })
+            .returning({
+                id: mediadleStats.id,
+                totalWon: mediadleStats.totalWon,
+                currentStreak: mediadleStats.streak,
+                bestStreak: mediadleStats.bestStreak,
+                totalPlayed: mediadleStats.totalPlayed,
+                averageAttempts: mediadleStats.averageAttempts,
+                winRate: sql<number>`
+                    CASE 
+                        WHEN ${mediadleStats.totalPlayed} > 0 
+                        THEN (CAST(${mediadleStats.totalWon} AS REAL) / ${mediadleStats.totalPlayed}) * 100
+                        ELSE 0
+                    END
+                `,
+            });
+
+        return newStats!;
+    }
+
+    static async updateMediadleStats(
+        statsId: number,
+        totalPlayed: number,
+        totalWon: number,
+        streak: number,
+        bestStreak: number,
+        averageAttempts: number
+    ) {
+        const [updatedStats] = await db
+            .update(mediadleStats)
+            .set({
+                totalPlayed,
+                totalWon,
+                streak,
+                bestStreak,
+                averageAttempts,
+            })
+            .where(eq(mediadleStats.id, statsId))
+            .returning();
+
+        return updatedStats!;
     }
 
     static async getUserAttemptsData(userId: number) {

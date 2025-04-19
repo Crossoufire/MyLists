@@ -115,7 +115,7 @@ const SortComponent = ({ sorting, allSorting, applySorting }: SortComponentProps
     const handleSortChange = (sort: string) => {
         applySorting({ sort });
     };
-    
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -160,7 +160,6 @@ const DotsOthers = () => {
                     </Link>
                 </Button>
                 <Button asChild>
-                    {/*//@ts-expect-error*/}
                     <Link to="/achievements/$username" params={{ username }}>
                         <Award className="mr-2 w-4 h-4"/> Achievements
                     </Link>

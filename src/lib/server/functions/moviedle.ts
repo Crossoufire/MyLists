@@ -26,3 +26,20 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
         return moviesService.searchByName(query);
     });
+
+
+export const postAddMediadleGuess = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .validator((data: any) => data as { guess: string })
+    .handler(async ({ data: { guess }, context: { currentUser } }) => {
+        const mediadleService = container.services.mediadle;
+        const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
+
+        try {
+            // @ts-expect-error
+            const result = await mediadleService.addMediadleGuess(currentUser.id, guess, moviesService);
+            return result;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    });

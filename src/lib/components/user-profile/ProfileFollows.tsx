@@ -26,7 +26,6 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                         <div role="button" onClick={toggleCollapse}>Follows</div>
                     </div>
                     <div>
-                        {/*//@ts-expect-error*/}
                         <Link to="/profile/$username/follows" params={{ username }}>
                             <MutedText className="mt-1 text-sm hover:underline">All ({follows.total})</MutedText>
                         </Link>

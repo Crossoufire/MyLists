@@ -3,7 +3,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 
-export const getUserStats = createServerFn({ method: "POST" })
+export const getUserStats = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .validator((data: any) => data)
     .handler(async ({ data: { mediaType }, context: { user } }) => {

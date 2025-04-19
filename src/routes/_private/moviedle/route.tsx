@@ -12,6 +12,7 @@ import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {AttemptsGraph} from "@/lib/components/moviedle/AttemptsGraph";
 import {CountdownTimer} from "@/lib/components/moviedle/CountdownTimer";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {useMoviedleGuessMutation} from "@/lib/react-query/mutations/mediadle.mutations";
 import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-query/query-options";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
 
@@ -25,8 +26,8 @@ export const Route = createFileRoute("/_private/moviedle")({
 
 function MediadlePage() {
     const [guess, setGuess] = useState("");
-    // const makeGuess = useMoviedleGuessMutation();
     const [debouncedSearch] = useDebounce(guess, 350);
+    const makeGuessMutation = useMoviedleGuessMutation();
     const [showSuggestions, setShowSuggestions] = useState(false);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
     const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
@@ -41,13 +42,13 @@ function MediadlePage() {
         setShowSuggestions(false);
     };
 
-    const onClickGuess = () => {
-        // makeGuess.mutate({ guess }, {
-        //     onSuccess: () => {
-        //         setGuess("");
-        //         setShowSuggestions(false);
-        //     },
-        // });
+    const onGuessClick = () => {
+        makeGuessMutation.mutate({ guess }, {
+            onSuccess: () => {
+                setGuess("");
+                setShowSuggestions(false);
+            },
+        });
     };
 
     return (
@@ -127,7 +128,7 @@ function MediadlePage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <Button className="w-full" onClick={onClickGuess} disabled={!guess}>
+                                        <Button className="w-full" onClick={onGuessClick} disabled={!guess}>
                                             Submit Guess
                                         </Button>
                                     </div>

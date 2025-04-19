@@ -42,7 +42,6 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                             </div>
                         </div>
                         {!followers &&
-                            //@ts-expect-error
                             <Link to="/profile/$username/history" params={{ username }}>
                                 <MutedText className="mt-1 text-sm hover:underline">All</MutedText>
                             </Link>

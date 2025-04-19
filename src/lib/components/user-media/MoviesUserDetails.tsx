@@ -1,7 +1,6 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {UpdateRedo} from "@/lib/components/user-media/UpdateRedo";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options";
 import {UpdateStatus} from "@/lib/components/user-media/UpdateStatus";
 import {UpdateRating} from "@/lib/components/user-media/UpdateRating";
 import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.mutations";
@@ -10,7 +9,7 @@ import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.muta
 interface MoviesUserDetailsProps {
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
+    userMedia: any //Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
 }
 
 

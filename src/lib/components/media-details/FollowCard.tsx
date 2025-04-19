@@ -1,7 +1,7 @@
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options";
@@ -112,8 +112,7 @@ const RedoInfo = ({ follow, mediaType }: RedoInfoProps) => {
     if (mediaType === "games") {
         return null;
     }
-    else if (["series", "anime"].includes(mediaType)) {
-        //@ts-expect-error
+    else if (mediaType == MediaType.SERIES || mediaType == MediaType.ANIME) {
         const maxCount = Math.max(...follow.mediaList.redo2);
         //@ts-expect-error
         const totalRedo = follow.mediaList.redo2.reduce((a, b) => a + b, 0);
@@ -173,37 +172,33 @@ interface MoreFollowDetailsProps {
 
 
 const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
-    if (mediaType === "series" || mediaType === "anime") {
-        if (!["Random", "Plan to Watch"].includes(follow.mediaList.status)) {
+    if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
+        if (![Status.RANDOM, Status.PLAN_TO_WATCH].includes(follow.mediaList.status)) {
             return (
                 <div className="flex gap-x-2 items-center">
                     <Play size={16} className="mt-0.5"/>
-                    {/*//@ts-expect-error*/}
                     S{zeroPad(follow.mediaList.currentSeason)} - E{zeroPad(follow.mediaList.lastEpisodeWatched)}
                 </div>
             );
         }
     }
-    else if (mediaType === "books" && follow.mediaList.status !== "Plan to Read") {
+    else if (mediaType === MediaType.BOOKS && follow.mediaList.status !== Status.PLAN_TO_READ) {
         return (
             <div className="flex gap-x-2 items-center">
-                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Pages {follow.mediaList.actualPage}/{follow.mediaList.totalPages}
             </div>
         );
     }
-    else if (mediaType === "games" && follow.mediaList.status !== "Plan to Play") {
+    else if (mediaType === MediaType.GAMES && follow.mediaList.status !== Status.PLAN_TO_PLAY) {
         return (
             <div className="flex gap-x-2 items-center">
-                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Played {follow.mediaList.playtime / 60} h
             </div>
         );
     }
-    else if (mediaType === "manga" && follow.mediaList.status !== "Plan to Read") {
+    else if (mediaType === MediaType.MANGA && follow.mediaList.status !== Status.PLAN_TO_READ) {
         return (
             <div className="flex gap-x-2 items-center">
-                {/*//@ts-expect-error*/}
                 <Play size={16} className="mt-0.5"/> Chpt. {follow.mediaList.currentChapter}/{follow?.mediaList.totalChapters ?? "?"}
             </div>
         );
