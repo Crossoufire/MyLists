@@ -17,7 +17,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async getComingNext(userId: number) {
-        const comingNext = await db
+        const comingNext = await getDbClient()
             .select({
                 mediaId: movies.id,
                 mediaName: movies.name,
@@ -39,7 +39,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async searchByName(query: string) {
-        return db
+        return getDbClient()
             .select({ name: movies.name })
             .from(movies)
             .where(like(movies.name, `%${query}%`))
@@ -60,7 +60,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async findAllAssociatedDetails(mediaId: number) {
-        const mainData = await db.query.movies.findFirst({
+        const mainData = await getDbClient().query.movies.findFirst({
             where: eq(movies.id, mediaId),
             with: {
                 moviesActors: true,
@@ -73,7 +73,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         }
 
         const collectionMovies = mainData?.collectionId
-            ? await db.query.movies.findMany({
+            ? await getDbClient().query.movies.findMany({
                 where: and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)),
                 columns: { id: true, name: true, imageCover: true },
                 orderBy: [asc(movies.releaseDate)],
@@ -114,7 +114,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     async getListFilters(userId: number) {
         const { genres, labels } = await super.getCommonListFilters(userId);
 
-        const langs = await db
+        const langs = await getDbClient()
             .selectDistinct({ name: movies.originalLanguage })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))

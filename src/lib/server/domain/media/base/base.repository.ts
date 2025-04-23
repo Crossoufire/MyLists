@@ -1,48 +1,14 @@
-import {db} from "@/lib/server/database/db";
 import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 const ALL_VALUE = "All";
 const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
-
-
-// interface BaseMediaTableColumns {
-//     id: typeof movies.id;
-//     name: typeof movies.name;
-//     apiId: typeof movies.apiId;
-//     imageCover: typeof movies.imageCover;
-//     releaseDate: typeof movies.releaseDate;
-// }
-
-
-// interface BaseListTableColumns {
-//     userId: typeof moviesList.userId;
-//     rating: typeof moviesList.rating;
-//     status: typeof moviesList.status;
-//     comment: typeof moviesList.comment;
-//     mediaId: typeof moviesList.mediaId;
-//     favorite: typeof moviesList.favorite;
-// }
-
-
-// interface BaseGenreTableColumns {
-//     name: typeof moviesGenre.name;
-//     mediaId: typeof moviesGenre.mediaId;
-// }
-
-
-// interface BaseLabelTableColumns {
-//     id: typeof moviesLabels.id;
-//     name: typeof moviesLabels.name;
-//     userId: typeof moviesLabels.userId;
-//     mediaId: typeof moviesLabels.mediaId;
-// }
 
 
 export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
@@ -81,7 +47,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             hideCommon: {
                 isActive: (args: any) => args.hideCommon === true && args.currentUserId && args.currentUserId !== args.userId,
                 getCondition: (args: any) => {
-                    const subQuery = db
+                    const subQuery = getDbClient()
                         .select({ mediaId: listTable.mediaId })
                         .from(listTable)
                         .where(eq(listTable.userId, args.currentUserId!));
@@ -115,21 +81,22 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async findByApiId(apiId: number) {
         const { mediaTable } = this.config;
 
-        return db.select().from(mediaTable)
+        return getDbClient()
+            .select()
+            .from(mediaTable)
             .where(eq(mediaTable.apiId, apiId))
-            .limit(1)
-            .then((results) => results[0] ?? null);
+            .get()
     }
 
     async findSimilarMedia(mediaId: number) {
         const { mediaTable, genreTable } = this.config;
 
-        const targetGenresSubQuery = db
+        const targetGenresSubQuery = getDbClient()
             .select({ name: genreTable.name })
             .from(genreTable)
             .where(eq(genreTable.mediaId, mediaId));
 
-        const similarSub = db
+        const similarSub = getDbClient()
             .select({ movieId: genreTable.mediaId, commonGenreCount: count(genreTable.name).as("common_genre_count") })
             .from(genreTable)
             .where(and(ne(genreTable.mediaId, mediaId), inArray(genreTable.name, targetGenresSubQuery)))
@@ -138,7 +105,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .limit(SIMILAR_MAX_GENRES)
             .as("similar_media");
 
-        const results = await db
+        const results = await getDbClient()
             .select({
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
@@ -150,7 +117,6 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .orderBy(desc(similarSub.commonGenreCount));
 
         return results;
-
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {
@@ -170,7 +136,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async getUserFavorites(userId: number, limit = 8) {
         const { listTable, mediaTable } = this.config;
 
-        return db
+        return getDbClient()
             .select({
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
@@ -179,7 +145,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
             .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .limit(limit);
+            .limit(limit)
     }
 
     async findUserMedia(userId: number, mediaId: number) {
@@ -205,7 +171,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async getUserFollowsMediaData(userId: number, mediaId: number) {
         const { listTable } = this.config;
 
-        const inFollowsLists = await db
+        const inFollowsLists = await getDbClient()
             .select({
                 id: user.id,
                 name: user.name,
@@ -223,14 +189,14 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async getCommonListFilters(userId: number) {
         const { genreTable, labelTable, listTable } = this.config;
 
-        const genresPromise = db
+        const genresPromise = getDbClient()
             .selectDistinct({ name: genreTable.name })
             .from(genreTable)
             .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
             .where(eq(listTable.userId, userId))
             .orderBy(asc(genreTable.name));
 
-        const labelsPromise = db
+        const labelsPromise = getDbClient()
             .selectDistinct({ name: labelTable.name })
             .from(labelTable)
             .where(and(eq(labelTable.userId, userId)))
@@ -244,12 +210,13 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async getTotalMediaLabel(userId: number) {
         const { labelTable } = this.config;
 
-        const result = await db
+        const result = getDbClient()
             .selectDistinct({ count: count(labelTable.name) })
             .from(labelTable)
-            .where(eq(labelTable.userId, userId));
+            .where(eq(labelTable.userId, userId))
+            .get();
 
-        return result[0]?.count ?? 0;
+        return result?.count ?? 0;
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
@@ -266,14 +233,14 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         const allFilters = { ...this.baseFilterDefinitions, ...this.specificFilterDefinitions };
 
         // Main query builder
-        let queryBuilder = db
+        let queryBuilder = getDbClient()
             .select(baseSelection)
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
 
         // Count query builder
-        let countQueryBuilder = db
+        let countQueryBuilder = getDbClient()
             .select({ count: count() })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
@@ -316,7 +283,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         let commonIdsSet = new Set<number>();
         if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
             const mediaIds = results.map((m: any) => m.mediaId);
-            const commonMediaIdsResult = await db
+            const commonMediaIdsResult = await getDbClient()
                 .select({ mediaId: listTable.mediaId })
                 .from(listTable)
                 .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)))
@@ -349,7 +316,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, statusFilters } = statsConfig;
 
         const countAlias = sql<number>`countDistinct(${metricNameColumn})`
-        const topValuesQuery = db
+        const topValuesQuery = getDbClient()
             .select({ name: metricNameColumn, value: countAlias })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
@@ -364,7 +331,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
         const avgRatingAlias = sql<number>`avgDistinct(${metricNameColumn})`;
         const ratingCountAlias = sql<number>`count(${listTable.rating})`;
-        const topRatedQuery = db
+        const topRatedQuery = getDbClient()
             .select({ name: metricNameColumn, value: avgRatingAlias })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
@@ -378,7 +345,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .orderBy(asc(avgRatingAlias))
             .limit(limit);
 
-        const topFavoritedQuery = db
+        const topFavoritedQuery = getDbClient()
             .select({ name: metricNameColumn, value: countAlias })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
@@ -418,7 +385,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             ratingDistribution[(i * 0.5).toFixed(1)] = 0;
         }
 
-        const ratingQuery = await db
+        const ratingQuery = await getDbClient()
             .select({ rating: listTable.rating, count: count(listTable.rating) })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), isNotNull(listTable.rating)))
@@ -438,7 +405,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async computeReleaseDateStats(userId: number) {
         const { mediaTable, listTable } = this.config;
 
-        const releaseDates = await db
+        const releaseDates = await getDbClient()
             .select({
                 name: sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`,
                 value: sql<number>`cast(count(${mediaTable.releaseDate}) as int)`.as("count"),
