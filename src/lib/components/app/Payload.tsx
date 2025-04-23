@@ -60,9 +60,9 @@ const TVPayload = ({ payload }: { payload: Record<string, any> }) => {
 
 
 const RedoPayload = ({ payload, mediaType }: { payload: Record<string, any>, mediaType: MediaType }) => {
-    const name = (mediaType === MediaType.BOOKS) ? "Chapter" : "Episode";
+    const name = (mediaType === MediaType.BOOKS) ? "Re-read" : "Re-watched";
 
-    if (["series", "anime"].includes(mediaType)) {
+    if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
         return (
             <>{name} {payload.old_value}x S. <MoveRight className="w-4 h-4"/> {payload.new_value}x S.</>
         );

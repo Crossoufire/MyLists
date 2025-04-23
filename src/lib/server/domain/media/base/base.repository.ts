@@ -4,6 +4,7 @@ import {followers, user} from "@/lib/server/database/schema";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 const ALL_VALUE = "All";
@@ -103,7 +104,8 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
     async findById(mediaId: number) {
         const { mediaTable } = this.config;
-        return db
+
+        return getDbClient()
             .select()
             .from(mediaTable)
             .where(eq(mediaTable.id, mediaId))
@@ -151,6 +153,20 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
     }
 
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const { listTable, labelTable } = this.config;
+
+        await getDbClient()
+            .delete(listTable)
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .execute();
+
+        await getDbClient()
+            .delete(labelTable)
+            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)))
+            .execute();
+    }
+
     async getUserFavorites(userId: number, limit = 8) {
         const { listTable, mediaTable } = this.config;
 
@@ -169,7 +185,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async findUserMedia(userId: number, mediaId: number) {
         const { listTable, labelTable } = this.config;
 
-        const mainUserMediaData = await db
+        const mainUserMediaData = await getDbClient()
             .select().from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
             .limit(1)
@@ -177,11 +193,8 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
         if (!mainUserMediaData) return null;
 
-        const associatedLabels = await db
-            .select({
-                id: labelTable.id,
-                name: labelTable.name,
-            }).from(labelTable)
+        const associatedLabels = await getDbClient()
+            .select({ id: labelTable.id, name: labelTable.name }).from(labelTable)
             .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name))
             .execute();

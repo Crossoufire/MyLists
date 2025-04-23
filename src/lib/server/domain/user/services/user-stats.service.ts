@@ -115,7 +115,6 @@ export class UserStatsService {
         const updatesPerMonth = await this.userUpdatesRepository.getUpdatesCountPerMonth(userId);
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
         const labelCountPromises = statsFromSettings.mediaTypes.map((mediaType) => {
-            //@ts-expect-error
             const mediaRepository = this.mediaRepoRegistry.getRepository(mediaType);
             return mediaRepository.getTotalMediaLabel(userId);
         });
@@ -126,9 +125,7 @@ export class UserStatsService {
     }
 
     async getSpecificMediaTypeStats(userId: number, mediaType: MediaType) {
-        //@ts-expect-error
         const mediaRepository = this.mediaRepoRegistry.getRepository(mediaType);
-
         const commonStats = await this.computeCommonMediaStats(userId, mediaType);
         const updatesStats = await this.userUpdatesRepository.getMediaUpdatesCountPerMonth(userId, mediaType);
         const specificStats = await mediaRepository.calculateSpecificStats(userId);

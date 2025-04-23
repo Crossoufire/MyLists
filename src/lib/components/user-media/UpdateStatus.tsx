@@ -1,18 +1,21 @@
-import {Status} from "@/lib/server/utils/enums";
+import {MediaType, Status} from "@/lib/server/utils/enums";
+import {useUpdateStatusMutation} from "@/lib/react-query/mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
 interface StatusDropProps {
-    updateStatus?: any;
-    allStatus?: Status[];
+    status: Status;
+    mediaType: MediaType;
     canBeCompleted?: boolean;
-    status: Status | undefined;
+    updateStatus: ReturnType<typeof useUpdateStatusMutation>;
 }
 
 
-export const UpdateStatus = ({ status, allStatus, updateStatus, canBeCompleted = true }: StatusDropProps) => {
+export const UpdateStatus = ({ status, mediaType, updateStatus, canBeCompleted = true }: StatusDropProps) => {
+    const allStatuses = Status.byMediaType(mediaType);
+
     const handleStatus = (status: Status) => {
-        updateStatus.mutate({ payload: status });
+        updateStatus.mutate({ payload: { status } });
     };
 
     return (
@@ -23,8 +26,8 @@ export const UpdateStatus = ({ status, allStatus, updateStatus, canBeCompleted =
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>
-                    {allStatus?.map(s => (
-                        <SelectItem key={s} value={s} disabled={s === "Completed" && !canBeCompleted}>
+                    {allStatuses?.map(s => (
+                        <SelectItem key={s} value={s} disabled={s === Status.COMPLETED && !canBeCompleted}>
                             {s}
                         </SelectItem>
                     ))}

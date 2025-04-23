@@ -11,6 +11,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
+import {getUserMediaHistory} from "../server/functions/user-media";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -172,4 +173,11 @@ export const achievementOptions = (username: string) => queryOptions({
 export const userStatsOptions = (username: string, search: Record<string, any>) => queryOptions({
     queryKey: queryKeys.userStatsKey(username, search),
     queryFn: () => getUserStats({ data: { username, search } }),
+});
+
+export const historyOptions = (mediaType: MediaType, mediaId: number) => queryOptions({
+    queryKey: queryKeys.historyKey(mediaType, mediaId),
+    queryFn: () => getUserMediaHistory({ data: { mediaType, mediaId } }),
+    staleTime: 10 * 1000,
+    placeholderData: [],
 });

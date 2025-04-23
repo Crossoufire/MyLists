@@ -5,7 +5,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 
 interface RedoDropProps {
     name: string;
-    redo: number | null | undefined;
+    redo: number | null;
     updateRedo: ReturnType<typeof useUpdateRedoMutation>
 }
 
@@ -24,7 +24,9 @@ export const UpdateRedo = ({ name, redo, updateRedo }: RedoDropProps) => {
                 </SelectTrigger>
                 <SelectContent>
                     {getRedoList().map(val =>
-                        <SelectItem key={val} value={val.toString()}>{`${val}`}</SelectItem>
+                        <SelectItem key={val} value={val.toString()}>
+                            {`${val}`}
+                        </SelectItem>
                     )}
                 </SelectContent>
             </Select>

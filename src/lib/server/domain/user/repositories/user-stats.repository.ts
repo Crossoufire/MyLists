@@ -2,6 +2,7 @@ import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
 import {StatsDelta} from "@/lib/server/types/stats.types";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 
@@ -55,7 +56,8 @@ export class UserStatsRepository {
 
         if (Object.keys(setUpdates).length === 0) return;
 
-        await db
+        // Execute query
+        await getDbClient()
             .update(userMediaSettings)
             .set(setUpdates)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))

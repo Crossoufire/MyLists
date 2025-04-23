@@ -58,6 +58,8 @@ export interface MediaSchemaConfig<
     labelTable: TLabelTable;
     baseSelection: SelectionMap<TListTable, TMediaTable>;
     availableSorts: Record<string, SQL | SQL[]>;
+    maxGenres: number;
+    defaultStatus: Status;
     defaultSortName: string;
     genreConfig?: RelatedEntityConfig<any, any>;
     actorConfig?: RelatedEntityConfig<any, any>;

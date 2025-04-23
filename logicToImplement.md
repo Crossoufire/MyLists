@@ -10,19 +10,25 @@
 - Features -> DONE
 - Achievements -> DONE
 - Moviedle -> DONE
+- Media Details ->
+    - Add history GET and mutation -> DONE
+    - Add media to list mutation -> DONE
+    - Add redo mutation -> DONE
+    - Add comments mutation -> DONE
+    - Add status mutation -> DONE
+    - Add favorite mutation -> DONE
+    - Add remove from list mutation -> DONE
+
+## Backend Logic implemented
+
+- DB transaction system -> DONE
 
 ## Logic (GET and mutations) to implement
 
 - Media Details ->
-    - Add history GET and mutation
-    - Add status mutation
-    - Add rating mutation
-    - Add comments mutation
-    - Add labels WHOLE SYSTEM (GET + mutations)
-    - Add remove from list mutation
-    - Add favorite mutation
-    - Fix redo mutation
     - Add refresh mutation
+    - Add rating mutation
+    - Add labels WHOLE SYSTEM (GET + mutations)
 - Edit Media Details ->
     - Add GET page
     - Add edit mutation
@@ -30,7 +36,7 @@
     - Add GET page
 - Footer ->
     - Remove flask and add Tanstack Start
-- Platform Stats ->
+      Platform Stats ->
     - Add GET page
     - Add cache system
 - Trending Page ->

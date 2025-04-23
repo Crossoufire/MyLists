@@ -55,7 +55,6 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
             />
             <Separator className="mt-3 mb-1.5"/>
             <div className="flex items-center justify-end">
-                {/*//@ts-expect-error*/}
                 <Link to={`/stats/$username`} params={{ username: user.name }} className="text-base font-medium hover:underline">
                     Advanced stats<ArrowRight className="inline-block ml-1 w-4 h-4"/>
                 </Link>

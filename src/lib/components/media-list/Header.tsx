@@ -154,8 +154,7 @@ const DotsOthers = () => {
                     </Link>
                 </Button>
                 <Button asChild>
-                    {/*// @ts-expect-error*/}
-                    <Link to="/stats/$username" params={{ username }} search={{ mt: mediaType }}>
+                    <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
                         <ChartLine className="mr-2 w-4 h-4"/> Collection Stats
                     </Link>
                 </Button>

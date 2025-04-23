@@ -14,6 +14,7 @@ import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options";
 import {MediaDataDetails} from "@/lib/components/media-details/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {RefreshAndEditMedia} from "@/lib/components/media-details/RefreshAndEditMedia";
+import {useAddMediaToListMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
@@ -40,10 +41,10 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
-    // const addToList = useAddMediaToListMutation(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId));
+    const addMediaToListMutation = useAddMediaToListMutation(mediaType, mediaId, queryKeys.detailsKey(mediaType, mediaId));
 
-    const handleAddMediaUser = () => {
-        // addToList.mutate({ payload: undefined });
+    const handleAddMediaToUser = () => {
+        addMediaToListMutation.mutate({});
     };
 
     return (
@@ -78,7 +79,7 @@ function MediaDetailsPage() {
                                 />
                                 :
                                 <div className="w-[300px]">
-                                    <Button onClick={handleAddMediaUser}>
+                                    <Button onClick={handleAddMediaToUser}>
                                         Add to your list
                                     </Button>
                                 </div>

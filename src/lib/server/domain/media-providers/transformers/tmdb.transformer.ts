@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
+import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {ProviderSearchResults} from "@/lib/server/domain/media-providers/interfaces/types";
 
 
@@ -7,7 +8,7 @@ export class TmdbTransformer {
     private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
     private readonly defaultDuration = 90;
     private readonly maxActors = 5;
-    private readonly maxGenres = 5;
+    private readonly maxGenres = moviesConfig.maxGenres;
 
     transformSearchResults(rawData: Record<string, any>) {
         const results = rawData?.results ?? [];

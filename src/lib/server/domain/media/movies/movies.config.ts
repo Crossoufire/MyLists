@@ -1,4 +1,5 @@
 import {asc, desc} from "drizzle-orm";
+import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
 
@@ -33,6 +34,8 @@ export const moviesConfig: MovieSchemaConfig = {
         mediaIdColumnInEntity: schema.moviesActors.mediaId,
         idColumnInMedia: schema.movies.id,
     },
+    maxGenres: 5,
+    defaultStatus: Status.COMPLETED,
     defaultSortName: "Title A-Z",
     availableSorts: {
         "Title A-Z": asc(schema.movies.name),

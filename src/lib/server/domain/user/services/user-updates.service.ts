@@ -1,14 +1,14 @@
-import {and, desc, eq} from "drizzle-orm";
-import {db} from "@/lib/server/database/db";
+import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 interface LogUpdateParams {
     media: any;
-    oldValue: any,
-    newValue: any,
+    oldState: any,
+    newState: any,
     userId: number;
     mediaType: MediaType;
     updateType: UpdateType;
@@ -21,27 +21,39 @@ type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: an
 export class UserUpdatesService {
     private readonly updateThreshold = 300
 
-    constructor(private userUpdatesRepository: typeof UserUpdatesRepository) {
+    constructor(private repository: typeof UserUpdatesRepository) {
     }
 
     async getUserUpdates(userId: number, limit = 8) {
-        return this.userUpdatesRepository.getUserUpdates(userId, limit);
+        return this.repository.getUserUpdates(userId, limit);
+    }
+
+    async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+        return this.repository.getUserMediaHistory(userId, mediaType, mediaId);
+    }
+
+    async deleteMediaUpdatesForUser(userId: number, mediaType: MediaType, mediaId: number) {
+        const updates = await this.repository.getUserMediaHistory(userId, mediaType, mediaId);
+        const updateIds = updates.map((update) => update.id);
+        await this.repository.deleteUserUpdates(userId, updateIds, false);
     }
 
     async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
-        return this.userUpdatesRepository.getUserUpdatesPaginated(userId, filters)
+        return this.repository.getUserUpdatesPaginated(userId, filters)
     }
 
     async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
-        return this.userUpdatesRepository.getFollowsUpdates(userId, asPublic, limit);
+        return this.repository.getFollowsUpdates(userId, asPublic, limit);
     }
 
     async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
-        return this.userUpdatesRepository.deleteUserUpdates(userId, updateIds, returnData);
+        return this.repository.deleteUserUpdates(userId, updateIds, returnData);
     }
 
-    async logUpdate({ userId, mediaType, media, updateType, oldValue, newValue }: LogUpdateParams) {
-        const [previousEntry] = await db.select()
+    async logUpdate({ userId, mediaType, media, updateType, oldState, newState }: LogUpdateParams) {
+        const { oldValue, newValue } = this.extractLogValues(updateType)(oldState, newState);
+
+        const [previousEntry] = await getDbClient().select()
             .from(userMediaUpdate).where(and(
                 eq(userMediaUpdate.userId, userId),
                 eq(userMediaUpdate.mediaId, media.id),
@@ -62,16 +74,16 @@ export class UserUpdatesService {
             mediaType: mediaType,
             mediaName: media.name,
             updateType: updateType,
-            payload: { oldValue, newValue },
-            timestamp: new Date().toISOString()
+            payload: { old_value: oldValue, new_value: newValue },
+            timestamp: sql<string>`CURRENT_TIMESTAMP`,
         };
 
         if (timeDifference > this.updateThreshold) {
-            await db.insert(userMediaUpdate).values(newUpdateData).execute();
+            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
         }
         else {
-            await db.delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
-            await db.insert(userMediaUpdate).values(newUpdateData).execute();
+            await getDbClient().delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
+            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
         }
     }
 

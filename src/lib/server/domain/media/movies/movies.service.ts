@@ -1,6 +1,18 @@
+import {notFound} from "@tanstack/react-router";
 import type {StatsDelta} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+
+
+interface UserMediaState {
+    redo: number;
+    total: number;
+    mediaId: number;
+    favorite: boolean;
+    status: Status | null;
+    rating: number | null | undefined;
+    comment: string | null | undefined;
+}
 
 
 export class MoviesService {
@@ -38,10 +50,6 @@ export class MoviesService {
         return mediaWithDetails;
     }
 
-    async getMinimalMediaDetails(mediaId: number) {
-        return await this.repository.findById(mediaId);
-    }
-
     async getUserMediaDetails(userId: number, mediaId: number) {
         return await this.repository.findUserMedia(userId, mediaId);
     }
@@ -66,114 +74,174 @@ export class MoviesService {
         return this.repository.getSearchListFilters(userId, query, job);
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: any) {
-        return this.repository.updateUserMediaDetails(userId, mediaId, updateData);
-    }
-
     async getComingNext(userId: number) {
         const comingNextData = await this.repository.getComingNext(userId);
         return { items: comingNextData, mediaType: MediaType.MOVIES };
     }
 
-    calculateDeltaStats(oldState: any | null, newState: any, mediaDetails: any) {
-        const delta: StatsDelta = { statusCounts: {} };
+    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
+        const newStatus = status ?? this.repository.config.defaultStatus;
 
-        const oldStatus: Status | null = oldState?.status;
-        const newStatus: Status | null = newState.status;
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+
+        const userMedia = await this.repository.findUserMedia(userId, mediaId);
+        if (userMedia) {
+            throw new Error("Media already in your list");
+        }
+
+        const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
+
+        const delta = this.calculateDeltaStats(null, newState as UserMediaState, media);
+
+        return { newState, media, delta };
+    }
+
+    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) {
+            throw new Error("Media not in your list");
+        }
+
+        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
+        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserMediaState, newState as UserMediaState, media);
+
+        return { oldState, newState, media, delta, completeUpdateData };
+    }
+
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) {
+            throw new Error("Media not in your list");
+        }
+
+        await this.repository.removeMediaFromUserList(userId, mediaId);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserMediaState, null, media);
+
+        return delta;
+    }
+
+    completePartialUpdateData(partialUpdateData: Record<string, any>) {
+        const completeUpdateData = { ...partialUpdateData };
+
+        if (completeUpdateData.status) {
+            return { ...completeUpdateData, redo: 0 };
+        }
+        return completeUpdateData;
+    }
+
+    calculateDeltaStats(oldState: UserMediaState | null, newState: UserMediaState | null, media: any) {
+        const delta: StatsDelta = {};
+        const statusCounts: Partial<Record<Status, number>> = {};
+
+        // Extract Old State Info
+        const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
-        const newRating = newState.rating;
-        const oldComment = oldState?.comment;
-        const newComment = newState.comment;
-        const oldFavorite = oldState?.favorite;
-        const newFavorite = newState.favorite;
         const oldRedo = oldState?.redo ?? 0;
-        const newRedo = newState.redo ?? 0;
+        const oldComment = oldState?.comment;
+        const oldFavorite = oldState?.favorite ?? false;
+        const wasCompleted = oldStatus === Status.COMPLETED;
+        const wasFavorited = wasCompleted && oldFavorite;
+        const wasCommented = wasCompleted && !!oldComment;
+        const wasRated = wasCompleted && oldRating != null;
+        const oldTotalSpecificValue = oldState ? (wasCompleted ? 1 : 0) + oldRedo : 0;
+        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
 
-        const movieDuration = mediaDetails.duration!;
+        // Extract New State Info
+        const newStatus = newState?.status;
+        const newRating = newState?.rating;
+        const newRedo = newState?.redo ?? 0;
+        const newComment = newState?.comment;
+        const newFavorite = newState?.favorite ?? false;
+        const isCompleted = newStatus === Status.COMPLETED;
+        const isFavorited = isCompleted && newFavorite;
+        const isCommented = isCompleted && !!newComment;
+        const isRated = isCompleted && newRating != null;
+        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
+        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 
+        // --- Calculate Deltas ----------------------------------------------------------------
+
+        // Total Entries
+        if (!oldState && newState) {
+            delta.totalEntries = 1;
+        }
+        else if (oldState && !newState) {
+            delta.totalEntries = -1;
+        }
+
+        // Status Counts
         if (oldStatus !== newStatus) {
             if (oldStatus) {
-                delta.statusCounts![oldStatus] = (delta.statusCounts![oldStatus] ?? 0) - 1;
+                statusCounts[oldStatus] = (statusCounts[oldStatus] ?? 0) - 1;
             }
             if (newStatus) {
-                delta.statusCounts![newStatus] = (delta.statusCounts![newStatus] ?? 0) + 1;
-            }
-
-            const wasWatched = oldStatus !== null && oldStatus === Status.COMPLETED;
-            const isNowWatched = newStatus !== null && newStatus === Status.COMPLETED;
-
-            if (!wasWatched && isNowWatched) {
-                delta.timeSpent = (delta.timeSpent ?? 0) + movieDuration;
-            }
-            else if (wasWatched && !isNowWatched) {
-                delta.timeSpent = (delta.timeSpent ?? 0) - movieDuration;
-                if (oldRating !== null && oldRating !== undefined) {
-                    delta.entriesRated = (delta.entriesRated ?? 0) - 1;
-                    delta.sumEntriesRated = (delta.sumEntriesRated ?? 0) - oldRating;
-                }
-                if (oldComment) {
-                    delta.entriesCommented = (delta.entriesCommented ?? 0) - 1;
-                }
-                if (oldFavorite) {
-                    delta.entriesFavorites = (delta.entriesFavorites ?? 0) - 1;
-                }
+                statusCounts[newStatus] = (statusCounts[newStatus] ?? 0) + 1;
             }
         }
 
-        if (newStatus === Status.COMPLETED) {
-            const hadRating = oldRating !== null && oldRating !== undefined;
-            const hasRating = newRating !== null && newRating !== undefined;
+        // Time Spent
+        delta.timeSpent = (newTotalTimeSpent - oldTotalTimeSpent);
 
-            if (!hadRating && hasRating) {
-                delta.entriesRated = (delta.entriesRated ?? 0) + 1;
-                delta.sumEntriesRated = (delta.sumEntriesRated ?? 0) + newRating;
-            }
-            else if (hadRating && !hasRating) {
-                // Removed a rating (should only happen if status also changed away from watched, handled above)
-                // This case might be redundant if cleanup logic is robust.
-            }
-            else if (hadRating && hasRating && oldRating !== newRating) {
-                // Changed an existing rating
-                delta.sumEntriesRated =
-                    (delta.sumEntriesRated ?? 0) + (newRating - oldRating);
-            }
+        // Total Redo Count
+        delta.totalRedo = (newRedo - oldRedo);
+
+        // Total Specific
+        delta.totalSpecific = (newTotalSpecificValue - oldTotalSpecificValue);
+
+        // Rating Stats
+        let entriesRatedDelta = 0;
+        let sumEntriesRatedDelta = 0;
+        if (wasRated && !isRated) {
+            entriesRatedDelta = -1;
+            sumEntriesRatedDelta = -(oldRating ?? 0);
         }
-
-        if (newStatus === Status.COMPLETED) {
-            const hadComment = !!oldComment;
-            const hasComment = !!newComment;
-            if (!hadComment && hasComment) {
-                delta.entriesCommented = (delta.entriesCommented ?? 0) + 1;
-            }
-            else if (hadComment && !hasComment) {
-                // This case might be redundant if cleanup logic is robust.
-                // delta.entriesCommented = (delta.entriesCommented ?? 0) - 1;
-            }
+        else if (!wasRated && isRated) {
+            entriesRatedDelta = 1;
+            sumEntriesRatedDelta = newRating ?? 0;
         }
-
-        if (newStatus === Status.COMPLETED) {
-            const hadFavorite = !!oldFavorite;
-            const hasFavorite = !!newFavorite;
-            if (!hadFavorite && hasFavorite) {
-                delta.entriesFavorites = (delta.entriesFavorites ?? 0) + 1;
-            }
-            else if (hadFavorite && !hasFavorite) {
-                // This case might be redundant if cleanup logic is robust.
-                // delta.entriesFavorites = (delta.entriesFavorites ?? 0) - 1;
-            }
+        else if (wasRated && isRated && oldRating !== newRating) {
+            sumEntriesRatedDelta = (newRating ?? 0) - (oldRating ?? 0);
         }
+        delta.entriesRated = entriesRatedDelta;
+        delta.sumEntriesRated = sumEntriesRatedDelta;
 
-        if (oldRedo !== newRedo) {
-            delta.totalRedo = (delta.totalRedo ?? 0) + (newRedo - oldRedo);
+        // Comment Stats
+        let entriesCommentedDelta = 0;
+        if (wasCommented && !isCommented) {
+            entriesCommentedDelta = -1;
         }
-
-        if (oldState === null) {
-            delta.totalEntries = (delta.totalEntries ?? 0) + 1;
-            // Initial values are already handled by the logic above (e.g., adding time if status is watched)
+        else if (!wasCommented && isCommented) {
+            entriesCommentedDelta = 1;
         }
+        delta.entriesCommented = entriesCommentedDelta;
 
-        if (Object.keys(delta.statusCounts!).length === 0) {
-            delete delta.statusCounts;
+        // Favorite Stats
+        let entriesFavoritesDelta = 0;
+        if (wasFavorited && !isFavorited) {
+            entriesFavoritesDelta = -1;
+        }
+        else if (!wasFavorited && isFavorited) {
+            entriesFavoritesDelta = 1;
+        }
+        delta.entriesFavorites = entriesFavoritesDelta;
+
+        // Add statusCounts to delta only if entries
+        if (Object.keys(statusCounts).length > 0) {
+            delta.statusCounts = statusCounts;
         }
 
         return delta;

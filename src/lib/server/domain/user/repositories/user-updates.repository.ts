@@ -1,4 +1,4 @@
-import {db} from "@/lib/server/database/db";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
@@ -6,7 +6,7 @@ import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle
 
 export class UserUpdatesRepository {
     static async getUserUpdates(userId: number, limit = 8) {
-        return db.query.userMediaUpdate.findMany({
+        return getDbClient().query.userMediaUpdate.findMany({
             where: eq(userMediaUpdate.userId, userId),
             orderBy: [desc(userMediaUpdate.timestamp)],
             limit: limit,
@@ -19,12 +19,12 @@ export class UserUpdatesRepository {
         const search = filters?.search ?? "";
         const offset = pageIndex * limit;
 
-        const totalCountResult = await db
+        const totalCountResult = await getDbClient()
             .select({ count: sql<number>`count()` })
             .from(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
 
-        const historyResult = await db
+        const historyResult = await getDbClient()
             .select()
             .from(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
@@ -36,22 +36,35 @@ export class UserUpdatesRepository {
         return { total: totalCountResult[0]?.count ?? 0, items: historyResult };
     }
 
+    static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+        return getDbClient()
+            .select()
+            .from(userMediaUpdate)
+            .where(and(
+                eq(userMediaUpdate.userId, userId),
+                eq(userMediaUpdate.mediaType, mediaType),
+                eq(userMediaUpdate.mediaId, mediaId),
+            ))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .execute();
+    }
+
     static async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
         let allowedUserIdsQuery;
 
         if (asPublic) {
-            allowedUserIdsQuery = db
+            allowedUserIdsQuery = getDbClient()
                 .select({ id: user.id }).from(followers)
                 .leftJoin(user, eq(followers.followedId, user.id))
                 .where(and(eq(followers.followerId, userId), eq(user.privacy, PrivacyType.PUBLIC)));
         }
         else {
-            allowedUserIdsQuery = db
+            allowedUserIdsQuery = getDbClient()
                 .select({ id: followers.followedId }).from(followers)
                 .where(eq(followers.followerId, userId));
         }
 
-        const followsUpdates = await db
+        const followsUpdates = await getDbClient()
             .select({ ...getTableColumns(userMediaUpdate), username: user.name })
             .from(userMediaUpdate)
             .leftJoin(user, eq(userMediaUpdate.userId, user.id))
@@ -63,7 +76,7 @@ export class UserUpdatesRepository {
     }
 
     static async getUpdatesCountPerMonth(userId: number) {
-        const monthlyCountsQuery = db
+        const monthlyCountsQuery = getDbClient()
             .select({
                 month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
                 count: count(userMediaUpdate.mediaId).as("count"),
@@ -92,7 +105,7 @@ export class UserUpdatesRepository {
     }
 
     static async getMediaUpdatesCountPerMonth(userId: number, mediaType: MediaType) {
-        const monthlyCountsQuery = db
+        const monthlyCountsQuery = getDbClient()
             .select({
                 month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
                 count: count(userMediaUpdate.mediaId).as("count"),
@@ -121,13 +134,13 @@ export class UserUpdatesRepository {
     }
 
     static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
-        await db
+        await getDbClient()
             .delete(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)))
             .execute();
 
         if (returnData) {
-            const newUpdateToReturn = await db
+            const newUpdateToReturn = await getDbClient()
                 .select()
                 .from(userMediaUpdate)
                 .where(eq(userMediaUpdate.userId, userId))

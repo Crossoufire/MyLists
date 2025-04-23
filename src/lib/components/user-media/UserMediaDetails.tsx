@@ -1,16 +1,21 @@
+import {toast} from "sonner";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {LabelLists} from "@/lib/components/user-media/LabelLists";
 import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
+import {HistoryDetails} from "@/lib/components/user-media/HistoryDetails";
 import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
+import {historyOptions, queryKeys} from "@/lib/react-query/query-options";
 import {MoviesUserDetails} from "@/lib/components/user-media/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
+import {useRemoveMediaFromListMutation, useUpdateCommentMutation, useUpdateFavoriteMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {
+    userMedia: any //Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: any //Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
 }
 
 
@@ -24,20 +29,21 @@ const mediaComponentMap = (value: MediaType) => {
 
 
 export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDetailsProps) => {
-    // const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
     const MediaUserDetails = mediaComponentMap(mediaType);
-    // const { data: history } = useQuery(historyOptions(mediaType, userMedia.mediaId));
-    // const removeFromList = useRemoveMediaFromListMutation(mediaType, userMedia.mediaId, queryKey);
-    // const { updateFavorite, updateComment } = useUserMediaMutations(mediaType, userMedia.mediaId, queryKey);
+    const history = useQuery(historyOptions(mediaType, userMedia.mediaId)).data;
+    const updateCommentMutation = useUpdateCommentMutation(mediaType, userMedia.mediaId, queryKey);
+    const updateFavoriteMutation = useUpdateFavoriteMutation(mediaType, userMedia.mediaId, queryKey);
+    const removeMediaFromListMutation = useRemoveMediaFromListMutation(mediaType, userMedia.mediaId, queryKey);
 
-    const handleDeleteMedia = () => {
+    const handleRemoveMediaFromList = () => {
         if (!window.confirm("Do you want to remove this media from your list?")) return;
-        // removeFromList.mutate(undefined, {
-        //     onSuccess: () => {
-        //         toast.success("Media removed from your list");
-        //         queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.mediaId) });
-        //     },
-        // });
+        removeMediaFromListMutation.mutate({}, {
+            onSuccess: () => {
+                toast.success("Media removed from your list");
+                queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.mediaId) });
+            },
+        });
     };
 
     return (
@@ -48,13 +54,13 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                         <TabsTrigger value="yourInfo">
                             Your Info
                         </TabsTrigger>
-                        {/*<TabsTrigger value="history" disabled={history.length === 0}>*/}
-                        {/*    History ({history.length})*/}
-                        {/*</TabsTrigger>*/}
+                        <TabsTrigger value="history" disabled={history?.length === 0}>
+                            History ({history?.length})
+                        </TabsTrigger>
                     </div>
                     <UpdateFavorite
-                        // updateFavorite={updateFavorite}
-                        isFavorite={userMedia?.favorite}
+                        isFavorite={userMedia.favorite}
+                        updateFavorite={updateFavoriteMutation}
                     />
                 </TabsList>
                 <TabsContent value="yourInfo">
@@ -65,25 +71,25 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                             mediaType={mediaType}
                         />
                         <UpdateComment
-                            content={userMedia?.comment}
-                            // updateComment={updateComment}
+                            content={userMedia.comment}
+                            updateComment={updateCommentMutation}
                         />
                         <LabelLists
                             queryKey={queryKey}
                             mediaType={mediaType}
-                            mediaId={userMedia?.mediaId}
+                            mediaId={userMedia.mediaId}
                             mediaLabels={userMedia?.labels ?? []}
                         />
                     </div>
                 </TabsContent>
                 <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-5 pt-3">
-                    {/*<HistoryDetails*/}
-                    {/*    history={history}*/}
-                    {/*    queryKey={queryKeys.historyKey(mediaType, userMedia.mediaId)}*/}
-                    {/*/>*/}
+                    <HistoryDetails
+                        history={history ?? []}
+                        queryKey={queryKeys.historyKey(mediaType, userMedia.mediaId)}
+                    />
                 </TabsContent>
             </Tabs>
-            <Button variant="destructive" onClick={handleDeleteMedia}>
+            <Button variant="destructive" onClick={handleRemoveMediaFromList}>
                 Remove from your list
             </Button>
         </div>

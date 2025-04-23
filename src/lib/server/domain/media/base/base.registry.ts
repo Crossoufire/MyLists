@@ -4,17 +4,27 @@ import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.reposito
 
 
 interface MediaRepoMap {
+    [MediaType.SERIES]: MoviesRepository;
+    [MediaType.ANIME]: MoviesRepository;
     [MediaType.MOVIES]: MoviesRepository;
+    [MediaType.GAMES]: MoviesRepository;
+    [MediaType.BOOKS]: MoviesRepository;
+    [MediaType.MANGA]: MoviesRepository;
 }
 
 
 interface MediaServiceMap {
+    [MediaType.SERIES]: MoviesService;
+    [MediaType.ANIME]: MoviesService;
     [MediaType.MOVIES]: MoviesService;
+    [MediaType.GAMES]: MoviesService;
+    [MediaType.BOOKS]: MoviesService;
+    [MediaType.MANGA]: MoviesService;
 }
 
 
 export class MediaRepoRegistry {
-    private static repositories: Partial<MediaRepoMap> = {};
+    private static repositories: MediaRepoMap = {} as MediaRepoMap;
 
     static registerRepository<T extends keyof MediaRepoMap>(mediaType: T, repository: MediaRepoMap[T]) {
         this.repositories[mediaType] = repository;
@@ -30,7 +40,7 @@ export class MediaRepoRegistry {
 
 
 export class MediaServiceRegistry {
-    private static services: Partial<MediaServiceMap> = {};
+    private static services: MediaServiceMap = {} as MediaServiceMap;
 
     static registerService<T extends keyof MediaServiceMap>(mediaType: T, service: MediaServiceMap[T]) {
         this.services[mediaType] = service;

@@ -3,11 +3,12 @@ import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
+import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface CommentaryProps {
-    updateComment?: any;
     content: string | null | undefined;
+    updateComment: ReturnType<typeof useUpdateRedoMutation>;
 }
 
 
@@ -26,7 +27,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
 
     const handleSave = () => {
         if (content === updatedContent) return;
-        updateComment.mutate({ payload: updatedContent });
+        updateComment.mutate({ payload: { comment: updatedContent } });
         setCommentInput(false);
     };
 

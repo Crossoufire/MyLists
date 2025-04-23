@@ -5,11 +5,15 @@ import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.t
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {and, asc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
+    config: MovieSchemaConfig;
+
     constructor() {
         super(moviesConfig, createMoviesFilters);
+        this.config = moviesConfig;
     }
 
     async getComingNext(userId: number) {
@@ -42,6 +46,17 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .orderBy(movies.name)
             .limit(20)
             .execute();
+    }
+
+    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+        const newTotal = newStatus === Status.COMPLETED ? 1 : 0;
+
+        const [newMedia] = await getDbClient()
+            .insert(moviesList)
+            .values({ userId, mediaId, total: newTotal, status: newStatus })
+            .returning();
+
+        return newMedia;
     }
 
     async findAllAssociatedDetails(mediaId: number) {
@@ -138,12 +153,13 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         }
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: any) {
-        const [result] = await db
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>) {
+        const [result] = await getDbClient()
             .update(moviesList)
             .set(updateData)
             .where(and(eq(moviesList.userId, userId), eq(moviesList.mediaId, mediaId)))
             .returning();
+
         return result;
     }
 
