@@ -1,11 +1,11 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {and, asc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {

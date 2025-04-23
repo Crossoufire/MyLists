@@ -10,7 +10,6 @@ export const getMediaDetails = createServerFn({ method: "GET" })
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         //@ts-expect-error
         const mediaStrategy = container.registries.mediaStrategy.getStrategy(mediaType);
-        //@ts-expect-error
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         //@ts-expect-error
