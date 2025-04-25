@@ -1,7 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {ProviderSearchResults} from "@/lib/server/domain/media-providers/interfaces/types";
+
+import {ProviderSearchResults} from "@/lib/server/types/base.types";
 
 
 export class TmdbTransformer {
@@ -71,7 +72,6 @@ export class TmdbTransformer {
             popularity: rawData?.popularity ?? 0,
             originalName: rawData?.original_title,
             voteAverage: rawData?.vote_average ?? 0,
-            lastApiUpdate: new Date().toISOString(),
             originalLanguage: rawData?.original_language,
             collectionId: rawData?.belongs_to_collection?.id,
             duration: rawData?.runtime ?? this.defaultDuration,
@@ -79,10 +79,10 @@ export class TmdbTransformer {
             directorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Director")?.name,
             compositorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Original Music Composer")?.name,
             imageCover: await saveImageFromUrl({
-                imageUrl: `${this.imageBaseUrl}${rawData?.poster_path}`,
-                saveLocation: "public/static/covers/movies-covers",
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
+                saveLocation: "public/static/covers/movies-covers",
+                imageUrl: `${this.imageBaseUrl}${rawData?.poster_path}`,
             }),
         }
 

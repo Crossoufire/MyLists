@@ -57,6 +57,7 @@ function MediaDetailsPage() {
                             <RefreshAndEditMedia
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
+                                apiId={apiData.media.apiId}
                                 lastUpdate={apiData.media.lastApiUpdate}
                             />
                         )}

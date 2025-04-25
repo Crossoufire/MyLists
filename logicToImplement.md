@@ -19,6 +19,7 @@
     - Add favorite mutation -> DONE
     - Add remove from list mutation -> DONE
     - Add rating mutation -> DONE
+    - Add labels WHOLE SYSTEM (GET + mutations)
 
 ## Backend Logic implemented
 
@@ -27,7 +28,6 @@
 ## Logic (GET and mutations) to implement
 
 - Media Details ->
-    - Add labels WHOLE SYSTEM (GET + mutations)
     - Add refresh mutation
 - Edit Media Details ->
     - Add GET page

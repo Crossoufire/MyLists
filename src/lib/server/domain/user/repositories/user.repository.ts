@@ -2,7 +2,8 @@ import {db} from "@/lib/server/database/db";
 import {and, asc, count, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
-import {ProviderSearchResults} from "@/lib/server/domain/media-providers/interfaces/types";
+
+import {ProviderSearchResults} from "@/lib/server/types/base.types";
 
 
 export class UserRepository {

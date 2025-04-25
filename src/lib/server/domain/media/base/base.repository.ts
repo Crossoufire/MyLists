@@ -119,7 +119,6 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
                 mediaCover: mediaTable.imageCover,
-                commonGenreCount: similarSub.commonGenreCount,
             })
             .from(similarSub)
             .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))

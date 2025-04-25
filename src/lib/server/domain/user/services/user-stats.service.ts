@@ -1,6 +1,6 @@
 import {StatsDelta} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {MediaRepoRegistry} from "@/lib/server/domain/media/base/base.registry";
+import {MediaRepoRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";

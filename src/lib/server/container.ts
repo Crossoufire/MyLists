@@ -7,7 +7,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {UserService} from "@/lib/server/domain/user/services/user.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
-import {TmdbClient} from "@/lib/server/domain/media-providers/clients/tmdb.client";
+import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {MediadleService} from "@/lib/server/domain/user/services/mediadle.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
@@ -18,12 +18,11 @@ import {NotificationsRepository} from "./domain/user/repositories/notifications.
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {TmdbTransformer} from "@/lib/server/domain/media-providers/transformers/tmdb.transformer";
+import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
-import {MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/base/base.registry";
+import {MediaProviderRegistry, MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-import {TmdbMoviesStrategy} from "@/lib/server/domain/media-providers/strategies/tmdb-movies.strategy";
-import {ProviderStrategyRegistry} from "@/lib/server/domain/media-providers/registries/provider-strategy.registry";
 
 
 // Initialize user repositories
@@ -58,9 +57,9 @@ const tmdbClient = new TmdbClient();
 // API Transformers
 const tmdbTransformer = new TmdbTransformer();
 
-// Provider strategies
-const tmdbMovieStrategy = new TmdbMoviesStrategy(tmdbClient, tmdbTransformer, moviesRepository);
-ProviderStrategyRegistry.registerStrategy(MediaType.MOVIES, tmdbMovieStrategy);
+// Media Providers Services
+const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
+MediaProviderRegistry.registerService(MediaType.MOVIES, moviesProviderService);
 
 export const container = {
     clients: {
@@ -85,9 +84,12 @@ export const container = {
         notifications: notificationsService,
         mediadle: mediadleService,
     },
+    providersServices: {
+        movies: moviesProviderService,
+    },
     registries: {
         mediaRepo: MediaRepoRegistry,
         mediaService: MediaServiceRegistry,
-        mediaStrategy: ProviderStrategyRegistry,
+        mediaProviderService: MediaProviderRegistry,
     }
 };

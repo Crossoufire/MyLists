@@ -1,6 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
 interface MediaRepoMap {
@@ -20,6 +21,16 @@ interface MediaServiceMap {
     [MediaType.GAMES]: MoviesService;
     [MediaType.BOOKS]: MoviesService;
     [MediaType.MANGA]: MoviesService;
+}
+
+
+interface MediaProviderServiceMap {
+    [MediaType.SERIES]: MoviesProviderService;
+    [MediaType.ANIME]: MoviesProviderService;
+    [MediaType.MOVIES]: MoviesProviderService;
+    [MediaType.GAMES]: MoviesProviderService;
+    [MediaType.BOOKS]: MoviesProviderService;
+    [MediaType.MANGA]: MoviesProviderService;
 }
 
 
@@ -51,5 +62,21 @@ export class MediaServiceRegistry {
             throw new Error(`Service for media type ${mediaType} not registered`);
         }
         return this.services[mediaType];
+    }
+}
+
+
+export class MediaProviderRegistry {
+    private static providers: MediaProviderServiceMap = {} as MediaProviderServiceMap;
+
+    static registerService<T extends keyof MediaProviderServiceMap>(mediaType: T, provider: MediaProviderServiceMap[T]) {
+        this.providers[mediaType] = provider;
+    }
+
+    static getService<T extends keyof MediaProviderServiceMap>(mediaType: T) {
+        if (!this.providers[mediaType]) {
+            throw new Error(`ProvviderService for media type ${mediaType} not registered`);
+        }
+        return this.providers[mediaType];
     }
 }

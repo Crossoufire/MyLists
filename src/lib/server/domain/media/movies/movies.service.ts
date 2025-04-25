@@ -28,14 +28,14 @@ export class MoviesService {
         return this.repository.searchByName(query);
     }
 
-    async getMediaDetails(mediaId: number | string, external: boolean, strategy: any) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 
         let mediaWithDetails;
         let internalMediaId = media?.id;
 
         if (external && !internalMediaId) {
-            internalMediaId = await strategy.processAndStoreMedia(mediaId);
+            internalMediaId = await providerService.processAndStoreMedia(mediaId);
             if (!internalMediaId) {
                 throw new Error("Failed to fetch media details");
             }
@@ -48,7 +48,11 @@ export class MoviesService {
             throw new Error("Movie not found");
         }
 
-        return mediaWithDetails;
+        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
+        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+
+        return { media: mediaWithDetails, userMedia, followsData, similarMedia };
     }
 
     async getUserMediaLabels(userId: number) {
@@ -57,18 +61,6 @@ export class MoviesService {
 
     async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
         return this.repository.editUserLabel({ userId, label, mediaId, action });
-    }
-
-    async getUserMediaDetails(userId: number, mediaId: number) {
-        return await this.repository.findUserMedia(userId, mediaId);
-    }
-
-    async getUserFollowsMediaData(userId: number, mediaId: number) {
-        return await this.repository.getUserFollowsMediaData(userId, mediaId);
-    }
-
-    async findSimilarMedia(mediaId: number) {
-        return await this.repository.findSimilarMedia(mediaId);
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: any) {

@@ -111,6 +111,34 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return result
     }
 
+    async updateMediaWithDetails({ mediaData, actorsData, genresData }: any) {
+        const isSuccess = await db.transaction(async (tx) => {
+            const [media] = await tx
+                .update(movies)
+                .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+                .where(eq(movies.apiId, mediaData.apiId))
+                .returning({ id: movies.id })
+
+            const mediaId = media.id;
+
+            if (actorsData && actorsData.length > 0) {
+                await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
+                const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+                await tx.insert(moviesActors).values(actorsToAdd)
+            }
+
+            if (genresData && genresData.length > 0) {
+                await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
+                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+                await tx.insert(moviesGenre).values(genresToAdd)
+            }
+
+            return true;
+        });
+
+        return isSuccess;
+    }
+
     async getListFilters(userId: number) {
         const { genres, labels } = await super.getCommonListFilters(userId);
 

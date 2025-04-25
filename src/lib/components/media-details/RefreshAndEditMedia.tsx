@@ -1,35 +1,38 @@
+import {toast} from "sonner";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Pencil, RefreshCw} from "lucide-react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {formatDateTime} from "@/lib/utils/functions";
+import {queryKeys} from "@/lib/react-query/query-options";
+import {useRefreshMediaMutation} from "@/lib/react-query/mutations/media.mutations";
 
 
 interface RefreshAndEditMediaProps {
+    apiId: number;
     mediaId: number;
     mediaType: MediaType;
     lastUpdate: string | null;
 }
 
 
-export const RefreshAndEditMedia = ({ mediaType, mediaId, lastUpdate }: RefreshAndEditMediaProps) => {
-    // const refreshMutation = useRefreshMutation(queryKeys.detailsKey(mediaType, mediaId.toString()));
+export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: RefreshAndEditMediaProps) => {
+    const refreshMutation = useRefreshMediaMutation(queryKeys.detailsKey(mediaType, mediaId.toString()));
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
-    const toto = false;
 
     const handleRefresh = () => {
-        // refreshMutation.mutate({ mediaType, mediaId }, {
-        //     onError: () => toast.error("An error occurred while refreshing the mediadata"),
-        //     onSuccess: () => toast.success("Mediadata successfully refreshed"),
-        // });
+        refreshMutation.mutate({ mediaType, apiId }, {
+            onError: () => toast.error("An error occurred while refreshing the mediadata"),
+            onSuccess: () => toast.success("Mediadata successfully refreshed"),
+        });
     };
 
     return (
         <div className="flex items-center gap-3 mt-2">
             <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
                 <div role="button" onClick={handleRefresh}>
-                    <RefreshCw size={18} className={cn("", toto && "animate-spin opacity-30")}/>
+                    <RefreshCw size={18} className={cn("", refreshMutation.isPending && "animate-spin opacity-30")}/>
                 </div>
             </Tooltip>
             {/*//@ts-expect-error*/}

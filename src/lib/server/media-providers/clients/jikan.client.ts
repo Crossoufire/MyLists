@@ -1,4 +1,4 @@
-import {BaseClient} from "@/lib/server/domain/media-providers/clients/base.client";
+import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 
 
 export class JikanClient extends BaseClient {
