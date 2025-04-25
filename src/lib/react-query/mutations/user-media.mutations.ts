@@ -1,7 +1,9 @@
 import {queryKeys} from "@/lib/react-query/query-options";
+import {MediaType, Status} from "@/lib/server/utils/enums";
+import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
-import {postAddMediaToList, postDeleteUserUpdates, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
+import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 
 
 export const useDeleteUpdatesMutation = (queryKey: string[]) => {
@@ -81,29 +83,14 @@ export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: nu
     });
 };
 
-
-// --- Media Update Mutations (status, favorite, comment, redo, etc...) ---------------------------------------
-
-
-interface UpdateUserMediaMutationOptions {
-    mediaId: number;
-    queryKey: string[];
-    mediaType: MediaType;
-    fieldToUpdate: string;
-    updateType?: UpdateType;
-}
-
-
-export const useUpdateUserMediaMutation = (data: UpdateUserMediaMutationOptions) => {
+export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
     const queryClient = useQueryClient();
-    const { mediaType, mediaId, queryKey, fieldToUpdate, updateType } = data;
 
-    // { payload: { redo: <valu> } }
     return useMutation<Record<string, any>, Error, { payload: Record<string, any> }>({
         mutationFn: ({ payload }) => {
-            return postUpdateUserMedia({ data: { mediaType, mediaId, payload, updateType } });
+            return postUpdateUserMedia({ data: { mediaType, mediaId, payload } });
         },
-        meta: { errorMessage: `Failed to update the ${fieldToUpdate} value` },
+        meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
             // <data> contains all modifications necessary to update <userMedia>
             // Example: if `status` was updated for Movies it returns { status: the-new-status, redo: 0 }
@@ -130,18 +117,26 @@ export const useUpdateUserMediaMutation = (data: UpdateUserMediaMutationOptions)
     });
 };
 
-export const useUpdateRedoMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
-    return useUpdateUserMediaMutation({ mediaType, mediaId, queryKey, fieldToUpdate: "redo", updateType: UpdateType.REDO });
-};
+export const useEditUserLabelMutation = (mediaType: MediaType, mediaId: number) => {
+    const queryClient = useQueryClient();
 
-export const useUpdateCommentMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
-    return useUpdateUserMediaMutation({ mediaType, mediaId, queryKey, fieldToUpdate: "comment" });
-};
-
-export const useUpdateFavoriteMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
-    return useUpdateUserMediaMutation({ mediaType, mediaId, queryKey, fieldToUpdate: "favorite" });
-};
-
-export const useUpdateStatusMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
-    return useUpdateUserMediaMutation({ mediaType, mediaId, queryKey, fieldToUpdate: "status", updateType: UpdateType.STATUS });
+    return useMutation<any, Error, { label: Label, action: EditUserLabels["action"] }>({
+        mutationFn: ({ label, action }) => {
+            return postEditUserLabel({ data: { mediaType, mediaId, label, action } });
+        },
+        meta: { errorMessage: "Failed to edit this label" },
+        onSuccess: (data, variables) => {
+            queryClient.setQueryData(queryKeys.labelsKey(mediaType), (oldData: Label[]) => {
+                if (variables.action === "add") {
+                    return oldData.map(l => l.name).includes(data.name) ? oldData : [...oldData, data];
+                }
+                else if (variables.action === "rename") {
+                    return oldData.map(l => l.name === variables.label.oldName ? data : l);
+                }
+                else if (variables.action === "deleteAll") {
+                    return oldData.filter(l => l.name !== variables.label.name);
+                }
+            });
+        }
+    })
 };

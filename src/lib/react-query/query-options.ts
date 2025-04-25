@@ -8,10 +8,10 @@ import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
+import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
-import {getUserMediaHistory} from "../server/functions/user-media";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -180,4 +180,10 @@ export const historyOptions = (mediaType: MediaType, mediaId: number) => queryOp
     queryFn: () => getUserMediaHistory({ data: { mediaType, mediaId } }),
     staleTime: 10 * 1000,
     placeholderData: [],
+});
+
+export const userMediaLabelsOptions = (mediaType: MediaType, isOpen: boolean) => queryOptions({
+    queryKey: queryKeys.labelsKey(mediaType),
+    queryFn: () => getUserMediaLabels({ data: { mediaType } }),
+    enabled: isOpen,
 });

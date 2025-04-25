@@ -1,14 +1,14 @@
 import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
 
 
 interface LogUpdateParams {
+    os: any,
+    ns: any,
     media: any;
-    oldState: any,
-    newState: any,
     userId: number;
     mediaType: MediaType;
     updateType: UpdateType;
@@ -50,8 +50,8 @@ export class UserUpdatesService {
         return this.repository.deleteUserUpdates(userId, updateIds, returnData);
     }
 
-    async logUpdate({ userId, mediaType, media, updateType, oldState, newState }: LogUpdateParams) {
-        const { oldValue, newValue } = this.extractLogValues(updateType)(oldState, newState);
+    async logUpdate({ userId, mediaType, media, updateType, os, ns }: LogUpdateParams) {
+        const { oldValue, newValue } = this.extractLogValues(updateType)(os, ns);
 
         const [previousEntry] = await getDbClient().select()
             .from(userMediaUpdate).where(and(

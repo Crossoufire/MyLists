@@ -3,6 +3,8 @@ import {createServerFn} from "@tanstack/react-start";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
+import {Label} from "@/lib/components/user-media/LabelsDialog";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -52,44 +54,44 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => {
+        data as {
+            mediaId: number,
+            mediaType: MediaType,
+            payload: Record<string, any>,
+        };
+
+        if (data.payload?.status) {
+            data.updateType = UpdateType.STATUS;
+        }
+        else if (data.payload?.redo) {
+            data.updateType = UpdateType.REDO;
+        }
+
         return data as {
             mediaId: number,
             mediaType: MediaType,
-            updateType?: UpdateType,
             payload: Record<string, any>,
+            updateType?: UpdateType,
         };
     })
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload, updateType } = data;
 
+        const userId = parseInt(currentUser.id);
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const {
-            oldState,
-            newState,
-            media,
-            delta,
-            completeUpdateData,
-        } = await mediaService.updateUserMediaDetails(parseInt(currentUser.id), mediaId, payload);
+        const { os, ns, media, delta, updateData } = await mediaService.updateUserMediaDetails(userId, mediaId, payload);
 
         //@ts-expect-error
         await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
 
         if (updateType) {
-            await userUpdatesService.logUpdate({
-                //@ts-expect-error
-                userId: currentUser.id,
-                media,
-                mediaType,
-                updateType,
-                oldState,
-                newState,
-            });
+            await userUpdatesService.logUpdate({ userId, media, mediaType, updateType, os, ns });
         }
 
-        return completeUpdateData;
+        return updateData;
     });
 
 
@@ -116,4 +118,31 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
         const userUpdatesService = container.services.userUpdates;
         //@ts-expect-error
         return userUpdatesService.deleteUserUpdates(currentUser.id, updateIds, returnData);
+    });
+
+
+export const getUserMediaLabels = createServerFn({ method: "GET" })
+    .middleware([authMiddleware])
+    .validator((data: any) => data as { mediaType: MediaType })
+    .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
+        const userId = parseInt(currentUser.id);
+        const mediaService = container.registries.mediaService.getService(mediaType);
+        return mediaService.getUserMediaLabels(userId);
+    });
+
+
+export const postEditUserLabel = createServerFn({ method: "POST" })
+    .middleware([authMiddleware, transactionMiddleware])
+    .validator((data: any) => {
+        return data as {
+            label: Label,
+            mediaId: number,
+            mediaType: MediaType,
+            action: EditUserLabels["action"],
+        };
+    })
+    .handler(async ({ data: { mediaType, label, action, mediaId }, context: { currentUser } }) => {
+        const userId = parseInt(currentUser.id);
+        const mediaService = container.registries.mediaService.getService(mediaType);
+        return mediaService.editUserLabel({ userId, label, mediaId, action });
     });

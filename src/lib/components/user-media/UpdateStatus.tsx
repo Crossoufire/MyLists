@@ -1,5 +1,5 @@
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {useUpdateStatusMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
@@ -7,7 +7,7 @@ interface StatusDropProps {
     status: Status;
     mediaType: MediaType;
     canBeCompleted?: boolean;
-    updateStatus: ReturnType<typeof useUpdateStatusMutation>;
+    updateStatus: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 

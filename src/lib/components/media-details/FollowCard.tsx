@@ -1,12 +1,12 @@
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
 import {Card, CardContent} from "@/lib/components/ui/card";
+import {getFeelingIcon, getStatusColor, zeroPad} from "@/lib/utils/functions";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options";
 import {Heart, MessageCircle, Play, RotateCw, Star} from "lucide-react";
-import {getStatusColor, zeroPad} from "@/lib/utils/functions";
+import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
@@ -17,14 +17,14 @@ interface FollowCardProps {
 
 
 export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
+    const rating = formatRating();
 
-    // TODO: add rating to follow and user
-    const formatRating = () => {
-        // if (follow.rating.type === "feeling") {
-        //     return getFeelingIcon(follow.rating.value, { size: 17 });
-        // }
-        // return follow.rating.value === null ? "--" : follow.rating.value.toFixed(1);
-    };
+    function formatRating() {
+        if (follow.ratingSystem === RatingSystemType.FEELING) {
+            return getFeelingIcon(follow.mediaList.rating, { size: 17 });
+        }
+        return follow.mediaList.rating === null ? "--" : follow.mediaList.rating.toFixed(1);
+    }
 
     const getTextColor = (backColor: string) => {
         const hex = backColor.replace("#", "");
@@ -53,8 +53,8 @@ export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
                         </Link>
                         <div className="flex justify-between items-center pr-3">
                             <div className="flex items-center gap-x-2">
-                                <Star size={15} className="text-amber-500"/>
-                                {/*<div>{formatRating()}</div>*/}
+                                <Star size={15} className={cn("text-[e2e2e2]", rating != "--" && "text-amber-500")}/>
+                                <div>{rating}</div>
                             </div>
                             <RedoInfo
                                 follow={follow}
@@ -86,7 +86,7 @@ export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
                     <div className="flex gap-x-3">
                         <Badge style={{
                             background: getStatusColor(follow.mediaList.status),
-                            color: getTextColor(getStatusColor(follow.mediaList.status))
+                            color: getTextColor(getStatusColor(follow.mediaList.status)),
                         }}>
                             {follow.mediaList.status}
                         </Badge>
@@ -199,7 +199,7 @@ const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
     else if (mediaType === MediaType.MANGA && follow.mediaList.status !== Status.PLAN_TO_READ) {
         return (
             <div className="flex gap-x-2 items-center">
-                <Play size={16} className="mt-0.5"/> Chpt. {follow.mediaList.currentChapter}/{follow?.mediaList.totalChapters ?? "?"}
+                <Play size={16} className="mt-0.5"/> Chpt. {follow.mediaList.currentChapter}/{follow.mediaList.totalChapters ?? "?"}
             </div>
         );
     }

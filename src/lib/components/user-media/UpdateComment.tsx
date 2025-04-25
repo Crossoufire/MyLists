@@ -3,12 +3,12 @@ import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface CommentaryProps {
     content: string | null | undefined;
-    updateComment: ReturnType<typeof useUpdateRedoMutation>;
+    updateComment: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 

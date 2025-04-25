@@ -23,7 +23,7 @@ export const user = sqliteTable("user", {
     gridListView: integer("grid_list_view", { mode: "boolean" }),
     privacy: text("privacy").$type<PrivacyType>().default(PrivacyType.RESTRICTED),
     searchSelector: text("search_selector").$type<ApiProviderType>().default(ApiProviderType.TMDB),
-    ratingSystem: text("rating_system").$type<RatingSystemType>().default(RatingSystemType.SCORE),
+    ratingSystem: text("rating_system").$type<RatingSystemType>().default(RatingSystemType.SCORE).notNull(),
 });
 
 

@@ -46,18 +46,11 @@ export const getScoreList = () => {
     const MAX_SCORE = 10;
     const STEP = 0.5;
 
-    // Generation
-    const scores = Array.from(
-        { length: (MAX_SCORE - MIN_SCORE) / STEP + 1 },
-        (_, i) => MIN_SCORE + i * STEP,
-    );
+    const scores = Array.from({ length: (MAX_SCORE - MIN_SCORE) / STEP + 1 }, (_, i) => MIN_SCORE + i * STEP);
 
     return [
         { value: null, component: "--" },
-        ...scores.map(value => ({
-            value,
-            component: value === MAX_SCORE ? value : value.toFixed(1)
-        }))
+        ...scores.map(value => ({ value, component: value === MAX_SCORE ? value : value.toFixed(1) }))
     ];
 };
 

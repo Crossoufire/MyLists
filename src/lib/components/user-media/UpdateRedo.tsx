@@ -1,12 +1,12 @@
 import {getRedoList} from "@/lib/utils/functions";
-import {useUpdateRedoMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
 interface RedoDropProps {
     name: string;
     redo: number | null;
-    updateRedo: ReturnType<typeof useUpdateRedoMutation>
+    updateRedo: ReturnType<typeof useUpdateUserMediaMutation>
 }
 
 

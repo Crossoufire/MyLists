@@ -3,7 +3,12 @@ import {TmdbMoviesStrategy} from "@/lib/server/domain/media-providers/strategies
 
 
 interface ProviderStrategyMap {
+    [MediaType.SERIES]: TmdbMoviesStrategy;
+    [MediaType.ANIME]: TmdbMoviesStrategy;
     [MediaType.MOVIES]: TmdbMoviesStrategy;
+    [MediaType.GAMES]: TmdbMoviesStrategy;
+    [MediaType.BOOKS]: TmdbMoviesStrategy;
+    [MediaType.MANGA]: TmdbMoviesStrategy;
 }
 
 

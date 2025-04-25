@@ -2,6 +2,7 @@ import {notFound} from "@tanstack/react-router";
 import type {StatsDelta} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 
 
 interface UserMediaState {
@@ -27,7 +28,7 @@ export class MoviesService {
         return this.repository.searchByName(query);
     }
 
-    async getMediaDetails(mediaId: number, external: boolean, strategy: any) {
+    async getMediaDetails(mediaId: number | string, external: boolean, strategy: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 
         let mediaWithDetails;
@@ -48,6 +49,14 @@ export class MoviesService {
         }
 
         return mediaWithDetails;
+    }
+
+    async getUserMediaLabels(userId: number) {
+        return await this.repository.getUserMediaLabels(userId);
+    }
+
+    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
+        return this.repository.editUserLabel({ userId, label, mediaId, action });
     }
 
     async getUserMediaDetails(userId: number, mediaId: number) {
@@ -114,7 +123,7 @@ export class MoviesService {
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
         const delta = this.calculateDeltaStats(oldState as unknown as UserMediaState, newState as UserMediaState, media);
 
-        return { oldState, newState, media, delta, completeUpdateData };
+        return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {

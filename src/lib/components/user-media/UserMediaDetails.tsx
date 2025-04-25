@@ -9,11 +9,11 @@ import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
 import {historyOptions, queryKeys} from "@/lib/react-query/query-options";
 import {MoviesUserDetails} from "@/lib/components/user-media/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {useRemoveMediaFromListMutation, useUpdateCommentMutation, useUpdateFavoriteMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {
-    userMedia: any //Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
+    userMedia: any;
     queryKey: string[];
     mediaType: MediaType;
 }
@@ -21,9 +21,13 @@ interface UserMediaDetailsProps {
 
 const mediaComponentMap = (value: MediaType) => {
     const components = {
+        series: MoviesUserDetails,
+        anime: MoviesUserDetails,
         movies: MoviesUserDetails,
+        games: MoviesUserDetails,
+        books: MoviesUserDetails,
+        manga: MoviesUserDetails,
     };
-    //@ts-expect-error
     return components[value];
 };
 
@@ -32,8 +36,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
     const queryClient = useQueryClient();
     const MediaUserDetails = mediaComponentMap(mediaType);
     const history = useQuery(historyOptions(mediaType, userMedia.mediaId)).data;
-    const updateCommentMutation = useUpdateCommentMutation(mediaType, userMedia.mediaId, queryKey);
-    const updateFavoriteMutation = useUpdateFavoriteMutation(mediaType, userMedia.mediaId, queryKey);
+    const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
     const removeMediaFromListMutation = useRemoveMediaFromListMutation(mediaType, userMedia.mediaId, queryKey);
 
     const handleRemoveMediaFromList = () => {
@@ -60,7 +63,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                     </div>
                     <UpdateFavorite
                         isFavorite={userMedia.favorite}
-                        updateFavorite={updateFavoriteMutation}
+                        updateFavorite={updateUserMediaMutation}
                     />
                 </TabsList>
                 <TabsContent value="yourInfo">
@@ -72,7 +75,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                         />
                         <UpdateComment
                             content={userMedia.comment}
-                            updateComment={updateCommentMutation}
+                            updateComment={updateUserMediaMutation}
                         />
                         <LabelLists
                             queryKey={queryKey}

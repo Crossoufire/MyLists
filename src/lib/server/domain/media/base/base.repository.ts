@@ -1,6 +1,7 @@
 import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
@@ -9,6 +10,14 @@ import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray
 const ALL_VALUE = "All";
 const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
+
+
+export interface EditUserLabels {
+    label: Label;
+    userId: number;
+    mediaId: number;
+    action: "add" | "rename" | "deleteOne" | "deleteAll";
+}
 
 
 export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
@@ -68,7 +77,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         } as FilterDefinitions;
     }
 
-    async findById(mediaId: number) {
+    async findById(mediaId: number | string) {
         const { mediaTable } = this.config;
 
         return getDbClient()
@@ -78,7 +87,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .get()
     }
 
-    async findByApiId(apiId: number) {
+    async findByApiId(apiId: number | string) {
         const { mediaTable } = this.config;
 
         return getDbClient()
@@ -119,6 +128,48 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         return results;
     }
 
+    async getUserMediaLabels(userId: number) {
+        const { labelTable } = this.config;
+
+        return getDbClient()
+            .selectDistinct({ name: labelTable.name })
+            .from(labelTable)
+            .where(eq(labelTable.userId, userId))
+            .orderBy(asc(labelTable.name));
+    }
+
+    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
+        const { labelTable } = this.config;
+
+        if (action === "add") {
+            const [labelData] = await getDbClient()
+                .insert(labelTable)
+                .values({ userId, name: label.name, mediaId })
+                .returning({ name: labelTable.name })
+            return labelData as Label;
+        }
+        else if (action === "rename") {
+            const [labelData] = await getDbClient()
+                .update(labelTable)
+                .set({ name: label.name })
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label?.oldName)))
+                .returning({ name: labelTable.name })
+            return labelData as Label;
+        }
+        else if (action === "deleteOne") {
+            await getDbClient()
+                .delete(labelTable)
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name), eq(labelTable.mediaId, mediaId)))
+                .execute();
+        }
+        else if (action === "deleteAll") {
+            await getDbClient()
+                .delete(labelTable)
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name)))
+                .execute();
+        }
+    }
+
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const { listTable, labelTable } = this.config;
 
@@ -151,16 +202,20 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async findUserMedia(userId: number, mediaId: number) {
         const { listTable, labelTable } = this.config;
 
-        const mainUserMediaData = await getDbClient()
-            .select().from(listTable)
+        const mainUserMediaData = getDbClient()
+            .select({ ...listTable, ratingSystem: user.ratingSystem })
+            .from(listTable)
+            .innerJoin(user, eq(user.id, listTable.userId))
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .limit(1)
-            .then((results) => results[0] ?? null);
+            .get()
 
-        if (!mainUserMediaData) return null;
+        if (!mainUserMediaData) {
+            return null;
+        }
 
         const associatedLabels = await getDbClient()
-            .select({ id: labelTable.id, name: labelTable.name }).from(labelTable)
+            .select({ name: labelTable.name })
+            .from(labelTable)
             .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name))
             .execute();
@@ -177,6 +232,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 name: user.name,
                 image: user.image,
                 mediaList: listTable,
+                ratingSystem: user.ratingSystem,
             })
             .from(followers)
             .innerJoin(user, eq(user.id, followers.followedId))
