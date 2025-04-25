@@ -70,7 +70,6 @@ export const auth = betterAuth({
                 input: false,
             },
         },
-
     },
     session: {
         cookieCache: {

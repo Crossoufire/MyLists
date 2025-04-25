@@ -30,3 +30,23 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);
         await mediaProviderService.processAndRefreshMedia(apiId);
     });
+
+
+export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, transactionMiddleware])
+    .validator((data: any) => data as { mediaType: MediaType, mediaId: number })
+    .handler(async ({ data: { mediaType, mediaId } }) => {
+        
+    });
+
+
+export const postEditMediaDetails = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware, transactionMiddleware])
+    .validator((data: any) => data as {
+        mediaType: MediaType,
+        mediaId: number,
+        payload: Record<string, any>,
+    })
+    .handler(async ({ data: { mediaType, mediaId, payload } }) => {
+
+    });

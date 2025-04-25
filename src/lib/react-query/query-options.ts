@@ -3,12 +3,12 @@ import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
-import {getMediaDetails} from "@/lib/server/functions/media-details";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
+import {getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
@@ -186,4 +186,11 @@ export const userMediaLabelsOptions = (mediaType: MediaType, isOpen: boolean) =>
     queryKey: queryKeys.labelsKey(mediaType),
     queryFn: () => getUserMediaLabels({ data: { mediaType } }),
     enabled: isOpen,
+});
+
+export const editMediaDetailsOptions = (mediaType: MediaType, mediaId: number) => queryOptions({
+    queryKey: queryKeys.editDetailsKey(mediaType, mediaId),
+    queryFn: () => getMediaDetailsToEdit({ data: { mediaType, mediaId } }),
+    gcTime: 0,
+    staleTime: 0,
 });

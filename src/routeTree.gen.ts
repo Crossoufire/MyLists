@@ -33,6 +33,7 @@ import { Route as PrivateProfileUsernameHeaderIndexImport } from './routes/_priv
 import { Route as PrivateProfileUsernameHeaderHistoryImport } from './routes/_private/profile/$username/_header/history'
 import { Route as PrivateProfileUsernameHeaderFollowsImport } from './routes/_private/profile/$username/_header/follows'
 import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
+import { Route as PrivateDetailsEditMediaTypeMediaIdImport } from './routes/_private/details/edit/$mediaType.$mediaId'
 
 // Create Virtual Routes
 
@@ -173,6 +174,13 @@ const PrivateProfileUsernameHeaderFollowersRoute =
     getParentRoute: () => PrivateProfileUsernameHeaderRoute,
   } as any)
 
+const PrivateDetailsEditMediaTypeMediaIdRoute =
+  PrivateDetailsEditMediaTypeMediaIdImport.update({
+    id: '/details/edit/$mediaType/$mediaId',
+    path: '/details/edit/$mediaType/$mediaId',
+    getParentRoute: () => PrivateRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -296,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateProfileUsernameHeaderImport
       parentRoute: typeof PrivateProfileUsernameRoute
     }
+    '/_private/details/edit/$mediaType/$mediaId': {
+      id: '/_private/details/edit/$mediaType/$mediaId'
+      path: '/details/edit/$mediaType/$mediaId'
+      fullPath: '/details/edit/$mediaType/$mediaId'
+      preLoaderRoute: typeof PrivateDetailsEditMediaTypeMediaIdImport
+      parentRoute: typeof PrivateImport
+    }
     '/_private/profile/$username/_header/followers': {
       id: '/_private/profile/$username/_header/followers'
       path: '/followers'
@@ -378,6 +393,7 @@ interface PrivateRouteChildren {
   PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute
   PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
   PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren
+  PrivateDetailsEditMediaTypeMediaIdRoute: typeof PrivateDetailsEditMediaTypeMediaIdRoute
 }
 
 const PrivateRouteChildren: PrivateRouteChildren = {
@@ -391,6 +407,8 @@ const PrivateRouteChildren: PrivateRouteChildren = {
     PrivateListMediaTypeUsernameRouteRoute,
   PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
   PrivateProfileUsernameRoute: PrivateProfileUsernameRouteWithChildren,
+  PrivateDetailsEditMediaTypeMediaIdRoute:
+    PrivateDetailsEditMediaTypeMediaIdRoute,
 }
 
 const PrivateRouteWithChildren =
@@ -425,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/profile/$username/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
   '/profile/$username/history': typeof PrivateProfileUsernameHeaderHistoryRoute
@@ -447,6 +466,7 @@ export interface FileRoutesByTo {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
+  '/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/profile/$username/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
   '/profile/$username/history': typeof PrivateProfileUsernameHeaderHistoryRoute
@@ -471,6 +491,7 @@ export interface FileRoutesById {
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
   '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/_private/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/_private/profile/$username/_header/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/_private/profile/$username/_header/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
   '/_private/profile/$username/_header/history': typeof PrivateProfileUsernameHeaderHistoryRoute
@@ -495,6 +516,7 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/details/edit/$mediaType/$mediaId'
     | '/profile/$username/followers'
     | '/profile/$username/follows'
     | '/profile/$username/history'
@@ -516,6 +538,7 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/details/edit/$mediaType/$mediaId'
     | '/profile/$username/followers'
     | '/profile/$username/follows'
     | '/profile/$username/history'
@@ -538,6 +561,7 @@ export interface FileRouteTypes {
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
     | '/_private/profile/$username/_header'
+    | '/_private/details/edit/$mediaType/$mediaId'
     | '/_private/profile/$username/_header/followers'
     | '/_private/profile/$username/_header/follows'
     | '/_private/profile/$username/_header/history'
@@ -589,7 +613,8 @@ export const routeTree = rootRoute
         "/_private/stats/$username",
         "/_private/list/$mediaType/$username",
         "/_private/details/$mediaType/$mediaId",
-        "/_private/profile/$username"
+        "/_private/profile/$username",
+        "/_private/details/edit/$mediaType/$mediaId"
       ]
     },
     "/_public": {
@@ -664,6 +689,10 @@ export const routeTree = rootRoute
         "/_private/profile/$username/_header/history",
         "/_private/profile/$username/_header/"
       ]
+    },
+    "/_private/details/edit/$mediaType/$mediaId": {
+      "filePath": "_private/details/edit/$mediaType.$mediaId.tsx",
+      "parent": "/_private"
     },
     "/_private/profile/$username/_header/followers": {
       "filePath": "_private/profile/$username/_header/followers.tsx",
