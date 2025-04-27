@@ -35,7 +35,7 @@ export const Footer = () => {
                 <div className="md:col-span-3 flex flex-col gap-y-1">
                     <div className="font-bold text-xl">Powered by</div>
                     <ul>
-                        <li><a href="https://flask.palletsprojects.com/" rel="noreferrer" target="_blank">Flask</a></li>
+                        <li><a href="https://tanstack.com/start/" rel="noreferrer" target="_blank">Tanstack Start</a></li>
                         <li><a href="https://reactjs.org/" rel="noreferrer" target="_blank">React</a></li>
                         <li><a href="https://www.themoviedb.org/" rel="noreferrer" target="_blank">TMDB</a></li>
                         <li><a href="https://www.igdb.com/" rel="noreferrer" target="_blank">IGDB</a></li>

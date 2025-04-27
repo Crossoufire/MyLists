@@ -1,6 +1,6 @@
 import {notFound} from "@tanstack/react-router";
-import {container} from "@/lib/server/container";
 import {createServerFn} from "@tanstack/react-start";
+import {getContainer} from "@/lib/server/core/container";
 import {NotificationType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
@@ -10,10 +10,10 @@ export const getUserProfile = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { currentUser, user } }) => {
         const profileOwnerId = user.id;
-        const userService = container.services.user;
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const achievementsService = container.services.achievements;
+        const userService = getContainer().services.user;
+        const userStatsService = getContainer().services.userStats;
+        const userUpdatesService = getContainer().services.userUpdates;
+        const achievementsService = getContainer().services.achievements;
 
         // @ts-expect-error
         if (currentUser && currentUser.id !== profileOwnerId) {
@@ -49,8 +49,8 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
     .validator((data: any) => data as { followId: number, followStatus: boolean })
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
-        const userService = container.services.user;
-        const notificationsService = container.services.notifications;
+        const userService = getContainer().services.user;
+        const notificationsService = getContainer().services.notifications;
 
         // @ts-expect-error
         if (currentUser.id === followId) {
@@ -76,7 +76,7 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 export const getUsersFollowers = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user } }) => {
-        const userService = container.services.user;
+        const userService = getContainer().services.user;
         return userService.getUserFollowers(user.id, 999999);
     });
 
@@ -84,7 +84,7 @@ export const getUsersFollowers = createServerFn({ method: "GET" })
 export const getUsersFollows = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user } }) => {
-        const userService = container.services.user;
+        const userService = getContainer().services.user;
         return userService.getUserFollows(user.id, 999999);
     });
 
@@ -93,6 +93,6 @@ export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .validator((data: any) => data)
     .handler(async ({ context: { user }, data }) => {
-        const userUpdatesService = container.services.userUpdates;
+        const userUpdatesService = getContainer().services.userUpdates;
         return userUpdatesService.getUserUpdatesPaginated(user.id, { ...data.filters });
     });

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import {db} from "./database/db";
 import {betterAuth} from "better-auth";
+import {db} from "@/lib/server/database/db";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";

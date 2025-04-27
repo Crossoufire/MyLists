@@ -1,4 +1,4 @@
-import {auth} from "@/lib/server/auth";
+import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
 import {RoleType} from "@/lib/server/utils/enums";
 import {createMiddleware} from "@tanstack/react-start";

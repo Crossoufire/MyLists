@@ -1,7 +1,7 @@
-import {auth} from "@/lib/server/auth";
-import {container} from "../container";
+import {auth} from "@/lib/server/core/auth";
 import {PrivacyType} from "@/lib/server/utils/enums";
 import {createMiddleware} from "@tanstack/react-start";
+import {getContainer} from "@/lib/server/core/container";
 import {notFound, redirect} from "@tanstack/react-router";
 import {getWebRequest} from "@tanstack/react-start/server";
 
@@ -27,7 +27,7 @@ export const authorizationMiddleware = createMiddleware()
         return data as BaseDataWithUsername;
     })
     .server(async ({ next, data: { username } }) => {
-        const userService = container.services.user;
+        const userService = getContainer().services.user;
 
         const user = await userService.getUserByUsername(username);
         if (!user) {

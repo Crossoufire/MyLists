@@ -1,8 +1,9 @@
 import {notFound} from "@tanstack/react-router";
+import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {StatsDelta} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 
 
 interface UserMediaState {
@@ -35,7 +36,7 @@ export class MoviesService {
         let internalMediaId = media?.id;
 
         if (external && !internalMediaId) {
-            internalMediaId = await providerService.processAndStoreMedia(mediaId);
+            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId);
             if (!internalMediaId) {
                 throw new Error("Failed to fetch media details");
             }
@@ -55,6 +56,56 @@ export class MoviesService {
         return { media: mediaWithDetails, userMedia, followsData, similarMedia };
     }
 
+    async getMediaEditableFields(mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+
+        const editableFields = this.repository.config.editableFields;
+        const fields: { [key: string]: any } = {};
+
+        for (const key in media) {
+            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
+                fields[key] = media[key];
+            }
+        }
+
+        return { fields };
+    }
+
+    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+
+        const editableFields = this.repository.config.editableFields;
+        const fields: { [key: string]: any } = {};
+        fields.apiId = media.apiId;
+
+        // TODO: check types and values for fields (to meditate because only manager endpoint -> can be less strict)
+
+        if (payload?.imageCover) {
+            const imageName = await saveImageFromUrl({
+                defaultName: "default.jpg",
+                imageUrl: payload.imageCover,
+                resize: { width: 300, height: 450 },
+                saveLocation: "public/static/covers/movies-covers",
+            });
+            fields.imageCover = imageName;
+            delete payload.imageCover;
+        }
+
+        for (const key in payload) {
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
+                fields[key] = payload[key];
+            }
+        }
+
+        await this.repository.updateMediaWithDetails({ mediaData: fields });
+    }
+
     async getUserMediaLabels(userId: number) {
         return await this.repository.getUserMediaLabels(userId);
     }
@@ -69,6 +120,14 @@ export class MoviesService {
 
     async getListFilters(userId: number) {
         return this.repository.getListFilters(userId);
+    }
+
+    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
+        const page = search.page ?? 1;
+        const perPage = search.perPage ?? 25;
+        const offset = (page - 1) * perPage;
+
+        return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
     }
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {

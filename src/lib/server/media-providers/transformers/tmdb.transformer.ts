@@ -1,15 +1,14 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-
 import {ProviderSearchResults} from "@/lib/server/types/base.types";
+import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 
 
 export class TmdbTransformer {
-    private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
-    private readonly defaultDuration = 90;
     private readonly maxActors = 5;
+    private readonly defaultDuration = 90;
     private readonly maxGenres = moviesConfig.maxGenres;
+    private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
 
     transformSearchResults(rawData: Record<string, any>) {
         const results = rawData?.results ?? [];
@@ -90,5 +89,25 @@ export class TmdbTransformer {
         const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
 
         return { mediaData, actorsData, genresData }
+    }
+
+    async transformMoviesTrends(rawData: Record<string, any>) {
+        const moviesTrends = [];
+
+        const rawResults = rawData?.results ?? [];
+        for (const result of rawResults) {
+            const mediaData = {
+                apiId: result.id,
+                overview: result?.overview,
+                displayName: result?.title,
+                mediaType: MediaType.MOVIES,
+                releaseDate: new Date(result?.release_date),
+                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : "default.jpg",
+            }
+
+            moviesTrends.push(mediaData);
+        }
+
+        return moviesTrends
     }
 }

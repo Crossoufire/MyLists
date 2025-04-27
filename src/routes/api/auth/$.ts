@@ -1,4 +1,4 @@
-import {auth} from "@/lib/server/auth";
+import {auth} from "@/lib/server/core/auth";
 import {createAPIFileRoute} from "@tanstack/react-start/api";
 
 

@@ -1,5 +1,5 @@
-import {container} from "@/lib/server/container";
 import {createServerFn} from "@tanstack/react-start";
+import {getContainer} from "@/lib/server/core/container";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 
@@ -7,7 +7,7 @@ export const getUserStats = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .validator((data: any) => data)
     .handler(async ({ data: { mediaType }, context: { user } }) => {
-        const userStatsService = container.services.userStats;
+        const userStatsService = getContainer().services.userStats;
 
         if (!mediaType) {
             return userStatsService.getUserMediaStats(user.id);

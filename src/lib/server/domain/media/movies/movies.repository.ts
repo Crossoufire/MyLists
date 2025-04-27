@@ -1,11 +1,11 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/asyncStorage";
-import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {MediaListArgs, MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
-import {and, asc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
+import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
+import {and, asc, countDistinct, eq, gte, inArray, isNotNull, like, lte, ne, notInArray, or, sql} from "drizzle-orm";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
@@ -29,9 +29,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(
                 eq(moviesList.userId, userId),
                 notInArray(moviesList.status, [Status.DROPPED, Status.RANDOM]),
-                gte(movies.releaseDate, sql`datetime('now')`),
+                gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
             ))
-            .groupBy(movies.originalLanguage)
             .orderBy(asc(movies.releaseDate))
             .execute();
 
@@ -57,6 +56,67 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .returning();
 
         return newMedia;
+    }
+
+    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
+        let dataQuery = getDbClient()
+            .selectDistinct({
+                mediaId: movies.id,
+                mediaName: movies.name,
+                imageCover: movies.imageCover,
+                inUserList: isNotNull(moviesList.userId).mapWith(Boolean).as("inUserList"),
+            })
+            .from(movies)
+            .leftJoin(moviesList, and(eq(moviesList.mediaId, movies.id), eq(moviesList.userId, userId)))
+            .$dynamic();
+
+        let countQuery = getDbClient()
+            .select({ value: countDistinct(movies.id) })
+            .from(movies)
+            .$dynamic();
+
+        let filterCondition;
+        if (job === JobType.ACTOR) {
+            dataQuery = dataQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
+            countQuery = countQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
+            filterCondition = like(moviesActors.name, `%${name}%`);
+        }
+        else if (job === JobType.CREATOR) {
+            filterCondition = like(movies.directorName, `%${name}%`);
+        }
+        else if (job === JobType.COMPOSITOR) {
+            filterCondition = like(movies.compositorName, `%${name}%`);
+        }
+
+        if (filterCondition) {
+            dataQuery = dataQuery.where(filterCondition);
+            countQuery = countQuery.where(filterCondition);
+        }
+
+        const [totalResult, results] = await Promise.all([
+            countQuery.execute(),
+            dataQuery.orderBy(asc(movies.releaseDate)).limit(limit).offset(offset).execute(),
+        ]);
+
+        const totalCount = totalResult[0]?.value ?? 0;
+
+        return {
+            items: results,
+            total: totalCount,
+            pages: Math.ceil(totalCount / limit),
+        };
+    }
+
+    async getMediaToBeRefreshed() {
+        return getDbClient()
+            .select({ apiId: movies.apiId })
+            .from(movies)
+            .where(and(
+                lte(movies.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-2 days')`),
+                or(
+                    gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
+                    gte(movies.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
+                )));
     }
 
     async findAllAssociatedDetails(mediaId: number) {

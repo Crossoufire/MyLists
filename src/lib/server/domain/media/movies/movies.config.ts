@@ -1,7 +1,18 @@
 import {asc, desc} from "drizzle-orm";
 import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {MovieSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {MediaSchemaConfig, RelatedEntityConfig} from "@/lib/server/types/media-lists.types";
+
+
+export type MovieSchemaConfig = MediaSchemaConfig<
+    typeof schema.movies,
+    typeof schema.moviesList,
+    typeof schema.moviesGenre,
+    typeof schema.moviesLabels
+> & {
+    genreConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesGenre>;
+    actorConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesActors>;
+};
 
 
 export const moviesConfig: MovieSchemaConfig = {
@@ -48,4 +59,10 @@ export const moviesConfig: MovieSchemaConfig = {
         "Release Date -": [asc(schema.movies.releaseDate), asc(schema.movies.name)],
         "Re-Watched": [desc(schema.moviesList.redo), asc(schema.movies.name)],
     },
+    editableFields: [
+        "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
+        "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
+    ] as const,
 };
+
+

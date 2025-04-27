@@ -35,7 +35,6 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: R
                     <RefreshCw size={18} className={cn("", refreshMutation.isPending && "animate-spin opacity-30")}/>
                 </div>
             </Tooltip>
-            {/*//@ts-expect-error*/}
             <Link to="/details/edit/$mediaType/$mediaId" params={{ mediaType, mediaId }}>
                 <Pencil className="w-5 h-5"/>
             </Link>

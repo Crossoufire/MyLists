@@ -3,14 +3,13 @@ import {LoaderCircle} from "lucide-react";
 import {Card} from "@/lib/components/ui/card";
 import {MediaType} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/app/BlockLink";
-import {mediaListOptions} from "@/lib/react-query/query-options";
 
 
 interface MediaCardProps {
+    item: any;
     isPending?: boolean;
     mediaType: MediaType;
     children: React.ReactNode;
-    item: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["results"]["items"][0];
 }
 
 

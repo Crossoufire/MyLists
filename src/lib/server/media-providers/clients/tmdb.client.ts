@@ -1,9 +1,22 @@
+import {RateLimiterAbstract} from "rate-limiter-flexible";
+import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 
 
 export class TmdbClient extends BaseClient {
+    private static readonly consumeKey = "tmdb-API";
     private readonly apiKey = process.env.THEMOVIEDB_API_KEY;
     private readonly baseUrl = "https://api.themoviedb.org/3";
+    private static readonly throttleOptions = { points: 30, duration: 1, keyPrefix: "tmdbAPI" };
+
+    constructor(limiter: RateLimiterAbstract, consumeKey: string) {
+        super(limiter, consumeKey);
+    }
+
+    public static async create() {
+        const tmdbLimiter = await createRateLimiter(TmdbClient.throttleOptions);
+        return new TmdbClient(tmdbLimiter, TmdbClient.consumeKey);
+    }
 
     async search(query: string, page: number = 1) {
         const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
@@ -42,7 +55,8 @@ export class TmdbClient extends BaseClient {
 
         while (page <= Math.min(totalPages, 20)) {
             try {
-                const response = await this.call(`${this.baseUrl}/tv/changes?api_key=${this.apiKey}&page=${page}`);
+                const url = `${this.baseUrl}/tv/changes?api_key=${this.apiKey}&page=${page}`
+                const response = await this.call(url);
                 const data: any = response.json();
 
                 if (data && data.results) {

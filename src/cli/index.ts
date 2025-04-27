@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {Command} from "commander";
-import {registerAllCommands} from "./commands";
+import {registerAllCommands} from "@/cli/commands";
 
 
 const program = new Command();
@@ -8,7 +8,7 @@ const program = new Command();
 
 program
     .name("mylists-cli")
-    .description("CLI tool for MyLists")
+    .description("CLI tools for MyLists")
     .version("0.0.1");
 
 

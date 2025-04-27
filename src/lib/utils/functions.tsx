@@ -238,15 +238,13 @@ export const genreListsToListsOfDict = (stringList: string[]) => {
 };
 
 
-//@ts-ignore
-export const sliceIntoParts = (array, slices) => {
+export const sliceIntoParts = (array: [string, any][], slices: number) => {
     const len = array.length;
     const partSize = Math.floor(len / slices);
     const remainder = len % slices;
 
-    const result = [];
     let start = 0;
-
+    const result = [];
     for (let i = 0; i < slices; i++) {
         const end = start + partSize + (i < remainder ? 1 : 0);
         result.push(array.slice(start, end));

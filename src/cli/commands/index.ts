@@ -1,7 +1,7 @@
 import {Command} from "commander";
-import {registerTemplateCommand} from "./template";
+import {registerBulkMediaRefreshCommand} from "./bulk-media-refresh";
 
 
 export function registerAllCommands(program: Command) {
-    registerTemplateCommand(program);
+    registerBulkMediaRefreshCommand(program);
 }

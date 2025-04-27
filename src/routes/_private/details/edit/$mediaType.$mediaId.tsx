@@ -33,14 +33,31 @@ function MediaEditPage() {
     const { history } = useRouter();
     const { mediaType, mediaId } = Route.useParams();
     const editMediaMutation = useEditMediaMutation();
-
     const apiData = useSuspenseQuery(editMediaDetailsOptions(mediaType, mediaId)).data;
-    const form = useForm({ defaultValues: { genres: apiData.genres } });
-    const parts = sliceIntoParts(apiData.fields, 3);
+    const form = useForm({
+        defaultValues: {
+            genres: apiData.fields?.genres,
+            authors: apiData.fields?.authors,
+            imageCover: undefined,
+            originalName: apiData.fields?.originalName,
+            name: apiData.fields?.name,
+            directorName: apiData.fields?.directorName,
+            releaseDate: apiData.fields?.releaseDate,
+            duration: apiData.fields?.duration,
+            synopsis: apiData.fields?.synopsis,
+            budget: apiData.fields?.budget,
+            revenue: apiData.fields?.revenue,
+            tagline: apiData.fields?.tagline,
+            originalLanguage: apiData.fields?.originalLanguage,
+            lockStatus: apiData.fields?.lockStatus,
+            homepage: apiData.fields?.homepage,
+        }
+    });
+    const parts = sliceIntoParts(Object.entries(apiData.fields), 3);
 
     const onSubmit = (submittedData: any) => {
         editMediaMutation.mutate({ mediaType, mediaId, payload: submittedData }, {
-            onError: (error) => toast.error(error.description),
+            onError: () => toast.error("An error occurred while updating the media"),
             onSuccess: async () => {
                 toast.success("Media successfully updated!");
                 history.go(-1);
@@ -48,20 +65,22 @@ function MediaEditPage() {
         });
     };
 
-    const renderField = (form, arr) => {
+    const renderField = (form: any, fieldEntry: [string, any]) => {
+        const [key, _] = fieldEntry;
+
         return (
             <FormField
-                key={arr[0]}
-                name={arr[0]}
+                key={key}
+                name={key}
                 control={form.control}
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>{capitalize(arr[0].replaceAll("_", " "))}</FormLabel>
+                        <FormLabel>{capitalize(key.replaceAll("_", " "))}</FormLabel>
                         <FormControl>
-                            {arr[0] === "synopsis" ?
-                                <Textarea{...field} className="h-[130px]" defaultValue={arr[1]}/>
+                            {key === "synopsis" ?
+                                <Textarea {...field} className="h-[130px]"/>
                                 :
-                                <Input{...field} defaultValue={arr[1]}/>
+                                <Input {...field}/>
                             }
                         </FormControl>
                         <FormMessage/>
@@ -78,11 +97,11 @@ function MediaEditPage() {
                     <div className="grid grid-cols-3 gap-8 max-sm:grid-cols-1">
                         <div className="space-y-4">
                             <FormField
-                                name="image_cover"
+                                name="imageCover"
                                 control={form.control}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Image Cover URL</FormLabel>
+                                        <FormLabel>ImageCover URL</FormLabel>
                                         <FormControl>
                                             <Input {...field}/>
                                         </FormControl>
@@ -90,8 +109,7 @@ function MediaEditPage() {
                                     </FormItem>
                                 )}
                             />
-
-                            {apiData.authors &&
+                            {apiData?.fields?.authors &&
                                 <FormField
                                     name="authors"
                                     control={form.control}
@@ -99,21 +117,18 @@ function MediaEditPage() {
                                         <FormItem>
                                             <FormLabel>Authors</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    defaultValue={apiData.authors}
-                                                />
+                                                <Input {...field}/>
                                             </FormControl>
                                             <FormMessage/>
                                         </FormItem>
                                     )}
                                 />
                             }
-                            {parts[0].map(arr => renderField(form, arr))}
+                            {parts[0].map(array => renderField(form, array))}
                         </div>
                         <div className="space-y-4">
-                            {parts[1].map(arr => renderField(form, arr))}
-                            {apiData.genres &&
+                            {parts[1].map(array => renderField(form, array))}
+                            {apiData?.fields?.genres &&
                                 <FormField
                                     name="genres"
                                     control={form.control}
@@ -123,7 +138,8 @@ function MediaEditPage() {
                                             <FormControl>
                                                 <GenreSelector
                                                     selectedGenres={field.value}
-                                                    genresList={apiData.all_genres}
+                                                    //@ts-expect-error
+                                                    genresList={apiData?.allGenres}
                                                     setSelectedGenres={field.onChange}
                                                 />
                                             </FormControl>
@@ -136,9 +152,9 @@ function MediaEditPage() {
                         <div className="space-y-4">{parts[2].map(arr => renderField(form, arr))}</div>
                     </div>
                     <div className="flex justify-end">
-                        <FormButton className="mt-5" disabled={editMediaMutation.isPending}>
+                        <Button className="mt-5" disabled={editMediaMutation.isPending}>
                             Save Changes
-                        </FormButton>
+                        </Button>
                     </div>
                 </form>
             </Form>
@@ -147,8 +163,15 @@ function MediaEditPage() {
 }
 
 
-function GenreSelector({ genresList, selectedGenres, setSelectedGenres }) {
-    const toggleGenre = (ev, genre) => {
+interface GenreSelectorProps {
+    genresList: string[];
+    selectedGenres: string[];
+    setSelectedGenres: (genres: string[]) => void;
+}
+
+
+function GenreSelector({ genresList, selectedGenres, setSelectedGenres }: GenreSelectorProps) {
+    const toggleGenre = (ev: any, genre: string) => {
         ev.preventDefault();
 
         if (selectedGenres.includes(genre)) {
@@ -162,9 +185,11 @@ function GenreSelector({ genresList, selectedGenres, setSelectedGenres }) {
 
     return (
         <div className="flex flex-wrap items-center justify-start gap-2">
-            {genresList.map(genre =>
-                <Button key={genre} variant={selectedGenres.includes(genre) ? "default" : "outline"}
-                        onClick={(ev) => toggleGenre(ev, genre)} className="text-sm rounded-full px-3">
+            {genresList.map((genre) =>
+                <Button
+                    key={genre} variant={selectedGenres.includes(genre) ? "default" : "outline"}
+                    onClick={(ev) => toggleGenre(ev, genre)} className="text-sm rounded-full px-3"
+                >
                     {genre}
                 </Button>
             )}

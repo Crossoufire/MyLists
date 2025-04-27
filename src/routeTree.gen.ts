@@ -20,6 +20,7 @@ import { Route as UniversalPrivacyPolicyImport } from './routes/_universal/priva
 import { Route as UniversalFeaturesImport } from './routes/_universal/features'
 import { Route as UniversalAboutImport } from './routes/_universal/about'
 import { Route as PublicForgotPasswordImport } from './routes/_public/forgot-password'
+import { Route as PrivateTrendsRouteImport } from './routes/_private/trends/route'
 import { Route as PrivateSettingsRouteImport } from './routes/_private/settings/route'
 import { Route as PrivateMoviedleRouteImport } from './routes/_private/moviedle/route'
 import { Route as PrivateHallOfFameRouteImport } from './routes/_private/hall-of-fame/route'
@@ -34,6 +35,7 @@ import { Route as PrivateProfileUsernameHeaderHistoryImport } from './routes/_pr
 import { Route as PrivateProfileUsernameHeaderFollowsImport } from './routes/_private/profile/$username/_header/follows'
 import { Route as PrivateProfileUsernameHeaderFollowersImport } from './routes/_private/profile/$username/_header/followers'
 import { Route as PrivateDetailsEditMediaTypeMediaIdImport } from './routes/_private/details/edit/$mediaType.$mediaId'
+import { Route as PrivateDetailsMediaTypeJobNameImport } from './routes/_private/details/$mediaType/$job.$name'
 
 // Create Virtual Routes
 
@@ -81,6 +83,12 @@ const PublicForgotPasswordRoute = PublicForgotPasswordImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => PublicRoute,
+} as any)
+
+const PrivateTrendsRouteRoute = PrivateTrendsRouteImport.update({
+  id: '/trends',
+  path: '/trends',
+  getParentRoute: () => PrivateRoute,
 } as any)
 
 const PrivateSettingsRouteRoute = PrivateSettingsRouteImport.update({
@@ -181,6 +189,13 @@ const PrivateDetailsEditMediaTypeMediaIdRoute =
     getParentRoute: () => PrivateRoute,
   } as any)
 
+const PrivateDetailsMediaTypeJobNameRoute =
+  PrivateDetailsMediaTypeJobNameImport.update({
+    id: '/details/$mediaType/$job/$name',
+    path: '/details/$mediaType/$job/$name',
+    getParentRoute: () => PrivateRoute,
+  } as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -225,6 +240,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof PrivateSettingsRouteImport
+      parentRoute: typeof PrivateImport
+    }
+    '/_private/trends': {
+      id: '/_private/trends'
+      path: '/trends'
+      fullPath: '/trends'
+      preLoaderRoute: typeof PrivateTrendsRouteImport
       parentRoute: typeof PrivateImport
     }
     '/_public/forgot-password': {
@@ -303,6 +325,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/$username'
       preLoaderRoute: typeof PrivateProfileUsernameHeaderImport
       parentRoute: typeof PrivateProfileUsernameRoute
+    }
+    '/_private/details/$mediaType/$job/$name': {
+      id: '/_private/details/$mediaType/$job/$name'
+      path: '/details/$mediaType/$job/$name'
+      fullPath: '/details/$mediaType/$job/$name'
+      preLoaderRoute: typeof PrivateDetailsMediaTypeJobNameImport
+      parentRoute: typeof PrivateImport
     }
     '/_private/details/edit/$mediaType/$mediaId': {
       id: '/_private/details/edit/$mediaType/$mediaId'
@@ -388,11 +417,13 @@ interface PrivateRouteChildren {
   PrivateHallOfFameRouteRoute: typeof PrivateHallOfFameRouteRoute
   PrivateMoviedleRouteRoute: typeof PrivateMoviedleRouteRoute
   PrivateSettingsRouteRoute: typeof PrivateSettingsRouteRoute
+  PrivateTrendsRouteRoute: typeof PrivateTrendsRouteRoute
   PrivateAchievementsUsernameRoute: typeof PrivateAchievementsUsernameRoute
   PrivateStatsUsernameRoute: typeof PrivateStatsUsernameRoute
   PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute
   PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute
   PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren
+  PrivateDetailsMediaTypeJobNameRoute: typeof PrivateDetailsMediaTypeJobNameRoute
   PrivateDetailsEditMediaTypeMediaIdRoute: typeof PrivateDetailsEditMediaTypeMediaIdRoute
 }
 
@@ -401,12 +432,14 @@ const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateHallOfFameRouteRoute: PrivateHallOfFameRouteRoute,
   PrivateMoviedleRouteRoute: PrivateMoviedleRouteRoute,
   PrivateSettingsRouteRoute: PrivateSettingsRouteRoute,
+  PrivateTrendsRouteRoute: PrivateTrendsRouteRoute,
   PrivateAchievementsUsernameRoute: PrivateAchievementsUsernameRoute,
   PrivateStatsUsernameRoute: PrivateStatsUsernameRoute,
   PrivateListMediaTypeUsernameRouteRoute:
     PrivateListMediaTypeUsernameRouteRoute,
   PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
   PrivateProfileUsernameRoute: PrivateProfileUsernameRouteWithChildren,
+  PrivateDetailsMediaTypeJobNameRoute: PrivateDetailsMediaTypeJobNameRoute,
   PrivateDetailsEditMediaTypeMediaIdRoute:
     PrivateDetailsEditMediaTypeMediaIdRoute,
 }
@@ -433,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
   '/settings': typeof PrivateSettingsRouteRoute
+  '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
@@ -443,6 +477,7 @@ export interface FileRoutesByFullPath {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/details/$mediaType/$job/$name': typeof PrivateDetailsMediaTypeJobNameRoute
   '/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/profile/$username/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
@@ -456,6 +491,7 @@ export interface FileRoutesByTo {
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
   '/settings': typeof PrivateSettingsRouteRoute
+  '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
@@ -466,6 +502,7 @@ export interface FileRoutesByTo {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderIndexRoute
+  '/details/$mediaType/$job/$name': typeof PrivateDetailsMediaTypeJobNameRoute
   '/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/profile/$username/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
@@ -480,6 +517,7 @@ export interface FileRoutesById {
   '/_private/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/_private/moviedle': typeof PrivateMoviedleRouteRoute
   '/_private/settings': typeof PrivateSettingsRouteRoute
+  '/_private/trends': typeof PrivateTrendsRouteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_universal/about': typeof UniversalAboutRoute
   '/_universal/features': typeof UniversalFeaturesRoute
@@ -491,6 +529,7 @@ export interface FileRoutesById {
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
   '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
+  '/_private/details/$mediaType/$job/$name': typeof PrivateDetailsMediaTypeJobNameRoute
   '/_private/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/_private/profile/$username/_header/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
   '/_private/profile/$username/_header/follows': typeof PrivateProfileUsernameHeaderFollowsRoute
@@ -506,6 +545,7 @@ export interface FileRouteTypes {
     | '/hall-of-fame'
     | '/moviedle'
     | '/settings'
+    | '/trends'
     | '/forgot-password'
     | '/about'
     | '/features'
@@ -516,6 +556,7 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/details/$mediaType/$job/$name'
     | '/details/edit/$mediaType/$mediaId'
     | '/profile/$username/followers'
     | '/profile/$username/follows'
@@ -528,6 +569,7 @@ export interface FileRouteTypes {
     | '/hall-of-fame'
     | '/moviedle'
     | '/settings'
+    | '/trends'
     | '/forgot-password'
     | '/about'
     | '/features'
@@ -538,6 +580,7 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
+    | '/details/$mediaType/$job/$name'
     | '/details/edit/$mediaType/$mediaId'
     | '/profile/$username/followers'
     | '/profile/$username/follows'
@@ -550,6 +593,7 @@ export interface FileRouteTypes {
     | '/_private/hall-of-fame'
     | '/_private/moviedle'
     | '/_private/settings'
+    | '/_private/trends'
     | '/_public/forgot-password'
     | '/_universal/about'
     | '/_universal/features'
@@ -561,6 +605,7 @@ export interface FileRouteTypes {
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
     | '/_private/profile/$username/_header'
+    | '/_private/details/$mediaType/$job/$name'
     | '/_private/details/edit/$mediaType/$mediaId'
     | '/_private/profile/$username/_header/followers'
     | '/_private/profile/$username/_header/follows'
@@ -609,11 +654,13 @@ export const routeTree = rootRoute
         "/_private/hall-of-fame",
         "/_private/moviedle",
         "/_private/settings",
+        "/_private/trends",
         "/_private/achievements/$username",
         "/_private/stats/$username",
         "/_private/list/$mediaType/$username",
         "/_private/details/$mediaType/$mediaId",
         "/_private/profile/$username",
+        "/_private/details/$mediaType/$job/$name",
         "/_private/details/edit/$mediaType/$mediaId"
       ]
     },
@@ -638,6 +685,10 @@ export const routeTree = rootRoute
     },
     "/_private/settings": {
       "filePath": "_private/settings/route.tsx",
+      "parent": "/_private"
+    },
+    "/_private/trends": {
+      "filePath": "_private/trends/route.tsx",
       "parent": "/_private"
     },
     "/_public/forgot-password": {
@@ -689,6 +740,10 @@ export const routeTree = rootRoute
         "/_private/profile/$username/_header/history",
         "/_private/profile/$username/_header/"
       ]
+    },
+    "/_private/details/$mediaType/$job/$name": {
+      "filePath": "_private/details/$mediaType/$job.$name.tsx",
+      "parent": "/_private"
     },
     "/_private/details/edit/$mediaType/$mediaId": {
       "filePath": "_private/details/edit/$mediaType.$mediaId.tsx",

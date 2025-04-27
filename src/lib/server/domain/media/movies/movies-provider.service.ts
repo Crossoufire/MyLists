@@ -11,29 +11,40 @@ export class MoviesProviderService {
     ) {
     }
 
-    async processAndStoreMedia(apiId: number) {
-        try {
-            const rawData = await this.client.getMovieDetails(apiId);
-            const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
-            return this.repository.storeMediaWithDetails({ mediaData, actorsData, genresData });
-        }
-        catch (error) {
-            return null;
-        }
+    async fetchAndStoreMediaDetails(apiId: number) {
+        const rawData = await this.client.getMovieDetails(apiId);
+        const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
+        return this.repository.storeMediaWithDetails({ mediaData, actorsData, genresData });
     }
 
-    async processAndRefreshMedia(apiId: number) {
+    async fetchAndRefreshMediaDetails(apiId: number) {
         try {
             const rawData = await this.client.getMovieDetails(apiId);
             const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
             return this.repository.updateMediaWithDetails({ mediaData, actorsData, genresData });
         }
-        catch (error) {
-            return false;
+        catch (error: any) {
+            error.message = `Error refreshing movie with apiId ${apiId}: ${error.message}`;
+            throw error;
         }
     }
 
     async bulkProcessAndRefreshMedia() {
-        // TODO: get all movies to be refreshed from database then refresh each movie using processAndStoreMedia
+        // const mediaToBeRefreshed = await this.repository.getMediaToBeRefreshed();
+        // const apiIds = mediaToBeRefreshed.map(m => m.apiId);
+
+        const promises = [];
+        const apiIds = [157336, 157336]
+        for (const apiId of apiIds) {
+            promises.push(this.fetchAndRefreshMediaDetails(apiId));
+        }
+
+        return Promise.allSettled(promises);
+    }
+
+    async fetchAndFormatTrends() {
+        const rawData = await this.client.getMoviesTrending();
+        const moviesTrends = this.transformer.transformMoviesTrends(rawData);
+        return moviesTrends;
     }
 }

@@ -1,5 +1,4 @@
 import {Column, SQL, Table} from "drizzle-orm";
-import * as schema from "@/lib/server/database/schema";
 import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
 
 
@@ -38,7 +37,7 @@ type SelectionMap<TListTable extends Table, TMediaTable extends Table> = {
 };
 
 
-interface RelatedEntityConfig<TJoinTable extends Table, TEntityTable extends Table> {
+export interface RelatedEntityConfig<TJoinTable extends Table, TEntityTable extends Table> {
     entityTable: TEntityTable;
     idColumnInMedia: TJoinTable[keyof TJoinTable];
     filterColumnInEntity: TEntityTable[keyof TEntityTable];
@@ -69,15 +68,5 @@ export interface MediaSchemaConfig<
     creatorConfig?: RelatedEntityConfig<any, any>;
     publisherConfig?: RelatedEntityConfig<any, any>;
     authorConfig?: RelatedEntityConfig<any, any>;
+    editableFields: string[];
 }
-
-
-export type MovieSchemaConfig = MediaSchemaConfig<
-    typeof schema.movies,
-    typeof schema.moviesList,
-    typeof schema.moviesGenre,
-    typeof schema.moviesLabels
-> & {
-    genreConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesGenre>;
-    actorConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesActors>;
-};

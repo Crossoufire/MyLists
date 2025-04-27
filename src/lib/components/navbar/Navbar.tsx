@@ -81,9 +81,9 @@ export const Navbar = () => {
                                 {/*</NavLink>*/}
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<NavLink to="/trends" className={navStyle()}>*/}
-                                {/*    Trends*/}
-                                {/*</NavLink>*/}
+                                <NavLink to="/trends" className={navStyle()}>
+                                    Trends
+                                </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 <NavLink to="/moviedle" className={navStyle()}>
@@ -198,9 +198,9 @@ export const Navbar = () => {
                                         {/*</NavLink>*/}
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        {/*<NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
-                                        {/*    Trends*/}
-                                        {/*</NavLink>*/}
+                                        <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Trends
+                                        </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
                                         <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>

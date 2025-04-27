@@ -1,5 +1,6 @@
 import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/auth";
+import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
@@ -8,8 +9,8 @@ import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
-import {getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
+import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 
@@ -193,4 +194,15 @@ export const editMediaDetailsOptions = (mediaType: MediaType, mediaId: number) =
     queryFn: () => getMediaDetailsToEdit({ data: { mediaType, mediaId } }),
     gcTime: 0,
     staleTime: 0,
+});
+
+export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: string, search: Record<string, any>) => queryOptions({
+    queryKey: queryKeys.jobDetailsKey(mediaType, job, name, search),
+    queryFn: () => getJobDetails({ data: { mediaType, job, name, search } }),
+});
+
+export const trendsOptions = () => queryOptions({
+    queryKey: queryKeys.trendsKey(),
+    queryFn: () => getTrendsMedia(),
+    meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
 });

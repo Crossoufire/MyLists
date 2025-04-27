@@ -2,15 +2,15 @@ import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 
 
 export class IgdbClient extends BaseClient {
-    private readonly apiKey = process.env.IGDB_API_KEY;
-    private readonly secretId = process.env.SECRET_IGDB;
-    private readonly clientId = process.env.CLIENT_IGDB;
+    private readonly apiKey = process.env.IGDB_API_KEY!;
+    private readonly secretId = process.env.SECRET_IGDB!;
+    private readonly clientId = process.env.CLIENT_IGDB!;
     private readonly baseUrl = "https://api.igdb.com/v4/games";
     private readonly headers = {
         "Client-ID": this.clientId,
-        "Authorization": `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
         "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${this.apiKey}`,
     };
 
     async search(query: string, page: number = 1) {

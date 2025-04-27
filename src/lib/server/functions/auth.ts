@@ -1,5 +1,5 @@
 import {eq} from "drizzle-orm";
-import {auth} from "@/lib/server/auth";
+import {auth} from "@/lib/server/core/auth";
 import {db} from "@/lib/server/database/db";
 import {createServerFn} from "@tanstack/react-start";
 import {ApiProviderType} from "@/lib/server/utils/enums";

@@ -1,5 +1,5 @@
-import {container} from "@/lib/server/container";
 import {createServerFn} from "@tanstack/react-start";
+import {getContainer} from "@/lib/server/core/container";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
@@ -11,7 +11,7 @@ export const getUserMediaHistory = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .validator((data: any) => data as { mediaType: MediaType, mediaId: number })
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
-        const userUpdatesService = container.services.userUpdates;
+        const userUpdatesService = getContainer().services.userUpdates;
         // @ts-expect-error
         return userUpdatesService.getUserMediaHistory(currentUser.id, mediaType, mediaId);
     });
@@ -27,9 +27,9 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         }
     })
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
+        const userStatsService = getContainer().services.userStats;
+        const userUpdatesService = getContainer().services.userUpdates;
+        const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         // @ts-expect-error
         const { newState, media, delta } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
@@ -78,9 +78,9 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const { mediaType, mediaId, payload, updateType } = data;
 
         const userId = parseInt(currentUser.id);
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
+        const userStatsService = getContainer().services.userStats;
+        const userUpdatesService = getContainer().services.userUpdates;
+        const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         const { os, ns, media, delta, updateData } = await mediaService.updateUserMediaDetails(userId, mediaId, payload);
 
@@ -99,9 +99,9 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { mediaId: number, mediaType: MediaType })
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
-        const userStatsService = container.services.userStats;
-        const userUpdatesService = container.services.userUpdates;
-        const mediaService = container.registries.mediaService.getService(mediaType);
+        const userStatsService = getContainer().services.userStats;
+        const userUpdatesService = getContainer().services.userUpdates;
+        const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         const delta = await mediaService.removeMediaFromUserList(parseInt(currentUser.id), mediaId);
         //@ts-expect-error
@@ -115,7 +115,7 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { updateIds: number[], returnData: boolean })
     .handler(async ({ data: { updateIds, returnData }, context: { currentUser } }) => {
-        const userUpdatesService = container.services.userUpdates;
+        const userUpdatesService = getContainer().services.userUpdates;
         //@ts-expect-error
         return userUpdatesService.deleteUserUpdates(currentUser.id, updateIds, returnData);
     });
@@ -126,7 +126,7 @@ export const getUserMediaLabels = createServerFn({ method: "GET" })
     .validator((data: any) => data as { mediaType: MediaType })
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const userId = parseInt(currentUser.id);
-        const mediaService = container.registries.mediaService.getService(mediaType);
+        const mediaService = getContainer().registries.mediaService.getService(mediaType);
         return mediaService.getUserMediaLabels(userId);
     });
 
@@ -143,6 +143,6 @@ export const postEditUserLabel = createServerFn({ method: "POST" })
     })
     .handler(async ({ data: { mediaType, label, action, mediaId }, context: { currentUser } }) => {
         const userId = parseInt(currentUser.id);
-        const mediaService = container.registries.mediaService.getService(mediaType);
+        const mediaService = getContainer().registries.mediaService.getService(mediaType);
         return mediaService.editUserLabel({ userId, label, mediaId, action });
     });
