@@ -6,7 +6,7 @@ import {Navbar} from "@/lib/components/navbar/Navbar";
 import type {QueryClient} from "@tanstack/react-query";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
 import {authOptions} from "@/lib/react-query/query-options";
-import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
+import {createRootRouteWithContext, HeadContent, Outlet, Scripts, useLocation} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -35,6 +35,8 @@ function RootComponent() {
 
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
+    const location = useLocation();
+
     return (
         <html suppressHydrationWarning>
         <head>
@@ -42,18 +44,24 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         </head>
         <body>
 
-        <div id="root">
-            <Toaster/>
-            <SheetProvider>
-                <Navbar/>
-            </SheetProvider>
-            <main className="md:max-w-screen-xl container mx-auto">
+        {location.pathname.startsWith("/admin") ?
+            <div id="admin">
                 {children}
-            </main>
-            <Footer/>
-            {import.meta.env.DEV && <ReactQueryDevtools/>}
-            {import.meta.env.DEV && <TanStackRouterDevtools/>}
-        </div>
+            </div>
+            :
+            <div id="root">
+                <Toaster/>
+                <SheetProvider>
+                    <Navbar/>
+                </SheetProvider>
+                <main className="md:max-w-screen-xl container mx-auto">
+                    {children}
+                </main>
+                <Footer/>
+                {import.meta.env.DEV && <ReactQueryDevtools/>}
+                {import.meta.env.DEV && <TanStackRouterDevtools/>}
+            </div>
+        }
 
         <Scripts/>
         </body>

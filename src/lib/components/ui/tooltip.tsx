@@ -83,4 +83,4 @@ const Tooltip = ({ children, text, subText, side, className, offset = 10, ...pro
 };
 
 
-export {Tooltip}
+export {Tooltip, TooltipContent, TooltipPrim, TooltipProvider, TooltipTrigger}

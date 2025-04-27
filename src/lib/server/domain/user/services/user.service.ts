@@ -6,6 +6,19 @@ export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
 
+    async getPaginatedUsers(data: Record<string, any>) {
+        return this.userRepository.findPaginatedUsers(data);
+    }
+
+    async getAdminOverview() {
+        // Total Users and growth
+        // Active Users and growth (3 or 6 months)
+        // New Users and growth
+        // Cumulative number of users per month
+        // Recent Users (last day)
+        // Number of users per privacy value
+    }
+
     async isFollowing(userId: number, followedId: number) {
         if (userId === followedId) return false;
         return this.userRepository.isFollowing(userId, followedId);

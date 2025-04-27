@@ -1,12 +1,38 @@
 import {db} from "@/lib/server/database/db";
-import {and, asc, count, eq, like, sql} from "drizzle-orm";
+import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
+import {ProviderSearchResults} from "@/lib/server/types/base.types";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 
-import {ProviderSearchResults} from "@/lib/server/types/base.types";
-
 
 export class UserRepository {
+    static async findPaginatedUsers(data: Record<string, any>) {
+        const page = data.page ?? 1;
+        const search = data.search ?? "";
+        const perPage = data.perPage ?? 25;
+        const offset = (page - 1) * perPage;
+
+        const users = await db
+            .select({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                date: user.createdAt,
+                privacy: user.privacy,
+                updatedAt: user.updatedAt,
+                active: user.emailVerified,
+            })
+            .from(user)
+            .offset(offset)
+            .limit(perPage)
+            .orderBy(desc(user.updatedAt))
+            .where(like(user.name, `%${search}%`))
+            .execute();
+
+        return { items: users, pages: Math.ceil(users.length / perPage) };
+    }
+
     static async findByUsername(username: string) {
         const userResult = await db.query.user.findFirst({
             where: eq(user.name, username),
