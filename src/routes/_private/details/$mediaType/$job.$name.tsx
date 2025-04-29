@@ -3,7 +3,7 @@ import {MediaCard} from "@/lib/components/app/MediaCard";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
-import {jobDetailsOptions} from "@/lib/react-query/query-options";
+import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
 

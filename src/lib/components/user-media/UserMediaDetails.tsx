@@ -6,10 +6,10 @@ import {LabelLists} from "@/lib/components/user-media/LabelLists";
 import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
 import {HistoryDetails} from "@/lib/components/user-media/HistoryDetails";
 import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
-import {historyOptions, queryKeys} from "@/lib/react-query/query-options";
+import {historyOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MoviesUserDetails} from "@/lib/components/user-media/MoviesUserDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {

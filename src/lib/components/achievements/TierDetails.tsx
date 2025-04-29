@@ -3,7 +3,7 @@ import {cn} from "@/lib/utils/helpers";
 import {Button} from "@/lib/components/ui/button";
 import {Progress} from "@/lib/components/ui/progress";
 import {capitalize, diffColors} from "@/lib/utils/functions";
-import {achievementOptions} from "@/lib/react-query/query-options";
+import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 

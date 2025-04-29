@@ -4,7 +4,7 @@ import {Input} from "@/lib/components/ui/input";
 import authClient from "@/lib/utils/auth-client";
 import {Button} from "@/lib/components/ui/button";
 import {useQueryClient} from "@tanstack/react-query";
-import {queryKeys} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useNavigate, useRouter} from "@tanstack/react-router";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";

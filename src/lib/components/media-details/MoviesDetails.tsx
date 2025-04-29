@@ -1,7 +1,7 @@
 import {Star} from "lucide-react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media-details/Synopsis";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options";
+import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {MapDetails} from "@/lib/components/media-details/MapDetails";
 import {GenericDetails} from "@/lib/components/media-details/GenericDetails";

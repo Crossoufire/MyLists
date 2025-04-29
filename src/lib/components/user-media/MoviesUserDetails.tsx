@@ -3,7 +3,7 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {UpdateRedo} from "@/lib/components/user-media/UpdateRedo";
 import {UpdateRating} from "@/lib/components/user-media/UpdateRating";
 import {UpdateStatus} from "@/lib/components/user-media/UpdateStatus";
-import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface MoviesUserDetailsProps {
@@ -17,7 +17,7 @@ export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUser
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     console.log({ userMedia });
-    
+
     return (
         <>
             <UpdateStatus

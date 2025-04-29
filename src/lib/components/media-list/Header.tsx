@@ -1,7 +1,7 @@
 import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
-import {mediaListOptions} from "@/lib/react-query/query-options";
+import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
 import {MediaLevelCircle} from "@/lib/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/lib/components/media-list/SearchComponent";

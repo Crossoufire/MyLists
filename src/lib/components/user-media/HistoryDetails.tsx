@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {UserUpdate} from "@/lib/components/app/UserUpdate";
-import {historyOptions} from "@/lib/react-query/query-options";
-import {useDeleteUpdatesMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {historyOptions} from "@/lib/react-query/query-options/query-options";
+import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface HistoryDetailsProps {

@@ -8,7 +8,7 @@ import {useDebounce} from "@/lib/hooks/use-debounce";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
 import React, {useEffect, useRef, useState} from "react";
-import {navSearchOptions} from "@/lib/react-query/query-options";
+import {navSearchOptions} from "@/lib/react-query/query-options/query-options";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";

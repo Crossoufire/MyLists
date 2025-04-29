@@ -1,5 +1,5 @@
 import {SQL} from "drizzle-orm";
-import {authOptions} from "@/lib/react-query/query-options";
+import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 

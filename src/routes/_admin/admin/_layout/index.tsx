@@ -1,59 +1,68 @@
-import {queryOptions} from "@tanstack/react-query";
+import {capitalize} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
-import {Overview} from "@/lib//components/admin/dashboard/Overview";
-import {UserStats} from "@/lib/components/admin/dashboard/UserStats";
-import {RecentUsers} from "@/lib/components/admin/dashboard/RecentUsers";
-import {DashboardShell} from "@/lib/components/admin/dashboard/DashboardShell";
-import {DashboardHeader} from "@/lib/components/admin/dashboard/DashboardHeader";
+import {useSuspenseQuery} from "@tanstack/react-query";
+import {Overview} from "@/lib/components/admin/Overview";
+import {UserStats} from "@/lib/components/admin/UserStats";
+import {RecentUsers} from "@/lib/components/admin/RecentUsers";
+import {DashboardShell} from "@/lib/components/admin/DashboardShell";
+import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
+import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-options";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
-
-
-const userAdminOptions = () => queryOptions({
-    queryKey: ["adminOverview"],
-    queryFn: () => getAdminOverview(),
-});
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/")({
     loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(userAdminOptions());
+        return queryClient.ensureQueryData(adminOverviewOptions());
     },
     component: DashboardPage,
 })
 
 
 export default function DashboardPage() {
+    const apiData = useSuspenseQuery(adminOverviewOptions()).data;
+
     return (
         <DashboardShell>
             <DashboardHeader heading="Dashboard" description="Overview of your platform's performance and user statistics."/>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <UserStats
                     icon="users"
-                    value="10,482"
                     title="Total Users"
-                    description="+12% from last month"
+                    value={apiData.totalUsers.count}
+                    description={`+${apiData.totalUsers.growth.toFixed(1)}% from last month`}
                 />
-                <UserStats title="Active Users" value="8,641" description="+5.2% from last week" icon="activity"/>
-                <UserStats title="New Users" value="1,245" description="+18% from last month" icon="userPlus"/>
-                <UserStats title="Privacy Restricted" value="2,431" description="23% of total users" icon="shield"/>
+                <UserStats
+                    icon="activity"
+                    title="Active Users"
+                    value={apiData.activeUsers.count}
+                    description={`+${apiData.activeUsers.growth.toFixed(1)}% from last month`}
+                />
+                {apiData.usersPerPrivacy.map((privacyValue: any) =>
+                    <UserStats
+                        icon="shield"
+                        value={privacyValue.count}
+                        title={capitalize(privacyValue.privacy) + " Users"}
+                        description={"Users with privacy set to " + privacyValue.privacy}
+                    />
+                )}
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
+                <Card className="col-span-6">
                     <CardHeader>
                         <CardTitle>User Growth</CardTitle>
                         <CardDescription>Cumulative number of users per month</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <Overview/>
+                        <Overview data={apiData.cumulativeUsersPerMonth}/>
                     </CardContent>
                 </Card>
-                <Card className="col-span-3">
+                <Card className="col-span-6">
                     <CardHeader>
                         <CardTitle>Recent Users</CardTitle>
                         <CardDescription>Latest user activity on the platform</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <RecentUsers/>
+                        <RecentUsers users={apiData.recentUsers}/>
                     </CardContent>
                 </Card>
             </div>

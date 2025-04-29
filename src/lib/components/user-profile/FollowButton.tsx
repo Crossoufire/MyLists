@@ -2,8 +2,8 @@ import {toast} from "sonner";
 import {useParams} from "@tanstack/react-router";
 import {UserMinus, UserPlus} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
-import {queryKeys} from "@/lib/react-query/query-options";
-import {useFollowMutation} from "@/lib/react-query/mutations/user.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {useFollowMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
 interface FollowButtonProps {

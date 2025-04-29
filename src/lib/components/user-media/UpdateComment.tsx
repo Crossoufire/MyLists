@@ -3,7 +3,7 @@ import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface CommentaryProps {

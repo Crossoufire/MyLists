@@ -1,4 +1,4 @@
-import {queryKeys} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postAddMediadleGuess} from "@/lib/server/functions/moviedle";
 

@@ -6,6 +6,10 @@ export class MediadleService {
     constructor(private repository: typeof MediadleRepository) {
     }
 
+    async getAdminAllUsersStats(data: Record<string, any>) {
+        return this.repository.getAdminAllUsersStats(data);
+    }
+
     async getUserMediadleStats(userId: number) {
         const userMediadleStats = await this.repository.getUserMediadleStats(userId);
         if (!userMediadleStats) {

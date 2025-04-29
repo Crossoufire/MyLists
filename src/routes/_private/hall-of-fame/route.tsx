@@ -8,7 +8,7 @@ import {MutedText} from "@/lib/components/app/MutedText";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {HoFCard} from "@/lib/components/hall-of-fame/HoFCard";
-import {hallOfFameOptions} from "@/lib/react-query/query-options";
+import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";

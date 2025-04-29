@@ -10,7 +10,7 @@ import {useParams, useSearch} from "@tanstack/react-router";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options";
+import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {GamesPlatformsEnum, JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";

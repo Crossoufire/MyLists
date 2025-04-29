@@ -1,4 +1,4 @@
-import {authOptions, queryKeys} from "@/lib/react-query/query-options";
+import {authOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
 
 

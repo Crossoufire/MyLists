@@ -7,7 +7,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
 import {LoginForm} from "@/lib/components/auth/LoginForm";
-import {queryKeys} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {RegisterForm} from "@/lib/components/auth/RegisterForm";
 import {NavMediaDrop} from "@/lib/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";

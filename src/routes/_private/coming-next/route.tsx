@@ -6,7 +6,7 @@ import {MediaCard} from "@/lib/components/app/MediaCard";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
-import {upcomingOptions} from "@/lib/react-query/query-options";
+import {upcomingOptions} from "@/lib/react-query/query-options/query-options";
 import {capitalize, formatDateTime, zeroPad} from "@/lib/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 

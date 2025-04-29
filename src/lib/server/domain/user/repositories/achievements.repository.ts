@@ -1,5 +1,5 @@
 import {db} from "@/lib/server/database/db";
-import {and, count, eq, max, sql} from "drizzle-orm";
+import {and, asc, count, eq, getTableColumns, max, sql} from "drizzle-orm";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
 
@@ -14,6 +14,21 @@ export class AchievementsRepository {
             WHEN 'platinum' THEN 4
             ELSE 0
         END`;
+    }
+
+    static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
+        return db.update(achievement).set(payload).where(eq(achievement.id, achievementId));
+    }
+
+    static async adminUpdateTiers(payloads: Record<string, any>[]) {
+        return db.transaction(async (tx) => {
+            for (const payload of payloads) {
+                await tx
+                    .update(achievementTier)
+                    .set({ criteria: payload.criteria })
+                    .where(eq(achievementTier.id, payload.id));
+            }
+        });
     }
 
     static async getDifficultySummary(userId: number) {
@@ -128,5 +143,37 @@ export class AchievementsRepository {
             .orderBy(achievement.id, tierOrder);
 
         return results;
+    }
+
+    static async getAllAchievements() {
+        const tierOrder = this.getSQLTierOrdering();
+
+        const flatResults = await db
+            .select({
+                ...getTableColumns(achievement),
+                tier: getTableColumns(achievementTier),
+            })
+            .from(achievement)
+            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
+            .orderBy(asc(achievement.id), tierOrder);
+
+        type GroupedAchievement = Omit<typeof flatResults[0], "tier"> & {
+            tiers: typeof flatResults[0]["tier"][];
+        };
+
+        const groupedAchievements = flatResults.reduce<Record<number, GroupedAchievement>>((acc, row) => {
+            const { tier, ...achievementData } = row;
+            const achievementId = achievementData.id;
+
+            if (!acc[achievementId]) {
+                acc[achievementId] = { ...achievementData, tiers: [] };
+            }
+
+            acc[achievementId].tiers.push(tier);
+
+            return acc;
+        }, {});
+
+        return Object.values(groupedAchievements);
     }
 }

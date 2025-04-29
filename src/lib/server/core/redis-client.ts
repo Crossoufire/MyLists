@@ -1,23 +1,21 @@
-import {createClient, RedisClientType} from "redis";
+import {Redis} from "ioredis";
 
 
-let isConnecting = false;
-let redisInstance: RedisClientType | null = null;
-let connectionPromise: Promise<RedisClientType> | null = null;
+let redisInstance: Redis | null = null;
+let connectionPromise: Promise<Redis> | null = null;
 
 
-export const connectRedis = () => {
+export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}) => {
     const nodeEnv = process.env.NODE_ENV;
 
-    if (redisInstance?.isReady) {
-        return Promise.resolve(redisInstance);
+    if (redisInstance?.status === "ready" || redisInstance?.status === "connecting") {
+        return connectionPromise || Promise.resolve(redisInstance);
+    }
+    if (redisInstance?.status === "connect") {
+        return connectionPromise || Promise.resolve(redisInstance);
     }
 
-    if (isConnecting && connectionPromise) {
-        return connectionPromise;
-    }
-
-    if (nodeEnv !== "production") {
+    if (!bypassEnv && nodeEnv !== "production") {
         return Promise.resolve(null);
     }
 
@@ -26,42 +24,30 @@ export const connectRedis = () => {
         return Promise.reject(new Error("REDIS_URL environment variable not set."));
     }
 
-    isConnecting = true;
-    connectionPromise = (async () => {
-        console.log("Attempting to connect to Redis...");
+    if (!connectionPromise) {
+        console.log("Attempting to connect to Redis using ioredis...");
 
-        if (!redisInstance) {
-            redisInstance = createClient({
-                url: redisUrl,
-                socket: {
-                    connectTimeout: 5000,
-                    reconnectStrategy: (retries) => Math.min(retries * 50, 1000),
-                },
+        redisInstance = new Redis(redisUrl, { lazyConnect: true });
+
+        connectionPromise = new Promise((resolve, reject) => {
+            redisInstance!.on("connect", () => console.log("ioredis: connecting..."));
+            redisInstance!.on("ready", () => {
+                console.log("ioredis: client ready.");
+                resolve(redisInstance!);
             });
-
-            redisInstance.on("error", (error) => console.error("Redis Client Error:", error));
-            redisInstance.on("connect", () => console.log("Redis client connecting..."));
-            redisInstance.on("ready", () => console.log("Redis client ready."));
-            redisInstance.on("end", () => console.log("Redis client connection closed."));
-            redisInstance.on("reconnecting", () => console.warn("Redis client reconnecting..."));
-        }
-
-        try {
-            if (!redisInstance.isOpen) {
-                await redisInstance.connect();
-            }
-            console.log("Successfully connected to Redis.");
-            isConnecting = false;
-
-            return redisInstance;
-        }
-        catch (error) {
-            console.error("FATAL: Failed to connect to Redis:", error);
-            isConnecting = false;
-            
-            throw error;
-        }
-    })();
+            redisInstance!.on("error", (error) => {
+                console.error("ioredis: Client Error:", error);
+                if (redisInstance?.status !== "ready" && redisInstance?.status !== "connecting") {
+                    connectionPromise = null;
+                    redisInstance = null;
+                    reject(error);
+                }
+            });
+            redisInstance!.on("end", () => console.log("ioredis: client connection closed."));
+            redisInstance!.on("reconnecting", () => console.warn("ioredis: client reconnecting..."));
+            redisInstance!.connect().catch(reject);
+        });
+    }
 
     return connectionPromise;
 };

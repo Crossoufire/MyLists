@@ -12,7 +12,7 @@ import {MediaIcon} from "@/lib/components/app/MediaIcon";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/lib/react-query/query-options";
+import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {

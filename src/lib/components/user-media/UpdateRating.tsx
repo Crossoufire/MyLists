@@ -1,6 +1,6 @@
 import {RatingSystemType} from "@/lib/server/utils/enums";
 import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/functions";
-import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 

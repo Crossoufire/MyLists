@@ -10,11 +10,11 @@ import AvatarCircles from "@/lib/components/ui/avatar-circles";
 import {FollowCard} from "@/lib/components/media-details/FollowCard";
 import {SimilarMedia} from "@/lib/components/media-details/SimilarMedia";
 import {UserMediaDetails} from "@/lib/components/user-media/UserMediaDetails";
-import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options";
+import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MediaDataDetails} from "@/lib/components/media-details/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {RefreshAndEditMedia} from "@/lib/components/media-details/RefreshAndEditMedia";
-import {useAddMediaToListMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({

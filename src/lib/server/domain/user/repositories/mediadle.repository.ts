@@ -1,10 +1,45 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/asyncStorage";
-import {and, eq, gte, isNotNull, notInArray, sql} from "drizzle-orm";
-import {dailyMediadle, mediadleStats, movies, userMediadleProgress} from "@/lib/server/database/schema";
+import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
+import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
+import {db} from "@/lib/server/database/db";
 
 
 export class MediadleRepository {
+    static async getAdminAllUsersStats(data: Record<string, any>) {
+        const page = data.pageIndex ?? 0;
+        const search = data.search ?? "";
+        const perPage = data.pageSize ?? 25;
+        const offset = page * perPage;
+
+        const totalResult = await db
+            .select({ count: count() })
+            .from(mediadleStats)
+            .innerJoin(user, eq(mediadleStats.userId, user.id))
+            .where(like(user.name, `%${search}%`))
+            .execute();
+        const totalStats = totalResult[0]?.count ?? 0;
+
+        const results = await db
+            .select({
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                ...getTableColumns(mediadleStats),
+            })
+            .from(mediadleStats)
+            .innerJoin(user, eq(mediadleStats.userId, user.id))
+            .where(like(user.name, `%${search}%`))
+            .orderBy(desc(mediadleStats.totalPlayed))
+            .limit(perPage)
+            .offset(offset)
+            .execute();
+
+        return { items: results, pages: Math.ceil((totalStats ?? 0) / perPage), total: totalStats };
+    }
+
     static async getTodayMoviedle() {
         const today = new Date().toISOString().slice(0, 10);
         return getDbClient()

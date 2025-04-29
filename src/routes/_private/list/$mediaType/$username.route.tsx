@@ -10,7 +10,7 @@ import {MediaGrid} from "@/lib/components/media-list/MediaGrid";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
-import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options";
+import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
 
 

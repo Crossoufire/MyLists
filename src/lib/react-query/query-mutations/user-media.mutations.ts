@@ -1,4 +1,4 @@
-import {queryKeys} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {useMutation, useQueryClient} from "@tanstack/react-query";

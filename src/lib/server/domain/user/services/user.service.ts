@@ -6,17 +6,58 @@ export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
 
-    async getPaginatedUsers(data: Record<string, any>) {
-        return this.userRepository.findPaginatedUsers(data);
+    async getAdminPaginatedUsers(data: Record<string, any>) {
+        return this.userRepository.getAdminPaginatedUsers(data);
+    }
+
+    async adminUpdateUser(userId: number | undefined, payload: Record<string, any>) {
+        if (!userId && payload.showUpdateModal) {
+            await this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
+            return;
+        }
+
+        if (payload.delete) {
+            await this.userRepository.adminDeleteUser(userId!);
+            return;
+        }
+
+        const availablePayloads = ["privacy", "role", "emailVerified"];
+
+        const isValidPayload = Object.keys(payload).every(key => availablePayloads.includes(key));
+        if (!isValidPayload) {
+            throw new Error("Invalid payload");
+        }
+
+        return this.userRepository.adminUpdateUser(userId!, payload);
     }
 
     async getAdminOverview() {
-        // Total Users and growth
-        // Active Users and growth (3 or 6 months)
-        // New Users and growth
-        // Cumulative number of users per month
-        // Recent Users (last day)
-        // Number of users per privacy value
+        const now = new Date();
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+        const twoMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString();
+        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString();
+
+        const recentUsers = await this.userRepository.getAdminRecentUsers(10);
+        const usersPerPrivacy = await this.userRepository.getAdminUsersPerPrivacyValue();
+        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth(12);
+
+        const userStats = await this.userRepository.getAdminUserStatistics({
+            now: now.toISOString(),
+            currentMonthStart,
+            previousMonthStart,
+            twoMonthsAgoStart,
+            threeMonthsAgo,
+        });
+
+        return {
+            totalUsers: userStats.totalUsers,
+            activeUsers: userStats.activeUsers,
+            newUsers: userStats.newUsers,
+            cumulativeUsersPerMonth,
+            recentUsers,
+            usersPerPrivacy,
+        };
     }
 
     async isFollowing(userId: number, followedId: number) {

@@ -4,7 +4,7 @@ import {Heart, Settings2} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
 import {MediaCard} from "@/lib/components/app/MediaCard";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {mediaListOptions} from "@/lib/react-query/query-options";
+import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
 import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
 import {CommentPopover} from "@/lib/components/media-list/CommentPopover";

@@ -5,10 +5,10 @@ import {Link, useParams} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {UserUpdate} from "@/lib/components/app/UserUpdate";
-import {queryKeys} from "@/lib/react-query/query-options";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {UserUpdatesType} from "@/routes/_private/profile/$username/_header/index";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {useDeleteUpdatesMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface UserUpdatesProps {

@@ -1,5 +1,5 @@
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {useUpdateUserMediaMutation} from "@/lib/react-query/mutations/user-media.mutations";
+import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 

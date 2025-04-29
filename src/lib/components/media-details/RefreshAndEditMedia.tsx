@@ -5,8 +5,8 @@ import {Pencil, RefreshCw} from "lucide-react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {formatDateTime} from "@/lib/utils/functions";
-import {queryKeys} from "@/lib/react-query/query-options";
-import {useRefreshMediaMutation} from "@/lib/react-query/mutations/media.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {useRefreshMediaMutation} from "@/lib/react-query/query-mutations/media.mutations";
 
 
 interface RefreshAndEditMediaProps {

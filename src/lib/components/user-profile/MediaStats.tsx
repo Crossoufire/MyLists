@@ -4,7 +4,7 @@ import {Tooltip} from "@/lib/components/ui/tooltip";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {BlockLink} from "@/lib/components/app/BlockLink";
-import {profileOptions} from "@/lib/react-query/query-options";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {StatusBullet} from "@/lib/components/user-profile/StatusBullet";

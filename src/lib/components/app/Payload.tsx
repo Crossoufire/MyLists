@@ -2,7 +2,7 @@ import {MoveRight} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {zeroPad} from "@/lib/utils/functions";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
-import {profileOptions} from "@/lib/react-query/query-options";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface PayloadProps {

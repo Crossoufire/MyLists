@@ -6,7 +6,7 @@ import {Payload} from "@/lib/components/app/Payload";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
-import {profileOptions} from "@/lib/react-query/query-options";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface UserUpdateProps {

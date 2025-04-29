@@ -8,7 +8,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {allUpdatesOptions} from "@/lib/react-query/query-options";
+import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
 import {TablePagination} from "@/lib/components/app/TablePagination";
 import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";

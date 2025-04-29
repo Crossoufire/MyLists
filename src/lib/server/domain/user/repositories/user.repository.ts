@@ -6,31 +6,159 @@ import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserRepository {
-    static async findPaginatedUsers(data: Record<string, any>) {
-        const page = data.page ?? 1;
-        const search = data.search ?? "";
-        const perPage = data.perPage ?? 25;
-        const offset = (page - 1) * perPage;
+    static async getAdminUserStatistics(dates: any) {
+        const { now, currentMonthStart, previousMonthStart, twoMonthsAgoStart, threeMonthsAgo } = dates;
+
+        const result = await db
+            .select({
+                totalUsers: count(),
+                totalUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END)`,
+                totalUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
+                activeUsers: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} THEN 1 ELSE 0 END)`,
+                activeUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
+                activeUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END)`,
+                newUsersThisMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${currentMonthStart} AND ${user.createdAt} < ${now} THEN 1 ELSE 0 END)`,
+                newUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${previousMonthStart} AND ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END)`,
+                newUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
+                totalUsersGrowth: sql<number>`CASE 
+                    WHEN SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END) = 0 THEN 0 
+                    ELSE ((SUM(CASE WHEN ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END) - 
+                           SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)) * 100.0 / 
+                           SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END))
+                    END`,
+                activeUsersGrowth: sql<number>`CASE 
+                    WHEN SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END) = 0 THEN 0 
+                    ELSE ((SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${previousMonthStart} THEN 1 ELSE 0 END) - 
+                           SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END)) * 100.0 / 
+                           SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END))
+                    END`,
+                newUsersGrowth: sql<number>`CASE 
+                    WHEN SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END) = 0 THEN 0 
+                    ELSE ((SUM(CASE WHEN ${user.createdAt} >= ${previousMonthStart} AND ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END) - 
+                           SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)) * 100.0 / 
+                           SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END))
+                    END`
+            })
+            .from(user)
+            .execute();
+
+        return {
+            totalUsers: {
+                count: result[0]?.totalUsers || 0,
+                growth: result[0]?.totalUsersGrowth || 0,
+            },
+            activeUsers: {
+                count: result[0]?.activeUsers || 0,
+                growth: result[0]?.activeUsersGrowth || 0,
+            },
+            newUsers: {
+                count: result[0]?.newUsersThisMonth || 0,
+                growth: result[0]?.newUsersGrowth || 0,
+            }
+        };
+    }
+
+    static async getAdminCumulativeUsersPerMonth(months: number) {
+        const now = new Date();
+        const monthsData = [];
+
+        for (let i = 0; i < months; i++) {
+            const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toISOString();
+            const monthName = monthDate.toLocaleString('default', { month: 'long' });
+            monthsData.push({ monthEnd, monthName });
+        }
 
         const users = await db
+            .select({ createdAt: user.createdAt })
+            .from(user)
+            .execute();
+
+        const results = [];
+        for (const monthData of monthsData) {
+            const count = users.filter(u => new Date(u.createdAt) <= new Date(monthData.monthEnd)).length;
+            results.unshift({ month: monthData.monthName, count });
+        }
+
+        return results;
+    }
+
+    static async getAdminRecentUsers(limit: number) {
+        return db
             .select({
                 id: user.id,
                 name: user.name,
                 email: user.email,
                 image: user.image,
-                date: user.createdAt,
                 privacy: user.privacy,
                 updatedAt: user.updatedAt,
-                active: user.emailVerified,
+                createdAt: user.createdAt,
+            })
+            .from(user)
+            .orderBy(desc(user.updatedAt))
+            .limit(limit)
+            .execute();
+    }
+
+    static async getAdminUsersPerPrivacyValue() {
+        const results = await db
+            .select({ privacy: user.privacy, count: count() })
+            .from(user)
+            .groupBy(user.privacy)
+            .execute();
+
+        return results;
+    }
+
+    static async getAdminPaginatedUsers(data: Record<string, any>) {
+        const page = data.pageIndex ?? 0;
+        const search = data.search ?? "";
+        const perPage = data.pageSize ?? 25;
+        const sortBy = data.sortBy ?? "updatedAt";
+        const sortDesc = data.sortDesc ?? true;
+        const offset = page * perPage;
+
+        const totalUsers = db.select({ count: count() }).from(user).where(like(user.name, `%${search}%`)).get();
+
+        const users = await db
+            .select({
+                id: user.id,
+                name: user.name,
+                role: user.role,
+                email: user.email,
+                image: user.image,
+                privacy: user.privacy,
+                updatedAt: user.updatedAt,
+                createdAt: user.createdAt,
+                emailVerified: user.emailVerified,
+                showUpdateModal: user.showUpdateModal,
             })
             .from(user)
             .offset(offset)
             .limit(perPage)
-            .orderBy(desc(user.updatedAt))
+            // @ts-expect-error
+            .orderBy(sortDesc ? desc(user[sortBy]) : asc(user[sortBy]))
             .where(like(user.name, `%${search}%`))
             .execute();
 
-        return { items: users, pages: Math.ceil(users.length / perPage) };
+        return { items: users, pages: Math.ceil(users.length / perPage), total: totalUsers?.count || 0 };
+    }
+
+    static async adminUpdateUser(userId: number, payload: Record<string, any>) {
+        return db
+            .update(user)
+            .set(payload)
+            .where(eq(user.id, userId))
+            .execute();
+    }
+
+    static async adminDeleteUser(_userId: number) {
+        // TODO: Delete user (cascade with verification, session, and account), notifications, userMediaSettings, followers,
+        //  all media Types, userMediaUpdates...
+    }
+
+    static async adminUpdateFeaturesFlag(showUpdateModal: boolean) {
+        return db.update(user).set({ showUpdateModal }).execute();
     }
 
     static async findByUsername(username: string) {

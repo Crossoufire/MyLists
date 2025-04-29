@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options";
+import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
 import {MoviesDetails} from "@/lib/components/media-details/MoviesDetails";
 

@@ -6,12 +6,24 @@ export class AchievementsService {
     constructor(private repository: typeof AchievementsRepository) {
     }
 
+    async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
+        return this.repository.adminUpdateAchievement(achievementId, payload);
+    }
+
+    async adminUpdateTiers(payloads: Record<string, any>[]) {
+        return this.repository.adminUpdateTiers(payloads);
+    }
+
     async getDifficultySummary(userId: number) {
         return this.repository.getDifficultySummary(userId);
     }
 
     async getAchievementsDetails(userId: number, limit = 6) {
         return this.repository.getAchievementsDetails(userId, limit);
+    }
+
+    async getAllAchievements() {
+        return this.repository.getAllAchievements();
     }
 
     async getUserAchievementStats(userId: number) {

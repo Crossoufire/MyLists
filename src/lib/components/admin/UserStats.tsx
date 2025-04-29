@@ -4,8 +4,8 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card
 
 interface UserStatsProps {
     title: string
-    value: string
     description: string
+    value: string | number
     icon: "users" | "activity" | "userPlus" | "shield"
 }
 

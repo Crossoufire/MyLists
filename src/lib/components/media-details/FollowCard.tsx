@@ -4,7 +4,7 @@ import {Badge} from "@/lib/components/ui/badge";
 import {Separator} from "@/lib/components/ui/separator";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {getFeelingIcon, getStatusColor, zeroPad} from "@/lib/utils/functions";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options";
+import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {Heart, MessageCircle, Play, RotateCw, Star} from "lucide-react";
 import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";

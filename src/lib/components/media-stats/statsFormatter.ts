@@ -1,4 +1,4 @@
-import {userStatsOptions} from "@/lib/react-query/query-options";
+import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {formatNumberWithKM, formatNumberWithSpaces, getFeelingIcon} from "@/lib/utils/functions";
 

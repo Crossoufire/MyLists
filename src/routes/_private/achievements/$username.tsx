@@ -4,7 +4,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
-import {achievementOptions} from "@/lib/react-query/query-options";
+import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {AchievementCard} from "@/lib/components/achievements/AchievementCard";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {AchievementSummary} from "@/lib/components/achievements/AchievementSummary";

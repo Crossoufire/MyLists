@@ -1,5 +1,5 @@
 import {Link} from "@tanstack/react-router";
-import {Award, Film, Flag, Home, Settings, Users} from "lucide-react";
+import {Award, CheckCheck, Film, Home, Settings, Users} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -45,40 +45,9 @@ export function AdminSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton asChild>
-                                    <Link to="/admin/features">
-                                        <Flag className="h-4 w-4"/>
-                                        <span>Features</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-                {/*<SidebarGroup>*/}
-                {/*    <SidebarGroupLabel>Analytics</SidebarGroupLabel>*/}
-                {/*    <SidebarGroupContent>*/}
-                {/*        <SidebarMenu>*/}
-                {/*            <SidebarMenuItem>*/}
-                {/*                <SidebarMenuButton asChild>*/}
-                {/*                    <Link to="/admin/activity">*/}
-                {/*                        <Activity className="h-4 w-4"/>*/}
-                {/*                        <span>User Activity</span>*/}
-                {/*                    </Link>*/}
-                {/*                </SidebarMenuButton>*/}
-                {/*            </SidebarMenuItem>*/}
-                {/*            <SidebarMenuItem>*/}
-                {/*                <SidebarMenuButton asChild>*/}
-                {/*                    <Link to="/admin/statistics">*/}
-                {/*                        <BarChart3 className="h-4 w-4"/>*/}
-                {/*                        <span>Statistics</span>*/}
-                {/*                    </Link>*/}
-                {/*                </SidebarMenuButton>*/}
-                {/*            </SidebarMenuItem>*/}
-                {/*        </SidebarMenu>*/}
-                {/*    </SidebarGroupContent>*/}
-                {/*</SidebarGroup>*/}
                 <SidebarGroup>
                     <SidebarGroupLabel>Content</SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -96,6 +65,21 @@ export function AdminSidebar() {
                                     <Link to="/admin/mediadle">
                                         <Film className="h-4 w-4"/>
                                         <span>Mediadle Stats</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+                <SidebarGroup>
+                    <SidebarGroupLabel>Tasks</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link to="/admin/tasks">
+                                        <CheckCheck className="h-4 w-4"/>
+                                        <span>Long Running Tasks</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

@@ -4,7 +4,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {trendsOptions} from "@/lib/react-query/query-options";
+import {trendsOptions} from "@/lib/react-query/query-options/query-options";
 import {Card, CardContent, CardTitle} from "@/lib/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 
