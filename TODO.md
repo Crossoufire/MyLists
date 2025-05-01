@@ -25,7 +25,10 @@
 - Add API rate limiting with `rate-limiter-flexible` -> DONE
 - Add `redis` (for `cache-manager` and `rate-limiter-flexible`) -> DONE
 - Create admin dashboard ->
+    - Check users mediadle stats -> DONE
+    - Update an achievement tier -> DONE
     - Allow to change user privacy -> DONE
+    - Update an achievement definition -> DONE
     - Check specific user when was last active -> DONE
     - Activate/Deactivate the `new feature` flag -> DONE
     - Check the cumulative number of users per month -> DONE
@@ -33,7 +36,13 @@
     - Check how many users where active in the last N days -> DONE
     - Ability to change the active status of a user (disable account) -> DONE
 - Create small CLI for scheduled tasks ->
+    - Vacuum db -> DONE
+    - Analyze db -> DONE
+    - Lock old movies -> DONE
     - Add bulk media refresh -> DONE
+    - Seed database with achievements -> DONE
+    - Remove non-list media from database -> DONE
+    - Remove unused media covers from disk -> DONE
 
 ---
 
@@ -55,27 +64,17 @@
 ## Backend Logic to implement
 
 - Add `zod` validation on `createServerFn` functions
-- Add rate limiter in `nginx` (for flood/spamming protection)
+- Add rate limiter in `nginx` (for spamming protection)
+- Add `ON CASCADE` for many things to avoid `FK` errors and simplify code
 - Add global error handler (either monkey-patch or wait for TSS maintainers)
 - Create admin dashboard
     - Delete users
-    - Update an achievement tier
-    - Update an achievement definition
-    - Check mediadle stats of all/speicific users
     - Execute long running tasks from CLI using admin dashboard
 - Create small CLI for scheduled tasks
-    - Vacuum db
-    - Analyze db
-    - Lock old movies
     - Update IGDB token
     - Update platform stats
     - Run all scheduled tasks
-    - Create demo user account
     - Update all the user's achievements
     - Compute user's stats per media type
-    - Seed the database with achievements
-    - Remove unused media covers from disk
     - Add new media notifications to users
-    - Remove non-list media from the database
-    - Lock media that are not available in the provider
     - Compute media time spent per user and per media type

@@ -1,4 +1,8 @@
+import dotenv from "dotenv";
 import {Redis} from "ioredis";
+
+
+dotenv.config();
 
 
 let redisInstance: Redis | null = null;
@@ -27,7 +31,10 @@ export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}
     if (!connectionPromise) {
         console.log("Attempting to connect to Redis using ioredis...");
 
-        redisInstance = new Redis(redisUrl, { lazyConnect: true });
+        redisInstance = new Redis(redisUrl, {
+            lazyConnect: true,
+            maxRetriesPerRequest: null,
+        });
 
         connectionPromise = new Promise((resolve, reject) => {
             redisInstance!.on("connect", () => console.log("ioredis: connecting..."));

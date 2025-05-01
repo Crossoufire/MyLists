@@ -1,5 +1,5 @@
 import {queryOptions} from "@tanstack/react-query";
-import {getAdminAchievements, getAdminAllUsers, getAdminMediadleStats, getAdminOverview} from "@/lib/server/functions/admin";
+import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, getAdminMediadleStats, getAdminOverview, getAdminTasks} from "@/lib/server/functions/admin";
 
 
 type AdminQueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -11,6 +11,9 @@ export type AdminQueryKeys = {
     adminAchievementsKey: AdminQueryKeyFunction<[]>;
     adminMediadleKey: AdminQueryKeyFunction<[Record<string, any>]>;
     adminTasksKey: AdminQueryKeyFunction<[]>;
+    adminJobsKey: AdminQueryKeyFunction<[]>;
+    adminJobLogsKey: AdminQueryKeyFunction<[string | null | undefined]>;
+    adminJobCompletedKey: AdminQueryKeyFunction<[]>;
 };
 
 
@@ -18,8 +21,11 @@ export const adminQueryKeys: AdminQueryKeys = {
     adminAchievementsKey: () => ["adminAchievements"],
     adminMediadleKey: (search) => ["adminMediadle", search],
     adminOverviewKey: () => ["adminOverview"],
-    adminTasksKey: () => ["adminTags"],
+    adminTasksKey: () => ["adminTasks"],
     adminUsersKeys: (search) => ["adminUpdateUsers", search],
+    adminJobsKey: () => ["adminJobs"],
+    adminJobLogsKey: (jobId) => ["adminJobs", jobId, "Logs"],
+    adminJobCompletedKey: () => ["adminJobs", "Completed"],
 };
 
 
@@ -49,5 +55,27 @@ export const adminMediadleOptions = (search: Record<string, any>) => queryOption
 
 export const adminTasksOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminTasksKey(),
-    // queryFn: () => getAdminTasks(),
+    queryFn: () => getAdminTasks(),
+    staleTime: Infinity,
+});
+
+
+export const adminJobsOptions = ({ pollingRateSec }: { pollingRateSec: number }) => queryOptions({
+    queryKey: adminQueryKeys.adminJobsKey(),
+    queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
+    refetchInterval: pollingRateSec * 1000,
+    placeholderData: (previousData) => previousData,
+});
+
+
+export const adminJobLogsOptions = (jobId: string | null | undefined, isEnabled: boolean) => queryOptions({
+    queryKey: adminQueryKeys.adminJobLogsKey(jobId),
+    queryFn: () => getAdminJobLogs({ data: { jobId: jobId! } }),
+    enabled: isEnabled,
+});
+
+
+export const adminJobCompletedOptions = () => queryOptions({
+    queryKey: adminQueryKeys.adminJobCompletedKey(),
+    queryFn: () => getAdminJobs({ data: { types: ["completed", "failed"] } }),
 });

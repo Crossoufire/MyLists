@@ -38,6 +38,10 @@ export class UserUpdatesService {
         await this.repository.deleteUserUpdates(userId, updateIds, false);
     }
 
+    async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+        return this.repository.deleteMediaUpdates(mediaType, mediaIds);
+    }
+
     async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
         return this.repository.getUserUpdatesPaginated(userId, filters)
     }

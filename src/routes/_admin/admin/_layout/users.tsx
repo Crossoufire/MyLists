@@ -346,5 +346,3 @@ function UserManagementPage() {
         </DashboardShell>
     )
 }
-
-

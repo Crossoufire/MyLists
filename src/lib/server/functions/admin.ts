@@ -1,6 +1,9 @@
 import {createServerFn} from "@tanstack/react-start";
+import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
+import {taskDefinitions, TasksName} from "@/cli/commands";
 import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {JobType} from "bullmq";
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
@@ -69,11 +72,20 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
     });
 
 
+export const getAdminTasks = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware])
+    .handler(async () => {
+        return taskDefinitions;
+    });
+
+
 export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { taskName: string })
+    .validator((data: any) => data as { taskName: TasksName })
     .handler(async ({ data: { taskName } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+
+        console.log(taskName);
 
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
@@ -85,49 +97,27 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     });
 
 
-export const getAdminJobOverview = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .handler(async () => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
-
-        try {
-            return mylistsLongTaskQueue.getJobCounts("wait", "active", "completed", "failed", "delayed", "paused");
-        }
-        catch (error) {
-            throw new Error("Failed to fetch job counts.");
-        }
-    });
-
-
 export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { types: string[]; start?: number; end?: number })
-    .handler(async ({ data }) => {
+    .validator((data: any) => data as { types: JobType[] })
+    .handler(async ({ data: { types } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
         try {
-            const { types, start = 0, end = 19 } = data;
-            const validTypes = types.filter((t) =>
-                ["wait", "active", "completed", "failed", "delayed", "paused"].includes(t)
-            ) as any[];
-
-            if (!validTypes.length) {
-                throw new Error("Invalid job types requested.");
-            }
-
-            const jobs = await mylistsLongTaskQueue.getJobs(validTypes, start, end, true);
+            const jobs = await mylistsLongTaskQueue.getJobs(types);
             return jobs.map((job) => ({
                 id: job.id,
                 name: job.name,
                 data: job.data,
                 progress: job.progress,
-                returnValue: job.returnvalue,
-                failedReason: job.failedReason,
                 timestamp: job.timestamp,
-                processedOn: job.processedOn,
                 finishedOn: job.finishedOn,
-                attemptsMade: job.attemptsMade,
                 stacktrace: job.stacktrace,
+                returnValue: job.returnvalue,
+                processedOn: job.processedOn,
+                failedReason: job.failedReason,
+                attemptsMade: job.attemptsMade,
+                status: deriveMQJobStatus(job),
             }));
         }
         catch (error) {
@@ -138,20 +128,17 @@ export const getAdminJobs = createServerFn({ method: "GET" })
 
 export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as {
-        end?: number,
-        jobId: string,
-        start?: number,
-    })
-    .handler(async ({ data }) => {
+    .validator((data: any) => data as { jobId: string })
+    .handler(async ({ data: { jobId } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
         try {
-            const { jobId, start = 0, end = 99 } = data;
-            const logs = await mylistsLongTaskQueue.getJobLogs(jobId, start, end);
-            return logs;
+            return mylistsLongTaskQueue.getJobLogs(jobId);
         }
         catch (error) {
             throw new Error("Failed to fetch job logs.");
         }
     });
+
+
+

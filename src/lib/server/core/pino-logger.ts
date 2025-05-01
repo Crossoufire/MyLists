@@ -3,7 +3,7 @@ import {hostname} from "os";
 
 
 const pinoLogger = pino({
-    level: process.env.LOG_LEVEL || "info",
+    level: "info",
     base: {
         pid: process.pid,
         hostname: hostname(),

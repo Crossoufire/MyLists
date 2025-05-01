@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
-import {and, count, desc, eq, sql} from "drizzle-orm";
-import {NotificationType} from "@/lib/server/utils/enums";
 import {notifications} from "@/lib/server/database/schema";
+import {and, count, desc, eq, inArray, sql} from "drizzle-orm";
+import {MediaType, NotificationType} from "@/lib/server/utils/enums";
 
 
 export class NotificationsRepository {
@@ -29,5 +29,12 @@ export class NotificationsRepository {
             .get();
 
         return notificationsCount?.count || 0;
+    }
+
+    static async deleteNotifications(mediaType: MediaType, mediaIds: number[]) {
+        await db
+            .delete(notifications)
+            .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)))
+            .execute();
     }
 }

@@ -1,4 +1,6 @@
+import pino from "pino";
 import {Cache} from "cache-manager";
+import pinoLogger from "./pino-logger";
 import {MediaType} from "@/lib/server/utils/enums";
 import {initializeCache} from "@/lib/server/core/cache-manager";
 import {UserService} from "@/lib/server/domain/user/services/user.service";
@@ -55,13 +57,18 @@ interface AppContainer {
 }
 
 
+interface ContainerOptions {
+    tasksServiceLogger?: pino.Logger;
+}
+
+
 declare global {
     var __MY_APP_CONTAINER: AppContainer | undefined;
 }
 
 
-export async function initializeContainer() {
-    if (globalThis.__MY_APP_CONTAINER) {
+export async function initializeContainer(options: ContainerOptions = {}) {
+    if (globalThis.__MY_APP_CONTAINER && !options.tasksServiceLogger) {
         return globalThis.__MY_APP_CONTAINER;
     }
 
@@ -93,7 +100,15 @@ export async function initializeContainer() {
     MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
 
     // Tasks Service
-    const tasksService = new TasksService(MediaServiceRegistry, MediaProviderRegistry);
+    const tasksLogger = options.tasksServiceLogger || pinoLogger;
+    const tasksService = new TasksService(
+        tasksLogger,
+        MediaServiceRegistry,
+        MediaProviderRegistry,
+        achievementsService,
+        userUpdatesService,
+        notificationsService,
+    )
 
     // API Transformers
     const tmdbTransformer = new TmdbTransformer();
@@ -105,7 +120,7 @@ export async function initializeContainer() {
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     MediaProviderRegistry.registerService(MediaType.MOVIES, moviesProviderService);
 
-    return {
+    const currentContainer: AppContainer = {
         cacheManager: cacheManager,
         clients: {
             tmdb: tmdbClient,
@@ -136,13 +151,19 @@ export async function initializeContainer() {
             mediaProviderService: MediaProviderRegistry,
         },
     };
+
+    if (!globalThis.__MY_APP_CONTAINER) {
+        globalThis.__MY_APP_CONTAINER = currentContainer;
+    }
+
+    return currentContainer;
 }
 
 
 export function getContainer() {
     const globalContainer = globalThis.__MY_APP_CONTAINER;
     if (!globalContainer) {
-        throw new Error("Global container has not been initialized.");
+        throw new Error("Global container not initialized. Ensure SSR or relevant entry point runs initializeContainer first.");
     }
     return globalContainer;
 }

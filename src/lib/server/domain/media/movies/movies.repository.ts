@@ -5,7 +5,7 @@ import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
-import {and, asc, countDistinct, eq, gte, inArray, isNotNull, like, lte, ne, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, countDistinct, eq, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, or, sql} from "drizzle-orm";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
@@ -35,6 +35,50 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .execute();
 
         return comingNext;
+    }
+
+    async getNonListMediaIds() {
+        const mediaToDelete = await getDbClient()
+            .select({ id: movies.id })
+            .from(movies)
+            .leftJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(isNull(moviesList.userId))
+            .execute();
+
+        return mediaToDelete.map((media) => media.id);
+    }
+
+    async removeMediaByIds(mediaIds: number[]) {
+        await getDbClient()
+            .delete(moviesActors)
+            .where(inArray(moviesActors.mediaId, mediaIds))
+            .execute();
+
+        await getDbClient()
+            .delete(moviesGenre)
+            .where(inArray(moviesGenre.mediaId, mediaIds))
+            .execute();
+
+        await getDbClient()
+            .delete(movies)
+            .where(inArray(movies.id, mediaIds))
+            .execute();
+    }
+
+    async lockOldMovies() {
+        const [{ count }] = await getDbClient()
+            .select({ count: sql<number>`count(*)` })
+            .from(movies)
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+
+        await getDbClient()
+            .update(movies)
+            .set({ lockStatus: true })
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+
+        return count;
     }
 
     async searchByName(query: string) {

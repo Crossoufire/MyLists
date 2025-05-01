@@ -150,4 +150,11 @@ export class UserUpdatesRepository {
             return newUpdateToReturn?.at(-1) ?? null;
         }
     }
+
+    static async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+        await getDbClient()
+            .delete(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)))
+            .execute();
+    }
 }

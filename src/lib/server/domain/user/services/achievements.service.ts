@@ -1,9 +1,14 @@
+import {AchievementData} from "@/lib/server/types/achievements";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 
 
 export class AchievementsService {
     constructor(private repository: typeof AchievementsRepository) {
+    }
+
+    async seedAchievements(achievements: AchievementData[]) {
+        return this.repository.seedAchievements(achievements);
     }
 
     async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {

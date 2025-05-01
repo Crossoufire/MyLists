@@ -9,7 +9,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
-import {adminAchievementsOptions, adminQueryKeys} from "@/lib/react-query/query-options/admin-options";
+import {adminAchievementsOptions} from "@/lib/react-query/query-options/admin-options";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/react-query/query-mutations/admin.mutations";
@@ -25,15 +25,15 @@ export const Route = createFileRoute("/_admin/admin/_layout/achievements")({
 
 function AchievementPage() {
     const [editedName, setEditedName] = useState("");
+    const updateTiersMutation = useAdminUpdateTiersMutation();
     const [editableTiers, setEditableTiers] = useState<any[]>([]);
     const [editedDescription, setEditedDescription] = useState("");
     const [editedMediaType, setEditedMediaType] = useState<any>("");
     const [isTierDialogOpen, setIsTierDialogOpen] = useState(false);
     const apiData = useSuspenseQuery(adminAchievementsOptions()).data;
+    const updateAchievementMutation = useAdminUpdateAchievementMutation();
     const [editingAchievement, setEditingAchievement] = useState<any | null>(null);
     const [isAchievementEditDialogOpen, setIsAchievementEditDialogOpen] = useState(false);
-    const updateAchievementMutation = useAdminUpdateAchievementMutation(adminQueryKeys.adminAchievementsKey());
-    const updateTiersMutation = useAdminUpdateTiersMutation(adminQueryKeys.adminAchievementsKey());
 
     useEffect(() => {
         if (isAchievementEditDialogOpen && editingAchievement) {

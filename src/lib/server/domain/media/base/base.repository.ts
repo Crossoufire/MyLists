@@ -87,6 +87,15 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .get()
     }
 
+    async getCoverFilenames() {
+        const { mediaTable } = this.config;
+
+        return getDbClient()
+            .select({ imageCover: mediaTable.imageCover })
+            .from(mediaTable)
+            .execute()
+    }
+
     async findByApiId(apiId: number | string) {
         const { mediaTable } = this.config;
 

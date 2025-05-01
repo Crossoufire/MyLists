@@ -1,4 +1,4 @@
-import {NotificationType} from "@/lib/server/utils/enums";
+import {MediaType, NotificationType} from "@/lib/server/utils/enums";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 
 
@@ -16,5 +16,9 @@ export class NotificationsService {
 
     async countUnreadNotifications(userId: number, lastReadTime: string | null) {
         return this.repository.countUnreadNotifications(userId, lastReadTime);
+    }
+
+    async deleteNotifications(mediaType: MediaType, mediaIds: number[]) {
+        return this.repository.deleteNotifications(mediaType, mediaIds);
     }
 }

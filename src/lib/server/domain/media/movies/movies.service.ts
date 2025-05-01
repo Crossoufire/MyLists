@@ -4,6 +4,7 @@ import type {StatsDelta} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 
 
 interface UserMediaState {
@@ -23,6 +24,23 @@ export class MoviesService {
 
     async getById(mediaId: number) {
         return this.repository.findById(mediaId);
+    }
+
+    async getNonListMediaIds() {
+        return this.repository.getNonListMediaIds();
+    }
+
+    async removeMediaByIds(mediaIds: number[]) {
+        return this.repository.removeMediaByIds(mediaIds);
+    }
+
+    async getCoverFilenames() {
+        const coverFilenames = await this.repository.getCoverFilenames();
+        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
+    }
+
+    async lockOldMovies() {
+        return this.repository.lockOldMovies();
     }
 
     async searchByName(query: string) {
@@ -305,5 +323,9 @@ export class MoviesService {
         }
 
         return delta;
+    }
+
+    getAchievementsDefinition() {
+        return moviesAchievements();
     }
 }

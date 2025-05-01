@@ -1,11 +1,17 @@
 import pino from "pino";
-import pinoLogger from "@/lib/server/core/pino-logger";
+import path from "path";
+import {fileURLToPath} from "url";
+import fs from "node:fs/promises";
 import {MediaType} from "@/lib/server/utils/enums";
+import {taskDefinitions, TasksName} from "@/cli/commands";
+import {getDbClient, withTransaction} from "@/lib/server/database/asyncStorage";
+import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
+import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
+import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 type TaskHandler = () => Promise<void>;
-type TasksName = "bulkMediaRefresh" | "updateTokens" | "updateAchievements";
 
 
 export class TasksService {
@@ -13,13 +19,20 @@ export class TasksService {
     private taskHandlers: Map<TasksName, TaskHandler>;
 
     constructor(
+        logger: pino.Logger,
         private mediaServiceRegistry: typeof MediaServiceRegistry,
         private mediaProviderRegistry: typeof MediaProviderRegistry,
+        private achievementsService: AchievementsService,
+        private userUpdatesService: UserUpdatesService,
+        private notificationsService: NotificationsService,
     ) {
-        this.logger = pinoLogger.child({ service: "TasksService" });
-        this.taskHandlers = new Map<TasksName, TaskHandler>([
-            ["bulkMediaRefresh", this.runBulkMediaRefresh.bind(this)],
-        ]);
+        this.logger = logger.child({ service: "TasksService" });
+        this.taskHandlers = new Map<TasksName, TaskHandler>();
+
+        for (const taskDef of taskDefinitions) {
+            const handler = this[taskDef.handlerMethod as keyof this] as TaskHandler;
+            this.taskHandlers.set(taskDef.name, handler.bind(this));
+        }
     }
 
     async runTask(taskName: TasksName) {
@@ -30,17 +43,28 @@ export class TasksService {
 
         const taskHandler = this.taskHandlers.get(taskName);
         if (!taskHandler) {
+            taskLogger.error(`Unknown task name: ${taskName}`);
             throw new Error(`Unknown task name: ${taskName}`);
         }
 
-        await taskHandler();
+        try {
+            await taskHandler();
+            const duration = Date.now() - startTime;
+            taskLogger.info({ durationMs: duration }, "Task completed");
+        }
+        catch (error: any) {
+            taskLogger.error({ err: error }, "Task execution failed");
+            throw error;
+        }
+
         const duration = (Date.now() - startTime);
         taskLogger.info({ durationMs: duration }, "Task completed");
     }
 
-    private async runBulkMediaRefresh() {
-        const mediaTypes = [MediaType.MOVIES];
+    protected async runBulkMediaRefresh() {
+        this.logger.info("Starting: Bulk Media Refresh execution.");
 
+        const mediaTypes = [MediaType.MOVIES];
         for (const mediaType of mediaTypes) {
             this.logger.info({ mediaType }, `Refreshing media for ${mediaType}...`);
 
@@ -62,9 +86,145 @@ export class TasksService {
 
         this.logger.info("Completed: Bulk Media Refresh execution.");
     }
+
+    protected async runVacuumDB() {
+        this.logger.info("Starting: VacuumDB execution.");
+        getDbClient().run("VACUUM");
+        this.logger.info("Completed: VacuumDB execution.");
+    }
+
+    protected async runAnalyzeDB() {
+        this.logger.info("Starting: AnalyzeDB execution.");
+        getDbClient().run("ANALYZE");
+        this.logger.info("Completed: AnalyzeDB execution.");
+    }
+
+    protected async runRemoveUnusedMediaCovers() {
+        this.logger.info("Starting: RemoveUnusedMediaCovers execution.");
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            this.logger.info(`Starting cleanup for '${mediaType}' covers...`);
+
+            const projectRoot = await findProjectRoot();
+            const coversDirectoryPath = path.join(projectRoot, "public", "static", "covers", `${mediaType}-covers`);
+
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const dbCoverFilenames = await mediaService.getCoverFilenames();
+            const dbCoverSet = new Set(dbCoverFilenames);
+
+            const filesOnDisk = await fs.readdir(coversDirectoryPath);
+            this.logger.info(`Found ${filesOnDisk.length} files in directory:`);
+
+            const coversToDelete = filesOnDisk.filter((filename) => !dbCoverSet.has(filename));
+            if (coversToDelete.length === 0) {
+                this.logger.info(`No old '${mediaType}' covers to remove.`);
+                return;
+            }
+
+            let failedCount = 0;
+            let deletionCount = 0;
+            this.logger.info(`${coversToDelete.length} '${mediaType}' covers to remove...`);
+
+            for (const cover of coversToDelete) {
+                const filePath = path.join(coversDirectoryPath, cover);
+                try {
+                    await fs.unlink(filePath);
+                    this.logger.info(`Deleted: ${cover}`);
+                    deletionCount += 1;
+                }
+                catch (error) {
+                    console.warn(`Failed to delete ${cover}:`, error);
+                    failedCount += 1;
+                }
+            }
+
+            if (deletionCount > 0) {
+                this.logger.info(`Successfully deleted ${deletionCount} old '${mediaType}' covers.`);
+            }
+            if (failedCount > 0) {
+                this.logger.warn(`Failed to delete ${failedCount} '${mediaType}' covers.`);
+            }
+            this.logger.info(`Cleanup finished for '${mediaType}' covers.`);
+        }
+
+        this.logger.info("Completed: RemoveUnusedMediaCovers execution.");
+    }
+
+    protected async runLockOldMovies() {
+        this.logger.info(`Starting locking movies older than 6 months...`);
+
+        const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
+        const totalMoviesLocked = await moviesService.lockOldMovies();
+
+        this.logger.info({ totalMoviesLocked }, `Locked ${totalMoviesLocked} movies older than 6 months.`);
+        this.logger.info("Completed: LockOldMovies execution.");
+    }
+
+    protected async runSeedAchievements() {
+        this.logger.info("Starting seeding achievements...");
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            this.logger.info(`Seeding ${mediaType} achievements...`);
+
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const achievementsDefinition = mediaService.getAchievementsDefinition();
+            await this.achievementsService.seedAchievements(achievementsDefinition);
+
+            this.logger.info(`Seeding ${mediaType} achievements completed.`);
+        }
+
+        this.logger.info("Completed: SeedAchievements execution.");
+    }
+
+    protected async runRemoveNonListMedia() {
+        this.logger.info(`Removing non-list media...`);
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            this.logger.info(`Removing ${mediaType} non-list media...`);
+
+            await withTransaction(async (_tx) => {
+                const mediaService = this.mediaServiceRegistry.getService(mediaType);
+                const mediaIds = await mediaService.getNonListMediaIds();
+                this.logger.info(`Found ${mediaIds.length} non-list ${mediaType} to remove.`);
+
+                // Remove in other services
+                this.userUpdatesService.deleteMediaUpdates(mediaType, mediaIds);
+                this.notificationsService.deleteNotifications(mediaType, mediaIds);
+
+                // Remove main media and associated tables: actors, genres, companies, authors...
+                await mediaService.removeMediaByIds(mediaIds);
+            });
+
+            this.logger.info(`Removing non-list ${mediaType} completed.`);
+        }
+
+        this.logger.info("Completed: RemoveNonListMedia execution.");
+    }
 }
 
 
 function isRefreshable(service: any) {
     return service && typeof service.bulkProcessAndRefreshMedia === "function";
+}
+
+
+async function findProjectRoot(markerFilename: string = "package.json") {
+    let currentDir = path.dirname(fileURLToPath(import.meta.url));
+    while (true) {
+        const markerPath = path.join(currentDir, markerFilename);
+        try {
+            await fs.access(markerPath);
+            return currentDir;
+        }
+        catch {
+            const parentDir = path.dirname(currentDir);
+            if (parentDir === currentDir) {
+                throw new Error(`Could not find project root containing "${markerFilename}".`);
+            }
+            currentDir = parentDir;
+        }
+    }
 }
