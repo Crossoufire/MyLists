@@ -16,6 +16,7 @@ const shutdown = async () => {
 
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+process.on("SIGHUP", shutdown);
 
 process.on("unhandledRejection", (reason, promise) => {
     pinoLogger.fatal({ reason, promise }, "Unhandled Rejection at Worker");

@@ -4,10 +4,11 @@ import {Heart, Settings2} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
 import {MediaCard} from "@/lib/components/app/MediaCard";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
 import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
+import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
 import {CommentPopover} from "@/lib/components/media-list/CommentPopover";
+import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaGridProps {
@@ -62,14 +63,14 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                             <Settings2 className="w-4 h-4 opacity-70"/>
                         </div>
                     }
-                    {/*{!isCurrent && !userMedia.common && isConnected &&*/}
-                    {/*    <QuickAddMedia*/}
-                    {/*        queryKey={queryKey}*/}
-                    {/*        mediaType={mediaType}*/}
-                    {/*        allStatus={allStatus}*/}
-                    {/*        mediaId={userMedia.mediaId}*/}
-                    {/*    />*/}
-                    {/*}*/}
+                    {!isCurrent && !userMedia.common && isConnected &&
+                        <QuickAddMedia
+                            queryKey={queryKey}
+                            mediaType={mediaType}
+                            allStatuses={allStatuses}
+                            mediaId={userMedia.mediaId}
+                        />
+                    }
                 </div>
                 <div className="absolute top-1.5 left-1.5 z-10 bg-gray-950 px-2 rounded-md opacity-85">
                     {/*<SpecificUserMediaData*/}

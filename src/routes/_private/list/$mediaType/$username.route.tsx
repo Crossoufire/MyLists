@@ -15,14 +15,14 @@ import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
 
 
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({
-    validateSearch: (search: any) => search as MediaListArgs,
-    loaderDeps: ({ search }) => ({ search }),
     params: {
         parse: (params) => ({
             username: params.username,
             mediaType: params.mediaType as MediaType,
         })
     },
+    validateSearch: (search: any) => search as MediaListArgs,
+    loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
         return queryClient.ensureQueryData(mediaListOptions(mediaType, username, search));
     },
@@ -106,15 +106,15 @@ function MediaList() {
                 items={apiData.results.items}
                 queryKey={queryKeys.userListKey(mediaType, username, search)}
             />
-            {/*    :*/}
-            {/*    <MediaTable*/}
-            {/*        mediaType={mediaType}*/}
-            {/*        isCurrent={isCurrent}*/}
-            {/*        mediaList={apiData.media_data}*/}
-            {/*        pagination={apiData.pagination}*/}
-            {/*        queryKey={queryKeys.userListKey(mediaType, username, search)}*/}
-            {/*        onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}*/}
-            {/*    />*/}
+            {/*:*/}
+            {/*<MediaTable*/}
+            {/*         mediaType={mediaType}*/}
+            {/*         isCurrent={isCurrent}*/}
+            {/*         mediaList={apiData.media_data}*/}
+            {/*         pagination={apiData.pagination}*/}
+            {/*         queryKey={queryKeys.userListKey(mediaType, username, search)}*/}
+            {/*         onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}*/}
+            {/*     />*/}
             {/*}*/}
             {isGrid &&
                 <Pagination

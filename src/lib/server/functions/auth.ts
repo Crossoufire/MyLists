@@ -9,12 +9,12 @@ import {userMediaSettings} from "@/lib/server/database/schema";
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
     const { headers } = getWebRequest()!;
-    const session = await auth.api.getSession({ headers });
+    const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session?.user) return null;
 
     // @ts-expect-error
-    const settings = await db.query.userMediaSettings.findMany({ where: eq(userMediaSettings.userId, session.user.id) });
+    const settings = await db.select().from(userMediaSettings).where(eq(userMediaSettings.userId, session.user.id));
 
     return {
         ...session.user,

@@ -25,7 +25,11 @@ interface SaveImageFromUrlOptions {
 }
 
 
-const ALLOWED_IMAGE_TYPES = ["image/gif", "image/jpeg", "image/png", "image/webp", "image/tiff"];
+interface SaveUploadedImageOptions {
+    file: File;
+    saveLocation: string;
+    resize?: ResizeOptions;
+}
 
 
 export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, resize }: SaveImageFromUrlOptions) => {
@@ -46,7 +50,7 @@ export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, re
 };
 
 
-export const saveUploadedImage = async (file: File, saveLocation: string, resize: ResizeOptions) => {
+export const saveUploadedImage = async ({ file, saveLocation, resize }: SaveUploadedImageOptions) => {
     try {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);

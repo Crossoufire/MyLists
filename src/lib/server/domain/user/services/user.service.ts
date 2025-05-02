@@ -31,6 +31,10 @@ export class UserService {
         return this.userRepository.adminUpdateUser(userId!, payload);
     }
 
+    async updateUserSettings(userId: number, payload: Record<string, any>) {
+        await this.userRepository.updateUserSettings(userId, payload);
+    }
+
     async getAdminOverview() {
         const now = new Date();
         const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -79,6 +83,10 @@ export class UserService {
 
     async getUserById(userId: number) {
         return this.userRepository.findById(userId);
+    }
+
+    async getUserByName(name: string) {
+        return this.userRepository.findUserByName(name);
     }
 
     async updateFollowStatus(userId: number, followedId: number) {

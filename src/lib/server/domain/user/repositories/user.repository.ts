@@ -110,6 +110,14 @@ export class UserRepository {
         return results;
     }
 
+    static async findUserByName(name: string) {
+        return db.select().from(user).where(eq(user.name, name)).execute();
+    }
+
+    static async updateUserSettings(userId: number, payload: Record<string, any>) {
+        await db.update(user).set(payload).where(eq(user.id, userId)).execute();
+    }
+
     static async getAdminPaginatedUsers(data: Record<string, any>) {
         const page = data.pageIndex ?? 0;
         const search = data.search ?? "";

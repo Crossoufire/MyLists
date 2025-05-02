@@ -31,10 +31,11 @@
     - Update an achievement definition -> DONE
     - Check specific user when was last active -> DONE
     - Activate/Deactivate the `new feature` flag -> DONE
+    - Ability to change the active status of a user -> DONE
     - Check the cumulative number of users per month -> DONE
+    - Execute long running tasks using admin dashboard -> DONE
     - Check how many users have a specific privacy value -> DONE
     - Check how many users where active in the last N days -> DONE
-    - Ability to change the active status of a user (disable account) -> DONE
 - Create small CLI for scheduled tasks ->
     - Vacuum db -> DONE
     - Analyze db -> DONE
@@ -64,12 +65,11 @@
 ## Backend Logic to implement
 
 - Add `zod` validation on `createServerFn` functions
-- Add rate limiter in `nginx` (for spamming protection)
+- Add rate limiter in `nginx` for prod (for spamming protection)
 - Add `ON CASCADE` for many things to avoid `FK` errors and simplify code
 - Add global error handler (either monkey-patch or wait for TSS maintainers)
 - Create admin dashboard
     - Delete users
-    - Execute long running tasks from CLI using admin dashboard
 - Create small CLI for scheduled tasks
     - Update IGDB token
     - Update platform stats

@@ -1,3 +1,4 @@
+import {toast} from "sonner";
 import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/lib/hooks/use-auth";
@@ -5,57 +6,70 @@ import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {ImageCropper} from "@/lib/components/user-settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {useGeneralSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
 export const GeneralForm = () => {
-    const { currentUser } = useAuth();
-    // const generalSettings = useGeneralSettingsMutation();
+    const { currentUser, setCurrentUser } = useAuth();
+    const generalSettingsMutation = useGeneralSettingsMutation();
     const form = useForm({
         defaultValues: {
-            profileImage: undefined,
-            backgroundImage: undefined,
             username: currentUser?.name,
             privacy: currentUser?.privacy,
-        }
+            profileImage: undefined as File | undefined,
+            backgroundImage: undefined as File | undefined,
+        },
     });
 
     const onSubmit = async (submittedData: any) => {
-        if (submittedData.username.trim() === currentUser?.name.trim()) {
-            delete submittedData.username;
-        }
-
         const formData = new FormData();
-        Object.keys(submittedData).forEach(key => {
+
+        Object.keys(submittedData).forEach((key) => {
             if (submittedData[key] === undefined) return;
             formData.append(key, submittedData[key]);
         });
 
-        // generalSettings.mutate({ data: formData }, {
-        //     onError: (error) => {
-        //         if (error?.errors?.form?.username) {
-        //             return form.setError("username", { type: "manual", message: error.errors.form.username[0] });
-        //         }
-        //         toast.error(error.description);
-        //     },
-        //     onSuccess: (data) => {
-        //         setCurrentUser(data);
-        //         toast.success("Settings successfully updated");
-        //     },
-        // });
+        generalSettingsMutation.mutate({ data: formData }, {
+            onError: (error: any) => {
+                if (error?.name === "ZodError" && error?.issues && Array.isArray(error.issues)) {
+                    error.issues.forEach((issue: any) => {
+                        form.setError(issue.path[0], { type: "server", message: issue.message });
+                    });
+                }
+                else if (error?.message?.includes("Username invalid")) {
+                    form.setError("username", { type: "server", message: error.message });
+                }
+                else {
+                    const message = error?.message || "An unexpected error occurred.";
+                    form.setError("root", { type: "server", message: message });
+                }
+            },
+            onSuccess: async () => {
+                await setCurrentUser();
+                form.reset({
+                    profileImage: undefined,
+                    backgroundImage: undefined,
+                    username: currentUser?.name,
+                    privacy: currentUser?.privacy,
+                });
+                toast.success("Settings successfully updated");
+            },
+        });
     };
 
     return (
-        <Form {...form} key={JSON.stringify(currentUser)}>
+        <Form {...form} key={currentUser?.id}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full">
                 <div className="space-y-5">
                     <FormField
                         control={form.control}
                         name="username"
                         rules={{
-                            minLength: { value: 3, message: "The username is too short (3 min)." },
-                            maxLength: { value: 15, message: "The username is too long (15 max)." },
+                            required: { value: true, message: "Username is required." },
+                            minLength: { value: 3, message: "Username too short (3 min)." },
+                            maxLength: { value: 15, message: "Username too long (15 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>
@@ -80,7 +94,7 @@ export const GeneralForm = () => {
                                 </FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger className="border ">
+                                        <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select a privacy mode"/>
                                         </SelectTrigger>
                                     </FormControl>
@@ -133,7 +147,12 @@ export const GeneralForm = () => {
                         )}
                     />
                 </div>
-                <Button className="mt-5" disabled={!form.formState.isDirty}>
+                {form.formState.errors.root && (
+                    <p className="mt-2 text-sm font-medium text-destructive">
+                        {form.formState.errors.root.message}
+                    </p>
+                )}
+                <Button type="submit" className="mt-5" disabled={!form.formState.isDirty || generalSettingsMutation.isPending}>
                     Update
                 </Button>
             </form>

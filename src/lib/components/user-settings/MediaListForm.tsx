@@ -1,23 +1,59 @@
+import {toast} from "sonner";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {useAuth} from "@/lib/hooks/use-auth";
-import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
 import {Switch} from "@/lib/components/ui/switch";
 import {CircleHelp, Download} from "lucide-react";
 import {Separator} from "@/lib/components/ui/separator";
-import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
+import {capitalize, downloadFile, jsonToCsv} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
+import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
+
+
+interface MediaTypeToggleConfig {
+    label: string;
+    mediaType: MediaType;
+    searchSelector?: ApiProviderType;
+    name: "addAnime" | "addGames" | "addBooks" | "addManga";
+}
+
+
+const mediaTypeToggles: MediaTypeToggleConfig[] = [
+    {
+        label: "Anime",
+        name: "addAnime",
+        mediaType: MediaType.ANIME,
+    },
+    {
+        label: "Games",
+        name: "addGames",
+        mediaType: MediaType.GAMES,
+        searchSelector: ApiProviderType.IGDB,
+    },
+    {
+        label: "Books",
+        name: "addBooks",
+        mediaType: MediaType.BOOKS,
+        searchSelector: ApiProviderType.BOOKS,
+    },
+    {
+        label: "Manga",
+        name: "addManga",
+        mediaType: MediaType.MANGA,
+        searchSelector: ApiProviderType.MANGA,
+    },
+];
 
 
 export const MediaListForm = () => {
-    const { currentUser } = useAuth();
-    // const listSettings = useListSettingsMutation();
-    const [selectedListForExport, setSelectedListForExport] = useState("");
-    // const downloadListAsCSV = useDownloadListAsCSVMutation();
-
+    const { currentUser, setCurrentUser } = useAuth();
+    const listSettingsMutation = useListSettingsMutation();
+    const downloadListAsCSVMutation = useDownloadListAsCSVMutation();
+    const [selectedListForExport, setSelectedListForExport] = useState<MediaType | "">("");
     const form = useForm({
         defaultValues: {
             ratingSystem: currentUser?.ratingSystem,
@@ -30,195 +66,136 @@ export const MediaListForm = () => {
         }
     });
 
-    const watchAddBooks = form.watch("addBooks");
-    const watchAddGames = form.watch("addGames");
-    const watchAddManga = form.watch("addManga");
-
-    const mediaTypesList = Object.values(MediaType).map(
-        (mediaType) => ({ label: `${capitalize(mediaType)}List`, value: mediaType })
-    );
-
     const onSubmit = (submittedData: any) => {
-        const newData = { ...submittedData };
-        newData.gridListView = (newData.gridListView === "grid");
+        const mutationPayload = {
+            ...submittedData,
+            gridListView: (submittedData.gridListView === "grid"),
+        };
 
-        // listSettings.mutate({ ...newData }, {
-        //     onError: () => toast.error("An error occurred while updating the data"),
-        //     onSuccess: (data) => {
-        //         setCurrentUser(data);
-        //         toast.success("Settings successfully updated");
-        //     }
-        // });
+        listSettingsMutation.mutate({ data: mutationPayload }, {
+            onError: () => toast.error("An error occurred while updating the data"),
+            onSuccess: async () => {
+                await setCurrentUser();
+                toast.success("Settings successfully updated");
+            }
+        });
     };
 
-    const onListChanged = (field: any, check: boolean) => {
-        field.onChange(check);
-        const currentSearchSelector = form.getValues("searchSelector");
+    const isListActive = (fieldName: keyof typeof form.control._defaultValues) => {
+        return form.watch(fieldName) === true;
+    };
 
-        if (!check) {
-            if (field.name === "addGames" && currentSearchSelector === "igdb") {
-                form.setValue("searchSelector", "tmdb", { shouldValidate: true });
-            }
-            else if (field.name === "addBooks" && currentSearchSelector === "books") {
-                form.setValue("searchSelector", "tmdb", { shouldValidate: true });
-            }
-            else if (field.name === "addManga" && currentSearchSelector === "manga") {
-                form.setValue("searchSelector", "tmdb", { shouldValidate: true });
-            }
+    const onListActivationChanged = (field: any, value: boolean, config: MediaTypeToggleConfig) => {
+        field.onChange(value);
+        const currentSearchSelector = form.watch("searchSelector");
+        if (!value && config.searchSelector && currentSearchSelector === config.searchSelector) {
+            form.setValue("searchSelector", ApiProviderType.TMDB, { shouldDirty: true });
         }
     };
 
     const handleDownloadCSV = async (ev: React.MouseEvent<HTMLButtonElement>) => {
         ev.preventDefault();
 
-        // downloadListAsCSV.mutate({ selectedList }, {
-        //     onError: () => toast.error("An error occurred querying the CSV data"),
-        //     onSuccess: (data) => {
-        //         try {
-        //             const formattedData = jsonToCsv(data);
-        //             downloadFile(formattedData, selectedList, "text/csv");
-        //         }
-        //         catch {
-        //             toast.error("An error occurred while formatting the CSV");
-        //         }
-        //     }
-        // });
+        downloadListAsCSVMutation.mutate({ selectedList: selectedListForExport }, {
+            onError: () => toast.error("An error occurred querying the CSV data"),
+            onSuccess: (data) => {
+                try {
+                    const formattedData = jsonToCsv(data);
+                    downloadFile(formattedData, selectedListForExport, "text/csv");
+                }
+                catch {
+                    toast.error("An error occurred while formatting the CSV");
+                }
+            }
+        });
     };
 
+    const mediaTypesForExport = Object.values(MediaType).map((mediaType) => ({
+        label: `${capitalize(mediaType)} List`,
+        value: mediaType,
+    }));
+
     return (
-        <div>
+        <div className="space-y-6">
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full space-y-8">
                     <div className="space-y-4">
-                        <h3 className="text-base font-medium">
-                            Activate Lists Type
-                            <Separator/>
-                        </h3>
-                        <FormField
-                            control={form.control}
-                            name="addAnime"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={(checked) => onListChanged(field, checked)}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>&nbsp; Activate anime list</FormLabel>
-                                    </div>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="addGames"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={(checked) => onListChanged(field, checked)}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>&nbsp; Activate games list</FormLabel>
-                                    </div>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="addBooks"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={(checked) => onListChanged(field, checked)}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>&nbsp; Activate books list</FormLabel>
-                                    </div>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="addManga"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={(checked) => onListChanged(field, checked)}
-                                        />
-                                    </FormControl>
-                                    <div className="leading-none">
-                                        <FormLabel>&nbsp; Activate manga list</FormLabel>
-                                    </div>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
+                        <h3 className="text-base font-medium">Activate List Types</h3>
+                        <Separator/>
+                        {mediaTypeToggles.map((config) => (
+                            <FormField
+                                key={config.name}
+                                name={config.name}
+                                control={form.control}
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between space-x-3 rounded-md border p-3">
+                                        <FormLabel className="font-normal">
+                                            {config.label} List
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={(checked) => onListActivationChanged(field, checked, config)}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        ))}
                     </div>
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">
                             <div className="flex items-center gap-2">
                                 Navbar Search Selector
                                 <TextPopover>
-                                    Select your preferred navbar search selector.
-                                    'Media' correspond to Series/Anime and Movies.
-                                    Selecting Games/Books as default impose that your Games/Books list must be activated.
+                                    Select your preferred navbar search selector. 'Media'
+                                    corresponds to Series/Anime and Movies. Selecting
+                                    Games/Books/Manga as default requires the corresponding list
+                                    to be activated.
                                 </TextPopover>
                             </div>
-                            <Separator/>
                         </h3>
+                        <Separator/>
                         <FormField
-                            control={form.control}
                             name="searchSelector"
-                            render={({ field }) =>
+                            control={form.control}
+                            render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="border">
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Select a search selector"/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="tmdb">Media</SelectItem>
-                                            <SelectItem value="books" disabled={!watchAddBooks}>Books</SelectItem>
-                                            <SelectItem value="igdb" disabled={!watchAddGames}>Games</SelectItem>
-                                            <SelectItem value="manga" disabled={!watchAddManga}>Manga</SelectItem>
-                                            <SelectItem value="users">Users</SelectItem>
+                                            <SelectItem value={ApiProviderType.TMDB}>Media</SelectItem>
+                                            <SelectItem value={ApiProviderType.BOOKS} disabled={!isListActive("addBooks")}>Books</SelectItem>
+                                            <SelectItem value={ApiProviderType.IGDB} disabled={!isListActive("addGames")}>Games</SelectItem>
+                                            <SelectItem value={ApiProviderType.MANGA} disabled={!isListActive("addManga")}>Manga</SelectItem>
+                                            <SelectItem value={ApiProviderType.USERS}>Users</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>
                                 </FormItem>
-                            }
+                            )}
                         />
                     </div>
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">
                             <div className="flex items-center gap-2">
-                                <div>Rating System</div>
+                                Rating System
                                 <RatingSystemPopover/>
                             </div>
-                            <Separator/>
                         </h3>
+                        <Separator/>
                         <FormField
-                            control={form.control}
                             name="ratingSystem"
+                            control={form.control}
                             render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="border">
+                                            <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Select a rating system"/>
                                             </SelectTrigger>
                                         </FormControl>
@@ -233,61 +210,65 @@ export const MediaListForm = () => {
                         />
                     </div>
                     <div className="space-y-4">
-                        <h3 className="text-base font-medium">
-                            <div className="flex items-center gap-3">
-                                <div>Lists View Mode</div>
-                            </div>
-                            <Separator/>
-                        </h3>
+                        <h3 className="text-base font-medium">List View Mode</h3>
+                        <Separator/>
                         <FormField
-                            control={form.control}
                             name="gridListView"
-                            render={({ field }) =>
+                            control={form.control}
+                            render={({ field }) => (
                                 <FormItem>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="border">
-                                                <SelectValue placeholder="Select a search selector"/>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select a view mode"/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="grid">Grid</SelectItem>
-                                            <SelectItem value="table">Table</SelectItem>
+                                            <SelectItem value={"grid"}>Grid</SelectItem>
+                                            <SelectItem value={"table"}>Table</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>
                                 </FormItem>
-                            }
+                            )}
                         />
                     </div>
-                    <Button className="mt-3">
-                        Update
+                    <Button type="submit" disabled={listSettingsMutation.isPending}>
+                        {listSettingsMutation.isPending ? "Updating..." : "Update Settings"}
                     </Button>
                 </form>
             </Form>
-            <Separator className="mt-4 w-[400px] max-sm:w-full"/>
-            <div className="mt-4 space-y-4 w-[400px] max-sm:w-full bg-neutral-900 p-3 rounded-lg">
-                <h3 className="text-base font-medium">
-                    Export Your Lists As CSV
-                    <Separator/>
-                </h3>
-                <div className="flex gap-4">
-                    <Select onValueChange={setSelectedListForExport} value={selectedListForExport}>
-                        <SelectTrigger className="w-[140px] border">
-                            <SelectValue placeholder="Select a list"/>
-                        </SelectTrigger>
-                        <SelectContent className="w-[140px]">
-                            {mediaTypesList.map(({ label, value }) =>
-                                <SelectItem key={value} value={value}>
-                                    {label}
-                                </SelectItem>
-                            )}
-                        </SelectContent>
-                    </Select>
-                    <Button onClick={handleDownloadCSV} disabled={!selectedListForExport}>
-                        <Download className="mr-2 h-4 w-4"/> Download CSV
+            <Separator className="w-[400px] max-sm:w-full"/>
+            <div className="w-[400px] max-sm:w-full space-y-4 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+                <h3 className="text-base font-medium">Export List as CSV</h3>
+                <Separator/>
+                <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-grow">
+                        <Select onValueChange={(value) => setSelectedListForExport(value as MediaType)} value={selectedListForExport}>
+                            <SelectTrigger id="list-export-select">
+                                <SelectValue placeholder="Select a list..."/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {mediaTypesForExport.map(({ label, value }) => (
+                                    <SelectItem key={value} value={value}>
+                                        {label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Button
+                        variant="outline"
+                        onClick={handleDownloadCSV}
+                        disabled={!selectedListForExport || downloadListAsCSVMutation.isPending}
+                    >
+                        <Download className="mr-2 h-4 w-4"/>
+                        {downloadListAsCSVMutation.isPending ? "Exporting..." : "Download CSV"}
                     </Button>
                 </div>
+                {downloadListAsCSVMutation.isError && (
+                    <p className="text-sm text-destructive">Failed to export list. Please try again.</p>
+                )}
             </div>
         </div>
     );
