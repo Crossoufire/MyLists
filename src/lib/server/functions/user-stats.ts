@@ -9,13 +9,15 @@ export const getUserStats = createServerFn({ method: "GET" })
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = getContainer().services.userStats;
 
-        if (!mediaType) {
-            return userStatsService.getUserMediaStats(user.id);
-        }
+        // if (!mediaType) {
+        const userStats = await userStatsService.getUserMediaStats(user.id);
+        console.log({ userStats });
+        return { ...userStats, ratingSystem: user.ratingSystem };
+        // }
 
-        if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
-            throw new Error("MediaType not activated");
-        }
-
-        return userStatsService.getSpecificMediaTypeStats(user.id, mediaType);
+        // if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
+        //     throw new Error("MediaType not activated");
+        // }
+        //
+        // return userStatsService.getSpecificMediaTypeStats(user.id, mediaType);
     });

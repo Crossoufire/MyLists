@@ -108,6 +108,7 @@ export async function initializeContainer(options: ContainerOptions = {}) {
         achievementsService,
         userUpdatesService,
         notificationsService,
+        userStatsService,
     )
 
     // API Transformers

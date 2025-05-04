@@ -1,6 +1,6 @@
-import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
+import {getFeelingIcon} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
-import {formatNumberWithKM, formatNumberWithSpaces, getFeelingIcon} from "@/lib/utils/functions";
+import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
 // Constants for common configurations
@@ -41,8 +41,8 @@ interface DataToLoadProps {
 
 
 interface GlobalDataProps {
+    apiData: ApiData;
     forUser?: boolean;
-    apiData: Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
 }
 
 
@@ -70,6 +70,7 @@ const globalData = ({ apiData, forUser = false }: GlobalDataProps) => {
             cards: {
                 ...MAIN_CARDS_CONFIG,
                 dataList: [
+                    //@ts-expect-error
                     ...(forUser ? [] : [createStatCard("Total Active Users", apiData.totalUsers, "At least one media list")]),
                     createStatCard("Total Entries", apiData.totalEntries, "Cumulated media entries"),
                     createStatCard("Total Time Spent", `${(apiData.totalDays / 365).toFixed(1)}`, "Cumulated time in years!"),
@@ -77,7 +78,7 @@ const globalData = ({ apiData, forUser = false }: GlobalDataProps) => {
                     createRatingStatCard(RatingSystemType.SCORE, apiData.avgRated, apiData.totalRated),
                     createStatCard(`Avg. Favorites / ${forUser ? "Type" : "User"}`, apiData.avgFavorites, `With ${apiData.totalFavorites} favorites`),
                     createStatCard(`Avg. Comments / ${forUser ? "Type" : "User"}`, apiData.avgComments, `With ${apiData.totalComments} comments`),
-                    createStatCard("Avg. Updates / Month", apiData.updatesPerMonth.avgUpdates, `With ${apiData?.totalUpdates} updates`),
+                    createStatCard("Avg. Updates / Month", apiData.updatesPerMonth.avgUpdates, `With ${apiData.updatesPerMonth.totalUpdates} updates`),
                     createStatCard("Total Labels Created", apiData.totalLabels, "With at least one media"),
                     createStatCard("Total Redo", apiData.totalRedo, "Re-watched and re-read"),
                 ],

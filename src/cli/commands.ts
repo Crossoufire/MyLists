@@ -42,6 +42,16 @@ export const taskDefinitions = [
         description: "Remove unused media covers from the database",
         handlerMethod: "runRemoveUnusedMediaCovers",
     },
+    {
+        name: "addMediaNotifications",
+        description: "Add media notifications to users",
+        handlerMethod: "runAddMediaNotifications",
+    },
+    {
+        name: "computeAllUsersStats",
+        description: "Compute all users stats",
+        handlerMethod: "runComputeAllUsersStats",
+    },
 ] as const;
 
 

@@ -103,6 +103,8 @@ export const getMediaIcon = (mediaType: MediaType | "user") => {
 
 
 export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
+    if (!mediaType) return "#868686";
+
     const colors = {
         user: "#6e6e6e",
         series: "#267f90",
@@ -112,8 +114,8 @@ export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
         games: "#217f21",
         manga: "#a04646",
     };
-    // @ts-ignore
-    return colors[mediaType.toLowerCase()] ?? "#868686";
+    
+    return colors[mediaType];
 };
 
 

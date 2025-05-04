@@ -6,6 +6,23 @@ export class NotificationsService {
     constructor(private repository: typeof NotificationsRepository) {
     }
 
+    async sendMediaNotifications(mediaType: MediaType, mediaArray: any[]) {
+        for (const userMedia of mediaArray) {
+            const notification = await this.repository.searchNotification(userMedia.userId, mediaType, userMedia.id);
+            if (notification) {
+                continue;
+            }
+            
+            await this.repository.addNotification({
+                mediaType: mediaType,
+                mediaId: userMedia.id,
+                userId: userMedia.userId,
+                notificationType: NotificationType.MEDIA,
+                payload: { name: userMedia.name, releaseDate: userMedia.releaseDate },
+            });
+        }
+    }
+
     async sendNotification(userId: number, notificationType: NotificationType, payload: Record<string, any>) {
         return this.repository.sendNotification(userId, notificationType, payload);
     }

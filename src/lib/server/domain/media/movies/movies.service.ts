@@ -47,6 +47,14 @@ export class MoviesService {
         return this.repository.searchByName(query);
     }
 
+    async getMediaToNotify() {
+        return this.repository.getMediaToNotify();
+    }
+
+    async computeAllUsersStats() {
+        return this.repository.computeAllUsersStats();
+    }
+
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 

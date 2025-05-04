@@ -7,11 +7,12 @@ import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Header} from "@/lib/components/media-list/Header";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {MediaGrid} from "@/lib/components/media-list/MediaGrid";
+import {MediaTable} from "@/lib/components/media-list/MediaTable";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
-import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
+import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({
@@ -40,11 +41,9 @@ function MediaList() {
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
 
     // @ts-expect-error
-    const isCurrent = (currentUser?.id === apiData.userData.id);
+    const isCurrent = (parseInt(currentUser?.id) === apiData.userData.id);
 
     const handleFilterChange = async (newFilters: Partial<typeof search>) => {
-        console.log({ newFilters });
-
         const page = newFilters.page || 1;
         await navigate({
             // @ts-expect-error
@@ -99,23 +98,22 @@ function MediaList() {
                 totalItems={apiData.results.pagination.totalItems}
                 onFilterRemove={(filters: any) => handleFilterChange(filters)}
             />
-            {/*{isGrid ?*/}
-            <MediaGrid
-                isCurrent={isCurrent}
-                mediaType={mediaType}
-                items={apiData.results.items}
-                queryKey={queryKeys.userListKey(mediaType, username, search)}
-            />
-            {/*:*/}
-            {/*<MediaTable*/}
-            {/*         mediaType={mediaType}*/}
-            {/*         isCurrent={isCurrent}*/}
-            {/*         mediaList={apiData.media_data}*/}
-            {/*         pagination={apiData.pagination}*/}
-            {/*         queryKey={queryKeys.userListKey(mediaType, username, search)}*/}
-            {/*         onChangePage={(data) => handleFilterChange({ page: data.pageIndex + 1 })}*/}
-            {/*     />*/}
-            {/*}*/}
+            {isGrid ?
+                <MediaGrid
+                    isCurrent={isCurrent}
+                    mediaType={mediaType}
+                    items={apiData.results.items}
+                    queryKey={queryKeys.userListKey(mediaType, username, search)}
+                />
+                :
+                <MediaTable
+                    mediaType={mediaType}
+                    isCurrent={isCurrent}
+                    results={apiData.results}
+                    queryKey={queryKeys.userListKey(mediaType, username, search)}
+                    onChangePage={(data: any) => handleFilterChange({ page: data.pageIndex + 1 })}
+                />
+            }
             {isGrid &&
                 <Pagination
                     currentPage={apiData.results.pagination.page}

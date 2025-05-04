@@ -2,6 +2,7 @@ import {CirclePlus} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface QuickAddMediaProps {
@@ -13,10 +14,10 @@ interface QuickAddMediaProps {
 
 
 export const QuickAddMedia = ({ mediaType, mediaId, allStatuses, queryKey }: QuickAddMediaProps) => {
-    // const addToListMutation = useAddMediaToListMutation(mediaType, mediaId, queryKey);
+    const addToListMutation = useAddMediaToListMutation(mediaType, mediaId, queryKey);
 
     const addMediaToUser = (status: Status) => {
-        // addToListMutation.mutate({ payload: status });
+        addToListMutation.mutate({ status });
     };
 
     return (

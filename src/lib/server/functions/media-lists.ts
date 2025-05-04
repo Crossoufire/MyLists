@@ -9,6 +9,7 @@ export const serverGetMediaList = createServerFn({ method: "GET" })
         const { mediaType, args } = data;
 
         const targetUserId = user.id;
+        const currentUserId = currentUser?.id ? parseInt(currentUser.id) : undefined;
         const userService = getContainer().services.user;
         const mediaServiceRegistry = getContainer().registries.mediaService;
 
@@ -24,7 +25,7 @@ export const serverGetMediaList = createServerFn({ method: "GET" })
         }
 
         const mediaService = mediaServiceRegistry.getService(mediaType);
-        const results = await mediaService.getMediaList(currentUser?.id, targetUserId, args);
+        const results = await mediaService.getMediaList(currentUserId, targetUserId, args);
 
         return { userData: user, mediaType, results };
     });

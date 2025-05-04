@@ -7,7 +7,7 @@ import {BlockLink} from "@/lib/components/app/BlockLink";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
-import {StatusBullet} from "@/lib/components/user-profile/StatusBullet";
+import {StatusBullet} from "@/lib/components/app/StatusBullet";
 
 
 interface MediaStatsProps {

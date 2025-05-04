@@ -1,20 +1,29 @@
 import {useSearch} from "@tanstack/react-router";
-import {Separator} from "@/components/ui/separator";
-import {useRatingSystem} from "@/providers/RatingProvider";
-import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/utils/functions";
+import {Separator} from "@/lib/components/ui/separator";
+import {RatingSystemType} from "@/lib/server/utils/enums";
+import {useRatingSystem} from "@/lib/contexts/rating-context";
+import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/lib/utils/functions";
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis} from "recharts";
 
 
-export const StatsGraph = ({ title, dataList }) => {
-    const ratingSystem = useRatingSystem().ratingSystem;
-    const filters = useSearch({ strict: false });
-    let newDataList = (title === "Rating" && ratingSystem === "feeling") ? transformDataList(dataList) : dataList;
+interface StatsGraphProps {
+    title: string;
+    dataList: any[];
+}
 
-    function transformDataList(dataList) {
+
+export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
+    return null;
+
+    const ratingSystem = useRatingSystem();
+    const filters = useSearch({ strict: false });
+    let newDataList = (title === "Rating" && ratingSystem === RatingSystemType.FEELING) ? transformDataList(dataList) : dataList;
+
+    function transformDataList(dataList: any[]) {
         const validValues = [0, 2, 4, 6, 8, 10];
         const validIndices = validValues.map(value => value * 2);
         const transformedList = validValues.map((value, index) => ({ name: index * 2, value: 0 }));
-        dataList.forEach((item, idx) => {
+        dataList.forEach((item: any, idx: number) => {
             if (item.value !== 0) {
                 const closestValidIndex = validIndices.reduce((prev, curr) => {
                     const prevDiff = Math.abs(idx - prev);
@@ -33,7 +42,7 @@ export const StatsGraph = ({ title, dataList }) => {
         return transformedList;
     }
 
-    const renderCustomLabel = ({ x, y, width, height, value }) => {
+    const renderCustomLabel = ({ x, y, width, height, value }: any) => {
         if (height < 17 || width < 28) return null;
 
         const X = x + width / 2;
@@ -52,12 +61,14 @@ export const StatsGraph = ({ title, dataList }) => {
             <div className="flex items-center justify-center h-[300px] max-sm:h-[200px]">
                 <ResponsiveContainer>
                     <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
-                        {title === "Rating" && ratingSystem === "feeling" ?
+                        {title === "Rating" && ratingSystem === RatingSystemType.FEELING ?
+                            //@ts-expect-error
                             <XAxis dataKey="name" stroke="#e2e2e2" tick={<CustomXAxisTick/>}/>
                             :
                             <XAxis dataKey="name" stroke="#e2e2e2"/>
                         }
                         <YAxis dataKey="value" stroke="#e2e2e2"/>
+                        {/*//@ts-expect-error*/}
                         <RechartsTooltip cursor={{ fill: "#373535" }} content={<CustomTooltip/>}/>
                         <Bar dataKey="value" fill={getMediaColor(filters.mt)}>
                             {newDataList.map((entry, idx) =>
@@ -73,7 +84,14 @@ export const StatsGraph = ({ title, dataList }) => {
 };
 
 
-export const CustomTooltip = ({ active, payload, label }) => {
+interface CustomTooltipProps {
+    label: string;
+    payload: any[];
+    active: boolean;
+}
+
+
+export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-gray-800 p-2 rounded-md">
@@ -86,8 +104,15 @@ export const CustomTooltip = ({ active, payload, label }) => {
 };
 
 
-const CustomXAxisTick = ({ x, y, payload }) => {
-    const getFeelingComponent = (value) => {
+interface CustomXAxisTick {
+    x: number;
+    y: number;
+    payload: any;
+}
+
+
+const CustomXAxisTick = ({ x, y, payload }: CustomXAxisTick) => {
+    const getFeelingComponent = (value: any) => {
         const feelings = getFeelingList({ size: 18 });
         const feeling = feelings.find((item) => item.value === value);
         return feeling ? feeling.component : "--";

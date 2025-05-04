@@ -43,8 +43,8 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
             mediaType,
             media,
             updateType: UpdateType.STATUS,
-            oldState: null,
-            newState,
+            os: null,
+            ns: newState,
         });
 
         return newState;

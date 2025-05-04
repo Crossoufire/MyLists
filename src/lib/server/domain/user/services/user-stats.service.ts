@@ -109,17 +109,22 @@ export class UserStatsService {
         await this.repository.updateDeltaUserStats(userId, mediaType, delta);
     }
 
+    async updateAllUserStats(mediaType: MediaType, userStats: any[]) {
+        await this.repository.updateUserStats(mediaType, userStats);
+    }
+
     async getUserMediaStats(userId: number) {
         const statsFromSettings = await this.getGlobalStats(userId);
-
         const updatesPerMonth = await this.userUpdatesRepository.getUpdatesCountPerMonth(userId);
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
-        const labelCountPromises = statsFromSettings.mediaTypes.map((mediaType) => {
-            const mediaRepository = this.mediaRepoRegistry.getRepository(mediaType);
-            return mediaRepository.getTotalMediaLabel(userId);
-        });
-        const labelCounts = await Promise.all(labelCountPromises);
-        const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
+        // const labelCountPromises = statsFromSettings.mediaTypes.map((mediaType) => {
+        //     const mediaRepository = this.mediaRepoRegistry.getRepository(mediaType);
+        //     return mediaRepository.getTotalMediaLabel(userId);
+        // });
+        // const labelCounts = await Promise.all(labelCountPromises);
+        // const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
+
+        const totalLabels = 4;
 
         return { ...statsFromSettings, totalLabels, platinumAchievements, updatesPerMonth };
     }

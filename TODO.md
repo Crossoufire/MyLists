@@ -14,8 +14,10 @@
 - Media Details -> DONE
 - Edit Media Details -> DONE
 - Trending Page -> DONE
+- MediaList Page -> DONE
 - Settings Page ->
     - Add GET page -> DONE
+    - Add General Settings -> DONE
 
 ## Backend Logic implemented
 
@@ -43,24 +45,23 @@
     - Add bulk media refresh -> DONE
     - Seed database with achievements -> DONE
     - Remove non-list media from database -> DONE
+    - Add new media notifications to users -> DONE
     - Remove unused media covers from disk -> DONE
+    - Compute user's stats (and time spent) per media type -> DONE
 
 ---
 
 ## Logic (GET and mutations) to implement
 
 - Settings Page ->
-    - Add all settings mutation
-- MediaList Page ->
-    - Fix filters
-    - Add table view
-    - Add update media system
-    - Fix currentUser checking
+    - Add List Settings ->
+    - Add Password Settings ->
+    - Add delete User Settings ->
 - Platform Stats ->
-    - Add GET page
-    - Add cache system
+    - Add GET page ->
+    - Add cache system ->
 - User stats page ->
-    - Make it work (needs other mediaTypes, annoying)
+    - Make it work (needs other mediaTypes, annoying) ->
 
 ## Backend Logic to implement
 
@@ -75,6 +76,3 @@
     - Update platform stats
     - Run all scheduled tasks
     - Update all the user's achievements
-    - Compute user's stats per media type
-    - Add new media notifications to users
-    - Compute media time spent per user and per media type

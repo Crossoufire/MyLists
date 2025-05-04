@@ -1,7 +1,7 @@
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 
@@ -33,6 +33,7 @@ export const useDeleteUpdatesMutation = (queryKey: string[]) => {
     });
 };
 
+
 export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: string[]) => {
     const queryClient = useQueryClient();
 
@@ -52,14 +53,18 @@ export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number 
                 }
                 return {
                     ...oldData,
-                    mediaData: oldData.mediaData.map((media: any) => (
-                        media.mediaId === mediaId ? { ...media, common: true } : media),
-                    )
+                    results: {
+                        ...oldData.results,
+                        items: oldData.results.items.map((media: any) => (
+                            media.mediaId === mediaId ? { ...media, common: true } : media),
+                        )
+                    },
                 };
             });
         }
     });
 };
+
 
 export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: string[]) => {
     const queryClient = useQueryClient();
@@ -76,12 +81,16 @@ export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: nu
                 }
                 return {
                     ...oldData,
-                    mediaData: [...oldData.mediaData.filter((media: any) => media.mediaId !== mediaId)],
+                    results: {
+                        ...oldData.results,
+                        items: [...oldData.results.items.filter((media: any) => media.mediaId !== mediaId)],
+                    },
                 };
             });
         }
     });
 };
+
 
 export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
     const queryClient = useQueryClient();
@@ -92,9 +101,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
         },
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
-            // <data> contains all modifications necessary to update <userMedia>
-            // Example: if `status` was updated for Movies it returns { status: the-new-status, redo: 0 }
-
+            console.log(data);
             queryClient.setQueryData(queryKey, (oldData: Record<string, any>) => {
                 // @ts-expect-error
                 if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {
@@ -105,9 +112,12 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
                 if (queryKey[0] === queryKeys.userListKey(undefined, undefined, undefined)[0]) {
                     return {
                         ...oldData,
-                        items: oldData.items.map((userMedia: any) =>
-                            userMedia.mediaId === mediaId ? { ...userMedia, ...data } : userMedia
-                        ),
+                        results: {
+                            ...oldData.results,
+                            items: oldData.results.items.map((userMedia: any) => {
+                                return userMedia.mediaId === mediaId ? { ...userMedia, ...data } : userMedia
+                            }),
+                        }
                     };
                 }
 
@@ -116,6 +126,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
         },
     });
 };
+
 
 export const useEditUserLabelMutation = (mediaType: MediaType, mediaId: number) => {
     const queryClient = useQueryClient();

@@ -1,16 +1,11 @@
 import React, {createContext, use} from "react";
+import {RatingSystemType} from "@/lib/server/utils/enums";
 
 
-interface RatingContextType {
-    rating: number;
-    setRating: (rating: number) => void;
-}
+const RatingContext = createContext<RatingSystemType | null>(null);
 
 
-const RatingContext = createContext<RatingContextType | null>(null);
-
-
-export const RatingProvider = ({ value, children }: { value: RatingContextType; children: React.ReactNode }) => (
+export const RatingProvider = ({ value, children }: { value: RatingSystemType; children: React.ReactNode }) => (
     <RatingContext value={value}>
         {children}
     </RatingContext>

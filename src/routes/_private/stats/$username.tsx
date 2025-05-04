@@ -1,3 +1,4 @@
+import {dataToLoad} from "@/lib/stats";
 import {useEffect, useState} from "react";
 import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
@@ -6,9 +7,8 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {RatingProvider} from "@/lib/contexts/rating-context";
-import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
-import {dataToLoad} from "@/lib/components/media-stats/statsFormatter";
 import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
+import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_private/stats/$username")({
@@ -36,12 +36,12 @@ function StatsPage() {
         return null;
     }
 
-    const otherStats = apiData.settings.map(s => ({
-        mediaType: s.mediaType,
-        isSelected: s.mediaType === filters.mediaType,
-        sidebarTitle: `${capitalize(s.mediaType)} stats`,
-        to: `/stats/${username}?mediaType=${s.mediaType}`,
-    }));
+    // const otherStats = apiData.settings.map(s => ({
+    //     mediaType: s.mediaType,
+    //     isSelected: s.mediaType === filters.mediaType,
+    //     sidebarTitle: `${capitalize(s.mediaType)} stats`,
+    //     to: `/stats/${username}?mediaType=${s.mediaType}`,
+    // }));
 
     const linkItemsSidebar = [
         {
@@ -50,7 +50,7 @@ function StatsPage() {
             sidebarTitle: "Overall stats",
             isSelected: filters.mediaType === undefined,
         },
-        ...otherStats,
+        // ...otherStats,
         { sidebarTitle: "User's profile", to: `/profile/${username}`, external: true },
         { sidebarTitle: "User's achievements", to: `/achievements/${username}`, external: true },
     ];
@@ -66,7 +66,9 @@ function StatsPage() {
                 />
                 <div>
                     <RatingProvider value={apiData.ratingSystem}>
-                        <StatsDisplay statsData={statsData.find((data) => data.sidebarTitle === selectedTab)}/>
+                        <StatsDisplay
+                            statsData={statsData.find((data) => data.sidebarTitle === selectedTab)}
+                        />
                     </RatingProvider>
                 </div>
             </div>

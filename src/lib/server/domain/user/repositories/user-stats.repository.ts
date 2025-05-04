@@ -9,10 +9,11 @@ import {user, userMediaSettings} from "@/lib/server/database/schema";
 
 export class UserStatsRepository {
     static async getActiveSettings(userId: number) {
-        const settings = await db.query.userMediaSettings.findMany({
-            where: and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)),
-        });
-        return settings;
+        return getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)))
+            .execute();
     }
 
     static async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
@@ -61,6 +62,29 @@ export class UserStatsRepository {
             .update(userMediaSettings)
             .set(setUpdates)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+    }
+
+    static async updateUserStats(mediaType: MediaType, userStats: any[]) {
+        await db.transaction(async (tx) => {
+            for (const stat of userStats) {
+                await tx
+                    .update(userMediaSettings)
+                    .set({
+                        mediaType: mediaType,
+                        timeSpent: stat.timeSpent,
+                        totalRedo: stat.totalRedo,
+                        statusCounts: stat.statusCounts,
+                        totalEntries: stat.totalEntries,
+                        entriesRated: stat.entriesRated,
+                        totalSpecific: stat.totalSpecific,
+                        averageRating: stat.averageRating,
+                        sumEntriesRated: stat.sumEntriesRated,
+                        entriesFavorites: stat.entriesFavorites,
+                        entriesCommented: stat.entriesCommented,
+                    })
+                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+            }
+        });
     }
 
     static async getSpecificSetting(userId: number, mediaType: MediaType) {

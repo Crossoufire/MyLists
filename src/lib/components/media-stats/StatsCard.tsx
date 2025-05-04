@@ -1,11 +1,11 @@
 import {List} from "lucide-react";
-import {Tooltip} from "@/components/ui/tooltip";
-import {StatsList} from "@/components/media-stats/StatsList";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Tooltip} from "@/lib/components/ui/tooltip";
+import {StatsList} from "@/lib/components/media-stats/StatsList";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
-export const StatsCard = ({ data }) => {
+export const StatsCard = ({ data }: { data: any }) => {
     return (
         <Card className="flex flex-col lg:min-w-[220px]">
             <CardHeader>

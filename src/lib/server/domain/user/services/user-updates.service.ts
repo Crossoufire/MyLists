@@ -103,6 +103,7 @@ export class UserUpdatesService {
                 newValue: { season: ns.season, episode: ns.episode },
             }),
         }
+
         return logValueExtractors[updateType];
     }
 }

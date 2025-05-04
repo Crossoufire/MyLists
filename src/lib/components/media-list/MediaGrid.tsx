@@ -7,8 +7,11 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
 import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
+import {DisplayRating} from "@/lib/components/media-list/DisplayRating";
 import {CommentPopover} from "@/lib/components/media-list/CommentPopover";
 import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
+import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
+import {SpecificUserMediaData} from "@/lib/components/media-list/SpecificUserMediaData";
 
 
 interface MediaGridProps {
@@ -73,10 +76,10 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                     }
                 </div>
                 <div className="absolute top-1.5 left-1.5 z-10 bg-gray-950 px-2 rounded-md opacity-85">
-                    {/*<SpecificUserMediaData*/}
-                    {/*    userMedia={userMedia}*/}
-                    {/*    mediaType={mediaType}*/}
-                    {/*/>*/}
+                    <SpecificUserMediaData
+                        userMedia={userMedia}
+                        mediaType={mediaType}
+                    />
                 </div>
                 {isConnected && <MediaInfoCorner isCommon={userMedia.common}/>}
                 <div className="absolute bottom-0 px-3 pt-2 pb-3 space-y-3 bg-gray-900 w-full rounded-b-sm">
@@ -84,9 +87,12 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                         <h3 className="font-semibold truncate flex-grow" title={userMedia.mediaName}>
                             {userMedia.mediaName}
                         </h3>
-                        {/*<div className="flex-shrink-0">*/}
-                        {/*    <DisplayRating rating={userMedia.rating}/>*/}
-                        {/*</div>*/}
+                        <div className="flex-shrink-0">
+                            <DisplayRating
+                                rating={userMedia.rating}
+                                ratingSystem={userMedia.ratingSystem}
+                            />
+                        </div>
                     </div>
                     <div className="flex flex-wrap items-center justify-between w-full">
                         <Badge variant="outline" className="flex-shrink-0">{userMedia.status}</Badge>
@@ -105,13 +111,13 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                     </div>
                 </div>
             </MediaCard>
-            {/*<UserMediaEditDialog*/}
-            {/*    queryKey={queryKey}*/}
-            {/*    mediaType={mediaType}*/}
-            {/*    userMedia={userMedia}*/}
-            {/*    dialogOpen={dialogOpen}*/}
-            {/*    onOpenChange={() => setDialogOpen(false)}*/}
-            {/*/>*/}
+            <UserMediaEditDialog
+                queryKey={queryKey}
+                mediaType={mediaType}
+                userMedia={userMedia}
+                dialogOpen={dialogOpen}
+                onOpenChange={() => setDialogOpen(false)}
+            />
         </>
     );
 };

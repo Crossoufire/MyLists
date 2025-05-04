@@ -101,7 +101,7 @@ export class UserUpdatesRepository {
 
         const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
 
-        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
+        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth, totalUpdates };
     }
 
     static async getMediaUpdatesCountPerMonth(userId: number, mediaType: MediaType) {

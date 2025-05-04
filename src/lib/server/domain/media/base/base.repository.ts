@@ -298,8 +298,12 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
         // Main query builder
         let queryBuilder = getDbClient()
-            .select(baseSelection)
+            .select({
+                ...baseSelection,
+                ratingSystem: user.ratingSystem,
+            })
             .from(listTable)
+            .innerJoin(user, eq(listTable.userId, user.id))
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
 
@@ -345,6 +349,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
         // Fetch common IDs (if needed and not filtered out)
         let commonIdsSet = new Set<number>();
+
         if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
             const mediaIds = results.map((m: any) => m.mediaId);
             const commonMediaIdsResult = await getDbClient()

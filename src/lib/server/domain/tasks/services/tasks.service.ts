@@ -1,10 +1,11 @@
 import pino from "pino";
 import path from "path";
-import {fileURLToPath} from "url";
 import fs from "node:fs/promises";
+import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
 import {getDbClient, withTransaction} from "@/lib/server/database/asyncStorage";
+import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
@@ -25,6 +26,7 @@ export class TasksService {
         private achievementsService: AchievementsService,
         private userUpdatesService: UserUpdatesService,
         private notificationsService: NotificationsService,
+        private userStatsService: UserStatsService,
     ) {
         this.logger = logger.child({ service: "TasksService" });
         this.taskHandlers = new Map<TasksName, TaskHandler>();
@@ -202,6 +204,40 @@ export class TasksService {
         }
 
         this.logger.info("Completed: RemoveNonListMedia execution.");
+    }
+
+    protected async runAddMediaNotifications() {
+        this.logger.info("Starting: AddMediaNotifications execution.");
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            this.logger.info(`Adding ${mediaType} notifications to users...`);
+
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const mediaToNotify = await mediaService.getMediaToNotify();
+            await this.notificationsService.sendMediaNotifications(mediaType, mediaToNotify);
+
+            this.logger.info(`Adding ${mediaType} notifications completed.`);
+        }
+
+        this.logger.info("Completed: AddMediaNotifications execution.");
+    }
+
+    protected async runComputeAllUsersStats() {
+        this.logger.info("Starting: ComputeAllUsersStats execution.");
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            this.logger.info(`Computing ${mediaType} stats for all users...`);
+
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const userMediaStats = await mediaService.computeAllUsersStats();
+            await this.userStatsService.updateAllUserStats(mediaType, userMediaStats);
+
+            this.logger.info(`Computed ${mediaType} stats for all users.`);
+        }
+
+        this.logger.info("Completed: ComputeAllUsersStats execution.");
     }
 }
 
