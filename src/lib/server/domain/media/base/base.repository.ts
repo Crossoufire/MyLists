@@ -79,12 +79,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
     async findById(mediaId: number | string) {
         const { mediaTable } = this.config;
-
-        return getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.id, mediaId))
-            .get()
+        return getDbClient().select().from(mediaTable).where(eq(mediaTable.id, mediaId)).get()
     }
 
     async getCoverFilenames() {
@@ -98,12 +93,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 
     async findByApiId(apiId: number | string) {
         const { mediaTable } = this.config;
-
-        return getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.apiId, apiId))
-            .get()
+        return getDbClient().select().from(mediaTable).where(eq(mediaTable.apiId, apiId)).get()
     }
 
     async findSimilarMedia(mediaId: number) {
@@ -123,7 +113,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .limit(SIMILAR_MAX_GENRES)
             .as("similar_media");
 
-        const results = await getDbClient()
+        const results = getDbClient()
             .select({
                 mediaId: mediaTable.id,
                 mediaName: mediaTable.name,
@@ -210,7 +200,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async findUserMedia(userId: number, mediaId: number) {
         const { listTable, labelTable } = this.config;
 
-        const mainUserMediaData = getDbClient()
+        const mainUserMediaData = await getDbClient()
             .select({ ...listTable, ratingSystem: user.ratingSystem })
             .from(listTable)
             .innerJoin(user, eq(user.id, listTable.userId))
@@ -227,6 +217,10 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name))
             .execute();
+
+        if (!mainUserMediaData && !associatedLabels) {
+            return null;
+        }
 
         return { ...mainUserMediaData, labels: associatedLabels };
     }
@@ -274,7 +268,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     async getTotalMediaLabel(userId: number) {
         const { labelTable } = this.config;
 
-        const result = getDbClient()
+        const result = await getDbClient()
             .selectDistinct({ count: count(labelTable.name) })
             .from(labelTable)
             .where(eq(labelTable.userId, userId))

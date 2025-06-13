@@ -16,6 +16,20 @@ export class UserStatsRepository {
             .execute();
     }
 
+    static async updateUserMediaSettings(userId: number, payload: Record<MediaType, boolean>) {
+        const updateCases = Object.entries(payload).map(([mediaType, active]) => {
+            return sql`${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
+        });
+
+        await getDbClient()
+            .update(userMediaSettings)
+            .set({
+                active: sql`CASE ${sql.join(updateCases, sql` WHEN `)} END`,
+            })
+            .where(eq(userMediaSettings.userId, userId))
+            .execute();
+    }
+
     static async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
         const setUpdates: Record<string, any> = {};
 
@@ -192,13 +206,15 @@ export class UserStatsRepository {
 
         // Final Query Construction with Search and Pagination
         const finalQueryBase = db.with(allUsersRanked).select().from(allUsersRanked);
-        if (search) finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
+        if (search)
+            finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
         // Get Total Count for Pagination
         const totalCounter = db.with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
-        if (search) totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
-        const totalResult = totalCounter.get();
+        if (search)
+            totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
+        const totalResult = await totalCounter.get();
         const total = totalResult?.count ?? 0;
         const pages = Math.ceil(total / perPage);
         const offset = (page - 1) * perPage;
@@ -246,7 +262,7 @@ export class UserStatsRepository {
         });
 
         // Get Current User's Ranks
-        const currentUserRankData = db
+        const currentUserRankData = await db
             .with(allUsersRanked)
             .select()
             .from(allUsersRanked)

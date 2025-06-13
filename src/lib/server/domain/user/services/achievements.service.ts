@@ -12,7 +12,7 @@ export class AchievementsService {
     }
 
     async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        return this.repository.adminUpdateAchievement(achievementId, payload);
+        await this.repository.adminUpdateAchievement(achievementId, payload);
     }
 
     async adminUpdateTiers(payloads: Record<string, any>[]) {

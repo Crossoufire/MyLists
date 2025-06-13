@@ -2,7 +2,7 @@ import {createMiddleware} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 
 
-export const trendsCacheMiddleware = createMiddleware().server(async ({ next, data }) => {
+export const trendsCacheMiddleware = createMiddleware({ type: "function" }).server(async ({ next, data }) => {
     const cacheKey = `$trends:${JSON.stringify(data ?? null)}`;
 
     const result = getContainer().cacheManager.wrap(

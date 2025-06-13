@@ -16,8 +16,6 @@ interface MoviesUserDetailsProps {
 export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUserDetailsProps) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
-    console.log({ userMedia });
-
     return (
         <>
             <UpdateStatus

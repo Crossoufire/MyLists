@@ -1,11 +1,13 @@
+import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
+import {usePasswordSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 
 
 export const PasswordForm = () => {
-    // const passwordSettings = usePasswordSettingsMutation();
+    const passwordSettingsMutation = usePasswordSettingsMutation();
     const form = useForm({
         defaultValues: {
             newPassword: "",
@@ -15,19 +17,27 @@ export const PasswordForm = () => {
     });
 
     const onSubmit = async (submittedData: any) => {
-        delete submittedData.confirm_new_password;
-
-        // passwordSettings.mutate({ ...submittedData }, {
-        //     onError: (error) => {
-        //         if (error?.errors?.json?.currentPassword) {
-        //             const message = error.errors.json.currentPassword[0];
-        //             return form.setError("currentPassword", { type: "manual", message });
-        //         }
-        //         toast.error("An error occurred while updating your password");
-        //     },
-        //     onSuccess: () => toast.success("Settings successfully updated"),
-        //     onSettled: () => form.reset(),
-        // });
+        passwordSettingsMutation.mutate({
+            newPassword: submittedData.newPassword,
+            currentPassword: submittedData.currentPassword,
+        }, {
+            onError: (error: any) => {
+                if (error?.name === "ZodError" && error?.issues && Array.isArray(error.issues)) {
+                    error.issues.forEach((issue: any) => {
+                        form.setError(issue.path[0], { type: "server", message: issue.message });
+                    });
+                }
+                else if (error?.message?.includes("Current password is incorrect")) {
+                    form.setError("currentPassword", { type: "server", message: error.message });
+                }
+                else {
+                    const message = error?.message || "An unexpected error occurred.";
+                    form.setError("root", { type: "server", message: message });
+                }
+            },
+            onSuccess: () => toast.success("Settings successfully updated"),
+            onSettled: () => form.reset(),
+        });
     };
 
     return (
@@ -54,7 +64,7 @@ export const PasswordForm = () => {
                     <FormField
                         control={form.control}
                         name="newPassword"
-                        rules={{ minLength: { value: 8, message: "The new password must have at least 8 characters." } }}
+                        rules={{ minLength: { value: 8, message: "New password must have at least 8 characters." } }}
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>New Password</FormLabel>
@@ -75,7 +85,7 @@ export const PasswordForm = () => {
                         rules={{
                             validate: (val) => {
                                 if (form.watch("newPassword") !== val) {
-                                    return "The passwords do not match.";
+                                    return "¨Passwords do not match.";
                                 }
                             }
                         }}
@@ -94,6 +104,11 @@ export const PasswordForm = () => {
                         )}
                     />
                 </div>
+                {form.formState.errors.root && (
+                    <p className="mt-2 text-sm font-medium text-destructive">
+                        {form.formState.errors.root.message}
+                    </p>
+                )}
                 <Button className="mt-5">
                     Update
                 </Button>

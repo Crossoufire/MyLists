@@ -14,35 +14,27 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
-interface MediaTypeToggleConfig {
-    label: string;
-    mediaType: MediaType;
-    searchSelector?: ApiProviderType;
-    name: "addAnime" | "addGames" | "addBooks" | "addManga";
-}
-
-
-const mediaTypeToggles: MediaTypeToggleConfig[] = [
+const mediaTypeToggles: any[] = [
     {
         label: "Anime",
-        name: "addAnime",
+        name: MediaType.ANIME,
         mediaType: MediaType.ANIME,
     },
     {
         label: "Games",
-        name: "addGames",
+        name: MediaType.GAMES,
         mediaType: MediaType.GAMES,
         searchSelector: ApiProviderType.IGDB,
     },
     {
         label: "Books",
-        name: "addBooks",
+        name: MediaType.BOOKS,
         mediaType: MediaType.BOOKS,
         searchSelector: ApiProviderType.BOOKS,
     },
     {
         label: "Manga",
-        name: "addManga",
+        name: MediaType.MANGA,
         mediaType: MediaType.MANGA,
         searchSelector: ApiProviderType.MANGA,
     },
@@ -58,11 +50,11 @@ export const MediaListForm = () => {
         defaultValues: {
             ratingSystem: currentUser?.ratingSystem,
             searchSelector: currentUser?.searchSelector,
-            addAnime: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active,
-            addGames: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active,
-            addBooks: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active,
-            addManga: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active,
             gridListView: currentUser?.gridListView === true ? "grid" : "table",
+            [MediaType.ANIME]: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active,
+            [MediaType.GAMES]: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active,
+            [MediaType.BOOKS]: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active,
+            [MediaType.MANGA]: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active,
         }
     });
 
@@ -81,11 +73,12 @@ export const MediaListForm = () => {
         });
     };
 
-    const isListActive = (fieldName: keyof typeof form.control._defaultValues) => {
+    const isListActive = (fieldName: MediaType) => {
+        //@ts-expect-error
         return form.watch(fieldName) === true;
     };
 
-    const onListActivationChanged = (field: any, value: boolean, config: MediaTypeToggleConfig) => {
+    const onListActivationChanged = (field: any, value: boolean, config: any) => {
         field.onChange(value);
         const currentSearchSelector = form.watch("searchSelector");
         if (!value && config.searchSelector && currentSearchSelector === config.searchSelector) {
@@ -122,7 +115,7 @@ export const MediaListForm = () => {
                     <div className="space-y-4">
                         <h3 className="text-base font-medium">Activate List Types</h3>
                         <Separator/>
-                        {mediaTypeToggles.map((config) => (
+                        {mediaTypeToggles.map((config: any) => (
                             <FormField
                                 key={config.name}
                                 name={config.name}
@@ -169,9 +162,9 @@ export const MediaListForm = () => {
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value={ApiProviderType.TMDB}>Media</SelectItem>
-                                            <SelectItem value={ApiProviderType.BOOKS} disabled={!isListActive("addBooks")}>Books</SelectItem>
-                                            <SelectItem value={ApiProviderType.IGDB} disabled={!isListActive("addGames")}>Games</SelectItem>
-                                            <SelectItem value={ApiProviderType.MANGA} disabled={!isListActive("addManga")}>Manga</SelectItem>
+                                            <SelectItem value={ApiProviderType.BOOKS} disabled={!isListActive(MediaType.BOOKS)}>Books</SelectItem>
+                                            <SelectItem value={ApiProviderType.IGDB} disabled={!isListActive(MediaType.GAMES)}>Games</SelectItem>
+                                            <SelectItem value={ApiProviderType.MANGA} disabled={!isListActive(MediaType.MANGA)}>Manga</SelectItem>
                                             <SelectItem value={ApiProviderType.USERS}>Users</SelectItem>
                                         </SelectContent>
                                     </Select>

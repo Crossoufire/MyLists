@@ -1,4 +1,4 @@
-import {getFeelingIcon} from "@/lib/utils/functions";
+import {formatNumberWithKM, getFeelingIcon} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 

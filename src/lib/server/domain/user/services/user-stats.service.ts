@@ -61,6 +61,10 @@ export class UserStatsService {
         };
     }
 
+    async updateUserMediaSettings(userId: number, payload: Record<string, any>) {
+        await this.repository.updateUserMediaSettings(userId, payload);
+    }
+
     async getSummaryStats(userId: number, _limit = 10) {
         const excludedStatuses = Status.getNoPlanTo();
         const activeSettings = await this.repository.getActiveSettings(userId);
@@ -180,7 +184,7 @@ export class UserStatsService {
         const userRanks = [];
         for (const mediaType of mediaTypes) {
             const rankKey = `${mediaType}Rank` as keyof typeof currentUserRankData;
-            const rank = (currentUserRankData[rankKey] as number) ?? null;
+            const rank = (currentUserRankData[rankKey] as unknown as number) ?? null;
             const mtCount = mediaTypeCountMap.get(mediaType) ?? 0;
             const active = currentUserActiveSettings.has(mediaType);
             let percent: number | null = null;

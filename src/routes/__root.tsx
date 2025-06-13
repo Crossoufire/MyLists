@@ -1,6 +1,7 @@
+/// <reference types="vite/client" />
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
-import appCSS from "@/lib/styles/app.css?url";
+import appCSS from "@/styles.css?url";
 import {Footer} from "@/lib/components/app/Footer";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import type {QueryClient} from "@tanstack/react-query";

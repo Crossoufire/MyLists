@@ -12,7 +12,7 @@ export interface BaseDataWithUsername {
 }
 
 
-export const authorizationMiddleware = createMiddleware()
+export const authorizationMiddleware = createMiddleware({ type: "function" })
     .validator((rawData: any): BaseDataWithUsername => {
         if (typeof rawData !== "object" || rawData === null) {
             throw new Error("Bad request");

@@ -56,7 +56,7 @@
 - Settings Page ->
     - Add List Settings ->
     - Add Password Settings ->
-    - Add delete User Settings ->
+    - Add Delete User ->
 - Platform Stats ->
     - Add GET page ->
     - Add cache system ->

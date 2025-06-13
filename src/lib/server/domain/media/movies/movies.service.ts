@@ -26,6 +26,10 @@ export class MoviesService {
         return this.repository.findById(mediaId);
     }
 
+    async downloadMediaListAsCSV(userId: number) {
+        return this.repository.downloadMediaListAsCSV(userId);
+    }
+
     async getNonListMediaIds() {
         return this.repository.getNonListMediaIds();
     }

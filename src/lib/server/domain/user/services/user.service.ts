@@ -28,7 +28,7 @@ export class UserService {
             throw new Error("Invalid payload");
         }
 
-        return this.userRepository.adminUpdateUser(userId!, payload);
+        await this.userRepository.adminUpdateUser(userId!, payload);
     }
 
     async updateUserSettings(userId: number, payload: Record<string, any>) {

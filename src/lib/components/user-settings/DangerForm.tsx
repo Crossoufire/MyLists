@@ -2,7 +2,7 @@ import {Button} from "@/lib/components/ui/button";
 
 
 export const DangerForm = () => {
-    // const deleteAccount = useDeleteAccountMutation();
+    // const deleteAccountMutation = useDeleteAccountMutation();
 
     const onSubmit = async () => {
         const firstConfirm = window.confirm("Are you really sure?");
@@ -11,7 +11,7 @@ export const DangerForm = () => {
         const secondConfirm = window.confirm("All your data will be permanently deleted. Are you sure?");
         if (!secondConfirm) return;
 
-        // deleteAccount.mutate(undefined, {
+        // deleteAccountMutation.mutate({}, {
         //     onError: () => toast.error("An error occurred while deleting your account. Please try again later."),
         //     onSuccess: async () => {
         //         logout.mutate(undefined, {

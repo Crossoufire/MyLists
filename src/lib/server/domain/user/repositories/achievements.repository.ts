@@ -20,7 +20,7 @@ export class AchievementsRepository {
     static async seedAchievements(achievementsDefinition: AchievementData[]) {
         await db.transaction(async (tx) => {
             for (const achievementData of achievementsDefinition) {
-                const existingAchievement = tx
+                const existingAchievement = await tx
                     .select()
                     .from(achievement)
                     .where(eq(achievement.codeName, achievementData.codeName))
@@ -118,7 +118,7 @@ export class AchievementsRepository {
     }
 
     static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        return db.update(achievement).set(payload).where(eq(achievement.id, achievementId));
+        await db.update(achievement).set(payload).where(eq(achievement.id, achievementId));
     }
 
     static async adminUpdateTiers(payloads: Record<string, any>[]) {

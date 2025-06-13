@@ -101,7 +101,6 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
         },
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
-            console.log(data);
             queryClient.setQueryData(queryKey, (oldData: Record<string, any>) => {
                 // @ts-expect-error
                 if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {

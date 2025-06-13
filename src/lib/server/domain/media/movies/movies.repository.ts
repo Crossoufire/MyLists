@@ -37,6 +37,19 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return comingNext;
     }
 
+    async downloadMediaListAsCSV(userId: number) {
+        const results = await getDbClient()
+            .select({
+                ...getTableColumns(moviesList),
+                name: movies.name,
+            })
+            .from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+            .where(eq(moviesList.userId, userId))
+
+        return results;
+    }
+
     async getNonListMediaIds() {
         const mediaToDelete = await getDbClient()
             .select({ id: movies.id })
@@ -299,31 +312,29 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     async updateMediaWithDetails({ mediaData, actorsData, genresData }: any) {
-        const isSuccess = await db.transaction(async (tx) => {
-            const [media] = await tx
-                .update(movies)
-                .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
-                .where(eq(movies.apiId, mediaData.apiId))
-                .returning({ id: movies.id })
+        const tx = getDbClient();
 
-            const mediaId = media.id;
+        const [media] = await tx
+            .update(movies)
+            .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+            .where(eq(movies.apiId, mediaData.apiId))
+            .returning({ id: movies.id })
 
-            if (actorsData && actorsData.length > 0) {
-                await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
-                const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
-                await tx.insert(moviesActors).values(actorsToAdd)
-            }
+        const mediaId = media.id;
 
-            if (genresData && genresData.length > 0) {
-                await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
-                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
-                await tx.insert(moviesGenre).values(genresToAdd)
-            }
+        if (actorsData && actorsData.length > 0) {
+            await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
+            const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+            await tx.insert(moviesActors).values(actorsToAdd)
+        }
 
-            return true;
-        });
+        if (genresData && genresData.length > 0) {
+            await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
+            const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+            await tx.insert(moviesGenre).values(genresToAdd)
+        }
 
-        return isSuccess;
+        return true;
     }
 
     async getListFilters(userId: number) {

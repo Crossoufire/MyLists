@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
-import {postDownloadListAsCSV, postGeneralSettings, postMediaListSettings} from "@/lib/server/functions/user-settings";
+import {getDownloadListAsCSV, postGeneralSettings, postMediaListSettings, postPasswordSettings} from "@/lib/server/functions/user-settings";
 
 
 export const useFollowMutation = (queryKey: string[]) => {
@@ -40,20 +40,16 @@ export const useListSettingsMutation = () => {
 
 export const useDownloadListAsCSVMutation = () => {
     return useMutation<any, Error, { selectedList: string }>({
-        mutationFn: ({ selectedList }) => postDownloadListAsCSV({ data: { selectedList } }),
+        mutationFn: ({ selectedList }) => getDownloadListAsCSV({ data: { selectedList } }),
     });
 };
 
 
-// export const usePasswordSettingsMutation = () => {
-//     return useMutation({
-//         mutationFn: (data) =>
-//             postFetcher({
-//                 url: settingsUrls.passwordSettings(),
-//                 data,
-//             }),
-//     });
-// };
+export const usePasswordSettingsMutation = () => {
+    return useMutation<void, Error, { currentPassword: string, newPassword: string }>({
+        mutationFn: ({ currentPassword, newPassword }) => postPasswordSettings({ data: { currentPassword, newPassword } }),
+    });
+};
 
 
 // export const useDeleteAccountMutation = () => {

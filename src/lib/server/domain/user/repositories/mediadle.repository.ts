@@ -42,11 +42,7 @@ export class MediadleRepository {
 
     static async getTodayMoviedle() {
         const today = new Date().toISOString().slice(0, 10);
-        return getDbClient()
-            .select()
-            .from(dailyMediadle)
-            .where(sql`${dailyMediadle.date} >= ${today}`)
-            .get();
+        return getDbClient().select().from(dailyMediadle).where(sql`${dailyMediadle.date} >= ${today}`).get();
     }
 
     static async createDailyMoviedle() {
@@ -58,7 +54,7 @@ export class MediadleRepository {
             .execute();
         const alreadyUsedMoviesIds = alreadyUsedMovies.map((row: any) => row.mediaId);
 
-        const selectedMovie = getDbClient()
+        const selectedMovie = await getDbClient()
             .select()
             .from(movies)
             .where(and(notInArray(movies.id, alreadyUsedMoviesIds), gte(movies.voteCount, 700)))

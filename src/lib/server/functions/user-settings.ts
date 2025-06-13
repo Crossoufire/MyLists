@@ -1,10 +1,11 @@
 import {z} from "zod";
-import {capitalize} from "@/lib/utils/functions";
+import {auth} from "@/lib/server/core/auth";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {saveUploadedImage} from "@/lib/server/utils/save-image";
-import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType} from "@/lib/server/utils/enums";
 
 
 const generalSettingsSchema = z.object({
@@ -18,7 +19,7 @@ const generalSettingsSchema = z.object({
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware, transactionMiddleware])
     .validator((data: unknown) => {
         if (!(data instanceof FormData)) {
             throw new Error("Expected FormData");
@@ -66,28 +67,74 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
     });
 
 
+const mediaListSettingsSchema = z.object({
+    anime: z.boolean(),
+    games: z.boolean(),
+    manga: z.boolean(),
+    books: z.boolean(),
+    gridListView: z.boolean(),
+    searchSelector: z.enum(Object.values(ApiProviderType) as [ApiProviderType, ...ApiProviderType[]]),
+    ratingSystem: z.enum(Object.values(RatingSystemType) as [RatingSystemType, ...RatingSystemType[]]),
+});
+
+
 export const postMediaListSettings = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
-    .validator((data: any) => data)
+    .middleware([authMiddleware, transactionMiddleware])
+    .validator((data: any) => mediaListSettingsSchema.parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = getContainer().services.user;
+        const userStatsService = getContainer().services.userStats;
 
-        const mediaTypes = [MediaType.ANIME, MediaType.GAMES, MediaType.BOOKS, MediaType.MANGA];
-        for (const mediaType of mediaTypes) {
-            const settingKey = `add${capitalize(mediaType)}`;
-            if (data[settingKey]) {
-
-            }
+        const toUpdateinUserStats = {
+            anime: data.anime,
+            manga: data.manga,
+            games: data.games,
+            books: data.books,
+        }
+        const toUpdateInUser = {
+            gridListView: data.gridListView,
+            searchSelector: data.searchSelector,
+            ratingSystem: data.ratingSystem,
         }
 
         //@ts-expect-error
-        await userService.updateUserSettings(currentUser.id, data);
+        await userService.updateUserSettings(currentUser.id, toUpdateInUser);
+        //@ts-expect-error
+        await userStatsService.updateUserMediaSettings(currentUser.id, toUpdateinUserStats);
     });
 
 
-export const postDownloadListAsCSV = createServerFn({ method: "POST" })
+export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => data)
+    .validator((data: any) => {
+        if (!data.selectedList.includes(MediaType)) throw new Error("Invalid media type");
+        return data as { selectedList: MediaType };
+    })
     .handler(async ({ data, context: { currentUser } }) => {
+        const mediaService = getContainer().registries.mediaService.getService(data.selectedList);
+        //@ts-expect-error
+        return mediaService.downloadMediaListAsCSV(currentUser.id);
+    });
 
+
+const passwordSettingsSchema = z.object({
+    newPassword: z.string().min(8).max(50),
+    currentPassword: z.string().min(8).max(50),
+});
+
+
+export const postPasswordSettings = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .validator((data: any) => passwordSettingsSchema.parse(data))
+    .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
+        const ctx = await auth.$context;
+        const userAccount = await ctx.internalAdapter.findAccount(currentUser.id);
+
+        const isValid = await ctx.password.verify({ hash: userAccount?.password ?? "", password: currentPassword });
+        if (!isValid) {
+            throw new Error("Current password is incorrect");
+        }
+
+        const hash = await ctx.password.hash(newPassword);
+        await ctx.internalAdapter.updatePassword(currentUser.id, hash)
     });
