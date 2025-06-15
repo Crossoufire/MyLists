@@ -20,7 +20,23 @@ interface UserMediaState {
 
 
 export class MoviesService {
+    private readonly achievementHandlers: Map<string, (achievement: Achievement, userId?: number) => Promise<any>>;
+
     constructor(private repository: MoviesRepository) {
+        this.achievementHandlers = new Map([
+            ["completed_movies", this.repository.countCompletedAchievementCte.bind(this.repository)],
+            ["rated_movies", this.repository.countRatedAchievementCte.bind(this.repository)],
+            ["comment_movies", this.repository.countCommentedAchievementCte.bind(this.repository)],
+            ["director_movies", this.repository.getDirectorAchievementCte.bind(this.repository)],
+            ["actor_movies", this.repository.getActorAchievementCte.bind(this.repository)],
+            ["origin_lang_movies", this.repository.getOriginLanguageAchievementCte.bind(this.repository,)],
+            ["war_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["family_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["sci_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["animation_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["long_movies", this.repository.getDurationAchievementCte.bind(this.repository)],
+            ["short_movies", this.repository.getDurationAchievementCte.bind(this.repository)],
+        ]);
     }
 
     async getById(mediaId: number) {
@@ -60,45 +76,12 @@ export class MoviesService {
         return this.repository.computeAllUsersStats();
     }
 
-    async calculateAchievement(achievement: Achievement, userId?: number) {
-        if (achievement.codeName === "completed_movies") {
-            return this.repository.countCompletedAchievementCte(achievement, userId);
+    async getAchievementCte(achievement: Achievement, userId?: number) {
+        const handler = this.achievementHandlers.get(achievement.codeName);
+        if (!handler) {
+            throw new Error("Invalid Achievement codeName");
         }
-        else if (achievement.codeName === "rated_movies") {
-            return this.repository.countRatedAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "comment_movies") {
-            return this.repository.countCommentedAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "director_movies") {
-            return this.repository.getDirectorAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "actor_movies") {
-            return this.repository.getActorAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "origin_lang_movies") {
-            return this.repository.getOriginLanguageAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "war_genre_movies") {
-            return this.repository.specificGenreAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "family_genre_movies") {
-            return this.repository.specificGenreAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "sci_genre_movies") {
-            return this.repository.specificGenreAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "animation_movies") {
-            return this.repository.specificGenreAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "long_movies") {
-            return this.repository.getDurationAchievementCte(achievement, userId);
-        }
-        else if (achievement.codeName === "short_movies") {
-            return this.repository.getDurationAchievementCte(achievement, userId);
-        }
-
-        throw new Error("Unknown achievement code name");
+        return handler(achievement, userId);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {

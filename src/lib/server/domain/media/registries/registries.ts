@@ -14,7 +14,7 @@ interface MediaRepositoryMap {
 }
 
 
-interface MediaServiceMap {
+export interface MediaServiceMap {
     [MediaType.SERIES]: MoviesService;
     [MediaType.ANIME]: MoviesService;
     [MediaType.MOVIES]: MoviesService;

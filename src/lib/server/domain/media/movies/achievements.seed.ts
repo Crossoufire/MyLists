@@ -2,7 +2,7 @@ import {AchievementData} from "@/lib/server/types/achievements";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 
 
-export function moviesAchievements(): AchievementData[] {
+export const moviesAchievements = () => {
     return [
         {
             codeName: "completed_movies",
@@ -10,54 +10,28 @@ export function moviesAchievements(): AchievementData[] {
             description: "Awarded for completing movies, because real life has too few explosions and car chases.",
             mediaType: MediaType.MOVIES,
             tiers: [
-                {
-                    criteria: { count: 100 },
-                    difficulty: AchievementDifficulty.BRONZE,
-                },
-                {
-                    criteria: { count: 400 },
-                    difficulty: AchievementDifficulty.SILVER,
-                },
-                {
-                    criteria: { count: 800 },
-                    difficulty: AchievementDifficulty.GOLD,
-                },
-                {
-                    criteria: { count: 1500 },
-                    difficulty: AchievementDifficulty.PLATINUM,
-                },
+                { criteria: { count: 100 }, difficulty: AchievementDifficulty.BRONZE },
+                { criteria: { count: 400 }, difficulty: AchievementDifficulty.SILVER },
+                { criteria: { count: 800 }, difficulty: AchievementDifficulty.GOLD },
+                { criteria: { count: 1500 }, difficulty: AchievementDifficulty.PLATINUM },
             ],
         },
         {
             codeName: "rated_movies",
             name: "Certified Movie Critic",
-            description:
-                "Awarded for rating movies, because slapping stars on films is harder than it looks, right?",
+            description: "Awarded for rating movies, because slapping stars on films is harder than it looks, right?",
             mediaType: MediaType.MOVIES,
             tiers: [
-                {
-                    criteria: { count: 50 },
-                    difficulty: AchievementDifficulty.BRONZE,
-                },
-                {
-                    criteria: { count: 100 },
-                    difficulty: AchievementDifficulty.SILVER,
-                },
-                {
-                    criteria: { count: 150 },
-                    difficulty: AchievementDifficulty.GOLD,
-                },
-                {
-                    criteria: { count: 250 },
-                    difficulty: AchievementDifficulty.PLATINUM,
-                },
+                { criteria: { count: 50 }, difficulty: AchievementDifficulty.BRONZE },
+                { criteria: { count: 100 }, difficulty: AchievementDifficulty.SILVER },
+                { criteria: { count: 150 }, difficulty: AchievementDifficulty.GOLD },
+                { criteria: { count: 250 }, difficulty: AchievementDifficulty.PLATINUM },
             ],
         },
         {
             codeName: "comment_movies",
             name: "Couch Commentator",
-            description:
-                "Awarded for commenting movies, because every film deserves your unsolicited director’s cut.",
+            description: "Awarded for commenting movies, because every film deserves your unsolicited director’s cut.",
             mediaType: MediaType.MOVIES,
             tiers: [
                 {
@@ -309,5 +283,5 @@ export function moviesAchievements(): AchievementData[] {
                 },
             ],
         },
-    ];
+    ] as AchievementData[];
 }

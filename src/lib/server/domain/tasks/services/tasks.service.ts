@@ -190,8 +190,7 @@ export class TasksService {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const mediaAchievements = allAchievements.filter(a => a.mediaType === mediaType);
             for (const achievement of mediaAchievements) {
-                const cte = mediaService.calculateAchievement(achievement, undefined);
-                await this.achievementsService.updateEachAchievementTier(achievement, cte);
+                await this.achievementsService.calculateAchievement(achievement, mediaService);
             }
         }
 
