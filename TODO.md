@@ -44,6 +44,7 @@
     - Lock old movies -> DONE
     - Add bulk media refresh -> DONE
     - Seed database with achievements -> DONE
+    - Update all the user's achievements -> DONE
     - Remove non-list media from database -> DONE
     - Add new media notifications to users -> DONE
     - Remove unused media covers from disk -> DONE
@@ -69,10 +70,10 @@
 - Add rate limiter in `nginx` for prod (for spamming protection)
 - Add `ON CASCADE` for many things to avoid `FK` errors and simplify code
 - Add global error handler (either monkey-patch or wait for TSS maintainers)
+
 - Create admin dashboard
     - Delete users
 - Create small CLI for scheduled tasks
     - Update IGDB token
     - Update platform stats
     - Run all scheduled tasks
-    - Update all the user's achievements

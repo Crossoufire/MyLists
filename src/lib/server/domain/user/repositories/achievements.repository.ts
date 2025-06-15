@@ -1,6 +1,7 @@
 import {db} from "@/lib/server/database/db";
-import {AchievementDifficulty} from "@/lib/server/utils/enums";
-import {AchievementData} from "@/lib/server/types/achievements";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {AchievementData, AchievementTier} from "@/lib/server/types/achievements";
 import {and, asc, count, eq, getTableColumns, inArray, max, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
 
@@ -118,7 +119,7 @@ export class AchievementsRepository {
     }
 
     static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        await db.update(achievement).set(payload).where(eq(achievement.id, achievementId));
+        await getDbClient().update(achievement).set(payload).where(eq(achievement.id, achievementId));
     }
 
     static async adminUpdateTiers(payloads: Record<string, any>[]) {
@@ -135,7 +136,7 @@ export class AchievementsRepository {
     static async getDifficultySummary(userId: number) {
         const tierOrder = this.getSQLTierOrdering();
 
-        const subq = db
+        const subq = getDbClient()
             .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
@@ -143,7 +144,7 @@ export class AchievementsRepository {
             .groupBy(userAchievement.achievementId)
             .as("subq");
 
-        const results = await db
+        const results = await getDbClient()
             .select({ difficulty: achievementTier.difficulty, count: count().mapWith(Number) })
             .from(achievementTier)
             .innerJoin(subq, and(eq(achievementTier.achievementId, subq.achievementId), eq(tierOrder, subq.maxTierOrder)))
@@ -156,7 +157,7 @@ export class AchievementsRepository {
     static async getAchievementsDetails(userId: number, limit = 6) {
         const tierOrder = this.getSQLTierOrdering();
 
-        const highestCompletedTierSubquery = db
+        const highestCompletedTierSubquery = getDbClient()
             .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
@@ -164,7 +165,7 @@ export class AchievementsRepository {
             .groupBy(userAchievement.achievementId)
             .as("highestCompleted");
 
-        const results = await db
+        const results = await getDbClient()
             .select({
                 name: achievement.name,
                 description: achievement.description,
@@ -180,24 +181,23 @@ export class AchievementsRepository {
         return results;
     }
 
-    static async countPlatinumAchievements(userId: number) {
-        const result = await db
+    static async countPlatinumAchievements(userId?: number) {
+        const forUser = userId ? eq(userAchievement.userId, userId) : undefined;
+        
+        const result = await getDbClient()
             .select({ count: count() })
             .from(userAchievement)
             .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
-            .where(and(
-                eq(userAchievement.userId, userId),
-                eq(userAchievement.completed, true),
-                eq(achievementTier.difficulty, AchievementDifficulty.PLATINUM)
-            ))
+            .where(and(forUser, eq(userAchievement.completed, true), eq(achievementTier.difficulty, AchievementDifficulty.PLATINUM)))
+            .get();
 
-        return result[0]?.count ?? 0;
+        return result?.count ?? 0;
     }
 
     static async getUserAchievementStats(userId: number) {
         const tierOrder = this.getSQLTierOrdering();
 
-        const subq = db
+        const subq = getDbClient()
             .select({
                 mediaType: achievement.mediaType,
                 achievementId: userAchievement.achievementId,
@@ -210,7 +210,7 @@ export class AchievementsRepository {
             .groupBy(achievement.mediaType, userAchievement.achievementId)
             .as("subq");
 
-        const completedResult = await db
+        const completedResult = await getDbClient()
             .select({
                 mediaType: subq.mediaType,
                 count: count().as("count"),
@@ -221,7 +221,7 @@ export class AchievementsRepository {
             .groupBy(subq.mediaType, achievementTier.difficulty)
             .orderBy(subq.mediaType, tierOrder);
 
-        const totalAchievementsResult = await db
+        const totalAchievementsResult = await getDbClient()
             .select({ total: count().as("total"), mediaType: achievement.mediaType })
             .from(achievement)
             .groupBy(achievement.mediaType);
@@ -232,7 +232,7 @@ export class AchievementsRepository {
     static async getAllUserAchievements(userId: number) {
         const tierOrder = this.getSQLTierOrdering();
 
-        const results = await db
+        const results = await getDbClient()
             .select({
                 tier: achievementTier,
                 achievement: achievement,
@@ -246,10 +246,10 @@ export class AchievementsRepository {
         return results;
     }
 
-    static async getAllAchievements() {
+    static async allUsersAchievements() {
         const tierOrder = this.getSQLTierOrdering();
 
-        const flatResults = await db
+        const flatResults = await getDbClient()
             .select({
                 ...getTableColumns(achievement),
                 tier: getTableColumns(achievementTier),
@@ -262,19 +262,76 @@ export class AchievementsRepository {
             tiers: typeof flatResults[0]["tier"][];
         };
 
-        const groupedAchievements = flatResults.reduce<Record<number, GroupedAchievement>>((acc, row) => {
-            const { tier, ...achievementData } = row;
-            const achievementId = achievementData.id;
+        const groupedAchievements = flatResults
+            .reduce<Record<number, GroupedAchievement>>((acc, row) => {
+                const { tier, ...achievementData } = row;
+                const achievementId = achievementData.id;
 
-            if (!acc[achievementId]) {
-                acc[achievementId] = { ...achievementData, tiers: [] };
-            }
+                if (!acc[achievementId]) {
+                    acc[achievementId] = { ...achievementData, tiers: [] };
+                }
 
-            acc[achievementId].tiers.push(tier);
+                acc[achievementId].tiers.push(tier);
 
-            return acc;
-        }, {});
+                return acc;
+            }, {});
 
         return Object.values(groupedAchievements);
+    }
+
+    static async getMediaAchievements(mediaType: MediaType) {
+        return getDbClient()
+            .select()
+            .from(achievement)
+            .where(eq(achievement.mediaType, mediaType))
+            .execute()
+    }
+
+    static async updateAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any, completedAt: any) {
+        await getDbClient()
+            .update(userAchievement)
+            .set({
+                count: count,
+                progress: progress,
+                completed: completed,
+                completedAt: completedAt,
+                lastCalculatedAt: sql`datetime('now')`,
+            }).from(cte)
+            .where(and(
+                eq(userAchievement.tierId, tier.id),
+                sql`${userAchievement.userId} = calculation.user_id`,
+                eq(userAchievement.achievementId, tier.achievementId),
+            ));
+    }
+
+    static async insertAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any) {
+        await getDbClient().run(sql`
+            INSERT INTO ${userAchievement} (
+                tier_id, 
+                user_id, 
+                achievement_id, 
+                count, 
+                progress, 
+                completed, 
+                completed_at, 
+                last_calculated_at
+            )
+            SELECT 
+                ${tier.id},
+                calculation.user_id,
+                ${tier.achievementId},
+                ${count},
+                ${progress},
+                ${completed},
+                CASE WHEN ${completed} THEN datetime('now') ELSE NULL END,
+                datetime('now')
+            FROM ${cte}
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ${userAchievement} ua
+                WHERE ua.tier_id = ${tier.id}
+                    AND ua.achievement_id = ${tier.achievementId}
+                    AND ua.user_id = calculation.user_id
+            )
+        `);
     }
 }

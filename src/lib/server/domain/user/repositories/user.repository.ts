@@ -3,7 +3,7 @@ import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ProviderSearchResults} from "@/lib/server/types/base.types";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 
 
 export class UserRepository {

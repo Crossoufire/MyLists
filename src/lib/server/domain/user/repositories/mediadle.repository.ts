@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
 import {db} from "@/lib/server/database/db";

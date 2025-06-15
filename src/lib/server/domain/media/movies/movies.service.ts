@@ -1,6 +1,7 @@
 import {notFound} from "@tanstack/react-router";
+import {Achievement} from "@/lib/server/types/achievements";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import type {StatsDelta} from "@/lib/server/types/stats.types";
+import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
@@ -57,6 +58,81 @@ export class MoviesService {
 
     async computeAllUsersStats() {
         return this.repository.computeAllUsersStats();
+    }
+
+    async calculateAchievement(achievement: Achievement, userId?: number) {
+        if (achievement.codeName === "completed_movies") {
+            return this.repository.countCompletedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "rated_movies") {
+            return this.repository.countRatedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "comment_movies") {
+            return this.repository.countCommentedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "director_movies") {
+            return this.repository.getDirectorAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "actor_movies") {
+            return this.repository.getActorAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "origin_lang_movies") {
+            return this.repository.getOriginLanguageAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "war_genre_movies") {
+            return this.repository.specificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "family_genre_movies") {
+            return this.repository.specificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "sci_genre_movies") {
+            return this.repository.specificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "animation_movies") {
+            return this.repository.specificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "long_movies") {
+            return this.repository.getDurationAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "short_movies") {
+            return this.repository.getDurationAchievementCte(achievement, userId);
+        }
+
+        throw new Error("Unknown achievement code name");
+    }
+
+    async calculateAdvancedMediaStats(userId?: number) {
+        // If userId not provided, calculations are platform-wide
+
+        // Specific media stats but calculation common
+        const ratings = await this.repository.computeRatingStats(userId);
+        const genresStats = await this.repository.computeTopGenresStats(userId);
+        const totalLabels = await this.repository.computeTotalMediaLabel(userId);
+        const releaseDates = await this.repository.computeReleaseDateStats(userId);
+
+        // Specific stats
+        const avgDuration = await this.repository.avgMovieDuration(userId);
+        const durationDistrib = await this.repository.movieDurationDistrib(userId);
+        const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
+        const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+
+        return {
+            ratings,
+            totalLabels,
+            genresStats,
+            releaseDates,
+            totalBudget,
+            totalRevenue,
+            avgDuration,
+            durationDistrib,
+            directorsStats,
+            actorsStats,
+            languagesStats,
+        };
+    }
+
+    async computeTotalMediaLabel(userId?: number) {
+        return this.repository.computeTotalMediaLabel(userId);
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
@@ -234,7 +310,7 @@ export class MoviesService {
     }
 
     calculateDeltaStats(oldState: UserMediaState | null, newState: UserMediaState | null, media: any) {
-        const delta: StatsDelta = {};
+        const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
         // Extract Old State Info

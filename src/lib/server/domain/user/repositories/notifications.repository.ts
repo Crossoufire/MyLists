@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
 import {notifications} from "@/lib/server/database/schema";
 import {and, count, desc, eq, inArray, sql} from "drizzle-orm";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, NotificationType} from "@/lib/server/utils/enums";
 
 

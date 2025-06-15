@@ -1,6 +1,6 @@
 import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 

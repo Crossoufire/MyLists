@@ -1,14 +1,14 @@
 import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
-import {StatsDelta} from "@/lib/server/types/stats.types";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {DeltaStats} from "@/lib/server/types/stats.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserStatsRepository {
-    static async getActiveSettings(userId: number) {
+    static async userActiveMediaSettings(userId: number) {
         return getDbClient()
             .select()
             .from(userMediaSettings)
@@ -16,7 +16,7 @@ export class UserStatsRepository {
             .execute();
     }
 
-    static async updateUserMediaSettings(userId: number, payload: Record<MediaType, boolean>) {
+    static async updateUserMediaListSettings(userId: number, payload: Record<MediaType, boolean>) {
         const updateCases = Object.entries(payload).map(([mediaType, active]) => {
             return sql`${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
         });
@@ -30,10 +30,10 @@ export class UserStatsRepository {
             .execute();
     }
 
-    static async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
+    static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, delta: DeltaStats) {
         const setUpdates: Record<string, any> = {};
 
-        const numericFields: (keyof StatsDelta)[] = [
+        const numericFields: (keyof DeltaStats)[] = [
             "timeSpent", "views", "totalEntries", "totalRedo", "entriesRated",
             "sumEntriesRated", "entriesCommented", "entriesFavorites", "totalSpecific",
         ];
@@ -78,38 +78,30 @@ export class UserStatsRepository {
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
     }
 
-    static async updateUserStats(mediaType: MediaType, userStats: any[]) {
-        await db.transaction(async (tx) => {
-            for (const stat of userStats) {
-                await tx
-                    .update(userMediaSettings)
-                    .set({
-                        mediaType: mediaType,
-                        timeSpent: stat.timeSpent,
-                        totalRedo: stat.totalRedo,
-                        statusCounts: stat.statusCounts,
-                        totalEntries: stat.totalEntries,
-                        entriesRated: stat.entriesRated,
-                        totalSpecific: stat.totalSpecific,
-                        averageRating: stat.averageRating,
-                        sumEntriesRated: stat.sumEntriesRated,
-                        entriesFavorites: stat.entriesFavorites,
-                        entriesCommented: stat.entriesCommented,
-                    })
-                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
-            }
-        });
+    static async specificUserMediaSetting(userId: number, mediaType: MediaType) {
+        const mediaSettings = await getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+            .get();
+
+        return mediaSettings!;
     }
 
-    static async getSpecificSetting(userId: number, mediaType: MediaType) {
-        const setting = await db.query.userMediaSettings.findFirst({
-            where: and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)),
-        });
-
-        return setting!;
+    static async allUsersAllMediaSettings() {
+        return getDbClient().select().from(userMediaSettings)!;
     }
 
-    static async getHallOfFameData(data: Record<string, any>, currentUserId: number) {
+    static async allUsersMediaSettings(mediaType: MediaType) {
+        const mediaSettings = await getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .where(eq(userMediaSettings.mediaType, mediaType))
+
+        return mediaSettings!;
+    }
+
+    static async userHallofFameData(userId: number, data: Record<string, any>) {
         const { sorting = "normalized", search = "", page = 1, perPage = 10 } = data;
 
         const mediaTypes = Object.values(MediaType);
@@ -266,11 +258,11 @@ export class UserStatsRepository {
             .with(allUsersRanked)
             .select()
             .from(allUsersRanked)
-            .where(eq(allUsersRanked.id, currentUserId))
+            .where(eq(allUsersRanked.id, userId))
             .get();
 
         // Get Current User's Active Media Settings
-        const settings = await this.getActiveSettings(currentUserId);
+        const settings = await this.userActiveMediaSettings(userId);
         const currentUserActiveSettings = new Set(settings.map((s) => s.mediaType));
 
         return {
@@ -283,5 +275,28 @@ export class UserStatsRepository {
             rankSelectionColName,
             page, pages, total,
         };
+    }
+
+    static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: any[]) {
+        await db.transaction(async (tx) => {
+            for (const stat of userStats) {
+                await tx
+                    .update(userMediaSettings)
+                    .set({
+                        mediaType: mediaType,
+                        timeSpent: stat.timeSpent,
+                        totalRedo: stat.totalRedo,
+                        statusCounts: stat.statusCounts,
+                        totalEntries: stat.totalEntries,
+                        entriesRated: stat.entriesRated,
+                        totalSpecific: stat.totalSpecific,
+                        averageRating: stat.averageRating,
+                        sumEntriesRated: stat.sumEntriesRated,
+                        entriesFavorites: stat.entriesFavorites,
+                        entriesCommented: stat.entriesCommented,
+                    })
+                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+            }
+        });
     }
 }

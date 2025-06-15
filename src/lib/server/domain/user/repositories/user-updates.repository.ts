@@ -1,4 +1,4 @@
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
@@ -75,14 +75,16 @@ export class UserUpdatesRepository {
         return followsUpdates;
     }
 
-    static async getUpdatesCountPerMonth(userId: number) {
+    static async allMediaUpdatesCountPerMonth(userId?: number) {
+        const forUser = userId ? eq(userMediaUpdate.userId, userId) : undefined;
+
         const monthlyCountsQuery = getDbClient()
             .select({
                 month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
                 count: count(userMediaUpdate.mediaId).as("count"),
             })
             .from(userMediaUpdate)
-            .where(eq(userMediaUpdate.userId, userId))
+            .where(forUser)
             .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
             .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
 
@@ -95,7 +97,7 @@ export class UserUpdatesRepository {
             if (row.month && typeof row.count === "number") {
                 updatesPerMonth[row.month] = row.count;
                 totalUpdates += row.count;
-                numberOfMonths++;
+                numberOfMonths += 1;
             }
         });
 
@@ -104,14 +106,16 @@ export class UserUpdatesRepository {
         return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth, totalUpdates };
     }
 
-    static async getMediaUpdatesCountPerMonth(userId: number, mediaType: MediaType) {
+    static async mediaUpdatesCountPerMonth(mediaType: MediaType, userId?: number) {
+        const forUser = userId ? eq(userMediaUpdate.userId, userId) : undefined;
+
         const monthlyCountsQuery = getDbClient()
             .select({
                 month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
                 count: count(userMediaUpdate.mediaId).as("count"),
             })
             .from(userMediaUpdate)
-            .where(and(eq(userMediaUpdate.userId, userId), eq(userMediaUpdate.mediaType, mediaType)))
+            .where(and(forUser, eq(userMediaUpdate.mediaType, mediaType)))
             .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
             .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
 
@@ -124,7 +128,7 @@ export class UserUpdatesRepository {
             if (row.month && typeof row.count === "number") {
                 updatesPerMonth[row.month] = row.count;
                 totalUpdates += row.count;
-                numberOfMonths++;
+                numberOfMonths += 1;
             }
         });
 

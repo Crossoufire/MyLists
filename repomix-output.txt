@@ -1,0 +1,2661 @@
+Directory Structure
+================================================================
+src/lib/server/domain/media/base/base.calculation.repository.ts
+src/lib/server/domain/media/base/base.repository.ts
+src/lib/server/domain/media/movies/movies.calculation.repository.ts
+src/lib/server/domain/media/movies/movies.calculation.service.ts
+src/lib/server/domain/media/movies/movies.config.ts
+src/lib/server/domain/media/movies/movies.repository.ts
+src/lib/server/domain/media/movies/movies.service.ts
+src/lib/server/domain/media/registries/registries.ts
+src/lib/server/domain/user/repositories/achievements.repository.ts
+src/lib/server/domain/user/repositories/user-stats.repository.ts
+src/lib/server/domain/user/repositories/user-updates.repository.ts
+src/lib/server/domain/user/services/achievements.service.ts
+src/lib/server/domain/user/services/user-stats.service.ts
+src/lib/server/domain/user/services/user-updates.service.ts
+
+================================================================
+Files
+================================================================
+
+================
+File: src/lib/server/domain/media/base/base.calculation.repository.ts
+================
+import {Status} from "@/lib/server/utils/enums";
+import {and, asc, count, eq, gte, isNotNull, notInArray, sql} from "drizzle-orm";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {Achievement} from "@/lib/server/domain/media/movies/movies.calculation.service";
+export class BaseCalculationRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
+> {
+    protected readonly config: TConfig;
+    constructor(config: TConfig) {
+        this.config = config;
+    }
+    applyUserFilterAndGrouping(cte: any, baseConditions: any[], userId?: number) {
+        const { listTable } = this.config;
+        const conditions = [...baseConditions];
+        if (userId) {
+            conditions.push(eq(listTable.userId, userId));
+        }
+        return cte.where(and(...conditions)).groupBy(listTable.userId).as("calculation");
+    }
+    getCountCompletedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+        const conditions = [eq(listTable.status, Status.COMPLETED)]
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    getCountRatedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+        const conditions = [isNotNull(listTable.rating)]
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    getCountCommentedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+        const conditions = [isNotNull(listTable.comment)]
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    getSpecificGenreAchievementCte(achievement: Achievement, userId?: number) {
+        const { mediaTable, listTable, genreTable } = this.config;
+        const baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(genreTable, eq(mediaTable.id, genreTable.mediaId));
+        const conditions = [eq(listTable.status, Status.COMPLETED), eq(genreTable.name, achievement.value)];
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    async topMetricStatsQueries(userId: number, statsConfig: Record<string, any>) {
+        const limit = statsConfig?.limit ?? 10;
+        const { mediaTable, listTable } = this.config;
+        const minRatingCount = statsConfig?.minRatingCount ?? 5;
+        const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, statusFilters } = statsConfig;
+        const countAlias = sql<number>`countDistinct(${metricNameColumn})`
+        const topValuesQuery = getDbClient()
+            .select({ name: metricNameColumn, value: countAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                notInArray(listTable.status, statusFilters)
+            ))
+            .groupBy(metricNameColumn)
+            .orderBy(asc(countAlias))
+            .limit(limit)
+        const avgRatingAlias = sql<number>`avgDistinct(${metricNameColumn})`;
+        const ratingCountAlias = sql<number>`count(${listTable.rating})`;
+        const topRatedQuery = getDbClient()
+            .select({ name: metricNameColumn, value: avgRatingAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                isNotNull(listTable.rating), notInArray(listTable.status, statusFilters),
+            ))
+            .groupBy(metricNameColumn)
+            .having(gte(ratingCountAlias, minRatingCount))
+            .orderBy(asc(avgRatingAlias))
+            .limit(limit);
+        const topFavoritedQuery = getDbClient()
+            .select({ name: metricNameColumn, value: countAlias })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
+            .where(and(
+                eq(listTable.userId, userId), isNotNull(metricNameColumn),
+                eq(listTable.favorite, true), notInArray(listTable.status, statusFilters),
+            ))
+            .groupBy(metricNameColumn)
+            .orderBy(asc(countAlias))
+            .limit(limit);
+        const [topValuesResult, topRatedResult, topFavoritedResult] =
+            await Promise.all([topValuesQuery.execute(), topRatedQuery.execute(), topFavoritedQuery.execute()]);
+        return {
+            topValues: topValuesResult.map((row: any) => ({
+                name: row.name,
+                value: Number(row.value) || 0,
+            })),
+            topRated: topRatedResult.map((row: any) => ({
+                name: row.name,
+                value: Math.round((Number(row.value) || 0) * 100) / 100,
+            })),
+            topFavorited: topFavoritedResult.map((row: any) => ({
+                name: row.name,
+                value: Number(row.value) || 0,
+            })),
+        };
+    }
+    async computeRatingStats(userId: number) {
+        const { listTable } = this.config;
+        const ratingDistribution: { [key: string]: number } = {};
+        for (let i = 0; i <= 20; i++) {
+            ratingDistribution[(i * 0.5).toFixed(1)] = 0;
+        }
+        const ratingQuery = await getDbClient()
+            .select({ rating: listTable.rating, count: count(listTable.rating) })
+            .from(listTable)
+            .where(and(eq(listTable.userId, userId), isNotNull(listTable.rating)))
+            .groupBy(listTable.rating)
+            .orderBy(asc(listTable.rating))
+            .execute();
+        ratingQuery.forEach((result) => {
+            const ratingKey = result?.rating?.toFixed(1);
+            if (ratingKey) ratingDistribution[ratingKey] = result.count;
+        });
+        const ratings = Object.entries(ratingDistribution).map(([name, value]) => ({ name, value }));
+        return ratings.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+    }
+    async computeReleaseDateStats(userId: number) {
+        const { mediaTable, listTable } = this.config;
+        const releaseDates = await getDbClient()
+            .select({
+                name: sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`,
+                value: sql<number>`cast(count(${mediaTable.releaseDate}) as int)`.as("count"),
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.releaseDate)))
+            .groupBy(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`)
+            .orderBy(asc(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`))
+            .execute();
+        return releaseDates;
+    }
+    async computeGenresStats(userId: number) {
+        const { genreTable, listTable } = this.config;
+        const metricStatsConfig = {
+            metricTable: genreTable,
+            metricNameColumn: genreTable.name,
+            metricIdColumn: genreTable.mediaId,
+            mediaLinkColumn: listTable.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        return await this.topMetricStatsQueries(userId, metricStatsConfig);
+    }
+    async getTotalMediaLabel(userId: number) {
+        const { labelTable } = this.config;
+        const result = await getDbClient()
+            .selectDistinct({ count: count(labelTable.name) })
+            .from(labelTable)
+            .where(eq(labelTable.userId, userId))
+            .get();
+        return result?.count ?? 0;
+    }
+}
+
+================
+File: src/lib/server/domain/media/movies/movies.calculation.repository.ts
+================
+import {Status} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {movies, moviesActors, moviesList} from "@/lib/server/database/schema";
+import {Achievement} from "@/lib/server/domain/media/movies/movies.calculation.service";
+import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
+import {and, asc, count, countDistinct, eq, gte, isNotNull, lte, max, ne, sql} from "drizzle-orm";
+import {BaseCalculationRepository} from "@/lib/server/domain/media/base/base.calculation.repository";
+export class MoviesCalculationRepository extends BaseCalculationRepository<MovieSchemaConfig> {
+    config: MovieSchemaConfig;
+    constructor() {
+        super(moviesConfig);
+        this.config = moviesConfig;
+    }
+    getDurationAchievementCte(achievement: Achievement, userId?: number) {
+        const value = parseInt(achievement.value!);
+        const isLong = achievement.codeName.includes("long");
+        const condition = isLong ? gte(movies.duration, value) : lte(movies.duration, value);
+        let baseCTE = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                value: count(moviesList.mediaId).as("value"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+        const conditions = [eq(moviesList.status, Status.COMPLETED), condition]
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
+        let subQ = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                count: count(moviesList.mediaId).as("count"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+            .where(eq(moviesList.status, Status.COMPLETED))
+            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, movies.directorName)
+            .as("sub");
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+    getActorAchievementCte(_achievement: Achievement, userId?: number) {
+        let subQ = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                count: count(moviesList.mediaId).as("count"),
+            }).from(moviesList)
+            .innerJoin(moviesActors, eq(moviesList.mediaId, moviesActors.mediaId))
+            .where(eq(moviesList.status, Status.COMPLETED))
+            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, moviesActors.name)
+            .as("sub");
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+    getOriginLanguageAchievementCte(_achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                value: countDistinct(movies.originalLanguage).as("value"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+        const conditions = [eq(moviesList.status, Status.COMPLETED)]
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+    async getBudgetRevenueStats(userId: number) {
+        const data = await getDbClient()
+            .select({
+                totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)::numeric`.as("total_budget"),
+                totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)::numeric`.as("total_revenue"),
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH)))
+            .get();
+        return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
+    }
+    async getDurationDistribution(userId: number) {
+        return getDbClient()
+            .select({
+                name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
+                value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
+            .groupBy(sql<number>`floor(${movies.duration} / 30.0) * 30`)
+            .orderBy(asc(sql<number>`floor(${movies.duration} / 30.0) * 30`));
+    }
+    async getAvgDuration(userId: number) {
+        const avgDuration = await getDbClient()
+            .select({
+                average: sql<number | null>`cast(avg(${movies.duration}) as numeric)`.as("avg_duration")
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(eq(moviesList.userId, userId), ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
+            .get();
+        return avgDuration?.average;
+    }
+    async specificTopMetrics(userId: number) {
+        const directorsConfig = {
+            metricTable: movies,
+            metricNameColumn: movies.directorName,
+            metricIdColumn: movies.id,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const actorsConfig = {
+            metricTable: moviesActors,
+            metricNameColumn: moviesActors.name,
+            metricIdColumn: moviesActors.mediaId,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const languagesConfig = {
+            metricTable: movies,
+            metricNameColumn: movies.originalLanguage,
+            metricIdColumn: movies.id,
+            mediaLinkColumn: moviesList.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+        const languagesStats = await this.topMetricStatsQueries(userId, languagesConfig);
+        const directorsStats = await this.topMetricStatsQueries(userId, directorsConfig);
+        const actorsStats = await this.topMetricStatsQueries(userId, actorsConfig);
+        return { directorsStats, actorsStats, languagesStats };
+    }
+}
+
+================
+File: src/lib/server/domain/media/movies/movies.calculation.service.ts
+================
+import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {MoviesCalculationRepository} from "@/lib/server/domain/media/movies/movies.calculation.repository";
+export interface Achievement {
+    id: number
+    name: string
+    mediaType: MediaType | null
+    codeName: string
+    description: string
+    value: string | null
+    tiers: AchievementTier[]
+}
+export interface AchievementTier {
+    id: number
+    achievementId: number
+    difficulty: AchievementDifficulty
+    criteria: {
+        count: any,
+    }
+    rarity: number | null
+}
+export class MoviesCalculationService {
+    constructor(private repository: MoviesCalculationRepository) {
+    }
+    async calculateAchievement(achievement: Achievement, userId?: number) {
+        if (achievement.codeName === "completed_movies") {
+            return this.repository.getCountCompletedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "rated_movies") {
+            return this.repository.getCountRatedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "comment_movies") {
+            return this.repository.getCountCommentedAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "director_movies") {
+            return this.repository.getDirectorAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "actor_movies") {
+            return this.repository.getActorAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "origin_lang_movies") {
+            return this.repository.getOriginLanguageAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "war_genre_movies") {
+            return this.repository.getSpecificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "family_genre_movies") {
+            return this.repository.getSpecificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "sci_genre_movies") {
+            return this.repository.getSpecificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "animation_movies") {
+            return this.repository.getSpecificGenreAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "long_movies") {
+            return this.repository.getDurationAchievementCte(achievement, userId);
+        }
+        else if (achievement.codeName === "short_movies") {
+            return this.repository.getDurationAchievementCte(achievement, userId);
+        }
+        throw new Error("Unknown achievement code name");
+    }
+    async calculateSpecificStats(userId: number) {
+        const ratings = await this.repository.computeRatingStats(userId);
+        const totalLabels = await this.repository.getTotalMediaLabel(userId);
+        const genresStats = await this.repository.computeGenresStats(userId);
+        const releaseDates = await this.repository.computeReleaseDateStats(userId);
+        const avgDuration = await this.repository.getAvgDuration(userId);
+        const { totalBudget, totalRevenue } = await this.repository.getBudgetRevenueStats(userId);
+        const durationDistribution = await this.repository.getDurationDistribution(userId);
+        const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        return {
+            ratings,
+            totalLabels,
+            genresStats,
+            releaseDates,
+            totalBudget,
+            totalRevenue,
+            avgDuration,
+            durationDistribution,
+            directorsStats,
+            actorsStats,
+            languagesStats,
+        };
+    }
+    async getTotalMediaLabel(userId: number) {
+        return this.repository.getTotalMediaLabel(userId);
+    }
+}
+
+================
+File: src/lib/server/domain/media/registries/registries.ts
+================
+import {MediaType} from "@/lib/server/utils/enums";
+import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
+import {MoviesCalculationService} from "@/lib/server/domain/media/movies/movies.calculation.service";
+interface MediaRepositoryMap {
+    [MediaType.SERIES]: MoviesRepository;
+    [MediaType.ANIME]: MoviesRepository;
+    [MediaType.MOVIES]: MoviesRepository;
+    [MediaType.GAMES]: MoviesRepository;
+    [MediaType.BOOKS]: MoviesRepository;
+    [MediaType.MANGA]: MoviesRepository;
+}
+interface MediaServiceMap {
+    [MediaType.SERIES]: MoviesService;
+    [MediaType.ANIME]: MoviesService;
+    [MediaType.MOVIES]: MoviesService;
+    [MediaType.GAMES]: MoviesService;
+    [MediaType.BOOKS]: MoviesService;
+    [MediaType.MANGA]: MoviesService;
+}
+interface MediaCalculationServiceMap {
+    [MediaType.SERIES]: MoviesCalculationService;
+    [MediaType.ANIME]: MoviesCalculationService;
+    [MediaType.MOVIES]: MoviesCalculationService;
+    [MediaType.GAMES]: MoviesCalculationService;
+    [MediaType.BOOKS]: MoviesCalculationService;
+    [MediaType.MANGA]: MoviesCalculationService;
+}
+interface MediaProviderServiceMap {
+    [MediaType.SERIES]: MoviesProviderService;
+    [MediaType.ANIME]: MoviesProviderService;
+    [MediaType.MOVIES]: MoviesProviderService;
+    [MediaType.GAMES]: MoviesProviderService;
+    [MediaType.BOOKS]: MoviesProviderService;
+    [MediaType.MANGA]: MoviesProviderService;
+}
+export class MediaRepositoryRegistry {
+    private static repositories: MediaRepositoryMap = {} as MediaRepositoryMap;
+    static registerRepository<T extends keyof MediaRepositoryMap>(mediaType: T, repository: MediaRepositoryMap[T]) {
+        this.repositories[mediaType] = repository;
+    }
+    static getRepository<T extends keyof MediaRepositoryMap>(mediaType: T) {
+        if (!this.repositories[mediaType]) {
+            throw new Error(`Repository for media type ${mediaType} not registered`);
+        }
+        return this.repositories[mediaType];
+    }
+}
+export class MediaServiceRegistry {
+    private static services: MediaServiceMap = {} as MediaServiceMap;
+    static registerService<T extends keyof MediaServiceMap>(mediaType: T, service: MediaServiceMap[T]) {
+        this.services[mediaType] = service;
+    }
+    static getService<T extends keyof MediaServiceMap>(mediaType: T) {
+        if (!this.services[mediaType]) {
+            throw new Error(`Service for media type ${mediaType} not registered`);
+        }
+        return this.services[mediaType];
+    }
+}
+export class MediaProviderServiceRegistry {
+    private static providers: MediaProviderServiceMap = {} as MediaProviderServiceMap;
+    static registerService<T extends keyof MediaProviderServiceMap>(mediaType: T, provider: MediaProviderServiceMap[T]) {
+        this.providers[mediaType] = provider;
+    }
+    static getService<T extends keyof MediaProviderServiceMap>(mediaType: T) {
+        if (!this.providers[mediaType]) {
+            throw new Error(`ProviderService for media type ${mediaType} not registered`);
+        }
+        return this.providers[mediaType];
+    }
+}
+export class MediaCalculationServiceRegistry {
+    private static providers: MediaCalculationServiceMap = {} as MediaCalculationServiceMap;
+    static registerService<T extends keyof MediaCalculationServiceMap>(mediaType: T, provider: MediaCalculationServiceMap[T]) {
+        this.providers[mediaType] = provider;
+    }
+    static getService<T extends keyof MediaCalculationServiceMap>(mediaType: T) {
+        if (!this.providers[mediaType]) {
+            throw new Error(`CalculationService for media type ${mediaType} not registered`);
+        }
+        return this.providers[mediaType];
+    }
+}
+
+================
+File: src/lib/server/domain/media/movies/movies.config.ts
+================
+import {asc, desc} from "drizzle-orm";
+import {Status} from "@/lib/server/utils/enums";
+import * as schema from "@/lib/server/database/schema";
+import {MediaSchemaConfig, RelatedEntityConfig} from "@/lib/server/types/media-lists.types";
+export type MovieSchemaConfig = MediaSchemaConfig<
+    typeof schema.movies,
+    typeof schema.moviesList,
+    typeof schema.moviesGenre,
+    typeof schema.moviesLabels
+> & {
+    genreConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesGenre>;
+    actorConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesActors>;
+};
+export const moviesConfig: MovieSchemaConfig = {
+    mediaTable: schema.movies,
+    listTable: schema.moviesList,
+    genreTable: schema.moviesGenre,
+    labelTable: schema.moviesLabels,
+    baseSelection: {
+        userId: schema.moviesList.userId,
+        imageCover: schema.movies.imageCover,
+        mediaId: schema.moviesList.mediaId,
+        status: schema.moviesList.status,
+        rating: schema.moviesList.rating,
+        favorite: schema.moviesList.favorite,
+        comment: schema.moviesList.comment,
+        redo: schema.moviesList.redo,
+        mediaName: schema.movies.name,
+        director: schema.movies.directorName,
+        originalLanguage: schema.movies.originalLanguage,
+    },
+    genreConfig: {
+        entityTable: schema.moviesGenre,
+        filterColumnInEntity: schema.moviesGenre.name,
+        mediaIdColumnInEntity: schema.moviesGenre.mediaId,
+        idColumnInMedia: schema.movies.id,
+    },
+    actorConfig: {
+        entityTable: schema.moviesActors,
+        filterColumnInEntity: schema.moviesActors.name,
+        mediaIdColumnInEntity: schema.moviesActors.mediaId,
+        idColumnInMedia: schema.movies.id,
+    },
+    maxGenres: 5,
+    defaultStatus: Status.COMPLETED,
+    defaultSortName: "Title A-Z",
+    availableSorts: {
+        "Title A-Z": asc(schema.movies.name),
+        "Title Z-A": desc(schema.movies.name),
+        "Rating +": [desc(schema.moviesList.rating), asc(schema.movies.name)],
+        "Rating -": [asc(schema.moviesList.rating), asc(schema.movies.name)],
+        "TMDB Rating +": [desc(schema.movies.voteAverage), asc(schema.movies.name)],
+        "TMDB Rating -": [asc(schema.movies.voteAverage), asc(schema.movies.name)],
+        "Release Date +": [desc(schema.movies.releaseDate), asc(schema.movies.name)],
+        "Release Date -": [asc(schema.movies.releaseDate), asc(schema.movies.name)],
+        "Re-Watched": [desc(schema.moviesList.redo), asc(schema.movies.name)],
+    },
+    editableFields: [
+        "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
+        "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
+    ] as const,
+    achievementsCodeName: [
+        "animation_movies",
+        "rated_movies",
+        "completed_movies",
+        "comment_movies",
+        "director_movies",
+        "long_movies",
+        "family_genre_movies",
+        "sci_genre_movies",
+        "short_movies",
+        "actor_movies",
+        "war_genre_movies",
+        "origin_lang_movies",
+    ]
+};
+
+================
+File: src/lib/server/domain/user/repositories/achievements.repository.ts
+================
+import {db} from "@/lib/server/database/db";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {AchievementData} from "@/lib/server/types/achievements";
+import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {and, asc, count, eq, getTableColumns, inArray, max, sql} from "drizzle-orm";
+import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
+import {AchievementTier} from "@/lib/server/domain/media/movies/movies.calculation.service";
+export class AchievementsRepository {
+    static getSQLTierOrdering() {
+        return sql<number>`CASE ${achievementTier.difficulty}
+            WHEN 'bronze' THEN 1
+            WHEN 'silver' THEN 2
+            WHEN 'gold' THEN 3
+            WHEN 'platinum' THEN 4
+            ELSE 0
+        END`;
+    }
+    static async seedAchievements(achievementsDefinition: AchievementData[]) {
+        await db.transaction(async (tx) => {
+            for (const achievementData of achievementsDefinition) {
+                const existingAchievement = await tx
+                    .select()
+                    .from(achievement)
+                    .where(eq(achievement.codeName, achievementData.codeName))
+                    .get();
+                let currentAchievement: typeof achievement.$inferSelect | undefined;
+                if (existingAchievement) {
+                    currentAchievement = existingAchievement;
+                    await tx
+                        .update(achievement)
+                        .set({
+                            name: achievementData.name,
+                            mediaType: achievementData.mediaType,
+                            value: achievementData.value?.toString(),
+                            description: achievementData.description,
+                        })
+                        .where(eq(achievement.id, currentAchievement.id))
+                }
+                else {
+                    const newAchievements = await tx
+                        .insert(achievement)
+                        .values({
+                            name: achievementData.name,
+                            codeName: achievementData.codeName,
+                            mediaType: achievementData.mediaType,
+                            value: achievementData.value?.toString(),
+                            description: achievementData.description,
+                        })
+                        .returning();
+                    currentAchievement = newAchievements[0];
+                }
+                const existingTiers = await tx
+                    .select()
+                    .from(achievementTier)
+                    .where(eq(achievementTier.achievementId, currentAchievement.id))
+                const newDifficulties = new Set(achievementData.tiers.map((tier) => tier.difficulty));
+                const existingTierDiff = new Set(existingTiers.map((tier) => tier.difficulty));
+                const difficultiesToRemove = Array.from(existingTierDiff).filter((d) => !newDifficulties.has(d));
+                if (difficultiesToRemove.length > 0) {
+                    await tx
+                        .delete(achievementTier)
+                        .where(and(
+                            eq(achievementTier.achievementId, currentAchievement.id),
+                            inArray(achievementTier.difficulty, difficultiesToRemove),
+                        ))
+                }
+                for (const tierData of achievementData.tiers) {
+                    const existingTier = existingTiers.find((tier) => tier.difficulty === tierData.difficulty);
+                    if (existingTier) {
+                        await tx
+                            .update(achievementTier)
+                            .set({ criteria: tierData.criteria })
+                            .where(eq(achievementTier.id, existingTier.id))
+                    }
+                    else {
+                        await tx
+                            .insert(achievementTier)
+                            .values({
+                                achievementId: currentAchievement.id,
+                                difficulty: tierData.difficulty,
+                                criteria: tierData.criteria,
+                            })
+                    }
+                }
+            }
+            const mediaTypeAchievements = await tx
+                .select({
+                    id: achievement.id,
+                    codeName: achievement.codeName,
+                })
+                .from(achievement)
+                .where(eq(achievement.mediaType, achievementsDefinition[0].mediaType))
+            const definedCodeNames = new Set(achievementsDefinition.map((ad) => ad.codeName));
+            const achievementsToRemove = mediaTypeAchievements.filter(
+                (existingAch) => !definedCodeNames.has(existingAch.codeName),
+            );
+            if (achievementsToRemove.length > 0) {
+                const idsToRemove = achievementsToRemove.map((ach) => ach.id);
+                await tx
+                    .delete(achievementTier)
+                    .where(inArray(achievementTier.achievementId, idsToRemove))
+                await tx
+                    .delete(achievement)
+                    .where(inArray(achievement.id, idsToRemove))
+            }
+        });
+    }
+    static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
+        await getDbClient().update(achievement).set(payload).where(eq(achievement.id, achievementId));
+    }
+    static async adminUpdateTiers(payloads: Record<string, any>[]) {
+        return db.transaction(async (tx) => {
+            for (const payload of payloads) {
+                await tx
+                    .update(achievementTier)
+                    .set({ criteria: payload.criteria })
+                    .where(eq(achievementTier.id, payload.id));
+            }
+        });
+    }
+    static async getDifficultySummary(userId: number) {
+        const tierOrder = this.getSQLTierOrdering();
+        const subq = getDbClient()
+            .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
+            .groupBy(userAchievement.achievementId)
+            .as("subq");
+        const results = await getDbClient()
+            .select({ difficulty: achievementTier.difficulty, count: count().mapWith(Number) })
+            .from(achievementTier)
+            .innerJoin(subq, and(eq(achievementTier.achievementId, subq.achievementId), eq(tierOrder, subq.maxTierOrder)))
+            .groupBy(achievementTier.difficulty)
+            .orderBy(tierOrder);
+        return results;
+    }
+    static async getAchievementsDetails(userId: number, limit = 6) {
+        const tierOrder = this.getSQLTierOrdering();
+        const highestCompletedTierSubquery = getDbClient()
+            .select({ achievementId: userAchievement.achievementId, maxTierOrder: max(tierOrder).as("maxTierOrder") })
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
+            .groupBy(userAchievement.achievementId)
+            .as("highestCompleted");
+        const results = await getDbClient()
+            .select({
+                name: achievement.name,
+                description: achievement.description,
+                difficulty: achievementTier.difficulty,
+            })
+            .from(achievement)
+            .innerJoin(highestCompletedTierSubquery, eq(achievement.id, highestCompletedTierSubquery.achievementId))
+            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
+            .where(eq(tierOrder, highestCompletedTierSubquery.maxTierOrder))
+            .orderBy(sql`RANDOM()`)
+            .limit(limit);
+        return results;
+    }
+    static async countPlatinumAchievements(userId: number) {
+        const result = await getDbClient()
+            .select({ count: count() })
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .where(and(
+                eq(userAchievement.userId, userId),
+                eq(userAchievement.completed, true),
+                eq(achievementTier.difficulty, AchievementDifficulty.PLATINUM)
+            ))
+            .get();
+        return result?.count ?? 0;
+    }
+    static async getUserAchievementStats(userId: number) {
+        const tierOrder = this.getSQLTierOrdering();
+        const subq = getDbClient()
+            .select({
+                mediaType: achievement.mediaType,
+                achievementId: userAchievement.achievementId,
+                maxTierOrder: max(tierOrder).as("maxTierOrder"),
+            })
+            .from(userAchievement)
+            .innerJoin(achievementTier, eq(userAchievement.tierId, achievementTier.id))
+            .innerJoin(achievement, eq(userAchievement.achievementId, achievement.id))
+            .where(and(eq(userAchievement.userId, userId), eq(userAchievement.completed, true)))
+            .groupBy(achievement.mediaType, userAchievement.achievementId)
+            .as("subq");
+        const completedResult = await getDbClient()
+            .select({
+                mediaType: subq.mediaType,
+                count: count().as("count"),
+                difficulty: achievementTier.difficulty,
+            })
+            .from(achievementTier)
+            .innerJoin(subq, and(eq(achievementTier.achievementId, subq.achievementId), eq(tierOrder, subq.maxTierOrder)))
+            .groupBy(subq.mediaType, achievementTier.difficulty)
+            .orderBy(subq.mediaType, tierOrder);
+        const totalAchievementsResult = await getDbClient()
+            .select({ total: count().as("total"), mediaType: achievement.mediaType })
+            .from(achievement)
+            .groupBy(achievement.mediaType);
+        return { completedResult, totalAchievementsResult };
+    }
+    static async getAllUserAchievements(userId: number) {
+        const tierOrder = this.getSQLTierOrdering();
+        const results = await getDbClient()
+            .select({
+                tier: achievementTier,
+                achievement: achievement,
+                userProgress: userAchievement,
+            })
+            .from(achievement)
+            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
+            .leftJoin(userAchievement, and(eq(achievementTier.id, userAchievement.tierId), eq(userAchievement.userId, userId)))
+            .orderBy(achievement.id, tierOrder);
+        return results;
+    }
+    static async getAllAchievements() {
+        const tierOrder = this.getSQLTierOrdering();
+        const flatResults = await getDbClient()
+            .select({
+                ...getTableColumns(achievement),
+                tier: getTableColumns(achievementTier),
+            })
+            .from(achievement)
+            .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
+            .orderBy(asc(achievement.id), tierOrder);
+        type GroupedAchievement = Omit<typeof flatResults[0], "tier"> & {
+            tiers: typeof flatResults[0]["tier"][];
+        };
+        const groupedAchievements = flatResults
+            .reduce<Record<number, GroupedAchievement>>((acc, row) => {
+                const { tier, ...achievementData } = row;
+                const achievementId = achievementData.id;
+                if (!acc[achievementId]) {
+                    acc[achievementId] = { ...achievementData, tiers: [] };
+                }
+                acc[achievementId].tiers.push(tier);
+                return acc;
+            }, {});
+        return Object.values(groupedAchievements);
+    }
+    static async getMediaAchievements(mediaType: MediaType) {
+        return getDbClient()
+            .select()
+            .from(achievement)
+            .where(eq(achievement.mediaType, mediaType))
+            .execute()
+    }
+    static async updateAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any, completedAt: any) {
+        await getDbClient()
+            .update(userAchievement)
+            .set({
+                count: count,
+                progress: progress,
+                completed: completed,
+                completedAt: completedAt,
+                lastCalculatedAt: sql`datetime('now')`,
+            }).from(cte)
+            .where(and(
+                eq(userAchievement.tierId, tier.id),
+                sql`${userAchievement.userId} = calculation.user_id`,
+                eq(userAchievement.achievementId, tier.achievementId),
+            ));
+    }
+    static async insertAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any) {
+        await getDbClient().run(sql`
+            INSERT INTO ${userAchievement} (
+                tier_id,
+                user_id,
+                achievement_id,
+                count,
+                progress,
+                completed,
+                completed_at,
+                last_calculated_at
+            )
+            SELECT
+                ${tier.id},
+                calculation.user_id,
+                ${tier.achievementId},
+                ${count},
+                ${progress},
+                ${completed},
+                CASE WHEN ${completed} THEN datetime('now') ELSE NULL END,
+                datetime('now')
+            FROM ${cte}
+            WHERE NOT EXISTS (
+                SELECT 1 FROM ${userAchievement} ua
+                WHERE ua.tier_id = ${tier.id}
+                    AND ua.achievement_id = ${tier.achievementId}
+                    AND ua.user_id = calculation.user_id
+            )
+        `);
+    }
+}
+
+================
+File: src/lib/server/domain/user/services/achievements.service.ts
+================
+import {sql} from "drizzle-orm";
+import {userAchievement} from "@/lib/server/database/schema";
+import {AchievementData} from "@/lib/server/types/achievements";
+import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/domain/media/movies/movies.calculation.service";
+import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+export class AchievementsService {
+    constructor(private repository: typeof AchievementsRepository) {
+    }
+    async seedAchievements(achievements: AchievementData[]) {
+        return this.repository.seedAchievements(achievements);
+    }
+    async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
+        await this.repository.adminUpdateAchievement(achievementId, payload);
+    }
+    async adminUpdateTiers(payloads: Record<string, any>[]) {
+        return this.repository.adminUpdateTiers(payloads);
+    }
+    async getDifficultySummary(userId: number) {
+        return this.repository.getDifficultySummary(userId);
+    }
+    async getAchievementsDetails(userId: number, limit = 6) {
+        return this.repository.getAchievementsDetails(userId, limit);
+    }
+    async getAllAchievements() {
+        return this.repository.getAllAchievements();
+    }
+    async getUserAchievementStats(userId: number) {
+        const { completedResult, totalAchievementsResult } = await this.repository.getUserAchievementStats(userId);
+        const mediaTypes = Object.values(MediaType);
+        const difficulties = Object.values(AchievementDifficulty);
+        const totalAchievementsMap = new Map(totalAchievementsResult.map((item) => [item.mediaType, item.total]));
+        const completedCountsMap = new Map(completedResult.map((item) => [`${item.mediaType}-${item.difficulty}`, item.count]));
+        const allDifficultySums = Object.fromEntries(
+            difficulties.map((diff) => [diff, 0])
+        ) as Record<AchievementDifficulty, number>;
+        const results = {
+            all: [] as TierStat[],
+            ...Object.fromEntries(mediaTypes.map((mt) => [mt, [] as TierStat[]])),
+        } as AchievementStats;
+        let grandTotal = 0;
+        let grandTotalGained = 0;
+        for (const mediaType of mediaTypes) {
+            const mediaTypeStats: TierStat[] = [];
+            let mediaTypeTotalGained = 0;
+            for (const difficulty of difficulties) {
+                const count = completedCountsMap.get(`${mediaType}-${difficulty}`) || 0;
+                mediaTypeStats.push({ tier: difficulty, count });
+                allDifficultySums[difficulty] += count;
+                mediaTypeTotalGained += count;
+            }
+            const mediaTypeAchievementTotal = totalAchievementsMap.get(mediaType) || 0;
+            mediaTypeStats.push({ tier: "total", count: `${mediaTypeTotalGained}/${mediaTypeAchievementTotal}` });
+            results[mediaType] = mediaTypeStats;
+            grandTotal += mediaTypeAchievementTotal;
+            grandTotalGained += mediaTypeTotalGained;
+        }
+        const allStats: TierStat[] = [];
+        for (const difficulty of difficulties) {
+            allStats.push({ tier: difficulty, count: allDifficultySums[difficulty] });
+        }
+        allStats.push({ tier: "total", count: `${grandTotalGained}/${grandTotal}` });
+        results["all"] = allStats;
+        return results;
+    }
+    async getAllUserAchievements(userId: number) {
+        const results = await this.repository.getAllUserAchievements(userId);
+        const achievementsMap = new Map<number, UserAchievementDetails>();
+        for (const row of results) {
+            const tier = row.tier;
+            const ach = row.achievement;
+            const progress = row.userProgress;
+            let achievementEntry = achievementsMap.get(ach.id);
+            if (!achievementEntry) {
+                achievementEntry = {
+                    id: ach.id,
+                    name: ach.name,
+                    description: ach.description,
+                    mediaType: ach.mediaType!,
+                    tiers: [],
+                };
+                achievementsMap.set(ach.id, achievementEntry);
+            }
+            const tierProgress: UserTierProgress = {
+                id: tier.id,
+                rarity: tier.rarity!,
+                criteria: tier.criteria,
+                difficulty: tier.difficulty,
+                count: progress?.count ?? 0,
+                progress: progress?.progress ?? 0,
+                completed: progress?.completed ?? false,
+                completedAt: progress?.completedAt ?? null,
+            };
+            achievementEntry.tiers.push(tierProgress);
+        }
+        const finalAchievements = Array.from(achievementsMap.values());
+        finalAchievements.sort((a, b) => {
+            if (a.mediaType !== b.mediaType) {
+                return (a.mediaType).localeCompare(b.mediaType);
+            }
+            return a.name.localeCompare(b.name);
+        });
+        return finalAchievements;
+    }
+    async getMediaAchievements(mediaType: MediaType) {
+        return this.repository.getMediaAchievements(mediaType);
+    }
+    async updateEachAchievementTier(achievement: Achievement, cte: any) {
+        for (const tier of achievement.tiers) {
+            const valueNeeded = tier.criteria.count;
+            const count = sql`calculation.value`;
+            const completed = sql`calculation.value >= ${valueNeeded}`;
+            const progress = sql`CASE
+                WHEN (calculation.value / ${valueNeeded}) * 100.0 < 100.0
+                THEN (calculation.value / ${valueNeeded}) * 100.0
+                ELSE 100.0
+            END`;
+            const completedAt = sql`CASE
+                WHEN calculation.value >= ${valueNeeded} AND ${userAchievement.completed} = false
+                THEN datetime('now')
+                ELSE ${userAchievement.completedAt}
+            END`;
+            await this.repository.updateAchievement(tier, cte, completed, count, progress, completedAt);
+            await this.repository.insertAchievement(tier, cte, completed, count, progress);
+        }
+    }
+}
+type AchievementStats = { [key in MediaType | "all"]: TierStat[] };
+interface TierStat {
+    count: number | string;
+    tier: AchievementDifficulty | "total";
+}
+interface UserTierProgress {
+    id: number;
+    count: number;
+    rarity: number;
+    progress: number;
+    completed: boolean;
+    completedAt: string | null;
+    criteria: { count: number };
+    difficulty: AchievementDifficulty;
+}
+interface UserAchievementDetails {
+    id: number;
+    name: string;
+    mediaType: MediaType;
+    tiers: UserTierProgress[];
+    description: string | null;
+}
+
+================
+File: src/lib/server/domain/user/repositories/user-stats.repository.ts
+================
+import {db} from "@/lib/server/database/db";
+import {alias} from "drizzle-orm/sqlite-core";
+import {MediaType} from "@/lib/server/utils/enums";
+import {StatsDelta} from "@/lib/server/types/stats.types";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
+import {user, userMediaSettings} from "@/lib/server/database/schema";
+export class UserStatsRepository {
+    static async getActiveSettings(userId: number) {
+        return getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.active, true)))
+            .execute();
+    }
+    static async updateUserMediaSettings(userId: number, payload: Record<MediaType, boolean>) {
+        const updateCases = Object.entries(payload).map(([mediaType, active]) => {
+            return sql`${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
+        });
+        await getDbClient()
+            .update(userMediaSettings)
+            .set({
+                active: sql`CASE ${sql.join(updateCases, sql` WHEN `)} END`,
+            })
+            .where(eq(userMediaSettings.userId, userId))
+            .execute();
+    }
+    static async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
+        const setUpdates: Record<string, any> = {};
+        const numericFields: (keyof StatsDelta)[] = [
+            "timeSpent", "views", "totalEntries", "totalRedo", "entriesRated",
+            "sumEntriesRated", "entriesCommented", "entriesFavorites", "totalSpecific",
+        ];
+        for (const field of numericFields) {
+            if (delta[field] !== undefined && delta[field] !== 0) {
+                const column = userMediaSettings[field];
+                setUpdates[field] = sql`${column} + ${delta[field]!}`;
+            }
+        }
+        if (delta.statusCounts && Object.keys(delta.statusCounts).length > 0) {
+            let jsonUpdateSql = sql`${userMediaSettings.statusCounts}`;
+            for (const [status, change] of Object.entries(delta.statusCounts)) {
+                if (change !== 0) {
+                    jsonUpdateSql = sql`json_set(
+                        COALESCE(${jsonUpdateSql}, '{}'),
+                        '$.${sql.raw(status)}',
+                        COALESCE(json_extract(COALESCE(${jsonUpdateSql}, '{}'), '$.${sql.raw(status)}'), 0) + ${change}
+                    )`;
+                }
+            }
+            setUpdates.statusCounts = jsonUpdateSql;
+        }
+        const deltaEntriesRated = delta.entriesRated ?? 0;
+        const deltaSumEntriesRated = delta.sumEntriesRated ?? 0;
+        setUpdates.averageRating = sql<number | null>`
+            CASE
+                WHEN COALESCE(${userMediaSettings.entriesRated}, 0) + ${deltaEntriesRated} <= 0
+                THEN NULL
+                ELSE (CAST(COALESCE(${userMediaSettings.sumEntriesRated}, 0) + ${deltaSumEntriesRated} AS REAL) /
+                (COALESCE(${userMediaSettings.entriesRated}, 0) + ${deltaEntriesRated}))
+            END`;
+        if (Object.keys(setUpdates).length === 0) return;
+        await getDbClient()
+            .update(userMediaSettings)
+            .set(setUpdates)
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+    }
+    static async updateUserStats(mediaType: MediaType, userStats: any[]) {
+        await db.transaction(async (tx) => {
+            for (const stat of userStats) {
+                await tx
+                    .update(userMediaSettings)
+                    .set({
+                        mediaType: mediaType,
+                        timeSpent: stat.timeSpent,
+                        totalRedo: stat.totalRedo,
+                        statusCounts: stat.statusCounts,
+                        totalEntries: stat.totalEntries,
+                        entriesRated: stat.entriesRated,
+                        totalSpecific: stat.totalSpecific,
+                        averageRating: stat.averageRating,
+                        sumEntriesRated: stat.sumEntriesRated,
+                        entriesFavorites: stat.entriesFavorites,
+                        entriesCommented: stat.entriesCommented,
+                    })
+                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+            }
+        });
+    }
+    static async getSpecificMediaSetting(userId: number, mediaType: MediaType) {
+        const mediaSettings = await getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
+            .get();
+        return mediaSettings!;
+    }
+    static async getHallOfFameData(data: Record<string, any>, currentUserId: number) {
+        const { sorting = "normalized", search = "", page = 1, perPage = 10 } = data;
+        const mediaTypes = Object.values(MediaType);
+        const umsAlias = alias(userMediaSettings, "ums");
+        const maxTimePerMedia = db
+            .select({
+                mediaType: userMediaSettings.mediaType,
+                maxTime: sql<number>`max(${userMediaSettings.timeSpent})`.as("max_time"),
+            })
+            .from(userMediaSettings)
+            .where(eq(userMediaSettings.active, true))
+            .groupBy(userMediaSettings.mediaType)
+            .as("max_time_per_media");
+        const normalizedScoreColumns: Record<string, SQL.Aliased<number>> = {};
+        mediaTypes.forEach((mt) => normalizedScoreColumns[`${mt}Score`] = sql<number>`sum(
+            CASE
+                WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0
+                THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime}
+            ELSE 0
+        END)`.as(`${mt}_score`));
+        const totalScoreSumExpression = mediaTypes.map((mt) =>
+            sql`
+                CASE
+                    WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0
+                    THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime}
+                ELSE 0 END
+            `,
+        ).reduce((acc, curr) => sql`${acc} + ${curr}`);
+        const baseQuery = db
+            .select({
+                id: user.id,
+                name: user.name,
+                image: user.image,
+                ...normalizedScoreColumns,
+                totalScore: sql<number>`sum(${totalScoreSumExpression})`.as("total_score"),
+                totalTime: sql<number>`sum(CASE WHEN ${umsAlias.active} = 1 THEN ${umsAlias.timeSpent} ELSE 0 END)`.as("total_time"),
+            })
+            .from(user)
+            .innerJoin(umsAlias, eq(user.id, umsAlias.userId))
+            .leftJoin(maxTimePerMedia, eq(umsAlias.mediaType, maxTimePerMedia.mediaType))
+            .where(ne(user.name, "DemoProfile"))
+            .groupBy(user.id, user.name, user.image)
+            .as("base_sub");
+        // Dynamically construct Ranking window functions
+        const rankColumns: Record<string, SQL.Aliased<unknown>> = {};
+        mediaTypes.forEach((mt) => {
+            const scoreCol = baseQuery[`${mt}Score` as keyof typeof baseQuery];
+            rankColumns[`${mt}Rank`] = sql`row_number() OVER (ORDER BY ${scoreCol} DESC)`.as(`${mt}_rank`);
+        });
+        const allUsersRanked = db
+            .with(baseQuery)
+            .select({
+                id: baseQuery.id,
+                name: baseQuery.name,
+                image: baseQuery.image,
+                ...mediaTypes.reduce((acc, mt) => {
+                    const scoreKey = `${mt}Score` as keyof typeof baseQuery;
+                    acc[scoreKey] = baseQuery[scoreKey];
+                    return acc;
+                }, {} as Record<string, any>),
+                totalScore: baseQuery.totalScore,
+                totalTime: baseQuery.totalTime,
+                totalRank: sql`row_number() OVER (ORDER BY ${baseQuery.totalScore} DESC)`.as("total_rank"),
+                totalRankTime: sql`row_number() OVER (ORDER BY ${baseQuery.totalTime} DESC)`.as("total_rank_time"),
+                ...rankColumns,
+            })
+            .from(baseQuery)
+            .as("all_users_ranked");
+        // Determine Sorting Column
+        let orderByColumn: any;
+        let rankSelectionColName: string;
+        if (sorting === "normalized") {
+            orderByColumn = allUsersRanked.totalRank;
+            rankSelectionColName = "totalRank";
+        }
+        else if (sorting === "profile") {
+            orderByColumn = allUsersRanked.totalRankTime;
+            rankSelectionColName = "totalRankTime";
+        }
+        else {
+            const rankCol = allUsersRanked[`${sorting}Rank` as keyof typeof allUsersRanked];
+            orderByColumn = rankCol;
+            rankSelectionColName = `${sorting}Rank`;
+        }
+        const finalQueryBase = db.with(allUsersRanked).select().from(allUsersRanked);
+        if (search)
+            finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
+        // Get Total Count for Pagination
+        const totalCounter = db.with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
+        if (search)
+            totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
+        const totalResult = await totalCounter.get();
+        const total = totalResult?.count ?? 0;
+        const pages = Math.ceil(total / perPage);
+        const offset = (page - 1) * perPage;
+        // Execute Final Paginated Query
+        const rankedUsers = await finalQueryBase
+            .orderBy(orderByColumn)
+            .limit(perPage)
+            .offset(offset)
+            .execute();
+        // Add user settings to map
+        const userIds = rankedUsers.map((u) => u.id);
+        const allSettings = await db
+            .select()
+            .from(userMediaSettings)
+            .where(inArray(userMediaSettings.userId, userIds))
+            .execute();
+        const userSettingsMap = new Map<number, (typeof userMediaSettings.$inferSelect)[]>();
+        for (const setting of allSettings) {
+            if (!userSettingsMap.has(setting.userId)) {
+                userSettingsMap.set(setting.userId, []);
+            }
+            userSettingsMap.get(setting.userId)!.push(setting);
+        }
+        // Get Media Type Counts
+        const mediaTypeCountsResult = await db
+            .select({
+                mediaType: userMediaSettings.mediaType,
+                activeUsers: sql<number>`count(${userMediaSettings.userId})`,
+            })
+            .from(userMediaSettings)
+            .where(and(gt(userMediaSettings.timeSpent, 0), eq(userMediaSettings.active, true)),
+            )
+            .groupBy(userMediaSettings.mediaType)
+            .execute();
+        const mediaTypeCountMap = new Map<MediaType, number>();
+        mediaTypeCountsResult.forEach((row) => {
+            if (row.mediaType) {
+                mediaTypeCountMap.set(row.mediaType, row.activeUsers);
+            }
+        });
+        const currentUserRankData = await db
+            .with(allUsersRanked)
+            .select()
+            .from(allUsersRanked)
+            .where(eq(allUsersRanked.id, currentUserId))
+            .get();
+        const settings = await this.getActiveSettings(currentUserId);
+        const currentUserActiveSettings = new Set(settings.map((s) => s.mediaType));
+        return {
+            mediaTypes,
+            currentUserRankData: currentUserRankData!,
+            mediaTypeCountMap,
+            currentUserActiveSettings,
+            rankedUsers,
+            userSettingsMap,
+            rankSelectionColName,
+            page, pages, total,
+        };
+    }
+}
+
+================
+File: src/lib/server/domain/user/repositories/user-updates.repository.ts
+================
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
+import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
+import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
+export class UserUpdatesRepository {
+    static async getUserUpdates(userId: number, limit = 8) {
+        return getDbClient().query.userMediaUpdate.findMany({
+            where: eq(userMediaUpdate.userId, userId),
+            orderBy: [desc(userMediaUpdate.timestamp)],
+            limit: limit,
+        });
+    }
+    static async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
+        const pageIndex = filters?.pageIndex ?? 0;
+        const limit = filters?.pageSize ?? 25;
+        const search = filters?.search ?? "";
+        const offset = pageIndex * limit;
+        const totalCountResult = await getDbClient()
+            .select({ count: sql<number>`count()` })
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+        const historyResult = await getDbClient()
+            .select()
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .offset(offset)
+            .limit(limit)
+            .execute();
+        return { total: totalCountResult[0]?.count ?? 0, items: historyResult };
+    }
+    static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+        return getDbClient()
+            .select()
+            .from(userMediaUpdate)
+            .where(and(
+                eq(userMediaUpdate.userId, userId),
+                eq(userMediaUpdate.mediaType, mediaType),
+                eq(userMediaUpdate.mediaId, mediaId),
+            ))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .execute();
+    }
+    static async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
+        let allowedUserIdsQuery;
+        if (asPublic) {
+            allowedUserIdsQuery = getDbClient()
+                .select({ id: user.id }).from(followers)
+                .leftJoin(user, eq(followers.followedId, user.id))
+                .where(and(eq(followers.followerId, userId), eq(user.privacy, PrivacyType.PUBLIC)));
+        }
+        else {
+            allowedUserIdsQuery = getDbClient()
+                .select({ id: followers.followedId }).from(followers)
+                .where(eq(followers.followerId, userId));
+        }
+        const followsUpdates = await getDbClient()
+            .select({ ...getTableColumns(userMediaUpdate), username: user.name })
+            .from(userMediaUpdate)
+            .leftJoin(user, eq(userMediaUpdate.userId, user.id))
+            .where(inArray(userMediaUpdate.userId, allowedUserIdsQuery))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .limit(limit);
+        return followsUpdates;
+    }
+    static async getUpdatesCountPerMonth(userId: number) {
+        const monthlyCountsQuery = getDbClient()
+            .select({
+                month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
+                count: count(userMediaUpdate.mediaId).as("count"),
+            })
+            .from(userMediaUpdate)
+            .where(eq(userMediaUpdate.userId, userId))
+            .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+            .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+        const results = await monthlyCountsQuery.execute();
+        const updatesPerMonth: Record<string, number> = {};
+        let totalUpdates = 0;
+        let numberOfMonths = 0;
+        results.forEach((row) => {
+            if (row.month && typeof row.count === "number") {
+                updatesPerMonth[row.month] = row.count;
+                totalUpdates += row.count;
+                numberOfMonths += 1;
+            }
+        });
+        const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
+        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth, totalUpdates };
+    }
+    static async getMediaUpdatesCountPerMonth(userId: number, mediaType: MediaType) {
+        const monthlyCountsQuery = getDbClient()
+            .select({
+                month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
+                count: count(userMediaUpdate.mediaId).as("count"),
+            })
+            .from(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), eq(userMediaUpdate.mediaType, mediaType)))
+            .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+            .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
+        const results = await monthlyCountsQuery.execute();
+        const updatesPerMonth: Record<string, number> = {};
+        let totalUpdates = 0;
+        let numberOfMonths = 0;
+        results.forEach((row) => {
+            if (row.month && typeof row.count === "number") {
+                updatesPerMonth[row.month] = row.count;
+                totalUpdates += row.count;
+                numberOfMonths++;
+            }
+        });
+        const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
+        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
+    }
+    static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        await getDbClient()
+            .delete(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.userId, userId), inArray(userMediaUpdate.id, updateIds)))
+            .execute();
+        if (returnData) {
+            const newUpdateToReturn = await getDbClient()
+                .select()
+                .from(userMediaUpdate)
+                .where(eq(userMediaUpdate.userId, userId))
+                .orderBy(desc(userMediaUpdate.timestamp))
+                .limit(8)
+                .execute();
+            return newUpdateToReturn?.at(-1) ?? null;
+        }
+    }
+    static async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+        await getDbClient()
+            .delete(userMediaUpdate)
+            .where(and(eq(userMediaUpdate.mediaType, mediaType), inArray(userMediaUpdate.mediaId, mediaIds)))
+            .execute();
+    }
+}
+
+================
+File: src/lib/server/domain/user/services/user-updates.service.ts
+================
+import {and, desc, eq, sql} from "drizzle-orm";
+import {userMediaUpdate} from "@/lib/server/database/schema";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {MediaType, UpdateType} from "@/lib/server/utils/enums";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+interface LogUpdateParams {
+    os: any,
+    ns: any,
+    media: any;
+    userId: number;
+    mediaType: MediaType;
+    updateType: UpdateType;
+}
+type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: any; newValue: any };
+export class UserUpdatesService {
+    private readonly updateThreshold = 300
+    constructor(private repository: typeof UserUpdatesRepository) {
+    }
+    async getUserUpdates(userId: number, limit = 8) {
+        return this.repository.getUserUpdates(userId, limit);
+    }
+    async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
+        return this.repository.getUserMediaHistory(userId, mediaType, mediaId);
+    }
+    async deleteMediaUpdatesForUser(userId: number, mediaType: MediaType, mediaId: number) {
+        const updates = await this.repository.getUserMediaHistory(userId, mediaType, mediaId);
+        const updateIds = updates.map((update) => update.id);
+        await this.repository.deleteUserUpdates(userId, updateIds, false);
+    }
+    async deleteMediaUpdates(mediaType: MediaType, mediaIds: number[]) {
+        return this.repository.deleteMediaUpdates(mediaType, mediaIds);
+    }
+    async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
+        return this.repository.getUserUpdatesPaginated(userId, filters)
+    }
+    async getFollowsUpdates(userId: number, asPublic: boolean, limit = 10) {
+        return this.repository.getFollowsUpdates(userId, asPublic, limit);
+    }
+    async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
+        return this.repository.deleteUserUpdates(userId, updateIds, returnData);
+    }
+    async logUpdate({ userId, mediaType, media, updateType, os, ns }: LogUpdateParams) {
+        const { oldValue, newValue } = this.extractLogValues(updateType)(os, ns);
+        const [previousEntry] = await getDbClient().select()
+            .from(userMediaUpdate).where(and(
+                eq(userMediaUpdate.userId, userId),
+                eq(userMediaUpdate.mediaId, media.id),
+                eq(userMediaUpdate.mediaType, mediaType),
+            ))
+            .orderBy(desc(userMediaUpdate.timestamp))
+            .limit(1)
+            .execute()
+        let timeDifference = Number.POSITIVE_INFINITY;
+        if (previousEntry) {
+            timeDifference = (new Date().getTime() - new Date(previousEntry.timestamp).getTime()) / 1000;
+        }
+        const newUpdateData = {
+            userId: userId,
+            mediaId: media.id,
+            mediaType: mediaType,
+            mediaName: media.name,
+            updateType: updateType,
+            payload: { old_value: oldValue, new_value: newValue },
+            timestamp: sql<string>`CURRENT_TIMESTAMP`,
+        };
+        if (timeDifference > this.updateThreshold) {
+            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
+        }
+        else {
+            await getDbClient().delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
+            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
+        }
+    }
+    extractLogValues(updateType: UpdateType) {
+        const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
+            redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
+            status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
+            page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
+            chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
+            playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
+            tv: (os, ns) => ({
+                oldValue: { season: os?.season ?? null, episode: os?.episode ?? null },
+                newValue: { season: ns.season, episode: ns.episode },
+            }),
+        }
+        return logValueExtractors[updateType];
+    }
+}
+
+================
+File: src/lib/server/domain/user/services/user-stats.service.ts
+================
+import {StatsDelta} from "@/lib/server/types/stats.types";
+import {MediaType, Status} from "@/lib/server/utils/enums";
+import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
+import {MediaCalculationServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+export class UserStatsService {
+    constructor(
+        private repository: typeof UserStatsRepository,
+        private achievementsRepository: typeof AchievementsRepository,
+        private userUpdatesRepository: typeof UserUpdatesRepository,
+        private mediaCalcServiceRegistry: typeof MediaCalculationServiceRegistry,
+    ) {
+    }
+    async getSummaryStats(userId: number) {
+        const activeSettings = await this.repository.getActiveSettings(userId);
+        const timePerMedia = activeSettings.map((setting) => setting.timeSpent / 60);
+        const totalHours = timePerMedia.reduce((sum, time) => sum + time, 0);
+        const totalEntries = activeSettings.reduce((sum, setting) => sum + setting.totalEntries, 0);
+        const totalFavorites = activeSettings.reduce((sum, setting) => sum + setting.entriesFavorites, 0);
+        const totalComments = activeSettings.reduce((sum, setting) => sum + setting.entriesCommented, 0);
+        const totalRedo = activeSettings.reduce((sum, setting) => sum + setting.totalRedo, 0);
+        const excludedStatuses = Status.getNoPlanTo();
+        const totalEntriesNoPlan = activeSettings.reduce((sum, setting) => {
+            let settingSum = 0;
+            Object.entries(setting.statusCounts).forEach(([status, count]) => {
+                if (!excludedStatuses.includes(status as Status)) {
+                    settingSum += count;
+                }
+            });
+            return sum + settingSum;
+        }, 0);
+        const totalRated = activeSettings.reduce((sum, setting) => sum + setting.entriesRated, 0);
+        const percentRated = totalEntriesNoPlan === 0 ? 0 : (totalRated / totalEntriesNoPlan) * 100;
+        const avgRated = totalRated === 0 ? 0 : activeSettings.reduce((sum, s) => sum + s.sumEntriesRated, 0) / totalRated;
+        const avgComments = totalComments === 0 ? 0 : totalComments / activeSettings.length;
+        const avgFavorites = totalFavorites === 0 ? 0 : totalFavorites / activeSettings.length;
+        return {
+            totalEntries,
+            totalFavorites,
+            totalComments,
+            totalEntriesNoPlan,
+            timePerMedia,
+            totalRated,
+            percentRated,
+            avgRated,
+            avgComments,
+            avgFavorites,
+            totalRedo,
+            totalHours: Math.floor(totalHours),
+            totalDays: Math.round(totalHours / 24),
+            mediaTypes: activeSettings.map((setting) => setting.mediaType),
+        };
+    }
+    async updateUserMediaSettings(userId: number, payload: Record<string, any>) {
+        await this.repository.updateUserMediaSettings(userId, payload);
+    }
+    async getPerMediaSummaryStats(userId: number, _limit = 10) {
+        const excludedStatuses = Status.getNoPlanTo();
+        const activeSettings = await this.repository.getActiveSettings(userId);
+        const data = [];
+        for (const setting of activeSettings) {
+            let totalNoPlan = 0;
+            Object.entries(setting.statusCounts).forEach(([status, count]) => {
+                if (!excludedStatuses.includes(status as Status)) {
+                    totalNoPlan += count;
+                }
+            });
+            const favoritesMedia: any[] = []
+            const statusList = Object.entries(setting.statusCounts).map(([status, count]) =>
+                ({ status, count, percent: (count / setting.totalEntries) * 100 })
+            );
+            const summary = {
+                mediaType: setting.mediaType,
+                totalSpecific: setting.totalSpecific,
+                timeSpent: Math.floor(setting.timeSpent / 60),
+                timeSpentDays: Math.floor(setting.timeSpent / 1440),
+                totalEntries: setting.totalEntries,
+                totalNoPlan: totalNoPlan,
+                noData: setting.totalEntries === 0,
+                statusList: statusList,
+                favoritesList: favoritesMedia,
+                EntriesFavorites: setting.entriesFavorites,
+                entriesRated: setting.entriesRated,
+                percentRated: setting.entriesRated / totalNoPlan,
+                avgRated: setting.averageRating,
+            };
+            data.push(summary);
+        }
+        return data;
+    }
+    async updateDeltaUserStats(userId: number, mediaType: MediaType, delta: StatsDelta) {
+        await this.repository.updateDeltaUserStats(userId, mediaType, delta);
+    }
+    async updateAllUserStats(mediaType: MediaType, userStats: any[]) {
+        await this.repository.updateUserStats(mediaType, userStats);
+    }
+    async getUserMediaStats(userId: number) {
+        const statsFromUsersStats = await this.getSummaryStats(userId);
+        const mediaUpdatesPerMonth = await this.userUpdatesRepository.getUpdatesCountPerMonth(userId);
+        const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
+        const totalLabels = 4;
+        return { ...statsFromUsersStats, totalLabels, platinumAchievements, updatesPerMonth: mediaUpdatesPerMonth };
+    }
+    async getSpecificMediaTypeStats(userId: number, mediaType: MediaType) {
+        const mediaCalcService = this.mediaCalcServiceRegistry.getService(mediaType);
+        const commonStatsFromUserStats = await this.computeCommonMediaStats(userId, mediaType);
+        const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.getMediaUpdatesCountPerMonth(userId, mediaType);
+        const specificMediaStats = await mediaCalcService.calculateSpecificStats(userId);
+        return { ...commonStatsFromUserStats, ...mediaUpdatesPerMonthStats, ...specificMediaStats };
+    }
+    async computeCommonMediaStats(userId: number, mediaType: MediaType) {
+        const mediaSettings = await this.repository.getSpecificMediaSetting(userId, mediaType);
+        const totalEntries = mediaSettings.totalEntries;
+        const totalRedo = mediaSettings.totalRedo;
+        const timeSpentHours = mediaSettings.timeSpent / 60
+        const timeSpentDays = Math.round(timeSpentHours / 24);
+        const totalRated = mediaSettings.entriesRated;
+        const avgRated = totalRated === 0 ? 0 : mediaSettings.sumEntriesRated / totalRated;
+        const totalFavorites = mediaSettings.entriesFavorites;
+        const totalComments = mediaSettings.entriesCommented;
+        const statusesCounts = Object.entries(mediaSettings.statusCounts).map(([status, count]) => ({ status, count }));
+        return {
+            totalEntries,
+            totalRedo,
+            timeSpentHours,
+            timeSpentDays,
+            totalRated,
+            avgRated,
+            totalFavorites,
+            totalComments,
+            statusesCounts
+        };
+    }
+    async getHallOfFameData(data: Record<string, any>, currentUserId: number) {
+        const {
+            mediaTypes,
+            currentUserRankData,
+            mediaTypeCountMap,
+            currentUserActiveSettings,
+            rankedUsers,
+            userSettingsMap,
+            rankSelectionColName,
+            page, pages, total,
+        } = await this.repository.getHallOfFameData(data, currentUserId);
+        const userRanks = [];
+        for (const mediaType of mediaTypes) {
+            const rankKey = `${mediaType}Rank` as keyof typeof currentUserRankData;
+            const rank = (currentUserRankData[rankKey] as unknown as number) ?? null;
+            const mtCount = mediaTypeCountMap.get(mediaType) ?? 0;
+            const active = currentUserActiveSettings.has(mediaType);
+            let percent: number | null = null;
+            if (rank !== null && active) {
+                if (mtCount === 0) {
+                    percent = null;
+                }
+                else if (mtCount === 1 && rank === 1) {
+                    percent = 100;
+                }
+                else if (rank > mtCount) {
+                    percent = null;
+                }
+                else {
+                    percent = (rank / mtCount) * 100;
+                }
+            }
+            userRanks.push({ rank, active, mediaType, percent });
+        }
+        const items = rankedUsers.map((row) => {
+            return {
+                id: row.id,
+                name: row.name,
+                image: row.image,
+                totalTime: row.totalTime,
+                settings: userSettingsMap.get(row.id) ?? [],
+                rank: (row[rankSelectionColName as keyof typeof row] as number) ?? null,
+            }
+        });
+        return { items, page, pages, total, userRanks }
+    }
+}
+
+================
+File: src/lib/server/domain/media/base/base.repository.ts
+================
+import {followers, user} from "@/lib/server/database/schema";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {FilterDefinitions} from "@/lib/server/types/base.types";
+import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {and, asc, count, desc, eq, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
+const ALL_VALUE = "All";
+const DEFAULT_PER_PAGE = 25;
+const SIMILAR_MAX_GENRES = 12;
+export interface EditUserLabels {
+    label: Label;
+    userId: number;
+    mediaId: number;
+    action: "add" | "rename" | "deleteOne" | "deleteAll";
+}
+export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
+> {
+    protected readonly config: TConfig;
+    protected readonly baseFilterDefinitions: FilterDefinitions;
+    protected readonly specificFilterDefinitions: FilterDefinitions;
+    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions) {
+        this.config = config;
+        this.baseFilterDefinitions = this.createBaseFilterDefinitions();
+        this.specificFilterDefinitions = specificFilterFactory ? specificFilterFactory(this.config) : {};
+    }
+    protected createBaseFilterDefinitions = () => {
+        const { listTable, mediaTable, genreConfig } = this.config;
+        return {
+            search: {
+                isActive: (args: any) => !!args.search,
+                getCondition: (args: any) => like(mediaTable.name, `%${args.search}%`),
+            },
+            status: {
+                isActive: (args: any) => isValidFilter(args.status),
+                getCondition: (args: any) => inArray(listTable.status, args.status!.filter((s: any) => s !== ALL_VALUE)),
+            },
+            favorite: {
+                isActive: (args: any) => args.favorite === true,
+                getCondition: (_args: any) => eq(listTable.favorite, true),
+            },
+            comment: {
+                isActive: (args: any) => args.comment === true,
+                getCondition: (_args: any) => isNotNull(listTable.comment),
+            },
+            hideCommon: {
+                isActive: (args: any) => args.hideCommon === true && args.currentUserId && args.currentUserId !== args.userId,
+                getCondition: (args: any) => {
+                    const subQuery = getDbClient()
+                        .select({ mediaId: listTable.mediaId })
+                        .from(listTable)
+                        .where(eq(listTable.userId, args.currentUserId!));
+                    return notInArray(listTable.mediaId, subQuery);
+                },
+            },
+            genres: {
+                isActive: (args: any) => isValidFilter(args.genres),
+                applyJoin: (qb: any, _args: any) => {
+                    if (!genreConfig) throw new Error("Genre config missing");
+                    return applyJoin(qb, genreConfig);
+                },
+                getCondition: (args: any) => {
+                    if (!genreConfig) throw new Error("Genre config missing");
+                    return inArray(genreConfig.filterColumnInEntity, args.genres!);
+                },
+            },
+        } as FilterDefinitions;
+    }
+    async findById(mediaId: number | string) {
+        const { mediaTable } = this.config;
+        return getDbClient().select().from(mediaTable).where(eq(mediaTable.id, mediaId)).get()
+    }
+    async getCoverFilenames() {
+        const { mediaTable } = this.config;
+        return getDbClient()
+            .select({ imageCover: mediaTable.imageCover })
+            .from(mediaTable)
+            .execute()
+    }
+    async findByApiId(apiId: number | string) {
+        const { mediaTable } = this.config;
+        return getDbClient().select().from(mediaTable).where(eq(mediaTable.apiId, apiId)).get()
+    }
+    async findSimilarMedia(mediaId: number) {
+        const { mediaTable, genreTable } = this.config;
+        const targetGenresSubQuery = getDbClient()
+            .select({ name: genreTable.name })
+            .from(genreTable)
+            .where(eq(genreTable.mediaId, mediaId));
+        const similarSub = getDbClient()
+            .select({ movieId: genreTable.mediaId, commonGenreCount: count(genreTable.name).as("common_genre_count") })
+            .from(genreTable)
+            .where(and(ne(genreTable.mediaId, mediaId), inArray(genreTable.name, targetGenresSubQuery)))
+            .groupBy(genreTable.mediaId)
+            .orderBy(desc(sql`common_genre_count`))
+            .limit(SIMILAR_MAX_GENRES)
+            .as("similar_media");
+        const results = getDbClient()
+            .select({
+                mediaId: mediaTable.id,
+                mediaName: mediaTable.name,
+                mediaCover: mediaTable.imageCover,
+            })
+            .from(similarSub)
+            .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
+            .orderBy(desc(similarSub.commonGenreCount));
+        return results;
+    }
+    async getUserMediaLabels(userId: number) {
+        const { labelTable } = this.config;
+        return getDbClient()
+            .selectDistinct({ name: labelTable.name })
+            .from(labelTable)
+            .where(eq(labelTable.userId, userId))
+            .orderBy(asc(labelTable.name));
+    }
+    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
+        const { labelTable } = this.config;
+        if (action === "add") {
+            const [labelData] = await getDbClient()
+                .insert(labelTable)
+                .values({ userId, name: label.name, mediaId })
+                .returning({ name: labelTable.name })
+            return labelData as Label;
+        }
+        else if (action === "rename") {
+            const [labelData] = await getDbClient()
+                .update(labelTable)
+                .set({ name: label.name })
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label?.oldName)))
+                .returning({ name: labelTable.name })
+            return labelData as Label;
+        }
+        else if (action === "deleteOne") {
+            await getDbClient()
+                .delete(labelTable)
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name), eq(labelTable.mediaId, mediaId)))
+                .execute();
+        }
+        else if (action === "deleteAll") {
+            await getDbClient()
+                .delete(labelTable)
+                .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name)))
+                .execute();
+        }
+    }
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const { listTable, labelTable } = this.config;
+        await getDbClient()
+            .delete(listTable)
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .execute();
+        await getDbClient()
+            .delete(labelTable)
+            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)))
+            .execute();
+    }
+    async getUserFavorites(userId: number, limit = 8) {
+        const { listTable, mediaTable } = this.config;
+        return getDbClient()
+            .select({
+                mediaId: mediaTable.id,
+                mediaName: mediaTable.name,
+                mediaCover: mediaTable.imageCover,
+            })
+            .from(listTable)
+            .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
+            .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .limit(limit)
+    }
+    async findUserMedia(userId: number, mediaId: number) {
+        const { listTable, labelTable } = this.config;
+        const mainUserMediaData = await getDbClient()
+            .select({ ...listTable, ratingSystem: user.ratingSystem })
+            .from(listTable)
+            .innerJoin(user, eq(user.id, listTable.userId))
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .get()
+        if (!mainUserMediaData) {
+            return null;
+        }
+        const associatedLabels = await getDbClient()
+            .select({ name: labelTable.name })
+            .from(labelTable)
+            .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
+            .orderBy(asc(labelTable.name))
+            .execute();
+        if (!mainUserMediaData && !associatedLabels) {
+            return null;
+        }
+        return { ...mainUserMediaData, labels: associatedLabels };
+    }
+    async getUserFollowsMediaData(userId: number, mediaId: number) {
+        const { listTable } = this.config;
+        const inFollowsLists = await getDbClient()
+            .select({
+                id: user.id,
+                name: user.name,
+                image: user.image,
+                mediaList: listTable,
+                ratingSystem: user.ratingSystem,
+            })
+            .from(followers)
+            .innerJoin(user, eq(user.id, followers.followedId))
+            .innerJoin(listTable, eq(listTable.userId, followers.followedId))
+            .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)));
+        return inFollowsLists;
+    }
+    async getCommonListFilters(userId: number) {
+        const { genreTable, labelTable, listTable } = this.config;
+        const genresPromise = getDbClient()
+            .selectDistinct({ name: genreTable.name })
+            .from(genreTable)
+            .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
+            .where(eq(listTable.userId, userId))
+            .orderBy(asc(genreTable.name));
+        const labelsPromise = getDbClient()
+            .selectDistinct({ name: labelTable.name })
+            .from(labelTable)
+            .where(and(eq(labelTable.userId, userId)))
+            .orderBy(asc(labelTable.name));
+        const results = await Promise.all([genresPromise, labelsPromise]);
+        return { genres: results[0] || [], labels: results[1] || [] };
+    }
+    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
+        const page = args.page ?? 1;
+        const perPage = args.perPage ?? DEFAULT_PER_PAGE;
+        const offset = (page - 1) * perPage;
+        const { listTable, mediaTable, baseSelection, availableSorts, defaultSortName } = this.config;
+        const sortKeyName = args.sort ? args.sort : defaultSortName;
+        const selectedSort = availableSorts[sortKeyName];
+        const filterArgs = { ...args, currentUserId, userId };
+        const allFilters = { ...this.baseFilterDefinitions, ...this.specificFilterDefinitions };
+        let queryBuilder = getDbClient()
+            .select({
+                ...baseSelection,
+                ratingSystem: user.ratingSystem,
+            })
+            .from(listTable)
+            .innerJoin(user, eq(listTable.userId, user.id))
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .$dynamic();
+        let countQueryBuilder = getDbClient()
+            .select({ count: count() })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .$dynamic();
+        const conditions = [];
+        conditions.push(eq(listTable.userId, userId));
+        for (const key of Object.keys(allFilters)) {
+            const filterDef = allFilters[key];
+            if (filterDef.isActive(filterArgs)) {
+                if (filterDef.applyJoin) {
+                    queryBuilder = filterDef.applyJoin(queryBuilder, filterArgs);
+                    countQueryBuilder = filterDef.applyJoin(countQueryBuilder, filterArgs);
+                }
+                const condition = filterDef.getCondition(filterArgs);
+                if (condition) {
+                    conditions.push(condition);
+                }
+            }
+        }
+        const finalCondition = and(...conditions);
+        queryBuilder = queryBuilder.where(finalCondition);
+        countQueryBuilder = countQueryBuilder.where(finalCondition);
+        const finalQuery = queryBuilder
+            .orderBy(...(Array.isArray(selectedSort) ? selectedSort : [selectedSort]))
+            .limit(perPage)
+            .offset(offset);
+        const [results, totalResult] = await Promise.all([finalQuery.execute(), countQueryBuilder.execute()]);
+        const totalItems = totalResult[0]?.count ?? 0;
+        const totalPages = Math.ceil(totalItems / perPage);
+        let commonIdsSet = new Set<number>();
+        if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
+            const mediaIds = results.map((m: any) => m.mediaId);
+            const commonMediaIdsResult = await getDbClient()
+                .select({ mediaId: listTable.mediaId })
+                .from(listTable)
+                .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)))
+                .execute();
+            commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
+        }
+        const processedResults = results.map((item: any) => ({
+            ...item,
+            common: commonIdsSet.has(item.mediaId),
+        }));
+        return {
+            items: processedResults,
+            pagination: {
+                page,
+                perPage,
+                totalPages,
+                totalItems,
+                availableSorting: Object.keys(availableSorts),
+                sorting: sortKeyName,
+            },
+        };
+    }
+}
+export const isValidFilter = <T>(value: T[] | undefined): value is T[] => {
+    return Array.isArray(value) && value.length > 0 && value[0] !== ALL_VALUE;
+}
+export const applyJoin = (qb: any, config: any) => {
+    return qb.innerJoin(config.entityTable, eq(config.mediaIdColumnInEntity, config.idColumnInMedia));
+}
+
+================
+File: src/lib/server/domain/media/movies/movies.service.ts
+================
+import {notFound} from "@tanstack/react-router";
+import {saveImageFromUrl} from "@/lib/server/utils/save-image";
+import type {StatsDelta} from "@/lib/server/types/stats.types";
+import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
+import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
+interface UserMediaState {
+    redo: number;
+    total: number;
+    mediaId: number;
+    favorite: boolean;
+    status: Status | null;
+    rating: number | null | undefined;
+    comment: string | null | undefined;
+}
+export class MoviesService {
+    constructor(private repository: MoviesRepository) {
+    }
+    async getById(mediaId: number) {
+        return this.repository.findById(mediaId);
+    }
+    async downloadMediaListAsCSV(userId: number) {
+        return this.repository.downloadMediaListAsCSV(userId);
+    }
+    async getNonListMediaIds() {
+        return this.repository.getNonListMediaIds();
+    }
+    async removeMediaByIds(mediaIds: number[]) {
+        return this.repository.removeMediaByIds(mediaIds);
+    }
+    async getCoverFilenames() {
+        const coverFilenames = await this.repository.getCoverFilenames();
+        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
+    }
+    async lockOldMovies() {
+        return this.repository.lockOldMovies();
+    }
+    async searchByName(query: string) {
+        return this.repository.searchByName(query);
+    }
+    async getMediaToNotify() {
+        return this.repository.getMediaToNotify();
+    }
+    async computeAllUsersStats() {
+        return this.repository.computeAllUsersStats();
+    }
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
+        let mediaWithDetails;
+        let internalMediaId = media?.id;
+        if (external && !internalMediaId) {
+            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId);
+            if (!internalMediaId) {
+                throw new Error("Failed to fetch media details");
+            }
+        }
+        if (internalMediaId) {
+            mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+        }
+        else {
+            throw new Error("Movie not found");
+        }
+        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
+        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+        return { media: mediaWithDetails, userMedia, followsData, similarMedia };
+    }
+    async getMediaEditableFields(mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+        const editableFields = this.repository.config.editableFields;
+        const fields: { [key: string]: any } = {};
+        for (const key in media) {
+            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
+                fields[key] = media[key];
+            }
+        }
+        return { fields };
+    }
+    async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+        const editableFields = this.repository.config.editableFields;
+        const fields: { [key: string]: any } = {};
+        fields.apiId = media.apiId;
+        if (payload?.imageCover) {
+            const imageName = await saveImageFromUrl({
+                defaultName: "default.jpg",
+                imageUrl: payload.imageCover,
+                resize: { width: 300, height: 450 },
+                saveLocation: "public/static/covers/movies-covers",
+            });
+            fields.imageCover = imageName;
+            delete payload.imageCover;
+        }
+        for (const key in payload) {
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
+                fields[key] = payload[key];
+            }
+        }
+        await this.repository.updateMediaWithDetails({ mediaData: fields });
+    }
+    async getUserMediaLabels(userId: number) {
+        return await this.repository.getUserMediaLabels(userId);
+    }
+    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
+        return this.repository.editUserLabel({ userId, label, mediaId, action });
+    }
+    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
+        return this.repository.getMediaList(currentUserId, userId, args);
+    }
+    async getListFilters(userId: number) {
+        return this.repository.getListFilters(userId);
+    }
+    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
+        const page = search.page ?? 1;
+        const perPage = search.perPage ?? 25;
+        const offset = (page - 1) * perPage;
+        return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
+    }
+    async getSearchListFilters(userId: number, query: string, job: JobType) {
+        return this.repository.getSearchListFilters(userId, query, job);
+    }
+    async getComingNext(userId: number) {
+        const comingNextData = await this.repository.getComingNext(userId);
+        return { items: comingNextData, mediaType: MediaType.MOVIES };
+    }
+    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
+        const newStatus = status ?? this.repository.config.defaultStatus;
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+        const userMedia = await this.repository.findUserMedia(userId, mediaId);
+        if (userMedia) {
+            throw new Error("Media already in your list");
+        }
+        const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
+        const delta = this.calculateDeltaStats(null, newState as UserMediaState, media);
+        return { newState, media, delta };
+    }
+    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) {
+            throw new Error("Media not in your list");
+        }
+        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
+        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserMediaState, newState as UserMediaState, media);
+        return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
+    }
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) {
+            throw notFound();
+        }
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) {
+            throw new Error("Media not in your list");
+        }
+        await this.repository.removeMediaFromUserList(userId, mediaId);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserMediaState, null, media);
+        return delta;
+    }
+    completePartialUpdateData(partialUpdateData: Record<string, any>) {
+        const completeUpdateData = { ...partialUpdateData };
+        if (completeUpdateData.status) {
+            return { ...completeUpdateData, redo: 0 };
+        }
+        return completeUpdateData;
+    }
+    calculateDeltaStats(oldState: UserMediaState | null, newState: UserMediaState | null, media: any) {
+        const delta: StatsDelta = {};
+        const statusCounts: Partial<Record<Status, number>> = {};
+        const oldStatus = oldState?.status;
+        const oldRating = oldState?.rating;
+        const oldRedo = oldState?.redo ?? 0;
+        const oldComment = oldState?.comment;
+        const oldFavorite = oldState?.favorite ?? false;
+        const wasCompleted = oldStatus === Status.COMPLETED;
+        const wasFavorited = wasCompleted && oldFavorite;
+        const wasCommented = wasCompleted && !!oldComment;
+        const wasRated = wasCompleted && oldRating != null;
+        const oldTotalSpecificValue = oldState ? (wasCompleted ? 1 : 0) + oldRedo : 0;
+        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
+        const newStatus = newState?.status;
+        const newRating = newState?.rating;
+        const newRedo = newState?.redo ?? 0;
+        const newComment = newState?.comment;
+        const newFavorite = newState?.favorite ?? false;
+        const isCompleted = newStatus === Status.COMPLETED;
+        const isFavorited = isCompleted && newFavorite;
+        const isCommented = isCompleted && !!newComment;
+        const isRated = isCompleted && newRating != null;
+        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
+        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
+        if (!oldState && newState) {
+            delta.totalEntries = 1;
+        }
+        else if (oldState && !newState) {
+            delta.totalEntries = -1;
+        }
+        if (oldStatus !== newStatus) {
+            if (oldStatus) {
+                statusCounts[oldStatus] = (statusCounts[oldStatus] ?? 0) - 1;
+            }
+            if (newStatus) {
+                statusCounts[newStatus] = (statusCounts[newStatus] ?? 0) + 1;
+            }
+        }
+        delta.timeSpent = (newTotalTimeSpent - oldTotalTimeSpent);
+        delta.totalRedo = (newRedo - oldRedo);
+        delta.totalSpecific = (newTotalSpecificValue - oldTotalSpecificValue);
+        let entriesRatedDelta = 0;
+        let sumEntriesRatedDelta = 0;
+        if (wasRated && !isRated) {
+            entriesRatedDelta = -1;
+            sumEntriesRatedDelta = -(oldRating ?? 0);
+        }
+        else if (!wasRated && isRated) {
+            entriesRatedDelta = 1;
+            sumEntriesRatedDelta = newRating ?? 0;
+        }
+        else if (wasRated && isRated && oldRating !== newRating) {
+            sumEntriesRatedDelta = (newRating ?? 0) - (oldRating ?? 0);
+        }
+        delta.entriesRated = entriesRatedDelta;
+        delta.sumEntriesRated = sumEntriesRatedDelta;
+        let entriesCommentedDelta = 0;
+        if (wasCommented && !isCommented) {
+            entriesCommentedDelta = -1;
+        }
+        else if (!wasCommented && isCommented) {
+            entriesCommentedDelta = 1;
+        }
+        delta.entriesCommented = entriesCommentedDelta;
+        let entriesFavoritesDelta = 0;
+        if (wasFavorited && !isFavorited) {
+            entriesFavoritesDelta = -1;
+        }
+        else if (!wasFavorited && isFavorited) {
+            entriesFavoritesDelta = 1;
+        }
+        delta.entriesFavorites = entriesFavoritesDelta;
+        if (Object.keys(statusCounts).length > 0) {
+            delta.statusCounts = statusCounts;
+        }
+        return delta;
+    }
+    getAchievementsDefinition() {
+        return moviesAchievements();
+    }
+}
+
+================
+File: src/lib/server/domain/media/movies/movies.repository.ts
+================
+import {db} from "@/lib/server/database/db";
+import {JobType, Status} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
+import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
+import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, or, sql} from "drizzle-orm";
+export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
+    config: MovieSchemaConfig;
+    constructor() {
+        super(moviesConfig, createMoviesFilters);
+        this.config = moviesConfig;
+    }
+    async getComingNext(userId: number) {
+        const comingNext = await getDbClient()
+            .select({
+                mediaId: movies.id,
+                mediaName: movies.name,
+                date: movies.releaseDate,
+                imageCover: movies.imageCover,
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(
+                eq(moviesList.userId, userId),
+                notInArray(moviesList.status, [Status.DROPPED, Status.RANDOM]),
+                gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
+            ))
+            .orderBy(asc(movies.releaseDate))
+            .execute();
+        return comingNext;
+    }
+    async downloadMediaListAsCSV(userId: number) {
+        const results = await getDbClient()
+            .select({
+                ...getTableColumns(moviesList),
+                name: movies.name,
+            })
+            .from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+            .where(eq(moviesList.userId, userId))
+        return results;
+    }
+    async getNonListMediaIds() {
+        const mediaToDelete = await getDbClient()
+            .select({ id: movies.id })
+            .from(movies)
+            .leftJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(isNull(moviesList.userId))
+            .execute();
+        return mediaToDelete.map((media) => media.id);
+    }
+    async removeMediaByIds(mediaIds: number[]) {
+        await getDbClient()
+            .delete(moviesActors)
+            .where(inArray(moviesActors.mediaId, mediaIds))
+            .execute();
+        await getDbClient()
+            .delete(moviesGenre)
+            .where(inArray(moviesGenre.mediaId, mediaIds))
+            .execute();
+        await getDbClient()
+            .delete(movies)
+            .where(inArray(movies.id, mediaIds))
+            .execute();
+    }
+    async lockOldMovies() {
+        const [{ count }] = await getDbClient()
+            .select({ count: sql<number>`count(*)` })
+            .from(movies)
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+        await getDbClient()
+            .update(movies)
+            .set({ lockStatus: true })
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+        return count;
+    }
+    async searchByName(query: string) {
+        return getDbClient()
+            .select({ name: movies.name })
+            .from(movies)
+            .where(like(movies.name, `%${query}%`))
+            .orderBy(movies.name)
+            .limit(20)
+            .execute();
+    }
+    async computeAllUsersStats() {
+        const results = await getDbClient()
+            .select({
+                userId: moviesList.userId,
+                timeSpent: sql<number>`COALESCE(SUM(${moviesList.total} * ${movies.duration}), 0)`.as("timeSpent"),
+                totalSpecific: sql<number>`COALESCE(SUM(${moviesList.total}), 0)`.as("totalSpecific"),
+                statusCounts: sql`
+                    COALESCE((
+                        SELECT
+                            JSON_GROUP_OBJECT(status, count_per_status)
+                        FROM (
+                            SELECT
+                                status,
+                                COUNT(*) as count_per_status
+                            FROM ${moviesList} as sub_list
+                            WHERE sub_list.user_id = ${moviesList.userId} GROUP BY status
+                        )
+                    ), '{}')
+                `.as("statusCounts"),
+                entriesFavorites: sql<number>`
+                    COALESCE(SUM(CASE WHEN ${moviesList.favorite} = 1 THEN 1 ELSE 0 END), 0)
+                `.as("entriesFavorites"),
+                totalRedo: sql<number>`COALESCE(SUM(${moviesList.redo}), 0)`.as("totalRedo"),
+                entriesCommented: sql<number>`
+                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${moviesList.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
+                `.as("entriesCommented"),
+                totalEntries: count(moviesList.mediaId).as("totalEntries"),
+                entriesRated: count(moviesList.rating).as("entriesRated"),
+                sumEntriesRated: sql<number>`COALESCE(SUM(${moviesList.rating}), 0)`.as("sumEntriesRated"),
+                averageRating: sql<number>`
+                    COALESCE(SUM(${moviesList.rating}) * 1.0 / NULLIF(COUNT(${moviesList.rating}), 0), 0.0)
+                `.as("averageRating"),
+            })
+            .from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+            .groupBy(moviesList.userId)
+            .execute();
+        return results.map((row) => {
+            let statusCounts: Record<string, number> = {};
+            try {
+                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
+                if (typeof parsed === "object" && parsed !== null) {
+                    statusCounts = parsed;
+                }
+            }
+            catch (e) {
+                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
+            }
+            return {
+                userId: row.userId,
+                statusCounts: statusCounts,
+                timeSpent: Number(row.timeSpent) || 0,
+                totalRedo: Number(row.totalRedo) || 0,
+                totalEntries: Number(row.totalEntries) || 0,
+                entriesRated: Number(row.entriesRated) || 0,
+                totalSpecific: Number(row.totalSpecific) || 0,
+                averageRating: Number(row.averageRating) || 0,
+                sumEntriesRated: Number(row.sumEntriesRated) || 0,
+                entriesFavorites: Number(row.entriesFavorites) || 0,
+                entriesCommented: Number(row.entriesCommented) || 0,
+            };
+        });
+    }
+    async getMediaToNotify() {
+        return getDbClient()
+            .select({
+                ...getTableColumns(movies),
+                mediaList: { ...getTableColumns(moviesList) },
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(
+                isNotNull(movies.releaseDate),
+                gte(movies.releaseDate, sql`datetime('now')`),
+                lte(movies.releaseDate, sql`datetime('now', '+7 days')`),
+            ))
+            .orderBy(movies.releaseDate)
+            .execute();
+    }
+    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+        const newTotal = (newStatus === Status.COMPLETED) ? 1 : 0;
+        const [newMedia] = await getDbClient()
+            .insert(moviesList)
+            .values({ userId, mediaId, total: newTotal, status: newStatus })
+            .returning();
+        return newMedia;
+    }
+    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
+        let dataQuery = getDbClient()
+            .selectDistinct({
+                mediaId: movies.id,
+                mediaName: movies.name,
+                imageCover: movies.imageCover,
+                inUserList: isNotNull(moviesList.userId).mapWith(Boolean).as("inUserList"),
+            })
+            .from(movies)
+            .leftJoin(moviesList, and(eq(moviesList.mediaId, movies.id), eq(moviesList.userId, userId)))
+            .$dynamic();
+        let countQuery = getDbClient()
+            .select({ value: countDistinct(movies.id) })
+            .from(movies)
+            .$dynamic();
+        let filterCondition;
+        if (job === JobType.ACTOR) {
+            dataQuery = dataQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
+            countQuery = countQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
+            filterCondition = like(moviesActors.name, `%${name}%`);
+        }
+        else if (job === JobType.CREATOR) {
+            filterCondition = like(movies.directorName, `%${name}%`);
+        }
+        else if (job === JobType.COMPOSITOR) {
+            filterCondition = like(movies.compositorName, `%${name}%`);
+        }
+        if (filterCondition) {
+            dataQuery = dataQuery.where(filterCondition);
+            countQuery = countQuery.where(filterCondition);
+        }
+        const [totalResult, results] = await Promise.all([
+            countQuery.execute(),
+            dataQuery.orderBy(asc(movies.releaseDate)).limit(limit).offset(offset).execute(),
+        ]);
+        const totalCount = totalResult[0]?.value ?? 0;
+        return {
+            items: results,
+            total: totalCount,
+            pages: Math.ceil(totalCount / limit),
+        };
+    }
+    async getMediaToBeRefreshed() {
+        return getDbClient()
+            .select({ apiId: movies.apiId })
+            .from(movies)
+            .where(and(
+                lte(movies.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-2 days')`),
+                or(
+                    gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
+                    gte(movies.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
+                )));
+    }
+    async findAllAssociatedDetails(mediaId: number) {
+        const mainData = await getDbClient().query.movies.findFirst({
+            where: eq(movies.id, mediaId),
+            with: {
+                moviesActors: true,
+                moviesGenres: true,
+            },
+        });
+        if (!mainData) {
+            throw new Error("Movie not found");
+        }
+        const collectionMovies = mainData?.collectionId
+            ? await getDbClient().query.movies.findMany({
+                where: and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)),
+                columns: { id: true, name: true, imageCover: true },
+                orderBy: [asc(movies.releaseDate)],
+            }) : [];
+        return { ...mainData, collection: collectionMovies };
+    }
+    async storeMediaWithDetails({ mediaData, actorsData, genresData }: any) {
+        const result = await db.transaction(async (tx) => {
+            const [media] = await tx
+                .insert(movies)
+                .values(mediaData)
+                .returning()
+            if (!media) {
+                throw new Error("Failed to store the media details");
+            }
+            const mediaId = media.id;
+            if (actorsData && actorsData.length > 0) {
+                const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+                await tx.insert(moviesActors).values(actorsToAdd)
+            }
+            if (genresData && genresData.length > 0) {
+                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+                await tx.insert(moviesGenre).values(genresToAdd)
+            }
+            return mediaId;
+        });
+        return result
+    }
+    async updateMediaWithDetails({ mediaData, actorsData, genresData }: any) {
+        const tx = getDbClient();
+        const [media] = await tx
+            .update(movies)
+            .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+            .where(eq(movies.apiId, mediaData.apiId))
+            .returning({ id: movies.id })
+        const mediaId = media.id;
+        if (actorsData && actorsData.length > 0) {
+            await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
+            const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+            await tx.insert(moviesActors).values(actorsToAdd)
+        }
+        if (genresData && genresData.length > 0) {
+            await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
+            const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+            await tx.insert(moviesGenre).values(genresToAdd)
+        }
+        return true;
+    }
+    async getListFilters(userId: number) {
+        const { genres, labels } = await super.getCommonListFilters(userId);
+        const langs = await getDbClient()
+            .selectDistinct({ name: movies.originalLanguage })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(eq(moviesList.userId, userId));
+        return { langs, genres, labels };
+    }
+    async getSearchListFilters(userId: number, query: string, job: JobType) {
+        if (job === JobType.ACTOR) {
+            const actors = await db
+                .selectDistinct({ name: moviesActors.name })
+                .from(moviesActors)
+                .innerJoin(moviesList, eq(moviesList.mediaId, moviesActors.mediaId))
+                .where(and(eq(moviesList.userId, userId), like(moviesActors.name, `%${query}%`)));
+            return actors
+        }
+        else if (job === JobType.CREATOR) {
+            const directors = await db
+                .selectDistinct({ name: movies.directorName })
+                .from(movies)
+                .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+                .where(and(eq(moviesList.userId, userId), like(movies.directorName, `%${query}%`)));
+            return directors
+        }
+        else if (job === JobType.COMPOSITOR) {
+            const compositors = await db
+                .selectDistinct({ name: movies.compositorName })
+                .from(movies)
+                .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+                .where(and(eq(moviesList.userId, userId), like(movies.compositorName, `%${query}%`)));
+            return compositors
+        }
+        else {
+            throw new Error("Job type not supported");
+        }
+    }
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>) {
+        const [result] = await getDbClient()
+            .update(moviesList)
+            .set(updateData)
+            .where(and(eq(moviesList.userId, userId), eq(moviesList.mediaId, mediaId)))
+            .returning();
+        return result;
+    }
+}
+const createMoviesFilters = (config: MovieSchemaConfig) => {
+    const { mediaTable, actorConfig } = config;
+    return {
+        directors: {
+            isActive: (args: MediaListArgs) => isValidFilter(args.directors),
+            getCondition: (args: MediaListArgs) => inArray(mediaTable.directorName, args.directors!),
+        },
+        languages: {
+            isActive: (args: MediaListArgs) => isValidFilter(args.langs),
+            getCondition: (args: MediaListArgs) => inArray(mediaTable.originalLanguage, args.langs!),
+        },
+        actors: {
+            isActive: (args: MediaListArgs) => isValidFilter(args.actors),
+            applyJoin: (qb: any, _args: MediaListArgs) => applyJoin(qb, actorConfig),
+            getCondition: (args: MediaListArgs) => inArray(actorConfig.filterColumnInEntity, args.actors!),
+        },
+    }
+}

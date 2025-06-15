@@ -100,7 +100,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
         //@ts-expect-error
         await userService.updateUserSettings(currentUser.id, toUpdateInUser);
         //@ts-expect-error
-        await userStatsService.updateUserMediaSettings(currentUser.id, toUpdateinUserStats);
+        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateinUserStats);
     });
 
 

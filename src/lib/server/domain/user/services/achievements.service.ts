@@ -1,4 +1,6 @@
-import {AchievementData} from "@/lib/server/types/achievements";
+import {sql} from "drizzle-orm";
+import {userAchievement} from "@/lib/server/database/schema";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 
@@ -27,8 +29,8 @@ export class AchievementsService {
         return this.repository.getAchievementsDetails(userId, limit);
     }
 
-    async getAllAchievements() {
-        return this.repository.getAllAchievements();
+    async allUsersAchievements() {
+        return this.repository.allUsersAchievements();
     }
 
     async getUserAchievementStats(userId: number) {
@@ -127,16 +129,42 @@ export class AchievementsService {
 
         return finalAchievements;
     }
+
+    async getMediaAchievements(mediaType: MediaType) {
+        return this.repository.getMediaAchievements(mediaType);
+    }
+
+    async updateEachAchievementTier(achievement: Achievement, cte: any) {
+        for (const tier of achievement.tiers) {
+            const valueNeeded = tier.criteria.count;
+
+            const count = sql`calculation.value`;
+            const completed = sql`calculation.value >= ${valueNeeded}`;
+            const progress = sql`CASE
+                WHEN (calculation.value / ${valueNeeded}) * 100.0 < 100.0
+                THEN (calculation.value / ${valueNeeded}) * 100.0
+                ELSE 100.0
+            END`;
+            const completedAt = sql`CASE 
+                WHEN calculation.value >= ${valueNeeded} AND ${userAchievement.completed} = false
+                THEN datetime('now')
+                ELSE ${userAchievement.completedAt}
+            END`;
+
+            await this.repository.updateAchievement(tier, cte, completed, count, progress, completedAt);
+            await this.repository.insertAchievement(tier, cte, completed, count, progress);
+        }
+    }
 }
+
+
+type AchievementStats = { [key in MediaType | "all"]: TierStat[] };
 
 
 interface TierStat {
     count: number | string;
     tier: AchievementDifficulty | "total";
 }
-
-
-type AchievementStats = { [key in MediaType | "all"]: TierStat[] };
 
 
 interface UserTierProgress {

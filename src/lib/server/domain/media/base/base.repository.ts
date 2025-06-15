@@ -1,10 +1,11 @@
-import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
-import {getDbClient} from "@/lib/server/database/asyncStorage";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
+import {Status} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/types/achievements";
 
 
 const ALL_VALUE = "All";
@@ -26,8 +27,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
     protected readonly baseFilterDefinitions: FilterDefinitions;
     protected readonly specificFilterDefinitions: FilterDefinitions;
 
-    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions,
-    ) {
+    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions) {
         this.config = config;
         this.baseFilterDefinitions = this.createBaseFilterDefinitions();
         this.specificFilterDefinitions = specificFilterFactory ? specificFilterFactory(this.config) : {};
@@ -265,18 +265,6 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         return { genres: results[0] || [], labels: results[1] || [] };
     }
 
-    async getTotalMediaLabel(userId: number) {
-        const { labelTable } = this.config;
-
-        const result = await getDbClient()
-            .selectDistinct({ count: count(labelTable.name) })
-            .from(labelTable)
-            .where(eq(labelTable.userId, userId))
-            .get();
-
-        return result?.count ?? 0;
-    }
-
     async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
         const page = args.page ?? 1;
         const perPage = args.perPage ?? DEFAULT_PER_PAGE;
@@ -372,10 +360,163 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         };
     }
 
-    async topMetricStatsQueries(userId: number, statsConfig: Record<string, any>) {
+    // --- Achievements ----------------------------------------------------------
+
+    applyUserFilterAndGrouping(cte: any, baseConditions: any[], userId?: number) {
+        const { listTable } = this.config;
+
+        const conditions = [...baseConditions];
+        if (userId) {
+            conditions.push(eq(listTable.userId, userId));
+        }
+
+        return cte.where(and(...conditions)).groupBy(listTable.userId).as("calculation");
+    }
+
+    countCompletedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+
+        const conditions = [eq(listTable.status, Status.COMPLETED)]
+
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+
+    countRatedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+
+        const conditions = [isNotNull(listTable.rating)]
+
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+
+    countCommentedAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+
+        const conditions = [isNotNull(listTable.comment)]
+
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+
+    specificGenreAchievementCte(achievement: Achievement, userId?: number) {
+        const { mediaTable, listTable, genreTable } = this.config;
+
+        const baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(genreTable, eq(mediaTable.id, genreTable.mediaId));
+
+        const conditions = [eq(listTable.status, Status.COMPLETED), eq(genreTable.name, achievement.value)];
+
+        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+    }
+
+    // --- Advanced Stats ---------------------------------------------------
+
+    async computeRatingStats(userId?: number) {
+        const { listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const ratingDistrib: { [key: string]: number } = {};
+        for (let i = 0; i <= 20; i++) {
+            ratingDistrib[(i * 0.5).toFixed(1)] = 0;
+        }
+
+        const ratingQuery = await getDbClient()
+            .select({
+                rating: listTable.rating,
+                count: count(listTable.rating),
+            })
+            .from(listTable)
+            .where(and(forUser, isNotNull(listTable.rating)))
+            .groupBy(listTable.rating)
+            .orderBy(asc(listTable.rating))
+            .execute();
+
+        ratingQuery.forEach((result) => {
+            const ratingKey = result?.rating?.toFixed(1);
+            if (ratingKey) {
+                ratingDistrib[ratingKey] = result.count;
+            }
+        });
+
+        const ratings = Object.entries(ratingDistrib).map(([name, value]) => ({ name, value }));
+
+        return ratings.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+    }
+
+    async computeReleaseDateStats(userId?: number) {
+        const { mediaTable, listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const releaseDates = await getDbClient()
+            .select({
+                name: sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`,
+                value: sql<number>`cast(count(${mediaTable.releaseDate}) as int)`.as("count"),
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(forUser, isNotNull(mediaTable.releaseDate)))
+            .groupBy(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`)
+            .orderBy(asc(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`))
+            .execute();
+
+        return releaseDates;
+    }
+
+    async computeTotalMediaLabel(userId?: number) {
+        const { labelTable } = this.config;
+        const forUser = userId ? eq(labelTable.userId, userId) : undefined;
+
+        const result = await getDbClient()
+            .selectDistinct({ count: count(labelTable.name) })
+            .from(labelTable)
+            .where(and(forUser))
+            .get();
+
+        return result?.count ?? 0;
+    }
+
+    async computeTopGenresStats(userId?: number) {
+        const { genreTable, listTable } = this.config;
+
+        const metricStatsConfig = {
+            metricTable: genreTable,
+            metricNameColumn: genreTable.name,
+            metricIdColumn: genreTable.mediaId,
+            mediaLinkColumn: listTable.mediaId,
+            statusFilters: [Status.PLAN_TO_WATCH],
+        };
+
+        return this.computeTopMetricStats(metricStatsConfig, userId);
+    }
+
+    async computeTopMetricStats(statsConfig: Record<string, any>, userId?: number) {
         const limit = statsConfig?.limit ?? 10;
         const { mediaTable, listTable } = this.config;
         const minRatingCount = statsConfig?.minRatingCount ?? 5;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
         const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, statusFilters } = statsConfig;
 
         const countAlias = sql<number>`countDistinct(${metricNameColumn})`
@@ -384,10 +525,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(
-                eq(listTable.userId, userId), isNotNull(metricNameColumn),
-                notInArray(listTable.status, statusFilters)
-            ))
+            .where(and(forUser, isNotNull(metricNameColumn), notInArray(listTable.status, statusFilters)))
             .groupBy(metricNameColumn)
             .orderBy(asc(countAlias))
             .limit(limit)
@@ -399,10 +537,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(
-                eq(listTable.userId, userId), isNotNull(metricNameColumn),
-                isNotNull(listTable.rating), notInArray(listTable.status, statusFilters),
-            ))
+            .where(and(forUser, isNotNull(metricNameColumn), isNotNull(listTable.rating), notInArray(listTable.status, statusFilters)))
             .groupBy(metricNameColumn)
             .having(gte(ratingCountAlias, minRatingCount))
             .orderBy(asc(avgRatingAlias))
@@ -413,10 +548,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(
-                eq(listTable.userId, userId), isNotNull(metricNameColumn),
-                eq(listTable.isFavorite, true), notInArray(listTable.status, statusFilters),
-            ))
+            .where(and(forUser, isNotNull(metricNameColumn), eq(listTable.isFavorite, true), notInArray(listTable.status, statusFilters)))
             .groupBy(metricNameColumn)
             .orderBy(asc(countAlias))
             .limit(limit);
@@ -438,63 +570,6 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 value: Number(row.value) || 0,
             })),
         };
-    }
-
-    async computeRatingStats(userId: number) {
-        const { listTable } = this.config;
-
-        const ratingDistribution: { [key: string]: number } = {};
-        for (let i = 0; i <= 20; i++) {
-            ratingDistribution[(i * 0.5).toFixed(1)] = 0;
-        }
-
-        const ratingQuery = await getDbClient()
-            .select({ rating: listTable.rating, count: count(listTable.rating) })
-            .from(listTable)
-            .where(and(eq(listTable.userId, userId), isNotNull(listTable.rating)))
-            .groupBy(listTable.rating)
-            .orderBy(asc(listTable.rating))
-            .execute();
-
-        ratingQuery.forEach((result) => {
-            const ratingKey = result?.rating?.toFixed(1);
-            if (ratingKey) ratingDistribution[ratingKey] = result.count;
-        });
-
-        const ratings = Object.entries(ratingDistribution).map(([name, value]) => ({ name, value }));
-        return ratings.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
-    }
-
-    async computeReleaseDateStats(userId: number) {
-        const { mediaTable, listTable } = this.config;
-
-        const releaseDates = await getDbClient()
-            .select({
-                name: sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`,
-                value: sql<number>`cast(count(${mediaTable.releaseDate}) as int)`.as("count"),
-            })
-            .from(mediaTable)
-            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.releaseDate)))
-            .groupBy(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`)
-            .orderBy(asc(sql<number>`floor(extract(year from ${mediaTable.releaseDate}) / 10.0) * 10`))
-            .execute();
-
-        return releaseDates;
-    }
-
-    async computeGenresStats(userId: number) {
-        const { genreTable, listTable } = this.config;
-
-        const metricStatsConfig = {
-            metricTable: genreTable,
-            metricNameColumn: genreTable.name,
-            metricIdColumn: genreTable.mediaId,
-            mediaLinkColumn: listTable.mediaId,
-            statusFilters: [Status.PLAN_TO_WATCH],
-        };
-
-        return await this.topMetricStatsQueries(userId, metricStatsConfig);
     }
 }
 

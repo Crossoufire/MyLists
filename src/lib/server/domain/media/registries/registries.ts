@@ -4,7 +4,7 @@ import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.reposito
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
-interface MediaRepoMap {
+interface MediaRepositoryMap {
     [MediaType.SERIES]: MoviesRepository;
     [MediaType.ANIME]: MoviesRepository;
     [MediaType.MOVIES]: MoviesRepository;
@@ -34,14 +34,14 @@ interface MediaProviderServiceMap {
 }
 
 
-export class MediaRepoRegistry {
-    private static repositories: MediaRepoMap = {} as MediaRepoMap;
+export class MediaRepositoryRegistry {
+    private static repositories: MediaRepositoryMap = {} as MediaRepositoryMap;
 
-    static registerRepository<T extends keyof MediaRepoMap>(mediaType: T, repository: MediaRepoMap[T]) {
+    static registerRepository<T extends keyof MediaRepositoryMap>(mediaType: T, repository: MediaRepositoryMap[T]) {
         this.repositories[mediaType] = repository;
     }
 
-    static getRepository<T extends keyof MediaRepoMap>(mediaType: T) {
+    static getRepository<T extends keyof MediaRepositoryMap>(mediaType: T) {
         if (!this.repositories[mediaType]) {
             throw new Error(`Repository for media type ${mediaType} not registered`);
         }
@@ -66,7 +66,7 @@ export class MediaServiceRegistry {
 }
 
 
-export class MediaProviderRegistry {
+export class MediaProviderServiceRegistry {
     private static providers: MediaProviderServiceMap = {} as MediaProviderServiceMap;
 
     static registerService<T extends keyof MediaProviderServiceMap>(mediaType: T, provider: MediaProviderServiceMap[T]) {
@@ -75,7 +75,7 @@ export class MediaProviderRegistry {
 
     static getService<T extends keyof MediaProviderServiceMap>(mediaType: T) {
         if (!this.providers[mediaType]) {
-            throw new Error(`ProvviderService for media type ${mediaType} not registered`);
+            throw new Error(`ProviderService for media type ${mediaType} not registered`);
         }
         return this.providers[mediaType];
     }

@@ -25,8 +25,8 @@ export const getUserProfile = createServerFn({ method: "GET" })
         const followsUpdates = await userUpdatesService.getFollowsUpdates(profileOwnerId, !currentUser);
         // @ts-expect-error
         const isFollowing = currentUser ? await userService.isFollowing(currentUser.id, profileOwnerId) : false;
-        const mediaGlobalSummary = await userStatsService.getGlobalStats(profileOwnerId);
-        const perMediaSummary = await userStatsService.getSummaryStats(profileOwnerId);
+        const preComputedStatsSummary = await userStatsService.userPreComputedStatsSummary(profileOwnerId);
+        const perMediaSummary = await userStatsService.userPerMediaSummaryStats(profileOwnerId);
         const achievements = {
             summary: await achievementsService.getDifficultySummary(profileOwnerId),
             details: await achievementsService.getAchievementsDetails(profileOwnerId),
@@ -38,7 +38,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
             userFollows,
             followsUpdates,
             isFollowing,
-            mediaGlobalSummary,
+            mediaGlobalSummary: preComputedStatsSummary,
             perMediaSummary,
             achievements,
         };

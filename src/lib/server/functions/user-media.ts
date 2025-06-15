@@ -35,7 +35,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         const { newState, media, delta } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
 
         //@ts-expect-error
-        await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         await userUpdatesService.logUpdate({
             //@ts-expect-error
@@ -85,7 +85,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const { os, ns, media, delta, updateData } = await mediaService.updateUserMediaDetails(userId, mediaId, payload);
 
         //@ts-expect-error
-        await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         if (updateType) {
             await userUpdatesService.logUpdate({ userId, media, mediaType, updateType, os, ns });
@@ -107,7 +107,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         //@ts-expect-error
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
         //@ts-expect-error
-        await userStatsService.updateDeltaUserStats(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
     });
 
 

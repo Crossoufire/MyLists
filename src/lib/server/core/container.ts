@@ -21,7 +21,7 @@ import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-st
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
-import {MediaProviderRegistry, MediaRepoRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 interface AppContainer {
@@ -50,9 +50,9 @@ interface AppContainer {
         notifications: NotificationsService;
     };
     registries: {
-        mediaRepo: typeof MediaRepoRegistry;
+        mediaRepo: typeof MediaRepositoryRegistry;
         mediaService: typeof MediaServiceRegistry;
-        mediaProviderService: typeof MediaProviderRegistry;
+        mediaProviderService: typeof MediaProviderServiceRegistry;
     };
 }
 
@@ -85,7 +85,7 @@ export async function initializeContainer(options: ContainerOptions = {}) {
 
     // Media Repositories
     const moviesRepository = new MoviesRepository();
-    MediaRepoRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
+    MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
 
     // User Services
     const userService = new UserService(userRepository);
@@ -93,7 +93,12 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const userUpdatesService = new UserUpdatesService(userUpdatesRepository);
     const achievementsService = new AchievementsService(achievementsRepository);
     const notificationsService = new NotificationsService(notificationsRepository);
-    const userStatsService = new UserStatsService(userStatsRepository, MediaRepoRegistry, achievementsRepository, userUpdatesRepository);
+    const userStatsService = new UserStatsService(
+        userStatsRepository,
+        achievementsRepository,
+        userUpdatesRepository,
+        MediaServiceRegistry,
+    );
 
     // Media Services
     const moviesService = new MoviesService(moviesRepository);
@@ -104,7 +109,7 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const tasksService = new TasksService(
         tasksLogger,
         MediaServiceRegistry,
-        MediaProviderRegistry,
+        MediaProviderServiceRegistry,
         achievementsService,
         userUpdatesService,
         notificationsService,
@@ -119,7 +124,7 @@ export async function initializeContainer(options: ContainerOptions = {}) {
 
     // Media Providers Services
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
-    MediaProviderRegistry.registerService(MediaType.MOVIES, moviesProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
 
     const currentContainer: AppContainer = {
         cacheManager: cacheManager,
@@ -147,9 +152,9 @@ export async function initializeContainer(options: ContainerOptions = {}) {
             notifications: notificationsService,
         },
         registries: {
-            mediaRepo: MediaRepoRegistry,
+            mediaRepo: MediaRepositoryRegistry,
             mediaService: MediaServiceRegistry,
-            mediaProviderService: MediaProviderRegistry,
+            mediaProviderService: MediaProviderServiceRegistry,
         },
     };
 

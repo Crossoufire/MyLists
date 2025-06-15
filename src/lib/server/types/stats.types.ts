@@ -1,7 +1,7 @@
 import {Status} from "@/lib/server/utils/enums";
 
 
-export type StatsDelta = {
+export type DeltaStats = {
     views?: number;
     timeSpent?: number;
     totalRedo?: number;

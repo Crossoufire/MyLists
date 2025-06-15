@@ -52,6 +52,11 @@ export const taskDefinitions = [
         description: "Compute all users stats",
         handlerMethod: "runComputeAllUsersStats",
     },
+    {
+        name: "calculateAchievements",
+        description: "Compute all users Achievements",
+        handlerMethod: "runCalculateAchievements",
+    },
 ] as const;
 
 

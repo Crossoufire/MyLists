@@ -4,12 +4,12 @@ import fs from "node:fs/promises";
 import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
-import {getDbClient, withTransaction} from "@/lib/server/database/asyncStorage";
+import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
-import {MediaProviderRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 type TaskHandler = () => Promise<void>;
@@ -22,7 +22,7 @@ export class TasksService {
     constructor(
         logger: pino.Logger,
         private mediaServiceRegistry: typeof MediaServiceRegistry,
-        private mediaProviderRegistry: typeof MediaProviderRegistry,
+        private mediaProviderRegistry: typeof MediaProviderServiceRegistry,
         private achievementsService: AchievementsService,
         private userUpdatesService: UserUpdatesService,
         private notificationsService: NotificationsService,
@@ -180,6 +180,24 @@ export class TasksService {
         this.logger.info("Completed: SeedAchievements execution.");
     }
 
+    protected async runCalculateAchievements() {
+        this.logger.info("Starting calculating all achievements...");
+
+        const allAchievements = await this.achievementsService.allUsersAchievements();
+
+        const mediaTypes = [MediaType.MOVIES];
+        for (const mediaType of mediaTypes) {
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            const mediaAchievements = allAchievements.filter(a => a.mediaType === mediaType);
+            for (const achievement of mediaAchievements) {
+                const cte = mediaService.calculateAchievement(achievement, undefined);
+                await this.achievementsService.updateEachAchievementTier(achievement, cte);
+            }
+        }
+
+        this.logger.info("Completed: CalculateAchievements execution.");
+    }
+
     protected async runRemoveNonListMedia() {
         this.logger.info(`Removing non-list media...`);
 
@@ -232,7 +250,7 @@ export class TasksService {
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const userMediaStats = await mediaService.computeAllUsersStats();
-            await this.userStatsService.updateAllUserStats(mediaType, userMediaStats);
+            await this.userStatsService.updateAllUsersPreComputedStats(mediaType, userMediaStats);
 
             this.logger.info(`Computed ${mediaType} stats for all users.`);
         }

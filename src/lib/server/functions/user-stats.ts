@@ -10,8 +10,7 @@ export const getUserStats = createServerFn({ method: "GET" })
         const userStatsService = getContainer().services.userStats;
 
         // if (!mediaType) {
-        const userStats = await userStatsService.getUserMediaStats(user.id);
-        console.log({ userStats });
+        const userStats = await userStatsService.userAdvancedStatsSummary(user.id);
         return { ...userStats, ratingSystem: user.ratingSystem };
         // }
 
@@ -19,5 +18,5 @@ export const getUserStats = createServerFn({ method: "GET" })
         //     throw new Error("MediaType not activated");
         // }
         //
-        // return userStatsService.getSpecificMediaTypeStats(user.id, mediaType);
+        // return userStatsService.userMediaAdvancedStats(user.id, mediaType);
     });
