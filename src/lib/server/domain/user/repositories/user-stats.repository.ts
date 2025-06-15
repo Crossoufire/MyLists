@@ -7,6 +7,9 @@ import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 
 
+export type Setting = typeof userMediaSettings.$inferSelect;
+
+
 export class UserStatsRepository {
     static async userActiveMediaSettings(userId: number) {
         return getDbClient()

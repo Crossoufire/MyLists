@@ -1,9 +1,9 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+import {Setting, UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 
 
 export class UserStatsService {
@@ -78,51 +78,9 @@ export class UserStatsService {
     }
 
     async userPreComputedStatsSummary(userId: number) {
-        // Return a user's stats summary for all its activated mediaTypes
-
         const activeSettings = await this.repository.userActiveMediaSettings(userId);
-
-        const timePerMedia = activeSettings.map((setting) => setting.timeSpent / 60);
-        const totalHours = timePerMedia.reduce((sum, time) => sum + time, 0);
-        const totalEntries = activeSettings.reduce((sum, setting) => sum + setting.totalEntries, 0);
-        const totalFavorites = activeSettings.reduce((sum, setting) => sum + setting.entriesFavorites, 0);
-        const totalComments = activeSettings.reduce((sum, setting) => sum + setting.entriesCommented, 0);
-        const totalRedo = activeSettings.reduce((sum, setting) => sum + setting.totalRedo, 0);
-
-        const excludedStatuses = Status.getNoPlanTo();
-        const totalEntriesNoPlan = activeSettings.reduce((sum, setting) => {
-            let settingSum = 0;
-            Object.entries(setting.statusCounts).forEach(([status, count]) => {
-                if (!excludedStatuses.includes(status as Status)) {
-                    settingSum += count;
-                }
-            });
-            return sum + settingSum;
-        }, 0);
-
-        // Total and percentage rated
-        const totalRated = activeSettings.reduce((sum, setting) => sum + setting.entriesRated, 0);
-        const percentRated = totalEntriesNoPlan === 0 ? 0 : (totalRated / totalEntriesNoPlan) * 100;
-        const avgRated = totalRated === 0 ? 0 : activeSettings.reduce((sum, s) => sum + s.sumEntriesRated, 0) / totalRated;
-        const avgComments = totalComments === 0 ? 0 : totalComments / activeSettings.length;
-        const avgFavorites = totalFavorites === 0 ? 0 : totalFavorites / activeSettings.length;
-
-        return {
-            totalEntries,
-            totalFavorites,
-            totalComments,
-            totalEntriesNoPlan,
-            timePerMedia,
-            totalRated,
-            percentRated,
-            avgRated,
-            avgComments,
-            avgFavorites,
-            totalRedo,
-            totalHours: Math.floor(totalHours),
-            totalDays: Math.round(totalHours / 24),
-            mediaTypes: activeSettings.map((setting) => setting.mediaType),
-        };
+        // For single user, divisor for avgs is number of mediaType they use.
+        return this._computePreComputedStatsSummary(activeSettings, activeSettings.length);
     }
 
     async userPerMediaSummaryStats(userId: number, _limit = 10) {
@@ -205,29 +163,8 @@ export class UserStatsService {
     }
 
     async userMediaPreComputedStats(mediaType: MediaType, userId: number) {
-        const mediaSettings = await this.repository.specificUserMediaSetting(userId, mediaType);
-
-        const totalEntries = mediaSettings.totalEntries;
-        const totalRedo = mediaSettings.totalRedo;
-        const timeSpentHours = mediaSettings.timeSpent / 60
-        const timeSpentDays = Math.round(timeSpentHours / 24);
-        const totalRated = mediaSettings.entriesRated;
-        const avgRated = totalRated === 0 ? 0 : mediaSettings.sumEntriesRated / totalRated;
-        const totalFavorites = mediaSettings.entriesFavorites;
-        const totalComments = mediaSettings.entriesCommented;
-        const statusesCounts = Object.entries(mediaSettings.statusCounts).map(([status, count]) => ({ status, count }));
-
-        return {
-            totalEntries,
-            totalRedo,
-            timeSpentHours,
-            timeSpentDays,
-            totalRated,
-            avgRated,
-            totalFavorites,
-            totalComments,
-            statusesCounts
-        };
+        const mediaSettings = await this.repository.specificUserMediaSetting(userId, mediaType,);
+        return this._computeMediaPreComputedStats([mediaSettings]);
     }
 
     // --- Platform Advanced Stats -----------------------------------------------
@@ -260,73 +197,52 @@ export class UserStatsService {
         return { ...platformMediaPreComputedStats, ...mediaUpdatesPerMonthStats, ...specificMediaStats };
     }
 
-    async platformMediaPreComputedStats(mediaType: MediaType) {
-        const mediaSettings = await this.repository.allUsersMediaSettings(mediaType);
-
-        const totalEntries = mediaSettings.reduce((sum, setting) => sum + setting.totalEntries, 0);
-        const totalRedo = mediaSettings.reduce((sum, setting) => sum + setting.totalRedo, 0);
-        const timeSpentHours = mediaSettings.reduce((sum, setting) => sum + setting.timeSpent / 60, 0);
-        const timeSpentDays = Math.round(timeSpentHours / 24);
-        const totalRated = mediaSettings.reduce((sum, setting) => sum + setting.entriesRated, 0);
-        const avgRated = totalRated === 0 ? 0 : mediaSettings.reduce((sum, s) => sum + s.sumEntriesRated, 0) / totalRated;
-        const totalFavorites = mediaSettings.reduce((sum, setting) => sum + setting.entriesFavorites, 0);
-        const totalComments = mediaSettings.reduce((sum, setting) => sum + setting.entriesCommented, 0);
-
-        const totalStatusCounts = mediaSettings.reduce((acc: Record<string, number>, setting) => {
-            for (const [status, count] of Object.entries(setting.statusCounts)) {
-                acc[status] = (acc[status] || 0) + count;
-            }
-            return acc;
-        }, {});
-        const statusesCounts = Object.entries(totalStatusCounts).map(([status, count]) => ({ status, count }));
-
-        return {
-            totalEntries,
-            totalRedo,
-            timeSpentHours,
-            timeSpentDays,
-            totalRated,
-            avgRated,
-            totalFavorites,
-            totalComments,
-            statusesCounts
-        };
-    }
-
     async platformPreComputedStatsSummary() {
         const allSettings = await this.repository.allUsersAllMediaSettings();
+        // For platform, divisor for avgs is number of users.
+        const userCount = new Set(allSettings.map((s) => s.userId)).size;
+        return this._computePreComputedStatsSummary(allSettings, userCount);
+    }
 
-        const timePerMedia = allSettings.map((setting) => setting.timeSpent / 60);
-        const totalHours = timePerMedia.reduce((sum, time) => sum + time, 0);
-        const totalEntries = allSettings.reduce((sum, setting) => sum + setting.totalEntries, 0);
-        const totalFavorites = allSettings.reduce((sum, setting) => sum + setting.entriesFavorites, 0);
-        const totalComments = allSettings.reduce((sum, setting) => sum + setting.entriesCommented, 0);
-        const totalRedo = allSettings.reduce((sum, setting) => sum + setting.totalRedo, 0);
+    async platformMediaPreComputedStats(mediaType: MediaType) {
+        const mediaSettings = await this.repository.allUsersMediaSettings(mediaType);
+        return this._computeMediaPreComputedStats(mediaSettings);
+    }
+
+    // --- Helpers ---------------------------------------------------------------
+
+    private _computePreComputedStatsSummary(settings: Setting[], avgDivisor: number) {
+        const totalHours = settings.reduce((sum, s) => sum + s.timeSpent / 60, 0);
+        const totalEntries = settings.reduce((sum, s) => sum + s.totalEntries, 0);
+        const totalFavorites = settings.reduce((sum, s) => sum + s.entriesFavorites, 0);
+        const totalComments = settings.reduce((sum, s) => sum + s.entriesCommented, 0);
+        const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
 
         const excludedStatuses = Status.getNoPlanTo();
-        const totalEntriesNoPlan = allSettings.reduce((sum, setting) => {
+        const totalEntriesNoPlan = settings.reduce((sum, setting) => {
             let settingSum = 0;
-            Object.entries(setting.statusCounts).forEach(([status, count]) => {
+            for (const [status, count] of Object.entries(setting.statusCounts)) {
                 if (!excludedStatuses.includes(status as Status)) {
                     settingSum += count;
                 }
-            });
+            }
             return sum + settingSum;
         }, 0);
 
-        // Total and percentage rated
-        const totalRated = allSettings.reduce((sum, setting) => sum + setting.entriesRated, 0);
+        const totalRated = settings.reduce((sum, s) => sum + s.entriesRated, 0);
+        const sumOfAllRatings = settings.reduce((sum, s) => sum + s.sumEntriesRated, 0);
         const percentRated = totalEntriesNoPlan === 0 ? 0 : (totalRated / totalEntriesNoPlan) * 100;
-        const avgRated = totalRated === 0 ? 0 : allSettings.reduce((sum, s) => sum + s.sumEntriesRated, 0) / totalRated;
-        const avgComments = totalComments === 0 ? 0 : totalComments / allSettings.length;
-        const avgFavorites = totalFavorites === 0 ? 0 : totalFavorites / allSettings.length;
+        const avgRated = totalRated === 0 ? 0 : sumOfAllRatings / totalRated;
+
+        // Handle specific avg. requirement
+        const avgComments = avgDivisor === 0 ? 0 : totalComments / avgDivisor;
+        const avgFavorites = avgDivisor === 0 ? 0 : totalFavorites / avgDivisor;
 
         return {
             totalEntries,
             totalFavorites,
             totalComments,
             totalEntriesNoPlan,
-            timePerMedia,
             totalRated,
             percentRated,
             avgRated,
@@ -335,7 +251,41 @@ export class UserStatsService {
             totalRedo,
             totalHours: Math.floor(totalHours),
             totalDays: Math.round(totalHours / 24),
-            mediaTypes: allSettings.map((setting) => setting.mediaType),
+            mediaTypes: [...new Set(settings.map((s) => s.mediaType))],
+        };
+    }
+
+    private _computeMediaPreComputedStats(settings: Setting[]) {
+        const totalEntries = settings.reduce((sum, s) => sum + s.totalEntries, 0);
+        const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
+        const timeSpentHours = settings.reduce((sum, s) => sum + s.timeSpent / 60, 0);
+        const totalRated = settings.reduce((sum, s) => sum + s.entriesRated, 0);
+        const sumOfAllRatings = settings.reduce((sum, s) => sum + s.sumEntriesRated, 0);
+        const totalFavorites = settings.reduce((sum, s) => sum + s.entriesFavorites, 0);
+        const totalComments = settings.reduce((sum, s) => sum + s.entriesCommented, 0);
+
+        const avgRated = totalRated === 0 ? 0 : sumOfAllRatings / totalRated;
+
+        const totalStatusCounts = settings.reduce((acc: Record<string, number>, setting) => {
+            for (const [status, count] of Object.entries(setting.statusCounts)) {
+                acc[status] = (acc[status] || 0) + count;
+            }
+            return acc;
+        }, {});
+
+        const statusesCounts = Object.entries(totalStatusCounts).map(([status, count]) => ({ status, count }),);
+
+        return {
+            totalEntries,
+            totalRedo,
+            timeSpentHours,
+            timeSpentDays: Math.round(timeSpentHours / 24),
+            totalRated,
+            avgRated,
+            totalFavorites,
+            totalComments,
+            statusesCounts,
         };
     }
 }
+
