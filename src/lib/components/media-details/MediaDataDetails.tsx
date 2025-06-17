@@ -1,7 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
+import {GamesDetails} from "@/lib/components/media-details/GamesDetails";
 import {MoviesDetails} from "@/lib/components/media-details/MoviesDetails";
+import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaDataDetailsProps {
@@ -13,6 +14,7 @@ interface MediaDataDetailsProps {
 const mediaDetailsMap = (value: MediaType) => {
     const components = {
         movies: MoviesDetails,
+        games: GamesDetails,
     };
     //@ts-expect-error
     return components[value];

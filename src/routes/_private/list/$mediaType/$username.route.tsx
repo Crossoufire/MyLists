@@ -37,8 +37,8 @@ function MediaList() {
     const { currentUser } = useAuth();
     const { username, mediaType } = Route.useParams();
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
-    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
+    const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
 
     // @ts-expect-error
     const isCurrent = (parseInt(currentUser?.id) === apiData.userData.id);

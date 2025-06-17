@@ -4,14 +4,13 @@ import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
+import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
+import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
-interface UserMovieState {
-    redo: number;
-    total: number;
+interface UserGameState {
     mediaId: number;
+    playtime: number;
     favorite: boolean;
     status: Status | null;
     rating: number | null | undefined;
@@ -19,23 +18,24 @@ interface UserMovieState {
 }
 
 
-export class MoviesService {
+export class GamesService {
     private readonly achievementHandlers: Map<string, (achievement: Achievement, userId?: number) => Promise<any>>;
 
-    constructor(private repository: MoviesRepository) {
+    constructor(private repository: GamesRepository) {
         this.achievementHandlers = new Map([
-            ["completed_movies", this.repository.countCompletedAchievementCte.bind(this.repository)],
-            ["rated_movies", this.repository.countRatedAchievementCte.bind(this.repository)],
-            ["comment_movies", this.repository.countCommentedAchievementCte.bind(this.repository)],
-            ["director_movies", this.repository.getDirectorAchievementCte.bind(this.repository)],
-            ["actor_movies", this.repository.getActorAchievementCte.bind(this.repository)],
-            ["origin_lang_movies", this.repository.getOriginLanguageAchievementCte.bind(this.repository,)],
-            ["war_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["family_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["sci_genre_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["animation_movies", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["long_movies", this.repository.getDurationAchievementCte.bind(this.repository)],
-            ["short_movies", this.repository.getDurationAchievementCte.bind(this.repository)],
+            ["completed_games", this.repository.countCompletedAchievementCte.bind(this.repository)],
+            ["rated_games", this.repository.countRatedAchievementCte.bind(this.repository)],
+            ["comment_games", this.repository.countCommentedAchievementCte.bind(this.repository)],
+            // ["developer_games", this.repository.getDirectorAchievementCte.bind(this.repository)],
+            // ["publisher_games", this.repository.getActorAchievementCte.bind(this.repository)],
+            // ["first_person_games", this.repository.getOriginLanguageAchievementCte.bind(this.repository)],
+            ["hack_slash_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["multiplayer_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["log_hours_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            ["platform_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
+            // ["pc_games", this.repository.getDurationAchievementCte.bind(this.repository)],
+            // ["short_games", this.repository.getDurationAchievementCte.bind(this.repository)],
+            // ["long_games", this.repository.getDurationAchievementCte.bind(this.repository)],
         ]);
     }
 
@@ -60,10 +60,6 @@ export class MoviesService {
         return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
     }
 
-    async lockOldMovies() {
-        return this.repository.lockOldMovies();
-    }
-
     async searchByName(query: string) {
         return this.repository.searchByName(query);
     }
@@ -84,6 +80,7 @@ export class MoviesService {
         return handler(achievement, userId);
     }
 
+    // TODO: TO update
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
 
@@ -94,23 +91,23 @@ export class MoviesService {
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
 
         // Specific stats
-        const avgDuration = await this.repository.avgMovieDuration(userId);
-        const durationDistrib = await this.repository.movieDurationDistrib(userId);
-        const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        // const avgDuration = await this.repository.avgMovieDuration(userId);
+        // const durationDistrib = await this.repository.movieDurationDistrib(userId);
+        // const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
+        // const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
             totalLabels,
             genresStats,
             releaseDates,
-            totalBudget,
-            totalRevenue,
-            avgDuration,
-            durationDistrib,
-            directorsStats,
-            actorsStats,
-            languagesStats,
+            // totalBudget,
+            // totalRevenue,
+            // avgDuration,
+            // durationDistrib,
+            // directorsStats,
+            // actorsStats,
+            // languagesStats,
         };
     }
 
@@ -135,7 +132,7 @@ export class MoviesService {
             mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
         }
         else {
-            throw new Error("Movie not found");
+            throw new Error("Game not found");
         }
 
         const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
@@ -180,7 +177,7 @@ export class MoviesService {
                 defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
                 resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/movies-covers",
+                saveLocation: "public/static/covers/games-covers",
             });
             fields.imageCover = imageName;
             delete payload.imageCover;
@@ -225,7 +222,7 @@ export class MoviesService {
 
     async getComingNext(userId: number) {
         const comingNextData = await this.repository.getComingNext(userId);
-        return { items: comingNextData, mediaType: MediaType.MOVIES };
+        return { items: comingNextData, mediaType: MediaType.GAMES };
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -243,7 +240,7 @@ export class MoviesService {
 
         const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
 
-        const delta = this.calculateDeltaStats(null, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(null, newState as UserGameState);
 
         return { newState, media, delta };
     }
@@ -261,7 +258,7 @@ export class MoviesService {
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserGameState, newState as UserGameState);
 
         return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
     }
@@ -278,7 +275,7 @@ export class MoviesService {
         }
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, null, media);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserGameState, null);
 
         return delta;
     }
@@ -286,41 +283,38 @@ export class MoviesService {
     completePartialUpdateData(partialUpdateData: Record<string, any>) {
         const completeUpdateData = { ...partialUpdateData };
 
-        if (completeUpdateData.status) {
-            return { ...completeUpdateData, redo: 0 };
+        if (completeUpdateData.status && completeUpdateData.status === Status.PLAN_TO_PLAY) {
+            return { ...completeUpdateData, playtime: 0 };
         }
+
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserMovieState | null, newState: UserMovieState | null, media: any) {
+    calculateDeltaStats(oldState: UserGameState | null, newState: UserGameState | null) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
         // Extract Old State Info
         const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
-        const oldRedo = oldState?.redo ?? 0;
         const oldComment = oldState?.comment;
         const oldFavorite = oldState?.favorite ?? false;
+        const oldTotalTimeSpent = oldState?.playtime ?? 0;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
         const wasRated = wasCompleted && oldRating != null;
-        const oldTotalSpecificValue = oldState ? (wasCompleted ? 1 : 0) + oldRedo : 0;
-        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
 
         // Extract New State Info
         const newStatus = newState?.status;
         const newRating = newState?.rating;
-        const newRedo = newState?.redo ?? 0;
         const newComment = newState?.comment;
         const newFavorite = newState?.favorite ?? false;
+        const newTotalTimeSpent = newState?.playtime ?? 0;
         const isCompleted = newStatus === Status.COMPLETED;
         const isFavorited = isCompleted && newFavorite;
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
-        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
-        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 
         // --- Calculate Deltas ----------------------------------------------------------------
 
@@ -345,11 +339,11 @@ export class MoviesService {
         // Time Spent
         delta.timeSpent = (newTotalTimeSpent - oldTotalTimeSpent);
 
-        // Total Redo Count
-        delta.totalRedo = (newRedo - oldRedo);
+        // Total Redo Count - Always 0 for Games
+        delta.totalRedo = 0;
 
-        // Total Specific
-        delta.totalSpecific = (newTotalSpecificValue - oldTotalSpecificValue);
+        // Total Specific - Always 0 for Games
+        delta.totalSpecific = 0;
 
         // Rating Stats
         let entriesRatedDelta = 0;
@@ -397,6 +391,6 @@ export class MoviesService {
     }
 
     getAchievementsDefinition() {
-        return moviesAchievements();
+        return gamesAchievements();
     }
 }

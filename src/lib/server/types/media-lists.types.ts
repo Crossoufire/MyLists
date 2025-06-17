@@ -63,6 +63,7 @@ export interface MediaSchemaConfig<
     genreConfig?: RelatedEntityConfig<any, any>;
     actorConfig?: RelatedEntityConfig<any, any>;
     companyConfig?: RelatedEntityConfig<any, any>;
+    platformConfig?: RelatedEntityConfig<any, any>;
     developerConfig?: RelatedEntityConfig<any, any>;
     networkConfig?: RelatedEntityConfig<any, any>;
     creatorConfig?: RelatedEntityConfig<any, any>;

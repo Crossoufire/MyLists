@@ -2,6 +2,13 @@
     "name": "tanstarter",
     "private": true,
     "type": "module",
+    "browserslist": [
+        "defaults and supports es6-module",
+        "Chrome >= 96",
+        "Edge >= 96",
+        "Firefox >= 93",
+        "Safari >= 15"
+    ],
     "scripts": {
         "dev": "vite dev --port 3000",
         "build": "vite build",

@@ -26,7 +26,7 @@ export class TmdbTransformer {
             if (item.media_type === "tv") details = this.processSearchTv(item);
             if (item.media_type === "movie") details = this.processSearchMovie(item);
 
-            return { ...baseInfo, ...details };
+            return { ...baseInfo, ...details } as ProviderSearchResults;
         });
 
         return transformedResults as ProviderSearchResults[];
@@ -35,7 +35,6 @@ export class TmdbTransformer {
     private processSearchTv(item: Record<string, any>) {
         const date = item.first_air_date;
         const name = item.original_name || item.name;
-
 
         let itemType: MediaType = MediaType.SERIES;
 
@@ -47,7 +46,7 @@ export class TmdbTransformer {
             itemType = MediaType.ANIME;
         }
 
-        return { name, date, itemType };
+        return { name, date, itemType } as ProviderSearchResults;
     }
 
     private processSearchMovie(item: Record<string, any>) {
@@ -55,7 +54,7 @@ export class TmdbTransformer {
         const itemType = MediaType.MOVIES;
         const name = item.original_title || item.title;
 
-        return { name, date, itemType };
+        return { name, date, itemType } as ProviderSearchResults;
     }
 
     async transformMoviesDetailsResults(rawData: Record<string, any>) {

@@ -354,8 +354,8 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 perPage,
                 totalPages,
                 totalItems,
-                availableSorting: Object.keys(availableSorts),
                 sorting: sortKeyName,
+                availableSorting: Object.keys(availableSorts),
             },
         };
     }

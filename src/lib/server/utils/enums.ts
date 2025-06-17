@@ -113,6 +113,7 @@ export const GamesPlatformsEnum = {
     XBOX_ONE: "Xbox One",
     XBOX_360: "Xbox 360",
     XBOX: "Xbox",
+    NINTENDO_SWITCH_2: "Switch 2",
     NINTENDO_SWITCH: "Switch",
     WII_U: "Wii U",
     WII: "Wii",

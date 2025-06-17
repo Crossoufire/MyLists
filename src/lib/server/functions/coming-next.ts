@@ -8,6 +8,12 @@ export const getComingNextMedia = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .handler(async ({ context: { currentUser } }) => {
         const mediaServiceRegistry = getContainer().registries.mediaService;
-        const mediaService = mediaServiceRegistry.getService(MediaType.MOVIES);
-        return [await mediaService.getComingNext(parseInt(currentUser.id!))];
+
+        const movieService = mediaServiceRegistry.getService(MediaType.MOVIES);
+        const gamesService = mediaServiceRegistry.getService(MediaType.GAMES);
+
+        return [
+            await movieService.getComingNext(parseInt(currentUser.id!)),
+            await gamesService.getComingNext(parseInt(currentUser.id!)),
+        ];
     });

@@ -28,6 +28,7 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                         job="creator"
                         name="Director"
                         mediaType={mediaType}
+                        // @ts-expect-error
                         valueList={[mediaData.directorName]}
                     />
                     <GenericDetails
@@ -38,14 +39,17 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                 <div className="flex flex-col gap-y-4">
                     <GenericDetails
                         name="Runtime"
+                        // @ts-expect-error
                         value={formatMinutes(mediaData.duration)}
                     />
                     <GenericDetails
                         name="Budget"
+                        // @ts-expect-error
                         value={mediaData.budget === 0 ? mediaData.budget : `${mediaData?.budget?.toLocaleString("fr")} $`}
                     />
                     <GenericDetails
                         name="Revenue"
+                        // @ts-expect-error
                         value={mediaData.revenue === 0 ? mediaData.revenue : `${mediaData?.revenue?.toLocaleString("fr")} $`}
                     />
                 </div>
@@ -54,28 +58,33 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                         name="Actors"
                         job="actor"
                         mediaType={mediaType}
+                        // @ts-expect-error
                         valueList={mediaData.moviesActors.map(actor => actor.name)}
                     />
                     <MapDetails
                         job="compositor"
                         name="Compositor"
                         mediaType={mediaType}
+                        // @ts-expect-error
                         valueList={[mediaData.compositorName]}
                     />
                 </div>
                 <div className="flex flex-col gap-y-4">
                     <GenericDetails
                         name="Origin"
+                        // @ts-expect-error
                         value={mediaData?.originalLanguage?.toUpperCase()}
                     />
                     <MapDetails
                         name="Genres"
+                        // @ts-expect-error
                         valueList={mediaData.moviesGenres.map(genre => genre.name)}
                     />
                 </div>
             </div>
         </div>
         <Synopsis
+            // @ts-expect-error
             tagLine={mediaData.tagline}
             synopsis={mediaData.synopsis}
         />

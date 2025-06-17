@@ -3,10 +3,14 @@ import {Cache} from "cache-manager";
 import pinoLogger from "./pino-logger";
 import {MediaType} from "@/lib/server/utils/enums";
 import {initializeCache} from "@/lib/server/core/cache-manager";
+import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {UserService} from "@/lib/server/domain/user/services/user.service";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
+import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
+import {IgdbTransformer} from "../media-providers/transformers/igdb.transformer";
 import {MediadleService} from "@/lib/server/domain/user/services/mediadle.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
@@ -14,6 +18,7 @@ import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.ser
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
@@ -27,9 +32,11 @@ import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegis
 interface AppContainer {
     cacheManager: Cache;
     clients: {
+        igdb: IgdbClient;
         tmdb: TmdbClient;
     };
     transformers: {
+        igdb: IgdbTransformer;
         tmdb: TmdbTransformer;
     };
     repositories: {
@@ -84,7 +91,9 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const notificationsRepository = NotificationsRepository;
 
     // Media Repositories
+    const gamesRepository = new GamesRepository()
     const moviesRepository = new MoviesRepository();
+    MediaRepositoryRegistry.registerRepository(MediaType.GAMES, gamesRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
 
     // User Services
@@ -101,7 +110,9 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     );
 
     // Media Services
+    const gamesService = new GamesService(gamesRepository);
     const moviesService = new MoviesService(moviesRepository);
+    MediaServiceRegistry.registerService(MediaType.GAMES, gamesService);
     MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
 
     // Tasks Service
@@ -117,21 +128,27 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     )
 
     // API Transformers
+    const igdbTransformer = new IgdbTransformer();
     const tmdbTransformer = new TmdbTransformer();
 
     // API Clients
+    const igdbClient = await IgdbClient.create();
     const tmdbClient = await TmdbClient.create();
 
     // Media Providers Services
+    const gamesProviderService = new GamesProviderService(igdbClient, igdbTransformer, gamesRepository)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
 
     const currentContainer: AppContainer = {
         cacheManager: cacheManager,
         clients: {
+            igdb: igdbClient,
             tmdb: tmdbClient,
         },
         transformers: {
+            igdb: igdbTransformer,
             tmdb: tmdbTransformer,
         },
         repositories: {
@@ -169,7 +186,7 @@ export async function initializeContainer(options: ContainerOptions = {}) {
 export function getContainer() {
     const globalContainer = globalThis.__MY_APP_CONTAINER;
     if (!globalContainer) {
-        throw new Error("Global container not initialized. Ensure SSR or relevant entry point runs initializeContainer first.");
+        throw new Error("Global container not initialized. Ensure server.ts runs initializeContainer first.");
     }
     return globalContainer;
 }

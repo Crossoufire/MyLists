@@ -229,6 +229,9 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         else if (job === JobType.COMPOSITOR) {
             filterCondition = like(movies.compositorName, `%${name}%`);
         }
+        else {
+            throw new Error("Job type not supported");
+        }
 
         if (filterCondition) {
             dataQuery = dataQuery.where(filterCondition);
@@ -275,12 +278,17 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         }
 
         const collectionMovies = mainData?.collectionId
-            ? await getDbClient().query.movies.findMany({
-                where: and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)),
-                columns: { id: true, name: true, imageCover: true },
-                orderBy: [asc(movies.releaseDate)],
-            }) : [];
-
+            ? await getDbClient()
+                .select({
+                    id: movies.id,
+                    name: movies.name,
+                    imageCover: movies.imageCover,
+                })
+                .from(movies)
+                .where(and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)))
+                .orderBy(asc(movies.releaseDate))
+            : [];
+        
         return { ...mainData, collection: collectionMovies };
     }
 

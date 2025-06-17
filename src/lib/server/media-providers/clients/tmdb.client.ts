@@ -21,7 +21,7 @@ export class TmdbClient extends BaseClient {
     async search(query: string, page: number = 1) {
         const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
         const response = await this.call(url);
-        return await response.json() as Record<string, any>;
+        return response.json() as Record<string, any>;
     }
 
     async getMovieDetails(movieId: number) {

@@ -10,10 +10,10 @@ import AvatarCircles from "@/lib/components/ui/avatar-circles";
 import {FollowCard} from "@/lib/components/media-details/FollowCard";
 import {SimilarMedia} from "@/lib/components/media-details/SimilarMedia";
 import {UserMediaDetails} from "@/lib/components/user-media/UserMediaDetails";
-import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MediaDataDetails} from "@/lib/components/media-details/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {RefreshAndEditMedia} from "@/lib/components/media-details/RefreshAndEditMedia";
+import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
@@ -48,7 +48,7 @@ function MediaDetailsPage() {
     };
 
     return (
-        <PageTitle title={apiData.media.name} onlyHelmet>
+        <PageTitle title={apiData.media.name ?? ""} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">
                 <div>
                     <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
@@ -111,10 +111,12 @@ function MediaDetailsPage() {
                                     similarMedia={apiData.similarMedia}
                                     title={`Similar ${capitalize(mediaType)}`}
                                 />
-                                {apiData.media?.collection.length !== 0 &&
+                                {/*//@ts-expect-error*/}
+                                {apiData.media?.collection && apiData.media.collection.length !== 0 &&
                                     <SimilarMedia
                                         mediaType={mediaType}
                                         title={"In The Same Collection"}
+                                        //@ts-expect-error
                                         similarMedia={apiData.media.collection}
                                     />
                                 }

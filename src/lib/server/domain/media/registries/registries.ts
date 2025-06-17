@@ -1,14 +1,17 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
-interface MediaRepositoryMap {
+export interface MediaRepositoryMap {
     [MediaType.SERIES]: MoviesRepository;
     [MediaType.ANIME]: MoviesRepository;
     [MediaType.MOVIES]: MoviesRepository;
-    [MediaType.GAMES]: MoviesRepository;
+    [MediaType.GAMES]: GamesRepository;
     [MediaType.BOOKS]: MoviesRepository;
     [MediaType.MANGA]: MoviesRepository;
 }
@@ -18,17 +21,17 @@ export interface MediaServiceMap {
     [MediaType.SERIES]: MoviesService;
     [MediaType.ANIME]: MoviesService;
     [MediaType.MOVIES]: MoviesService;
-    [MediaType.GAMES]: MoviesService;
+    [MediaType.GAMES]: GamesService;
     [MediaType.BOOKS]: MoviesService;
     [MediaType.MANGA]: MoviesService;
 }
 
 
-interface MediaProviderServiceMap {
+export interface MediaProviderServiceMap {
     [MediaType.SERIES]: MoviesProviderService;
     [MediaType.ANIME]: MoviesProviderService;
     [MediaType.MOVIES]: MoviesProviderService;
-    [MediaType.GAMES]: MoviesProviderService;
+    [MediaType.GAMES]: GamesProviderService;
     [MediaType.BOOKS]: MoviesProviderService;
     [MediaType.MANGA]: MoviesProviderService;
 }

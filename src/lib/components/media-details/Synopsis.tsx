@@ -3,7 +3,7 @@ import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
 
 interface SynopsisProps {
     synopsis: string | null | undefined;
-    tagLine: string | null | undefined;
+    tagLine?: string | null | undefined;
 }
 
 

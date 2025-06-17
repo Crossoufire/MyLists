@@ -13,6 +13,8 @@ interface MapDetailsProps {
 
 
 export const MapDetails = ({ name, valueList, mediaType, job, asJoin }: MapDetailsProps) => {
+    console.log(valueList);
+
     const renderLink = (value: string | null, idx: number) => (
         //@ts-expect-error
         <Link key={value} to="/details/$mediaType/$job/$value" params={{ mediaType, job, value }}>

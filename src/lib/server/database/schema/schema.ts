@@ -2,7 +2,7 @@ import {sql} from "drizzle-orm";
 import {user} from "./auth.schema";
 import {customJson, imageUrl} from "@/lib/server/database/custom-types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
-import {AchievementDifficulty, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, GamesPlatformsEnum, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
 
 
 const BASE_SERIES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/series-covers`;
@@ -257,7 +257,7 @@ export const games = sqliteTable("games", {
     hltbMainTime: real(),
     hltbMainAndExtraTime: real(),
     hltbTotalCompleteTime: real(),
-    apiId: integer({ mode: "boolean" }),
+    apiId: integer().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     lastApiUpdate: text(),
 });
@@ -398,7 +398,7 @@ export const gamesList = sqliteTable("games_list", {
     playtime: integer().default(0),
     favorite: integer({ mode: "boolean" }),
     comment: text(),
-    platform: text(),
+    platform: text().$type<GamesPlatformsEnum>(),
     rating: real(),
 });
 

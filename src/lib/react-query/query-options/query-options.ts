@@ -11,7 +11,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getMediaListFilters, getMediaListSearchFilters, serverGetMediaList} from "@/lib/server/functions/media-lists";
+import {getMediaList, getMediaListFilters, getMediaListSearchFilters} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 
 
@@ -100,7 +100,7 @@ export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | stri
 
 export const mediaListOptions = (mediaType: MediaType, username: string, search: Record<string, any>) => queryOptions({
     queryKey: queryKeys.userListKey(mediaType, username, search),
-    queryFn: () => serverGetMediaList({ data: { mediaType, username, args: search } }),
+    queryFn: () => getMediaList({ data: { mediaType, username, args: search } }),
 });
 
 export const listFiltersOptions = (mediaType: MediaType, username: string) => queryOptions({

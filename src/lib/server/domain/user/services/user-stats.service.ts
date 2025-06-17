@@ -217,7 +217,8 @@ export class UserStatsService {
         const totalFavorites = settings.reduce((sum, s) => sum + s.entriesFavorites, 0);
         const totalComments = settings.reduce((sum, s) => sum + s.entriesCommented, 0);
         const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
-
+        const timePerMedia = settings.map((s) => s.timeSpent / 60);
+        
         const excludedStatuses = Status.getNoPlanTo();
         const totalEntriesNoPlan = settings.reduce((sum, setting) => {
             let settingSum = 0;
@@ -239,6 +240,7 @@ export class UserStatsService {
         const avgFavorites = avgDivisor === 0 ? 0 : totalFavorites / avgDivisor;
 
         return {
+            timePerMedia,
             totalEntries,
             totalFavorites,
             totalComments,
