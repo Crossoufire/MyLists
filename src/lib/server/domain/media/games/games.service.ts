@@ -1,8 +1,8 @@
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {games, gamesCompanies, gamesGenre, gamesPlatforms} from "@/lib/server/database/schema";

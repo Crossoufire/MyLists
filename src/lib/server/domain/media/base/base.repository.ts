@@ -21,8 +21,7 @@ export interface EditUserLabels {
 }
 
 
-export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
-> {
+export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
