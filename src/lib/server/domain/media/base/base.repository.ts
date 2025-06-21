@@ -3,8 +3,8 @@ import {Achievement} from "@/lib/server/types/achievements";
 import {followers, user} from "@/lib/server/database/schema";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaListArgs, MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/base.types";
+import {GenreTable, LabelTable, ListTable, MediaListArgs, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, sql} from "drizzle-orm";
 
 
@@ -21,7 +21,7 @@ export interface EditUserLabels {
 }
 
 
-export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>> {
+export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
@@ -62,7 +62,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             },
             genres: createListFilterDef({
                 argName: "genres",
-                mediaTable: genreTable,
+                mediaTable: mediaTable,
                 entityTable: genreTable,
                 filterColumn: genreTable.name,
             }),
@@ -242,7 +242,10 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         const { listTable, labelTable } = this.config;
 
         const mainUserMediaData = await getDbClient()
-            .select({ ...listTable, ratingSystem: user.ratingSystem })
+            .select({
+                ...getTableColumns(listTable),
+                ratingSystem: user.ratingSystem,
+            })
             .from(listTable)
             .innerJoin(user, eq(user.id, listTable.userId))
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
@@ -586,7 +589,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(forUser, isNotNull(metricNameColumn), eq(listTable.isFavorite, true), notInArray(listTable.status, statusFilters)))
+            .where(and(forUser, isNotNull(metricNameColumn), eq(listTable.favorite, true), notInArray(listTable.status, statusFilters)))
             .groupBy(metricNameColumn)
             .orderBy(asc(countAlias))
             .limit(limit);

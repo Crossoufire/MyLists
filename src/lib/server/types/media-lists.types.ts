@@ -48,11 +48,54 @@ export interface RelatedEntityConfig<TJoinTable extends Table, TEntityTable exte
 }
 
 
+interface MediaTableColumns {
+    id: Column<any, any, any>;
+    name: Column<any, any, any>;
+    apiId: Column<any, any, any>;
+    synopsis: Column<any, any, any>;
+    imageCover: Column<any, any, any>;
+    releaseDate: Column<any, any, any>;
+    lastApiUpdate: Column<any, any, any>;
+}
+
+
+interface ListTableColumns {
+    id: Column<any, any, any>;
+    userId: Column<any, any, any>;
+    mediaId: Column<any, any, any>;
+    status: Column<any, any, any>;
+    favorite: Column<any, any, any>;
+    comment: Column<any, any, any>;
+    rating: Column<any, any, any>;
+}
+
+
+interface LabelTableColumns {
+    id: Column<any, any, any>;
+    userId: Column<any, any, any>;
+    mediaId: Column<any, any, any>;
+    name: Column<any, any, any>;
+}
+
+
+interface GenreTableColumns {
+    id: Column<any, any, any>;
+    mediaId: Column<any, any, any>;
+    name: Column<any, any, any>;
+}
+
+
+export type ListTable = Table & ListTableColumns;
+export type MediaTable = Table & MediaTableColumns;
+export type LabelTable = Table & LabelTableColumns;
+export type GenreTable = Table & GenreTableColumns;
+
+
 export interface MediaSchemaConfig<
-    TMediaTable extends Table,
-    TListTable extends Table,
-    TGenreTable extends Table,
-    TLabelTable extends Table,
+    TMediaTable extends MediaTable,
+    TListTable extends ListTable,
+    TGenreTable extends GenreTable,
+    TLabelTable extends LabelTable,
 > {
     mediaTable: TMediaTable;
     genreTable: TGenreTable;
@@ -78,10 +121,10 @@ export type TEpsPerSeasonTableParam = Table;
 
 
 export interface TVSchemaConfig<
-    TMediaTable extends Table,
-    TListTable extends Table,
-    TGenreTable extends Table,
-    TLabelTable extends Table,
+    TMediaTable extends MediaTable,
+    TListTable extends ListTable,
+    TGenreTable extends GenreTable,
+    TLabelTable extends LabelTable,
     TActorTableParam extends Table,
     TNetworkTableParam extends Table,
     TEpsPerSeasonTableParam extends Table,

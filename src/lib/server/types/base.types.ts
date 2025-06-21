@@ -1,14 +1,14 @@
-import {SQL} from "drizzle-orm";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {Column, SQL, Table} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
+import {MediaListArgs, MediaTable} from "@/lib/server/types/media-lists.types";
 
 
 export interface ListFilterDefinition {
+    mediaTable: MediaTable;
     argName: keyof MediaListArgs;
-    entityTable: any;
-    filterColumn: any;
-    mediaTable: any;
+    filterColumn: Column<any, any, any>;
+    entityTable: Table & { mediaId: Column<any, any, any> };
 }
 
 
