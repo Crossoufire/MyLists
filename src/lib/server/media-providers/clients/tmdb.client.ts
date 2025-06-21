@@ -30,7 +30,7 @@ export class TmdbClient extends BaseClient {
         return response.json();
     }
 
-    async getTvDetails(tvId: string) {
+    async getTvDetails(tvId: number) {
         const url = `${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}`;
         const response = await this.call(url);
         return response.json();

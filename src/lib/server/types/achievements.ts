@@ -20,20 +20,18 @@ export interface AchievementData {
 export interface Achievement {
     id: number
     name: string
-    mediaType: MediaType | null
     codeName: string
     description: string
     value: string | null
     tiers: AchievementTier[]
+    mediaType: MediaType | null
 }
 
 
 export interface AchievementTier {
     id: number
     achievementId: number
-    difficulty: AchievementDifficulty
-    criteria: {
-        count: any,
-    }
     rarity: number | null
+    criteria: { count: any }
+    difficulty: AchievementDifficulty
 }

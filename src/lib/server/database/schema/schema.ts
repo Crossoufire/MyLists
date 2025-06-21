@@ -230,8 +230,8 @@ export const anime = sqliteTable("anime", {
     imageCover: imageUrl("image_cover", BASE_ANIME_COVERS_PATH).notNull(),
     apiId: integer().notNull(),
     lockStatus: integer({ mode: "boolean" }),
-    seasonToAir: text(),
-    episodeToAir: text(),
+    seasonToAir: integer(),
+    episodeToAir: integer(),
     nextEpisodeToAir: text(),
     lastApiUpdate: text(),
 });

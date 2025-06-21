@@ -6,8 +6,8 @@ import {MediaCard} from "@/lib/components/app/MediaCard";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
-import {upcomingOptions} from "@/lib/react-query/query-options/query-options";
 import {capitalize, formatDateTime, zeroPad} from "@/lib/utils/functions";
+import {upcomingOptions} from "@/lib/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 
 
@@ -69,7 +69,7 @@ const NextMedia = ({ media, mediaType }: NextMediaProps) => {
         <MediaCard item={media} mediaType={mediaType}>
             <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-900 w-full rounded-b-sm text-center">
                 {(mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) && (
-                    <div>S{zeroPad(media.seasonToAir)}&nbsp;-&nbsp;E{zeroPad(media.episodeToAir)}</div>
+                    <div>S{zeroPad(parseInt(media.seasonToAir))}&nbsp;-&nbsp;E{zeroPad(parseInt(media.episodeToAir))}</div>
                 )}
                 <div>{formatDateTime(media.date)}</div>
             </div>

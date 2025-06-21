@@ -35,8 +35,6 @@ interface SaveUploadedImageOptions {
 export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, resize }: SaveImageFromUrlOptions) => {
     try {
         const response = await fetch(imageUrl);
-        console.log({ response })
-        
         if (!response.ok) {
             return defaultName;
         }

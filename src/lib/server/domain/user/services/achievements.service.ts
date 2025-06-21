@@ -2,7 +2,6 @@ import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements";
-import {MediaServiceMap} from "@/lib/server/domain/media/registries/registries";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 
 
@@ -135,7 +134,7 @@ export class AchievementsService {
         return this.repository.getMediaAchievements(mediaType);
     }
 
-    async calculateAchievement(achievement: Achievement, mediaService: MediaServiceMap[keyof MediaServiceMap]) {
+    async calculateAchievement(achievement: Achievement, mediaService: any) {
         const achievementCTE = mediaService.getAchievementCte(achievement);
 
         for (const tier of achievement.tiers) {

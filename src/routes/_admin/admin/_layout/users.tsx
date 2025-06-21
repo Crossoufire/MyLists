@@ -63,7 +63,6 @@ function UserManagementPage() {
 
     const onSortingChange = (updater: any) => {
         const newState = updater(sortingState);
-        console.log({ newState });
         setFilters({ sortBy: newState[0]?.id ?? "updatedAt", sortDesc: newState[0]?.desc ?? true, pageIndex: 0 });
     };
 

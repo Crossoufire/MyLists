@@ -1,6 +1,6 @@
 interface GenericDetailsProps {
+    value: any;
     name: string;
-    value: string | number | null | undefined;
 }
 
 

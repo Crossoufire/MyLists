@@ -30,15 +30,15 @@ function TrendsPage() {
                         Trending Movies
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="series">
-                    {/*<div className="grid grid-cols-12 gap-6">*/}
-                    {/*    {apiData.tv_trends.map((media) => (*/}
-                    {/*        <div key={media.api_id} className="col-span-12 md:col-span-6 lg:col-span-4">*/}
-                    {/*            <TrendItem media={media}/>*/}
-                    {/*        </div>*/}
-                    {/*    ))}*/}
-                    {/*</div>*/}
-                </TabsContent>
+                {/*<TabsContent value="series">*/}
+                {/*    <div className="grid grid-cols-12 gap-6">*/}
+                {/*        {apiData.tvTrends.map((media) => (*/}
+                {/*            <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">*/}
+                {/*                <TrendItem media={media}/>*/}
+                {/*            </div>*/}
+                {/*        ))}*/}
+                {/*    </div>*/}
+                {/*</TabsContent>*/}
                 <TabsContent value="movies">
                     <div className="grid grid-cols-12 gap-6">
                         {apiData.moviesTrends.map((media) => (

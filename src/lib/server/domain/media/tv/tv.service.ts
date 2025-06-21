@@ -1,15 +1,16 @@
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {movies, moviesActors, moviesGenre} from "@/lib/server/database/schema";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {MoviesAchCodeName, moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
+import {AnimeAchCodeName} from "@/lib/server/domain/media/tv/anime/achievements.seed";
+import {SeriesAchCodeName} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
-interface UserMovieState {
+interface UserTvState {
     redo: number;
     total: number;
     mediaId: number;
@@ -20,23 +21,17 @@ interface UserMovieState {
 }
 
 
-export class MoviesService {
-    private readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
+export class TvService {
+    private readonly achievementHandlers: Record<SeriesAchCodeName | AnimeAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
-    constructor(private repository: MoviesRepository) {
+    constructor(private repository: TvRepository) {
         this.achievementHandlers = {
-            completed_movies: this.repository.countCompletedAchievementCte.bind(this.repository),
-            rated_movies: this.repository.countRatedAchievementCte.bind(this.repository),
-            comment_movies: this.repository.countCommentedAchievementCte.bind(this.repository),
-            director_movies: this.repository.getDirectorAchievementCte.bind(this.repository),
-            actor_movies: this.repository.getActorAchievementCte.bind(this.repository),
-            origin_lang_movies: this.repository.getOriginLanguageAchievementCte.bind(this.repository),
-            war_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
-            family_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
-            sci_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
-            animation_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
-            long_movies: this.repository.getDurationAchievementCte.bind(this.repository),
-            short_movies: this.repository.getDurationAchievementCte.bind(this.repository),
+            completed_anime: this.repository.countCompletedAchievementCte.bind(this.repository),
+            completed_series: this.repository.countCompletedAchievementCte.bind(this.repository),
+            // rated_anime: this.repository.countRatedAchievementCte.bind(this.repository),
+            // rated_series: this.repository.countRatedAchievementCte.bind(this.repository),
+            // comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
+            // comment_series: this.repository.countCommentedAchievementCte.bind(this.repository),
         };
     }
 
@@ -52,6 +47,7 @@ export class MoviesService {
         return this.repository.getNonListMediaIds();
     }
 
+    // TODO: UPDATE
     async removeMediaByIds(mediaIds: number[]) {
         const tables = [moviesActors, moviesGenre, movies];
         return this.repository.removeMediaByIds(mediaIds, tables);
@@ -60,10 +56,6 @@ export class MoviesService {
     async getCoverFilenames() {
         const coverFilenames = await this.repository.getCoverFilenames();
         return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
-    async lockOldMovies() {
-        return this.repository.lockOldMovies();
     }
 
     async searchByName(query: string) {
@@ -79,7 +71,7 @@ export class MoviesService {
     }
 
     async getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as MoviesAchCodeName];
+        const handler = this.achievementHandlers[achievement.codeName as SeriesAchCodeName | AnimeAchCodeName];
         if (!handler) {
             throw new Error("Invalid Achievement codeName");
         }
@@ -96,23 +88,23 @@ export class MoviesService {
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
 
         // Specific stats
-        const avgDuration = await this.repository.avgMovieDuration(userId);
-        const durationDistrib = await this.repository.movieDurationDistrib(userId);
-        const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        // const avgDuration = await this.repository.avgMovieDuration(userId);
+        // const durationDistrib = await this.repository.movieDurationDistrib(userId);
+        // const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
+        // const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
             totalLabels,
             genresStats,
             releaseDates,
-            totalBudget,
-            totalRevenue,
-            avgDuration,
-            durationDistrib,
-            directorsStats,
-            actorsStats,
-            languagesStats,
+            // totalBudget,
+            // totalRevenue,
+            // avgDuration,
+            // durationDistrib,
+            // directorsStats,
+            // actorsStats,
+            // languagesStats,
         };
     }
 
@@ -123,7 +115,7 @@ export class MoviesService {
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
 
-        let mediaWithDetails;
+        let mediaWithDetails: any;
         let internalMediaId = media?.id;
 
         if (external && !internalMediaId) {
@@ -244,7 +236,7 @@ export class MoviesService {
 
         const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
 
-        const delta = this.calculateDeltaStats(null, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(null, newState as UserTvState, media);
 
         return { newState, media, delta };
     }
@@ -262,7 +254,7 @@ export class MoviesService {
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserTvState, newState as UserTvState, media);
 
         return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
     }
@@ -279,11 +271,12 @@ export class MoviesService {
         }
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, null, media);
+        const delta = this.calculateDeltaStats(oldState as unknown as UserTvState, null, media);
 
         return delta;
     }
 
+    // TODO: UPDATE
     completePartialUpdateData(partialUpdateData: Record<string, any>) {
         const completeUpdateData = { ...partialUpdateData };
 
@@ -293,7 +286,8 @@ export class MoviesService {
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserMovieState | null, newState: UserMovieState | null, media: any) {
+    // TODO: UPDATE
+    calculateDeltaStats(oldState: UserTvState | null, newState: UserTvState | null, media: any) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
@@ -397,7 +391,8 @@ export class MoviesService {
         return delta;
     }
 
+    // TODO : CHANGE TO SERIES AND ANIME
     getAchievementsDefinition() {
-        return moviesAchievements as unknown as AchievementData[];
+        return [] as AchievementData[];
     }
 }

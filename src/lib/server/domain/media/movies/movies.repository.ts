@@ -1,20 +1,18 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/types/achievements";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {applyJoin, BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
-
-import {Achievement} from "@/lib/server/types/achievements";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, like, lte, max, ne, or, sql} from "drizzle-orm";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     config: MovieSchemaConfig;
 
     constructor() {
-        super(moviesConfig, createMoviesFilters);
+        super(moviesConfig);
         this.config = moviesConfig;
     }
 
@@ -28,56 +26,11 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(
-                eq(moviesList.userId, userId),
-                notInArray(moviesList.status, [Status.DROPPED, Status.RANDOM]),
-                gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
-            ))
+            .where(and(eq(moviesList.userId, userId), gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`)))
             .orderBy(asc(movies.releaseDate))
             .execute();
 
         return comingNext;
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        const results = await getDbClient()
-            .select({
-                ...getTableColumns(moviesList),
-                name: movies.name,
-            })
-            .from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-            .where(eq(moviesList.userId, userId))
-
-        return results;
-    }
-
-    async getNonListMediaIds() {
-        const mediaToDelete = await getDbClient()
-            .select({ id: movies.id })
-            .from(movies)
-            .leftJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(isNull(moviesList.userId))
-            .execute();
-
-        return mediaToDelete.map((media) => media.id);
-    }
-
-    async removeMediaByIds(mediaIds: number[]) {
-        await getDbClient()
-            .delete(moviesActors)
-            .where(inArray(moviesActors.mediaId, mediaIds))
-            .execute();
-
-        await getDbClient()
-            .delete(moviesGenre)
-            .where(inArray(moviesGenre.mediaId, mediaIds))
-            .execute();
-
-        await getDbClient()
-            .delete(movies)
-            .where(inArray(movies.id, mediaIds))
-            .execute();
     }
 
     async lockOldMovies() {
@@ -94,16 +47,6 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .execute();
 
         return count;
-    }
-
-    async searchByName(query: string) {
-        return getDbClient()
-            .select({ name: movies.name })
-            .from(movies)
-            .where(like(movies.name, `%${query}%`))
-            .orderBy(movies.name)
-            .limit(20)
-            .execute();
     }
 
     async computeAllUsersStats() {
@@ -288,7 +231,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
                 .where(and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)))
                 .orderBy(asc(movies.releaseDate))
             : [];
-        
+
         return { ...mainData, collection: collectionMovies };
     }
 
@@ -547,26 +490,5 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
 
         return { directorsStats, actorsStats, languagesStats };
-    }
-}
-
-
-const createMoviesFilters = (config: MovieSchemaConfig) => {
-    const { mediaTable, actorConfig } = config;
-
-    return {
-        directors: {
-            isActive: (args: MediaListArgs) => isValidFilter(args.directors),
-            getCondition: (args: MediaListArgs) => inArray(mediaTable.directorName, args.directors!),
-        },
-        languages: {
-            isActive: (args: MediaListArgs) => isValidFilter(args.langs),
-            getCondition: (args: MediaListArgs) => inArray(mediaTable.originalLanguage, args.langs!),
-        },
-        actors: {
-            isActive: (args: MediaListArgs) => isValidFilter(args.actors),
-            applyJoin: (qb: any, _args: MediaListArgs) => applyJoin(qb, actorConfig),
-            getCondition: (args: MediaListArgs) => inArray(actorConfig.filterColumnInEntity, args.actors!),
-        },
     }
 }

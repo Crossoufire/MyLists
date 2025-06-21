@@ -45,7 +45,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
             header: "Name",
             cell: ({ row: { original } }) => {
                 return (
-                    <BlockLink to={`/details/${mediaType}/${original.mediaIid}`}>
+                    <BlockLink to={`/details/${mediaType}/${original.mediaId}`}>
                         <div className="flex items-center gap-3">
                             {original.mediaName}
                             {!isCurrent && original.common && <CircleCheck className="h-4 w-4 text-green-500"/>}

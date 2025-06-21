@@ -53,8 +53,6 @@ function HallOfFamePage() {
 
     useDebounceCallback(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
 
-    console.log(apiData)
-
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of profiles ranked by profile level">
             <div className="grid grid-cols-12 mx-auto w-[1000px] gap-x-10 max-sm:w-full max-sm:grid-cols-1">

@@ -4,10 +4,19 @@ import {ProviderSearchResults} from "@/lib/server/types/base.types";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 
 
+type Options = {
+    defaultDuration: number;
+    imageSaveLocation: string;
+}
+
+
 export class TmdbTransformer {
     private readonly maxActors = 5;
-    private readonly defaultDuration = 90;
-    private readonly maxGenres = moviesConfig.maxGenres;
+    private readonly maxNetworks = 5;
+    private readonly animeDefaultDuration = 24;
+    private readonly seriesDefaultDuration = 40;
+    private readonly moviesDefaultDuration = 90;
+    private readonly maxGenres = moviesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
 
     transformSearchResults(rawData: Record<string, any>) {
@@ -30,6 +39,28 @@ export class TmdbTransformer {
         });
 
         return transformedResults as ProviderSearchResults[];
+    }
+
+    processCreatedBy(rawData: Record<string, any>) {
+        const creators = rawData?.created_by;
+        if (creators?.length) {
+            return creators.map((creator: any) => creator.name).join(", ");
+        }
+
+        const writers = rawData?.credits?.crew?.filter((m: any) => m.department === "Writing" && m.known_for_department === "Writing");
+        if (!writers?.length) {
+            return;
+        }
+
+        const uniqueWriterNames = Array.from(new Set(writers.map((writer: any) => writer.name)));
+        const topWriters = uniqueWriterNames
+            .sort((nameA, nameB) => {
+                const popularityA = writers.find((w: any) => w.name === nameA)?.popularity || 0;
+                const popularityB = writers.find((w: any) => w.name === nameB)?.popularity || 0;
+                return popularityB - popularityA;
+            }).slice(0, 2);
+
+        return topWriters.join(", ");
     }
 
     private processSearchTv(item: Record<string, any>) {
@@ -72,7 +103,7 @@ export class TmdbTransformer {
             voteAverage: rawData?.vote_average ?? 0,
             originalLanguage: rawData?.original_language,
             collectionId: rawData?.belongs_to_collection?.id,
-            duration: rawData?.runtime ?? this.defaultDuration,
+            duration: rawData?.runtime ?? this.moviesDefaultDuration,
             releaseDate: new Date(rawData?.release_date).toISOString(),
             directorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Director")?.name,
             compositorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Original Music Composer")?.name,
@@ -88,6 +119,20 @@ export class TmdbTransformer {
         const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
 
         return { mediaData, actorsData, genresData }
+    }
+
+    async transformAnimeDetailsResults(rawData: Record<string, any>) {
+        return this._transformTvDetailsResults(rawData, {
+            defaultDuration: this.animeDefaultDuration,
+            imageSaveLocation: "public/static/covers/anime-covers",
+        });
+    }
+
+    async transformSeriesDetailsResults(rawData: Record<string, any>) {
+        return this._transformTvDetailsResults(rawData, {
+            defaultDuration: this.seriesDefaultDuration,
+            imageSaveLocation: "public/static/covers/series-covers",
+        });
     }
 
     async transformMoviesTrends(rawData: Record<string, any>) {
@@ -108,5 +153,56 @@ export class TmdbTransformer {
         }
 
         return moviesTrends
+    }
+
+    private async _transformTvDetailsResults(rawData: Record<string, any>, options: Options) {
+        const { defaultDuration, imageSaveLocation } = options;
+
+        const mediaData = {
+            apiId: rawData.id,
+            name: rawData?.name,
+            synopsis: rawData?.overview,
+            homepage: rawData?.homepage,
+            prodStatus: rawData?.status,
+            voteCount: rawData?.vote_count ?? 0,
+            popularity: rawData?.popularity ?? 0,
+            originalName: rawData?.original_name,
+            voteAverage: rawData?.vote_average ?? 0,
+            createdBy: this.processCreatedBy(rawData),
+            originCountry: rawData?.origin_country?.[0],
+            totalSeasons: rawData?.number_of_seasons ?? 1,
+            totalEpisodes: rawData?.number_of_episodes ?? 1,
+            nextEpisodeToAir: rawData?.next_episode_to_air?.air_date,
+            seasonToAir: rawData?.next_episode_to_air?.season_number,
+            episodeToAir: rawData?.next_episode_to_air?.episode_number,
+            duration: rawData?.episode_run_time?.[0] ?? defaultDuration,
+            lastAirDate: rawData?.last_air_date ? new Date(rawData.last_air_date).toISOString() : null,
+            releaseDate: rawData?.first_air_date ? new Date(rawData.first_air_date).toISOString() : null,
+            imageCover: await saveImageFromUrl({
+                defaultName: "default.jpg",
+                saveLocation: imageSaveLocation,
+                resize: { width: 300, height: 450 },
+                imageUrl: `${this.imageBaseUrl}${rawData?.poster_path}`,
+            }),
+        };
+
+        const seasonsData = rawData?.seasons
+            ?.filter((season: any) => season.season_number && season.season_number > 0)
+            .map((season: any) => ({
+                season: season.season_number,
+                episodes: season.episode_count,
+            })) || [{ season: 1, episodes: 1 }];
+
+        const networkData = rawData?.networks?.slice(0, this.maxNetworks).map((network: any) => ({ name: network.name }));
+        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
+        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre: any) => ({ name: genre.name }));
+
+        return {
+            mediaData,
+            seasonsData,
+            networkData,
+            actorsData,
+            genresData,
+        };
     }
 }

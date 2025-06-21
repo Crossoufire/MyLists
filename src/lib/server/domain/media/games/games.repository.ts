@@ -1,19 +1,18 @@
 import {db} from "@/lib/server/database/db";
+import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
-import {BaseRepository, isValidFilter} from "@/lib/server/domain/media/base/base.repository";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, notInArray, or, sql} from "drizzle-orm";
-import {notFound} from "@tanstack/react-router";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, like, lte, notInArray, or, sql} from "drizzle-orm";
 
 
 export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     config: GamesSchemaConfig;
 
     constructor() {
-        super(gamesConfig, createGamesFilters);
+        super(gamesConfig);
         this.config = gamesConfig;
     }
 
@@ -36,62 +35,6 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .execute();
 
         return comingNext;
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        const results = await getDbClient()
-            .select({
-                ...getTableColumns(gamesList),
-                name: games.name,
-            })
-            .from(gamesList)
-            .innerJoin(games, eq(gamesList.mediaId, games.id))
-            .where(eq(gamesList.userId, userId))
-
-        return results;
-    }
-
-    async getNonListMediaIds() {
-        const mediaToDelete = await getDbClient()
-            .select({ id: games.id })
-            .from(games)
-            .leftJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(isNull(gamesList.userId))
-            .execute();
-
-        return mediaToDelete.map((media) => media.id);
-    }
-
-    async removeMediaByIds(mediaIds: number[]) {
-        await getDbClient()
-            .delete(gamesCompanies)
-            .where(inArray(gamesCompanies.mediaId, mediaIds))
-            .execute();
-
-        await getDbClient()
-            .delete(gamesPlatforms)
-            .where(inArray(gamesPlatforms.mediaId, mediaIds))
-            .execute();
-
-        await getDbClient()
-            .delete(gamesGenre)
-            .where(inArray(gamesGenre.mediaId, mediaIds))
-            .execute();
-
-        await getDbClient()
-            .delete(games)
-            .where(inArray(games.id, mediaIds))
-            .execute();
-    }
-
-    async searchByName(query: string) {
-        return getDbClient()
-            .select({ name: games.name })
-            .from(games)
-            .where(like(games.name, `%${query}%`))
-            .orderBy(games.name)
-            .limit(20)
-            .execute();
     }
 
     async computeAllUsersStats() {
@@ -300,7 +243,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
 
         if (companiesData && companiesData.length > 0) {
             await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
-            const companiesToAdd = companiesData.map((company: any) => ({ mediaId, name: company.name }));
+            const companiesToAdd = companiesData.map((company: any) => ({ mediaId, ...company }));
             await tx.insert(gamesCompanies).values(companiesToAdd)
         }
         if (platformsData && platformsData.length > 0) {
@@ -501,20 +444,4 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     //
     //     return { directorsStats, actorsStats, languagesStats };
     // }
-}
-
-
-const createGamesFilters = (config: GamesSchemaConfig) => {
-    const { platformConfig, companyConfig } = config;
-
-    return {
-        platforms: {
-            isActive: (args: MediaListArgs) => isValidFilter(args.platforms),
-            getCondition: (args: MediaListArgs) => inArray(platformConfig.filterColumnInEntity, args.platforms!),
-        },
-        companies: {
-            isActive: (args: MediaListArgs) => isValidFilter(args.companies),
-            getCondition: (args: MediaListArgs) => inArray(companyConfig.filterColumnInEntity, args.companies!),
-        },
-    }
 }

@@ -9,11 +9,11 @@ type Games = typeof games.$inferInsert;
 
 
 export class IgdbTransformer {
-    private readonly maxGenres = gamesConfig.maxGenres;
+    private readonly maxGenres = gamesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/";
 
-    transformSearchResults(rawData: Record<string, any>) {
-        const results = rawData?.results ?? [];
+    transformSearchResults(rawData: Record<string, any>[]) {
+        const results = rawData ?? [];
         const transformedResults = results.map((item: any) => {
             return {
                 id: item.id,
@@ -28,8 +28,6 @@ export class IgdbTransformer {
     }
 
     async transformGamesDetailsResults(rawData: Record<string, any>) {
-        console.log({ rawData });
-
         const mediaData: Games = {
             apiId: rawData.id,
             name: rawData?.name,
@@ -39,8 +37,8 @@ export class IgdbTransformer {
             voteCount: rawData?.total_rating_count ?? 0,
             gameEngine: rawData?.game_engines?.[0]?.name,
             playerPerspective: rawData?.player_perspectives?.[0]?.name,
-            releaseDate: new Date(rawData?.first_release_date).toISOString(),
             gameModes: rawData?.game_modes?.map((mode: any) => mode?.name).join(","),
+            releaseDate: rawData?.first_release_date ? new Date(rawData?.first_release_date * 1000).toISOString() : undefined,
             imageCover: await saveImageFromUrl({
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
@@ -48,8 +46,6 @@ export class IgdbTransformer {
                 imageUrl: `${this.imageBaseUrl}${rawData?.cover?.image_id}.jpg`,
             }),
         }
-
-        console.log(mediaData.imageCover);
 
         const part1GenreData = rawData?.genres?.map((genre: any) => ({ name: genre.name }));
         const part2GenreData = rawData?.themes?.map((theme: any) => ({ name: theme.name }));
@@ -68,9 +64,13 @@ export class IgdbTransformer {
 
         genresData = genresData.slice(0, this.maxGenres);
         const companiesData = rawData?.involved_companies?.map((company: any) => {
-            if (company.developer === false && company.publisher === false) return;
-            return { name: company.company.name, developer: company.developer, publisher: company.publisher }
-        });
+            if (company.developer === false && company.publisher === false) return null;
+            return {
+                name: company.company.name,
+                developer: company.developer,
+                publisher: company.publisher,
+            };
+        }).filter(Boolean);
         const platformsData = rawData?.platforms?.map((platform: any) => ({ name: platform.name }));
 
         return { mediaData, companiesData, platformsData, genresData }

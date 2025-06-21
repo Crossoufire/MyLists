@@ -1,7 +1,8 @@
-import {asc, desc} from "drizzle-orm";
 import {Status} from "@/lib/server/utils/enums";
+import {asc, desc, getTableColumns} from "drizzle-orm";
 import * as schema from "@/lib/server/database/schema";
-import {MediaSchemaConfig, RelatedEntityConfig} from "@/lib/server/types/media-lists.types";
+import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<
@@ -9,10 +10,7 @@ export type MovieSchemaConfig = MediaSchemaConfig<
     typeof schema.moviesList,
     typeof schema.moviesGenre,
     typeof schema.moviesLabels
-> & {
-    genreConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesGenre>;
-    actorConfig: RelatedEntityConfig<typeof schema.movies, typeof schema.moviesActors>;
-};
+>;
 
 
 export const moviesConfig: MovieSchemaConfig = {
@@ -20,49 +18,41 @@ export const moviesConfig: MovieSchemaConfig = {
     listTable: schema.moviesList,
     genreTable: schema.moviesGenre,
     labelTable: schema.moviesLabels,
-    baseSelection: {
-        userId: schema.moviesList.userId,
-        imageCover: schema.movies.imageCover,
-        mediaId: schema.moviesList.mediaId,
-        status: schema.moviesList.status,
-        rating: schema.moviesList.rating,
-        favorite: schema.moviesList.favorite,
-        comment: schema.moviesList.comment,
-        redo: schema.moviesList.redo,
-        mediaName: schema.movies.name,
-        director: schema.movies.directorName,
-        originalLanguage: schema.movies.originalLanguage,
+    mediaList: {
+        baseSelection: {
+            mediaName: schema.movies.name,
+            imageCover: schema.movies.imageCover,
+            director: schema.movies.directorName,
+            originalLanguage: schema.movies.originalLanguage,
+            ...getTableColumns(schema.moviesList),
+        },
+        filterDefinitions: {
+            actors: createListFilterDef({
+                argName: "actors",
+                mediaTable: schema.movies,
+                entityTable: schema.moviesActors,
+                filterColumn: schema.moviesActors.name,
+            }),
+        },
+        defaultStatus: Status.COMPLETED,
+        defaultSortName: "Title A-Z",
+        availableSorts: {
+            "Title A-Z": asc(schema.movies.name),
+            "Title Z-A": desc(schema.movies.name),
+            "Rating +": [desc(schema.moviesList.rating), asc(schema.movies.name)],
+            "Rating -": [asc(schema.moviesList.rating), asc(schema.movies.name)],
+            "TMDB Rating +": [desc(schema.movies.voteAverage), asc(schema.movies.name)],
+            "TMDB Rating -": [asc(schema.movies.voteAverage), asc(schema.movies.name)],
+            "Release Date +": [desc(schema.movies.releaseDate), asc(schema.movies.name)],
+            "Release Date -": [asc(schema.movies.releaseDate), asc(schema.movies.name)],
+            "Re-Watched": [desc(schema.moviesList.redo), asc(schema.movies.name)],
+        },
     },
-    genreConfig: {
-        entityTable: schema.moviesGenre,
-        filterColumnInEntity: schema.moviesGenre.name,
-        mediaIdColumnInEntity: schema.moviesGenre.mediaId,
-        idColumnInMedia: schema.movies.id,
-    },
-    actorConfig: {
-        entityTable: schema.moviesActors,
-        filterColumnInEntity: schema.moviesActors.name,
-        mediaIdColumnInEntity: schema.moviesActors.mediaId,
-        idColumnInMedia: schema.movies.id,
-    },
-    maxGenres: 5,
-    defaultStatus: Status.COMPLETED,
-    defaultSortName: "Title A-Z",
-    availableSorts: {
-        "Title A-Z": asc(schema.movies.name),
-        "Title Z-A": desc(schema.movies.name),
-        "Rating +": [desc(schema.moviesList.rating), asc(schema.movies.name)],
-        "Rating -": [asc(schema.moviesList.rating), asc(schema.movies.name)],
-        "TMDB Rating +": [desc(schema.movies.voteAverage), asc(schema.movies.name)],
-        "TMDB Rating -": [asc(schema.movies.voteAverage), asc(schema.movies.name)],
-        "Release Date +": [desc(schema.movies.releaseDate), asc(schema.movies.name)],
-        "Release Date -": [asc(schema.movies.releaseDate), asc(schema.movies.name)],
-        "Re-Watched": [desc(schema.moviesList.redo), asc(schema.movies.name)],
+    apiProvider: {
+        maxGenres: 5,
     },
     editableFields: [
         "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
         "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
     ] as const,
 };
-
-

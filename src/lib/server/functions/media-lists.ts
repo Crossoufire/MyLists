@@ -3,13 +3,14 @@ import {getContainer} from "@/lib/server/core/container";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
 
-export const getMediaList = createServerFn({ method: "GET" })
+export const getMediaListServerFunction = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ data, context: { currentUser, user } }) => {
         const { mediaType, args } = data;
 
         const targetUserId = user.id;
         const currentUserId = currentUser?.id ? parseInt(currentUser.id) : undefined;
+
         const userService = getContainer().services.user;
         const mediaServiceRegistry = getContainer().registries.mediaService;
 

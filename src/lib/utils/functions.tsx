@@ -114,7 +114,7 @@ export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
         games: "#217f21",
         manga: "#a04646",
     };
-    
+
     return colors[mediaType];
 };
 
@@ -265,7 +265,9 @@ export const getLangCountryName = (name: string, type: LangType) => {
 
 
 export const zeroPad = (value: number | string | undefined) => {
-    if (value) return String(value).padStart(2, "0");
+    if (value) {
+        return String(value).padStart(2, "0");
+    }
     return "00";
 };
 

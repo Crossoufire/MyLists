@@ -111,12 +111,10 @@ function MediaDetailsPage() {
                                     similarMedia={apiData.similarMedia}
                                     title={`Similar ${capitalize(mediaType)}`}
                                 />
-                                {/*//@ts-expect-error*/}
                                 {apiData.media?.collection && apiData.media.collection.length !== 0 &&
                                     <SimilarMedia
                                         mediaType={mediaType}
                                         title={"In The Same Collection"}
-                                        //@ts-expect-error
                                         similarMedia={apiData.media.collection}
                                     />
                                 }

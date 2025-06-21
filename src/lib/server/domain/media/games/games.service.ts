@@ -1,11 +1,12 @@
 import {notFound} from "@tanstack/react-router";
-import {Achievement} from "@/lib/server/types/achievements";
+import {JobType, Status} from "@/lib/server/utils/enums";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
+import {games, gamesCompanies, gamesGenre, gamesPlatforms} from "@/lib/server/database/schema";
+import {GamesAchCodeName, gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
 interface UserGameState {
@@ -19,24 +20,25 @@ interface UserGameState {
 
 
 export class GamesService {
-    private readonly achievementHandlers: Map<string, (achievement: Achievement, userId?: number) => Promise<any>>;
+    private readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(private repository: GamesRepository) {
-        this.achievementHandlers = new Map([
-            ["completed_games", this.repository.countCompletedAchievementCte.bind(this.repository)],
-            ["rated_games", this.repository.countRatedAchievementCte.bind(this.repository)],
-            ["comment_games", this.repository.countCommentedAchievementCte.bind(this.repository)],
-            // ["developer_games", this.repository.getDirectorAchievementCte.bind(this.repository)],
-            // ["publisher_games", this.repository.getActorAchievementCte.bind(this.repository)],
-            // ["first_person_games", this.repository.getOriginLanguageAchievementCte.bind(this.repository)],
-            ["hack_slash_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["multiplayer_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["log_hours_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            ["platform_games", this.repository.specificGenreAchievementCte.bind(this.repository)],
-            // ["pc_games", this.repository.getDurationAchievementCte.bind(this.repository)],
-            // ["short_games", this.repository.getDurationAchievementCte.bind(this.repository)],
-            // ["long_games", this.repository.getDurationAchievementCte.bind(this.repository)],
-        ]);
+        //@ts-expect-error
+        this.achievementHandlers = {
+            completed_games: this.repository.countCompletedAchievementCte.bind(this.repository),
+            rated_games: this.repository.countRatedAchievementCte.bind(this.repository),
+            comment_games: this.repository.countCommentedAchievementCte.bind(this.repository),
+            hack_slash_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            multiplayer_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            log_hours_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            platform_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            pc_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            short_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            long_games: this.repository.specificGenreAchievementCte.bind(this.repository),
+            // developer_games: this.repository.getDeveloperAchievementCte.bind(this.repository),
+            // publisher_games: this.repository.getPublisherAchievementCte.bind(this.repository),
+            // first_person_games: this.repository.getFirstPersonAchievementCte.bind(this.repository),
+        };
     }
 
     async getById(mediaId: number) {
@@ -52,7 +54,8 @@ export class GamesService {
     }
 
     async removeMediaByIds(mediaIds: number[]) {
-        return this.repository.removeMediaByIds(mediaIds);
+        const tables = [gamesCompanies, gamesPlatforms, gamesGenre, games];
+        return this.repository.removeMediaByIds(mediaIds, tables);
     }
 
     async getCoverFilenames() {
@@ -73,7 +76,7 @@ export class GamesService {
     }
 
     async getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers.get(achievement.codeName);
+        const handler = this.achievementHandlers[achievement.codeName as GamesAchCodeName];
         if (!handler) {
             throw new Error("Invalid Achievement codeName");
         }
@@ -221,12 +224,11 @@ export class GamesService {
     }
 
     async getComingNext(userId: number) {
-        const comingNextData = await this.repository.getComingNext(userId);
-        return { items: comingNextData, mediaType: MediaType.GAMES };
+        return this.repository.getComingNext(userId);
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.defaultStatus;
+        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
 
         const media = await this.repository.findById(mediaId);
         if (!media) {
@@ -391,6 +393,6 @@ export class GamesService {
     }
 
     getAchievementsDefinition() {
-        return gamesAchievements();
+        return gamesAchievements as unknown as AchievementData[];
     }
 }

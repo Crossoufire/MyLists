@@ -8,10 +8,10 @@ import {useDebounce} from "@/lib/hooks/use-debounce";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
 import React, {useEffect, useRef, useState} from "react";
-import {navSearchOptions} from "@/lib/react-query/query-options/query-options";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
+import {navSearchOptions} from "@/lib/react-query/query-options/query-options";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
@@ -24,8 +24,7 @@ export const SearchBar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [debouncedSearch] = useDebounce(search, 350);
     const [selectDrop, setSelectDrop] = useState(currentUser?.searchSelector || ApiProviderType.TMDB);
-    const { data, isLoading, error }: { data: any; isLoading: boolean; error: any } =
-        useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
+    const { data, isLoading, error }: any = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);

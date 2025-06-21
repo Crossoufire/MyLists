@@ -1,5 +1,6 @@
 import {Column, SQL, Table} from "drizzle-orm";
 import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
+import {FilterDefinitions} from "./base.types";
 
 
 export interface MediaListArgs {
@@ -23,6 +24,8 @@ export interface MediaListArgs {
     companies?: string[];
     networks?: string[];
     creators?: string[];
+    currentUserId?: number;
+    userId?: number;
 }
 
 
@@ -55,19 +58,35 @@ export interface MediaSchemaConfig<
     genreTable: TGenreTable;
     listTable: TListTable;
     labelTable: TLabelTable;
-    baseSelection: SelectionMap<TListTable, TMediaTable>;
-    availableSorts: Record<string, SQL | SQL[]>;
-    maxGenres: number;
-    defaultStatus: Status;
-    defaultSortName: string;
-    genreConfig?: RelatedEntityConfig<any, any>;
-    actorConfig?: RelatedEntityConfig<any, any>;
-    companyConfig?: RelatedEntityConfig<any, any>;
-    platformConfig?: RelatedEntityConfig<any, any>;
-    developerConfig?: RelatedEntityConfig<any, any>;
-    networkConfig?: RelatedEntityConfig<any, any>;
-    creatorConfig?: RelatedEntityConfig<any, any>;
-    publisherConfig?: RelatedEntityConfig<any, any>;
-    authorConfig?: RelatedEntityConfig<any, any>;
+    mediaList: {
+        baseSelection: SelectionMap<TListTable, TMediaTable>;
+        defaultStatus: Status;
+        defaultSortName: string;
+        filterDefinitions: FilterDefinitions;
+        availableSorts: Record<string, SQL | SQL[]>;
+    }
+    apiProvider: {
+        maxGenres: number;
+    }
     editableFields: string[];
+}
+
+
+export type TActorTableParam = Table;
+export type TNetworkTableParam = Table;
+export type TEpsPerSeasonTableParam = Table;
+
+
+export interface TVSchemaConfig<
+    TMediaTable extends Table,
+    TListTable extends Table,
+    TGenreTable extends Table,
+    TLabelTable extends Table,
+    TActorTableParam extends Table,
+    TNetworkTableParam extends Table,
+    TEpsPerSeasonTableParam extends Table,
+> extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable> {
+    actorTable: TActorTableParam;
+    networkTable: TNetworkTableParam;
+    epsPerSeasonTable: TEpsPerSeasonTableParam;
 }

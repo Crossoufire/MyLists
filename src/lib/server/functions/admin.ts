@@ -85,8 +85,6 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .handler(async ({ data: { taskName } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
-        console.log(taskName);
-
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
             return { success: true, jobId: job.id, message: "Task enqueued." };

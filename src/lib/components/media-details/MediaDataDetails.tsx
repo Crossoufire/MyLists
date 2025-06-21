@@ -1,4 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {TvDetails} from "@/lib/components/media-details/TvDetails";
 import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
 import {GamesDetails} from "@/lib/components/media-details/GamesDetails";
 import {MoviesDetails} from "@/lib/components/media-details/MoviesDetails";
@@ -13,6 +14,8 @@ interface MediaDataDetailsProps {
 
 const mediaDetailsMap = (value: MediaType) => {
     const components = {
+        series: TvDetails,
+        anime: TvDetails,
         movies: MoviesDetails,
         games: GamesDetails,
     };

@@ -11,20 +11,32 @@ interface SpecificUserMediaDataProps {
 export const SpecificUserMediaData = ({ userMedia, mediaType }: SpecificUserMediaDataProps) => {
     if (
         (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) &&
-        !(userMedia.status === Status.PLAN_TO_WATCH || userMedia.status === Status.RANDOM)) {
-        return <EpsAndSeasons currentSeason={userMedia.currentSeason} currentEpisode={userMedia.lastEpisodeWatched}/>;
+        !(userMedia.status === Status.PLAN_TO_WATCH || userMedia.status === Status.RANDOM)
+    ) {
+        return <EpsAndSeasons
+            currentSeason={userMedia.currentSeason}
+            currentEpisode={userMedia.lastEpisodeWatched}
+        />;
     }
 
     if (mediaType === MediaType.GAMES && userMedia.status !== Status.PLAN_TO_PLAY) {
-        return <PlaytimeInfo playtime={userMedia.playtime}/>;
+        return <PlaytimeInfo
+            playtime={userMedia.playtime}
+        />;
     }
 
     if (mediaType === MediaType.BOOKS && userMedia.status !== Status.PLAN_TO_READ) {
-        return <PagesInfo actualPage={userMedia.actualPage} totalPages={userMedia.totalPages}/>;
+        return <PagesInfo
+            actualPage={userMedia.actualPage}
+            totalPages={userMedia.totalPages}
+        />;
     }
 
     if (mediaType === MediaType.MANGA && userMedia.status !== Status.PLAN_TO_READ) {
-        return <PagesInfo actualPage={userMedia.currentChapter} totalPages={userMedia.totalChapters ?? "?"}/>;
+        return <PagesInfo
+            actualPage={userMedia.currentChapter}
+            totalPages={userMedia.totalChapters ?? "?"}
+        />;
     }
 };
 

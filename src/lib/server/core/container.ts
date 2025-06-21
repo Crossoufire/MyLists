@@ -3,12 +3,16 @@ import {Cache} from "cache-manager";
 import pinoLogger from "./pino-logger";
 import {MediaType} from "@/lib/server/utils/enums";
 import {initializeCache} from "@/lib/server/core/cache-manager";
+import {TvService} from "@/lib/server/domain/media/tv/tv.service";
+import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {UserService} from "@/lib/server/domain/user/services/user.service";
+import {animeConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {seriesConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {IgdbTransformer} from "../media-providers/transformers/igdb.transformer";
 import {MediadleService} from "@/lib/server/domain/user/services/mediadle.service";
@@ -22,7 +26,9 @@ import {GamesProviderService} from "@/lib/server/domain/media/games/games-provid
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
+import {AnimeProviderService} from "@/lib/server/domain/media/tv/anime/anime-provider.service";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
+import {SeriesProviderService} from "@/lib/server/domain/media/tv/series/series-provider.service";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
@@ -69,16 +75,11 @@ interface ContainerOptions {
 }
 
 
-declare global {
-    var __MY_APP_CONTAINER: AppContainer | undefined;
-}
+let containerInstance: AppContainer | null = null;
+let containerPromise: Promise<AppContainer> | null = null;
 
 
 export async function initializeContainer(options: ContainerOptions = {}) {
-    if (globalThis.__MY_APP_CONTAINER && !options.tasksServiceLogger) {
-        return globalThis.__MY_APP_CONTAINER;
-    }
-
     // Initialize cache manager
     const cacheManager = await initializeCache();
 
@@ -91,9 +92,13 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const notificationsRepository = NotificationsRepository;
 
     // Media Repositories
-    const gamesRepository = new GamesRepository()
+    const gamesRepository = new GamesRepository();
     const moviesRepository = new MoviesRepository();
+    const animeRepository = new TvRepository(animeConfig);
+    const seriesRepository = new TvRepository(seriesConfig);
     MediaRepositoryRegistry.registerRepository(MediaType.GAMES, gamesRepository);
+    MediaRepositoryRegistry.registerRepository(MediaType.ANIME, animeRepository);
+    MediaRepositoryRegistry.registerRepository(MediaType.SERIES, seriesRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
 
     // User Services
@@ -112,7 +117,11 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     // Media Services
     const gamesService = new GamesService(gamesRepository);
     const moviesService = new MoviesService(moviesRepository);
+    const seriesService = new TvService(seriesRepository);
+    const animeService = new TvService(animeRepository);
     MediaServiceRegistry.registerService(MediaType.GAMES, gamesService);
+    MediaServiceRegistry.registerService(MediaType.ANIME, animeService);
+    MediaServiceRegistry.registerService(MediaType.SERIES, seriesService);
     MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
 
     // Tasks Service
@@ -138,10 +147,14 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     // Media Providers Services
     const gamesProviderService = new GamesProviderService(igdbClient, igdbTransformer, gamesRepository)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
+    const seriesProviderService = new SeriesProviderService(tmdbClient, tmdbTransformer, seriesRepository);
+    const animeProviderService = new AnimeProviderService(tmdbClient, tmdbTransformer, animeRepository);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
 
-    const currentContainer: AppContainer = {
+    return {
         cacheManager: cacheManager,
         clients: {
             igdb: igdbClient,
@@ -173,20 +186,24 @@ export async function initializeContainer(options: ContainerOptions = {}) {
             mediaService: MediaServiceRegistry,
             mediaProviderService: MediaProviderServiceRegistry,
         },
-    };
-
-    if (!globalThis.__MY_APP_CONTAINER) {
-        globalThis.__MY_APP_CONTAINER = currentContainer;
-    }
-
-    return currentContainer;
+    } as AppContainer;
 }
 
 
 export function getContainer() {
-    const globalContainer = globalThis.__MY_APP_CONTAINER;
-    if (!globalContainer) {
-        throw new Error("Global container not initialized. Ensure server.ts runs initializeContainer first.");
+    if (!containerPromise) {
+        containerPromise = initializeContainer().then((container) => {
+            containerInstance = container;
+            return container;
+        });
     }
-    return globalContainer;
+    return containerInstance!;
+}
+
+
+if (import.meta.hot) {
+    import.meta.hot.accept(() => {
+        containerPromise = null;
+        containerInstance = null;
+    });
 }

@@ -34,23 +34,28 @@ function MediaEditPage() {
     const { mediaType, mediaId } = Route.useParams();
     const editMediaMutation = useEditMediaMutation();
     const apiData = useSuspenseQuery(editMediaDetailsOptions(mediaType, mediaId)).data;
+    console.log(apiData);
+
     const form = useForm({
         defaultValues: {
-            genres: apiData.fields?.genres,
-            authors: apiData.fields?.authors,
             imageCover: undefined,
-            originalName: apiData.fields?.originalName,
             name: apiData.fields?.name,
-            directorName: apiData.fields?.directorName,
-            releaseDate: apiData.fields?.releaseDate,
-            duration: apiData.fields?.duration,
-            synopsis: apiData.fields?.synopsis,
+            genres: apiData.fields?.genres,
             budget: apiData.fields?.budget,
+            authors: apiData.fields?.authors,
             revenue: apiData.fields?.revenue,
             tagline: apiData.fields?.tagline,
-            originalLanguage: apiData.fields?.originalLanguage,
-            lockStatus: apiData.fields?.lockStatus,
+            synopsis: apiData.fields?.synopsis,
+            duration: apiData.fields?.duration,
             homepage: apiData.fields?.homepage,
+            createdBy: apiData.fields?.createdBy,
+            lockStatus: apiData.fields?.lockStatus,
+            releaseDate: apiData.fields?.releaseDate,
+            lastAirDate: apiData.fields?.lastAirDate,
+            originalName: apiData.fields?.originalName,
+            directorName: apiData.fields?.directorName,
+            originCountry: apiData.fields?.originCountry,
+            originalLanguage: apiData.fields?.originalLanguage,
         }
     });
     const parts = sliceIntoParts(Object.entries(apiData.fields), 3);

@@ -4,6 +4,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {LabelLists} from "@/lib/components/user-media/LabelLists";
 import {UpdateComment} from "@/lib/components/user-media/UpdateComment";
+import {TvUserDetails} from "@/lib/components/user-media/TvUserDetails";
 import {HistoryDetails} from "@/lib/components/user-media/HistoryDetails";
 import {UpdateFavorite} from "@/lib/components/user-media/UpdateFavorite";
 import {GamesUserDetails} from "@/lib/components/user-media/GamesUserDetails";
@@ -22,8 +23,8 @@ interface UserMediaDetailsProps {
 
 const mediaComponentMap = (value: MediaType) => {
     const components = {
-        series: MoviesUserDetails,
-        anime: MoviesUserDetails,
+        series: TvUserDetails,
+        anime: TvUserDetails,
         movies: MoviesUserDetails,
         games: GamesUserDetails,
         books: MoviesUserDetails,

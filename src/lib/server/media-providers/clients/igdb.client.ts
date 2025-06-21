@@ -28,11 +28,11 @@ export class IgdbClient extends BaseClient {
 
     async search(query: string, page: number = 1) {
         const data = (
-            `fields id, name, cover.image_id, first_release_date; limit 10; 
-            offset ${(page - 1) * this.resultsPerPage}; search "${query}";`
+            "fields id, name, cover.image_id, first_release_date; limit 10; " +
+            `offset ${(page - 1) * this.resultsPerPage}; search "${query}";`
         )
-        const response = await this.call(this.baseUrl, "post", { headers: this.headers, body: JSON.stringify(data) })
-        return response.json() as Record<string, any>;
+        const response = await this.call(this.baseUrl, "post", { headers: this.headers, body: data })
+        return response.json();
     }
 
     async getGameDetails(apiId: number) {
@@ -52,7 +52,7 @@ export class IgdbClient extends BaseClient {
         if (rawData.length === 0) {
             throw new Error("Game not found");
         }
-        
+
         return rawData[0] as Record<string, any>;
     }
 

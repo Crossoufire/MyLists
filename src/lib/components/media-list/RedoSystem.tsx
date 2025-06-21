@@ -12,9 +12,11 @@ interface RedoSystemProps {
 
 
 export const RedoSystem = ({ userMedia, mediaType }: RedoSystemProps) => {
-    if (mediaType === MediaType.GAMES) return null;
+    if (mediaType === MediaType.GAMES) {
+        return null;
+    }
 
-    if (["series", "anime"].includes(mediaType)) {
+    if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
         const totalRedo = userMedia.redo2.reduce((a: any, b: any) => a + b, 0);
 
         if (totalRedo === 0) return null;

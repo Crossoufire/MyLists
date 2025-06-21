@@ -11,7 +11,7 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getMediaList, getMediaListFilters, getMediaListSearchFilters} from "@/lib/server/functions/media-lists";
+import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 
 
@@ -89,7 +89,7 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
     queryKey: queryKeys.navSearchKey(query, page, apiProvider),
     queryFn: () => getSearchResults({ data: { query, page, apiProvider } }),
     staleTime: 1000 * 60 * 2,
-    enabled: query.length >= 2,
+    enabled: query.trim().length >= 2,
 });
 
 export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | string, external: boolean) => queryOptions({
@@ -100,7 +100,7 @@ export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | stri
 
 export const mediaListOptions = (mediaType: MediaType, username: string, search: Record<string, any>) => queryOptions({
     queryKey: queryKeys.userListKey(mediaType, username, search),
-    queryFn: () => getMediaList({ data: { mediaType, username, args: search } }),
+    queryFn: () => getMediaListServerFunction({ data: { mediaType, username, args: search } }),
 });
 
 export const listFiltersOptions = (mediaType: MediaType, username: string) => queryOptions({

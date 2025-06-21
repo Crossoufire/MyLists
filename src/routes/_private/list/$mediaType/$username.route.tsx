@@ -80,8 +80,6 @@ function MediaList() {
         });
     };
 
-    console.log(apiData)
-
     return (
         <PageTitle title={`${username} ${capitalize(mediaType)} Collection`} onlyHelmet>
             <Header

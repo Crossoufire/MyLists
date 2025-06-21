@@ -16,7 +16,7 @@ interface GamesDetailsProps {
 export const GamesDetails = ({ mediaData, mediaType }: GamesDetailsProps) => {
     const gameModes = mediaData.gameModes?.split(",") || [];
 
-    console.log(mediaData);
+    console.log({ mediaData });
 
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">

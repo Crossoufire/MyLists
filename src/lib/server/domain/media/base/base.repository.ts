@@ -1,11 +1,11 @@
-import {followers, user} from "@/lib/server/database/schema";
-import {getDbClient} from "@/lib/server/database/async-storage";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
-import {FilterDefinitions} from "@/lib/server/types/base.types";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {and, asc, count, desc, eq, gte, inArray, isNotNull, like, ne, notInArray, sql} from "drizzle-orm";
 import {Status} from "@/lib/server/utils/enums";
 import {Achievement} from "@/lib/server/types/achievements";
+import {followers, user} from "@/lib/server/database/schema";
+import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {MediaListArgs, MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/base.types";
+import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, sql} from "drizzle-orm";
 
 
 const ALL_VALUE = "All";
@@ -24,38 +24,36 @@ export interface EditUserLabels {
 export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any>
 > {
     protected readonly config: TConfig;
-    protected readonly baseFilterDefinitions: FilterDefinitions;
-    protected readonly specificFilterDefinitions: FilterDefinitions;
+    protected readonly baseFilterDefs: FilterDefinitions;
 
-    constructor(config: TConfig, specificFilterFactory?: (config: TConfig) => FilterDefinitions) {
+    constructor(config: TConfig) {
         this.config = config;
-        this.baseFilterDefinitions = this.createBaseFilterDefinitions();
-        this.specificFilterDefinitions = specificFilterFactory ? specificFilterFactory(this.config) : {};
+        this.baseFilterDefs = this.baseListFiltersDefs();
     }
 
-    protected createBaseFilterDefinitions = () => {
-        const { listTable, mediaTable, genreConfig } = this.config;
+    private baseListFiltersDefs = () => {
+        const { listTable, mediaTable, genreTable } = this.config;
 
         return {
             search: {
-                isActive: (args: any) => !!args.search,
-                getCondition: (args: any) => like(mediaTable.name, `%${args.search}%`),
+                isActive: (args: MediaListArgs) => !!args.search,
+                getCondition: (args: MediaListArgs) => ilike(mediaTable.name, `%${args.search}%`),
             },
             status: {
-                isActive: (args: any) => isValidFilter(args.status),
-                getCondition: (args: any) => inArray(listTable.status, args.status!.filter((s: any) => s !== ALL_VALUE)),
+                isActive: (args: MediaListArgs) => isValidFilter(args.status),
+                getCondition: (args: MediaListArgs) => inArray(listTable.status, args.status!.filter((s: any) => s !== ALL_VALUE)),
             },
             favorite: {
-                isActive: (args: any) => args.favorite === true,
-                getCondition: (_args: any) => eq(listTable.favorite, true),
+                isActive: (args: MediaListArgs) => args.favorite === true,
+                getCondition: (_args: MediaListArgs) => eq(listTable.favorite, true),
             },
             comment: {
-                isActive: (args: any) => args.comment === true,
-                getCondition: (_args: any) => isNotNull(listTable.comment),
+                isActive: (args: MediaListArgs) => args.comment === true,
+                getCondition: (_args: MediaListArgs) => isNotNull(listTable.comment),
             },
             hideCommon: {
-                isActive: (args: any) => args.hideCommon === true && args.currentUserId && args.currentUserId !== args.userId,
-                getCondition: (args: any) => {
+                isActive: (args: MediaListArgs) => args.hideCommon === true && args.currentUserId && args.currentUserId !== args.userId,
+                getCondition: (args: MediaListArgs) => {
                     const subQuery = getDbClient()
                         .select({ mediaId: listTable.mediaId })
                         .from(listTable)
@@ -63,23 +61,67 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                     return notInArray(listTable.mediaId, subQuery);
                 },
             },
-            genres: {
-                isActive: (args: any) => isValidFilter(args.genres),
-                applyJoin: (qb: any, _args: any) => {
-                    if (!genreConfig) throw new Error("Genre config missing");
-                    return applyJoin(qb, genreConfig);
-                },
-                getCondition: (args: any) => {
-                    if (!genreConfig) throw new Error("Genre config missing");
-                    return inArray(genreConfig.filterColumnInEntity, args.genres!);
-                },
-            },
+            genres: createListFilterDef({
+                argName: "genres",
+                mediaTable: genreTable,
+                entityTable: genreTable,
+                filterColumn: genreTable.name,
+            }),
         } as FilterDefinitions;
     }
 
     async findById(mediaId: number | string) {
         const { mediaTable } = this.config;
         return getDbClient().select().from(mediaTable).where(eq(mediaTable.id, mediaId)).get()
+    }
+
+    async downloadMediaListAsCSV(userId: number) {
+        const { mediaTable, listTable } = this.config;
+
+        const results = await getDbClient()
+            .select({
+                ...getTableColumns(listTable),
+                name: mediaTable.name,
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .where(eq(listTable.userId, userId))
+
+        return results;
+    }
+
+    async searchByName(query: string, limit: number = 20) {
+        const { mediaTable } = this.config;
+
+        return getDbClient()
+            .select({ name: mediaTable.name })
+            .from(mediaTable)
+            .where(like(mediaTable.name, `%${query}%`))
+            .orderBy(mediaTable.name)
+            .limit(limit)
+            .execute();
+    }
+
+    async removeMediaByIds(mediaIds: number[], tables: any[] = []) {
+        for (const table of tables) {
+            await getDbClient()
+                .delete(table)
+                .where(inArray(table.mediaId, mediaIds))
+                .execute();
+        }
+    }
+
+    async getNonListMediaIds() {
+        const { mediaTable, listTable } = this.config;
+
+        const mediaToDelete = await getDbClient()
+            .select({ id: mediaTable.id })
+            .from(mediaTable)
+            .leftJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(isNull(listTable.userId))
+            .execute();
+
+        return mediaToDelete.map((media) => media.id);
     }
 
     async getCoverFilenames() {
@@ -265,23 +307,26 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
         return { genres: results[0] || [], labels: results[1] || [] };
     }
 
-    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
+    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
+        const { listTable, mediaTable, mediaList } = this.config;
+
         const page = args.page ?? 1;
         const perPage = args.perPage ?? DEFAULT_PER_PAGE;
         const offset = (page - 1) * perPage;
 
-        const { listTable, mediaTable, baseSelection, availableSorts, defaultSortName } = this.config;
-
-        const sortKeyName = args.sort ? args.sort : defaultSortName;
-        const selectedSort = availableSorts[sortKeyName];
+        const sortKeyName = args.sort ? args.sort : mediaList.defaultSortName;
+        const selectedSort = mediaList.availableSorts[sortKeyName];
         const filterArgs = { ...args, currentUserId, userId };
 
-        const allFilters = { ...this.baseFilterDefinitions, ...this.specificFilterDefinitions };
+        const allFilters = {
+            ...this.baseFilterDefs,
+            ...mediaList.filterDefinitions,
+        };
 
         // Main query builder
         let queryBuilder = getDbClient()
             .select({
-                ...baseSelection,
+                ...mediaList.baseSelection,
                 ratingSystem: user.ratingSystem,
             })
             .from(listTable)
@@ -296,42 +341,34 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
 
-        // Apply Filters
+        // Iterate through all filters
         const conditions = [];
         conditions.push(eq(listTable.userId, userId));
-
-        // Iterate through all given filters
         for (const key of Object.keys(allFilters)) {
-            const filterDef = allFilters[key];
-            if (filterDef.isActive(filterArgs)) {
-                if (filterDef.applyJoin) {
-                    queryBuilder = filterDef.applyJoin(queryBuilder, filterArgs);
-                    countQueryBuilder = filterDef.applyJoin(countQueryBuilder, filterArgs);
-                }
+            const filterDef = allFilters[key as keyof MediaListArgs];
+            if (filterDef?.isActive(filterArgs)) {
                 const condition = filterDef.getCondition(filterArgs);
-                if (condition) {
-                    conditions.push(condition);
-                }
+                condition ?? conditions.push(condition);
             }
         }
 
-        const finalCondition = and(...conditions);
-        queryBuilder = queryBuilder.where(finalCondition);
-        countQueryBuilder = countQueryBuilder.where(finalCondition);
-
+        // Finish building query
+        queryBuilder = queryBuilder.where(and(...conditions));
+        countQueryBuilder = countQueryBuilder.where(and(...conditions));
         const finalQuery = queryBuilder
             .orderBy(...(Array.isArray(selectedSort) ? selectedSort : [selectedSort]))
             .limit(perPage)
             .offset(offset);
 
-        const [results, totalResult] = await Promise.all([finalQuery.execute(), countQueryBuilder.execute()]);
+        // Execute query
+        const [results, totalResult] = await Promise.all([finalQuery.execute(), countQueryBuilder.get()]);
 
-        const totalItems = totalResult[0]?.count ?? 0;
+        // Calculate total pages
+        const totalItems = totalResult?.count ?? 0;
         const totalPages = Math.ceil(totalItems / perPage);
 
-        // Fetch common IDs (if needed and not filtered out)
+        // Fetch common IDs (if in filter)
         let commonIdsSet = new Set<number>();
-
         if (currentUserId && currentUserId !== userId && !filterArgs.hideCommon && results.length > 0) {
             const mediaIds = results.map((m: any) => m.mediaId);
             const commonMediaIdsResult = await getDbClient()
@@ -339,9 +376,11 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 .from(listTable)
                 .where(and(eq(listTable.userId, currentUserId), inArray(listTable.mediaId, mediaIds)))
                 .execute();
+
             commonIdsSet = new Set(commonMediaIdsResult.map(m => m.mediaId));
         }
 
+        // Process results by adding common flag
         const processedResults = results.map((item: any) => ({
             ...item,
             common: commonIdsSet.has(item.mediaId),
@@ -355,7 +394,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
                 totalPages,
                 totalItems,
                 sorting: sortKeyName,
-                availableSorting: Object.keys(availableSorts),
+                availableSorting: Object.keys(mediaList.availableSorts),
             },
         };
     }
@@ -574,11 +613,20 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<any, any, any, any
 }
 
 
-export const isValidFilter = <T>(value: T[] | undefined): value is T[] => {
+export const isValidFilter = (value: any) => {
     return Array.isArray(value) && value.length > 0 && value[0] !== ALL_VALUE;
 }
 
 
-export const applyJoin = (qb: any, config: any) => {
-    return qb.innerJoin(config.entityTable, eq(config.mediaIdColumnInEntity, config.idColumnInMedia));
+export const createListFilterDef = ({ argName, entityTable, filterColumn, mediaTable }: ListFilterDefinition) => {
+    return {
+        isActive: (args: MediaListArgs) => isValidFilter(args[argName]),
+        getCondition: (args: MediaListArgs) => {
+            const subQuery = getDbClient()
+                .select({ mediaId: entityTable.mediaId })
+                .from(entityTable)
+                .where(inArray(filterColumn, args[argName] as string[]));
+            return inArray(mediaTable.id, subQuery);
+        },
+    } as FilterDefinition;
 }
