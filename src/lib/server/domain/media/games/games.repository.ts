@@ -1,14 +1,16 @@
 import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/types/achievements";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {IGamesRepository} from "@/lib/server/types/repositories.types";
+import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, like, lte, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
-export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
+export class GamesRepository extends BaseRepository<GamesSchemaConfig> implements IGamesRepository {
     config: GamesSchemaConfig;
 
     constructor() {
@@ -296,152 +298,214 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     // --- Achievements ----------------------------------------------------------
-    //
-    // getDurationAchievementCte(achievement: Achievement, userId?: number) {
-    //     const value = parseInt(achievement.value!);
-    //     const isLong = achievement.codeName.includes("long");
-    //     const condition = isLong ? gte(games.duration, value) : lte(games.duration, value);
-    //
-    //     let baseCTE = getDbClient()
-    //         .select({
-    //             userId: gamesList.userId,
-    //             value: count(gamesList.mediaId).as("value"),
-    //         }).from(gamesList)
-    //         .innerJoin(games, eq(gamesList.mediaId, games.id))
-    //
-    //     const conditions = [eq(gamesList.status, Status.COMPLETED), condition]
-    //
-    //     return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
-    // }
-    //
-    // getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let subQ = getDbClient()
-    //         .select({
-    //             userId: gamesList.userId,
-    //             count: count(gamesList.mediaId).as("count"),
-    //         }).from(gamesList)
-    //         .innerJoin(games, eq(gamesList.mediaId, games.id))
-    //         .where(eq(gamesList.status, Status.COMPLETED))
-    //         .groupBy(userId ? eq(gamesList.userId, userId) : gamesList.userId, games.directorName)
-    //         .as("sub");
-    //
-    //     return getDbClient()
-    //         .select({
-    //             userId: subQ.userId,
-    //             value: max(subQ.count).as("value"),
-    //         }).from(subQ)
-    //         .groupBy(subQ.userId)
-    //         .as("calculation");
-    // }
-    //
-    // getActorAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let subQ = getDbClient()
-    //         .select({
-    //             userId: gamesList.userId,
-    //             count: count(gamesList.mediaId).as("count"),
-    //         }).from(gamesList)
-    //         .innerJoin(gamesActors, eq(gamesList.mediaId, gamesActors.mediaId))
-    //         .where(eq(gamesList.status, Status.COMPLETED))
-    //         .groupBy(userId ? eq(gamesList.userId, userId) : gamesList.userId, gamesActors.name)
-    //         .as("sub");
-    //
-    //     return getDbClient()
-    //         .select({
-    //             userId: subQ.userId,
-    //             value: max(subQ.count).as("value"),
-    //         }).from(subQ)
-    //         .groupBy(subQ.userId)
-    //         .as("calculation");
-    // }
-    //
-    // getOriginLanguageAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let baseCTE = getDbClient()
-    //         .select({
-    //             userId: gamesList.userId,
-    //             value: countDistinct(games.originalLanguage).as("value"),
-    //         }).from(gamesList)
-    //         .innerJoin(games, eq(gamesList.mediaId, games.id))
-    //
-    //     const conditions = [eq(gamesList.status, Status.COMPLETED)]
-    //
-    //     return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
-    // }
-    //
-    // // --- Advanced Stats  --------------------------------------------------
-    //
-    // async avgMovieDuration(userId?: number) {
-    //     const forUser = userId ? eq(gamesList.userId, userId) : undefined;
-    //
-    //     const avgDuration = await getDbClient()
-    //         .select({
-    //             average: sql<number | null>`cast(avg(${games.duration}) as numeric)`.as("avg_duration")
-    //         })
-    //         .from(games)
-    //         .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-    //         .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_WATCH), isNotNull(games.duration)))
-    //         .get();
-    //
-    //     return avgDuration?.average;
-    // }
-    //
-    // async movieDurationDistrib(userId?: number) {
-    //     const forUser = userId ? eq(gamesList.userId, userId) : undefined;
-    //
-    //     return getDbClient()
-    //         .select({
-    //             name: sql<number>`floor(${games.duration} / 30.0) * 30`,
-    //             value: sql<number>`cast(count(${games.id}) as int)`.as("count"),
-    //         })
-    //         .from(games)
-    //         .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-    //         .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_WATCH), isNotNull(games.duration)))
-    //         .groupBy(sql<number>`floor(${games.duration} / 30.0) * 30`)
-    //         .orderBy(asc(sql<number>`floor(${games.duration} / 30.0) * 30`));
-    // }
-    //
-    // async budgetRevenueStats(userId?: number) {
-    //     const forUser = userId ? eq(gamesList.userId, userId) : undefined;
-    //
-    //     const data = await getDbClient()
-    //         .select({
-    //             totalBudget: sql<number>`coalesce(sum(${games.budget}), 0)`.as("total_budget"),
-    //             totalRevenue: sql<number>`coalesce(sum(${games.revenue}), 0)`.as("total_revenue"),
-    //         })
-    //         .from(games)
-    //         .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-    //         .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_WATCH)))
-    //         .get();
-    //
-    //     return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
-    // }
-    //
-    // async specificTopMetrics(userId?: number) {
-    //     const directorsConfig = {
-    //         metricTable: games,
-    //         metricNameColumn: games.directorName,
-    //         metricIdColumn: games.id,
-    //         mediaLinkColumn: gamesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //     const languagesConfig = {
-    //         metricTable: games,
-    //         metricNameColumn: games.originalLanguage,
-    //         metricIdColumn: games.id,
-    //         mediaLinkColumn: gamesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //     const actorsConfig = {
-    //         metricTable: gamesActors,
-    //         metricNameColumn: gamesActors.name,
-    //         metricIdColumn: gamesActors.mediaId,
-    //         mediaLinkColumn: gamesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //
-    //     const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-    //     const languagesStats = await this.computeTopMetricStats(languagesConfig, userId);
-    //     const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
-    //
-    //     return { directorsStats, actorsStats, languagesStats };
-    // }
+
+    getGameModeAchievementCte(achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: count(gamesList.id).as("value"),
+            }).from(gamesList)
+            .innerJoin(games, eq(gamesList.mediaId, games.id))
+
+        const conditions = [
+            ilike(games.gameModes, `%${achievement.value}%`),
+            notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY]),
+        ]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getTimeSpentAchievementCte(_achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: sql`SUM(${gamesList.playtime}) / 60`.as("value"),
+            }).from(gamesList)
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, [], userId);
+    }
+
+    getPlatformAchievementCte(_achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: countDistinct(gamesList.platform).as("value"),
+            }).from(gamesList)
+
+        const conditions = [notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY])]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: count(gamesList.mediaId).as("value"),
+            }).from(gamesList)
+
+        const conditions = [
+            eq(gamesList.platform, achievement.value as GamesPlatformsEnum),
+            notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY]),
+        ]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getDurationAchievementCte(achievement: Achievement, userId?: number) {
+        const value = parseInt(achievement.value!);
+        const isLong = achievement.codeName.includes("long");
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: count(gamesList.mediaId).as("value"),
+            }).from(gamesList)
+            .innerJoin(games, eq(gamesList.mediaId, games.id))
+
+        const conditions = [
+            isLong ? gte(gamesList.playtime, value) : lte(gamesList.playtime, value),
+            inArray(gamesList.status, [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER]),
+        ]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getCompanyAchievementCte(achievement: Achievement, userId?: number) {
+        const isDevCompany = achievement.value = "developer";
+
+        let subQ = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                count: count(gamesList.mediaId).as("count"),
+            }).from(gamesList)
+            .innerJoin(gamesCompanies, eq(gamesList.mediaId, gamesCompanies.mediaId))
+            .where(and(
+                notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY]),
+                isDevCompany ? eq(gamesCompanies.developer, true) : eq(gamesCompanies.publisher, true)
+            ))
+            .groupBy(userId ? eq(gamesList.userId, userId) : gamesList.userId, gamesCompanies.name)
+            .as("sub");
+
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+
+    getPerspectiveAchievementCte(achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: gamesList.userId,
+                value: count(gamesList.mediaId).as("value"),
+            }).from(gamesList)
+            .innerJoin(games, eq(gamesList.mediaId, games.id))
+
+        const conditions = [
+            eq(games.playerPerspective, achievement.value as string),
+            notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY]),
+        ]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    // --- Advanced Stats  --------------------------------------------------
+
+    async gameAvgPlaytime(userId?: number) {
+        const forUser = userId ? eq(gamesList.userId, userId) : undefined;
+
+        const avgDuration = await getDbClient()
+            .select({
+                average: sql<number | null>`avg(${gamesList.playtime})`.as("avg_playtime")
+            })
+            .from(gamesList)
+            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
+            .get();
+
+        return avgDuration?.average;
+    }
+
+    async gamePlaytimeDistrib(userId?: number) {
+        const forUser = userId ? eq(gamesList.userId, userId) : undefined;
+
+        return getDbClient()
+            .select({
+                name: sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`,
+                value: count(games.id).as("count"),
+            })
+            .from(games)
+            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
+            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
+            .groupBy(sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`)
+            .orderBy(asc(sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`));
+    }
+
+    async specificTopMetrics(userId?: number) {
+        const developersConfig = {
+            metricTable: gamesCompanies,
+            metricNameColumn: gamesCompanies.name,
+            metricIdColumn: games.id,
+            mediaLinkColumn: gamesList.mediaId,
+            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
+        };
+        const publishersConfig = {
+            ...developersConfig,
+            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
+        };
+        const platformsConfig = {
+            metricTable: gamesList,
+            metricNameColumn: gamesList.platform,
+            metricIdColumn: games.id,
+            mediaLinkColumn: gamesList.mediaId,
+            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+        };
+        const enginesConfig = {
+            metricTable: games,
+            metricNameColumn: games.gameEngine,
+            metricIdColumn: games.id,
+            mediaLinkColumn: gamesList.mediaId,
+            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+        };
+        const perspectivesConfig = {
+            metricTable: games,
+            metricNameColumn: games.playerPerspective,
+            metricIdColumn: games.id,
+            mediaLinkColumn: gamesList.mediaId,
+            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+        };
+
+        const developersStats = await this.computeTopMetricStats(developersConfig, userId);
+        const publishersStats = await this.computeTopMetricStats(publishersConfig, userId);
+        const platformsStats = await this.computeTopMetricStats(platformsConfig, userId);
+        const enginesStats = await this.computeTopMetricStats(enginesConfig, userId);
+        const perspectivesStats = await this.computeTopMetricStats(perspectivesConfig, userId);
+
+        return { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats };
+    }
+
+    async gameModesCount(userId?: number) {
+        const forUser = userId ? eq(gamesList.userId, userId) : undefined;
+
+        const data = await getDbClient()
+            .select({ modes: games.gameModes })
+            .from(games)
+            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
+            .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(games.gameModes)))
+            .execute();
+
+        const gameModes = data.flatMap(r => (r.modes ? r.modes.split(",") : []));
+
+        const modeCounts: Record<string, number> = {};
+        for (const mode of gameModes) {
+            modeCounts[mode] = (modeCounts[mode] || 0) + 1;
+        }
+
+        const topValuesResult = Object.entries(modeCounts)
+            .map(([name, value]) => ({ name, value: Number(value) || 0 }));
+
+        return { topValues: topValuesResult };
+    }
 }

@@ -9,6 +9,7 @@ import {GamesProviderService} from "@/lib/server/domain/media/games/games-provid
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 import {AnimeProviderService} from "@/lib/server/domain/media/tv/anime/anime-provider.service";
 import {SeriesProviderService} from "@/lib/server/domain/media/tv/series/series-provider.service";
+import {MediaService} from "@/lib/server/types/services.types";
 
 
 export interface MediaRepositoryMap {
@@ -68,7 +69,7 @@ export class MediaServiceRegistry {
         if (!this.services[mediaType]) {
             throw new Error(`Service for media type ${mediaType} not registered`);
         }
-        return this.services[mediaType];
+        return this.services[mediaType] as MediaService;
     }
 }
 

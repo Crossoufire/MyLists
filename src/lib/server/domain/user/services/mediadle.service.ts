@@ -1,4 +1,5 @@
 import {pixelateImage} from "@/lib/server/utils/image-pixelation";
+import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 
 
@@ -21,7 +22,7 @@ export class MediadleService {
         return { ...userMediadleStats, attempts };
     }
 
-    async getDailyMediadleData(userId: number, mediaService: any) {
+    async getDailyMediadleData(userId: number, mediaService: MoviesService) {
         let dailyMediadle = await this.repository.getTodayMoviedle();
         if (!dailyMediadle) {
             dailyMediadle = await this.repository.createDailyMoviedle();
@@ -32,7 +33,7 @@ export class MediadleService {
             userProgress = await this.repository.createUserProgress(userId, dailyMediadle.id);
         }
 
-        const selectedMovie = await mediaService.getById(dailyMediadle.mediaId);
+        const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
         const pixelationLevel = Math.min(dailyMediadle.pixelationLevels!, userProgress.attempts! + 1);
         const userMediadleStats = await this.getUserMediadleStats(userId);
 
@@ -62,7 +63,7 @@ export class MediadleService {
             throw new Error("User progress not found or game already completed");
         }
 
-        const selectedMovie = await mediaService.getById(dailyMediadle.mediaId);
+        const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
         const correct = selectedMovie.name.toLowerCase().trim() === guess.toLowerCase().trim();
 
         const potentialAttempts = progress.attempts! + 1;

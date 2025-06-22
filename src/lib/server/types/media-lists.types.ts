@@ -112,6 +112,7 @@ export interface MediaSchemaConfig<
         maxGenres: number;
     }
     editableFields: string[];
+    tablesForDeletion: any[];
 }
 
 

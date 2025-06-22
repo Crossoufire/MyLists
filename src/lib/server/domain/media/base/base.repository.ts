@@ -3,6 +3,7 @@ import {Achievement} from "@/lib/server/types/achievements";
 import {followers, user} from "@/lib/server/database/schema";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {IUniversalRepository} from "@/lib/server/types/repositories.types";
 import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/base.types";
 import {GenreTable, LabelTable, ListTable, MediaListArgs, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, sql} from "drizzle-orm";
@@ -21,7 +22,7 @@ export interface EditUserLabels {
 }
 
 
-export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> {
+export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> implements IUniversalRepository {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
@@ -71,22 +72,25 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
     async findById(mediaId: number | string) {
         const { mediaTable } = this.config;
-        return getDbClient().select().from(mediaTable).where(eq(mediaTable.id, mediaId)).get()
+
+        return getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.id, mediaId))
+            .get()
     }
 
     async downloadMediaListAsCSV(userId: number) {
         const { mediaTable, listTable } = this.config;
 
-        const results = await getDbClient()
+        return getDbClient()
             .select({
                 ...getTableColumns(listTable),
                 name: mediaTable.name,
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .where(eq(listTable.userId, userId))
-
-        return results;
+            .where(eq(listTable.userId, userId));
     }
 
     async searchByName(query: string, limit: number = 20) {
@@ -101,8 +105,10 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             .execute();
     }
 
-    async removeMediaByIds(mediaIds: number[], tables: any[] = []) {
-        for (const table of tables) {
+    async removeMediaByIds(mediaIds: number[]) {
+        const { tablesForDeletion } = this.config;
+
+        for (const table of tablesForDeletion) {
             await getDbClient()
                 .delete(table)
                 .where(inArray(table.mediaId, mediaIds))
@@ -134,7 +140,12 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
     async findByApiId(apiId: number | string) {
         const { mediaTable } = this.config;
-        return getDbClient().select().from(mediaTable).where(eq(mediaTable.apiId, apiId)).get()
+
+        return getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.apiId, apiId))
+            .get()
     }
 
     async findSimilarMedia(mediaId: number) {
@@ -306,7 +317,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
         const results = await Promise.all([genresPromise, labelsPromise]);
 
-        return { genres: results[0] || [], labels: results[1] || [] };
+        return { genres: results[0] || [], labels: results[1] || [] } as { genres: { name: string }[], labels: { name: string }[] };
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
@@ -403,7 +414,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
     // --- Achievements ----------------------------------------------------------
 
-    applyUserFilterAndGrouping(cte: any, baseConditions: any[], userId?: number) {
+    applyWhereConditionsAndGrouping(cte: any, baseConditions: any[], userId?: number) {
         const { listTable } = this.config;
 
         const conditions = [...baseConditions];
@@ -425,7 +436,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
         const conditions = [eq(listTable.status, Status.COMPLETED)]
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     countRatedAchievementCte(_achievement: Achievement, userId?: number) {
@@ -439,7 +450,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
         const conditions = [isNotNull(listTable.rating)]
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     countCommentedAchievementCte(_achievement: Achievement, userId?: number) {
@@ -453,7 +464,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
         const conditions = [isNotNull(listTable.comment)]
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     specificGenreAchievementCte(achievement: Achievement, userId?: number) {
@@ -470,7 +481,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
         const conditions = [eq(listTable.status, Status.COMPLETED), eq(genreTable.name, achievement.value)];
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     // --- Advanced Stats ---------------------------------------------------
@@ -547,26 +558,30 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             metricNameColumn: genreTable.name,
             metricIdColumn: genreTable.mediaId,
             mediaLinkColumn: listTable.mediaId,
-            statusFilters: [Status.PLAN_TO_WATCH],
+            filters: [notInArray(listTable.status, [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ])],
         };
 
         return this.computeTopMetricStats(metricStatsConfig, userId);
     }
 
     async computeTopMetricStats(statsConfig: Record<string, any>, userId?: number) {
-        const limit = statsConfig?.limit ?? 10;
         const { mediaTable, listTable } = this.config;
-        const minRatingCount = statsConfig?.minRatingCount ?? 5;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
-        const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, statusFilters } = statsConfig;
+
+        const limit = statsConfig?.limit ?? 10;
+        const minRatingCount = statsConfig?.minRatingCount ?? 5;
+        const { metricTable, metricIdColumn, metricNameColumn, mediaLinkColumn, filters } = statsConfig;
 
         const countAlias = sql<number>`countDistinct(${metricNameColumn})`
         const topValuesQuery = getDbClient()
-            .select({ name: metricNameColumn, value: countAlias })
+            .select({
+                name: metricNameColumn,
+                value: countAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(forUser, isNotNull(metricNameColumn), notInArray(listTable.status, statusFilters)))
+            .where(and(forUser, isNotNull(metricNameColumn), ...filters))
             .groupBy(metricNameColumn)
             .orderBy(asc(countAlias))
             .limit(limit)
@@ -578,7 +593,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(forUser, isNotNull(metricNameColumn), isNotNull(listTable.rating), notInArray(listTable.status, statusFilters)))
+            .where(and(forUser, isNotNull(metricNameColumn), isNotNull(listTable.rating), ...filters))
             .groupBy(metricNameColumn)
             .having(gte(ratingCountAlias, minRatingCount))
             .orderBy(asc(avgRatingAlias))
@@ -589,7 +604,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
-            .where(and(forUser, isNotNull(metricNameColumn), eq(listTable.favorite, true), notInArray(listTable.status, statusFilters)))
+            .where(and(forUser, isNotNull(metricNameColumn), eq(listTable.favorite, true), ...filters))
             .groupBy(metricNameColumn)
             .orderBy(asc(countAlias))
             .limit(limit);

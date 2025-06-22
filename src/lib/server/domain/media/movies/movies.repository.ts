@@ -2,13 +2,14 @@ import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {Achievement} from "@/lib/server/types/achievements";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, like, lte, max, ne, or, sql} from "drizzle-orm";
 
 
-export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
+export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implements IMoviesRepository {
     config: MovieSchemaConfig;
 
     constructor() {
@@ -358,7 +359,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const conditions = [eq(moviesList.status, Status.COMPLETED), condition]
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
@@ -411,7 +412,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const conditions = [eq(moviesList.status, Status.COMPLETED)]
 
-        return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
     }
 
     // --- Advanced Stats  --------------------------------------------------
@@ -421,7 +422,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const avgDuration = await getDbClient()
             .select({
-                average: sql<number | null>`cast(avg(${movies.duration}) as numeric)`.as("avg_duration")
+                average: sql<number | null>`avg(${movies.duration})`.as("avg_duration")
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
@@ -468,21 +469,21 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             metricNameColumn: movies.directorName,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
-            statusFilters: [Status.PLAN_TO_WATCH],
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const languagesConfig = {
             metricTable: movies,
             metricNameColumn: movies.originalLanguage,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
-            statusFilters: [Status.PLAN_TO_WATCH],
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const actorsConfig = {
             metricTable: moviesActors,
             metricNameColumn: moviesActors.name,
             metricIdColumn: moviesActors.mediaId,
             mediaLinkColumn: moviesList.mediaId,
-            statusFilters: [Status.PLAN_TO_WATCH],
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
 
         const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);

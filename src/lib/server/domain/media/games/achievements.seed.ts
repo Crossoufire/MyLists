@@ -106,8 +106,7 @@ export const gamesAchievements = [
     {
         codeName: "publisher_games",
         name: "Publisher Pal",
-        description:
-            "Awarded for playing games from the same publishers, because you've sworn an oath to defend their titles from all foes!",
+        description: "Awarded for playing games from the same publishers, because you've sworn an oath to defend their titles from all foes!",
         mediaType: MediaType.GAMES,
         value: "publisher",
         tiers: [

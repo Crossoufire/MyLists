@@ -1,10 +1,10 @@
+import {Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
-import {JobType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {IMoviesService} from "@/lib/server/types/services.types";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
-import {movies, moviesActors, moviesGenre} from "@/lib/server/database/schema";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {MoviesAchCodeName, moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 
@@ -20,10 +20,12 @@ interface UserMovieState {
 }
 
 
-export class MoviesService {
+export class MoviesService extends BaseService<MoviesRepository> implements IMoviesService {
     private readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
-    constructor(private repository: MoviesRepository) {
+    constructor(repository: MoviesRepository) {
+        super(repository);
+
         this.achievementHandlers = {
             completed_movies: this.repository.countCompletedAchievementCte.bind(this.repository),
             rated_movies: this.repository.countRatedAchievementCte.bind(this.repository),
@@ -40,42 +42,8 @@ export class MoviesService {
         };
     }
 
-    async getById(mediaId: number) {
-        return this.repository.findById(mediaId);
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        return this.repository.downloadMediaListAsCSV(userId);
-    }
-
-    async getNonListMediaIds() {
-        return this.repository.getNonListMediaIds();
-    }
-
-    async removeMediaByIds(mediaIds: number[]) {
-        const tables = [moviesActors, moviesGenre, movies];
-        return this.repository.removeMediaByIds(mediaIds, tables);
-    }
-
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
     async lockOldMovies() {
         return this.repository.lockOldMovies();
-    }
-
-    async searchByName(query: string) {
-        return this.repository.searchByName(query);
-    }
-
-    async getMediaToNotify() {
-        return this.repository.getMediaToNotify();
-    }
-
-    async computeAllUsersStats() {
-        return this.repository.computeAllUsersStats();
     }
 
     async getAchievementCte(achievement: Achievement, userId?: number) {
@@ -114,10 +82,6 @@ export class MoviesService {
             actorsStats,
             languagesStats,
         };
-    }
-
-    async computeTotalMediaLabel(userId?: number) {
-        return this.repository.computeTotalMediaLabel(userId);
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
@@ -165,6 +129,7 @@ export class MoviesService {
         return { fields };
     }
 
+    // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
         const media = await this.repository.findById(mediaId);
         if (!media) {
@@ -174,8 +139,6 @@ export class MoviesService {
         const editableFields = this.repository.config.editableFields;
         const fields: { [key: string]: any } = {};
         fields.apiId = media.apiId;
-
-        // TODO: check types and values for fields (to meditate because only manager endpoint -> can be less strict)
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
@@ -195,34 +158,6 @@ export class MoviesService {
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getUserMediaLabels(userId: number) {
-        return await this.repository.getUserMediaLabels(userId);
-    }
-
-    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
-        return this.repository.editUserLabel({ userId, label, mediaId, action });
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
-        return this.repository.getMediaList(currentUserId, userId, args);
-    }
-
-    async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
-        const page = search.page ?? 1;
-        const perPage = search.perPage ?? 25;
-        const offset = (page - 1) * perPage;
-
-        return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        return this.repository.getSearchListFilters(userId, query, job);
     }
 
     async getComingNext(userId: number) {

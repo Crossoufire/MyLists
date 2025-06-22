@@ -107,13 +107,14 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .validator((data: any) => {
-        if (!data.selectedList.includes(MediaType)) throw new Error("Invalid media type");
+        if (!data.selectedList.includes(MediaType)) {
+            throw new Error("Invalid media type");
+        }
         return data as { selectedList: MediaType };
     })
-    .handler(async ({ data, context: { currentUser } }) => {
-        const mediaService = getContainer().registries.mediaService.getService(data.selectedList);
-        //@ts-expect-error
-        return mediaService.downloadMediaListAsCSV(currentUser.id);
+    .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
+        const mediaService = getContainer().registries.mediaService.getService(selectedList);
+        return mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
     });
 
 

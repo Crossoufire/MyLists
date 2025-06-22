@@ -2,13 +2,14 @@ import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, isNotNull, like, lte, notInArray, or, sql} from "drizzle-orm";
 
 
-export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchemaConfig> {
+export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
     config: SeriesSchemaConfig | AnimeSchemaConfig;
 
     constructor(config: SeriesSchemaConfig | AnimeSchemaConfig) {
@@ -375,8 +376,8 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
             const creators = [...new Set(creatorsQuery
                 .filter(c => c.name)
                 .flatMap(c => c.name!.split(","))
-                .map(name => name.trim())
                 .filter(Boolean)
+                .map(n => ({ name: n.trim() }))
             )];
 
             return creators

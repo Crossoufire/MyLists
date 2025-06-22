@@ -244,7 +244,7 @@ export const animeNetwork = sqliteTable("anime_network", {
 
 export const games = sqliteTable("games", {
     id: integer().primaryKey().notNull(),
-    name: text(),
+    name: text().notNull(),
     imageCover: imageUrl("image_cover", BASE_GAMES_COVERS_PATH).notNull(),
     gameEngine: text(),
     gameModes: text(),
@@ -361,7 +361,7 @@ export const mangaList = sqliteTable("manga_list", {
 export const mangaAuthors = sqliteTable("manga_authors", {
     id: integer().primaryKey().notNull(),
     mediaId: integer().notNull().references(() => manga.id),
-    name: text(),
+    name: text().notNull(),
 });
 
 export const mangaGenre = sqliteTable("manga_genre", {

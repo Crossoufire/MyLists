@@ -10,10 +10,10 @@ import {useParams, useSearch} from "@tanstack/react-router";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {GamesPlatformsEnum, JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
+import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
 
 
@@ -30,7 +30,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
     const allStatuses = Status.byMediaType(mediaType);
     const searchFiltersList = JobType.byMediaType(mediaType);
-    const { data: listFilters, isLoading } = useQuery(listFiltersOptions(mediaType, username));
+    const { data: listFilters, isFetching } = useQuery(listFiltersOptions(mediaType, username));
 
     const registerChange = (filterType: string, value: any) => {
         if (Array.isArray(value)) {
@@ -82,7 +82,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                 </SheetHeader>
                 <Separator/>
                 <form onSubmit={handleOnSubmit}>
-                    {isLoading ?
+                    {isFetching ?
                         <div className="flex items-center justify-center h-[85vh]">
                             <LoaderCircle className="h-7 w-7 animate-spin"/>
                         </div>
@@ -94,7 +94,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 onChange={(status: Status) => registerChange("status", [status])}
                                 defaultChecked={(status: Status) => search?.status?.includes(status)}
                             />
-                            {listFilters?.platforms?.length > 0 &&
+                            {listFilters && listFilters?.platforms?.length > 0 &&
                                 <>
                                     <Separator/>
                                     <CheckboxGroup

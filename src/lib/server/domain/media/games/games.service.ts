@@ -1,11 +1,11 @@
+import {Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
-import {JobType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {IGamesService} from "@/lib/server/types/services.types";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {games, gamesCompanies, gamesGenre, gamesPlatforms} from "@/lib/server/database/schema";
 import {GamesAchCodeName, gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
@@ -19,60 +19,27 @@ interface UserGameState {
 }
 
 
-export class GamesService {
+export class GamesService extends BaseService<GamesRepository> implements IGamesService {
     private readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
-    constructor(private repository: GamesRepository) {
-        //@ts-expect-error
+    constructor(repository: GamesRepository) {
+        super(repository);
+
         this.achievementHandlers = {
             completed_games: this.repository.countCompletedAchievementCte.bind(this.repository),
             rated_games: this.repository.countRatedAchievementCte.bind(this.repository),
             comment_games: this.repository.countCommentedAchievementCte.bind(this.repository),
             hack_slash_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            multiplayer_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            log_hours_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            platform_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            pc_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            short_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            long_games: this.repository.specificGenreAchievementCte.bind(this.repository),
-            // developer_games: this.repository.getDeveloperAchievementCte.bind(this.repository),
-            // publisher_games: this.repository.getPublisherAchievementCte.bind(this.repository),
-            // first_person_games: this.repository.getFirstPersonAchievementCte.bind(this.repository),
+            multiplayer_games: this.repository.getGameModeAchievementCte.bind(this.repository),
+            log_hours_games: this.repository.getTimeSpentAchievementCte.bind(this.repository),
+            platform_games: this.repository.getPlatformAchievementCte.bind(this.repository),
+            pc_games: this.repository.getSpecificPlatformAchievementCte.bind(this.repository),
+            short_games: this.repository.getDurationAchievementCte.bind(this.repository),
+            long_games: this.repository.getDurationAchievementCte.bind(this.repository),
+            developer_games: this.repository.getCompanyAchievementCte.bind(this.repository),
+            publisher_games: this.repository.getCompanyAchievementCte.bind(this.repository),
+            first_person_games: this.repository.getPerspectiveAchievementCte.bind(this.repository),
         };
-    }
-
-    async getById(mediaId: number) {
-        return this.repository.findById(mediaId);
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        return this.repository.downloadMediaListAsCSV(userId);
-    }
-
-    async getNonListMediaIds() {
-        return this.repository.getNonListMediaIds();
-    }
-
-    async removeMediaByIds(mediaIds: number[]) {
-        const tables = [gamesCompanies, gamesPlatforms, gamesGenre, games];
-        return this.repository.removeMediaByIds(mediaIds, tables);
-    }
-
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
-    async searchByName(query: string) {
-        return this.repository.searchByName(query);
-    }
-
-    async getMediaToNotify() {
-        return this.repository.getMediaToNotify();
-    }
-
-    async computeAllUsersStats() {
-        return this.repository.computeAllUsersStats();
     }
 
     async getAchievementCte(achievement: Achievement, userId?: number) {
@@ -83,7 +50,6 @@ export class GamesService {
         return handler(achievement, userId);
     }
 
-    // TODO: TO update
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
 
@@ -94,28 +60,31 @@ export class GamesService {
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
 
         // Specific stats
-        // const avgDuration = await this.repository.avgMovieDuration(userId);
-        // const durationDistrib = await this.repository.movieDurationDistrib(userId);
-        // const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        // const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        const gameModes = await this.repository.gameModesCount(userId);
+        const avgDuration = await this.repository.gameAvgPlaytime(userId);
+        const durationDistrib = await this.repository.gamePlaytimeDistrib(userId);
+        const {
+            developersStats,
+            publishersStats,
+            platformsStats,
+            enginesStats,
+            perspectivesStats
+        } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
             totalLabels,
             genresStats,
             releaseDates,
-            // totalBudget,
-            // totalRevenue,
-            // avgDuration,
-            // durationDistrib,
-            // directorsStats,
-            // actorsStats,
-            // languagesStats,
+            gameModes,
+            avgDuration,
+            durationDistrib,
+            developersStats,
+            publishersStats,
+            platformsStats,
+            enginesStats,
+            perspectivesStats,
         };
-    }
-
-    async computeTotalMediaLabel(userId?: number) {
-        return this.repository.computeTotalMediaLabel(userId);
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
@@ -163,6 +132,7 @@ export class GamesService {
         return { fields };
     }
 
+    // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
         const media = await this.repository.findById(mediaId);
         if (!media) {
@@ -172,8 +142,6 @@ export class GamesService {
         const editableFields = this.repository.config.editableFields;
         const fields: { [key: string]: any } = {};
         fields.apiId = media.apiId;
-
-        // TODO: check types and values for fields (to meditate because only manager endpoint -> can be less strict)
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
@@ -193,34 +161,6 @@ export class GamesService {
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getUserMediaLabels(userId: number) {
-        return await this.repository.getUserMediaLabels(userId);
-    }
-
-    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
-        return this.repository.editUserLabel({ userId, label, mediaId, action });
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
-        return this.repository.getMediaList(currentUserId, userId, args);
-    }
-
-    async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
-        const page = search.page ?? 1;
-        const perPage = search.perPage ?? 25;
-        const offset = (page - 1) * perPage;
-
-        return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        return this.repository.getSearchListFilters(userId, query, job);
     }
 
     async getComingNext(userId: number) {

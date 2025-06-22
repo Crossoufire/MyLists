@@ -67,6 +67,7 @@ export const gamesConfig: GamesSchemaConfig = {
         "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",
         "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime"
     ] as const,
+    tablesForDeletion: [schema.gamesCompanies, schema.gamesPlatforms, schema.gamesGenre, schema.gamesLabels],
 };
 
 

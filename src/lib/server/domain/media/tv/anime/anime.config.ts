@@ -74,4 +74,5 @@ export const animeConfig: AnimeSchemaConfig = {
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
         "createdBy", "duration", "originCountry", "status", "synopsis"
     ] as const,
+    tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],
 };

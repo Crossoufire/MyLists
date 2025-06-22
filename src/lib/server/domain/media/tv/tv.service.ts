@@ -1,11 +1,11 @@
 import {notFound} from "@tanstack/react-router";
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {Status} from "@/lib/server/utils/enums";
+import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
-import {movies, moviesActors, moviesGenre} from "@/lib/server/database/schema";
 import {AnimeAchCodeName} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {SeriesAchCodeName} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
@@ -21,10 +21,12 @@ interface UserTvState {
 }
 
 
-export class TvService {
+export class TvService extends BaseService<TvRepository> implements ITvService {
     private readonly achievementHandlers: Record<SeriesAchCodeName | AnimeAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
-    constructor(private repository: TvRepository) {
+    constructor(repository: TvRepository) {
+        super(repository);
+
         this.achievementHandlers = {
             completed_anime: this.repository.countCompletedAchievementCte.bind(this.repository),
             completed_series: this.repository.countCompletedAchievementCte.bind(this.repository),
@@ -33,41 +35,6 @@ export class TvService {
             // comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
             // comment_series: this.repository.countCommentedAchievementCte.bind(this.repository),
         };
-    }
-
-    async getById(mediaId: number) {
-        return this.repository.findById(mediaId);
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        return this.repository.downloadMediaListAsCSV(userId);
-    }
-
-    async getNonListMediaIds() {
-        return this.repository.getNonListMediaIds();
-    }
-
-    // TODO: UPDATE
-    async removeMediaByIds(mediaIds: number[]) {
-        const tables = [moviesActors, moviesGenre, movies];
-        return this.repository.removeMediaByIds(mediaIds, tables);
-    }
-
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
-    async searchByName(query: string) {
-        return this.repository.searchByName(query);
-    }
-
-    async getMediaToNotify() {
-        return this.repository.getMediaToNotify();
-    }
-
-    async computeAllUsersStats() {
-        return this.repository.computeAllUsersStats();
     }
 
     async getAchievementCte(achievement: Achievement, userId?: number) {
@@ -106,10 +73,6 @@ export class TvService {
             // actorsStats,
             // languagesStats,
         };
-    }
-
-    async computeTotalMediaLabel(userId?: number) {
-        return this.repository.computeTotalMediaLabel(userId);
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
@@ -187,34 +150,6 @@ export class TvService {
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getUserMediaLabels(userId: number) {
-        return await this.repository.getUserMediaLabels(userId);
-    }
-
-    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
-        return this.repository.editUserLabel({ userId, label, mediaId, action });
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
-        return this.repository.getMediaList(currentUserId, userId, args);
-    }
-
-    async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
-        const page = search.page ?? 1;
-        const perPage = search.perPage ?? 25;
-        const offset = (page - 1) * perPage;
-
-        return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        return this.repository.getSearchListFilters(userId, query, job);
     }
 
     async getComingNext(userId: number) {

@@ -55,4 +55,5 @@ export const moviesConfig: MovieSchemaConfig = {
         "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
         "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
     ] as const,
+    tablesForDeletion: [schema.moviesActors, schema.moviesGenre, schema.moviesLabels],
 };
