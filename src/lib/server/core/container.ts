@@ -33,6 +33,7 @@ import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {HltbClient} from "../media-providers/clients/hltb.client";
 
 
 interface AppContainer {
@@ -141,11 +142,12 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const tmdbTransformer = new TmdbTransformer();
 
     // API Clients
+    const hltbClient = await HltbClient.create();
     const igdbClient = await IgdbClient.create();
     const tmdbClient = await TmdbClient.create();
 
     // Media Providers Services
-    const gamesProviderService = new GamesProviderService(igdbClient, igdbTransformer, gamesRepository)
+    const gamesProviderService = new GamesProviderService(igdbClient, hltbClient, igdbTransformer, gamesRepository)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     const seriesProviderService = new SeriesProviderService(tmdbClient, tmdbTransformer, seriesRepository);
     const animeProviderService = new AnimeProviderService(tmdbClient, tmdbTransformer, animeRepository);

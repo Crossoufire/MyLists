@@ -3,6 +3,7 @@ import {games} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {ProviderSearchResults} from "@/lib/server/types/base.types";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
+import {GameEntry} from "@/lib/server/media-providers/clients/hltb.client";
 
 
 type Games = typeof games.$inferInsert;
@@ -38,7 +39,10 @@ export class IgdbTransformer {
             gameEngine: rawData?.game_engines?.[0]?.name,
             playerPerspective: rawData?.player_perspectives?.[0]?.name,
             gameModes: rawData?.game_modes?.map((mode: any) => mode?.name).join(","),
-            releaseDate: rawData?.first_release_date ? new Date(rawData?.first_release_date * 1000).toISOString() : undefined,
+            releaseDate: rawData?.first_release_date ? new Date(rawData?.first_release_date * 1000).toISOString() : null,
+            hltbMainTime: null,
+            hltbMainAndExtraTime: null,
+            hltbTotalCompleteTime: null,
             imageCover: await saveImageFromUrl({
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
@@ -76,10 +80,10 @@ export class IgdbTransformer {
         return { mediaData, companiesData, platformsData, genresData }
     }
 
-    addHLTBDataToMainDetails(hltbRawData: Record<any, any>, mediaData: Games) {
-        mediaData.hltbMainTime = hltbRawData.main
-        mediaData.hltbMainAndExtraTime = hltbRawData.extra
-        mediaData.hltbTotalCompleteTime = hltbRawData.completionist
+    addHLTBDataToMainDetails(hltbData: GameEntry, mediaData: Games) {
+        mediaData.hltbMainTime = Number(hltbData.mainStory)
+        mediaData.hltbMainAndExtraTime = Number(hltbData.mainExtra)
+        mediaData.hltbTotalCompleteTime = Number(hltbData.completionist)
 
         return mediaData
     }

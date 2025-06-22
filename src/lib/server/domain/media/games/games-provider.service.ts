@@ -1,3 +1,4 @@
+import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.transformer";
@@ -5,41 +6,48 @@ import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.tr
 
 export class GamesProviderService {
     constructor(
-        private client: IgdbClient,
-        private transformer: IgdbTransformer,
-        private repository: GamesRepository,
+        private readonly client: IgdbClient,
+        private readonly hltbClient: HltbClient,
+        private readonly transformer: IgdbTransformer,
+        private readonly repository: GamesRepository
     ) {
     }
 
     async fetchAndStoreMediaDetails(apiId: number, isBulk: boolean = false) {
-        const rawData = await this.client.getGameDetails(apiId);
-        const { mediaData, genresData, companiesData, platformsData } = await this.transformer.transformGamesDetailsResults(rawData);
-        // TODO: ADD function to get HLTB data if not isBulk
-        return this.repository.storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData });
+        const details = await this._getMediaDetails(apiId, isBulk);
+        return this.repository.storeMediaWithDetails(details);
     }
 
     async fetchAndRefreshMediaDetails(apiId: number, isBulk: boolean = false) {
         try {
-            const rawData = await this.client.getGameDetails(apiId);
-            const { mediaData, companiesData, platformsData, genresData } = await this.transformer.transformGamesDetailsResults(rawData);
-            // TODO: ADD function to get HLTB data if not isBulk
-            return this.repository.updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData });
+            const details = await this._getMediaDetails(apiId, isBulk);
+            return this.repository.updateMediaWithDetails(details);
         }
-        catch (error: any) {
-            error.message = `Error refreshing game with apiId ${apiId}: ${error.message}`;
-            throw error;
+        catch (err: any) {
+            throw new Error(`Error refreshing game with apiId ${apiId}: ${err.message}`);
         }
     }
 
     async bulkProcessAndRefreshMedia() {
-        const mediaToBeRefreshed = await this.repository.getMediaToBeRefreshed();
-        const apiIds = mediaToBeRefreshed.map(m => m.apiId);
+        const mediaToRefresh = await this.repository.getMediaToBeRefreshed();
 
-        const promises = [];
-        for (const apiId of apiIds) {
-            promises.push(this.fetchAndRefreshMediaDetails(apiId, true));
-        }
+        const apiIds = mediaToRefresh.map((m) => m.apiId);
+        const promises = apiIds.map((apiId) => this.fetchAndRefreshMediaDetails(apiId, true));
 
         return Promise.allSettled(promises);
+    }
+
+    private async _getMediaDetails(apiId: number, isBulk: boolean) {
+        const rawData = await this.client.getGameDetails(apiId);
+        const { mediaData, genresData, companiesData, platformsData } = await this.transformer.transformGamesDetailsResults(rawData);
+
+        let extendedMediaData = mediaData;
+        if (!isBulk) {
+            const hltbData = await this.hltbClient.search(mediaData.name);
+            console.log({ hltbData });
+            extendedMediaData = this.transformer.addHLTBDataToMainDetails(hltbData, mediaData);
+        }
+
+        return { mediaData: extendedMediaData, companiesData, platformsData, genresData };
     }
 }
