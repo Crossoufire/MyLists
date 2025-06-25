@@ -15,7 +15,7 @@ type Options = {
 
 export class TmdbTransformer {
     private readonly maxActors = 5;
-    private readonly maxNetworks = 5;
+    private readonly maxNetworks = 2;
     private readonly animeDefaultDuration = 24;
     private readonly seriesDefaultDuration = 40;
     private readonly moviesDefaultDuration = 90;

@@ -28,15 +28,15 @@ export const animeConfig: AnimeSchemaConfig = {
         baseSelection: {
             mediaName: schema.anime.name,
             imageCover: schema.anime.imageCover,
-            seasons: sql<{ season: number; episodes: number }[]>`(
+            epsPerSeason: sql<{ season: number; episodes: number }[]>`(
                 SELECT 
-                    json_agg(json_build_object(
+                    json_group_array(json_object(
                         'season', ${schema.animeEpisodesPerSeason.season}, 
                         'episodes', ${schema.animeEpisodesPerSeason.episodes}
                     ))
                 FROM ${schema.animeEpisodesPerSeason} 
                 WHERE ${schema.animeEpisodesPerSeason.mediaId} = ${schema.anime.id}
-            )`.as("seasons"),
+            )`,
             ...getTableColumns(schema.animeList),
         },
         filterDefinitions: {

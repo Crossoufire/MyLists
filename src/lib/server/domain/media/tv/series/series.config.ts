@@ -28,15 +28,15 @@ export const seriesConfig: SeriesSchemaConfig = {
         baseSelection: {
             mediaName: schema.series.name,
             imageCover: schema.series.imageCover,
-            seasons: sql<{ season: number; episodes: number }[]>`(
+            epsPerSeason: sql<{ season: number; episodes: number }[]>`(
                 SELECT 
-                    json_agg(json_build_object(
+                    json_group_array(json_object(
                         'season', ${schema.seriesEpisodesPerSeason.season}, 
                         'episodes', ${schema.seriesEpisodesPerSeason.episodes}
                     ))
                 FROM ${schema.seriesEpisodesPerSeason} 
                 WHERE ${schema.seriesEpisodesPerSeason.mediaId} = ${schema.series.id}
-            )`.as("seasons"),
+            )`,
             ...getTableColumns(schema.seriesList),
         },
         filterDefinitions: {
