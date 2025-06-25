@@ -44,18 +44,19 @@ export interface ICommonRepository extends IUniversalRepository {
 // Level 3 - Media-specific methods
 export interface IMoviesRepository extends ICommonRepository {
     getComingNext(userId: number): Promise<any[]>;
-    getMediaToBeRefreshed(): Promise<any[]>;
+    getMediaIdsToBeRefreshed(): Promise<any[]>;
     lockOldMovies(): Promise<number>;
 }
 
 
 export interface ITvRepository extends ICommonRepository {
     getComingNext(userId: number): Promise<any[]>;
+    getMediaIdsToBeRefreshed(apiIds: number[]): Promise<number[]>;
 }
 
 
 export interface IGamesRepository extends ICommonRepository {
     getComingNext(userId: number): Promise<any[]>;
-    getMediaToBeRefreshed(): Promise<any[]>;
+    getMediaIdsToBeRefreshed(): Promise<any[]>;
     // updateIGDBToken(): Promise<any>;
 }

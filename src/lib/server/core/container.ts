@@ -10,6 +10,8 @@ import {UserService} from "@/lib/server/domain/user/services/user.service";
 import {animeConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
+import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
+import {JikanClient} from "@/lib/server/media-providers/clients/jikan.client";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {seriesConfig} from "@/lib/server/domain/media/tv/series/series.config";
@@ -33,7 +35,6 @@ import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {HltbClient} from "../media-providers/clients/hltb.client";
 
 
 interface AppContainer {
@@ -41,10 +42,12 @@ interface AppContainer {
     clients: {
         igdb: IgdbClient;
         tmdb: TmdbClient;
+        jikan: JikanClient;
     };
     transformers: {
         igdb: IgdbTransformer;
         tmdb: TmdbTransformer;
+        // jikan: JikanTransformer;
     };
     repositories: {
         user: typeof UserRepository;
@@ -145,12 +148,13 @@ export async function initializeContainer(options: ContainerOptions = {}) {
     const hltbClient = await HltbClient.create();
     const igdbClient = await IgdbClient.create();
     const tmdbClient = await TmdbClient.create();
+    const jikanClient = await JikanClient.create();
 
     // Media Providers Services
     const gamesProviderService = new GamesProviderService(igdbClient, hltbClient, igdbTransformer, gamesRepository)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     const seriesProviderService = new SeriesProviderService(tmdbClient, tmdbTransformer, seriesRepository);
-    const animeProviderService = new AnimeProviderService(tmdbClient, tmdbTransformer, animeRepository);
+    const animeProviderService = new AnimeProviderService(tmdbClient, jikanClient, tmdbTransformer, animeRepository);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);

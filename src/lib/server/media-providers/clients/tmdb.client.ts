@@ -1,12 +1,15 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
+import {connectRedis} from "@/lib/server/core/redis-client";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 
 
 export class TmdbClient extends BaseClient {
     private static readonly consumeKey = "tmdb-API";
+    private static readonly tvChangedIdsTtl = 60 * 5;
     private readonly apiKey = process.env.THEMOVIEDB_API_KEY;
     private readonly baseUrl = "https://api.themoviedb.org/3";
+    private static readonly tvChangedIdsCacheKey = "tmdb:tvChangedIds";
     private static readonly throttleOptions = { points: 30, duration: 1, keyPrefix: "tmdbAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -49,28 +52,51 @@ export class TmdbClient extends BaseClient {
     }
 
     async getTvChangedIds() {
+        const redis = await connectRedis();
+
+        // Try return cached data
+        const cached = await redis?.get(TmdbClient.tvChangedIdsCacheKey);
+        if (cached) {
+            try {
+                return JSON.parse(cached) as number[];
+            }
+            catch {
+            }
+        }
+
+        // Fetch data from API
         let page = 1;
         let totalPages = 1;
-        const changedApiIds = [];
+        const changedApiIds: number[] = [];
 
         while (page <= Math.min(totalPages, 20)) {
             try {
                 const url = `${this.baseUrl}/tv/changes?api_key=${this.apiKey}&page=${page}`
                 const response = await this.call(url);
-                const data: any = response.json();
+                const data: Record<string, any> = response.json();
 
                 if (data && data.results) {
-                    const ids = data.results.map((item: any) => item.id).filter((id: any) => typeof id === 'number');
-                    changedApiIds.push(...ids as number[]);
+                    const ids = data.results
+                        .map((item: any) => item.id)
+                        .filter((id: any) => typeof id === "number") as number[];
+                    changedApiIds.push(...ids);
                 }
 
                 totalPages = data.total_pages || 1;
-                page++;
+                page += 1;
             }
-            catch (error: any) {
+            catch {
                 break;
             }
         }
+
+        // Try save data to cache
+        await redis?.set(
+            TmdbClient.tvChangedIdsCacheKey,
+            JSON.stringify(changedApiIds),
+            "EX",
+            TmdbClient.tvChangedIdsTtl,
+        );
 
         return changedApiIds;
     }

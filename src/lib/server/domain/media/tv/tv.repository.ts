@@ -6,7 +6,7 @@ import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, isNotNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
 import {Achievement} from "@/lib/server/types/achievements";
 
 
@@ -220,19 +220,18 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
         };
     }
 
-    // TODO: SHOULD BE REMOVED BECAUSE SERIES AND ANIME USES THE API DIRECTLY
-    async getMediaToBeRefreshed() {
+    async getMediaIdsToBeRefreshed(apiIds: number[]) {
         const { mediaTable } = this.config;
 
-        return getDbClient()
+        const mediaIds = await getDbClient()
             .select({ apiId: mediaTable.apiId })
             .from(mediaTable)
             .where(and(
-                lte(mediaTable.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-2 days')`),
-                or(
-                    gte(mediaTable.releaseDate, sql`CURRENT_TIMESTAMP`),
-                    gte(mediaTable.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
-                )));
+                inArray(mediaTable.apiId, apiIds),
+                lte(mediaTable.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-1 day')`),
+            ));
+
+        return mediaIds.map((m: any) => m.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {

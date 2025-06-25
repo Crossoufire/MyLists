@@ -196,8 +196,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
         };
     }
 
-    async getMediaToBeRefreshed() {
-        return getDbClient()
+    async getMediaIdsToBeRefreshed() {
+        const results = await getDbClient()
             .select({ apiId: movies.apiId })
             .from(movies)
             .where(and(
@@ -206,6 +206,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
                     gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
                     gte(movies.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
                 )));
+
+        return results.map((r: any) => r.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {

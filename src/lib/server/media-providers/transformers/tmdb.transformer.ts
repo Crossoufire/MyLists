@@ -1,8 +1,11 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {anime} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {ProviderSearchResults} from "@/lib/server/types/base.types";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 
+
+type Anime = typeof anime.$inferInsert;
 
 type Options = {
     defaultDuration: number;
@@ -155,6 +158,17 @@ export class TmdbTransformer {
         return moviesTrends
     }
 
+    addAnimeSpecificGenres(jikanData: Record<string, any>[], genresData: { name: string }[]) {
+        const { genres = [], demographics = [] } = jikanData?.[0] || {};
+        const genreList = genres.map((g: any) => ({ name: g.name })) as { name: string }[];
+        const demoList = demographics.map((d: any) => ({ name: d.name })) as { name: string }[];
+
+        const newGenres = demoList.length >= 5
+            ? demoList.slice(0, 5) : [...demoList, ...genreList.slice(0, 5 - demoList.length)];
+
+        return newGenres.length ? newGenres : genresData;
+    }
+
     private async _transformTvDetailsResults(rawData: Record<string, any>, options: Options) {
         const { defaultDuration, imageSaveLocation } = options;
 
@@ -195,7 +209,8 @@ export class TmdbTransformer {
 
         const networkData = rawData?.networks?.slice(0, this.maxNetworks).map((network: any) => ({ name: network.name }));
         const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
-        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre: any) => ({ name: genre.name }));
+        const genresData = rawData?.genres
+            ?.slice(0, this.maxGenres).map((genre: any) => ({ name: genre.name })) as { name: string }[];
 
         return {
             mediaData,

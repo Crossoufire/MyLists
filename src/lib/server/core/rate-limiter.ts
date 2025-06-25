@@ -10,10 +10,7 @@ export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) =
             const redisInstance = await connectRedis();
 
             console.log(`Creating Redis rate limiter with options:`, options);
-            return new RateLimiterRedis({
-                ...options,
-                storeClient: redisInstance,
-            });
+            return new RateLimiterRedis({ ...options, storeClient: redisInstance });
         }
         catch (error) {
             console.error("Error during Redis connection or limiter creation:", error);

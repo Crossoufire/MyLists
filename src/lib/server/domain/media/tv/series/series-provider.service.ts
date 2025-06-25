@@ -30,11 +30,11 @@ export class SeriesProviderService {
     }
 
     async bulkProcessAndRefreshMedia() {
-        const mediaToBeRefreshed = await this.repository.getMediaToBeRefreshed();
-        const apiIds = mediaToBeRefreshed.map(m => m.apiId);
+        const changedApiIds = await this.client.getTvChangedIds();
+        const mediaIds = await this.repository.getMediaIdsToBeRefreshed(changedApiIds);
 
         const promises = [];
-        for (const apiId of apiIds) {
+        for (const apiId of mediaIds) {
             promises.push(this.fetchAndRefreshMediaDetails(apiId));
         }
 

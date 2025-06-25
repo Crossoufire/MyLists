@@ -173,14 +173,16 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
         return { items: results, total: totalCount, pages: Math.ceil(totalCount / limit) };
     }
 
-    async getMediaToBeRefreshed() {
-        return getDbClient()
+    async getMediaIdsToBeRefreshed() {
+        const results = await getDbClient()
             .select({ apiId: games.apiId })
             .from(games)
             .where(and(
                 lte(games.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-6 days')`),
                 or(gte(games.releaseDate, sql`CURRENT_TIMESTAMP`), isNull(games.releaseDate))
             ));
+
+        return results.map((r: any) => r.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {
