@@ -28,12 +28,25 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         super(repository);
 
         this.achievementHandlers = {
+            // Anime Achievements
             completed_anime: this.repository.countCompletedAchievementCte.bind(this.repository),
+            rated_anime: this.repository.countRatedAchievementCte.bind(this.repository),
+            comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
+            short_anime: this.repository.getDurationAchievementCte.bind(this.repository),
+            long_anime: this.repository.getDurationAchievementCte.bind(this.repository),
+            shonen_anime: this.repository.specificGenreAchievementCte.bind(this.repository),
+            seinen_anime: this.repository.specificGenreAchievementCte.bind(this.repository),
+            network_anime: this.repository.getNetworkAchievementCte.bind(this.repository),
+            actor_anime: this.repository.getActorAchievementCte.bind(this.repository),
+
+            // Series Achievements
             completed_series: this.repository.countCompletedAchievementCte.bind(this.repository),
-            // rated_anime: this.repository.countRatedAchievementCte.bind(this.repository),
-            // rated_series: this.repository.countRatedAchievementCte.bind(this.repository),
-            // comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
-            // comment_series: this.repository.countCommentedAchievementCte.bind(this.repository),
+            rated_series: this.repository.countRatedAchievementCte.bind(this.repository),
+            short_series: this.repository.getDurationAchievementCte.bind(this.repository),
+            long_series: this.repository.getDurationAchievementCte.bind(this.repository),
+            comedy_series: this.repository.specificGenreAchievementCte.bind(this.repository),
+            drama_series: this.repository.specificGenreAchievementCte.bind(this.repository),
+            network_series: this.repository.getNetworkAchievementCte.bind(this.repository),
         };
     }
 
@@ -55,23 +68,22 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         const releaseDates = await this.repository.computeReleaseDateStats(userId);
 
         // Specific stats
-        // const avgDuration = await this.repository.avgMovieDuration(userId);
-        // const durationDistrib = await this.repository.movieDurationDistrib(userId);
-        // const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        // const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        const avgDuration = await this.repository.avgTvDuration(userId);
+        const totalSeasons = await this.repository.computeTotalSeasons(userId);
+        const durationDistrib = await this.repository.tvDurationDistrib(userId);
+        const { networksStats, actorsStats, countriesStats } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
             totalLabels,
             genresStats,
             releaseDates,
-            // totalBudget,
-            // totalRevenue,
-            // avgDuration,
-            // durationDistrib,
-            // directorsStats,
-            // actorsStats,
-            // languagesStats,
+            totalSeasons,
+            avgDuration,
+            durationDistrib,
+            networksStats,
+            actorsStats,
+            countriesStats,
         };
     }
 

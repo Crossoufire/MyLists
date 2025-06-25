@@ -6,7 +6,8 @@ import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, isNotNull, like, lte, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, isNotNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
+import {Achievement} from "@/lib/server/types/achievements";
 
 
 export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
@@ -407,153 +408,141 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
         return result;
     }
 
-    // // --- Achievements ----------------------------------------------------------
-    //
-    // getDurationAchievementCte(achievement: Achievement, userId?: number) {
-    //     const value = parseInt(achievement.value!);
-    //     const isLong = achievement.codeName.includes("long");
-    //     const condition = isLong ? gte(movies.duration, value) : lte(movies.duration, value);
-    //
-    //     let baseCTE = getDbClient()
-    //         .select({
-    //             userId: moviesList.userId,
-    //             value: count(moviesList.mediaId).as("value"),
-    //         }).from(moviesList)
-    //         .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-    //
-    //     const conditions = [eq(moviesList.status, Status.COMPLETED), condition]
-    //
-    //     return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
-    // }
-    //
-    // getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let subQ = getDbClient()
-    //         .select({
-    //             userId: moviesList.userId,
-    //             count: count(moviesList.mediaId).as("count"),
-    //         }).from(moviesList)
-    //         .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-    //         .where(eq(moviesList.status, Status.COMPLETED))
-    //         .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, movies.directorName)
-    //         .as("sub");
-    //
-    //     return getDbClient()
-    //         .select({
-    //             userId: subQ.userId,
-    //             value: max(subQ.count).as("value"),
-    //         }).from(subQ)
-    //         .groupBy(subQ.userId)
-    //         .as("calculation");
-    // }
-    //
-    // getActorAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let subQ = getDbClient()
-    //         .select({
-    //             userId: moviesList.userId,
-    //             count: count(moviesList.mediaId).as("count"),
-    //         }).from(moviesList)
-    //         .innerJoin(moviesActors, eq(moviesList.mediaId, moviesActors.mediaId))
-    //         .where(eq(moviesList.status, Status.COMPLETED))
-    //         .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, moviesActors.name)
-    //         .as("sub");
-    //
-    //     return getDbClient()
-    //         .select({
-    //             userId: subQ.userId,
-    //             value: max(subQ.count).as("value"),
-    //         }).from(subQ)
-    //         .groupBy(subQ.userId)
-    //         .as("calculation");
-    // }
-    //
-    // getOriginLanguageAchievementCte(_achievement: Achievement, userId?: number) {
-    //     let baseCTE = getDbClient()
-    //         .select({
-    //             userId: moviesList.userId,
-    //             value: countDistinct(movies.originalLanguage).as("value"),
-    //         }).from(moviesList)
-    //         .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-    //
-    //     const conditions = [eq(moviesList.status, Status.COMPLETED)]
-    //
-    //     return this.applyUserFilterAndGrouping(baseCTE, conditions, userId);
-    // }
-    //
-    // // --- Advanced Stats  --------------------------------------------------
-    //
-    // async avgMovieDuration(userId?: number) {
-    //     const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-    //
-    //     const avgDuration = await getDbClient()
-    //         .select({
-    //             average: sql<number | null>`cast(avg(${movies.duration}) as numeric)`.as("avg_duration")
-    //         })
-    //         .from(movies)
-    //         .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-    //         .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
-    //         .get();
-    //
-    //     return avgDuration?.average;
-    // }
-    //
-    // async movieDurationDistrib(userId?: number) {
-    //     const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-    //
-    //     return getDbClient()
-    //         .select({
-    //             name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
-    //             value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
-    //         })
-    //         .from(movies)
-    //         .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-    //         .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
-    //         .groupBy(sql<number>`floor(${movies.duration} / 30.0) * 30`)
-    //         .orderBy(asc(sql<number>`floor(${movies.duration} / 30.0) * 30`));
-    // }
-    //
-    // async budgetRevenueStats(userId?: number) {
-    //     const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-    //
-    //     const data = await getDbClient()
-    //         .select({
-    //             totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)`.as("total_budget"),
-    //             totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)`.as("total_revenue"),
-    //         })
-    //         .from(movies)
-    //         .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-    //         .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH)))
-    //         .get();
-    //
-    //     return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
-    // }
-    //
-    // async specificTopMetrics(userId?: number) {
-    //     const directorsConfig = {
-    //         metricTable: movies,
-    //         metricNameColumn: movies.directorName,
-    //         metricIdColumn: movies.id,
-    //         mediaLinkColumn: moviesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //     const languagesConfig = {
-    //         metricTable: movies,
-    //         metricNameColumn: movies.originalLanguage,
-    //         metricIdColumn: movies.id,
-    //         mediaLinkColumn: moviesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //     const actorsConfig = {
-    //         metricTable: moviesActors,
-    //         metricNameColumn: moviesActors.name,
-    //         metricIdColumn: moviesActors.mediaId,
-    //         mediaLinkColumn: moviesList.mediaId,
-    //         statusFilters: [Status.PLAN_TO_WATCH],
-    //     };
-    //
-    //     const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-    //     const languagesStats = await this.computeTopMetricStats(languagesConfig, userId);
-    //     const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
-    //
-    //     return { directorsStats, actorsStats, languagesStats };
-    // }
+    // --- Achievements ----------------------------------------------------------
+
+    getDurationAchievementCte(achievement: Achievement, userId?: number) {
+        const { mediaTable, listTable } = this.config;
+
+        const value = parseInt(achievement.value!);
+        const isLong = achievement.codeName.includes("long");
+        const condition = isLong ? gte(mediaTable.totalEpisodes, value) : lte(mediaTable.totalEpisodes, value);
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+
+        const conditions = [eq(listTable.status, Status.COMPLETED), condition]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getNetworkAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable, networkTable } = this.config;
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: countDistinct(networkTable.name).as("value"),
+            }).from(listTable)
+            .innerJoin(networkTable, eq(listTable.mediaId, networkTable.mediaId))
+
+        const conditions = [ne(listTable.status, Status.PLAN_TO_WATCH)]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getActorAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable, actorTable } = this.config;
+
+        let subQ = getDbClient()
+            .select({
+                userId: listTable.userId,
+                count: count(listTable.mediaId).as("count"),
+            }).from(listTable)
+            .innerJoin(actorTable, eq(listTable.mediaId, actorTable.mediaId))
+            .where(eq(listTable.status, Status.COMPLETED))
+            .groupBy(userId ? eq(listTable.userId, userId) : listTable.userId, actorTable.name)
+            .as("sub");
+
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+
+    // --- Advanced Stats  --------------------------------------------------
+
+    async computeTotalSeasons(userId?: number) {
+        const { listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const totalSeasons = await getDbClient()
+            .select({ totalSeasons: sql<number>`coalesce(sum(${listTable.currentSeason}), 0)` })
+            .from(listTable)
+            .where(and(forUser, ne(listTable.status, Status.PLAN_TO_WATCH)))
+            .get();
+
+        return totalSeasons?.totalSeasons;
+    }
+
+    async avgTvDuration(userId?: number) {
+        const { mediaTable, listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const avgDuration = await getDbClient()
+            .select({
+                average: sql<number | null>`avg(${mediaTable.duration} * ${listTable.total})`.as("avg_duration")
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
+            .get();
+
+        return avgDuration?.average;
+    }
+
+    async tvDurationDistrib(userId?: number) {
+        const { mediaTable, listTable } = this.config;
+
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        return getDbClient()
+            .select({
+                name: sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`,
+                value: count(mediaTable.id).as("count"),
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
+            .groupBy(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`)
+            .orderBy(asc(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`));
+    }
+
+    async specificTopMetrics(userId?: number) {
+        const { mediaTable, listTable, networkTable, actorTable } = this.config;
+
+        const networkConfig = {
+            metricTable: networkTable,
+            metricNameColumn: networkTable.name,
+            metricIdColumn: mediaTable.id,
+            mediaLinkColumn: listTable.mediaId,
+            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+        };
+        const countriesConfig = {
+            metricTable: mediaTable,
+            metricNameColumn: mediaTable.originCountry,
+            metricIdColumn: mediaTable.id,
+            mediaLinkColumn: listTable.mediaId,
+            statusFilters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+        };
+        const actorsConfig = {
+            metricTable: actorTable,
+            metricNameColumn: actorTable.name,
+            metricIdColumn: actorTable.mediaId,
+            mediaLinkColumn: listTable.mediaId,
+            statusFilters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+        };
+
+        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
+        const networksStats = await this.computeTopMetricStats(networkConfig, userId);
+        const countriesStats = await this.computeTopMetricStats(countriesConfig, userId);
+
+        return { countriesStats, actorsStats, networksStats };
+    }
 }
