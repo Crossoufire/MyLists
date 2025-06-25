@@ -130,34 +130,43 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
             .execute();
     }
 
-    // TODO : Need to pass eps per season
-    async addMediaToUserList(userId: number, media: any, newStatus: Status) {
-        const { listTable } = this.config;
+    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+        const { listTable, epsPerSeasonTable } = this.config;
 
+        let newTotal = 1;
         let newSeason = 1;
         let newEpisode = 1;
-        let newTotal = 1;
+
+        const mediaEpsPerSeason = await getDbClient()
+            .select({
+                season: epsPerSeasonTable.season,
+                episodes: epsPerSeasonTable.episodes,
+            })
+            .from(epsPerSeasonTable)
+            .where(eq(epsPerSeasonTable.mediaId, mediaId))
+            .orderBy(asc(epsPerSeasonTable.season))
+            .execute();
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = media.totalSeasons;
-            newEpisode = media.totalEpisodes;
-            newTotal = media.totalEpisodes;
+            newSeason = mediaEpsPerSeason[-1].season;
+            newEpisode = mediaEpsPerSeason[-1].episodes;
+            newTotal = mediaEpsPerSeason.reduce((acc, curr) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
-            newEpisode = 0;
             newTotal = 0;
+            newEpisode = 0;
         }
 
         const [newMedia] = await getDbClient()
             .insert(listTable)
             .values({
                 userId,
-                mediaId: media.id,
+                mediaId: mediaId,
                 currentSeason: newSeason,
                 lastEpisodeWatched: newEpisode,
                 total: newTotal,
                 status: newStatus,
-                redo2: Array(media.totalSeasons).fill(0),
+                redo2: Array(mediaEpsPerSeason.length).fill(0),
             })
             .returning();
 

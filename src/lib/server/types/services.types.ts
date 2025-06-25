@@ -1,8 +1,8 @@
-import {JobType, Status} from "@/lib/server/utils/enums";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {Achievement} from "@/lib/server/types/achievements";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 
 
@@ -28,7 +28,7 @@ export interface IUniversalService {
 
 // Level 2 - Common patterns (implemented in each MediaService)
 export interface ICommonService extends IUniversalService {
-    addMediaToUserList(userId: number, mediaId: number, newStatus: Status): Promise<any>;
+    addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<any>;
     updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<any>;
     getAchievementCte(achievement: Achievement, userId?: number): Promise<string>;
     calculateAdvancedMediaStats(userId?: number): Promise<any>;
@@ -38,7 +38,7 @@ export interface ICommonService extends IUniversalService {
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
     completePartialUpdateData(partialUpdateData: Record<string, any>): Record<string, any>;
     calculateDeltaStats(oldState: any, newState: any, media: any): DeltaStats;
-    getAchievementsDefinition(): any;
+    getAchievementsDefinition(mediaType?: MediaType): any;
 }
 
 

@@ -1,13 +1,13 @@
 import {notFound} from "@tanstack/react-router";
-import {Status} from "@/lib/server/utils/enums";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements";
-import {AnimeAchCodeName} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {SeriesAchCodeName} from "@/lib/server/domain/media/tv/series/achievements.seed";
+import {AnimeAchCodeName, animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
+import {SeriesAchCodeName, seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
 interface UserTvState {
@@ -182,7 +182,6 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         }
 
         const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
-
         const delta = this.calculateDeltaStats(null, newState as UserTvState, media);
 
         return { newState, media, delta };
@@ -338,8 +337,15 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         return delta;
     }
 
-    // TODO : CHANGE TO SERIES AND ANIME
-    getAchievementsDefinition() {
-        return [] as AchievementData[];
+    getAchievementsDefinition(mediaType?: MediaType) {
+        if (mediaType === MediaType.ANIME) {
+            return animeAchievements as unknown as AchievementData[];
+        }
+        else if (mediaType === MediaType.SERIES) {
+            return seriesAchievements as unknown as AchievementData[];
+        }
+        else {
+            return [] as AchievementData[];
+        }
     }
 }

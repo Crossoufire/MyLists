@@ -22,24 +22,22 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
     .validator((data: any) => {
         return data as {
             status?: Status,
+            mediaId: number,
             mediaType: MediaType,
-            mediaId: number | string,
         }
     })
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
+        const currentUserId = parseInt(currentUser.id);
+
         const userStatsService = getContainer().services.userStats;
         const userUpdatesService = getContainer().services.userUpdates;
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
-        // @ts-expect-error
-        const { newState, media, delta } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
-
-        //@ts-expect-error
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        const { newState, media, delta } = await mediaService.addMediaToUserList(currentUserId, mediaId, status);
+        await userStatsService.updateUserPreComputedStatsWithDelta(currentUserId, mediaType, delta);
 
         await userUpdatesService.logUpdate({
-            //@ts-expect-error
-            userId: currentUser.id,
+            userId: currentUserId,
             mediaType,
             media,
             updateType: UpdateType.STATUS,
