@@ -131,21 +131,12 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
     }
 
     async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
-        const { listTable, epsPerSeasonTable } = this.config;
+        const { listTable } = this.config;
+        const mediaEpsPerSeason = await this.getMediaEpsPerSeason(mediaId);
 
         let newTotal = 1;
         let newSeason = 1;
         let newEpisode = 1;
-
-        const mediaEpsPerSeason = await getDbClient()
-            .select({
-                season: epsPerSeasonTable.season,
-                episodes: epsPerSeasonTable.episodes,
-            })
-            .from(epsPerSeasonTable)
-            .where(eq(epsPerSeasonTable.mediaId, mediaId))
-            .orderBy(asc(epsPerSeasonTable.season))
-            .execute();
 
         if (newStatus === Status.COMPLETED) {
             newSeason = mediaEpsPerSeason[-1].season;
@@ -171,6 +162,20 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
             .returning();
 
         return newMedia;
+    }
+
+    async getMediaEpsPerSeason(mediaId: number) {
+        const { epsPerSeasonTable } = this.config;
+
+        return getDbClient()
+            .select({
+                season: epsPerSeasonTable.season,
+                episodes: epsPerSeasonTable.episodes,
+            })
+            .from(epsPerSeasonTable)
+            .where(eq(epsPerSeasonTable.mediaId, mediaId))
+            .orderBy(asc(epsPerSeasonTable.season))
+            .execute();
     }
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
@@ -251,7 +256,7 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
                 ...getTableColumns(mediaTable),
                 actors: sql`json_group_array(DISTINCT json_object('id', ${actorTable.id}, 'name', ${actorTable.name}))`.mapWith(JSON.parse),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${genreTable.id}, 'name', ${genreTable.name}))`.mapWith(JSON.parse),
-                epsPerSeasons: sql`json_group_array(DISTINCT json_object('id', ${epsPerSeasonTable.id}, 'season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
+                epsPerSeason: sql`json_group_array(DISTINCT json_object('id', ${epsPerSeasonTable.id}, 'season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
                 networks: sql`json_group_array(DISTINCT json_object('id', ${networkTable.id}, 'name', ${networkTable.name}))`.mapWith(JSON.parse),
             })
             .from(mediaTable)

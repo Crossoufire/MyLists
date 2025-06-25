@@ -13,6 +13,7 @@ import {SeriesAchCodeName, seriesAchievements} from "@/lib/server/domain/media/t
 interface UserTvState {
     redo: number;
     total: number;
+    redo2: number[];
     mediaId: number;
     favorite: boolean;
     status: Status | null;
@@ -109,6 +110,11 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
 
         const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
         const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+
+        // Add eps per season to userMedia
+        const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaWithDetails.id);
+        (userMedia as any).epsPerSeason = mediaEpsPerSeason;
+
         const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
         return { media: mediaWithDetails, userMedia, followsData, similarMedia };
@@ -197,6 +203,10 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         if (!oldState) {
             throw new Error("Media not in your list");
         }
+
+        // Add eps per season to oldState
+        const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaId);
+        (oldState as any).epsPerSeason = mediaEpsPerSeason;
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);

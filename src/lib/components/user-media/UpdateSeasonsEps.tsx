@@ -3,16 +3,18 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 
 
 interface UpdateSeasonsEpsProps {
-    currentSeason: number;
-    epsPerSeason: number[];
-    currentEpisode: number;
-    onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>;
+    epsPerSeason: {
+        season: number,
+        episodes: number
+    }[],
+    currentSeason: number,
+    currentEpisode: number,
+    onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>,
 }
 
 
 export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason, currentEpisode }: UpdateSeasonsEpsProps) => {
-    const seasons = [...Array(epsPerSeason.length).keys()].map(v => (v + 1).toString());
-    const episodes = [...Array(epsPerSeason[currentSeason - 1]).keys()].map(v => (v + 1).toString());
+    const episodes = [...Array(epsPerSeason[currentSeason - 1].episodes).keys()].map(v => (v + 1).toString());
 
     const handleSeasonUpdate = (season: string) => {
         onUpdateMutation.mutate({ payload: { currentSeason: parseInt(season) } });
@@ -32,11 +34,11 @@ export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason
                         <SelectValue/>
                     </SelectTrigger>
                     <SelectContent>
-                        {seasons.map(season =>
-                            <SelectItem key={season} value={season}>
-                                {season}
-                            </SelectItem>)
-                        }
+                        {epsPerSeason.map(item =>
+                            <SelectItem key={item.season} value={item.season.toString()}>
+                                {item.season}
+                            </SelectItem>
+                        )}
                     </SelectContent>
                 </Select>
             </div>
@@ -51,8 +53,8 @@ export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason
                         {episodes.map(episode =>
                             <SelectItem key={episode} value={episode}>
                                 {episode}
-                            </SelectItem>)
-                        }
+                            </SelectItem>
+                        )}
                     </SelectContent>
                 </Select>
             </div>

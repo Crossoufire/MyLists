@@ -52,6 +52,7 @@ export interface IMoviesRepository extends ICommonRepository {
 export interface ITvRepository extends ICommonRepository {
     getComingNext(userId: number): Promise<any[]>;
     getMediaIdsToBeRefreshed(apiIds: number[]): Promise<number[]>;
+    getMediaEpsPerSeason(mediaId: number): Promise<{ season: number, episodes: number }[]>;
 }
 
 

@@ -164,7 +164,7 @@ export class TmdbTransformer {
         const demoList = demographics.map((d: any) => ({ name: d.name })) as { name: string }[];
 
         const newGenres = demoList.length >= 5
-            ? demoList.slice(0, 5) : [...demoList, ...genreList.slice(0, 5 - demoList.length)];
+            ? demoList.slice(0, 5) : [...genreList.slice(0, 5 - demoList.length), ...demoList];
 
         return newGenres.length ? newGenres : genresData;
     }

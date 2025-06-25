@@ -102,7 +102,7 @@ export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
                 synopsis={mediaData.synopsis}
             />
             <EpsPerSeason
-                epsPerSeason={mediaData.epsPerSeasons}
+                epsPerSeason={mediaData.epsPerSeason}
             />
         </div>
     );

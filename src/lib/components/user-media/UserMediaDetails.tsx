@@ -51,6 +51,8 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
         });
     };
 
+    console.log({ userMedia });
+
     return (
         <div className="space-y-2 w-[300px]">
             <Tabs defaultValue="yourInfo">
