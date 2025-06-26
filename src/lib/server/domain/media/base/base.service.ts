@@ -4,7 +4,7 @@ import {ICommonRepository} from "@/lib/server/types/repositories.types";
 import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 
 
-export class BaseService<R extends ICommonRepository> implements IUniversalService {
+export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia> {
     protected repository: R;
 
     constructor(repository: R) {

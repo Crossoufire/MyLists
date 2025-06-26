@@ -36,7 +36,7 @@ export const seriesConfig: SeriesSchemaConfig = {
                     ))
                 FROM ${schema.seriesEpisodesPerSeason} 
                 WHERE ${schema.seriesEpisodesPerSeason.mediaId} = ${schema.series.id}
-            )`,
+            )`.mapWith(JSON.parse),
             ...getTableColumns(schema.seriesList),
         },
         filterDefinitions: {

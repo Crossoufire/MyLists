@@ -1,16 +1,18 @@
 import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
-import {Achievement} from "@/lib/server/types/achievements";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
-import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
+import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms, movies} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
+import {AddedMediaDetails} from "@/lib/server/types/base.types";
 
 
-export class GamesRepository extends BaseRepository<GamesSchemaConfig> implements IGamesRepository {
+export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchemaConfig> implements IGamesRepository {
     config: GamesSchemaConfig;
 
     constructor() {
@@ -108,8 +110,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
     async getMediaToNotify() {
         return getDbClient()
             .select({
-                ...getTableColumns(games),
-                mediaList: { ...getTableColumns(gamesList) },
+                mediaId: games.id,
+                mediaName: games.name,
+                releaseDate: games.releaseDate,
+                userId: gamesList.userId,
             })
             .from(games)
             .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
@@ -122,10 +126,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
             .execute();
     }
 
-    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: any, newStatus: Status) {
         const [newMedia] = await getDbClient()
             .insert(gamesList)
-            .values({ userId, mediaId, status: newStatus, playtime: 0 })
+            .values({ userId, mediaId: media.id, status: newStatus, playtime: 0 })
             .returning();
 
         return newMedia;
@@ -182,59 +186,67 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
                 or(gte(games.releaseDate, sql`CURRENT_TIMESTAMP`), isNull(games.releaseDate))
             ));
 
-        return results.map((r: any) => r.apiId);
+        return results.map((r) => r.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {
-        const mainData = await getDbClient().query.games.findFirst({
-            where: eq(games.id, mediaId),
-            with: {
-                gamesGenres: true,
-                gamesCompanies: true,
-                gamesPlatforms: true,
-            },
-        });
+        const details = await getDbClient()
+            .select({
+                ...getTableColumns(games),
+                genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),
+                companies: sql`json_group_array(DISTINCT json_object('id', ${gamesCompanies.id}, 'name', ${gamesCompanies.name}))`.mapWith(JSON.parse),
+                platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
+            })
+            .from(games)
+            .innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
+            .innerJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
+            .innerJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
+            .where(eq(movies.id, mediaId))
+            .groupBy(...Object.values(getTableColumns(games)))
+            .get();
 
-        if (!mainData) {
-            throw new Error("Game not found");
-        }
+        if (!details) return;
 
-        return { ...mainData };
+        const result: Game & AddedMediaDetails = {
+            ...details,
+            genres: details.genres || [],
+            companies: details.companies || [],
+            platforms: details.platforms || [],
+        };
+
+        return result;
     }
 
-    async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: any) {
+    async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
         const result = await db.transaction(async (tx) => {
             const [media] = await tx
                 .insert(games)
                 .values(mediaData)
                 .returning()
 
-            if (!media) {
-                throw new Error("Failed to store the media details");
-            }
-
+            if (!media) return;
             const mediaId = media.id;
 
             if (companiesData && companiesData.length > 0) {
-                const companiesToAdd = companiesData.map((comp: any) => ({ mediaId, name: comp.name }));
+                const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
                 await tx.insert(gamesCompanies).values(companiesToAdd)
             }
             if (platformsData && platformsData.length > 0) {
-                const platformsToAdd = platformsData.map((plt: any) => ({ mediaId, name: plt.name }));
+                const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
                 await tx.insert(gamesPlatforms).values(platformsToAdd)
             }
             if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
                 await tx.insert(gamesGenre).values(genresToAdd)
             }
 
             return mediaId;
         });
 
-        return result
+        return result;
     }
 
-    async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: any) {
+    async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
         const tx = getDbClient();
 
         const [media] = await tx
@@ -247,17 +259,17 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
 
         if (companiesData && companiesData.length > 0) {
             await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
-            const companiesToAdd = companiesData.map((company: any) => ({ mediaId, ...company }));
+            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
             await tx.insert(gamesCompanies).values(companiesToAdd)
         }
         if (platformsData && platformsData.length > 0) {
             await tx.delete(gamesPlatforms).where(eq(gamesPlatforms.mediaId, mediaId));
-            const platformsToAdd = platformsData.map((platform: any) => ({ mediaId, name: platform.name }));
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
             await tx.insert(gamesPlatforms).values(platformsToAdd)
         }
         if (genresData && genresData.length > 0) {
             await tx.delete(gamesGenre).where(eq(gamesGenre.mediaId, mediaId));
-            const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
             await tx.insert(gamesGenre).values(genresToAdd)
         }
 
@@ -289,7 +301,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> implement
         }
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>) {
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<GamesList>) {
         const [result] = await getDbClient()
             .update(gamesList)
             .set(updateData)

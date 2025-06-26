@@ -36,7 +36,7 @@ export const animeConfig: AnimeSchemaConfig = {
                     ))
                 FROM ${schema.animeEpisodesPerSeason} 
                 WHERE ${schema.animeEpisodesPerSeason.mediaId} = ${schema.anime.id}
-            )`,
+            )`.mapWith(JSON.parse),
             ...getTableColumns(schema.animeList),
         },
         filterDefinitions: {

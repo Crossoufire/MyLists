@@ -1,5 +1,5 @@
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {CurrentUser} from "@/lib/server/types/base.types";
+import {CurrentUser} from "@/lib/server/types/provider.types";
 import {createFileRoute, redirect} from "@tanstack/react-router";
 
 

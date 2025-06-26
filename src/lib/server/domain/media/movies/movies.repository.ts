@@ -1,15 +1,17 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Achievement} from "@/lib/server/types/achievements";
+import {Achievement} from "@/lib/server/types/achievements.types";
+import {AddedMediaDetails} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
+import {Movie, MoviesList, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, like, lte, max, ne, or, sql} from "drizzle-orm";
 
 
-export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implements IMoviesRepository {
+export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSchemaConfig> implements IMoviesRepository {
     config: MovieSchemaConfig;
 
     constructor() {
@@ -54,8 +56,22 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
         const results = await getDbClient()
             .select({
                 userId: moviesList.userId,
-                timeSpent: sql<number>`COALESCE(SUM(${moviesList.total} * ${movies.duration}), 0)`.as("timeSpent"),
-                totalSpecific: sql<number>`COALESCE(SUM(${moviesList.total}), 0)`.as("totalSpecific"),
+                timeSpent: sql<number>`
+                    COALESCE(SUM(
+                        CASE 
+                            WHEN ${moviesList.status} = ${Status.COMPLETED} THEN (1 + ${moviesList.redo}) * ${movies.duration}
+                            ELSE 0
+                        END
+                    ), 0)
+                `.as("timeSpent"),
+                totalSpecific: sql<number>`
+                    COALESCE(SUM(
+                        CASE 
+                            WHEN ${moviesList.status} = ${Status.COMPLETED} THEN 1 + ${moviesList.redo}
+                            ELSE 0
+                        END
+                    ), 0)
+                `.as("totalSpecific"),
                 statusCounts: sql`
                     COALESCE((
                         SELECT 
@@ -119,8 +135,10 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
     async getMediaToNotify() {
         return getDbClient()
             .select({
-                ...getTableColumns(movies),
-                mediaList: { ...getTableColumns(moviesList) },
+                mediaId: movies.id,
+                mediaName: movies.name,
+                releaseDate: movies.releaseDate,
+                userId: moviesList.userId,
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
@@ -133,12 +151,12 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
             .execute();
     }
 
-    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: Movie, newStatus: Status) {
         const newTotal = (newStatus === Status.COMPLETED) ? 1 : 0;
 
         const [newMedia] = await getDbClient()
             .insert(moviesList)
-            .values({ userId, mediaId, total: newTotal, status: newStatus })
+            .values({ userId, mediaId: media.id, total: newTotal, status: newStatus })
             .returning();
 
         return newMedia;
@@ -207,67 +225,69 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
                     gte(movies.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
                 )));
 
-        return results.map((r: any) => r.apiId);
+        return results.map((r) => r.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {
-        const mainData = await getDbClient().query.movies.findFirst({
-            where: eq(movies.id, mediaId),
-            with: {
-                moviesActors: true,
-                moviesGenres: true,
-            },
-        });
+        const details = await getDbClient()
+            .select({
+                ...getTableColumns(movies),
+                actors: sql`json_group_array(DISTINCT json_object('id', ${moviesActors.id}, 'name', ${moviesActors.name}))`.mapWith(JSON.parse),
+                genres: sql`json_group_array(DISTINCT json_object('id', ${moviesGenre.id}, 'name', ${moviesGenre.name}))`.mapWith(JSON.parse),
+                collection: sql`
+                    SELECT json_group_array(json_object('id', m2.id,'name', m2.name, 'imageCover', m2.imageCover))
+                    FROM ${movies} m2
+                    WHERE m2.collectionId = ${movies.collectionId} AND m2.id != ${movies.id}
+                    ORDER BY m2.releaseDate ASC
+                  )
+                `.mapWith(JSON.parse),
+            })
+            .from(movies)
+            .innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id))
+            .innerJoin(moviesGenre, eq(moviesGenre.mediaId, movies.id))
+            .where(eq(movies.id, mediaId))
+            .groupBy(...Object.values(getTableColumns(movies)))
+            .get();
 
-        if (!mainData) {
-            throw new Error("Movie not found");
-        }
+        if (!details) return;
 
-        const collectionMovies = mainData?.collectionId
-            ? await getDbClient()
-                .select({
-                    id: movies.id,
-                    name: movies.name,
-                    imageCover: movies.imageCover,
-                })
-                .from(movies)
-                .where(and(eq(movies.collectionId, mainData.collectionId), ne(movies.id, mediaId)))
-                .orderBy(asc(movies.releaseDate))
-            : [];
+        const result: Movie & AddedMediaDetails = {
+            ...details,
+            actors: details.actors || [],
+            genres: details.genres || [],
+            collection: details.collection || [],
+        };
 
-        return { ...mainData, collection: collectionMovies };
+        return result;
     }
 
-    async storeMediaWithDetails({ mediaData, actorsData, genresData }: any) {
+    async storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
         const result = await db.transaction(async (tx) => {
             const [media] = await tx
                 .insert(movies)
                 .values(mediaData)
                 .returning()
 
-            if (!media) {
-                throw new Error("Failed to store the media details");
-            }
-
+            if (!media) return;
             const mediaId = media.id;
 
             if (actorsData && actorsData.length > 0) {
-                const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+                const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
                 await tx.insert(moviesActors).values(actorsToAdd)
             }
 
             if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
                 await tx.insert(moviesGenre).values(genresToAdd)
             }
 
             return mediaId;
         });
 
-        return result
+        return result;
     }
 
-    async updateMediaWithDetails({ mediaData, actorsData, genresData }: any) {
+    async updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
         const tx = getDbClient();
 
         const [media] = await tx
@@ -280,13 +300,13 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
 
         if (actorsData && actorsData.length > 0) {
             await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
-            const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
             await tx.insert(moviesActors).values(actorsToAdd)
         }
 
         if (genresData && genresData.length > 0) {
             await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
-            const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
             await tx.insert(moviesGenre).values(genresToAdd)
         }
 
@@ -335,7 +355,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
         }
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>) {
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<MoviesList>) {
         const [result] = await getDbClient()
             .update(moviesList)
             .set(updateData)
@@ -404,7 +424,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
             .as("calculation");
     }
 
-    getOriginLanguageAchievementCte(_achievement: Achievement, userId?: number) {
+    getLanguageAchievementCte(_achievement: Achievement, userId?: number) {
         let baseCTE = getDbClient()
             .select({
                 userId: moviesList.userId,
@@ -424,7 +444,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
 
         const avgDuration = await getDbClient()
             .select({
-                average: sql<number | null>`avg(${movies.duration})`.as("avg_duration")
+                average: sql<number | null>`avg(${movies.duration})`
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
@@ -466,16 +486,16 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
     }
 
     async specificTopMetrics(userId?: number) {
-        const directorsConfig = {
+        const langsConfig = {
             metricTable: movies,
-            metricNameColumn: movies.directorName,
+            metricNameColumn: movies.originalLanguage,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
-        const languagesConfig = {
+        const directorsConfig = {
             metricTable: movies,
-            metricNameColumn: movies.originalLanguage,
+            metricNameColumn: movies.directorName,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
@@ -488,10 +508,10 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> implemen
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
 
+        const langsStats = await this.computeTopMetricStats(langsConfig, userId);
         const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-        const languagesStats = await this.computeTopMetricStats(languagesConfig, userId);
         const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
 
-        return { directorsStats, actorsStats, languagesStats };
+        return { directorsStats, actorsStats, langsStats };
     }
 }

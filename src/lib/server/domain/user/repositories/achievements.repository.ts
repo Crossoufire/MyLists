@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
-import {AchievementData, AchievementTier} from "@/lib/server/types/achievements";
+import {AchievementData, AchievementTier} from "@/lib/server/types/achievements.types";
 import {and, asc, count, eq, getTableColumns, inArray, max, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
 
@@ -183,7 +183,7 @@ export class AchievementsRepository {
 
     static async countPlatinumAchievements(userId?: number) {
         const forUser = userId ? eq(userAchievement.userId, userId) : undefined;
-        
+
         const result = await getDbClient()
             .select({ count: count() })
             .from(userAchievement)

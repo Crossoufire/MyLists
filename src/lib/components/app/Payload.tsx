@@ -29,6 +29,7 @@ const getUpdatePayload = (updateType: UpdateType) => {
         status: StatusPayload,
         tv: TVPayload,
         redo: RedoPayload,
+        redoTv: RedoPayload,
         playtime: PlaytimePayload,
         page: PagePayload,
         chapter: ChapterPayload,

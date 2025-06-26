@@ -283,4 +283,3 @@ export const moviesAchievements = [
 ] as const;
 
 
-export type MoviesAchCodeName = typeof moviesAchievements[number]["codeName"];

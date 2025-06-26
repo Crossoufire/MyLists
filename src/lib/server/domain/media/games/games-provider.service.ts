@@ -29,10 +29,8 @@ export class GamesProviderService {
     }
 
     async bulkProcessAndRefreshMedia() {
-        const mediaToRefresh = await this.repository.getMediaIdsToBeRefreshed();
-
-        const apiIds = mediaToRefresh.map((m) => m.apiId);
-        const promises = apiIds.map((apiId) => this.fetchAndRefreshMediaDetails(apiId, true));
+        const mediaIdsToBeRefreshed = await this.repository.getMediaIdsToBeRefreshed();
+        const promises = mediaIdsToBeRefreshed.map((apiId) => this.fetchAndRefreshMediaDetails(apiId, true));
 
         return Promise.allSettled(promises);
     }

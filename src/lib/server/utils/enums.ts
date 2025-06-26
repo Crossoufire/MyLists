@@ -149,6 +149,7 @@ export const UpdateType = {
     PAGE: "page",
     REDO: "redo",
     STATUS: "status",
+    REDOTV: "redoTv",
     CHAPTER: "chapter",
     PLAYTIME: "playtime",
 } as const;

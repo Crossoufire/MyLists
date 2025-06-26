@@ -3,10 +3,12 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {IMoviesService} from "@/lib/server/types/services.types";
+import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {MoviesAchCodeName, moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
+import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 
 
 interface UserMovieState {
@@ -20,7 +22,7 @@ interface UserMovieState {
 }
 
 
-export class MoviesService extends BaseService<MoviesRepository> implements IMoviesService {
+export class MoviesService extends BaseService<Movie, MoviesList, IMoviesRepository> implements IMoviesService {
     private readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: MoviesRepository) {
@@ -32,7 +34,7 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
             comment_movies: this.repository.countCommentedAchievementCte.bind(this.repository),
             director_movies: this.repository.getDirectorAchievementCte.bind(this.repository),
             actor_movies: this.repository.getActorAchievementCte.bind(this.repository),
-            origin_lang_movies: this.repository.getOriginLanguageAchievementCte.bind(this.repository),
+            origin_lang_movies: this.repository.getLanguageAchievementCte.bind(this.repository),
             war_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             family_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             sci_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
@@ -67,7 +69,7 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
         const avgDuration = await this.repository.avgMovieDuration(userId);
         const durationDistrib = await this.repository.movieDurationDistrib(userId);
         const { totalBudget, totalRevenue } = await this.repository.budgetRevenueStats(userId);
-        const { directorsStats, actorsStats, languagesStats } = await this.repository.specificTopMetrics(userId);
+        const { directorsStats, actorsStats, langsStats } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
@@ -80,35 +82,32 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
             durationDistrib,
             directorsStats,
             actorsStats,
-            languagesStats,
+            langsStats,
         };
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
+        const media = external ?
+            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
-        let mediaWithDetails;
         let internalMediaId = media?.id;
-
         if (external && !internalMediaId) {
             internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) {
-                throw new Error("Failed to fetch media details");
-            }
+            if (!internalMediaId) throw new Error("Failed to fetch the details");
         }
 
         if (internalMediaId) {
-            mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-        }
-        else {
-            throw new Error("Movie not found");
+            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+            if (!mediaWithDetails) throw new Error("Movie not found");
+
+            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
+            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+
+            return { media: mediaWithDetails, userMedia, followsData, similarMedia };
         }
 
-        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
-        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-        return { media: mediaWithDetails, userMedia, followsData, similarMedia };
+        throw new Error("Movie not found")
     }
 
     async getMediaEditableFields(mediaId: number) {
@@ -122,6 +121,7 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
 
         for (const key in media) {
             if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
+                // @ts-expect-error
                 fields[key] = media[key];
             }
         }
@@ -129,8 +129,9 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
         return { fields };
     }
 
-    // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
+        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
+
         const media = await this.repository.findById(mediaId);
         if (!media) {
             throw notFound();
@@ -177,7 +178,7 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
             throw new Error("Media already in your list");
         }
 
-        const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
+        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
 
         const delta = this.calculateDeltaStats(null, newState as UserMovieState, media);
 
@@ -219,7 +220,7 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: any) {
         const completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
@@ -238,12 +239,12 @@ export class MoviesService extends BaseService<MoviesRepository> implements IMov
         const oldRedo = oldState?.redo ?? 0;
         const oldComment = oldState?.comment;
         const oldFavorite = oldState?.favorite ?? false;
+        const oldTotalSpecificValue = oldState?.total ?? 0;
+        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
         const wasRated = wasCompleted && oldRating != null;
-        const oldTotalSpecificValue = oldState ? (wasCompleted ? 1 : 0) + oldRedo : 0;
-        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
 
         // Extract New State Info
         const newStatus = newState?.status;

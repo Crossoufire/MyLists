@@ -26,25 +26,25 @@ function ComingNextPage() {
             <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-2">
                 <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {apiData.map((next) => (
-                        <TabsTrigger key={next.mediaType} value={next.mediaType} className="max-sm:px-2 px-4 flex items-center gap-2">
-                            <MediaIcon mediaType={next.mediaType} size={18}/>{" "}
-                            {capitalize(next.mediaType)}
+                        <TabsTrigger key={next?.mediaType} value={next?.mediaType ?? MediaType.SERIES} className="max-sm:px-2 px-4 flex items-center gap-2">
+                            <MediaIcon mediaType={next?.mediaType ?? MediaType.SERIES} size={18}/>{" "}
+                            {capitalize(next?.mediaType)}
                         </TabsTrigger>
                     ))}
                 </TabsList>
                 {apiData.map((next) => (
-                    <TabsContent key={next.mediaType} value={next.mediaType}>
+                    <TabsContent key={next?.mediaType} value={next?.mediaType ?? MediaType.SERIES}>
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
-                            {next.items.length === 0 ?
+                            {next?.items.length === 0 ?
                                 <MutedText className="px-2 col-span-12">
-                                    No upcoming {next.mediaType} found
+                                    No upcoming {next?.mediaType} found
                                 </MutedText>
                                 :
-                                next.items.map((media) => (
+                                next?.items.map((media) => (
                                     <div key={media.mediaId}>
                                         <NextMedia
                                             media={media}
-                                            mediaType={next.mediaType}
+                                            mediaType={next?.mediaType}
                                         />
                                     </div>
                                 ))

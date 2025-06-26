@@ -79,7 +79,6 @@
     - Run all scheduled tasks
 
 - FIX: Labels not returned in media lists
-- TODO: ADD function to get HLTB data if not isBulk
 - TODO: ADD page results to search
 - TODO: abstract jobtype if else with "strategy pattern" (see Gemini 2.5 pro on Google for info)
 - POTENTIAL TODO: Abstract Repetitive Stat Calculation Logic (see if still true after adding every mediaType)

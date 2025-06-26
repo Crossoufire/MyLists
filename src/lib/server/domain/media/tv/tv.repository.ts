@@ -1,21 +1,42 @@
 import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
+import {TvList, TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
-import {Achievement} from "@/lib/server/types/achievements";
+import {AddedMediaDetails} from "@/lib/server/types/base.types";
 
 
-export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
+export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
     config: SeriesSchemaConfig | AnimeSchemaConfig;
 
     constructor(config: SeriesSchemaConfig | AnimeSchemaConfig) {
         super(config);
         this.config = config;
+    }
+
+    async findByIdAndAddEpsPerSeason(mediaId: number) {
+        const { mediaTable, epsPerSeasonTable } = this.config;
+
+        const mainData = await getDbClient()
+            .select({
+                ...getTableColumns(mediaTable),
+                epsPerSeason: sql<{
+                    season: number,
+                    episodes: number
+                }[]>`json_group_array(json_object('season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
+            })
+            .from(mediaTable)
+            .innerJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))
+            .where(eq(mediaTable.id, mediaId))
+            .get();
+
+        return mainData;
     }
 
     async getComingNext(userId: number) {
@@ -46,6 +67,7 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
     async computeAllUsersStats() {
         const { mediaTable, listTable } = this.config;
 
+        // TODO: Change timeSpent and totalSpecific to be the real calculation
         const results = await getDbClient()
             .select({
                 userId: listTable.userId,
@@ -112,36 +134,50 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
     }
 
     async getMediaToNotify() {
-        const { mediaTable, listTable } = this.config;
+        const { mediaTable, listTable, epsPerSeasonTable } = this.config;
+
+        const epsSubq = getDbClient()
+            .select({
+                mediaId: epsPerSeasonTable.mediaId,
+                maxSeason: max(epsPerSeasonTable.season).as("maxSeason"),
+                lastEpisode: max(epsPerSeasonTable.episodes).as("lastEpisode"),
+            }).from(epsPerSeasonTable)
+            .groupBy(epsPerSeasonTable.mediaId)
+            .as("epsSubq");
 
         return getDbClient()
             .select({
-                ...getTableColumns(mediaTable),
-                mediaList: { ...getTableColumns(listTable) },
+                mediaId: mediaTable.id,
+                userId: listTable.userId,
+                mediaName: mediaTable.name,
+                lastEpisode: epsSubq.lastEpisode,
+                seasonToAir: mediaTable.seasonToAir,
+                episodeToAir: mediaTable.episodeToAir,
+                releaseDate: mediaTable.nextEpisodeToAir,
             })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .innerJoin(epsSubq, eq(mediaTable.id, epsSubq.mediaId))
             .where(and(
-                isNotNull(mediaTable.releaseDate),
+                isNotNull(mediaTable.nextEpisodeToAir),
                 gte(mediaTable.releaseDate, sql`datetime('now')`),
                 lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`),
             ))
-            .orderBy(mediaTable.releaseDate)
+            .orderBy(mediaTable.nextEpisodeToAir)
             .execute();
     }
 
-    async addMediaToUserList(userId: number, mediaId: number, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: any, newStatus: Status) {
         const { listTable } = this.config;
-        const mediaEpsPerSeason = await this.getMediaEpsPerSeason(mediaId);
 
         let newTotal = 1;
         let newSeason = 1;
         let newEpisode = 1;
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = mediaEpsPerSeason[-1].season;
-            newEpisode = mediaEpsPerSeason[-1].episodes;
-            newTotal = mediaEpsPerSeason.reduce((acc, curr) => acc + curr.episodes, 0);
+            newSeason = media.epsPerSeason[-1].season;
+            newEpisode = media.epsPerSeason[-1].episodes;
+            newTotal = media.epsPerSeason.reduce((acc: number, curr: any) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
             newTotal = 0;
@@ -152,12 +188,12 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
             .insert(listTable)
             .values({
                 userId,
-                mediaId: mediaId,
+                mediaId: media.id,
                 currentSeason: newSeason,
                 lastEpisodeWatched: newEpisode,
                 total: newTotal,
                 status: newStatus,
-                redo2: Array(mediaEpsPerSeason.length).fill(0),
+                redo2: Array(media.epsPerSeason.length).fill(0),
             })
             .returning();
 
@@ -245,18 +281,18 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
                 lte(mediaTable.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-1 day')`),
             ));
 
-        return mediaIds.map((m: any) => m.apiId);
+        return mediaIds.map((m) => m.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
-        const mainData = await getDbClient()
+        const details = await getDbClient()
             .select({
                 ...getTableColumns(mediaTable),
                 actors: sql`json_group_array(DISTINCT json_object('id', ${actorTable.id}, 'name', ${actorTable.name}))`.mapWith(JSON.parse),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${genreTable.id}, 'name', ${genreTable.name}))`.mapWith(JSON.parse),
-                epsPerSeason: sql`json_group_array(DISTINCT json_object('id', ${epsPerSeasonTable.id}, 'season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
+                epsPerSeason: sql`json_group_array(DISTINCT json_object('season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
                 networks: sql`json_group_array(DISTINCT json_object('id', ${networkTable.id}, 'name', ${networkTable.name}))`.mapWith(JSON.parse),
             })
             .from(mediaTable)
@@ -268,14 +304,20 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
             .groupBy(...Object.values(getTableColumns(mediaTable)))
             .get();
 
-        if (!mainData) {
-            throw notFound();
-        }
+        if (!details) return;
 
-        return { ...mainData };
+        const result: TvType & AddedMediaDetails = {
+            ...details,
+            genres: details.genres || [],
+            actors: details.actors || [],
+            networks: details.networks || [],
+            epsPerSeason: details.epsPerSeason || [],
+        };
+
+        return result;
     }
 
-    async storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: any) {
+    async storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
         const result = await db.transaction(async (tx) => {
@@ -284,29 +326,26 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
                 .values(mediaData)
                 .returning()
 
-            if (!media) {
-                throw new Error("Failed to store the media details");
-            }
-
+            if (!media) return;
             const mediaId = media.id;
 
             if (actorsData && actorsData.length > 0) {
-                const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+                const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
                 await tx.insert(actorTable).values(actorsToAdd)
             }
 
             if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
                 await tx.insert(genreTable).values(genresToAdd)
             }
 
             if (seasonsData && seasonsData.length > 0) {
-                const epsPerSeasonToAdd = seasonsData.map((eps: any) => ({ mediaId, season: eps.season, episodes: eps.episodes }));
+                const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
                 await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd)
             }
 
             if (networkData && networkData.length > 0) {
-                const networkToAdd = networkData.map((network: any) => ({ mediaId, name: network.name }));
+                const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
                 await tx.insert(networkTable).values(networkToAdd)
             }
 
@@ -316,7 +355,7 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
         return result
     }
 
-    async updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: any) {
+    async updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
         const tx = getDbClient();
@@ -331,25 +370,25 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
 
         if (actorsData && actorsData.length > 0) {
             await tx.delete(actorTable).where(eq(actorTable.mediaId, mediaId));
-            const actorsToAdd = actorsData.map((actor: any) => ({ mediaId, name: actor.name }));
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
             await tx.insert(actorTable).values(actorsToAdd)
         }
 
         if (genresData && genresData.length > 0) {
             await tx.delete(genreTable).where(eq(genreTable.mediaId, mediaId));
-            const genresToAdd = genresData.map((genre: any) => ({ mediaId, name: genre.name }));
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
             await tx.insert(genreTable).values(genresToAdd)
         }
 
         if (seasonsData && seasonsData.length > 0) {
             await tx.delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId));
-            const epsPerSeasonToAdd = seasonsData.map((eps: any) => ({ mediaId, season: eps.season, episodes: eps.episodes }));
+            const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
             await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd)
         }
 
         if (networkData && networkData.length > 0) {
             await tx.delete(networkTable).where(eq(networkTable.mediaId, mediaId));
-            const networkToAdd = networkData.map((network: any) => ({ mediaId, name: network.name }));
+            const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
             await tx.insert(networkTable).values(networkToAdd)
         }
 
@@ -357,16 +396,16 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
     }
 
     async getListFilters(userId: number) {
-        const { genres, labels } = await super.getCommonListFilters(userId);
         const { mediaTable, listTable } = this.config;
+        const { genres, labels } = await super.getCommonListFilters(userId);
 
-        const country = await getDbClient()
+        const countries = await getDbClient()
             .selectDistinct({ name: mediaTable.originCountry })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(eq(listTable.userId, userId));
 
-        return { country, genres, labels };
+        return { countries, genres, labels };
     }
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {
@@ -409,7 +448,7 @@ export class TvRepository extends BaseRepository<SeriesSchemaConfig | AnimeSchem
         }
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>) {
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TvList>) {
         const { listTable } = this.config;
 
         const [result] = await getDbClient()

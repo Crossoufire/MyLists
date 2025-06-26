@@ -3,8 +3,10 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {IGamesService} from "@/lib/server/types/services.types";
+import {Game} from "@/lib/server/domain/media/games/games.types";
+import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {GamesAchCodeName, gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
@@ -19,7 +21,7 @@ interface UserGameState {
 }
 
 
-export class GamesService extends BaseService<GamesRepository> implements IGamesService {
+export class GamesService extends BaseService<Game, IGamesRepository> implements IGamesService {
     private readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: GamesRepository) {
@@ -88,7 +90,7 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
         let mediaWithDetails;
         let internalMediaId = media?.id;
@@ -115,6 +117,8 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
     }
 
     async getMediaEditableFields(mediaId: number) {
+        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
+
         const media = await this.repository.findById(mediaId);
         if (!media) {
             throw notFound();
@@ -125,6 +129,7 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
 
         for (const key in media) {
             if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
+                //@ts-expect-error
                 fields[key] = media[key];
             }
         }
@@ -132,8 +137,9 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
         return { fields };
     }
 
-    // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
+        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
+
         const media = await this.repository.findById(mediaId);
         if (!media) {
             throw notFound();
@@ -180,7 +186,7 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
             throw new Error("Media already in your list");
         }
 
-        const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
+        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
 
         const delta = this.calculateDeltaStats(null, newState as UserGameState);
 
@@ -222,7 +228,7 @@ export class GamesService extends BaseService<GamesRepository> implements IGames
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: any) {
         const completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status && completeUpdateData.status === Status.PLAN_TO_PLAY) {

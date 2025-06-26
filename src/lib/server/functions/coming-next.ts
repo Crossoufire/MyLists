@@ -7,16 +7,15 @@ import {authMiddleware} from "@/lib/server/middlewares/authentication";
 export const getComingNextMedia = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .handler(async ({ context: { currentUser } }) => {
-        const mediaServiceRegistry = getContainer().registries.mediaService;
-
-        const comingNextData = [];
-        for (const mediaType of Object.values(MediaType)) {
-            const service = mediaServiceRegistry.getService(mediaType);
-            if (typeof service?.getComingNext === "function") {
-                const items = await service.getComingNext(parseInt(currentUser.id!));
-                comingNextData.push({ items, mediaType });
-            }
-        }
+        const comingNextData = await Promise.all(
+            Object.values(MediaType).map(mediaType => {
+                const mediaService = getContainer().registries.mediaService.getService(mediaType);
+                if (typeof mediaService?.getComingNext === "function") {
+                    return mediaService.getComingNext(parseInt(currentUser.id!)).then(items => ({ items, mediaType }));
+                }
+                return null;
+            }).filter(Boolean)
+        );
 
         return comingNextData;
     });

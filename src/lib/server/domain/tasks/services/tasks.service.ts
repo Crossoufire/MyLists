@@ -157,7 +157,6 @@ export class TasksService {
         this.logger.info(`Starting locking movies older than 6 months...`);
 
         const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
-        //@ts-expect-error
         const totalMoviesLocked = await moviesService.lockOldMovies();
 
         this.logger.info({ totalMoviesLocked }, `Locked ${totalMoviesLocked} movies older than 6 months.`);
@@ -232,8 +231,8 @@ export class TasksService {
             this.logger.info(`Adding ${mediaType} notifications to users...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const mediaToNotify = await mediaService.getMediaToNotify();
-            await this.notificationsService.sendMediaNotifications(mediaType, mediaToNotify);
+            const allMediaToNotify = await mediaService.getMediaToNotify();
+            await this.notificationsService.sendMediaNotifications(mediaType, allMediaToNotify);
 
             this.logger.info(`Adding ${mediaType} notifications completed.`);
         }

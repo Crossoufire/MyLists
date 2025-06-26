@@ -3,9 +3,11 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {AnimeAchCodeName, animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {SeriesAchCodeName, seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
@@ -22,7 +24,7 @@ interface UserTvState {
 }
 
 
-export class TvService extends BaseService<TvRepository> implements ITvService {
+export class TvService extends BaseService<TvType, TvList, ITvRepository> implements ITvService {
     private readonly achievementHandlers: Record<SeriesAchCodeName | AnimeAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: TvRepository) {
@@ -89,7 +91,7 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId);
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
         let mediaWithDetails: any;
         let internalMediaId = media?.id;
@@ -108,13 +110,10 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
             throw new Error("Movie not found");
         }
 
-        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
         const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+        (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
 
-        // Add eps per season to userMedia
-        const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaWithDetails.id);
-        (userMedia as any).epsPerSeason = mediaEpsPerSeason;
-
+        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
         const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
         return { media: mediaWithDetails, userMedia, followsData, similarMedia };
@@ -131,6 +130,7 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
 
         for (const key in media) {
             if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
+                // @ts-expect-error
                 fields[key] = media[key];
             }
         }
@@ -177,7 +177,7 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
         const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
 
-        const media = await this.repository.findById(mediaId);
+        const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
         if (!media) {
             throw notFound();
         }
@@ -187,14 +187,14 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
             throw new Error("Media already in your list");
         }
 
-        const newState = await this.repository.addMediaToUserList(userId, mediaId, newStatus);
+        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
         const delta = this.calculateDeltaStats(null, newState as UserTvState, media);
 
         return { newState, media, delta };
     }
 
     async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
+        const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
         if (!media) {
             throw notFound();
         }
@@ -206,9 +206,9 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
 
         // Add eps per season to oldState
         const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaId);
-        (oldState as any).epsPerSeason = mediaEpsPerSeason;
+        (media as any).epsPerSeason = mediaEpsPerSeason;
 
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
+        const completeUpdateData = this.completePartialUpdateData(partialUpdateData, oldState);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
         const delta = this.calculateDeltaStats(oldState as unknown as UserTvState, newState as UserTvState, media);
 
@@ -216,7 +216,7 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+        const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
         if (!media) {
             throw notFound();
         }
@@ -232,45 +232,71 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         return delta;
     }
 
-    // TODO: UPDATE
-    completePartialUpdateData(partialUpdateData: Record<string, any>) {
-        const completeUpdateData = { ...partialUpdateData };
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any) {
+        let completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
-            return { ...completeUpdateData, redo: 0 };
+            if (userMedia.lastEpisodeWatched === 0 && ![Status.PLAN_TO_WATCH, Status.RANDOM].includes(completeUpdateData.status)) {
+                completeUpdateData = { ...completeUpdateData, lastEpisodeWatched: 1 };
+            }
+
+            if ([Status.PLAN_TO_WATCH, Status.RANDOM].includes(completeUpdateData.status)) {
+                completeUpdateData = {
+                    ...completeUpdateData,
+                    currentSeason: 1,
+                    lastEpisodeWatched: 1,
+                    redo2: Array(userMedia.epsPerSeason.length).fill(0)
+                };
+            }
+
+            if (completeUpdateData.status === Status.COMPLETED) {
+                completeUpdateData = {
+                    ...completeUpdateData,
+                    currentSeason: userMedia.epsPerSeason[-1].season,
+                    lastEpisodeWatched: userMedia.epsPerSeason[-1].episodes,
+                };
+            }
         }
+
         return completeUpdateData;
     }
 
-    // TODO: UPDATE
-    calculateDeltaStats(oldState: UserTvState | null, newState: UserTvState | null, media: any) {
+    calculateDeltaStats(oldState: UserTvState | null, newState: UserTvState | null, media: Record<string, any>) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
+
+        console.dir({ media }, { depth: null });
 
         // Extract Old State Info
         const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
-        const oldRedo = oldState?.redo ?? 0;
         const oldComment = oldState?.comment;
+        const oldRedo = oldState?.redo2 ?? [];
         const oldFavorite = oldState?.favorite ?? false;
+        const oldTotalSpecificValue = oldState?.total ?? 0;
+        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
+        const oldSumRedo = oldState?.redo2.reduce((a, c) => a + c, 0) ?? 0;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
         const wasRated = wasCompleted && oldRating != null;
-        const oldTotalSpecificValue = oldState ? (wasCompleted ? 1 : 0) + oldRedo : 0;
-        const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
 
         // Extract New State Info
+        const newRedo = newState?.redo2;
         const newStatus = newState?.status;
         const newRating = newState?.rating;
-        const newRedo = newState?.redo ?? 0;
         const newComment = newState?.comment;
         const newFavorite = newState?.favorite ?? false;
+        const newSumRedo = newState?.redo2.reduce((a, c) => a + c, 0) ?? 0;
         const isCompleted = newStatus === Status.COMPLETED;
         const isFavorited = isCompleted && newFavorite;
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
-        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
+
+        const redoDiff = newRedo?.map((val, idx) => val - oldRedo[idx]);
+        const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason[i].episodes, 0);
+
+        const newTotalSpecificValue = oldTotalSpecificValue + (valuesToApply ?? 0);
         const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 
         // --- Calculate Deltas ----------------------------------------------------------------
@@ -297,7 +323,7 @@ export class TvService extends BaseService<TvRepository> implements ITvService {
         delta.timeSpent = (newTotalTimeSpent - oldTotalTimeSpent);
 
         // Total Redo Count
-        delta.totalRedo = (newRedo - oldRedo);
+        delta.totalRedo = (newSumRedo - oldSumRedo);
 
         // Total Specific
         delta.totalSpecific = (newTotalSpecificValue - oldTotalSpecificValue);

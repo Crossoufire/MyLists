@@ -114,7 +114,8 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     })
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const mediaService = getContainer().registries.mediaService.getService(selectedList);
-        return mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
+        const data = await mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
+        return data;
     });
 
 

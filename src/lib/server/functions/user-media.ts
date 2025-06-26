@@ -34,7 +34,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         const { newState, media, delta } = await mediaService.addMediaToUserList(currentUserId, mediaId, status);
-        await userStatsService.updateUserPreComputedStatsWithDelta(currentUserId, mediaType, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUserId, delta);
 
         await userUpdatesService.logUpdate({
             userId: currentUserId,
@@ -64,12 +64,21 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         else if (data.payload?.redo) {
             data.updateType = UpdateType.REDO;
         }
+        else if (data.payload?.redo2) {
+            data.updateType = UpdateType.REDOTV;
+        }
+        else if (data.payload?.currentSeason || data.payload?.lastEpisodeWatched) {
+            data.updateType = UpdateType.TV;
+        }
+        else if (data.payload?.playtime) {
+            data.updateType = UpdateType.PLAYTIME;
+        }
 
         return data as {
             mediaId: number,
             mediaType: MediaType,
-            payload: Record<string, any>,
             updateType?: UpdateType,
+            payload: Record<string, any>,
         };
     })
     .handler(async ({ data, context: { currentUser } }) => {
@@ -81,9 +90,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         const { os, ns, media, delta, updateData } = await mediaService.updateUserMediaDetails(userId, mediaId, payload);
-
-        //@ts-expect-error
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, userId, delta);
 
         if (updateType) {
             await userUpdatesService.logUpdate({ userId, media, mediaType, updateType, os, ns });
@@ -97,15 +104,16 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { mediaId: number, mediaType: MediaType })
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
+        const currentUserId = parseInt(currentUser.id);
         const userStatsService = getContainer().services.userStats;
         const userUpdatesService = getContainer().services.userUpdates;
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
 
         const delta = await mediaService.removeMediaFromUserList(parseInt(currentUser.id), mediaId);
-        //@ts-expect-error
-        await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
-        //@ts-expect-error
-        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
+        await userUpdatesService.deleteMediaUpdatesForUser(currentUserId, mediaType, mediaId);
+        await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUserId, delta);
+        
+        // TODO: DELETE NOTIFICATIONS ???
     });
 
 

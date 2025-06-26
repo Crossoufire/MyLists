@@ -1,15 +1,12 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {GamesService} from "@/lib/server/domain/media/games/games.service";
-import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {IGamesService, IMoviesService, ITvService} from "@/lib/server/types/services.types";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 import {AnimeProviderService} from "@/lib/server/domain/media/tv/anime/anime-provider.service";
 import {SeriesProviderService} from "@/lib/server/domain/media/tv/series/series-provider.service";
-import {MediaService} from "@/lib/server/types/services.types";
 
 
 export interface MediaRepositoryMap {
@@ -23,12 +20,12 @@ export interface MediaRepositoryMap {
 
 
 export interface MediaServiceMap {
-    [MediaType.SERIES]: TvService;
-    [MediaType.ANIME]: TvService;
-    [MediaType.MOVIES]: MoviesService;
-    [MediaType.GAMES]: GamesService;
-    [MediaType.BOOKS]: MoviesService;
-    [MediaType.MANGA]: MoviesService;
+    [MediaType.SERIES]: ITvService;
+    [MediaType.ANIME]: ITvService;
+    [MediaType.MOVIES]: IMoviesService;
+    [MediaType.GAMES]: IGamesService;
+    [MediaType.BOOKS]: IMoviesService;
+    [MediaType.MANGA]: IMoviesService;
 }
 
 
@@ -59,17 +56,17 @@ export class MediaRepositoryRegistry {
 
 
 export class MediaServiceRegistry {
-    private static services: MediaServiceMap = {} as MediaServiceMap;
+    private static services: Partial<MediaServiceMap> = {};
 
     static registerService<T extends keyof MediaServiceMap>(mediaType: T, service: MediaServiceMap[T]) {
         this.services[mediaType] = service;
     }
 
-    static getService<T extends keyof MediaServiceMap>(mediaType: T) {
+    static getService<T extends keyof MediaServiceMap>(mediaType: T): MediaServiceMap[T] {
         if (!this.services[mediaType]) {
             throw new Error(`Service for media type ${mediaType} not registered`);
         }
-        return this.services[mediaType] as MediaService;
+        return this.services[mediaType];
     }
 }
 

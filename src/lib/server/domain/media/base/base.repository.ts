@@ -1,12 +1,12 @@
 import {Status} from "@/lib/server/utils/enums";
-import {Achievement} from "@/lib/server/types/achievements";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {followers, user} from "@/lib/server/database/schema";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";
-import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/base.types";
+import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/provider.types";
 import {GenreTable, LabelTable, ListTable, MediaListArgs, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, sql} from "drizzle-orm";
+import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
 
 
 const ALL_VALUE = "All";
@@ -22,7 +22,10 @@ export interface EditUserLabels {
 }
 
 
-export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> implements IUniversalRepository {
+export class BaseRepository<
+    TMedia, TList,
+    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>
+> implements IUniversalRepository<TMedia, TList> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
@@ -70,27 +73,43 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
         } as FilterDefinitions;
     }
 
-    async findById(mediaId: number | string) {
+    async findById(mediaId: number) {
         const { mediaTable } = this.config;
 
-        return getDbClient()
+        const result = await getDbClient()
             .select()
             .from(mediaTable)
             .where(eq(mediaTable.id, mediaId))
+            .get();
+
+        return result as TMedia | undefined;
+    }
+
+    async findByApiId(apiId: number | string) {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.apiId, apiId))
             .get()
+
+        return result as TMedia | undefined;
     }
 
     async downloadMediaListAsCSV(userId: number) {
         const { mediaTable, listTable } = this.config;
 
-        return getDbClient()
+        const data = await getDbClient()
             .select({
                 ...getTableColumns(listTable),
-                name: mediaTable.name,
+                mediaName: sql<string>`${mediaTable.name}`,
             })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .where(eq(listTable.userId, userId));
+
+        return data as TMedia & { mediaName: string }[] | undefined;
     }
 
     async searchByName(query: string, limit: number = 20) {
@@ -136,16 +155,6 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             .select({ imageCover: mediaTable.imageCover })
             .from(mediaTable)
             .execute()
-    }
-
-    async findByApiId(apiId: number | string) {
-        const { mediaTable } = this.config;
-
-        return getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.apiId, apiId))
-            .get()
     }
 
     async findSimilarMedia(mediaId: number) {
@@ -303,21 +312,21 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
         const { genreTable, labelTable, listTable } = this.config;
 
         const genresPromise = getDbClient()
-            .selectDistinct({ name: genreTable.name })
+            .selectDistinct({ name: sql<string | null>`${genreTable.name}` })
             .from(genreTable)
             .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
             .where(eq(listTable.userId, userId))
             .orderBy(asc(genreTable.name));
 
         const labelsPromise = getDbClient()
-            .selectDistinct({ name: labelTable.name })
+            .selectDistinct({ name: sql<string | null>`${labelTable.name}` })
             .from(labelTable)
             .where(and(eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name));
 
-        const results = await Promise.all([genresPromise, labelsPromise]);
+        const [genreResult, labelsResult] = await Promise.all([genresPromise, labelsPromise]);
 
-        return { genres: results[0] || [], labels: results[1] || [] } as { genres: { name: string }[], labels: { name: string }[] };
+        return { genres: genreResult || [], labels: labelsResult || [] };
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
@@ -414,15 +423,13 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
 
     // --- Achievements ----------------------------------------------------------
 
-    applyWhereConditionsAndGrouping(cte: any, baseConditions: any[], userId?: number) {
+    applyWhereConditionsAndGrouping(cte: any, baseConditions: SQL[], userId?: number) {
         const { listTable } = this.config;
+        const conditions = userId ? [...baseConditions] : [...baseConditions, eq(listTable.userId, userId)];
 
-        const conditions = [...baseConditions];
-        if (userId) {
-            conditions.push(eq(listTable.userId, userId));
-        }
-
-        return cte.where(and(...conditions)).groupBy(listTable.userId).as("calculation");
+        return cte.where(and(...conditions))
+            .groupBy(listTable.userId)
+            .as("calculation");
     }
 
     countCompletedAchievementCte(_achievement: Achievement, userId?: number) {
@@ -575,7 +582,7 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
         const countAlias = sql<number>`countDistinct(${metricNameColumn})`
         const topValuesQuery = getDbClient()
             .select({
-                name: metricNameColumn,
+                name: sql<string>`${metricNameColumn}`,
                 value: countAlias,
             })
             .from(listTable)
@@ -589,7 +596,10 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
         const avgRatingAlias = sql<number>`avgDistinct(${metricNameColumn})`;
         const ratingCountAlias = sql<number>`count(${listTable.rating})`;
         const topRatedQuery = getDbClient()
-            .select({ name: metricNameColumn, value: avgRatingAlias })
+            .select({
+                name: sql<string>`${metricNameColumn}`,
+                value: avgRatingAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
@@ -600,7 +610,10 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             .limit(limit);
 
         const topFavoritedQuery = getDbClient()
-            .select({ name: metricNameColumn, value: countAlias })
+            .select({
+                name: sql<string>`${metricNameColumn}`,
+                value: countAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(metricTable, eq(mediaLinkColumn, metricIdColumn))
@@ -613,17 +626,17 @@ export class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTa
             await Promise.all([topValuesQuery.execute(), topRatedQuery.execute(), topFavoritedQuery.execute()]);
 
         return {
-            topValues: topValuesResult.map((row: any) => ({
+            topValues: topValuesResult.map((row) => ({
                 name: row.name,
-                value: Number(row.value) || 0,
+                value: row.value || 0,
             })),
-            topRated: topRatedResult.map((row: any) => ({
+            topRated: topRatedResult.map((row) => ({
                 name: row.name,
-                value: Math.round((Number(row.value) || 0) * 100) / 100,
+                value: Math.round((row.value || 0) * 100) / 100,
             })),
-            topFavorited: topFavoritedResult.map((row: any) => ({
+            topFavorited: topFavoritedResult.map((row) => ({
                 name: row.name,
-                value: Number(row.value) || 0,
+                value: row.value || 0,
             })),
         };
     }

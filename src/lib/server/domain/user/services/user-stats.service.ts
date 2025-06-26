@@ -1,5 +1,6 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
@@ -19,7 +20,7 @@ export class UserStatsService {
         await this.repository.updateUserMediaListSettings(userId, payload);
     }
 
-    async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, delta: DeltaStats) {
+    async updateUserPreComputedStatsWithDelta(mediaType: MediaType, userId: number, delta: DeltaStats) {
         await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, delta);
     }
 
@@ -128,7 +129,7 @@ export class UserStatsService {
         return data;
     }
 
-    async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: any[]) {
+    async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
         await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
     }
 
@@ -218,7 +219,7 @@ export class UserStatsService {
         const totalComments = settings.reduce((sum, s) => sum + s.entriesCommented, 0);
         const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
         const timePerMedia = settings.map((s) => s.timeSpent / 60);
-        
+
         const excludedStatuses = Status.getNoPlanTo();
         const totalEntriesNoPlan = settings.reduce((sum, setting) => {
             let settingSum = 0;

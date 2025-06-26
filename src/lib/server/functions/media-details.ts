@@ -9,6 +9,11 @@ export const getMediaDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any): { mediaType: MediaType, mediaId: number | string, external: boolean } => data)
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
+        const requestId = `${mediaId}-${Date.now()}-${Math.random()}`;
+        const handlerLabel = `[Timer] getMediaDetails Handler ${requestId}`;
+
+        console.time(handlerLabel);
+
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
         const mediaProviderService = getContainer().registries.mediaProviderService.getService(mediaType);
 
@@ -18,6 +23,8 @@ export const getMediaDetails = createServerFn({ method: "GET" })
             followsData,
             similarMedia,
         } = await mediaService.getMediaAndUserDetails(parseInt(currentUser.id), mediaId, external, mediaProviderService);
+
+        console.timeEnd(handlerLabel);
 
         return { media, userMedia, followsData, similarMedia };
     });

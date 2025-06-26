@@ -32,7 +32,10 @@ export class AnimeProviderService {
             const { mediaData, actorsData, seasonsData, networkData, genresData } = await this.transformer.transformAnimeDetailsResults(rawData);
 
             let extendedGenresData = genresData;
-            if (!isBulk) {
+            if (isBulk) {
+                extendedGenresData = null;
+            }
+            else {
                 const jikanData = await this.jikanClient.getAnimeGenresAndDemographics(mediaData.name);
                 extendedGenresData = this.transformer.addAnimeSpecificGenres(jikanData, genresData);
             }

@@ -30,12 +30,11 @@ export class MoviesProviderService {
     }
 
     async bulkProcessAndRefreshMedia() {
-        const mediaToBeRefreshed = await this.repository.getMediaIdsToBeRefreshed();
-        const apiIds = mediaToBeRefreshed.map(m => m.apiId);
+        const mediaIdsToBeRefreshed = await this.repository.getMediaIdsToBeRefreshed();
 
         // const apiIds = [157336, 157336]
         const promises = [];
-        for (const apiId of apiIds) {
+        for (const apiId of mediaIdsToBeRefreshed) {
             promises.push(this.fetchAndRefreshMediaDetails(apiId));
         }
 

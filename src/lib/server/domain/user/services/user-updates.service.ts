@@ -78,8 +78,8 @@ export class UserUpdatesService {
             mediaType: mediaType,
             mediaName: media.name,
             updateType: updateType,
-            payload: { old_value: oldValue, new_value: newValue },
             timestamp: sql<string>`CURRENT_TIMESTAMP`,
+            payload: { old_value: oldValue, new_value: newValue },
         };
 
         if (timeDifference > this.updateThreshold) {
@@ -94,10 +94,11 @@ export class UserUpdatesService {
     extractLogValues(updateType: UpdateType) {
         const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
             redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
+            redoTv: (os, ns) => ({ oldValue: os?.redo2 ?? 0, newValue: ns.redo2 }),
             status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
+            playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
             page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
             chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
-            playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
             tv: (os, ns) => ({
                 oldValue: { season: os?.season ?? null, episode: os?.episode ?? null },
                 newValue: { season: ns.season, episode: ns.episode },

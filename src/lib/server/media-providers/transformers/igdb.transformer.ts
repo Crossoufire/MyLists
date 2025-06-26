@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {games} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {ProviderSearchResults} from "@/lib/server/types/base.types";
+import {ProviderSearchResults} from "@/lib/server/types/provider.types";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
 import {GameEntry} from "@/lib/server/media-providers/clients/hltb.client";
 

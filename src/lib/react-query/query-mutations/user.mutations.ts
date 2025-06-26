@@ -39,7 +39,7 @@ export const useListSettingsMutation = () => {
 
 
 export const useDownloadListAsCSVMutation = () => {
-    return useMutation<any, Error, { selectedList: string }>({
+    return useMutation<Awaited<ReturnType<NonNullable<typeof getDownloadListAsCSV>>>, Error, { selectedList: string }>({
         mutationFn: ({ selectedList }) => getDownloadListAsCSV({ data: { selectedList } }),
     });
 };

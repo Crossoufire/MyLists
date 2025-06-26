@@ -2,6 +2,7 @@ import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
 import {DeltaStats} from "@/lib/server/types/stats.types";
+import {UserMediaStats} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
@@ -280,7 +281,7 @@ export class UserStatsRepository {
         };
     }
 
-    static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: any[]) {
+    static async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
         await db.transaction(async (tx) => {
             for (const stat of userStats) {
                 await tx
