@@ -32,7 +32,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const searchFiltersList = JobType.byMediaType(mediaType);
     const { data: listFilters, isFetching } = useQuery(listFiltersOptions(mediaType, username));
 
-    const registerChange = (filterType: string, value: any) => {
+    const handleRegisterChange = (filterType: string, value: any) => {
         if (Array.isArray(value)) {
             const updatedSearch = { ...localFilters };
             //@ts-expect-error
@@ -91,17 +91,17 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                             <CheckboxGroup
                                 title="Status"
                                 items={allStatuses.map(s => ({ name: s }))}
-                                onChange={(status: Status) => registerChange("status", [status])}
-                                defaultChecked={(status: Status) => search?.status?.includes(status)}
+                                onChange={(status) => handleRegisterChange("status", [status])}
+                                defaultChecked={(status) => search?.status?.includes(status as Status)}
                             />
-                            {listFilters && listFilters?.platforms?.length > 0 &&
+                            {listFilters && listFilters.platforms &&
                                 <>
                                     <Separator/>
                                     <CheckboxGroup
                                         title="Platforms"
                                         items={listFilters.platforms}
-                                        onChange={(pt: GamesPlatformsEnum) => registerChange("platforms", [pt])}
-                                        defaultChecked={(pt: GamesPlatformsEnum) => search.platforms?.includes(pt)}
+                                        onChange={(pt) => handleRegisterChange("platforms", [pt])}
+                                        defaultChecked={(pt) => search.platforms?.includes(pt as GamesPlatformsEnum)}
                                     />
                                 </>
                             }
@@ -110,20 +110,20 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 <SearchFilter
                                     key={job}
                                     job={job}
-                                    // @ts-expect-error
-                                    dataList={search[job]}
-                                    registerChange={registerChange}
+                                    //@ts-expect-error
+                                    dataList={search[`${job}s`]}
+                                    registerChange={handleRegisterChange}
                                 />
                             )}
                             <Separator/>
                             <CheckboxGroup
                                 title="Genres"
-                                items={listFilters.genres}
-                                onChange={(genre: string) => registerChange("genres", [genre])}
+                                items={listFilters?.genres ?? []}
+                                onChange={(genre) => handleRegisterChange("genres", [genre])}
                                 defaultChecked={(genre: string) => search.genres?.includes(genre)}
                             />
                             <Separator/>
-                            {listFilters?.langs?.length > 0 &&
+                            {listFilters && listFilters.langs &&
                                 <>
                                     <div className="space-y-2">
                                         <h3 className="font-medium">Languages/Countries</h3>
@@ -133,7 +133,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                                     <Checkbox
                                                         id={`${lang.name}-id`}
                                                         defaultChecked={search.langs?.includes(lang.name)}
-                                                        onCheckedChange={() => registerChange("langs", [lang.name])}
+                                                        onCheckedChange={() => handleRegisterChange("langs", [lang.name])}
                                                     />
                                                     <label htmlFor={`${lang.name}-id`} className="text-sm cursor-pointer line-clamp-1">
                                                         {(mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) ?
@@ -156,7 +156,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         <Checkbox
                                             id="favoriteCheck"
                                             defaultChecked={search.favorite}
-                                            onCheckedChange={() => registerChange("favorite", !search.favorite)}
+                                            onCheckedChange={() => handleRegisterChange("favorite", !search.favorite)}
                                         />
                                         <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
                                     </div>
@@ -164,7 +164,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         <Checkbox
                                             id="commentCheck"
                                             defaultChecked={search.comment}
-                                            onCheckedChange={() => registerChange("comment", !search.comment)}
+                                            onCheckedChange={() => handleRegisterChange("comment", !search.comment)}
                                         />
                                         <label htmlFor="commentCheck" className="text-sm cursor-pointer">Comments</label>
                                     </div>
@@ -173,21 +173,23 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                             <Checkbox
                                                 id="commonCheck"
                                                 defaultChecked={search.hideCommon}
-                                                onCheckedChange={() => registerChange("common", search.hideCommon)}
+                                                onCheckedChange={() => handleRegisterChange("common", search.hideCommon)}
                                             />
-                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
+                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">
+                                                Hide Common
+                                            </label>
                                         </div>
                                     }
                                 </div>
                             </div>
                             <Separator/>
-                            {listFilters.labels.length > 0 &&
+                            {listFilters && listFilters.labels &&
                                 <>
                                     <CheckboxGroup
                                         title="Labels"
                                         items={listFilters.labels}
-                                        onChange={(label: string) => registerChange("labels", [label])}
-                                        defaultChecked={(label: string) => search.labels?.includes(label)}
+                                        onChange={(label) => handleRegisterChange("labels", [label])}
+                                        defaultChecked={(label) => search.labels?.includes(label)}
                                     />
                                     <Separator/>
                                 </>
@@ -206,9 +208,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
 interface CheckboxGroupProps {
     title: string;
-    onChange: any;
-    defaultChecked: any;
-    items: Record<string, string>[];
+    defaultChecked: (v: string | Status | GamesPlatformsEnum) => void;
+    onChange: (v: string | Status | GamesPlatformsEnum | null) => void;
+    items: { name: string | number | null }[] | { name: GamesPlatformsEnum | null }[];
 }
 
 
@@ -230,8 +232,8 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }: CheckboxGroup
                     <div key={item.name} className="flex items-center space-x-2">
                         <Checkbox
                             id={`${item}-id`}
-                            onCheckedChange={() => onChange(item.name)}
-                            defaultChecked={defaultChecked?.(item.name)}
+                            defaultChecked={defaultChecked?.(item.name!)}
+                            onCheckedChange={() => onChange(item.name!)}
                         />
                         <label htmlFor={`${item.name}-id`} className="text-sm cursor-pointer line-clamp-1">{item.name}</label>
                     </div>

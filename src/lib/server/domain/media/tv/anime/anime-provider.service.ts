@@ -1,10 +1,11 @@
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {JikanClient} from "@/lib/server/media-providers/clients/jikan.client";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
 
 
-export class AnimeProviderService {
+export class AnimeProviderService implements IProviderService {
     constructor(
         private client: TmdbClient,
         private jikanClient: JikanClient,
@@ -23,7 +24,7 @@ export class AnimeProviderService {
             extendedGenresData = this.transformer.addAnimeSpecificGenres(jikanData, genresData);
         }
 
-        return this.repository.storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, extendedGenresData });
+        return this.repository.storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData: extendedGenresData });
     }
 
     async fetchAndRefreshMediaDetails(apiId: number, isBulk: boolean = false) {
@@ -40,7 +41,7 @@ export class AnimeProviderService {
                 extendedGenresData = this.transformer.addAnimeSpecificGenres(jikanData, genresData);
             }
 
-            return this.repository.updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, extendedGenresData });
+            return this.repository.updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData: extendedGenresData });
         }
         catch (error: any) {
             error.message = `Error refreshing Anime with apiId ${apiId}: ${error.message}`;

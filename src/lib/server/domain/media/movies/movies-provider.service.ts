@@ -1,9 +1,10 @@
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
 
 
-export class MoviesProviderService {
+export class MoviesProviderService implements IProviderService {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,
@@ -23,9 +24,9 @@ export class MoviesProviderService {
             const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
             return this.repository.updateMediaWithDetails({ mediaData, actorsData, genresData });
         }
-        catch (error: any) {
-            error.message = `Error refreshing movie with apiId ${apiId}: ${error.message}`;
-            throw error;
+        catch (err: any) {
+            err.message = `Error refreshing movie with apiId ${apiId}: ${err.message}`;
+            throw err;
         }
     }
 

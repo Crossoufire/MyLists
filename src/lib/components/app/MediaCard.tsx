@@ -2,11 +2,12 @@ import React from "react";
 import {LoaderCircle} from "lucide-react";
 import {Card} from "@/lib/components/ui/card";
 import {MediaType} from "@/lib/server/utils/enums";
+import {JobDetail} from "@/lib/server/types/base.types";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 
 
 interface MediaCardProps {
-    item: any;
+    item: JobDetail;
     isPending?: boolean;
     mediaType: MediaType;
     children: React.ReactNode;
@@ -21,7 +22,7 @@ export const MediaCard = ({ children, item, mediaType, isPending = false }: Medi
                     <img
                         alt={item.mediaName}
                         src={item.imageCover}
-                        className="object-cover w-full h-full rounded-lg"
+                        className={"object-cover w-full h-full rounded-lg"}
                     />
                 </BlockLink>
                 {isPending &&

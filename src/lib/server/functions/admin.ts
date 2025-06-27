@@ -4,6 +4,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {taskDefinitions, TasksName} from "@/cli/commands";
 import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {JobType} from "bullmq";
+import {AdminPaginatedUsers} from "@/lib/server/domain/user/repositories/user.repository";
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
@@ -16,7 +17,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data)
+    .validator((data: any) => data as AdminPaginatedUsers)
     .handler(async ({ data }) => {
         const userService = getContainer().services.user;
         return userService.getAdminPaginatedUsers(data);

@@ -1,6 +1,6 @@
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {CurrentUser} from "@/lib/server/types/provider.types";
+import {CurrentUser} from "@/lib/server/types/base.types";
 import {createFileRoute, redirect} from "@tanstack/react-router";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_public")({

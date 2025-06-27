@@ -10,7 +10,6 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
     .handler(async ({ context: { currentUser } }) => {
         const mediadleService = getContainer().services.mediadle;
         const moviesService = getContainer().registries.mediaService.getService(MediaType.MOVIES);
-        
         return mediadleService.getDailyMediadleData(parseInt(currentUser.id), moviesService);
     });
 

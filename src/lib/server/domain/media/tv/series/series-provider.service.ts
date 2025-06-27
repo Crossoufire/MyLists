@@ -1,9 +1,10 @@
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
 
 
-export class SeriesProviderService {
+export class SeriesProviderService implements IProviderService {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,

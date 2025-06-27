@@ -3,25 +3,15 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {AnimeAchCodeName, animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {SeriesAchCodeName, seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
-
-
-interface UserTvState {
-    redo: number;
-    total: number;
-    redo2: number[];
-    mediaId: number;
-    favorite: boolean;
-    status: Status | null;
-    rating: number | null | undefined;
-    comment: string | null | undefined;
-}
+import {EpsPerSeasonType, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
+import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
+import {AnimeAchCodeName, SeriesAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 
 
 export class TvService extends BaseService<TvType, TvList, ITvRepository> implements ITvService {
@@ -53,7 +43,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         };
     }
 
-    async getAchievementCte(achievement: Achievement, userId?: number) {
+    getAchievementCte(achievement: Achievement, userId?: number) {
         const handler = this.achievementHandlers[achievement.codeName as SeriesAchCodeName | AnimeAchCodeName];
         if (!handler) {
             throw new Error("Invalid Achievement codeName");
@@ -90,33 +80,35 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
+        const media = external ?
+            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
-        let mediaWithDetails: any;
         let internalMediaId = media?.id;
-
         if (external && !internalMediaId) {
             internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) {
-                throw new Error("Failed to fetch media details");
-            }
+            if (!internalMediaId) throw new Error("Failed to fetch media details");
         }
 
         if (internalMediaId) {
-            mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+            if (!mediaWithDetails) throw new Error("TV media not found");
+
+            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+            (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
+
+            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
+            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+
+            return {
+                media: mediaWithDetails,
+                userMedia,
+                followsData,
+                similarMedia,
+            };
         }
-        else {
-            throw new Error("Movie not found");
-        }
 
-        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-        (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
-
-        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
-        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-        return { media: mediaWithDetails, userMedia, followsData, similarMedia };
+        throw new Error("TV media not found");
     }
 
     async getMediaEditableFields(mediaId: number) {
@@ -178,61 +170,51 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
 
         const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) {
-            throw new Error("Media already in your list");
-        }
+        if (userMedia) throw new Error("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState as UserTvState, media);
+        const delta = this.calculateDeltaStats(null, newState, media);
 
         return { newState, media, delta };
     }
 
     async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
         const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         // Add eps per season to oldState
         const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaId);
         (media as any).epsPerSeason = mediaEpsPerSeason;
+        (oldState as any).epsPerSeason = mediaEpsPerSeason;
 
+        // @ts-expect-error
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData, oldState);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserTvState, newState as UserTvState, media);
+        const delta = this.calculateDeltaStats(oldState, newState, media);
 
         return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findByIdAndAddEpsPerSeason(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserTvState, null, media);
+        const delta = this.calculateDeltaStats(oldState, null, media);
 
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia: TvList & { epsPerSeason: EpsPerSeasonType }) {
         let completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
@@ -261,11 +243,9 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserTvState | null, newState: UserTvState | null, media: Record<string, any>) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvType & { epsPerSeason: EpsPerSeasonType }) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
-
-        console.dir({ media }, { depth: null });
 
         // Extract Old State Info
         const oldStatus = oldState?.status;

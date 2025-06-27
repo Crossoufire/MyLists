@@ -1,5 +1,5 @@
+import {IMoviesService} from "@/lib/server/types/services.types";
 import {pixelateImage} from "@/lib/server/utils/image-pixelation";
-import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 
 
@@ -22,18 +22,18 @@ export class MediadleService {
         return { ...userMediadleStats, attempts };
     }
 
-    async getDailyMediadleData(userId: number, mediaService: MoviesService) {
+    async getDailyMediadleData(userId: number, mediaService: IMoviesService) {
         let dailyMediadle = await this.repository.getTodayMoviedle();
         if (!dailyMediadle) {
             dailyMediadle = await this.repository.createDailyMoviedle();
         }
 
         let userProgress = await this.repository.getUserProgress(userId, dailyMediadle.id);
-        if (!userProgress) {
-            userProgress = await this.repository.createUserProgress(userId, dailyMediadle.id);
-        }
+        if (!userProgress) userProgress = await this.repository.createUserProgress(userId, dailyMediadle.id);
 
         const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
+        if (!selectedMovie) throw new Error("No Movie available for today");
+
         const pixelationLevel = Math.min(dailyMediadle.pixelationLevels!, userProgress.attempts! + 1);
         const userMediadleStats = await this.getUserMediadleStats(userId);
 

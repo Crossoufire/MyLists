@@ -54,6 +54,6 @@ export const moviesConfig: MovieSchemaConfig = {
     editableFields: [
         "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
         "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
-    ] as const,
+    ],
     tablesForDeletion: [schema.moviesActors, schema.moviesGenre, schema.moviesLabels],
 };

@@ -3,9 +3,9 @@ import {MediaCard} from "@/lib/components/app/MediaCard";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
-import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
+import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
@@ -48,10 +48,10 @@ function InfoPage() {
     return (
         <PageTitle title={`${name}'s ${mediaType} (${apiData.total})`}>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
-                {apiData.items.map((media) => (
-                    <div key={media.mediaId} className="col-span-1">
-                        <MediaCard item={media} mediaType={mediaType}>
-                            {media.inUserList && <MediaInfoCorner isCommon={media.inUserList}/>}
+                {apiData.items.map((item) => (
+                    <div key={item.mediaId} className="col-span-1">
+                        <MediaCard item={item} mediaType={mediaType}>
+                            {item.inUserList && <MediaInfoCorner isCommon={item.inUserList}/>}
                         </MediaCard>
                     </div>
                 ))}

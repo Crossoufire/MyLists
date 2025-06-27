@@ -1,47 +1,53 @@
+import {SQL} from "drizzle-orm";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {TvList, TvTopMetricStats, TvType} from "@/lib/server/domain/media/tv/tv.types";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
-import {Game, GamesList, GamesTopMetricStats} from "@/lib/server/domain/media/games/games.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
-import {Movie, MoviesList, MoviesTopMetricStats, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
+import {TvList, TvTopMetricStats, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {Game, GamesList, GamesTopMetricStats} from "@/lib/server/domain/media/games/games.types";
+import {Movie, MoviesList, MoviesTopMetricStats, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {
     AddedMediaDetails,
     ComingNext,
     CommonListFilters,
+    ConfigTopMetric,
+    EditUserLabels,
+    EpsPerSeasonType,
     ExpandedListFilters,
     ItemForNotification,
     JobDetails,
+    MediaListData,
+    SimpleMedia,
     TopMetricStats,
-    UserMediaStats
+    UserFollowsMediaData,
+    UserMediaStats,
+    UserMediaWithLabels
 } from "@/lib/server/types/base.types";
-import {SQL} from "drizzle-orm";
 
 
 // Level 1 - Universal methods (implemented in BaseRepository)
 export interface IUniversalRepository<TMedia, TList> {
-    findById(mediaId: number): Promise<TMedia | undefined>;
-    findByApiId(apiId: number | string): Promise<TMedia | undefined>;
-    downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
-    searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
-    removeMediaByIds(mediaIds: number[]): Promise<void>;
     getNonListMediaIds(): Promise<number[]>;
+    removeMediaByIds(mediaIds: number[]): Promise<void>;
+    findById(mediaId: number): Promise<TMedia | undefined>;
     getCoverFilenames(): Promise<{ imageCover: string }[]>;
-    findSimilarMedia(mediaId: number,): Promise<{ mediaId: number; mediaName: string; mediaCover: string | null }[]>;
-    getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
-    editUserLabel(args: EditUserLabels): Promise<Label | void>;
-    getUserFavorites(userId: number, limit?: number): Promise<any[]>;
-    findUserMedia(userId: number, mediaId: number): Promise<any | null>;
-    getUserFollowsMediaData(userId: number, mediaId: number): Promise<any[]>;
-    getCommonListFilters(userId: number): Promise<CommonListFilters>;
-    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<any>;
     computeTotalMediaLabel(userId?: number): Promise<number>;
+    findSimilarMedia(mediaId: number,): Promise<SimpleMedia[]>;
+    getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
+    findByApiId(apiId: number | string): Promise<TMedia | undefined>;
+    getCommonListFilters(userId: number): Promise<CommonListFilters>;
+    editUserLabel(args: EditUserLabels): Promise<Label | undefined | void>;
     removeMediaFromUserList(userId: number, mediaId: number): Promise<void>;
+    searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
+    getUserFavorites(userId: number, limit?: number): Promise<SimpleMedia[]>;
+    findUserMedia(userId: number, mediaId: number): Promise<UserMediaWithLabels<TList> | null>;
+    downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
+    getUserFollowsMediaData(userId: number, mediaId: number): Promise<UserFollowsMediaData<TList>[]>;
+    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData>;
 
     // --- Achievements ----------------------------------------------------------
     countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;
@@ -51,11 +57,11 @@ export interface IUniversalRepository<TMedia, TList> {
     applyWhereConditionsAndGrouping(cte: any, baseConditions: SQL[], userId?: number): any;
 
     // --- Advanced Stats ---------------------------------------------------
-    computeRatingStats(userId?: number): Promise<any>;
-    computeTopGenresStats(userId?: number): Promise<any>;
-    computeReleaseDateStats(userId?: number): Promise<any>;
     computeTotalMediaLabel(userId?: number): Promise<number>;
-    computeTopMetricStats(statsConfig: Record<string, any>, userId?: number): Promise<TopMetricStats>;
+    computeTopGenresStats(userId?: number): Promise<TopMetricStats>;
+    computeRatingStats(userId?: number): Promise<{ name: string, value: number }[]>;
+    computeReleaseDateStats(userId?: number): Promise<{ name: number, value: number }[]>;
+    computeTopMetricStats(statsConfig: ConfigTopMetric, userId?: number): Promise<TopMetricStats>;
 }
 
 
@@ -100,22 +106,22 @@ export interface ITvRepository extends ICommonRepository<TvType, TvList> {
     config: SeriesSchemaConfig | AnimeSchemaConfig;
 
     getComingNext(userId: number): Promise<ComingNext[]>;
-    findByIdAndAddEpsPerSeason(mediaId: number): Promise<any>;
     getMediaIdsToBeRefreshed(apiIds: number[]): Promise<number[]>;
+    getMediaEpsPerSeason(mediaId: number): Promise<EpsPerSeasonType>;
     updateMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<boolean>;
-    getMediaEpsPerSeason(mediaId: number): Promise<{ season: number, episodes: number }[]>;
     storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number | undefined>;
+    findByIdAndAddEpsPerSeason(mediaId: number): Promise<TvType & { epsPerSeason: EpsPerSeasonType }>;
 
     // --- Achievements ----------------------------------------------------------
     getDurationAchievementCte(achievement: Achievement, userId?: number): any;
     getNetworkAchievementCte(achievement: Achievement, userId?: number): any;
     getActorAchievementCte(achievement: Achievement, userId?: number): any;
 
-    // --- Advanced Stats --------------------------------------------------------
-    computeTotalSeasons(userId?: number): Promise<any>;
-    avgTvDuration(userId?: number): Promise<any>;
-    tvDurationDistrib(userId?: number): Promise<any>;
+    // --- Advanced Stats ---------------------------------------------------------
     specificTopMetrics(userId?: number): Promise<TvTopMetricStats>;
+    computeTotalSeasons(userId?: number): Promise<number | undefined>;
+    avgTvDuration(userId?: number): Promise<number | null | undefined>;
+    tvDurationDistrib(userId?: number): Promise<{ name: number, value: number }[]>;
 }
 
 

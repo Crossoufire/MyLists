@@ -4,7 +4,7 @@ import {UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-import {Setting, UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
+import {SettingTable, UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 
 
 export class UserStatsService {
@@ -156,16 +156,16 @@ export class UserStatsService {
     async userMediaAdvancedStats(userId: number, mediaType: MediaType) {
         const mediaService = this.mediaServiceRegistry.getService(mediaType);
 
-        const userMediaPreComputedStats = await this.userMediaPreComputedStats(mediaType, userId);
+        const userMediaPreComputedStats = await this.userMediaPreComputedStats(userId, mediaType);
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesCountPerMonth(mediaType, userId);
         const specificMediaStats = await mediaService.calculateAdvancedMediaStats(userId);
 
         return { ...userMediaPreComputedStats, ...mediaUpdatesPerMonthStats, ...specificMediaStats };
     }
 
-    async userMediaPreComputedStats(mediaType: MediaType, userId: number) {
-        const mediaSettings = await this.repository.specificUserMediaSetting(userId, mediaType,);
-        return this._computeMediaPreComputedStats([mediaSettings]);
+    async userMediaPreComputedStats(userId: number, mediaType: MediaType) {
+        const mediaSettings = await this.repository.specificUserMediaSetting(userId, mediaType);
+        return this._computeMediaPreComputedStats([mediaSettings!]);
     }
 
     // --- Platform Advanced Stats -----------------------------------------------
@@ -212,7 +212,7 @@ export class UserStatsService {
 
     // --- Helpers ---------------------------------------------------------------
 
-    private _computePreComputedStatsSummary(settings: Setting[], avgDivisor: number) {
+    private _computePreComputedStatsSummary(settings: SettingTable[], avgDivisor: number) {
         const totalHours = settings.reduce((sum, s) => sum + s.timeSpent / 60, 0);
         const totalEntries = settings.reduce((sum, s) => sum + s.totalEntries, 0);
         const totalFavorites = settings.reduce((sum, s) => sum + s.entriesFavorites, 0);
@@ -258,7 +258,7 @@ export class UserStatsService {
         };
     }
 
-    private _computeMediaPreComputedStats(settings: Setting[]) {
+    private _computeMediaPreComputedStats(settings: SettingTable[]) {
         const totalEntries = settings.reduce((sum, s) => sum + s.totalEntries, 0);
         const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
         const timeSpentHours = settings.reduce((sum, s) => sum + s.timeSpent / 60, 0);

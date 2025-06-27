@@ -1,64 +1,78 @@
-import {TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
-import {Game} from "@/lib/server/domain/media/games/games.types";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
-import {Movie} from "@/lib/server/domain/media/movies/movies.types";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
-import {ComingNext, ItemForNotification, JobDetails, UserMediaStats} from "@/lib/server/types/base.types";
+import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {Game, GamesList} from "@/lib/server/domain/media/games/games.types";
+import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {
+    AddMediaToUserList,
+    AdvancedMediaStats,
+    ComingNext,
+    EditUserLabels,
+    EpsPerSeasonType,
+    ExpandedListFilters,
+    ItemForNotification,
+    JobDetails,
+    MediaAndUserDetails,
+    MediaListData,
+    UpdateUserMediaDetails,
+    UserMediaStats,
+    UserMediaWithLabels
+} from "@/lib/server/types/base.types";
 
 
 // Level 1 - Universal methods (implemented in BaseService)
-export interface IUniversalService<TMedia> {
-    computeTotalMediaLabel(userId?: number): Promise<number>;
-    getMediaToNotify(): Promise<ItemForNotification[]>;
-    computeAllUsersStats(): Promise<UserMediaStats[]>;
-    findById(mediaId: number): Promise<TMedia | undefined>;
-    downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
-    searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
-    removeMediaByIds(mediaIds: number[]): Promise<void>;
-    getNonListMediaIds(): Promise<number[]>;
+export interface IUniversalService<TMedia, TList> {
     getCoverFilenames(): Promise<string[]>;
+    getNonListMediaIds(): Promise<number[]>;
+    computeAllUsersStats(): Promise<UserMediaStats[]>;
+    getMediaToNotify(): Promise<ItemForNotification[]>;
+    removeMediaByIds(mediaIds: number[]): Promise<void>;
+    findById(mediaId: number): Promise<TMedia | undefined>;
+    computeTotalMediaLabel(userId?: number): Promise<number>;
+    getListFilters(userId: number): Promise<ExpandedListFilters>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
-    editUserLabel(args: EditUserLabels): Promise<Label | void>;
-    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<any>;
-    getListFilters(userId: number): Promise<any>;
-    getSearchListFilters(userId: number, query: string, job: JobType): Promise<any[]>;
+    editUserLabel(args: EditUserLabels): Promise<Label | void | undefined>;
+    searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
+    downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
+    getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
+    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData>;
     getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>): Promise<JobDetails>;
 }
 
 
 // Level 2 - Common patterns (implemented in each MediaService)
-export interface ICommonService<TMedia> extends IUniversalService<TMedia> {
-    addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<any>;
-    updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<any>;
-    getAchievementCte(achievement: Achievement, userId?: number): Promise<string>;
-    calculateAdvancedMediaStats(userId?: number): Promise<any>;
-    getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any): Promise<any>;
-    getMediaEditableFields(mediaId: number): Promise<{ fields: { [p: string]: any } }>;
-    updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+export interface ICommonService<TMedia, TList> extends IUniversalService<TMedia, TList> {
+    getAchievementCte(achievement: Achievement, userId?: number): any;
+    getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
+    calculateAdvancedMediaStats(userId?: number): Promise<AdvancedMediaStats>;
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
-    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any): Record<string, any>;
-    calculateDeltaStats(oldState: any, newState: any, media: any): DeltaStats;
-    getAchievementsDefinition(mediaType?: MediaType): any;
+    getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
+    updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+    addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<AddMediaToUserList<TMedia, TList>>;
+    updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<TMedia, TList>>;
+    calculateDeltaStats(oldState: UserMediaWithLabels<TList>, newState: TList, media: TMedia & { epsPerSeason?: EpsPerSeasonType }): DeltaStats;
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: TList & { epsPerSeason?: EpsPerSeasonType }): Record<string, any>;
+    getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService): Promise<MediaAndUserDetails<TMedia, TList>>;
 }
 
 
 // Level 3 - Subset-specific methods (only some mediaTypes)
-export interface IMoviesService extends ICommonService<Movie> {
-    getComingNext(userId: number): Promise<ComingNext[]>;
+export interface IMoviesService extends ICommonService<Movie, MoviesList> {
     lockOldMovies(): Promise<number>;
-}
-
-
-export interface ITvService extends ICommonService<TvType> {
     getComingNext(userId: number): Promise<ComingNext[]>;
 }
 
 
-export interface IGamesService extends ICommonService<Game> {
+export interface ITvService extends ICommonService<TvType, TvList> {
+    getComingNext(userId: number): Promise<ComingNext[]>;
+}
+
+
+export interface IGamesService extends ICommonService<Game, GamesList> {
     getComingNext(userId: number): Promise<ComingNext[]>;
     // updateIGDBToken(): Promise<any>;
 }

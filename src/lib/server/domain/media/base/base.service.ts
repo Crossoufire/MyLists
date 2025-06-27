@@ -1,10 +1,10 @@
 import {JobType} from "@/lib/server/utils/enums";
+import {EditUserLabels} from "@/lib/server/types/base.types";
 import {IUniversalService} from "@/lib/server/types/services.types";
 import {ICommonRepository} from "@/lib/server/types/repositories.types";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 
 
-export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia> {
+export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia, TList> {
     protected repository: R;
 
     constructor(repository: R) {

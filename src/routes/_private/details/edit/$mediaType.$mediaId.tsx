@@ -34,7 +34,6 @@ function MediaEditPage() {
     const { mediaType, mediaId } = Route.useParams();
     const editMediaMutation = useEditMediaMutation();
     const apiData = useSuspenseQuery(editMediaDetailsOptions(mediaType, mediaId)).data;
-    console.log(apiData);
 
     const form = useForm({
         defaultValues: {

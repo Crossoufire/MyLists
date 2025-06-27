@@ -1,12 +1,12 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
+import {AdminPaginatedUsers, UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 
 
 export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
 
-    async getAdminPaginatedUsers(data: Record<string, any>) {
+    async getAdminPaginatedUsers(data: AdminPaginatedUsers) {
         return this.userRepository.getAdminPaginatedUsers(data);
     }
 
@@ -102,11 +102,11 @@ export class UserService {
     }
 
     async getUserFollowers(userId: number, limit = 8) {
-        return this.userRepository.getUserFollowers({ userId, limit });
+        return this.userRepository.getUserFollowers(userId, limit);
     }
 
     async getUserFollows(userId: number, limit = 8) {
-        return this.userRepository.getUserFollows({ userId, limit });
+        return this.userRepository.getUserFollows(userId, limit);
     }
 
     async searchUsers(query: string, page: number = 1) {

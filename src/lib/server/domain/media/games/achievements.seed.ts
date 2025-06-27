@@ -335,6 +335,3 @@ export const gamesAchievements = [
         ],
     },
 ] as const;
-
-
-export type GamesAchCodeName = typeof gamesAchievements[number]["codeName"];

@@ -1,6 +1,6 @@
 import {Status} from "@/lib/server/utils/enums";
-import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import * as schema from "@/lib/server/database/schema";
+import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {TVSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
@@ -73,6 +73,6 @@ export const animeConfig: AnimeSchemaConfig = {
     editableFields: [
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
         "createdBy", "duration", "originCountry", "status", "synopsis"
-    ] as const,
+    ],
     tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],
 };

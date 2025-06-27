@@ -23,6 +23,7 @@ export class UserUpdatesRepository {
             .select({ count: sql<number>`count()` })
             .from(userMediaUpdate)
             .where(and(eq(userMediaUpdate.userId, userId), like(userMediaUpdate.mediaName, `%${search}%`)))
+            .get();
 
         const historyResult = await getDbClient()
             .select()
@@ -33,7 +34,7 @@ export class UserUpdatesRepository {
             .limit(limit)
             .execute();
 
-        return { total: totalCountResult[0]?.count ?? 0, items: historyResult };
+        return { total: totalCountResult?.count ?? 0, items: historyResult };
     }
 
     static async getUserMediaHistory(userId: number, mediaType: MediaType, mediaId: number) {
@@ -87,8 +88,7 @@ export class UserUpdatesRepository {
             .where(forUser)
             .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
             .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
-
-        const results = await monthlyCountsQuery.execute();
+        const results = await monthlyCountsQuery;
 
         const updatesPerMonth: Record<string, number> = {};
         let totalUpdates = 0;
@@ -101,9 +101,11 @@ export class UserUpdatesRepository {
             }
         });
 
-        const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
-
-        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth, totalUpdates };
+        return {
+            updatesDistribution: updatesPerMonth,
+            avgUpdates: numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null,
+            totalUpdates,
+        };
     }
 
     static async mediaUpdatesCountPerMonth(mediaType: MediaType, userId?: number) {
@@ -132,9 +134,10 @@ export class UserUpdatesRepository {
             }
         });
 
-        const averageUpdatesPerMonth = numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null;
-
-        return { updatesDistribution: updatesPerMonth, avgUpdates: averageUpdatesPerMonth };
+        return {
+            updatesDistribution: updatesPerMonth,
+            avgUpdates: numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null,
+        };
     }
 
     static async deleteUserUpdates(userId: number, updateIds: number[], returnData: boolean) {
@@ -151,6 +154,7 @@ export class UserUpdatesRepository {
                 .orderBy(desc(userMediaUpdate.timestamp))
                 .limit(8)
                 .execute();
+            
             return newUpdateToReturn?.at(-1) ?? null;
         }
     }

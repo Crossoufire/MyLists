@@ -1,25 +1,26 @@
 import {Status} from "@/lib/server/utils/enums";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {followers, user} from "@/lib/server/database/schema";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";
-import {FilterDefinition, FilterDefinitions, ListFilterDefinition} from "@/lib/server/types/provider.types";
 import {GenreTable, LabelTable, ListTable, MediaListArgs, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {
+    ConfigTopMetric,
+    EditUserLabels,
+    FilterDefinition,
+    FilterDefinitions,
+    ListFilterDefinition,
+    MediaListData,
+    UserFollowsMediaData,
+    UserMediaWithLabels
+} from "@/lib/server/types/base.types";
 
 
 const ALL_VALUE = "All";
 const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
-
-
-export interface EditUserLabels {
-    label: Label;
-    userId: number;
-    mediaId: number;
-    action: "add" | "rename" | "deleteOne" | "deleteAll";
-}
 
 
 export class BaseRepository<
@@ -109,14 +110,14 @@ export class BaseRepository<
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .where(eq(listTable.userId, userId));
 
-        return data as TMedia & { mediaName: string }[] | undefined;
+        return data as (TMedia & { mediaName: string })[] | undefined;
     }
 
     async searchByName(query: string, limit: number = 20) {
         const { mediaTable } = this.config;
 
         return getDbClient()
-            .select({ name: mediaTable.name })
+            .select({ name: sql<string>`${mediaTable.name}` })
             .from(mediaTable)
             .where(like(mediaTable.name, `%${query}%`))
             .orderBy(mediaTable.name)
@@ -139,7 +140,7 @@ export class BaseRepository<
         const { mediaTable, listTable } = this.config;
 
         const mediaToDelete = await getDbClient()
-            .select({ id: mediaTable.id })
+            .select({ id: sql<number>`${mediaTable.id}` })
             .from(mediaTable)
             .leftJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(isNull(listTable.userId))
@@ -152,7 +153,7 @@ export class BaseRepository<
         const { mediaTable } = this.config;
 
         return getDbClient()
-            .select({ imageCover: mediaTable.imageCover })
+            .select({ imageCover: sql<string>`${mediaTable.imageCover}` })
             .from(mediaTable)
             .execute()
     }
@@ -166,7 +167,10 @@ export class BaseRepository<
             .where(eq(genreTable.mediaId, mediaId));
 
         const similarSub = getDbClient()
-            .select({ movieId: genreTable.mediaId, commonGenreCount: count(genreTable.name).as("common_genre_count") })
+            .select({
+                movieId: genreTable.mediaId,
+                commonGenreCount: count(genreTable.name).as("common_genre_count")
+            })
             .from(genreTable)
             .where(and(ne(genreTable.mediaId, mediaId), inArray(genreTable.name, targetGenresSubQuery)))
             .groupBy(genreTable.mediaId)
@@ -174,24 +178,22 @@ export class BaseRepository<
             .limit(SIMILAR_MAX_GENRES)
             .as("similar_media");
 
-        const results = getDbClient()
+        return getDbClient()
             .select({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
+                mediaId: sql<number>`${mediaTable.id}`,
+                mediaName: sql<string>`${mediaTable.name}`,
+                mediaCover: sql<string>`${mediaTable.imageCover}`,
             })
             .from(similarSub)
             .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
             .orderBy(desc(similarSub.commonGenreCount));
-
-        return results;
     }
 
     async getUserMediaLabels(userId: number) {
         const { labelTable } = this.config;
 
         return getDbClient()
-            .selectDistinct({ name: labelTable.name })
+            .selectDistinct({ name: sql<string>`${labelTable.name}` })
             .from(labelTable)
             .where(eq(labelTable.userId, userId))
             .orderBy(asc(labelTable.name));
@@ -248,9 +250,9 @@ export class BaseRepository<
 
         return getDbClient()
             .select({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                mediaCover: mediaTable.imageCover,
+                mediaId: sql<number>`${mediaTable.id}`,
+                mediaName: sql<string>`${mediaTable.name}`,
+                mediaCover: sql<string>`${mediaTable.imageCover}`,
             })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
@@ -276,17 +278,17 @@ export class BaseRepository<
         }
 
         const associatedLabels = await getDbClient()
-            .select({ name: labelTable.name })
+            .select({ name: sql<string>`${labelTable.name}` })
             .from(labelTable)
             .where(and(eq(labelTable.mediaId, mediaId), eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name))
             .execute();
 
-        if (!mainUserMediaData && !associatedLabels) {
+        if (!associatedLabels) {
             return null;
         }
 
-        return { ...mainUserMediaData, labels: associatedLabels };
+        return { ...mainUserMediaData, labels: associatedLabels } as UserMediaWithLabels<TList>;
     }
 
     async getUserFollowsMediaData(userId: number, mediaId: number) {
@@ -305,7 +307,7 @@ export class BaseRepository<
             .innerJoin(listTable, eq(listTable.userId, followers.followedId))
             .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)));
 
-        return inFollowsLists;
+        return inFollowsLists as unknown as UserFollowsMediaData<TList>[];
     }
 
     async getCommonListFilters(userId: number) {
@@ -418,7 +420,7 @@ export class BaseRepository<
                 sorting: sortKeyName,
                 availableSorting: Object.keys(mediaList.availableSorts),
             },
-        };
+        } as MediaListData;
     }
 
     // --- Achievements ----------------------------------------------------------
@@ -571,7 +573,7 @@ export class BaseRepository<
         return this.computeTopMetricStats(metricStatsConfig, userId);
     }
 
-    async computeTopMetricStats(statsConfig: Record<string, any>, userId?: number) {
+    async computeTopMetricStats(statsConfig: ConfigTopMetric, userId?: number) {
         const { mediaTable, listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 

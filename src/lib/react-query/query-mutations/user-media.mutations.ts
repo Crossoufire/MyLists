@@ -2,8 +2,8 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
+import {EditUserLabels} from "@/lib/server/types/base.types";
 
 
 export const useDeleteUpdatesMutation = (queryKey: string[]) => {

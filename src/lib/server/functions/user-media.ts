@@ -4,7 +4,8 @@ import {Label} from "@/lib/components/user-media/LabelsDialog";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {EditUserLabels} from "@/lib/server/domain/media/base/base.repository";
+
+import {EditUserLabels} from "@/lib/server/types/base.types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -112,7 +113,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         const delta = await mediaService.removeMediaFromUserList(parseInt(currentUser.id), mediaId);
         await userUpdatesService.deleteMediaUpdatesForUser(currentUserId, mediaType, mediaId);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUserId, delta);
-        
+
         // TODO: DELETE NOTIFICATIONS ???
     });
 

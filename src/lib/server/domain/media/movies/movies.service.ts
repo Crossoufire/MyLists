@@ -3,23 +3,14 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {IMoviesService} from "@/lib/server/types/services.types";
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-
-
-interface UserMovieState {
-    redo: number;
-    total: number;
-    mediaId: number;
-    favorite: boolean;
-    status: Status | null;
-    rating: number | null | undefined;
-    comment: string | null | undefined;
-}
+import {UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 
 
 export class MoviesService extends BaseService<Movie, MoviesList, IMoviesRepository> implements IMoviesService {
@@ -48,7 +39,7 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
         return this.repository.lockOldMovies();
     }
 
-    async getAchievementCte(achievement: Achievement, userId?: number) {
+    getAchievementCte(achievement: Achievement, userId?: number) {
         const handler = this.achievementHandlers[achievement.codeName as MoviesAchCodeName];
         if (!handler) {
             throw new Error("Invalid Achievement codeName");
@@ -86,7 +77,7 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
         const media = external ?
             await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
@@ -104,7 +95,12 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
-            return { media: mediaWithDetails, userMedia, followsData, similarMedia };
+            return {
+                userMedia,
+                followsData,
+                similarMedia,
+                media: mediaWithDetails,
+            };
         }
 
         throw new Error("Movie not found")
@@ -112,17 +108,13 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
 
     async getMediaEditableFields(mediaId: number) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
-
+        const fields = {} as Record<string, any>;
         for (const key in media) {
-            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
-                // @ts-expect-error
-                fields[key] = media[key];
+            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key as keyof Movie)) {
+                fields[key as keyof typeof media] = media[key as keyof typeof media];
             }
         }
 
@@ -133,12 +125,10 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
         // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
 
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
+        const fields = {} as Record<Partial<keyof Movie>, any>;
         fields.apiId = media.apiId;
 
         if (payload?.imageCover) {
@@ -153,8 +143,8 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
         }
 
         for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
-                fields[key] = payload[key];
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Movie)) {
+                fields[key as keyof typeof media] = payload[key as keyof typeof media];
             }
         }
 
@@ -169,67 +159,61 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
         const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
 
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) {
-            throw new Error("Media already in your list");
-        }
+        if (userMedia) throw new Error("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-
-        const delta = this.calculateDeltaStats(null, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(null, newState, media);
 
         return { newState, media, delta };
     }
 
     async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, newState as UserMovieState, media);
+        const delta = this.calculateDeltaStats(oldState, newState, media);
 
-        return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
+        return {
+            os: oldState,
+            ns: newState,
+            media,
+            delta,
+            updateData: completeUpdateData,
+        };
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserMovieState, null, media);
+        const delta = this.calculateDeltaStats(oldState, null, media);
 
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: any) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: MoviesList) {
         const completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
             return { ...completeUpdateData, redo: 0 };
         }
+
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserMovieState | null, newState: UserMovieState | null, media: any) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<MoviesList> | null, newState: MoviesList | null, media: Movie) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

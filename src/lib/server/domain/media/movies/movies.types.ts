@@ -9,8 +9,8 @@ export type MoviesList = typeof moviesList.$inferSelect;
 
 export type UpsertMovieWithDetails = {
     mediaData: typeof movies.$inferInsert,
-    actorsData: { name: string }[],
-    genresData: { name: string }[],
+    actorsData?: { name: string }[],
+    genresData?: { name: string }[],
 };
 
 

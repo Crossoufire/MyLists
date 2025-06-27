@@ -2,7 +2,7 @@ import {db} from "@/lib/server/database/db";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {AchievementData, AchievementTier} from "@/lib/server/types/achievements.types";
-import {and, asc, count, eq, getTableColumns, inArray, max, sql} from "drizzle-orm";
+import {and, asc, count, eq, getTableColumns, inArray, max, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
 
 
@@ -119,7 +119,10 @@ export class AchievementsRepository {
     }
 
     static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        await getDbClient().update(achievement).set(payload).where(eq(achievement.id, achievementId));
+        await getDbClient()
+            .update(achievement)
+            .set(payload)
+            .where(eq(achievement.id, achievementId));
     }
 
     static async adminUpdateTiers(payloads: Record<string, any>[]) {
@@ -258,23 +261,20 @@ export class AchievementsRepository {
             .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
             .orderBy(asc(achievement.id), tierOrder);
 
-        type GroupedAchievement = Omit<typeof flatResults[0], "tier"> & {
-            tiers: typeof flatResults[0]["tier"][];
-        };
+        type GroupedAch = Omit<typeof flatResults[0], "tier"> & { tiers: typeof flatResults[0]["tier"][]; };
 
-        const groupedAchievements = flatResults
-            .reduce<Record<number, GroupedAchievement>>((acc, row) => {
-                const { tier, ...achievementData } = row;
-                const achievementId = achievementData.id;
+        const groupedAchievements = flatResults.reduce<Record<number, GroupedAch>>((acc, row) => {
+            const { tier, ...achievementData } = row;
+            const achievementId = achievementData.id;
 
-                if (!acc[achievementId]) {
-                    acc[achievementId] = { ...achievementData, tiers: [] };
-                }
+            if (!acc[achievementId]) {
+                acc[achievementId] = { ...achievementData, tiers: [] };
+            }
 
-                acc[achievementId].tiers.push(tier);
+            acc[achievementId].tiers.push(tier);
 
-                return acc;
-            }, {});
+            return acc;
+        }, {});
 
         return Object.values(groupedAchievements);
     }
@@ -287,7 +287,7 @@ export class AchievementsRepository {
             .execute()
     }
 
-    static async updateAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any, completedAt: any) {
+    static async updateAchievement(tier: AchievementTier, cte: any, completed: SQL, count: SQL, progress: SQL, completedAt: SQL) {
         await getDbClient()
             .update(userAchievement)
             .set({
@@ -304,7 +304,7 @@ export class AchievementsRepository {
             ));
     }
 
-    static async insertAchievement(tier: AchievementTier, cte: any, completed: any, count: any, progress: any) {
+    static async insertAchievement(tier: AchievementTier, cte: any, completed: SQL, count: SQL, progress: SQL) {
         await getDbClient().run(sql`
             INSERT INTO ${userAchievement} (
                 tier_id, 

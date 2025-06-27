@@ -29,7 +29,9 @@ export const useAdminUpdateTiersMutation = () => {
 
     return useMutation<any, Error, { payloads: Record<string, any>[] }>({
         mutationFn: ({ payloads }) => postAdminUpdateTiers({ data: { payloads } }),
-        onSuccess: async () => await queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminAchievementsKey() }),
+        onSuccess: async () => {
+            return queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminAchievementsKey() })
+        },
     });
 };
 

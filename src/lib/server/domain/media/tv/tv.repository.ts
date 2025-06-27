@@ -1,15 +1,15 @@
 import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {TvList, TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
+import {TvList, TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
+import {AddedMediaDetails, ConfigTopMetric, EpsPerSeasonType} from "@/lib/server/types/base.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
-import {AddedMediaDetails} from "@/lib/server/types/base.types";
 
 
 export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
@@ -26,17 +26,14 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         const mainData = await getDbClient()
             .select({
                 ...getTableColumns(mediaTable),
-                epsPerSeason: sql<{
-                    season: number,
-                    episodes: number
-                }[]>`json_group_array(json_object('season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
+                epsPerSeason: sql<EpsPerSeasonType>`json_group_array(json_object('season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
             })
             .from(mediaTable)
             .innerJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))
             .where(eq(mediaTable.id, mediaId))
             .get();
 
-        return mainData;
+        return mainData as TvType & { epsPerSeason: EpsPerSeasonType };
     }
 
     async getComingNext(userId: number) {
@@ -67,7 +64,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
     async computeAllUsersStats() {
         const { mediaTable, listTable } = this.config;
 
-        // TODO: Change timeSpent and totalSpecific to be the real calculation
+        // TODO: Change timeSpent and totalSpecific to be real calculation
         const results = await getDbClient()
             .select({
                 userId: listTable.userId,
@@ -569,26 +566,26 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
     async specificTopMetrics(userId?: number) {
         const { mediaTable, listTable, networkTable, actorTable } = this.config;
 
-        const networkConfig = {
+        const networkConfig: ConfigTopMetric = {
             metricTable: networkTable,
             metricNameColumn: networkTable.name,
             metricIdColumn: mediaTable.id,
             mediaLinkColumn: listTable.mediaId,
             filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
         };
-        const countriesConfig = {
+        const countriesConfig: ConfigTopMetric = {
             metricTable: mediaTable,
             metricNameColumn: mediaTable.originCountry,
             metricIdColumn: mediaTable.id,
             mediaLinkColumn: listTable.mediaId,
-            statusFilters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
         };
-        const actorsConfig = {
+        const actorsConfig: ConfigTopMetric = {
             metricTable: actorTable,
             metricNameColumn: actorTable.name,
             metricIdColumn: actorTable.mediaId,
             mediaLinkColumn: listTable.mediaId,
-            statusFilters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
         };
 
         const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);

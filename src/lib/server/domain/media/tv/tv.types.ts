@@ -1,5 +1,7 @@
-import {anime, animeList, series, seriesList} from "@/lib/server/database/schema";
 import {TopMetricStats} from "@/lib/server/types/base.types";
+import {anime, animeList, series, seriesList} from "@/lib/server/database/schema";
+import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
+import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
 export type Series = typeof series.$inferSelect;
@@ -11,12 +13,15 @@ export type AnimeList = typeof animeList.$inferSelect;
 export type TvType = Series | Anime;
 export type TvList = SeriesList | AnimeList;
 
+export type AnimeAchCodeName = typeof animeAchievements[number]["codeName"];
+export type SeriesAchCodeName = typeof seriesAchievements[number]["codeName"];
+
 
 export type UpsertTvWithDetails = {
     mediaData: typeof series.$inferInsert | typeof anime.$inferInsert,
     actorsData: { name: string }[],
-    genresData: { name: string }[],
     networkData: { name: string }[],
+    genresData: { name: string }[] | null,
     seasonsData: { season: number, episodes: number }[],
 };
 

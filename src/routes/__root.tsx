@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+/// <reference types="vite/client"/>
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
 import appCSS from "@/styles.css?url";

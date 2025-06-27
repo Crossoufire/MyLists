@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
@@ -54,9 +55,9 @@ export class TasksService {
             const duration = Date.now() - startTime;
             taskLogger.info({ durationMs: duration }, "Task completed");
         }
-        catch (error: any) {
-            taskLogger.error({ err: error }, "Task execution failed");
-            throw error;
+        catch (err: any) {
+            taskLogger.error({ err }, "Task execution failed");
+            throw err;
         }
 
         const duration = (Date.now() - startTime);
@@ -259,12 +260,12 @@ export class TasksService {
 }
 
 
-function isRefreshable(service: any) {
+const isRefreshable = (service: IProviderService) => {
     return service && typeof service.bulkProcessAndRefreshMedia === "function";
 }
 
 
-async function findProjectRoot(markerFilename: string = "package.json") {
+const findProjectRoot = async (markerFilename: string = "package.json") => {
     let currentDir = path.dirname(fileURLToPath(import.meta.url));
     while (true) {
         const markerPath = path.join(currentDir, markerFilename);

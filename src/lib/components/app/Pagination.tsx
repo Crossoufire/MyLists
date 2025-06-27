@@ -3,14 +3,14 @@ import {Button} from "@/lib/components/ui/button";
 
 
 interface PaginationProps {
-    onChangePage: any;
     totalPages: number;
     currentPage: number;
+    onChangePage: (page: number) => void;
 }
 
 
 export const Pagination = ({ currentPage, totalPages, onChangePage }: PaginationProps) => {
-    const [pages, setPages] = useState<any>([]);
+    const [pages, setPages] = useState<("..." | number)[]>([]);
 
     useEffect(() => {
         const generatePages = () => {
@@ -24,10 +24,10 @@ export const Pagination = ({ currentPage, totalPages, onChangePage }: Pagination
                 else if (i === currentPage - 3 || i === currentPage + 3) {
                     pageArr.push("...");
                 }
-                i++;
+                i += 1;
             }
 
-            return pageArr;
+            return pageArr as ("..." | number)[];
         };
 
         setPages(generatePages());
@@ -35,7 +35,7 @@ export const Pagination = ({ currentPage, totalPages, onChangePage }: Pagination
 
     return (
         <ul className="flex justify-center items-center p-0 mt-8">
-            {pages.map((page: number | string, idx: number) => (
+            {pages.map((page, idx) => (
                 <li key={idx} className="px-3">
                     {page === "..." ?
                         <span className="ellipsis">...</span>

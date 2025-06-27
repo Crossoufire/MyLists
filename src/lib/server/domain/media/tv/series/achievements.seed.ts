@@ -91,6 +91,3 @@ export const seriesAchievements = [
         ],
     },
 ] as const;
-
-
-export type SeriesAchCodeName = typeof seriesAchievements[number]["codeName"];

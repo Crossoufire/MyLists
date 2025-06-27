@@ -116,6 +116,3 @@ export const animeAchievements = [
         ],
     },
 ] as const;
-
-
-export type AnimeAchCodeName = typeof animeAchievements[number]["codeName"];

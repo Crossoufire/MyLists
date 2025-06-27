@@ -4,13 +4,12 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
-import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {AchievementCard} from "@/lib/components/achievements/AchievementCard";
+import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {AchievementSummary} from "@/lib/components/achievements/AchievementSummary";
 
 
-// noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/achievements/$username")({
     loader: async ({ context: { queryClient }, params: { username } }) => {
         return queryClient.ensureQueryData(achievementOptions(username));

@@ -1,8 +1,9 @@
 import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
+import {MediaService} from "@/lib/server/types/services.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
+import {Achievement, AchievementData, AchievementStats, TierStat, UserAchievementDetails, UserTierProgress} from "@/lib/server/types/achievements.types";
 
 
 export class AchievementsService {
@@ -134,7 +135,7 @@ export class AchievementsService {
         return this.repository.getMediaAchievements(mediaType);
     }
 
-    async calculateAchievement(achievement: Achievement, mediaService: any) {
+    async calculateAchievement(achievement: Achievement, mediaService: MediaService) {
         const achievementCTE = mediaService.getAchievementCte(achievement);
 
         for (const tier of achievement.tiers) {
@@ -157,34 +158,4 @@ export class AchievementsService {
             await this.repository.insertAchievement(tier, achievementCTE, completed, count, progress);
         }
     }
-}
-
-
-type AchievementStats = { [key in MediaType | "all"]: TierStat[] };
-
-
-interface TierStat {
-    count: number | string;
-    tier: AchievementDifficulty | "total";
-}
-
-
-interface UserTierProgress {
-    id: number;
-    count: number;
-    rarity: number;
-    progress: number;
-    completed: boolean;
-    completedAt: string | null;
-    criteria: { count: number };
-    difficulty: AchievementDifficulty;
-}
-
-
-interface UserAchievementDetails {
-    id: number;
-    name: string;
-    mediaType: MediaType;
-    tiers: UserTierProgress[];
-    description: string | null;
 }

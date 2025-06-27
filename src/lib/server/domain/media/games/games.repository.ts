@@ -1,15 +1,15 @@
 import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
+import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms, movies} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
-import {AddedMediaDetails} from "@/lib/server/types/base.types";
 
 
 export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchemaConfig> implements IGamesRepository {
@@ -21,7 +21,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
     }
 
     async getComingNext(userId: number) {
-        const comingNext = await getDbClient()
+        return getDbClient()
             .select({
                 mediaId: games.id,
                 mediaName: games.name,
@@ -37,8 +37,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             ))
             .orderBy(asc(games.releaseDate))
             .execute();
-
-        return comingNext;
     }
 
     async computeAllUsersStats() {
@@ -225,8 +223,8 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
                 .returning()
 
             if (!media) return;
-            const mediaId = media.id;
 
+            const mediaId = media.id;
             if (companiesData && companiesData.length > 0) {
                 const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
                 await tx.insert(gamesCompanies).values(companiesToAdd)
@@ -256,7 +254,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .returning({ id: games.id })
 
         const mediaId = media.id;
-
         if (companiesData && companiesData.length > 0) {
             await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
             const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
@@ -458,37 +455,37 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
     }
 
     async specificTopMetrics(userId?: number) {
-        const developersConfig = {
-            metricTable: gamesCompanies,
-            metricNameColumn: gamesCompanies.name,
+        const developersConfig: ConfigTopMetric = {
             metricIdColumn: games.id,
+            metricTable: gamesCompanies,
             mediaLinkColumn: gamesList.mediaId,
-            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
+            metricNameColumn: gamesCompanies.name,
+            filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
         };
-        const publishersConfig = {
+        const publishersConfig: ConfigTopMetric = {
             ...developersConfig,
-            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
+            filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
         };
-        const platformsConfig = {
+        const platformsConfig: ConfigTopMetric = {
             metricTable: gamesList,
             metricNameColumn: gamesList.platform,
             metricIdColumn: games.id,
             mediaLinkColumn: gamesList.mediaId,
-            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+            filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
-        const enginesConfig = {
+        const enginesConfig: ConfigTopMetric = {
             metricTable: games,
             metricNameColumn: games.gameEngine,
             metricIdColumn: games.id,
             mediaLinkColumn: gamesList.mediaId,
-            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+            filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
-        const perspectivesConfig = {
+        const perspectivesConfig: ConfigTopMetric = {
             metricTable: games,
             metricNameColumn: games.playerPerspective,
             metricIdColumn: games.id,
             mediaLinkColumn: gamesList.mediaId,
-            statusFilters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
+            filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
 
         const developersStats = await this.computeTopMetricStats(developersConfig, userId);

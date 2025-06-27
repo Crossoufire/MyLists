@@ -73,6 +73,6 @@ export const seriesConfig: SeriesSchemaConfig = {
     editableFields: [
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
         "createdBy", "duration", "originCountry", "status", "synopsis"
-    ] as const,
+    ],
     tablesForDeletion: [schema.seriesActors, schema.seriesGenre, schema.seriesLabels],
 };

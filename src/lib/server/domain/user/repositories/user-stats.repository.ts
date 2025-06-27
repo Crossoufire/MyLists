@@ -3,12 +3,12 @@ import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {UserMediaStats} from "@/lib/server/types/base.types";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 
 
-export type Setting = typeof userMediaSettings.$inferSelect;
+export type SettingTable = typeof userMediaSettings.$inferSelect;
 
 
 export class UserStatsRepository {
@@ -27,9 +27,7 @@ export class UserStatsRepository {
 
         await getDbClient()
             .update(userMediaSettings)
-            .set({
-                active: sql`CASE ${sql.join(updateCases, sql` WHEN `)} END`,
-            })
+            .set({ active: sql`CASE ${sql.join(updateCases, sql` WHEN `)} END` })
             .where(eq(userMediaSettings.userId, userId))
             .execute();
     }
@@ -83,26 +81,26 @@ export class UserStatsRepository {
     }
 
     static async specificUserMediaSetting(userId: number, mediaType: MediaType) {
-        const mediaSettings = await getDbClient()
+        return getDbClient()
             .select()
             .from(userMediaSettings)
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
             .get();
-
-        return mediaSettings!;
     }
 
     static async allUsersAllMediaSettings() {
-        return getDbClient().select().from(userMediaSettings)!;
+        return getDbClient()
+            .select()
+            .from(userMediaSettings)
+            .execute()!;
     }
 
     static async allUsersMediaSettings(mediaType: MediaType) {
-        const mediaSettings = await getDbClient()
+        return getDbClient()
             .select()
             .from(userMediaSettings)
             .where(eq(userMediaSettings.mediaType, mediaType))
-
-        return mediaSettings!;
+            .execute()!;
     }
 
     static async userHallofFameData(userId: number, data: Record<string, any>) {
@@ -111,7 +109,7 @@ export class UserStatsRepository {
         const mediaTypes = Object.values(MediaType);
         const umsAlias = alias(userMediaSettings, "ums");
 
-        const maxTimePerMedia = db
+        const maxTimePerMedia = getDbClient()
             .select({
                 mediaType: userMediaSettings.mediaType,
                 maxTime: sql<number>`max(${userMediaSettings.timeSpent})`.as("max_time"),
@@ -140,7 +138,7 @@ export class UserStatsRepository {
             `,
         ).reduce((acc, curr) => sql`${acc} + ${curr}`);
 
-        const baseQuery = db
+        const baseQuery = getDbClient()
             .select({
                 id: user.id,
                 name: user.name,
@@ -163,7 +161,7 @@ export class UserStatsRepository {
             rankColumns[`${mt}Rank`] = sql`row_number() OVER (ORDER BY ${scoreCol} DESC)`.as(`${mt}_rank`);
         });
 
-        const allUsersRanked = db
+        const allUsersRanked = getDbClient()
             .with(baseQuery)
             .select({
                 id: baseQuery.id,
@@ -201,12 +199,12 @@ export class UserStatsRepository {
         }
 
         // Final Query Construction with Search and Pagination
-        const finalQueryBase = db.with(allUsersRanked).select().from(allUsersRanked);
+        const finalQueryBase = getDbClient().with(allUsersRanked).select().from(allUsersRanked);
         if (search)
             finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
         // Get Total Count for Pagination
-        const totalCounter = db.with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
+        const totalCounter = getDbClient().with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
         if (search)
             totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
@@ -224,7 +222,7 @@ export class UserStatsRepository {
 
         // Add user settings to map
         const userIds = rankedUsers.map((u) => u.id);
-        const allSettings = await db
+        const allSettings = await getDbClient()
             .select()
             .from(userMediaSettings)
             .where(inArray(userMediaSettings.userId, userIds))
@@ -239,7 +237,7 @@ export class UserStatsRepository {
         }
 
         // Get Media Type Counts
-        const mediaTypeCountsResult = await db
+        const mediaTypeCountsResult = await getDbClient()
             .select({
                 mediaType: userMediaSettings.mediaType,
                 activeUsers: sql<number>`count(${userMediaSettings.userId})`,
@@ -258,7 +256,7 @@ export class UserStatsRepository {
         });
 
         // Get Current User's Ranks
-        const currentUserRankData = await db
+        const currentUserRankData = await getDbClient()
             .with(allUsersRanked)
             .select()
             .from(allUsersRanked)

@@ -1,10 +1,11 @@
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.transformer";
 
 
-export class GamesProviderService {
+export class GamesProviderService implements IProviderService {
     constructor(
         private readonly client: IgdbClient,
         private readonly hltbClient: HltbClient,

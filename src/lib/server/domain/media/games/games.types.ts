@@ -1,8 +1,9 @@
-import {games, gamesList} from "@/lib/server/database/schema";
 import {TopMetricStats} from "@/lib/server/types/base.types";
+import {games, gamesList} from "@/lib/server/database/schema";
+import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
-export type Game = typeof games.$inferInsert;
+export type Game = typeof games.$inferSelect;
 export type GamesList = typeof gamesList.$inferSelect;
 
 
@@ -21,3 +22,6 @@ export type GamesTopMetricStats = {
     publishersStats: TopMetricStats;
     perspectivesStats: TopMetricStats;
 };
+
+
+export type GamesAchCodeName = typeof gamesAchievements[number]["codeName"];

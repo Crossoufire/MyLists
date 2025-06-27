@@ -2,7 +2,6 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
-import {db} from "@/lib/server/database/db";
 
 
 export class MediadleRepository {
@@ -12,15 +11,15 @@ export class MediadleRepository {
         const perPage = data.pageSize ?? 25;
         const offset = page * perPage;
 
-        const totalResult = await db
+        const totalResult = await getDbClient()
             .select({ count: count() })
             .from(mediadleStats)
             .innerJoin(user, eq(mediadleStats.userId, user.id))
             .where(like(user.name, `%${search}%`))
-            .execute();
-        const totalStats = totalResult[0]?.count ?? 0;
+            .get();
+        const totalStats = totalResult?.count ?? 0;
 
-        const results = await db
+        const results = await getDbClient()
             .select({
                 name: user.name,
                 email: user.email,
@@ -37,12 +36,20 @@ export class MediadleRepository {
             .offset(offset)
             .execute();
 
-        return { items: results, pages: Math.ceil((totalStats ?? 0) / perPage), total: totalStats };
+        return {
+            items: results,
+            pages: Math.ceil((totalStats ?? 0) / perPage),
+            total: totalStats,
+        };
     }
 
     static async getTodayMoviedle() {
         const today = new Date().toISOString().slice(0, 10);
-        return getDbClient().select().from(dailyMediadle).where(sql`${dailyMediadle.date} >= ${today}`).get();
+        return getDbClient()
+            .select()
+            .from(dailyMediadle)
+            .where(sql`${dailyMediadle.date} >= ${today}`)
+            .get();
     }
 
     static async createDailyMoviedle() {
@@ -52,7 +59,7 @@ export class MediadleRepository {
             .where(eq(dailyMediadle.mediaType, MediaType.MOVIES))
             .limit(200)
             .execute();
-        const alreadyUsedMoviesIds = alreadyUsedMovies.map((row: any) => row.mediaId);
+        const alreadyUsedMoviesIds = alreadyUsedMovies.map((r) => r.mediaId);
 
         const selectedMovie = await getDbClient()
             .select()
@@ -236,7 +243,7 @@ export class MediadleRepository {
             .where(and(
                 eq(userMediadleProgress.userId, userId),
                 eq(userMediadleProgress.dailyMediadleId, mediadleId),
-                eq(userMediadleProgress.completed, false), // Only update if not already completed
+                eq(userMediadleProgress.completed, false),
             ))
             .returning();
 

@@ -1,6 +1,6 @@
 import {Column, SQL, Table} from "drizzle-orm";
+import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
-import {FilterDefinitions} from "./provider.types";
 
 
 export interface MediaListArgs {

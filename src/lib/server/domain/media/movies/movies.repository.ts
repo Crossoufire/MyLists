@@ -1,10 +1,10 @@
 import {db} from "@/lib/server/database/db";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Achievement} from "@/lib/server/types/achievements.types";
-import {AddedMediaDetails} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {Movie, MoviesList, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
@@ -486,21 +486,21 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
     }
 
     async specificTopMetrics(userId?: number) {
-        const langsConfig = {
+        const langsConfig: ConfigTopMetric = {
             metricTable: movies,
             metricNameColumn: movies.originalLanguage,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
-        const directorsConfig = {
+        const directorsConfig: ConfigTopMetric = {
             metricTable: movies,
             metricNameColumn: movies.directorName,
             metricIdColumn: movies.id,
             mediaLinkColumn: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
-        const actorsConfig = {
+        const actorsConfig: ConfigTopMetric = {
             metricTable: moviesActors,
             metricNameColumn: moviesActors.name,
             metricIdColumn: moviesActors.mediaId,

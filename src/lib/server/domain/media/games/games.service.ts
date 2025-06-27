@@ -3,25 +3,17 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {IGamesService} from "@/lib/server/types/services.types";
-import {Game} from "@/lib/server/domain/media/games/games.types";
+import {IProviderService} from "@/lib/server/types/provider.types";
 import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {GamesAchCodeName, gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
+import {MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
 
 
-interface UserGameState {
-    mediaId: number;
-    playtime: number;
-    favorite: boolean;
-    status: Status | null;
-    rating: number | null | undefined;
-    comment: string | null | undefined;
-}
-
-
-export class GamesService extends BaseService<Game, IGamesRepository> implements IGamesService {
+export class GamesService extends BaseService<Game, GamesList, IGamesRepository> implements IGamesService {
     private readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: GamesRepository) {
@@ -44,7 +36,7 @@ export class GamesService extends BaseService<Game, IGamesRepository> implements
         };
     }
 
-    async getAchievementCte(achievement: Achievement, userId?: number) {
+    getAchievementCte(achievement: Achievement, userId?: number) {
         const handler = this.achievementHandlers[achievement.codeName as GamesAchCodeName];
         if (!handler) {
             throw new Error("Invalid Achievement codeName");
@@ -89,40 +81,40 @@ export class GamesService extends BaseService<Game, IGamesRepository> implements
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: any) {
-        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
+        const media = external ?
+            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
-        let mediaWithDetails;
         let internalMediaId = media?.id;
-
         if (external && !internalMediaId) {
             internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) {
-                throw new Error("Failed to fetch media details");
-            }
+            if (!internalMediaId) throw new Error("Failed to fetch media details");
         }
 
         if (internalMediaId) {
-            mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-        }
-        else {
-            throw new Error("Game not found");
+            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+            if (!mediaWithDetails) throw new Error("Game not found");
+
+            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
+            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+
+            return {
+                media: mediaWithDetails,
+                userMedia,
+                followsData,
+                similarMedia,
+            } as MediaAndUserDetails<Game, GamesList>;
         }
 
-        const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
-        const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-        const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-        return { media: mediaWithDetails, userMedia, followsData, similarMedia };
+        throw new Error("Game not found");
     }
 
     async getMediaEditableFields(mediaId: number) {
         // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
 
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
         const fields: { [key: string]: any } = {};
@@ -141,9 +133,7 @@ export class GamesService extends BaseService<Game, IGamesRepository> implements
         // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
 
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
         const fields: { [key: string]: any } = {};
@@ -177,58 +167,51 @@ export class GamesService extends BaseService<Game, IGamesRepository> implements
         const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
 
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) {
-            throw new Error("Media already in your list");
-        }
+        if (userMedia) throw new Error("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-
-        const delta = this.calculateDeltaStats(null, newState as UserGameState);
+        const delta = this.calculateDeltaStats(null, newState);
 
         return { newState, media, delta };
     }
 
     async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserGameState, newState as UserGameState);
+        const delta = this.calculateDeltaStats(oldState, newState);
 
-        return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
+        return {
+            os: oldState,
+            ns: newState,
+            media,
+            delta,
+            updateData: completeUpdateData,
+        };
     }
 
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) {
-            throw new Error("Media not in your list");
-        }
+        if (!oldState) throw new Error("Media not in your list");
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState as unknown as UserGameState, null);
+        const delta = this.calculateDeltaStats(oldState, null);
 
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: any) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: GamesList) {
         const completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status && completeUpdateData.status === Status.PLAN_TO_PLAY) {
@@ -238,7 +221,7 @@ export class GamesService extends BaseService<Game, IGamesRepository> implements
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserGameState | null, newState: UserGameState | null) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 

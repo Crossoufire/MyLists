@@ -6,6 +6,7 @@ import {MediaCard} from "@/lib/components/app/MediaCard";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {ComingNext} from "@/lib/server/types/base.types";
 import {capitalize, formatDateTime, zeroPad} from "@/lib/utils/functions";
 import {upcomingOptions} from "@/lib/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
@@ -40,10 +41,10 @@ function ComingNextPage() {
                                     No upcoming {next?.mediaType} found
                                 </MutedText>
                                 :
-                                next?.items.map((media) => (
-                                    <div key={media.mediaId}>
+                                next?.items.map((item) => (
+                                    <div key={item.mediaId}>
                                         <NextMedia
-                                            media={media}
+                                            item={item}
                                             mediaType={next?.mediaType}
                                         />
                                     </div>
@@ -59,19 +60,19 @@ function ComingNextPage() {
 
 
 interface NextMediaProps {
+    item: ComingNext;
     mediaType: MediaType;
-    media: Record<string, any>;
 }
 
 
-const NextMedia = ({ media, mediaType }: NextMediaProps) => {
+const NextMedia = ({ item, mediaType }: NextMediaProps) => {
     return (
-        <MediaCard item={media} mediaType={mediaType}>
+        <MediaCard item={item} mediaType={mediaType}>
             <div className="absolute bottom-0 px-4 pt-2 pb-2 space-y-1 bg-gray-900 w-full rounded-b-sm text-center">
-                {(mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) && (
-                    <div>S{zeroPad(parseInt(media.seasonToAir))}&nbsp;-&nbsp;E{zeroPad(parseInt(media.episodeToAir))}</div>
-                )}
-                <div>{formatDateTime(media.date)}</div>
+                {(mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) &&
+                    <div>S{zeroPad(item.seasonToAir!)}&nbsp;-&nbsp;E{zeroPad(item.episodeToAir!)}</div>
+                }
+                <div>{formatDateTime(item.date)}</div>
             </div>
         </MediaCard>
     );

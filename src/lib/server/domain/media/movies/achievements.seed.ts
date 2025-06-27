@@ -281,5 +281,3 @@ export const moviesAchievements = [
         ],
     },
 ] as const;
-
-

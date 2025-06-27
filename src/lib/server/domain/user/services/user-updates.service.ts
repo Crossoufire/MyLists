@@ -1,7 +1,7 @@
 import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
-import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 
 
@@ -19,7 +19,7 @@ type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: an
 
 
 export class UserUpdatesService {
-    private readonly updateThreshold = 300
+    private readonly updateThreshold = 300;
 
     constructor(private repository: typeof UserUpdatesRepository) {
     }
@@ -57,7 +57,8 @@ export class UserUpdatesService {
     async logUpdate({ userId, mediaType, media, updateType, os, ns }: LogUpdateParams) {
         const { oldValue, newValue } = this.extractLogValues(updateType)(os, ns);
 
-        const [previousEntry] = await getDbClient().select()
+        const [previousEntry] = await getDbClient()
+            .select()
             .from(userMediaUpdate).where(and(
                 eq(userMediaUpdate.userId, userId),
                 eq(userMediaUpdate.mediaId, media.id),
