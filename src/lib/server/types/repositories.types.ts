@@ -1,6 +1,6 @@
 import {SQL} from "drizzle-orm";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";

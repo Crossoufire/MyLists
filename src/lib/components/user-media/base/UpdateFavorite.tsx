@@ -21,7 +21,7 @@ export const UpdateFavorite = ({ updateFavorite, isFavorite }: UpdateFavoritePro
                 className={cn(
                     "opacity-100 w-5 h-5 text-white",
                     isFavorite && "text-red-700",
-                    updateFavorite?.isPending && "opacity-20",
+                    updateFavorite.isPending && "opacity-20",
                 )}
             />
         </div>

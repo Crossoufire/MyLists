@@ -1,5 +1,5 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";

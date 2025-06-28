@@ -10,5 +10,10 @@ export const useAuth = () => {
         await queryClient.invalidateQueries({ queryKey: queryKeys.authKey() });
     };
 
-    return { currentUser: currentUser, setCurrentUser, isLoading, isPending };
+    return {
+        currentUser: currentUser,
+        setCurrentUser,
+        isLoading,
+        isPending,
+    };
 };

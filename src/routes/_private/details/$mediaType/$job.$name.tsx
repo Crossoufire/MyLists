@@ -4,7 +4,7 @@ import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {createFileRoute} from "@tanstack/react-router";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 
@@ -12,7 +12,11 @@ import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({
     params: {
         parse: (params) => {
-            return { job: params.job as JobType, name: params.name as string, mediaType: params.mediaType as MediaType }
+            return {
+                job: params.job as JobType,
+                name: params.name as string,
+                mediaType: params.mediaType as MediaType,
+            }
         }
     },
     validateSearch: (search) => search as SearchType,
@@ -29,8 +33,8 @@ const DEFAULT = { page: 1 };
 
 function JobInfoPage() {
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const { mediaType, job, name } = Route.useParams();
-    const navigate = useNavigate({ from: "/details/$mediaType/$job/$name" });
     const apiData = useSuspenseQuery(jobDetailsOptions(mediaType, job, name, filters)).data;
     const { page = DEFAULT.page } = filters;
 

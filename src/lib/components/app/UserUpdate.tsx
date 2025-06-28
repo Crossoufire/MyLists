@@ -5,8 +5,8 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/app/Payload";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/app/BlockLink";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 
 
 interface UserUpdateProps {

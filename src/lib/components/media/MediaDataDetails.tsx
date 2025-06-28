@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {TvDetails} from "@/lib/components/media-details/TvDetails";
-import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
-import {GamesDetails} from "@/lib/components/media-details/GamesDetails";
-import {MoviesDetails} from "@/lib/components/media-details/MoviesDetails";
+import {TvDetails} from "@/lib/components/media/tv/TvDetails";
+import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
+import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
+import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 
 

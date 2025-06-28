@@ -32,7 +32,10 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: R
         <div className="flex items-center gap-3 mt-2">
             <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
                 <div role="button" onClick={handleRefresh}>
-                    <RefreshCw size={18} className={cn("", refreshMutation.isPending && "animate-spin opacity-30")}/>
+                    <RefreshCw
+                        size={18}
+                        className={cn("", refreshMutation.isPending && "animate-spin opacity-30")}
+                    />
                 </div>
             </Tooltip>
             <Link to="/details/edit/$mediaType/$mediaId" params={{ mediaType, mediaId }}>

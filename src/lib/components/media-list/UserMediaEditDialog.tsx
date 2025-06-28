@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserMediaDetails} from "@/lib/components/user-media/UserMediaDetails";
+import {UserMediaDetails} from "@/lib/components/user-media/base/UserMediaDetails";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
 
 

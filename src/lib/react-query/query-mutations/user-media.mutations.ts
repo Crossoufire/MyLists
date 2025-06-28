@@ -1,5 +1,5 @@
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
@@ -47,7 +47,7 @@ export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number 
         },
         onSuccess: (data) => {
             queryClient.setQueryData(queryKey, (oldData: any) => {
-                // @ts-expect-error
+                //@ts-expect-error
                 if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {
                     return { ...oldData, userMedia: data };
                 }

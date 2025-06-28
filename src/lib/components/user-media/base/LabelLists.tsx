@@ -5,7 +5,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {Label, LabelsDialog} from "@/lib/components/user-media/LabelsDialog";
+import {Label, LabelsDialog} from "@/lib/components/user-media/base/LabelsDialog";
 
 
 interface LabelListsProps {

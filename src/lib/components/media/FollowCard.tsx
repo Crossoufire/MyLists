@@ -114,9 +114,7 @@ const FollowCardLayout = ({ username, image, status, rating, comment, isFavorite
                                 <Star size={15} className={cn("text-gray-400", rating !== "--" && "text-amber-500")}/>
                                 <div>{rating}</div>
                             </div>
-
                             {childrens[0]}
-
                             <div className="flex items-center gap-x-2">
                                 {comment ?
                                     <Popover>

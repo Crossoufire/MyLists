@@ -8,7 +8,11 @@ import {SearchType} from "@/lib/server/types/base.types";
 
 export const getMediaDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any): { mediaType: MediaType, mediaId: number | string, external: boolean } => data)
+    .validator(data => data as {
+        external: boolean,
+        mediaType: MediaType,
+        mediaId: number | string,
+    })
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
         const mediaProviderService = getContainer().registries.mediaProviderService.getService(mediaType);

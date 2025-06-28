@@ -6,27 +6,27 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaType, RoleType} from "@/lib/server/utils/enums";
+import {FollowCard} from "@/lib/components/media/FollowCard";
 import AvatarCircles from "@/lib/components/ui/avatar-circles";
-import {FollowCard} from "@/lib/components/media-details/FollowCard";
-import {SimilarMedia} from "@/lib/components/media-details/SimilarMedia";
-import {UserMediaDetails} from "@/lib/components/user-media/UserMediaDetails";
-import {MediaDataDetails} from "@/lib/components/media-details/MediaDataDetails";
+import {SimilarMedia} from "@/lib/components/media/base/SimilarMedia";
+import {MediaDataDetails} from "@/lib/components/media/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {RefreshAndEditMedia} from "@/lib/components/media-details/RefreshAndEditMedia";
+import {UserMediaDetails} from "@/lib/components/user-media/base/UserMediaDetails";
+import {RefreshAndEditMedia} from "@/lib/components/media/base/RefreshAndEditMedia";
 import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
-    validateSearch: (search) => ({ external: Boolean(search?.external ?? false) }),
     params: {
         parse: (params) => {
             return {
-                mediaId: params.mediaId,
+                mediaId: params.mediaId as string | number,
                 mediaType: params.mediaType as MediaType,
             }
         }
     },
+    validateSearch: (search) => ({ external: Boolean(search?.external ?? false) }),
     loaderDeps: ({ search: { external } }) => ({ external }),
     loader: async ({ context: { queryClient }, params: { mediaType, mediaId }, deps: { external } }) => {
         return queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
@@ -48,19 +48,19 @@ function MediaDetailsPage() {
     };
 
     return (
-        <PageTitle title={apiData.media.name ?? ""} onlyHelmet>
+        <PageTitle title={apiData.media.name} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">
                 <div>
                     <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
                         <div>{apiData.media.name}</div>
-                        {currentUser?.role === RoleType.MANAGER && (
+                        {currentUser?.role === RoleType.MANAGER &&
                             <RefreshAndEditMedia
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
                                 apiId={apiData.media.apiId}
                                 lastUpdate={apiData.media.lastApiUpdate}
                             />
-                        )}
+                        }
                     </h3>
                     <Separator/>
                 </div>
@@ -70,7 +70,7 @@ function MediaDetailsPage() {
                             <img
                                 alt="media-cover"
                                 src={apiData.media.imageCover}
-                                className="w-[300px] h-[450px] rounded-md"
+                                className={"w-[300px] h-[450px] rounded-md"}
                             />
                             {apiData.userMedia ?
                                 <UserMediaDetails

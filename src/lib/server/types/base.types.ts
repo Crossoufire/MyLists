@@ -1,6 +1,6 @@
 import {Column, SQL} from "drizzle-orm";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaListArgs, MediaTable} from "@/lib/server/types/media-lists.types";

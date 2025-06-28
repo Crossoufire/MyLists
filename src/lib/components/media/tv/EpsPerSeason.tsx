@@ -1,4 +1,4 @@
-import {MediaTitle} from "@/lib/components/media-details/MediaTitle";
+import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 
 interface EpsPerSeasonProps {

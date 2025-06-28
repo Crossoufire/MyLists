@@ -1,4 +1,5 @@
 import {queryOptions} from "@tanstack/react-query";
+import {SearchType} from "@/lib/server/types/base.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getUserStats} from "@/lib/server/functions/user-stats";
@@ -11,9 +12,8 @@ import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/m
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
-import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
-import {SearchType} from "@/lib/server/types/base.types";
+import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];

@@ -1,6 +1,6 @@
 import {RotateCw} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
-import {FollowsData} from "@/lib/components/media-details/FollowCard";
+import {FollowsData} from "@/lib/components/media/FollowCard";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 

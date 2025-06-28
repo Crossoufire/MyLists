@@ -1,15 +1,15 @@
-import {Check, ChevronDown} from "lucide-react";
+import {cn} from "@/lib/utils/helpers";
 import {useEffect, useState} from "react";
+import {Check, ChevronDown} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
 import {GamesPlatformsEnum} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/lib/components/ui/command";
-import {cn} from "@/lib/utils/helpers";
 
 
 interface UpdatePlatformProps {
-    platform: GamesPlatformsEnum;
+    platform: GamesPlatformsEnum | null;
     updatePlatform: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 

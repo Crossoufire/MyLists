@@ -1,6 +1,6 @@
 import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
-import {Label} from "@/lib/components/user-media/LabelsDialog";
+import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";

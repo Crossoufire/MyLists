@@ -1,6 +1,6 @@
 import {Play} from "lucide-react";
 import {Status} from "@/lib/server/utils/enums";
-import {FollowsData} from "@/lib/components/media-details/FollowCard";
+import {FollowsData} from "@/lib/components/media/FollowCard";
 
 
 interface GamesDetailsFollowCardProps {
