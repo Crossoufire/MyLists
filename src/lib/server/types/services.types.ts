@@ -18,6 +18,7 @@ import {
     JobDetails,
     MediaAndUserDetails,
     MediaListData,
+    SearchType,
     UpdateUserMediaDetails,
     UserMediaStats,
     UserMediaWithLabels
@@ -39,8 +40,8 @@ export interface IUniversalService<TMedia, TList> {
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
+    getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType): Promise<JobDetails>;
     getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData>;
-    getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>): Promise<JobDetails>;
 }
 
 

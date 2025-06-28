@@ -236,3 +236,11 @@ export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefini
 export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 type NameValuePair = { name: string | number, value: number };
+
+
+export type SearchType = {
+    page?: number;
+    sort?: string;
+    search?: string;
+    perPage?: number;
+}

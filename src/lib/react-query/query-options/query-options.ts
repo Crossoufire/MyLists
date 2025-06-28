@@ -13,6 +13,7 @@ import {getNotifications, getNotificationsCount} from "@/lib/server/functions/no
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
+import {SearchType} from "@/lib/server/types/base.types";
 
 
 type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
@@ -196,7 +197,7 @@ export const editMediaDetailsOptions = (mediaType: MediaType, mediaId: number) =
     staleTime: 0,
 });
 
-export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: string, search: Record<string, any>) => queryOptions({
+export const jobDetailsOptions = (mediaType: MediaType, job: JobType, name: string, search: SearchType) => queryOptions({
     queryKey: queryKeys.jobDetailsKey(mediaType, job, name, search),
     queryFn: () => getJobDetails({ data: { mediaType, job, name, search } }),
 });

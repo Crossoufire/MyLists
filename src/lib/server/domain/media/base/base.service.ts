@@ -1,7 +1,7 @@
 import {JobType} from "@/lib/server/utils/enums";
-import {EditUserLabels} from "@/lib/server/types/base.types";
 import {IUniversalService} from "@/lib/server/types/services.types";
 import {ICommonRepository} from "@/lib/server/types/repositories.types";
+import {EditUserLabels, SearchType} from "@/lib/server/types/base.types";
 
 
 export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia, TList> {
@@ -64,7 +64,7 @@ export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TLis
         return this.repository.getListFilters(userId);
     }
 
-    async getMediaJobDetails(userId: number, job: JobType, name: string, search: Record<string, any>) {
+    async getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType) {
         const page = search.page ?? 1;
         const perPage = search.perPage ?? 25;
         const offset = (page - 1) * perPage;

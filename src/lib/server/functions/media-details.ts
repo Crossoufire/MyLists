@@ -3,6 +3,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {SearchType} from "@/lib/server/types/base.types";
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })
@@ -56,11 +57,11 @@ export const postEditMediaDetails = createServerFn({ method: "POST" })
 
 export const getJobDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => data as {
+    .validator((data) => data as {
         name: string,
         job: JobType,
         mediaType: MediaType,
-        search: Record<string, any>,
+        search: SearchType,
     })
     .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
         const mediaService = getContainer().registries.mediaService.getService(mediaType);

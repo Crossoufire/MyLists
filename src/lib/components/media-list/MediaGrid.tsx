@@ -2,10 +2,10 @@ import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Heart, Settings2} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
-import {MediaCard} from "@/lib/components/app/MediaCard";
+import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
-import {MediaInfoCorner} from "@/lib/components/app/MediaInfoCorner";
+import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
 import {DisplayRating} from "@/lib/components/media-list/DisplayRating";
 import {CommentPopover} from "@/lib/components/media-list/CommentPopover";
@@ -81,7 +81,7 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                         mediaType={mediaType}
                     />
                 </div>
-                {isConnected && <MediaInfoCorner isCommon={userMedia.common}/>}
+                {isConnected && <MediaCornerCommon isCommon={userMedia.common}/>}
                 <div className="absolute bottom-0 px-3 pt-2 pb-3 space-y-3 bg-gray-900 w-full rounded-b-sm">
                     <div className="flex items-center justify-between space-x-2 w-full max-sm:text-sm">
                         <h3 className="font-semibold truncate flex-grow" title={userMedia.mediaName}>
