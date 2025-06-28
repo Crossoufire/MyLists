@@ -347,7 +347,7 @@ export const mangaList = sqliteTable("manga_list", {
         userId: integer().notNull().references(() => user.id),
         currentChapter: integer().notNull(),
         total: integer(),
-        redo: integer().notNull(),
+        redo: integer().notNull().default(0),
         status: text().$type<Status>().notNull(),
         rating: real(),
         favorite: integer({ mode: "boolean" }),

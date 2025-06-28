@@ -5,7 +5,7 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/app/Payload";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
@@ -84,7 +84,7 @@ function AllUpdates() {
             cell: ({ row: { original } }: any) => {
                 return (
                     <div className="flex items-center gap-4">
-                        <MediaIcon mediaType={original.mediaType} size={16}/>
+                        <MediaAndUserIcon type={original.mediaType} size={16}/>
                         <Link
                             to="/details/$mediaType/$mediaId"
                             params={{ mediaType: original.mediaType, mediaId: original.mediaId }}

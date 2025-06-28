@@ -5,7 +5,7 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/app/Payload";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/app/BlockLink";
-import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 
 
@@ -29,10 +29,10 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
         <>
             <div className={cn("grid grid-cols-[auto_1fr_auto] gap-x-3 py-1 pr-2 group relative",
                 (mediaIdBeingDeleted === update.id && isPending) && "opacity-20")}>
-                <MediaIcon
+                <MediaAndUserIcon
                     size={18}
+                    type={update.mediaType}
                     className="mt-1 row-span-3"
-                    mediaType={update.mediaType}
                 />
                 <div className="col-span-2">
                     <BlockLink to={`/details/${update.mediaType}/${update.mediaId}`} disabled={isPending}>

@@ -299,7 +299,7 @@ export class BaseRepository<
                 id: user.id,
                 name: user.name,
                 image: user.image,
-                mediaList: listTable,
+                userMedia: listTable,
                 ratingSystem: user.ratingSystem,
             })
             .from(followers)
@@ -307,7 +307,7 @@ export class BaseRepository<
             .innerJoin(listTable, eq(listTable.userId, followers.followedId))
             .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)));
 
-        return inFollowsLists as unknown as UserFollowsMediaData<TList>[];
+        return inFollowsLists as UserFollowsMediaData<TList>[];
     }
 
     async getCommonListFilters(userId: number) {

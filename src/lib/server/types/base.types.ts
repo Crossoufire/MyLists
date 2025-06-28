@@ -117,7 +117,8 @@ export type UserFollowsMediaData<TList> = {
     id: number;
     name: string;
     image: string;
-    userMedia: TList & { ratingSystem: RatingSystemType };
+    userMedia: TList;
+    ratingSystem: RatingSystemType;
 }
 
 

@@ -2,17 +2,24 @@ import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
 import {Separator} from "@/lib/components/ui/separator";
+import {Heart, MessageCircle, Star} from "lucide-react";
 import {Card, CardContent} from "@/lib/components/ui/card";
-import {Heart, MessageCircle, Play, RotateCw, Star} from "lucide-react";
+import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
+import {RedoFollowCard} from "@/lib/components/media/base/RedoFollowCard";
+import {TvRedoFollowCard} from "@/lib/components/media/tv/TvRedoFollowCard";
 import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
-import {getFeelingIcon, getStatusColor, zeroPad} from "@/lib/utils/functions";
 import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
+import {TvDetailsFollowCard} from "@/lib/components/media/tv/TvDetailsFollowCard";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {GamesDetailsFollowCard} from "@/lib/components/media/games/GamesDetailsFollowCard";
+
+
+export type FollowsData = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["followsData"]
 
 
 interface FollowCardProps {
     mediaType: MediaType;
-    follow: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["followsData"][0];
+    follow: FollowsData[0];
 }
 
 
@@ -20,11 +27,62 @@ export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
     const rating = formatRating();
 
     function formatRating() {
-        if (follow.userMedia.ratingSystem === RatingSystemType.FEELING) {
+        if (follow.ratingSystem === RatingSystemType.FEELING) {
             return getFeelingIcon(follow.userMedia.rating, { size: 17 });
         }
         return follow.userMedia.rating === null ? "--" : follow.userMedia.rating.toFixed(1);
     }
+
+    const renderDetails = () => {
+        if (mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) {
+            return [
+                <TvRedoFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { redo2: number[] } }>}/>,
+                <TvDetailsFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { currentSeason: number } }>}/>
+            ];
+        }
+        else if (mediaType === MediaType.GAMES) {
+            return [
+                null,
+                <GamesDetailsFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { playtime: number | null } }>}/>,
+            ];
+        }
+        else if (mediaType === MediaType.MOVIES) {
+            return [
+                <RedoFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { redo: number | null } }>}/>,
+                null,
+            ];
+        }
+        else {
+            return [null, null];
+        }
+    };
+
+    return (
+        <FollowCardLayout
+            rating={rating}
+            image={follow.image}
+            username={follow.name}
+            childrens={renderDetails()}
+            status={follow.userMedia.status}
+            comment={follow.userMedia.comment}
+            isFavorite={follow.userMedia.favorite}
+        />
+    );
+};
+
+
+interface FollowCardLayoutProps {
+    image: string;
+    status: Status;
+    username: string;
+    comment: string | null;
+    rating: React.ReactNode;
+    isFavorite: boolean | null;
+    childrens: React.ReactNode[];
+}
+
+
+const FollowCardLayout = ({ username, image, status, rating, comment, isFavorite, childrens }: FollowCardLayoutProps) => {
 
     const getTextColor = (backColor: string) => {
         const hex = backColor.replace("#", "");
@@ -39,62 +97,51 @@ export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
             <CardContent className="p-4">
                 <div className="grid grid-cols-12 gap-2">
                     <div className="col-span-3">
-                        <Link to="/profile/$username" params={{ username: follow.name }}>
+                        <Link to="/profile/$username" params={{ username }}>
                             <img
-                                alt={follow.name}
-                                src={follow.image!}
+                                src={image}
+                                alt={username}
                                 className="bg-neutral-600 h-[52px] w-[52px] rounded-full"
                             />
                         </Link>
                     </div>
                     <div className="col-span-9 space-y-1">
-                        <Link to="/profile/$username" params={{ username: follow.name }}>
-                            <div className="text-lg font-medium">{follow.name}</div>
+                        <Link to="/profile/$username" params={{ username }}>
+                            <div className="text-lg font-medium">{username}</div>
                         </Link>
                         <div className="flex justify-between items-center pr-3">
                             <div className="flex items-center gap-x-2">
-                                <Star size={15} className={cn("text-[e2e2e2]", rating != "--" && "text-amber-500")}/>
+                                <Star size={15} className={cn("text-gray-400", rating !== "--" && "text-amber-500")}/>
                                 <div>{rating}</div>
                             </div>
-                            <RedoInfo
-                                follow={follow}
-                                mediaType={mediaType}
-                            />
+
+                            {childrens[0]}
+
                             <div className="flex items-center gap-x-2">
-                                {follow.userMedia.comment ?
+                                {comment ?
                                     <Popover>
                                         <PopoverTrigger>
                                             <MessageCircle size={15} className="text-blue-500"/>
                                         </PopoverTrigger>
-                                        <PopoverContent>{follow.userMedia.comment}</PopoverContent>
+                                        <PopoverContent>{comment}</PopoverContent>
                                     </Popover>
                                     :
                                     <MessageCircle size={15}/>
                                 }
                             </div>
-                            <div className="flex gap-x-2">
-                                <Heart
-                                    size={15}
-                                    className={cn("", follow.userMedia.favorite && "text-red-700")}
-                                />
-                            </div>
+                            <Heart
+                                size={15}
+                                className={cn("", isFavorite && "text-red-700")}
+                            />
                         </div>
                     </div>
                 </div>
                 <Separator className="mb-3 mt-3"/>
                 <div className="flex items-center justify-between">
-                    <div className="flex gap-x-3">
-                        <Badge style={{
-                            background: getStatusColor(follow.userMedia.status),
-                            color: getTextColor(getStatusColor(follow.userMedia.status)),
-                        }}>
-                            {follow.userMedia.status}
-                        </Badge>
-                    </div>
-                    <MoreFollowDetails
-                        follow={follow}
-                        mediaType={mediaType}
-                    />
+                    <Badge style={{ background: getStatusColor(status), color: getTextColor(getStatusColor(status)) }}>
+                        {status}
+                    </Badge>
+                    {childrens[1]}
                 </div>
             </CardContent>
         </Card>
@@ -102,105 +149,19 @@ export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
 };
 
 
-interface RedoInfoProps {
-    mediaType: MediaType;
-    follow: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["followsData"][0];
-}
-
-
-const RedoInfo = ({ follow, mediaType }: RedoInfoProps) => {
-    if (mediaType === "games") {
-        return null;
-    }
-    else if (mediaType == MediaType.SERIES || mediaType == MediaType.ANIME) {
-        const maxCount = Math.max(...follow.userMedia.redo2);
-        //@ts-expect-error
-        const totalRedo = follow.mediaList.redo2.reduce((a, b) => a + b, 0);
-
-        if (maxCount === 0) {
-            return (
-                <div className="flex items-center gap-x-2">
-                    <RotateCw size={15} className="text-green-500"/>
-                    <div>{totalRedo} {totalRedo > 1 ? "S." : ""}</div>
-                </div>
-            );
-        }
-
-        return (
-            <Popover>
-                <PopoverTrigger>
-                    <div className="flex items-center gap-x-2">
-                        <RotateCw size={15} className="text-green-500"/>
-                        <div>{totalRedo} {totalRedo > 1 ? "S." : ""}</div>
-                    </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">
-                    <div className=" grid gap-3">
-                        <div className="space-y-2">
-                            {/*//@ts-expect-error*/}
-                            {follow.mediaList.redo2.map((season, idx) => (
-                                <div key={idx} className="flex gap-3 items-center justify-between">
-                                    <div className="text-sm font-medium leading-none">
-                                        Season {zeroPad(idx + 1)}
-                                    </div>
-                                    <div className="text-sm font-medium">
-                                        {season}x
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </PopoverContent>
-            </Popover>
-        );
-    }
-    else {
-        return (
-            <div className="flex items-center gap-x-2">
-                <RotateCw size={15} className="text-green-500"/>
-                <div>{follow.userMedia.redo}</div>
-            </div>
-        );
-    }
-};
-
-
-interface MoreFollowDetailsProps {
-    mediaType: MediaType;
-    follow: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["followsData"][0];
-}
-
-
-const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
-    if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
-        if (![Status.RANDOM, Status.PLAN_TO_WATCH].includes(follow.userMedia.status)) {
-            return (
-                <div className="flex gap-x-2 items-center">
-                    <Play size={16} className="mt-0.5"/>
-                    S{zeroPad(follow.userMedia.currentSeason)} - E{zeroPad(follow.userMedia.lastEpisodeWatched)}
-                </div>
-            );
-        }
-    }
-    else if (mediaType === MediaType.BOOKS && follow.userMedia.status !== Status.PLAN_TO_READ) {
-        return (
-            <div className="flex gap-x-2 items-center">
-                <Play size={16} className="mt-0.5"/> Pages {follow.userMedia.actualPage}/{follow.userMedia.totalPages}
-            </div>
-        );
-    }
-    else if (mediaType === MediaType.GAMES && follow.userMedia.status !== Status.PLAN_TO_PLAY) {
-        return (
-            <div className="flex gap-x-2 items-center">
-                <Play size={16} className="mt-0.5"/> Played {follow.userMedia.playtime / 60} h
-            </div>
-        );
-    }
-    else if (mediaType === MediaType.MANGA && follow.userMedia.status !== Status.PLAN_TO_READ) {
-        return (
-            <div className="flex gap-x-2 items-center">
-                <Play size={16} className="mt-0.5"/> Chpt. {follow.userMedia.currentChapter}/{follow.userMedia.totalChapters ?? "?"}
-            </div>
-        );
-    }
-};
+// const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
+//     else if (mediaType === MediaType.BOOKS && follow.userMedia.status !== Status.PLAN_TO_READ) {
+//         return (
+//             <div className="flex gap-x-2 items-center">
+//                 <Play size={16} className="mt-0.5"/> Pages {follow.userMedia.actualPage}/{follow.userMedia.totalPages}
+//             </div>
+//         );
+//     }
+//     else if (mediaType === MediaType.MANGA && follow.userMedia.status !== Status.PLAN_TO_READ) {
+//         return (
+//             <div className="flex gap-x-2 items-center">
+//                 <Play size={16} className="mt-0.5"/> Chpt. {follow.userMedia.currentChapter}/{follow.userMedia.totalChapters ?? "?"}
+//             </div>
+//         );
+//     }
+// };

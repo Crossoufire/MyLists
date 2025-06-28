@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {PageTitle} from "@/lib/components/app/PageTitle";
-import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {AchievementCard} from "@/lib/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
@@ -28,7 +28,7 @@ function AchievementPage() {
                 <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {Object.entries(apiData.summary).map(([mt, _]) => (
                         <TabsTrigger key={mt} value={mt} className="max-sm:px-2 px-4 flex items-center gap-2">
-                            <MediaIcon mediaType={mt as MediaType}/> {capitalize(mt)}
+                            <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
                         </TabsTrigger>
                     ))}
                 </TabsList>
@@ -36,13 +36,12 @@ function AchievementPage() {
                     <TabsContent key={mt} value={mt}>
                         <AchievementSummary summary={summary}/>
                         <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {apiData.result.filter((r) => mt === "all" || mt === r.mediaType)
-                                .map((achievement) => (
-                                    <AchievementCard
-                                        key={achievement.id}
-                                        achievement={achievement}
-                                    />
-                                ))}
+                            {apiData.result.filter((r) => mt === "all" || mt === r.mediaType).map((achievement) => (
+                                <AchievementCard
+                                    key={achievement.id}
+                                    achievement={achievement}
+                                />
+                            ))}
                         </div>
                     </TabsContent>
                 ))}

@@ -17,5 +17,5 @@ export const getComingNextMedia = createServerFn({ method: "GET" })
             }).filter(Boolean)
         );
 
-        return comingNextData;
+        return comingNextData.filter(data => data !== null);
     });

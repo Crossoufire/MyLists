@@ -5,8 +5,8 @@ import {Award, CircleCheck} from "lucide-react";
 import {Progress} from "@/lib/components/ui/progress";
 import {capitalize, diffColors} from "@/lib/utils/functions";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
-import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {TiersDetails} from "@/lib/components/achievements/TierDetails";
+import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 

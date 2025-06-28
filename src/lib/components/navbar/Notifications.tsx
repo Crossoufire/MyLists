@@ -8,7 +8,7 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
@@ -94,7 +94,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                 <div className="flex items-center gap-2">
                     {data.mediaType ?
                         <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-3">
-                            <MediaIcon mediaType={data.mediaType} size={16}/>
+                            <MediaAndUserIcon type={data.mediaType} size={16}/>
                             <div className="truncate">{data.payload?.name}</div>
                             {((data.mediaType === "anime" || data.mediaType === "series") && data.payload?.finale) &&
                                 <Badge>Finale</Badge>
@@ -102,7 +102,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                         </div>
                         :
                         <>
-                            <MediaIcon mediaType="user" size={16}/>
+                            <MediaAndUserIcon type="user" size={16}/>
                             <div className="line-clamp-1">{data.payload?.message}</div>
                         </>
                     }

@@ -96,11 +96,11 @@ export class AchievementsService {
             let achievementEntry = achievementsMap.get(ach.id);
             if (!achievementEntry) {
                 achievementEntry = {
+                    tiers: [],
                     id: ach.id,
                     name: ach.name,
-                    description: ach.description,
                     mediaType: ach.mediaType!,
-                    tiers: [],
+                    description: ach.description,
                 };
                 achievementsMap.set(ach.id, achievementEntry);
             }

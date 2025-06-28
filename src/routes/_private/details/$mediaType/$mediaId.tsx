@@ -97,7 +97,7 @@ function MediaDetailsPage() {
                                         ({apiData.followsData.length})
                                     </span>
                                     <AvatarCircles
-                                        avatarUrls={apiData.followsData.map((follow: any) => follow.image!)}
+                                        avatarUrls={apiData.followsData.map((follow) => follow.image)}
                                     />
                                 </TabsTrigger>
                             </TabsList>
@@ -120,10 +120,10 @@ function MediaDetailsPage() {
                                 }
                             </TabsContent>
                             <TabsContent value="follows">
-                                {apiData.followsData.length !== 0 && (
+                                {apiData.followsData.length !== 0 &&
                                     <div className="mb-10 mt-6">
                                         <div className="grid grid-cols-12 gap-4">
-                                            {apiData.followsData.map((follow: any) => (
+                                            {apiData.followsData.map((follow) => (
                                                 <div key={follow.id} className="col-span-12 md:col-span-6 lg:col-span-6">
                                                     <FollowCard
                                                         follow={follow}
@@ -134,7 +134,7 @@ function MediaDetailsPage() {
                                             ))}
                                         </div>
                                     </div>
-                                )}
+                                }
                             </TabsContent>
                         </Tabs>
                     </div>

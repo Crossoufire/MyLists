@@ -3,7 +3,7 @@ import {ChevronDown} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaIcon} from "@/lib/components/app/MediaIcon";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
@@ -39,7 +39,7 @@ export const NavMediaDrop = () => {
                                 popRef={popRef}
                                 text={`${capitalize(item.media)}List`}
                                 to={`${item.url}/${currentUser?.name}`}
-                                icon={<MediaIcon mediaType={item.media} size={16}/>}
+                                icon={<MediaAndUserIcon type={item.media} size={16}/>}
                             />
                         )}
                     </ul>

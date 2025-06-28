@@ -1,5 +1,4 @@
 import {AchievementDifficulty, MediaType, Status} from "@/lib/server/utils/enums";
-import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, User} from "lucide-react";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
@@ -86,21 +85,6 @@ export const getRedoList = () => {
 
 
 // --- Icons & Colors ---------------------------------------------------------------------------------------
-
-
-export const getMediaIcon = (mediaType: MediaType | "user") => {
-    const icons = {
-        user: User,
-        series: Monitor,
-        anime: Cat,
-        movies: Popcorn,
-        games: Gamepad2,
-        books: Library,
-        manga: BookImage,
-    };
-    return icons[mediaType];
-};
-
 
 export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
     if (!mediaType) return "#868686";

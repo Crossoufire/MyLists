@@ -1,12 +1,13 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {MediaType} from "@/lib/server/utils/enums";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {capitalize, diffColors} from "@/lib/utils/functions";
-import {AchievementDifficulty} from "@/lib/server/utils/enums";
+import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface SummaryProps {
-    summary: { count: string | number, tier: AchievementDifficulty | "total" }[];
+    summary: Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["summary"][MediaType];
 }
 
 

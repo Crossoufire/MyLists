@@ -2,15 +2,18 @@ import React from "react";
 import {LoaderCircle} from "lucide-react";
 import {Card} from "@/lib/components/ui/card";
 import {MediaType} from "@/lib/server/utils/enums";
-import {JobDetail} from "@/lib/server/types/base.types";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 
 
 interface MediaCardProps {
-    item: JobDetail;
     isPending?: boolean;
     mediaType: MediaType;
     children: React.ReactNode;
+    item: {
+        mediaId: number;
+        mediaName: string;
+        imageCover: string;
+    };
 }
 
 
