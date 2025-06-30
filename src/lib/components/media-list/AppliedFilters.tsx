@@ -3,53 +3,62 @@ import {Badge} from "@/lib/components/ui/badge";
 import {capitalize} from "@/lib/utils/functions";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {useParams, useSearch} from "@tanstack/react-router";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 interface AppliedFiltersProps {
     totalItems: number;
-    onFilterRemove: any;
+    onFilterRemove: (filters: Partial<MediaListArgs>) => void;
 }
 
 
 export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersProps) => {
     const search = useSearch({ from: "/_private/list/$mediaType/$username" });
     const { mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
+
     const localFilters = { ...search };
     delete localFilters.page;
     delete localFilters.sort;
 
-    const removeFilter = (filterKey: string, filterValue: any) => {
-        //@ts-expect-error
+    const removeFilter = <K extends keyof MediaListArgs>(filterKey: K, filterValue: any) => {
         onFilterRemove({ [filterKey]: Array.isArray(localFilters[filterKey]) ? [filterValue] : null });
     };
 
     const removeAllFilters = () => {
-        const resetFilters = Object.keys(localFilters).reduce((acc, key) => {
-            //@ts-expect-error
-            if (Array.isArray(localFilters[key])) {
-                //@ts-expect-error
-                acc[key] = [];
+        const resetFilters = Object.keys(localFilters).reduce<Partial<MediaListArgs>>((acc, key) => {
+            const typedKey = key as keyof MediaListArgs;
+
+            if (Array.isArray(localFilters[typedKey])) {
+                acc[typedKey] = [] as any;
             }
             else {
-                //@ts-expect-error
-                acc[key] = null;
+                acc[typedKey] = undefined;
             }
             return acc;
         }, {});
+
         onFilterRemove(resetFilters);
     };
 
     return (
         <div className="flex flex-wrap items-center gap-2 mb-8">
-            <MutedText className="not-italic">{totalItems} {capitalize(mediaType)}</MutedText>
-            {Object.keys(localFilters).length > 0 && <MutedText className="not-italic mr-2">|</MutedText>}
+            <MutedText className="not-italic">
+                {totalItems} {capitalize(mediaType)}
+            </MutedText>
+            {Object.keys(localFilters).length > 0 &&
+                <MutedText className="not-italic mr-2">|</MutedText>
+            }
             <>
                 {Object.entries(localFilters).map(([key, value]) =>
                     Array.isArray(value) ?
                         value.map(val =>
                             <Badge key={`${key}-${val}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
                                 {val}
-                                <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key, val)}>
+                                <div
+                                    role="button"
+                                    className="hover:opacity-80 -mr-1"
+                                    onClick={() => removeFilter(key as keyof MediaListArgs, val)}
+                                >
                                     <X className="w-4 h-4"/>
                                 </div>
                             </Badge>,
@@ -61,8 +70,11 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
                                     (key === "comment" && value === true) ? `Commented` :
                                         value as string
                             }
-                            <div role="button" className="hover:opacity-80 -mr-1"
-                                 onClick={() => removeFilter(key, value)}>
+                            <div
+                                role="button"
+                                className="hover:opacity-80 -mr-1"
+                                onClick={() => removeFilter(key as keyof MediaListArgs, value)}
+                            >
                                 <X className="w-4 h-4"/>
                             </div>
                         </Badge>,

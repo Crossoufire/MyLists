@@ -2,23 +2,23 @@ import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Heart, Settings2} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
-import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
-import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
 import {DisplayRating} from "@/lib/components/media-list/DisplayRating";
 import {CommentPopover} from "@/lib/components/media-list/CommentPopover";
-import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
+import {ListItems} from "@/routes/_private/list/$mediaType/$username.route";
+import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
 import {SpecificUserMediaData} from "@/lib/components/media-list/SpecificUserMediaData";
 
 
 interface MediaGridProps {
+    items: ListItems;
     queryKey: string[];
     isCurrent: boolean;
     mediaType: MediaType;
-    items: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["results"]["items"];
 }
 
 
@@ -50,7 +50,7 @@ interface MediaItemProps {
     isConnected: boolean;
     mediaType: MediaType;
     allStatuses: Status[];
-    userMedia: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["results"]["items"][0];
+    userMedia: ListItems[0];
 }
 
 

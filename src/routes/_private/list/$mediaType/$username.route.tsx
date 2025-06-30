@@ -2,17 +2,17 @@ import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
+import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Header} from "@/lib/components/media-list/Header";
 import {Pagination} from "@/lib/components/app/Pagination";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 import {MediaGrid} from "@/lib/components/media-list/MediaGrid";
 import {MediaTable} from "@/lib/components/media-list/MediaTable";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
 import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
-import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
             mediaType: params.mediaType as MediaType,
         })
     },
-    validateSearch: (search: any) => search as MediaListArgs,
+    validateSearch: (search) => search as MediaListArgs,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { mediaType, username }, deps: { search } }) => {
         return queryClient.ensureQueryData(mediaListOptions(mediaType, username, search));
@@ -32,46 +32,45 @@ export const Route = createFileRoute("/_private/list/$mediaType/$username")({
 
 
 function MediaList() {
-    const navigate = useNavigate();
     const search = Route.useSearch();
     const { currentUser } = useAuth();
+    const navigate = Route.useNavigate();
     const { username, mediaType } = Route.useParams();
-    const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const [isGrid, setIsGrid] = useState(currentUser?.gridListView ?? true);
+    const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
 
     // @ts-expect-error
     const isCurrent = (parseInt(currentUser?.id) === apiData.userData.id);
 
-    const handleFilterChange = async (newFilters: Partial<typeof search>) => {
+    const handleFilterChange = async (newFilters: Partial<MediaListArgs>) => {
         const page = newFilters.page || 1;
         await navigate({
-            // @ts-expect-error
             search: (prev) => {
                 const updatedSearch = { ...prev };
 
-                Object.entries(newFilters).forEach(([key, valueOrArray]) => {
-                    if (
-                        valueOrArray === false || valueOrArray === null ||
-                        (Array.isArray(valueOrArray) && valueOrArray.length === 0)
-                    ) {
-                        delete updatedSearch[key];
-                    }
-                    else if (Array.isArray(prev[key])) {
-                        const oldSet = new Set(prev[key]);
-                        //@ts-expect-error
-                        const newSet = new Set(valueOrArray);
-                        //@ts-expect-error
-                        const toAdd = valueOrArray.filter((item: any) => !oldSet.has(item));
-                        const toKeep = prev[key].filter((item) => !newSet.has(item));
-                        updatedSearch[key] = [...toKeep, ...toAdd];
+                Object.entries(newFilters).forEach(([key, item]) => {
+                    const typedKey = key as keyof MediaListArgs;
+                    const prevValue = prev[typedKey];
 
-                        if (updatedSearch[key].length === 0) {
-                            delete updatedSearch[key];
+                    if (item === false || item === null || (Array.isArray(item) && item.length === 0)) {
+                        delete updatedSearch[typedKey];
+                    }
+                    else if (Array.isArray(prevValue) && Array.isArray(item)) {
+                        const oldSet = new Set(prevValue);
+                        const newSet = new Set(item);
+                        const toAdd = item.filter((i) => !oldSet.has(i));
+                        const toKeep = prevValue.filter((i) => !newSet.has(i));
+                        const merged = [...toKeep, ...toAdd];
+                        if (merged.length === 0) {
+                            delete updatedSearch[typedKey];
+                        }
+                        else {
+                            updatedSearch[typedKey] = merged as any;
                         }
                     }
                     else {
-                        updatedSearch[key] = valueOrArray;
+                        updatedSearch[typedKey] = item as any;
                     }
                 });
 
@@ -94,7 +93,7 @@ function MediaList() {
             />
             <AppliedFilters
                 totalItems={apiData.results.pagination.totalItems}
-                onFilterRemove={(filters: any) => handleFilterChange(filters)}
+                onFilterRemove={(filters: Partial<MediaListArgs>) => handleFilterChange(filters)}
             />
             {isGrid ?
                 <MediaGrid
@@ -129,3 +128,9 @@ function MediaList() {
         </PageTitle>
     );
 }
+
+
+type MediaListType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
+export type ListUserData = MediaListType["userData"];
+export type ListPagination = MediaListType["results"]["pagination"];
+export type ListItems = MediaListType["results"]["items"];

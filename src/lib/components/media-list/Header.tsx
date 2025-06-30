@@ -1,24 +1,24 @@
 import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
-import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
 import {MediaLevelCircle} from "@/lib/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/lib/components/media-list/SearchComponent";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {ListPagination, ListUserData} from "@/routes/_private/list/$mediaType/$username.route";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/lib/components/ui/dropdown-menu";
 
 
 interface HeaderProps {
     isGrid: boolean;
+    userData: ListUserData;
     onGridClick: () => void;
     onFilterClick: () => void;
+    pagination: ListPagination;
     onSortChange: ({ sort }: { sort: string }) => void;
     onSearchEnter: ({ search }: { search: string }) => void;
     onStatusChange: ({ status }: { status: Status[] }) => void;
-    userData: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["userData"];
-    pagination: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["results"]["pagination"];
 }
 
 
