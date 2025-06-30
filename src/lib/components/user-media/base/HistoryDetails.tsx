@@ -1,13 +1,13 @@
 import {useState} from "react";
+import {HistoryType} from "@/lib/components/types";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {UserUpdate} from "@/lib/components/app/UserUpdate";
-import {historyOptions} from "@/lib/react-query/query-options/query-options";
 import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface HistoryDetailsProps {
     queryKey: string[];
-    history: Awaited<ReturnType<NonNullable<ReturnType<typeof historyOptions>["queryFn"]>>>;
+    history: HistoryType;
 }
 
 

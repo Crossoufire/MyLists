@@ -1,9 +1,10 @@
 import {RotateCw} from "lucide-react";
-import {FollowsData} from "@/lib/components/media/FollowCard";
+import {MediaType} from "@/lib/server/utils/enums";
+import {ExtractFollowsByType} from "@/lib/components/types";
 
 
 interface RedoFollowCardProps {
-    follow: Extract<FollowsData[0], { userMedia: { redo: number | null } }>;
+    follow: ExtractFollowsByType<typeof MediaType.MOVIES | typeof MediaType.BOOKS | typeof MediaType.MANGA>;
 }
 
 

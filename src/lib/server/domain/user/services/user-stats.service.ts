@@ -1,6 +1,6 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {UserMediaStats} from "@/lib/server/types/base.types";
+import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
@@ -24,7 +24,7 @@ export class UserStatsService {
         await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, delta);
     }
 
-    async userHallofFameData(userId: number, data: Record<string, any>) {
+    async userHallofFameData(userId: number, filters: SearchTypeHoF) {
         const {
             mediaTypes,
             currentUserRankData,
@@ -34,7 +34,7 @@ export class UserStatsService {
             userSettingsMap,
             rankSelectionColName,
             page, pages, total,
-        } = await this.repository.userHallofFameData(userId, data);
+        } = await this.repository.userHallofFameData(userId, filters);
 
         // Calculate Current User's Percentile Ranks
         const userRanks = [];

@@ -1,54 +1,55 @@
 import {useState} from "react";
 import {Search} from "lucide-react";
 import {Input} from "@/lib/components/ui/input";
+import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
+import {MediaType} from "@/lib/server/utils/enums";
+import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {HoFCard} from "@/lib/components/hall-of-fame/HoFCard";
-import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {HofSorting, SearchTypeHoF} from "@/lib/server/types/base.types";
+import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
-// noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/hall-of-fame")({
-    validateSearch: (search) => (search as Record<string, any>),
+    validateSearch: (search) => search as SearchTypeHoF,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(hallOfFameOptions(search)),
     component: HallOfFamePage,
 });
 
 
-const DEFAULT = { page: 1, search: "", sorting: "normalized" };
+const DEFAULT = { page: 1, search: "", sorting: "normalized" } satisfies SearchTypeHoF;
 
 
 function HallOfFamePage() {
-    const navigate = useNavigate();
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data!;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const { sorting = DEFAULT.sorting, page = DEFAULT.page, search = DEFAULT.search } = filters;
+    const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
 
-    const fetchData = async (params: Record<string, any>) => {
-        //@ts-expect-error
+    const fetchData = async (params: SearchTypeHoF) => {
         await navigate({ search: params });
     };
 
     const resetSearch = async () => {
         setCurrentSearch(DEFAULT.search);
-        await fetchData((prev: Record<string, any>) => ({ ...prev, search: DEFAULT.search }));
+        await fetchData({ ...filters, search: DEFAULT.search });
     };
 
-    const onPageChange = async (newPage: number) => {
-        await fetchData({ search, page: newPage, sorting });
+    const onPageChange = async (page: number) => {
+        await fetchData({ page, sorting, search });
     };
 
-    const onSortChanged = async (sorting: string) => {
-        await fetchData({ search, page: 1, sorting });
+    const onSortChanged = async (sorting: HofSorting) => {
+        await fetchData({ page: 1, sorting, search });
     };
 
     useDebounceCallback(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
@@ -81,12 +82,11 @@ function HallOfFamePage() {
                                 <SelectContent>
                                     <SelectItem value="normalized">Normalized</SelectItem>
                                     <SelectItem value="profile">Profile</SelectItem>
-                                    <SelectItem value="series">Series</SelectItem>
-                                    <SelectItem value="anime">Anime</SelectItem>
-                                    <SelectItem value="movies">Movies</SelectItem>
-                                    <SelectItem value="books">Books</SelectItem>
-                                    <SelectItem value="games">Games</SelectItem>
-                                    <SelectItem value="manga">Manga</SelectItem>
+                                    {Object.values(MediaType).map(mt =>
+                                        <SelectItem key={mt} value={mt}>
+                                            {capitalize(mt)}
+                                        </SelectItem>
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -94,7 +94,12 @@ function HallOfFamePage() {
                     {apiData.items.length === 0 ?
                         <MutedText>No users found.</MutedText>
                         :
-                        apiData.items.map((user) => <HoFCard user={user} key={user.name}/>)
+                        apiData.items.map((user) =>
+                            <HoFCard
+                                user={user}
+                                key={user.name}
+                            />
+                        )
                     }
                     <Pagination
                         currentPage={page}

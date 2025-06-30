@@ -3,16 +3,22 @@ import {Progress} from "@/lib/components/ui/progress";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {capitalize, getMediaColor} from "@/lib/utils/functions";
+import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 
 
-export const HofRanking = ({ userRanks }: { userRanks: Record<string, any>[] }) => {
+interface HofRankingProps {
+    userRanks: Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
+}
+
+
+export const HofRanking = ({ userRanks }: HofRankingProps) => {
     return (
         <>
             <div className="text-xl font-semibold mb-3">My Rankings</div>
             <div className="grid grid-cols-2 w-full gap-3">
                 {userRanks.map((rank) => (
                     <Card key={rank.mediaType} className="p-2 max-sm:py-0 bg-card">
-                        {rank.active ? (
+                        {rank.active ?
                             <CardContent className="max-sm:py-4 p-2 space-y-1">
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="font-semibold text-lg">
@@ -30,7 +36,7 @@ export const HofRanking = ({ userRanks }: { userRanks: Record<string, any>[] }) 
                                     {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top --</>}
                                 </div>
                             </CardContent>
-                        ) : (
+                            :
                             <CardContent className="max-sm:py-4 p-2 space-y-1">
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="font-semibold text-lg">
@@ -41,7 +47,7 @@ export const HofRanking = ({ userRanks }: { userRanks: Record<string, any>[] }) 
                                     <MutedText>Not Activated</MutedText>
                                 </div>
                             </CardContent>
-                        )}
+                        }
                     </Card>
                 ))}
             </div>

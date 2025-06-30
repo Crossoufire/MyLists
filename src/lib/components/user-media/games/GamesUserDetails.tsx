@@ -1,11 +1,11 @@
 import React from "react";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {UpdatePlatform} from "@/lib/components/user-media/games/UpdatePlatform";
+import {ExtractUserMediaByType} from "@/lib/components/types";
 import {UpdateRating} from "@/lib/components/user-media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/user-media/base/UpdateStatus";
+import {UpdatePlatform} from "@/lib/components/user-media/games/UpdatePlatform";
 import {UpdatePlaytime} from "@/lib/components/user-media/games/UpdatePlaytime";
-import {ExtractUserMediaByType} from "@/lib/components/user-media/base/UserMediaDetails";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 

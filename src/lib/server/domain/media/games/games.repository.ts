@@ -192,7 +192,12 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .select({
                 ...getTableColumns(games),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),
-                companies: sql`json_group_array(DISTINCT json_object('id', ${gamesCompanies.id}, 'name', ${gamesCompanies.name}))`.mapWith(JSON.parse),
+                companies: sql`json_group_array(DISTINCT json_object(
+                    'id', ${gamesCompanies.id}, 
+                    'name', ${gamesCompanies.name},
+                    'developer', ${gamesCompanies.developer},
+                    'publisher', ${gamesCompanies.publisher},
+                ))`.mapWith(JSON.parse),
                 platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
             })
             .from(games)

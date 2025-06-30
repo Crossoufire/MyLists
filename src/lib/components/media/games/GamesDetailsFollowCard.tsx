@@ -1,10 +1,10 @@
 import {Play} from "lucide-react";
-import {Status} from "@/lib/server/utils/enums";
-import {FollowsData} from "@/lib/components/media/FollowCard";
+import {MediaType, Status} from "@/lib/server/utils/enums";
+import {ExtractFollowsByType} from "@/lib/components/types";
 
 
 interface GamesDetailsFollowCardProps {
-    follow: Extract<FollowsData[0], { userMedia: { playtime: number | null } }>;
+    follow: ExtractFollowsByType<typeof MediaType.GAMES>;
 }
 
 

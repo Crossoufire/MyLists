@@ -96,10 +96,10 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
             return {
+                media: mediaWithDetails,
                 userMedia,
                 followsData,
                 similarMedia,
-                media: mediaWithDetails,
             };
         }
 

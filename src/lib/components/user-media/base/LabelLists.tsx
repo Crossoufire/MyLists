@@ -1,11 +1,12 @@
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
+import {Label} from "@/lib/components/types";
 import {Badge} from "@/lib/components/ui/badge";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {Label, LabelsDialog} from "@/lib/components/user-media/base/LabelsDialog";
+import {LabelsDialog} from "@/lib/components/user-media/base/LabelsDialog";
 
 
 interface LabelListsProps {

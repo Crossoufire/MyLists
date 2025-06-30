@@ -1,10 +1,10 @@
 import {Column, SQL} from "drizzle-orm";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaListArgs, MediaTable} from "@/lib/server/types/media-lists.types";
 import {GamesPlatformsEnum, MediaType, NotificationType, RatingSystemType} from "@/lib/server/utils/enums";
+import {Label} from "@/lib/components/types";
 
 
 export type ComingNext = {
@@ -77,13 +77,13 @@ export type JobDetail = {
 
 
 export type AddedMediaDetails = {
-    genres?: { id: number, name: string }[];
+    genres: { id: number, name: string }[];
     actors?: { id: number, name: string }[];
     networks?: { id: number, name: string }[];
-    companies?: { id: number, name: string }[];
     platforms?: { id: number, name: string }[];
     epsPerSeason?: { season: number, episodes: number }[];
-    collection?: { id: number, name: string, imageCover: string }[];
+    collection?: { mediaId: number, mediaName: string, mediaCover: string }[];
+    companies?: { id: number, name: string, developer: boolean, publisher: boolean }[];
 };
 
 
@@ -203,7 +203,7 @@ export type MediaAndUserDetails<TMedia, TList> = {
 export type AddMediaToUserList<TMedia, TList> = {
     newState: TList;
     delta: DeltaStats;
-    media: TMedia & { epsPerSeason?: EpsPerSeasonType };
+    media: TMedia;
 }
 
 
@@ -236,11 +236,12 @@ export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefini
 export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 type NameValuePair = { name: string | number, value: number };
-
+export type HofSorting = "normalized" | "profile" | MediaType;
+export type SearchTypeHoF = SearchType & Omit<SearchType, "sorting"> & { sorting?: HofSorting };
 
 export type SearchType = {
     page?: number;
-    sort?: string;
     search?: string;
+    sorting?: string;
     perPage?: number;
 }

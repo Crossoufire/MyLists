@@ -8,6 +8,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {capitalize, sliceIntoParts} from "@/lib/utils/functions";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
+import {EditGenresSelector} from "@/lib/components/media/books/EditGenresSelector";
 import {editMediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditMediaMutation} from "@/lib/react-query/query-mutations/media.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId
     params: {
         parse: (params) => {
             return {
-                mediaId: parseInt(params.mediaId, 10),
+                mediaId: params.mediaId as unknown as number,
                 mediaType: params.mediaType as MediaType,
             }
         }
@@ -140,7 +141,7 @@ function MediaEditPage() {
                                         <FormItem>
                                             <FormLabel>Genres (Select up to 5)</FormLabel>
                                             <FormControl>
-                                                <GenreSelector
+                                                <EditGenresSelector
                                                     selectedGenres={field.value}
                                                     //@ts-expect-error
                                                     genresList={apiData?.allGenres}
@@ -163,40 +164,5 @@ function MediaEditPage() {
                 </form>
             </Form>
         </PageTitle>
-    );
-}
-
-
-interface GenreSelectorProps {
-    genresList: string[];
-    selectedGenres: string[];
-    setSelectedGenres: (genres: string[]) => void;
-}
-
-
-function GenreSelector({ genresList, selectedGenres, setSelectedGenres }: GenreSelectorProps) {
-    const toggleGenre = (ev: any, genre: string) => {
-        ev.preventDefault();
-
-        if (selectedGenres.includes(genre)) {
-            setSelectedGenres(selectedGenres.filter(l => l !== genre));
-        }
-        else {
-            if (selectedGenres.length >= 5) return;
-            setSelectedGenres([...selectedGenres, genre]);
-        }
-    };
-
-    return (
-        <div className="flex flex-wrap items-center justify-start gap-2">
-            {genresList.map((genre) =>
-                <Button
-                    key={genre} variant={selectedGenres.includes(genre) ? "default" : "outline"}
-                    onClick={(ev) => toggleGenre(ev, genre)} className="text-sm rounded-full px-3"
-                >
-                    {genre}
-                </Button>
-            )}
-        </div>
     );
 }

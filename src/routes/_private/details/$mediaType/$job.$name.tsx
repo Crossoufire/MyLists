@@ -1,10 +1,10 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {createFileRoute} from "@tanstack/react-router";
 import {SearchType} from "@/lib/server/types/base.types";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
-import {createFileRoute} from "@tanstack/react-router";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
 
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")(
 });
 
 
-const DEFAULT = { page: 1 };
+const DEFAULT = { page: 1 } satisfies SearchType;
 
 
 function JobInfoPage() {

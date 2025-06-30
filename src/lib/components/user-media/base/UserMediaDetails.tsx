@@ -2,32 +2,16 @@ import {toast} from "sonner";
 import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaConfig} from "@/lib/components/media-config";
+import {UserMedia} from "@/lib/components/types";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {LabelLists} from "@/lib/components/user-media/base/LabelLists";
 import {UpdateComment} from "@/lib/components/user-media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/components/user-media/base/HistoryDetails";
 import {UpdateFavorite} from "@/lib/components/user-media/base/UpdateFavorite";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {historyOptions, mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
+import {historyOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
+import {UserMediaSpecificDetails} from "@/lib/components/user-media/base/UserMediaSpecificDetails";
 import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-
-
-interface MediaSpecificDetailsProps<T extends MediaType> {
-    mediaType: T;
-    queryKey: string[];
-    userMedia: ExtractUserMediaByType<T>;
-}
-
-
-type UserMedia = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["userMedia"];
-
-
-export type ExtractUserMediaByType<T extends MediaType> =
-    T extends typeof MediaType.GAMES ? Extract<NonNullable<UserMedia>, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<NonNullable<UserMedia>, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<NonNullable<UserMedia>, { playtime: number | null } | { currentSeason: number }> :
-                never;
 
 
 interface UserMediaDetailsProps {
@@ -72,7 +56,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                 </TabsList>
                 <TabsContent value="yourInfo">
                     <div className="p-5 pt-3 bg-card rounded-md">
-                        <MediaSpecificDetails
+                        <UserMediaSpecificDetails
                             queryKey={queryKey}
                             mediaType={mediaType}
                             userMedia={userMedia as any}
@@ -102,16 +86,3 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
         </div>
     );
 };
-
-
-const MediaSpecificDetails = <T extends MediaType>({ mediaType, userMedia, queryKey }: MediaSpecificDetailsProps<T>) => {
-    const SpecificComponent = mediaConfig[mediaType].mediaUserDetails;
-
-    return (
-        <SpecificComponent
-            queryKey={queryKey}
-            mediaType={mediaType}
-            userMedia={userMedia}
-        />
-    );
-}

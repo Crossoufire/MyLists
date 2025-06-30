@@ -1,10 +1,15 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {TvDetails} from "@/lib/components/media/tv/TvDetails";
+import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
+import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
+import {RedoFollowCard} from "@/lib/components/media/base/RedoFollowCard";
 import {TvUserDetails} from "@/lib/components/user-media/tv/TvUserDetails";
 import {TvRedoFollowCard} from "@/lib/components/media/tv/TvRedoFollowCard";
 import {TvDetailsFollowCard} from "@/lib/components/media/tv/TvDetailsFollowCard";
 import {GamesUserDetails} from "@/lib/components/user-media/games/GamesUserDetails";
 import {MoviesUserDetails} from "@/lib/components/user-media/movies/MoviesUserDetails";
-import {ExtractUserMediaByType} from "@/lib/components/user-media/base/UserMediaDetails";
+import {GamesDetailsFollowCard} from "@/lib/components/media/games/GamesDetailsFollowCard";
+import {ExtractFollowsByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
 
 
 type MediaConfiguration = {
@@ -14,9 +19,14 @@ type MediaConfiguration = {
             queryKey: string[];
             userMedia: ExtractUserMediaByType<T>;
         }>;
-        mediaFollowCard: React.FC<{
-            follow: any;
-        }>[];
+        mediaFollowCards: [
+                React.FC<{ follow: ExtractFollowsByType<T> }> | null,
+                React.FC<{ follow: ExtractFollowsByType<T> }> | null,
+        ];
+        mediaDetails: React.FC<{
+            mediaType: T,
+            mediaData: ExtractMediaDetailsByType<T>,
+        }>;
     };
 };
 
@@ -24,26 +34,32 @@ type MediaConfiguration = {
 export const mediaConfig: MediaConfiguration = {
     [MediaType.SERIES]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCard: [TvRedoFollowCard, TvDetailsFollowCard],
+        mediaFollowCards: [TvRedoFollowCard, TvDetailsFollowCard],
+        mediaDetails: TvDetails,
     },
     [MediaType.ANIME]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCard: [],
+        mediaFollowCards: [TvRedoFollowCard, TvDetailsFollowCard],
+        mediaDetails: TvDetails,
     },
     [MediaType.MOVIES]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCard: [],
+        mediaFollowCards: [RedoFollowCard, null],
+        mediaDetails: MoviesDetails,
     },
     [MediaType.GAMES]: {
         mediaUserDetails: GamesUserDetails,
-        mediaFollowCard: [],
+        mediaFollowCards: [null, GamesDetailsFollowCard],
+        mediaDetails: GamesDetails,
     },
     [MediaType.BOOKS]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCard: [],
+        mediaFollowCards: [RedoFollowCard, null],
+        mediaDetails: MoviesDetails,
     },
     [MediaType.MANGA]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCard: [],
+        mediaFollowCards: [RedoFollowCard, null],
+        mediaDetails: MoviesDetails,
     },
 };

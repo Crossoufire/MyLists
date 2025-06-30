@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {ComingNext} from "@/lib/server/types/base.types";
 import {formatDateTime, zeroPad} from "@/lib/utils/functions";
+import {MediaCard} from "@/lib/components/media/base/MediaCard";
 
 
 interface ComingNextMediaProps {

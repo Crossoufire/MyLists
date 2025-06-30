@@ -1,15 +1,15 @@
 import {Star} from "lucide-react";
-import {MediaType} from "@/lib/server/utils/enums";
+import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {ExtractMediaDetailsByType} from "@/lib/components/types";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
+import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
 interface MoviesDetailsProps {
     mediaType: MediaType;
-    mediaData: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["media"];
+    mediaData: ExtractMediaDetailsByType<typeof MediaType.MOVIES>;
 }
 
 
@@ -21,14 +21,15 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                     <div>
                         <div className="font-semibold text-neutral-500">TMDB Rating</div>
                         <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-amber-500"/> {mediaData?.voteAverage?.toFixed(1)} ({mediaData.voteCount})
+                            <Star className="w-4 h-4 text-amber-500"/>
+                            {mediaData.voteAverage ? mediaData.voteAverage.toFixed(1) : "--"} ({mediaData.voteCount})
                         </div>
                     </div>
                     <MapDetails
-                        job="creator"
                         name="Director"
+                        job={JobType.CREATOR}
                         mediaType={mediaType}
-                        valueList={[mediaData.directorName]}
+                        dataList={[{ name: mediaData.directorName }]}
                     />
                     <GenericDetails
                         name="Release date"
@@ -52,16 +53,15 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                 <div className="flex flex-col gap-y-4">
                     <MapDetails
                         name="Actors"
-                        job="actor"
+                        job={JobType.ACTOR}
                         mediaType={mediaType}
-                        // @ts-expect-error
-                        valueList={mediaData.moviesActors.map(actor => actor.name)}
+                        dataList={mediaData?.actors ?? []}
                     />
                     <MapDetails
-                        job="compositor"
                         name="Compositor"
                         mediaType={mediaType}
-                        valueList={[mediaData.compositorName]}
+                        job={JobType.COMPOSITOR}
+                        dataList={[{ name: mediaData.compositorName }]}
                     />
                 </div>
                 <div className="flex flex-col gap-y-4">
@@ -71,8 +71,7 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
                     />
                     <MapDetails
                         name="Genres"
-                        // @ts-expect-error
-                        valueList={mediaData.moviesGenres.map(genre => genre.name)}
+                        dataList={mediaData?.genres ?? []}
                     />
                 </div>
             </div>

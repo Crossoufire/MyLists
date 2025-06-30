@@ -1,6 +1,5 @@
 import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
-import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";
@@ -16,6 +15,7 @@ import {
     UserFollowsMediaData,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
+import {Label} from "@/lib/components/types";
 
 
 const ALL_VALUE = "All";
@@ -33,6 +33,30 @@ export class BaseRepository<
     constructor(config: TConfig) {
         this.config = config;
         this.baseFilterDefs = this.baseListFiltersDefs();
+    }
+
+    async findById(mediaId: number) {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.id, mediaId))
+            .get();
+
+        return result as TMedia | undefined;
+    }
+
+    async findByApiId(apiId: number | string) {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.apiId, apiId))
+            .get()
+
+        return result as TMedia | undefined;
     }
 
     private baseListFiltersDefs = () => {
@@ -72,30 +96,6 @@ export class BaseRepository<
                 filterColumn: genreTable.name,
             }),
         } as FilterDefinitions;
-    }
-
-    async findById(mediaId: number) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.id, mediaId))
-            .get();
-
-        return result as TMedia | undefined;
-    }
-
-    async findByApiId(apiId: number | string) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.apiId, apiId))
-            .get()
-
-        return result as TMedia | undefined;
     }
 
     async downloadMediaListAsCSV(userId: number) {

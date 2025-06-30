@@ -1,9 +1,9 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {ExtractUserMediaByType} from "@/lib/components/types";
 import {UpdateRedo} from "@/lib/components/user-media/base/UpdateRedo";
 import {UpdateRating} from "@/lib/components/user-media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/user-media/base/UpdateStatus";
-import {ExtractUserMediaByType} from "@/lib/components/user-media/base/UserMediaDetails";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 

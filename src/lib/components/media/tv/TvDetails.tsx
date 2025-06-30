@@ -1,20 +1,21 @@
 import {Star} from "lucide-react";
-import {MediaType} from "@/lib/server/utils/enums";
+import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {ExtractMediaDetailsByType} from "@/lib/components/types";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
 import {EpsPerSeason} from "@/lib/components/media/tv/EpsPerSeason";
+import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
 interface TvDetailsProps {
-    mediaData: any;
     mediaType: MediaType;
+    mediaData: ExtractMediaDetailsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
 }
 
 
-export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
-    const creators = mediaData.createdBy?.split(", ") || [];
+export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps) => {
+    const creators = mediaData.createdBy?.split(", ").map(c => ({ name: c })) || [];
 
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
@@ -24,13 +25,14 @@ export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
                         <div>
                             <div className="font-semibold text-neutral-500">TMDB Rating</div>
                             <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-amber-500"/> {mediaData.voteAverage.toFixed(1)} ({mediaData.voteCount})
+                                <Star className="w-4 h-4 text-amber-500"/>
+                                {mediaData.voteAverage ? mediaData.voteAverage.toFixed(1) : "--"} ({mediaData.voteCount})
                             </div>
                         </div>
                         <MapDetails
-                            job="creator"
                             name="Created by"
-                            valueList={creators}
+                            dataList={creators}
+                            job={JobType.CREATOR}
                             mediaType={mediaType}
                         />
                         <GenericDetails
@@ -69,9 +71,9 @@ export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
                     <div className="flex flex-col gap-y-4">
                         <MapDetails
                             name="Actors"
-                            job="actor"
+                            job={JobType.ACTOR}
                             mediaType={mediaType}
-                            valueList={mediaData.actors.map((actor: any) => actor.name)}
+                            dataList={mediaData.actors ?? []}
                         />
                         <GenericDetails
                             name="Origin"
@@ -86,14 +88,14 @@ export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <MapDetails
-                            job="platform"
                             name="Networks"
                             mediaType={mediaType}
-                            valueList={mediaData.networks.map((net: any) => net.name)}
+                            job={JobType.PLATFORM}
+                            dataList={mediaData.networks ?? []}
                         />
                         <MapDetails
                             name="Genres"
-                            valueList={mediaData.genres.map((genre: any) => genre.name)}
+                            dataList={mediaData.genres}
                         />
                     </div>
                 </div>
@@ -102,7 +104,7 @@ export const TvDetails = ({ mediaData, mediaType }: TvDetailsProps) => {
                 synopsis={mediaData.synopsis}
             />
             <EpsPerSeason
-                epsPerSeason={mediaData.epsPerSeason}
+                epsPerSeason={mediaData.epsPerSeason ?? []}
             />
         </div>
     );

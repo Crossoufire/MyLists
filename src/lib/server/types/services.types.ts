@@ -1,5 +1,4 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
@@ -12,7 +11,6 @@ import {
     AdvancedMediaStats,
     ComingNext,
     EditUserLabels,
-    EpsPerSeasonType,
     ExpandedListFilters,
     ItemForNotification,
     JobDetails,
@@ -23,6 +21,7 @@ import {
     UserMediaStats,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
+import {Label} from "@/lib/components/types";
 
 
 // Level 1 - Universal methods (implemented in BaseService)
@@ -53,10 +52,10 @@ export interface ICommonService<TMedia, TList> extends IUniversalService<TMedia,
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
     getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
     updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+    calculateDeltaStats(oldState: UserMediaWithLabels<TList>, newState: TList, media: TMedia): DeltaStats;
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: TList): Record<string, any>;
     addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<AddMediaToUserList<TMedia, TList>>;
     updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<TMedia, TList>>;
-    calculateDeltaStats(oldState: UserMediaWithLabels<TList>, newState: TList, media: TMedia & { epsPerSeason?: EpsPerSeasonType }): DeltaStats;
-    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: TList & { epsPerSeason?: EpsPerSeasonType }): Record<string, any>;
     getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService): Promise<MediaAndUserDetails<TMedia, TList>>;
 }
 

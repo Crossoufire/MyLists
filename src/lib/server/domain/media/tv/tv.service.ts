@@ -8,7 +8,7 @@ import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {EpsPerSeasonType, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 import {AnimeAchCodeName, SeriesAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
@@ -193,7 +193,6 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         (media as any).epsPerSeason = mediaEpsPerSeason;
         (oldState as any).epsPerSeason = mediaEpsPerSeason;
 
-        // @ts-expect-error
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData, oldState);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
         const delta = this.calculateDeltaStats(oldState, newState, media);
@@ -214,7 +213,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia: TvList & { epsPerSeason: EpsPerSeasonType }) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia: TvList) {
         let completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
@@ -227,15 +226,15 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
                     ...completeUpdateData,
                     currentSeason: 1,
                     lastEpisodeWatched: 1,
-                    redo2: Array(userMedia.epsPerSeason.length).fill(0)
+                    redo2: Array(userMedia.epsPerSeason!.length).fill(0)
                 };
             }
 
             if (completeUpdateData.status === Status.COMPLETED) {
                 completeUpdateData = {
                     ...completeUpdateData,
-                    currentSeason: userMedia.epsPerSeason[-1].season,
-                    lastEpisodeWatched: userMedia.epsPerSeason[-1].episodes,
+                    currentSeason: userMedia.epsPerSeason![-1].season,
+                    lastEpisodeWatched: userMedia.epsPerSeason![-1].episodes,
                 };
             }
         }
@@ -243,7 +242,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvType & { epsPerSeason: EpsPerSeasonType }) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvType) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
@@ -274,7 +273,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         const isRated = isCompleted && newRating != null;
 
         const redoDiff = newRedo?.map((val, idx) => val - oldRedo[idx]);
-        const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason[i].episodes, 0);
+        const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason![i].episodes, 0);
 
         const newTotalSpecificValue = oldTotalSpecificValue + (valuesToApply ?? 0);
         const newTotalTimeSpent = newTotalSpecificValue * media.duration;

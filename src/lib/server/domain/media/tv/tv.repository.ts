@@ -33,7 +33,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .where(eq(mediaTable.id, mediaId))
             .get();
 
-        return mainData as TvType & { epsPerSeason: EpsPerSeasonType };
+        return mainData as TvType;
     }
 
     async getComingNext(userId: number) {

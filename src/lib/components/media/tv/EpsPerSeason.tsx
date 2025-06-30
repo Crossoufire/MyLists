@@ -1,11 +1,9 @@
+import {EpsPerSeasonType} from "@/lib/server/types/base.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 
 interface EpsPerSeasonProps {
-    epsPerSeason: {
-        season: number,
-        episodes: number
-    }[];
+    epsPerSeason: EpsPerSeasonType;
 }
 
 

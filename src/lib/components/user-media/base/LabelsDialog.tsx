@@ -5,15 +5,12 @@ import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {useEffect, useRef, useState} from "react";
 import {MediaType} from "@/lib/server/utils/enums";
+import {Label, ToastType} from "@/lib/components/types";
 import {MutedText} from "@/lib/components/app/MutedText";
 import {userMediaLabelsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditUserLabelMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/components/ui/credenza";
-
-
-export type Label = { oldName?: string, name: string };
-type Toast = { type: "error" | "success", message: string };
 
 
 interface LabelsDialogProps {
@@ -29,7 +26,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
     const inputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [oldLabelName, setOldLabelName] = useState("");
-    const [toast, setToast] = useState<Toast | null>(null);
+    const [toast, setToast] = useState<ToastType | null>(null);
     const [editingLabelName, setEditingLabelName] = useState("");
     const [inputAddNewLabel, setInputAddNewLabel] = useState("");
     const editUserLabelMutation = useEditUserLabelMutation(mediaType, mediaId);

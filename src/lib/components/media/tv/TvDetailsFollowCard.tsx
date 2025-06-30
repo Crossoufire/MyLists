@@ -1,11 +1,11 @@
 import {Play} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
-import {Status} from "@/lib/server/utils/enums";
-import {FollowsData} from "@/lib/components/media/FollowCard";
+import {MediaType, Status} from "@/lib/server/utils/enums";
+import {ExtractFollowsByType} from "@/lib/components/types";
 
 
 interface TvDetailsFollowCardProps {
-    follow: Extract<FollowsData[0], { userMedia: { currentSeason: number } }>;
+    follow: ExtractFollowsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
 }
 
 

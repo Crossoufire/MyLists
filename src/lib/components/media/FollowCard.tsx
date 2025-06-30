@@ -1,68 +1,47 @@
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
+import {FollowData} from "@/lib/components/types";
 import {Separator} from "@/lib/components/ui/separator";
 import {Heart, MessageCircle, Star} from "lucide-react";
+import {mediaConfig} from "@/lib/components/media-config";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
-import {RedoFollowCard} from "@/lib/components/media/base/RedoFollowCard";
-import {TvRedoFollowCard} from "@/lib/components/media/tv/TvRedoFollowCard";
 import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
-import {mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
-import {TvDetailsFollowCard} from "@/lib/components/media/tv/TvDetailsFollowCard";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {GamesDetailsFollowCard} from "@/lib/components/media/games/GamesDetailsFollowCard";
-
-
-export type FollowsData = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>["followsData"]
 
 
 interface FollowCardProps {
+    follow: FollowData;
     mediaType: MediaType;
-    follow: FollowsData[0];
 }
 
 
 export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
     const rating = formatRating();
+    const [RedoComponent, DetailsComponent] = mediaConfig[mediaType].mediaFollowCards;
 
     function formatRating() {
         if (follow.ratingSystem === RatingSystemType.FEELING) {
             return getFeelingIcon(follow.userMedia.rating, { size: 17 });
         }
         return follow.userMedia.rating === null ? "--" : follow.userMedia.rating.toFixed(1);
+
     }
 
-    const renderDetails = () => {
-        if (mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) {
-            return [
-                <TvRedoFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { redo2: number[] } }>}/>,
-                <TvDetailsFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { currentSeason: number } }>}/>
-            ];
-        }
-        else if (mediaType === MediaType.GAMES) {
-            return [
-                null,
-                <GamesDetailsFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { playtime: number | null } }>}/>,
-            ];
-        }
-        else if (mediaType === MediaType.MOVIES) {
-            return [
-                <RedoFollowCard follow={follow as Extract<FollowsData[0], { userMedia: { redo: number | null } }>}/>,
-                null,
-            ];
-        }
-        else {
-            return [null, null];
-        }
-    };
+    const childrens = [
+        //@ts-expect-error
+        RedoComponent ? <RedoComponent follow={follow as any}/> : null,
+        //@ts-expect-error
+        DetailsComponent ? <DetailsComponent follow={follow as any}/> : null,
+    ];
 
     return (
         <FollowCardLayout
             rating={rating}
             image={follow.image}
+            childrens={childrens}
             username={follow.name}
-            childrens={renderDetails()}
             status={follow.userMedia.status}
             comment={follow.userMedia.comment}
             isFavorite={follow.userMedia.favorite}

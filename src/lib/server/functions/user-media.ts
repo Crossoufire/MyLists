@@ -1,11 +1,11 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 
 import {EditUserLabels} from "@/lib/server/types/base.types";
+import {Label} from "@/lib/components/types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })

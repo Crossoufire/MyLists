@@ -1,4 +1,5 @@
 import {Column, SQL, Table} from "drizzle-orm";
+import * as schema from "@/lib/server/database/schema";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
 

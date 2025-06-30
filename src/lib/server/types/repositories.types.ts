@@ -1,6 +1,5 @@
 import {SQL} from "drizzle-orm";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {Label} from "@/lib/components/user-media/base/LabelsDialog";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
@@ -27,6 +26,7 @@ import {
     UserMediaStats,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
+import {Label} from "@/lib/components/types";
 
 
 // Level 1 - Universal methods (implemented in BaseRepository)
@@ -106,11 +106,11 @@ export interface ITvRepository extends ICommonRepository<TvType, TvList> {
     config: SeriesSchemaConfig | AnimeSchemaConfig;
 
     getComingNext(userId: number): Promise<ComingNext[]>;
+    findByIdAndAddEpsPerSeason(mediaId: number): Promise<TvType>;
     getMediaIdsToBeRefreshed(apiIds: number[]): Promise<number[]>;
     getMediaEpsPerSeason(mediaId: number): Promise<EpsPerSeasonType>;
     updateMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<boolean>;
     storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number | undefined>;
-    findByIdAndAddEpsPerSeason(mediaId: number): Promise<TvType & { epsPerSeason: EpsPerSeasonType }>;
 
     // --- Achievements ----------------------------------------------------------
     getDurationAchievementCte(achievement: Achievement, userId?: number): any;

@@ -1,22 +1,23 @@
 import {Star} from "lucide-react";
-import {MediaType} from "@/lib/server/utils/enums";
+import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {ExtractMediaDetailsByType} from "@/lib/components/types";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
+import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
 interface GamesDetailsProps {
-    mediaData: any;
     mediaType: MediaType;
+    mediaData: ExtractMediaDetailsByType<typeof MediaType.GAMES>;
 }
 
 
-export const GamesDetails = ({ mediaData, mediaType }: GamesDetailsProps) => {
-    const gameModes = mediaData.gameModes?.split(",") || [];
-
-    console.log({ mediaData });
+export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps) => {
+    const gameModes = mediaData.gameModes?.split(",").map(m => ({ name: m })) || [];
+    const developers = mediaData.companies ? mediaData.companies.filter(c => c.developer) : [];
+    const publishers = mediaData.companies ? mediaData.companies.filter(c => c.publisher) : [];
 
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
@@ -26,14 +27,15 @@ export const GamesDetails = ({ mediaData, mediaType }: GamesDetailsProps) => {
                         <div>
                             <div className="font-semibold text-neutral-500">IGDB Rating</div>
                             <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 text-amber-500"/> {(mediaData.voteAverage ?? 0 / 10).toFixed(1)} ({mediaData.voteCount})
+                                <Star className="w-4 h-4 text-amber-500"/>
+                                {mediaData.voteAverage ? (mediaData.voteAverage / 10).toFixed(1) : "--"} ({mediaData.voteCount})
                             </div>
                         </div>
                         <MapDetails
-                            job="creator"
                             name="Developers"
+                            job={JobType.CREATOR}
                             mediaType={mediaType}
-                            valueList={mediaData.gamesCompanies.filter((company: any) => company.developer).map((company: any) => company.name)}
+                            dataList={developers}
                         />
                         <GenericDetails
                             name="Release date"
@@ -51,27 +53,27 @@ export const GamesDetails = ({ mediaData, mediaType }: GamesDetailsProps) => {
                         />
                         <MapDetails
                             name="Modes"
-                            valueList={gameModes}
+                            dataList={gameModes}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <MapDetails
                             name="Genres"
-                            valueList={mediaData.gamesGenres.map((genre: any) => genre.name)}
+                            dataList={mediaData.genres}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">
                         <GenericDetails
                             name="HLTB Main"
-                            value={formatMinutes(mediaData.hltbMainTime * 60, true)}
+                            value={mediaData.hltbMainTime && formatMinutes(mediaData.hltbMainTime * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Extra"
-                            value={formatMinutes(mediaData.hltbMainAndExtraTime * 60, true)}
+                            value={mediaData.hltbMainAndExtraTime && formatMinutes(mediaData.hltbMainAndExtraTime * 60, true)}
                         />
                         <GenericDetails
                             name="HLTB Total"
-                            value={formatMinutes(mediaData.hltbTotalCompleteTime * 60, true)}
+                            value={mediaData.hltbTotalCompleteTime && formatMinutes(mediaData.hltbTotalCompleteTime * 60, true)}
                         />
                     </div>
                 </div>
@@ -79,13 +81,13 @@ export const GamesDetails = ({ mediaData, mediaType }: GamesDetailsProps) => {
                 <MapDetails
                     asJoin={true}
                     name="Publishers"
-                    valueList={mediaData.gamesCompanies.filter((company: any) => company.publisher).map((company: any) => company.name)}
+                    dataList={publishers}
                 />
                 <div className="mt-4"/>
                 <MapDetails
                     asJoin={true}
                     name="Platforms"
-                    valueList={mediaData.gamesPlatforms.map((pt: any) => pt.name)}
+                    dataList={mediaData.platforms ?? []}
                 />
             </div>
             <Synopsis

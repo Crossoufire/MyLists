@@ -104,7 +104,7 @@ function MediaDetailsPage() {
                             <TabsContent value="mediaDetails">
                                 <MediaDataDetails
                                     mediaType={mediaType}
-                                    mediaData={apiData.media}
+                                    mediaData={apiData.media as any}
                                 />
                                 <SimilarMedia
                                     mediaType={mediaType}

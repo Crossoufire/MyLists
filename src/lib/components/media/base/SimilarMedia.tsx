@@ -2,13 +2,14 @@ import {Link} from "@tanstack/react-router";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {MutedText} from "@/lib/components/app/MutedText";
+import {SimpleMedia} from "@/lib/server/types/base.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 
 interface SimilarMediaProps {
     title: string;
     mediaType: MediaType;
-    similarMedia: Array<any>;
+    similarMedia: SimpleMedia[];
 }
 
 
@@ -23,7 +24,7 @@ export const SimilarMedia = ({ title, mediaType, similarMedia }: SimilarMediaPro
                     </div>
                     :
                     similarMedia.map(media =>
-                        <div key={media.media_id} className="col-span-3 md:col-span-2">
+                        <div key={media.mediaId} className="col-span-3 md:col-span-2">
                             <Link to="/details/$mediaType/$mediaId" params={{ mediaType, mediaId: media.mediaId }} search={{ external: false }}>
                                 <Tooltip text={media.mediaName}>
                                     <img

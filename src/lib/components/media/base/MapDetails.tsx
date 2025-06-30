@@ -1,45 +1,54 @@
 import {Fragment} from "react";
 import {Link} from "@tanstack/react-router";
-import {MediaType} from "@/lib/server/utils/enums";
+import {JobType, MediaType} from "@/lib/server/utils/enums";
 
 
 interface MapDetailsProps {
     name: string;
-    job?: string;
+    job?: JobType;
     asJoin?: boolean;
     mediaType?: MediaType;
-    valueList: Array<any>;
+    dataList: { name: string | null }[];
 }
 
 
-export const MapDetails = ({ name, valueList, mediaType, job, asJoin }: MapDetailsProps) => {
-    const renderLink = (value: string | null, idx: number) => (
-        //@ts-expect-error
-        <Link key={value} to="/details/$mediaType/$job/$value" params={{ mediaType, job, value }}>
+export const MapDetails = ({ name, dataList, mediaType, job, asJoin }: MapDetailsProps) => {
+    const isDashString = (dataList.length === 0 || (dataList.some(item => item.name === null)));
+
+    const renderLink = (item: { name: string }, idx: number) => (
+        <Link key={item.name} to="/details/$mediaType/$job/$name" params={{ mediaType: mediaType!, job: job!, name: item.name }}>
             {asJoin ?
                 <>
-                    <span className="hover:underline hover:underline-offset-2">{value}</span>
-                    {idx !== valueList.length - 1 && ", "}
+                    <span className="hover:underline hover:underline-offset-2">{item.name}</span>
+                    {idx !== dataList.length - 1 && ", "}
                 </>
                 :
-                <div className="hover:underline hover:underline-offset-2">{value}</div>
+                <div className="hover:underline hover:underline-offset-2">
+                    {item.name}
+                </div>
             }
         </Link>
     );
 
-    const renderValue = (value: string | null, idx: number) => (
-        <Fragment key={value}>
-            {asJoin ? <span>{value}{idx !== valueList.length - 1 && ", "}</span> : <div>{value}</div>}
+    const renderValue = (item: { name: string }, idx: number) => (
+        <Fragment key={item.name}>
+            {asJoin ?
+                <span>{item.name}{idx !== dataList.length - 1 && ", "}</span>
+                :
+                <div>{item.name}</div>
+            }
         </Fragment>
     );
 
     return (
         <div>
             <div className="font-semibold text-neutral-500">{name}</div>
-            {(valueList.length === 0 || (valueList.length === 1 && valueList[0] === null)) && "--"}
-            {valueList.map((value, idx) =>
-                (mediaType && job) ? renderLink(value, idx) : renderValue(value, idx)
-            )}
+            {isDashString ?
+                "--" : dataList.map((item, idx) =>
+                    (mediaType && job) ?
+                        //@ts-expect-error
+                        renderLink(item, idx) : renderValue(item, idx))
+            }
         </div>
     );
 };

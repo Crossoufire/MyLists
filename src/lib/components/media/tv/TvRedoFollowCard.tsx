@@ -1,11 +1,12 @@
 import {RotateCw} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
-import {FollowsData} from "@/lib/components/media/FollowCard";
+import {MediaType} from "@/lib/server/utils/enums";
+import {ExtractFollowsByType} from "@/lib/components/types";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
 interface TvRedoFollowCardProps {
-    follow: Extract<FollowsData[0], { userMedia: { redo2: number[] } }>;
+    follow: ExtractFollowsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
 }
 
 

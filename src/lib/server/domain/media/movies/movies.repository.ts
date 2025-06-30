@@ -235,7 +235,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
                 actors: sql`json_group_array(DISTINCT json_object('id', ${moviesActors.id}, 'name', ${moviesActors.name}))`.mapWith(JSON.parse),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${moviesGenre.id}, 'name', ${moviesGenre.name}))`.mapWith(JSON.parse),
                 collection: sql`
-                    SELECT json_group_array(json_object('id', m2.id,'name', m2.name, 'imageCover', m2.imageCover))
+                    SELECT json_group_array(json_object('mediaId', m2.id,'mediaName', m2.name, 'mediaCover', m2.imageCover))
                     FROM ${movies} m2
                     WHERE m2.collectionId = ${movies.collectionId} AND m2.id != ${movies.id}
                     ORDER BY m2.releaseDate ASC

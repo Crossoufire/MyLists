@@ -2,7 +2,7 @@ import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {UserMediaStats} from "@/lib/server/types/base.types";
+import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
 import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
@@ -103,8 +103,8 @@ export class UserStatsRepository {
             .execute()!;
     }
 
-    static async userHallofFameData(userId: number, data: Record<string, any>) {
-        const { sorting = "normalized", search = "", page = 1, perPage = 10 } = data;
+    static async userHallofFameData(userId: number, filters: SearchTypeHoF) {
+        const { sorting = "normalized", search = "", page = 1, perPage = 10 } = filters;
 
         const mediaTypes = Object.values(MediaType);
         const umsAlias = alias(userMediaSettings, "ums");

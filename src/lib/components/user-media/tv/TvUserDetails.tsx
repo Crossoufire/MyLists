@@ -1,10 +1,10 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {ExtractUserMediaByType} from "@/lib/components/types";
 import {UpdateRedoTv} from "@/lib/components/user-media/tv/UpdateRedoTv";
 import {UpdateRating} from "@/lib/components/user-media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/user-media/base/UpdateStatus";
 import {UpdateSeasonsEps} from "@/lib/components/user-media/tv/UpdateSeasonsEps";
-import {ExtractUserMediaByType} from "@/lib/components/user-media/base/UserMediaDetails";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
@@ -27,8 +27,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
             />
             {(userMedia.status !== Status.PLAN_TO_WATCH && userMedia.status !== Status.RANDOM) &&
                 <UpdateSeasonsEps
-                    //@ts-expect-error
-                    epsPerSeason={userMedia.epsPerSeason}
+                    epsPerSeason={userMedia.epsPerSeason!}
                     currentSeason={userMedia.currentSeason}
                     onUpdateMutation={updateUserMediaMutation}
                     currentEpisode={userMedia.lastEpisodeWatched}
