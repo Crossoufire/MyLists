@@ -1,11 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {anime} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {ProviderSearchResults} from "@/lib/server/types/provider.types";
+import {ProviderSearchResults, TrendsMedia} from "@/lib/server/types/provider.types";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 
-
-type Anime = typeof anime.$inferInsert;
 
 type Options = {
     defaultDuration: number;
@@ -143,12 +140,12 @@ export class TmdbTransformer {
 
         const rawResults = rawData?.results ?? [];
         for (const result of rawResults) {
-            const mediaData = {
+            const mediaData: TrendsMedia = {
                 apiId: result.id,
                 overview: result?.overview,
                 displayName: result?.title,
                 mediaType: MediaType.MOVIES,
-                releaseDate: new Date(result?.release_date),
+                releaseDate: result?.release_date,
                 posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : "default.jpg",
             }
 
@@ -156,6 +153,32 @@ export class TmdbTransformer {
         }
 
         return moviesTrends
+    }
+
+    async transformSeriesTrends(rawData: Record<string, any>) {
+        const tvTrends = [];
+
+        const rawResults = rawData?.results ?? [];
+        for (const result of rawResults) {
+            const mediaData: TrendsMedia = {
+                apiId: result.id,
+                displayName: result?.name,
+                overview: result?.overview,
+                mediaType: MediaType.SERIES,
+                releaseDate: result?.first_air_date,
+                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : "default.jpg",
+            }
+
+            const isJap = result?.origin_country.find((c: string) => c.toLowerCase() === "jp" || c.toLowerCase() === "ja") ?? false;
+            const isAnimation = result?.genre_ids.find((g: number) => g === 16) ?? false;
+            if (isJap && isAnimation) {
+                mediaData.mediaType = MediaType.ANIME;
+            }
+
+            tvTrends.push(mediaData);
+        }
+
+        return tvTrends
     }
 
     addAnimeSpecificGenres(jikanData: Record<string, any>[], genresData: { name: string }[] | null) {

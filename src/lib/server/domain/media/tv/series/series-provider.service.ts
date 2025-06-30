@@ -1,10 +1,10 @@
-import {IProviderService} from "@/lib/server/types/provider.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {ITrendsProviderService} from "@/lib/server/types/provider.types";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
 
 
-export class SeriesProviderService implements IProviderService {
+export class SeriesProviderService implements ITrendsProviderService {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,
@@ -40,5 +40,11 @@ export class SeriesProviderService implements IProviderService {
         }
 
         return Promise.allSettled(promises);
+    }
+
+    async fetchAndFormatTrends() {
+        const rawData = await this.client.getTvTrending();
+        const tvTrends = this.transformer.transformSeriesTrends(rawData);
+        return tvTrends;
     }
 }

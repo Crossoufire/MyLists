@@ -24,8 +24,8 @@ export const Route = createFileRoute("/_private/stats/$username")({
 function StatsPage() {
     const filters = Route.useSearch();
     const { username } = Route.useParams();
-    const [selectedTab, setSelectedTab] = useState("Main Statistics");
     const apiData = useSuspenseQuery(userStatsOptions(username, filters)).data;
+    const [selectedTab, setSelectedTab] = useState("Main Statistics");
     const statsData = dataToLoad({ mediaType: filters.mediaType, apiData: apiData!, forUser: true });
 
     useEffect(() => {

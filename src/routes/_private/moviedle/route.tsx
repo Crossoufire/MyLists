@@ -13,11 +13,10 @@ import {AttemptsGraph} from "@/lib/components/moviedle/AttemptsGraph";
 import {CountdownTimer} from "@/lib/components/moviedle/CountdownTimer";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {useMoviedleGuessMutation} from "@/lib/react-query/query-mutations/mediadle.mutations";
-import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-query/query-options/query-options";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-query/query-options/query-options";
 
 
-// noinspection JSCheckFunctionSignatures
 export const Route = createFileRoute("/_private/moviedle")({
     loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(dailyMediadleOptions()),
     component: MediadlePage,
@@ -26,10 +25,10 @@ export const Route = createFileRoute("/_private/moviedle")({
 
 function MediadlePage() {
     const [guess, setGuess] = useState("");
-    const [debouncedSearch] = useDebounce(guess, 350);
     const makeGuessMutation = useMoviedleGuessMutation();
-    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [debouncedSearch] = useDebounce(guess, 350);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
 
     const onInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {

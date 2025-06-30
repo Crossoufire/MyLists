@@ -5,7 +5,6 @@ import {diffColors} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/app/MutedText";
-import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {AchievementsType} from "@/routes/_private/profile/$username/_header/index";
@@ -54,7 +53,7 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
 
 
 interface AchievementSummaryProps {
-    summary: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["achievements"]["summary"];
+    summary: AchievementsType["summary"];
 }
 
 
@@ -87,7 +86,7 @@ function AchievementSummary({ summary }: AchievementSummaryProps) {
 
 
 interface AchievementCardProps {
-    achievement: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["achievements"]["details"][0];
+    achievement: AchievementsType["details"][0];
 }
 
 

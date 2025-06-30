@@ -1,11 +1,11 @@
 import {queryOptions} from "@tanstack/react-query";
-import {SearchType, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
+import {SearchType, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";

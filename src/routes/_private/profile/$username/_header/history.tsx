@@ -5,12 +5,12 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/app/Payload";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
 import {TablePagination} from "@/lib/components/app/TablePagination";
-import {createFileRoute, Link, useNavigate} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
+import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
 import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 
@@ -26,9 +26,9 @@ export const Route = createFileRoute("/_private/profile/$username/_header/histor
 
 
 function AllUpdates() {
-    const navigate = useNavigate();
     const { currentUser } = useAuth();
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const { username } = Route.useParams();
     const isCurrent = (currentUser?.name === username);
     const [rowSelected, setRowSelected] = useState({});
@@ -38,12 +38,10 @@ function AllUpdates() {
     // const deleteMutation = useDeleteUpdateMutation(queryKeys.allUpdatesKey(username, filters));
 
     const setFilters = async (filtersData: Record<string, any>) => {
-        //@ts-expect-error
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), resetScroll: false });
     };
 
     const resetFilters = async () => {
-        //@ts-expect-error
         await navigate({ search: {}, resetScroll: false });
         setCurrentSearch("");
     };
