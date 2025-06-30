@@ -113,19 +113,15 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
 
     async getMediaEditableFields(mediaId: number) {
         const media = await this.repository.findById(mediaId);
-        if (!media) {
-            throw notFound();
-        }
+        if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
-
-        for (const key in media) {
-            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
-                // @ts-expect-error
-                fields[key] = media[key];
+        const fields = editableFields.reduce((acc, field) => {
+            if (field in media) {
+                (acc as any)[field] = media[field];
             }
-        }
+            return acc;
+        }, {} as Pick<typeof media, typeof editableFields[number]>);
 
         return { fields };
     }
@@ -140,8 +136,6 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         const fields: { [key: string]: any } = {};
         fields.apiId = media.apiId;
 
-        // TODO: check types and values for fields (to meditate because only manager endpoint -> can be less strict)
-
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
                 defaultName: "default.jpg",
@@ -154,6 +148,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
         }
 
         for (const key in payload) {
+            //@ts-expect-error
             if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
                 fields[key] = payload[key];
             }

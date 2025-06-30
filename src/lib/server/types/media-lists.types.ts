@@ -84,7 +84,7 @@ export interface MediaSchemaConfig<
     apiProvider: {
         maxGenres: number;
     }
-    editableFields: (Partial<keyof TMediaTable["$inferSelect"]> | Partial<keyof TListTable["$inferSelect"]>)[];
+    editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     tablesForDeletion: TableWithMediaId[];
 }
 
@@ -107,6 +107,6 @@ export interface TVSchemaConfig<
     networkTable: TNetworkTableParam;
     epsPerSeasonTable: TEpsPerSeasonTableParam;
     mediaList: Omit<MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable>["mediaList"], "baseSelection"> & {
-        baseSelection: BaseSelection<TListTable, TMediaTable> & { epsPerSeason?: SQL<any> };
+        baseSelection: BaseSelection<TListTable, TMediaTable> & { epsPerSeason?: SQL };
     };
 }

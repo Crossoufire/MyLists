@@ -72,7 +72,7 @@ export const animeConfig: AnimeSchemaConfig = {
     },
     editableFields: [
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
-        "createdBy", "duration", "originCountry", "status", "synopsis"
+        "createdBy", "duration", "originCountry", "prodStatus", "synopsis"
     ],
     tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],
 };
