@@ -3,7 +3,7 @@ import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";
-import {GenreTable, LabelTable, ListTable, MediaListArgs, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
+import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     ConfigTopMetric,
@@ -11,6 +11,7 @@ import {
     FilterDefinition,
     FilterDefinitions,
     ListFilterDefinition,
+    MediaListArgs,
     MediaListData,
     UserFollowsMediaData,
     UserMediaWithLabels

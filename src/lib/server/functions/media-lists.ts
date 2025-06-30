@@ -1,8 +1,8 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })

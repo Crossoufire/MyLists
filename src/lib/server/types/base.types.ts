@@ -1,10 +1,36 @@
 import {Column, SQL} from "drizzle-orm";
+import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
+import {MediaTable} from "@/lib/server/types/media-lists.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
-import {MediaListArgs, MediaTable} from "@/lib/server/types/media-lists.types";
-import {GamesPlatformsEnum, MediaType, NotificationType, RatingSystemType} from "@/lib/server/utils/enums";
-import {Label} from "@/lib/components/types";
+import {GamesPlatformsEnum, MediaType, NotificationType, RatingSystemType, Status} from "@/lib/server/utils/enums";
+
+
+export interface MediaListArgs {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    sort?: string,
+    status?: Status[];
+    genres?: string[];
+    labels?: string[];
+    langs?: string[];
+    favorite?: boolean;
+    comment?: boolean;
+    hideCommon?: boolean;
+    sorting?: string;
+    directors?: string[];
+    platforms?: GamesPlatformsEnum[];
+    publishers?: string[];
+    actors?: string[];
+    authors?: string[];
+    companies?: string[];
+    networks?: string[];
+    creators?: string[];
+    currentUserId?: number;
+    userId?: number;
+}
 
 
 export type ComingNext = {

@@ -1,7 +1,6 @@
 import {SQL} from "drizzle-orm";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
@@ -19,6 +18,7 @@ import {
     ExpandedListFilters,
     ItemForNotification,
     JobDetails,
+    MediaListArgs,
     MediaListData,
     SimpleMedia,
     TopMetricStats,

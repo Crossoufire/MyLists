@@ -1,5 +1,4 @@
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
@@ -15,6 +14,7 @@ import {
     ItemForNotification,
     JobDetails,
     MediaAndUserDetails,
+    MediaListArgs,
     MediaListData,
     SearchType,
     UpdateUserMediaDetails,

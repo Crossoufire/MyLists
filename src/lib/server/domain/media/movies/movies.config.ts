@@ -22,7 +22,7 @@ export const moviesConfig: MovieSchemaConfig = {
         baseSelection: {
             mediaName: schema.movies.name,
             imageCover: schema.movies.imageCover,
-            director: schema.movies.directorName,
+            directorName: schema.movies.directorName,
             originalLanguage: schema.movies.originalLanguage,
             ...getTableColumns(schema.moviesList),
         },

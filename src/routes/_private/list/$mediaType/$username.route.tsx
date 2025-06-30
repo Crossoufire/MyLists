@@ -8,11 +8,11 @@ import {Header} from "@/lib/components/media-list/Header";
 import {Pagination} from "@/lib/components/app/Pagination";
 import {MediaGrid} from "@/lib/components/media-list/MediaGrid";
 import {MediaTable} from "@/lib/components/media-list/MediaTable";
-import {MediaListArgs} from "@/lib/server/types/media-lists.types";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
 import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({

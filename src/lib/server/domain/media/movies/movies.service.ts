@@ -3,13 +3,13 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {IMoviesService} from "@/lib/server/types/services.types";
+import {UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-import {UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 
 

@@ -1,4 +1,4 @@
-import {asc, desc} from "drizzle-orm";
+import {asc, desc, getTableColumns} from "drizzle-orm";
 import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
@@ -20,16 +20,9 @@ export const gamesConfig: GamesSchemaConfig = {
     labelTable: schema.gamesLabels,
     mediaList: {
         baseSelection: {
-            userId: schema.gamesList.userId,
-            imageCover: schema.games.imageCover,
-            mediaId: schema.gamesList.mediaId,
-            status: schema.gamesList.status,
-            rating: schema.gamesList.rating,
-            favorite: schema.gamesList.favorite,
-            comment: schema.gamesList.comment,
             mediaName: schema.games.name,
-            playtime: schema.gamesList.playtime,
-            platform: schema.gamesList.platform,
+            imageCover: schema.games.imageCover,
+            ...getTableColumns(schema.gamesList),
         },
         filterDefinitions: {
             platforms: createListFilterDef({
