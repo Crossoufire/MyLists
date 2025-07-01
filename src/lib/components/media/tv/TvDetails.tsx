@@ -3,7 +3,7 @@ import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
 import {ExtractMediaDetailsByType} from "@/lib/components/types";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
-import {EpsPerSeason} from "@/lib/components/media/tv/EpsPerSeason";
+import {DisplayAllTvEpsPerSeason} from "@/lib/components/media/tv/DisplayAllTvEpsPerSeason";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
@@ -103,7 +103,7 @@ export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps) => {
             <Synopsis
                 synopsis={mediaData.synopsis}
             />
-            <EpsPerSeason
+            <DisplayAllTvEpsPerSeason
                 epsPerSeason={mediaData.epsPerSeason ?? []}
             />
         </div>

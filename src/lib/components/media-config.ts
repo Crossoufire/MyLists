@@ -1,15 +1,15 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {TvDetails} from "@/lib/components/media/tv/TvDetails";
+import {DisplayTvRedo} from "@/lib/components/media/tv/DisplayTvRedo";
 import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
 import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
-import {RedoFollowCard} from "@/lib/components/media/base/RedoFollowCard";
+import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {TvUserDetails} from "@/lib/components/user-media/tv/TvUserDetails";
-import {TvRedoFollowCard} from "@/lib/components/media/tv/TvRedoFollowCard";
-import {TvDetailsFollowCard} from "@/lib/components/media/tv/TvDetailsFollowCard";
+import {DisplayEpsAndSeasons} from "@/lib/components/media/tv/DisplayEpsAndSeasons";
 import {GamesUserDetails} from "@/lib/components/user-media/games/GamesUserDetails";
 import {MoviesUserDetails} from "@/lib/components/user-media/movies/MoviesUserDetails";
-import {GamesDetailsFollowCard} from "@/lib/components/media/games/GamesDetailsFollowCard";
-import {ExtractFollowsByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
+import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
+import {ExtractFollowsByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
 
 
 type MediaConfiguration = {
@@ -20,13 +20,17 @@ type MediaConfiguration = {
             userMedia: ExtractUserMediaByType<T>;
         }>;
         mediaFollowCards: [
-                React.FC<{ follow: ExtractFollowsByType<T> }> | null,
-                React.FC<{ follow: ExtractFollowsByType<T> }> | null,
+                React.FC<{ userData: ExtractFollowsByType<T> }> | null,
+                React.FC<{ userData: ExtractFollowsByType<T> }> | null,
         ];
         mediaDetails: React.FC<{
             mediaType: T,
             mediaData: ExtractMediaDetailsByType<T>,
         }>;
+        listDetailsCards: [
+                React.FC<{ userData: ExtractListByType<T> }> | null,
+                React.FC<{ userData: ExtractListByType<T> }> | null,
+        ];
     };
 };
 
@@ -34,32 +38,38 @@ type MediaConfiguration = {
 export const mediaConfig: MediaConfiguration = {
     [MediaType.SERIES]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCards: [TvRedoFollowCard, TvDetailsFollowCard],
+        mediaFollowCards: [DisplayTvRedo, DisplayEpsAndSeasons],
         mediaDetails: TvDetails,
+        listDetailsCards: [DisplayTvRedo, DisplayEpsAndSeasons],
     },
     [MediaType.ANIME]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCards: [TvRedoFollowCard, TvDetailsFollowCard],
+        mediaFollowCards: [DisplayTvRedo, DisplayEpsAndSeasons],
         mediaDetails: TvDetails,
+        listDetailsCards: [DisplayTvRedo, DisplayEpsAndSeasons],
     },
     [MediaType.MOVIES]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [RedoFollowCard, null],
+        mediaFollowCards: [DisplayRedoValue, null],
         mediaDetails: MoviesDetails,
+        listDetailsCards: [DisplayRedoValue, null],
     },
     [MediaType.GAMES]: {
         mediaUserDetails: GamesUserDetails,
-        mediaFollowCards: [null, GamesDetailsFollowCard],
+        mediaFollowCards: [null, DisplayPlaytime],
         mediaDetails: GamesDetails,
+        listDetailsCards: [null, DisplayPlaytime],
     },
     [MediaType.BOOKS]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [RedoFollowCard, null],
+        mediaFollowCards: [DisplayRedoValue, null],
         mediaDetails: MoviesDetails,
+        listDetailsCards: [DisplayRedoValue, null],
     },
     [MediaType.MANGA]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [RedoFollowCard, null],
+        mediaFollowCards: [DisplayRedoValue, null],
         mediaDetails: MoviesDetails,
+        listDetailsCards: [DisplayRedoValue, null],
     },
 };

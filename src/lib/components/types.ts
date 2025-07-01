@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {historyOptions, mediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
+import {historyOptions, mediaDetailsOptions, mediaListOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export type Prettify<T> = {
@@ -9,13 +9,13 @@ export type Prettify<T> = {
 
 // --- Types for User Media Details ------------------------------------
 export type MediaAndUserDetailsData = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>;
-export type UserMedia = MediaAndUserDetailsData["userMedia"];
 export type HistoryType = Awaited<ReturnType<NonNullable<ReturnType<typeof historyOptions>["queryFn"]>>>
+export type UserMedia = NonNullable<MediaAndUserDetailsData["userMedia"]>;
 
 export type ExtractUserMediaByType<T extends MediaType> =
-    T extends typeof MediaType.GAMES ? Extract<NonNullable<UserMedia>, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<NonNullable<UserMedia>, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<NonNullable<UserMedia>, { playtime: number | null } | { currentSeason: number }> :
+    T extends typeof MediaType.GAMES ? Extract<UserMedia, { playtime: number | null }> :
+        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMedia, { currentSeason: number }> :
+            T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number }> :
                 never;
 
 
@@ -35,17 +35,28 @@ export type FollowUserMedia = FollowData["userMedia"];
 
 export type ExtractFollowUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<FollowUserMedia, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<FollowUserMedia, { currentSeason: number }> :
+        T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<FollowUserMedia, { currentSeason: number }> :
             T extends typeof MediaType.MOVIES ? Exclude<FollowUserMedia, { playtime: number | null } | { currentSeason: number }> :
                 never;
 
-type SpecificFollow<T extends MediaType> = {
-    userMedia: ExtractFollowUserMediaByType<T>;
-};
-
-export type ExtractFollowsByType<T extends MediaType> = Extract<FollowData, SpecificFollow<T>>;
+export type ExtractFollowsByType<T extends MediaType> = FollowData & { userMedia: ExtractFollowUserMediaByType<T> };
 
 
 // --- Types for Label Dialog ------------------------------------------
 export type Label = { oldName?: string, name: string };
 export type ToastType = { type: "error" | "success", message: string };
+
+
+// --- Types for Media List ------------------------------------------
+type MediaListType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
+export type ListUserData = MediaListType["userData"];
+export type ListUserMedia = MediaListType["results"]["items"][0];
+export type ListPagination = MediaListType["results"]["pagination"];
+
+export type ExtractListMediaByType<T extends MediaType> =
+    T extends typeof MediaType.GAMES ? Extract<ListUserMedia, { playtime: number | null }> :
+        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<ListUserMedia, { currentSeason: number }> :
+            T extends typeof MediaType.MOVIES ? Exclude<ListUserMedia, { playtime: number | null } | { currentSeason: number }> :
+                never;
+
+export type ExtractListByType<T extends MediaType> = ListUserMedia & { userMedia: ExtractListMediaByType<T> };

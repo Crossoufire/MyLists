@@ -2,7 +2,7 @@ import {MessageCircle} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
-export const CommentPopover = ({ content }: { content?: string }) => {
+export const DisplayComment = ({ content }: { content?: string }) => {
     return (
         <Popover>
             <PopoverTrigger>

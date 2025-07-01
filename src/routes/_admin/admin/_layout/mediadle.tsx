@@ -130,8 +130,8 @@ function AdminMediadlePage() {
         data: apiData?.items ?? [],
         rowCount: apiData?.total ?? 0,
         getCoreRowModel: getCoreRowModel(),
-        onPaginationChange: onPaginationChange,
         state: { pagination: paginationState },
+        onPaginationChange: onPaginationChange,
     });
 
     useDebounceCallback(currentSearch, 300, setFilters, { ...filters, search: currentSearch, pageIndex: 0 });

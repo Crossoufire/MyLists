@@ -1,14 +1,15 @@
-import {cn} from "@/lib/utils/helpers";
+import {MessageCircle} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
 import {FollowData} from "@/lib/components/types";
+import {MediaType} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
-import {Heart, MessageCircle, Star} from "lucide-react";
 import {mediaConfig} from "@/lib/components/media-config";
 import {Card, CardContent} from "@/lib/components/ui/card";
-import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
-import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {DisplayRating} from "@/lib/components/media/DisplayRating";
+import {formatRating, getStatusColor} from "@/lib/utils/functions";
+import {DisplayComment} from "@/lib/components/media/DisplayComment";
+import {DisplayFavorite} from "@/lib/components/media/DisplayFavorite";
 
 
 interface FollowCardProps {
@@ -18,50 +19,8 @@ interface FollowCardProps {
 
 
 export const FollowCard = ({ follow, mediaType }: FollowCardProps) => {
-    const rating = formatRating();
+    const rating = formatRating(follow.ratingSystem, follow.userMedia.rating);
     const [RedoComponent, DetailsComponent] = mediaConfig[mediaType].mediaFollowCards;
-
-    function formatRating() {
-        if (follow.ratingSystem === RatingSystemType.FEELING) {
-            return getFeelingIcon(follow.userMedia.rating, { size: 17 });
-        }
-        return follow.userMedia.rating === null ? "--" : follow.userMedia.rating.toFixed(1);
-
-    }
-
-    const childrens = [
-        //@ts-expect-error
-        RedoComponent ? <RedoComponent follow={follow as any}/> : null,
-        //@ts-expect-error
-        DetailsComponent ? <DetailsComponent follow={follow as any}/> : null,
-    ];
-
-    return (
-        <FollowCardLayout
-            rating={rating}
-            image={follow.image}
-            childrens={childrens}
-            username={follow.name}
-            status={follow.userMedia.status}
-            comment={follow.userMedia.comment}
-            isFavorite={follow.userMedia.favorite}
-        />
-    );
-};
-
-
-interface FollowCardLayoutProps {
-    image: string;
-    status: Status;
-    username: string;
-    comment: string | null;
-    rating: React.ReactNode;
-    isFavorite: boolean | null;
-    childrens: React.ReactNode[];
-}
-
-
-const FollowCardLayout = ({ username, image, status, rating, comment, isFavorite, childrens }: FollowCardLayoutProps) => {
 
     const getTextColor = (backColor: string) => {
         const hex = backColor.replace("#", "");
@@ -76,49 +35,40 @@ const FollowCardLayout = ({ username, image, status, rating, comment, isFavorite
             <CardContent className="p-4">
                 <div className="grid grid-cols-12 gap-2">
                     <div className="col-span-3">
-                        <Link to="/profile/$username" params={{ username }}>
+                        <Link to="/profile/$username" params={{ username: follow.name }}>
                             <img
-                                src={image}
-                                alt={username}
+                                alt={follow.name}
+                                src={follow.image}
                                 className="bg-neutral-600 h-[52px] w-[52px] rounded-full"
                             />
                         </Link>
                     </div>
                     <div className="col-span-9 space-y-1">
-                        <Link to="/profile/$username" params={{ username }}>
-                            <div className="text-lg font-medium">{username}</div>
+                        <Link to="/profile/$username" params={{ username: follow.name }}>
+                            <div className="text-lg font-medium">{follow.name}</div>
                         </Link>
                         <div className="flex justify-between items-center pr-3">
+                            <DisplayRating rating={rating}/>
+
+                            {RedoComponent ? <RedoComponent userData={follow as any}/> : null}
+
                             <div className="flex items-center gap-x-2">
-                                <Star size={15} className={cn("text-gray-400", rating !== "--" && "text-amber-500")}/>
-                                <div>{rating}</div>
-                            </div>
-                            {childrens[0]}
-                            <div className="flex items-center gap-x-2">
-                                {comment ?
-                                    <Popover>
-                                        <PopoverTrigger>
-                                            <MessageCircle size={15} className="text-blue-500"/>
-                                        </PopoverTrigger>
-                                        <PopoverContent>{comment}</PopoverContent>
-                                    </Popover>
-                                    :
-                                    <MessageCircle size={15}/>
+                                {follow.userMedia.comment ?
+                                    <DisplayComment content={follow.userMedia.comment}/> : <MessageCircle size={15}/>
                                 }
                             </div>
-                            <Heart
-                                size={15}
-                                className={cn("", isFavorite && "text-red-700")}
-                            />
+                            <DisplayFavorite isFavorite={!!follow.userMedia.favorite}/>
                         </div>
                     </div>
                 </div>
                 <Separator className="mb-3 mt-3"/>
                 <div className="flex items-center justify-between">
-                    <Badge style={{ background: getStatusColor(status), color: getTextColor(getStatusColor(status)) }}>
-                        {status}
+                    <Badge style={{ background: getStatusColor(follow.userMedia.status), color: getTextColor(getStatusColor(follow.userMedia.status)) }}>
+                        {follow.userMedia.status}
                     </Badge>
-                    {childrens[1]}
+
+                    {DetailsComponent ? <DetailsComponent userData={follow as any}/> : null}
+
                 </div>
             </CardContent>
         </Card>

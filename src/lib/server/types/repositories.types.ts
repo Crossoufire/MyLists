@@ -47,7 +47,7 @@ export interface IUniversalRepository<TMedia, TList> {
     findUserMedia(userId: number, mediaId: number): Promise<UserMediaWithLabels<TList> | null>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getUserFollowsMediaData(userId: number, mediaId: number): Promise<UserFollowsMediaData<TList>[]>;
-    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData>;
+    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TList>>;
 
     // --- Achievements ----------------------------------------------------------
     countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;

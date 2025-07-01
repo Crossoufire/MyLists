@@ -5,9 +5,9 @@ import {Link, useParams, useSearch} from "@tanstack/react-router";
 import {MediaLevelCircle} from "@/lib/components/app/MediaLevelCircle";
 import {SearchComponent} from "@/lib/components/media-list/SearchComponent";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {ListPagination, ListUserData} from "@/routes/_private/list/$mediaType/$username.route";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/lib/components/ui/dropdown-menu";
+import {ListPagination, ListUserData} from "@/lib/components/types";
 
 
 interface HeaderProps {

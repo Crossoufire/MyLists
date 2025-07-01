@@ -2,7 +2,7 @@ import {toast} from "sonner";
 import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserMedia} from "@/lib/components/types";
+import {ListUserMedia, UserMedia} from "@/lib/components/types";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {LabelLists} from "@/lib/components/user-media/base/LabelLists";
 import {UpdateComment} from "@/lib/components/user-media/base/UpdateComment";
@@ -17,7 +17,7 @@ import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/
 interface UserMediaDetailsProps {
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: NonNullable<UserMedia>;
+    userMedia: UserMedia | ListUserMedia;
 }
 
 

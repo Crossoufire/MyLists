@@ -128,9 +128,3 @@ function MediaList() {
         </PageTitle>
     );
 }
-
-
-type MediaListType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
-export type ListUserData = MediaListType["userData"];
-export type ListPagination = MediaListType["results"]["pagination"];
-export type ListItems = MediaListType["results"]["items"];

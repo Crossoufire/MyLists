@@ -1,41 +1,36 @@
 import {useEffect, useState} from "react";
 
 
-//@ts-ignore
-export const useDebounceCallback = (value, delay, callback, ...args) => {
-    const [timer, setTimer] = useState(0);
+export const useDebounceCallback = (value: any, delay: number, callback: (...args: any[]) => void, ...args: any[]) => {
+    const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         clearTimer();
 
         if (value && callback) {
-            const newTimer = setTimeout(() => {
-                callback(...args);
-            }, delay);
-            //@ts-ignore
+            const newTimer = setTimeout(() => callback(...args), delay);
             setTimer(newTimer);
         }
+
+        return () => clearTimer();
     }, [value]);
 
     const clearTimer = () => {
         if (timer) {
             clearTimeout(timer);
+            setTimer(null);
         }
     };
 };
 
 
-//@ts-ignore
-export const useDebounce = (value, delay) => {
+export const useDebounce = <T>(value: T, delay: number): T => {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
         return () => clearTimeout(handler);
     }, [value, delay]);
 
-    return [debouncedValue];
+    return debouncedValue;
 };

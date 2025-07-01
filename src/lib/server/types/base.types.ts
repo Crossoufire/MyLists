@@ -148,12 +148,13 @@ export type UserFollowsMediaData<TList> = {
 }
 
 
-export type MediaListData = {
-    items: {
-        [p: string]: any;
+export type MediaListData<TList> = {
+    items: (TList & {
         common: boolean;
+        mediaName: string;
+        imageCover: string;
         ratingSystem: RatingSystemType;
-    }[];
+    })[];
     pagination: {
         page: number;
         perPage: number;

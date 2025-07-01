@@ -1,3 +1,4 @@
+import {Label} from "@/lib/components/types";
 import {Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -16,7 +17,6 @@ import {
     UserFollowsMediaData,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
-import {Label} from "@/lib/components/types";
 
 
 const ALL_VALUE = "All";
@@ -348,6 +348,8 @@ export class BaseRepository<
             ...mediaList.filterDefinitions,
         };
 
+        // TODO: Add labels
+
         // Main query builder
         let queryBuilder = getDbClient()
             .select({
@@ -421,7 +423,7 @@ export class BaseRepository<
                 sorting: sortKeyName,
                 availableSorting: Object.keys(mediaList.availableSorts),
             },
-        } as MediaListData;
+        } as MediaListData<TList>;
     }
 
     // --- Achievements ----------------------------------------------------------

@@ -40,7 +40,7 @@ export interface IUniversalService<TMedia, TList> {
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
     getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType): Promise<JobDetails>;
-    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData>;
+    getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TList>>;
 }
 
 

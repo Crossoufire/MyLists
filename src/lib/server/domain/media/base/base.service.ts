@@ -1,7 +1,7 @@
 import {JobType} from "@/lib/server/utils/enums";
 import {IUniversalService} from "@/lib/server/types/services.types";
 import {ICommonRepository} from "@/lib/server/types/repositories.types";
-import {EditUserLabels, SearchType} from "@/lib/server/types/base.types";
+import {EditUserLabels, MediaListArgs, SearchType} from "@/lib/server/types/base.types";
 
 
 export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia, TList> {
@@ -56,7 +56,7 @@ export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TLis
         return this.repository.editUserLabel({ userId, label, mediaId, action });
     }
 
-    async getMediaList(currentUserId: number | undefined, userId: number, args: any) {
+    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
         return this.repository.getMediaList(currentUserId, userId, args);
     }
 

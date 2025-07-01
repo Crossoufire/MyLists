@@ -1,8 +1,17 @@
-import {AchievementDifficulty, MediaType, Status} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
 
 
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
+
+
+export const formatRating = (system: RatingSystemType, rating: number | null) => {
+    if (system === RatingSystemType.FEELING) {
+        return getFeelingIcon(rating, { size: 17 });
+    }
+    return rating === null ? "--" : rating.toFixed(1);
+}
+
 
 export const getFeelingIcon = (value: number | null, { className, size, valueOnly }: FeelIconProps = {}) => {
     if (!value || value < 0 || value > 10) return "--";

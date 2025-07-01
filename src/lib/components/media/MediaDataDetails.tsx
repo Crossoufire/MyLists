@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {mediaConfig} from "@/lib/components/media-config";
-import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 import {ExtractMediaDetailsByType} from "@/lib/components/types";
+import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 
 interface MediaDataDetailsProps<T extends MediaType> {

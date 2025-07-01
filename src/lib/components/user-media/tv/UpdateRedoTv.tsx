@@ -14,8 +14,8 @@ interface UpdateRedoTvProps {
 
 export const UpdateRedoTv = ({ onUpdateMutation, redoValues }: UpdateRedoTvProps) => {
     const [open, setOpen] = useState(false);
-    const credRef = useRef<HTMLDivElement | null>(null);
     const [draftRedo, setDraftRedo] = useState(redoValues);
+    const credRef = useRef<HTMLDivElement | null>(null);
     const totalRedo = redoValues.reduce((a, b) => a + b, 0);
 
     useEffect(() => {

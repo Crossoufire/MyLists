@@ -1,13 +1,12 @@
 import {zeroPad} from "@/lib/utils/functions";
 import {RefreshCw, RotateCw} from "lucide-react";
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaListOptions} from "@/lib/react-query/query-options/query-options";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
 interface RedoSystemProps {
     mediaType: MediaType;
-    userMedia: Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>["results"]["items"][0];
+    userMedia: ListItems[0];
 }
 
 

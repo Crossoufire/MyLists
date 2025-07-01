@@ -1,18 +1,19 @@
 import {RotateCw} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractFollowsByType} from "@/lib/components/types";
+import {ExtractFollowsByType, ExtractListByType} from "@/lib/components/types";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
-interface TvRedoFollowCardProps {
-    follow: ExtractFollowsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
+interface DisplayTvRedoProps {
+    userData: ExtractFollowsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>
+        | ExtractListByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
 }
 
 
-export const TvRedoFollowCard = ({ follow }: TvRedoFollowCardProps) => {
-    const maxCount = Math.max(...follow.userMedia.redo2);
-    const totalRedo = follow.userMedia.redo2.reduce((a, b) => a + b, 0);
+export const DisplayTvRedo = ({ userData }: DisplayTvRedoProps) => {
+    const maxCount = Math.max(...userData.userMedia.redo2);
+    const totalRedo = userData.userMedia.redo2.reduce((a, b) => a + b, 0);
 
     if (maxCount === 0) {
         return (
@@ -34,7 +35,7 @@ export const TvRedoFollowCard = ({ follow }: TvRedoFollowCardProps) => {
             <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">
                 <div className=" grid gap-3">
                     <div className="space-y-2">
-                        {follow.userMedia.redo2.map((season, idx) => (
+                        {userData.userMedia.redo2.map((season, idx) => (
                             <div key={idx} className="flex gap-3 items-center justify-between">
                                 <div className="text-sm font-medium leading-none">
                                     Season {zeroPad(idx + 1)}
