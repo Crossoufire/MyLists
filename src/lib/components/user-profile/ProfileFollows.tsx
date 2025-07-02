@@ -2,8 +2,8 @@ import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
-import {BlockLink} from "@/lib/components/app/BlockLink";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {BlockLink} from "@/lib/components/general/BlockLink";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {UserFollowsType} from "@/routes/_private/profile/$username/_header/index";
 

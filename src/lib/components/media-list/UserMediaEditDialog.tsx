@@ -1,6 +1,6 @@
-import {ListUserMedia} from "@/lib/components/types";
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserMediaDetails} from "@/lib/components/user-media/base/UserMediaDetails";
+import {UserMediaItem} from "@/lib/components/types";
+import {UserMediaDetails} from "@/lib/components/media/base/UserMediaDetails";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
 
 
@@ -8,7 +8,7 @@ interface UserMediaEditDialogProps {
     queryKey: string[];
     dialogOpen: boolean;
     mediaType: MediaType;
-    userMedia: ListUserMedia;
+    userMedia: UserMediaItem;
     onOpenChange: (open: boolean) => void;
 }
 

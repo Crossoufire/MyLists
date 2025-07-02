@@ -1,9 +1,9 @@
 import {routeTree} from "./routeTree.gen";
-import {NotFound} from "@/lib/components/app/NotFound";
+import {NotFound} from "@/lib/components/general/NotFound";
 import {queryClient} from "@/lib/react-query/query-client";
 import {routerWithQueryClient} from "@tanstack/react-router-with-query";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";
-import {DefaultCatchBoundary} from "@/lib/components/app/DefaultCatchBoundary";
+import {DefaultCatchBoundary} from "@/lib/components/general/DefaultCatchBoundary";
 
 
 export function createRouter() {

@@ -4,10 +4,10 @@ import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/app/PageTitle";
 import {Header} from "@/lib/components/media-list/Header";
-import {Pagination} from "@/lib/components/app/Pagination";
 import {MediaListArgs} from "@/lib/server/types/base.types";
+import {PageTitle} from "@/lib/components/general/PageTitle";
+import {Pagination} from "@/lib/components/general/Pagination";
 import {MediaGrid} from "@/lib/components/media-list/MediaGrid";
 import {MediaTable} from "@/lib/components/media-list/MediaTable";
 import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
@@ -99,7 +99,7 @@ function MediaList() {
                 <MediaGrid
                     isCurrent={isCurrent}
                     mediaType={mediaType}
-                    items={apiData.results.items}
+                    mediaItems={apiData.results.items}
                     queryKey={queryKeys.userListKey(mediaType, username, search)}
                 />
                 :

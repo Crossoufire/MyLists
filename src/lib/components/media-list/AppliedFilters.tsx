@@ -1,7 +1,7 @@
 import {X} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
 import {capitalize} from "@/lib/utils/functions";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 

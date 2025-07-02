@@ -21,21 +21,3 @@ export const MediaFollowCard = <T extends MediaType>({ followData, mediaType }: 
         />
     );
 };
-
-
-// const MoreFollowDetails = ({ mediaType, follow }: MoreFollowDetailsProps) => {
-//     else if (mediaType === MediaType.BOOKS && follow.userMedia.status !== Status.PLAN_TO_READ) {
-//         return (
-//             <div className="flex gap-x-2 items-center">
-//                 <Play size={16} className="mt-0.5"/> Pages {follow.userMedia.actualPage}/{follow.userMedia.totalPages}
-//             </div>
-//         );
-//     }
-//     else if (mediaType === MediaType.MANGA && follow.userMedia.status !== Status.PLAN_TO_READ) {
-//         return (
-//             <div className="flex gap-x-2 items-center">
-//                 <Play size={16} className="mt-0.5"/> Chpt. {follow.userMedia.currentChapter}/{follow.userMedia.totalChapters ?? "?"}
-//             </div>
-//         );
-//     }
-// };

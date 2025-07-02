@@ -6,7 +6,7 @@ import {Button} from "@/lib/components/ui/button";
 import {useEffect, useRef, useState} from "react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Label, ToastType} from "@/lib/components/types";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {userMediaLabelsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditUserLabelMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";

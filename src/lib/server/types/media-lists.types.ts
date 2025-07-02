@@ -79,7 +79,7 @@ export interface MediaSchemaConfig<
         defaultSortName: string;
         filterDefinitions: FilterDefinitions;
         availableSorts: Record<string, SQL | SQL[]>;
-        baseSelection: BaseSelection<TListTable, TMediaTable>;
+        baseSelection: BaseSelection<TListTable, TMediaTable> & { epsPerSeason?: SQL };
     }
     apiProvider: {
         maxGenres: number;
@@ -106,7 +106,4 @@ export interface TVSchemaConfig<
     actorTable: TActorTableParam;
     networkTable: TNetworkTableParam;
     epsPerSeasonTable: TEpsPerSeasonTableParam;
-    mediaList: Omit<MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable>["mediaList"], "baseSelection"> & {
-        baseSelection: BaseSelection<TListTable, TMediaTable> & { epsPerSeason?: SQL };
-    };
 }

@@ -6,11 +6,11 @@ import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/app/PageTitle";
-import {MutedText} from "@/lib/components/app/MutedText";
-import {Pagination} from "@/lib/components/app/Pagination";
+import {PageTitle} from "@/lib/components/general/PageTitle";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {HoFCard} from "@/lib/components/hall-of-fame/HoFCard";
+import {HofCard} from "@/lib/components/hall-of-fame/HoFCard";
+import {Pagination} from "@/lib/components/general/Pagination";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
 import {HofSorting, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
@@ -94,10 +94,10 @@ function HallOfFamePage() {
                     {apiData.items.length === 0 ?
                         <MutedText>No users found.</MutedText>
                         :
-                        apiData.items.map((user) =>
-                            <HoFCard
-                                user={user}
-                                key={user.name}
+                        apiData.items.map((userData) =>
+                            <HofCard
+                                userData={userData}
+                                key={userData.name}
                             />
                         )
                     }

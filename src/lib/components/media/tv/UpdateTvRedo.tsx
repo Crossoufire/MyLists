@@ -6,13 +6,13 @@ import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user
 import {Credenza, CredenzaClose, CredenzaContent, CredenzaDescription, CredenzaFooter, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
 
 
-interface UpdateRedoTvProps {
+interface UpdateTvRedoProps {
     redoValues: number[];
     onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdateRedoTv = ({ onUpdateMutation, redoValues }: UpdateRedoTvProps) => {
+export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps) => {
     const [open, setOpen] = useState(false);
     const [draftRedo, setDraftRedo] = useState(redoValues);
     const credRef = useRef<HTMLDivElement | null>(null);

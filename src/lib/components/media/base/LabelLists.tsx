@@ -5,8 +5,8 @@ import {Badge} from "@/lib/components/ui/badge";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
-import {MutedText} from "@/lib/components/app/MutedText";
-import {LabelsDialog} from "@/lib/components/user-media/base/LabelsDialog";
+import {MutedText} from "@/lib/components/general/MutedText";
+import {LabelsDialog} from "@/lib/components/media/base/LabelsDialog";
 
 
 interface LabelListsProps {

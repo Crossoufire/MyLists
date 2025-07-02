@@ -5,7 +5,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Progress} from "@/lib/components/ui/progress";
 import {Separator} from "@/lib/components/ui/separator";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {StatsCard} from "@/lib/components/moviedle/StatsCard";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";

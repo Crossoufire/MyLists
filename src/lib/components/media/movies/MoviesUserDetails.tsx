@@ -1,22 +1,20 @@
-import React from "react";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ExtractUserMediaByType} from "@/lib/components/types";
-import {UpdateRating} from "@/lib/components/user-media/base/UpdateRating";
-import {UpdateStatus} from "@/lib/components/user-media/base/UpdateStatus";
-import {UpdatePlatform} from "@/lib/components/user-media/games/UpdatePlatform";
-import {UpdatePlaytime} from "@/lib/components/user-media/games/UpdatePlaytime";
+import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
+import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
+import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
-interface GamesUserDetailsProps {
+interface MoviesUserDetailsProps {
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: ExtractUserMediaByType<typeof MediaType.GAMES>;
+    userMedia: ExtractUserMediaByType<typeof MediaType.MOVIES>;
 }
 
 
-export const GamesUserDetails = ({ userMedia, mediaType, queryKey }: GamesUserDetailsProps) => {
+export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUserDetailsProps) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     return (
@@ -26,17 +24,9 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }: GamesUserDe
                 status={userMedia.status}
                 updateStatus={updateUserMediaMutation}
             />
-            <UpdatePlatform
-                platform={userMedia.platform}
-                updatePlatform={updateUserMediaMutation}
-            />
-            {userMedia.status !== Status.PLAN_TO_PLAY &&
+            {userMedia.status !== Status.PLAN_TO_WATCH &&
                 <>
                     <Separator/>
-                    <UpdatePlaytime
-                        playtime={userMedia.playtime ?? 0}
-                        updatePlaytime={updateUserMediaMutation}
-                    />
                     <div className="flex justify-between items-center">
                         <div>Rating</div>
                         <UpdateRating
@@ -45,6 +35,11 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }: GamesUserDe
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>
+                    <UpdateRedo
+                        name={"Re-watched"}
+                        redo={userMedia.redo}
+                        updateRedo={updateUserMediaMutation}
+                    />
                 </>
             }
         </>

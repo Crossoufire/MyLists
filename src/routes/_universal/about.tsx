@@ -1,6 +1,6 @@
 import {mail} from "@/lib/utils/helpers";
 import {createFileRoute} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 
 
 export const Route = createFileRoute("/_universal/about")({

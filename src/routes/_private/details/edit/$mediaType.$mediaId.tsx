@@ -5,7 +5,7 @@ import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 import {capitalize, sliceIntoParts} from "@/lib/utils/functions";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
 import {EditGenresSelector} from "@/lib/components/media/books/EditGenresSelector";

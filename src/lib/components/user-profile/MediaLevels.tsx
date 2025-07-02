@@ -3,7 +3,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Progress} from "@/lib/components/ui/progress";
 import {Separator} from "@/lib/components/ui/separator";
-import {MediaLevelCircle} from "@/lib/components/app/MediaLevelCircle";
+import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {UserSettingsType} from "@/routes/_private/profile/$username/_header/index";
 import {capitalize, computeLevel, getMediaColor, zeroPad} from "@/lib/utils/functions";

@@ -29,7 +29,7 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
 
         const mediaService = getContainer().registries.mediaService.getService(mediaType);
         const results = await mediaService.getMediaList(currentUserId, targetUserId, args);
-
+        
         return { userData: user, mediaType, results };
     });
 

@@ -1,9 +1,9 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
 import {SearchType} from "@/lib/server/types/base.types";
-import {PageTitle} from "@/lib/components/app/PageTitle";
-import {Pagination} from "@/lib/components/app/Pagination";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
+import {PageTitle} from "@/lib/components/general/PageTitle";
+import {Pagination} from "@/lib/components/general/Pagination";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
@@ -45,15 +45,17 @@ function JobInfoPage() {
     return (
         <PageTitle title={`${name}'s ${mediaType} (${apiData.total})`}>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6 sm:gap-5">
-                {apiData.items.map((item) => (
+                {apiData.items.map((item) =>
                     <div key={item.mediaId} className="col-span-1">
                         <MediaCard item={item} mediaType={mediaType}>
                             {item.inUserList &&
-                                <MediaCornerCommon isCommon={item.inUserList}/>
+                                <MediaCornerCommon
+                                    isCommon={item.inUserList}
+                                />
                             }
                         </MediaCard>
                     </div>
-                ))}
+                )}
             </div>
             <Pagination
                 currentPage={page}

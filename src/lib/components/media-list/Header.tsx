@@ -2,12 +2,12 @@ import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
-import {MediaLevelCircle} from "@/lib/components/app/MediaLevelCircle";
+import {ListPagination, ListUserData} from "@/lib/components/types";
+import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
 import {SearchComponent} from "@/lib/components/media-list/SearchComponent";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/lib/components/ui/dropdown-menu";
-import {ListPagination, ListUserData} from "@/lib/components/types";
 
 
 interface HeaderProps {

@@ -2,12 +2,12 @@ import {ArrowRight} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {Separator} from "@/lib/components/ui/separator";
-import {MutedText} from "@/lib/components/app/MutedText";
-import {BlockLink} from "@/lib/components/app/BlockLink";
+import {MutedText} from "@/lib/components/general/MutedText";
+import {BlockLink} from "@/lib/components/general/BlockLink";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
-import {StatusBullet} from "@/lib/components/app/StatusBullet";
+import {StatusBullet} from "@/lib/components/general/StatusBullet";
 
 
 interface MediaStatsProps {

@@ -1,10 +1,10 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ExtractUserMediaByType} from "@/lib/components/types";
-import {UpdateRedoTv} from "@/lib/components/user-media/tv/UpdateRedoTv";
-import {UpdateRating} from "@/lib/components/user-media/base/UpdateRating";
-import {UpdateStatus} from "@/lib/components/user-media/base/UpdateStatus";
-import {UpdateSeasonsEps} from "@/lib/components/user-media/tv/UpdateSeasonsEps";
+import {UpdateTvRedo} from "@/lib/components/media/tv/UpdateTvRedo";
+import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
+import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
+import {UpdateSeasonsEps} from "@/lib/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
@@ -49,7 +49,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
             {!(userMedia.status === Status.PLAN_TO_WATCH || userMedia.status === Status.RANDOM) &&
                 <div className="flex justify-between items-center h-7">
                     <div>Re-watched</div>
-                    <UpdateRedoTv
+                    <UpdateTvRedo
                         redoValues={userMedia.redo2}
                         onUpdateMutation={updateUserMediaMutation}
                     />

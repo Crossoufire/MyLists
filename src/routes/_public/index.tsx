@@ -1,7 +1,7 @@
 import homeImage from "@/lib/images/home1.jpg"
 import {Button} from "@/lib/components/ui/button";
 import {Separator} from "@/lib/components/ui/separator";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {ArrowRight, DollarSign, Heart, MessageCircle, MonitorSmartphone, PackageOpen, Sparkles,} from "lucide-react";

@@ -1,12 +1,12 @@
 import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useSearch} from "@tanstack/react-router";
-import {ListUserMedia} from "@/lib/components/types";
-import {BlockLink} from "@/lib/components/app/BlockLink";
+import {UserMediaItem} from "@/lib/components/types";
+import {BlockLink} from "@/lib/components/general/BlockLink";
 import {CircleCheck, Heart, Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
-import {TablePagination} from "@/lib/components/app/TablePagination";
+import {TablePagination} from "@/lib/components/general/TablePagination";
 import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 import {DisplayRating} from "@/lib/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
@@ -134,7 +134,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
 
     const getCurrentEditingItem = () => {
         if (!editingId) return null;
-        return results.items.find((item) => item.mediaId === editingId) as ListUserMedia;
+        return results.items.find((item) => item.mediaId === editingId) as UserMediaItem;
     };
 
     return (

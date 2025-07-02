@@ -2,22 +2,22 @@ import {toast} from "sonner";
 import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
-import {ListUserMedia, UserMedia} from "@/lib/components/types";
+import {UserMedia, UserMediaItem} from "@/lib/components/types";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {LabelLists} from "@/lib/components/user-media/base/LabelLists";
-import {UpdateComment} from "@/lib/components/user-media/base/UpdateComment";
-import {HistoryDetails} from "@/lib/components/user-media/base/HistoryDetails";
-import {UpdateFavorite} from "@/lib/components/user-media/base/UpdateFavorite";
+import {LabelLists} from "@/lib/components/media/base/LabelLists";
+import {UpdateComment} from "@/lib/components/media/base/UpdateComment";
+import {HistoryDetails} from "@/lib/components/media/base/HistoryDetails";
+import {UpdateFavorite} from "@/lib/components/media/base/UpdateFavorite";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {historyOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
-import {UserMediaSpecificDetails} from "@/lib/components/user-media/base/UserMediaSpecificDetails";
+import {UserMediaSpecificDetails} from "@/lib/components/media/base/UserMediaSpecificDetails";
 import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
 interface UserMediaDetailsProps {
     queryKey: string[];
     mediaType: MediaType;
-    userMedia: UserMedia | ListUserMedia;
+    userMedia: UserMedia | UserMediaItem;
 }
 
 

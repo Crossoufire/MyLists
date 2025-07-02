@@ -1,4 +1,4 @@
-import {CustomGraphTooltip} from "@/lib/components/app/CustomGraphTooltip";
+import {CustomGraphTooltip} from "@/lib/components/general/CustomGraphTooltip";
 import {Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 
 

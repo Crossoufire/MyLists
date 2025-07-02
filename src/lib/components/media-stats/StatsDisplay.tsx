@@ -1,5 +1,5 @@
 import {cn} from "@/lib/utils/helpers";
-import {StatusBullet} from "@/lib/components/app/StatusBullet";
+import {StatusBullet} from "@/lib/components/general/StatusBullet";
 import {StatsCard} from "@/lib/components/media-stats/StatsCard";
 import {StatsList} from "@/lib/components/media-stats/StatsList";
 import {Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious} from "@/lib/components/ui/carousel";

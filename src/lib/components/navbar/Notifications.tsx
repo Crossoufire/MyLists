@@ -7,7 +7,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";

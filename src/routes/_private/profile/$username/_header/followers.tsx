@@ -1,7 +1,7 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/app/PageTitle";
-import {BlockLink} from "@/lib/components/app/BlockLink";
+import {PageTitle} from "@/lib/components/general/PageTitle";
+import {BlockLink} from "@/lib/components/general/BlockLink";
 import {followersOptions} from "@/lib/react-query/query-options/query-options";
 
 

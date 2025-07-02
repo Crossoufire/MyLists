@@ -2,7 +2,7 @@ import {useCallback, useState} from "react";
 import Cropper, {Area} from "react-easy-crop";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {FormDescription} from "@/lib/components/ui/form";
 
 

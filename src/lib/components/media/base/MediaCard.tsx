@@ -2,7 +2,7 @@ import React from "react";
 import {LoaderCircle} from "lucide-react";
 import {Card} from "@/lib/components/ui/card";
 import {MediaType} from "@/lib/server/utils/enums";
-import {BlockLink} from "@/lib/components/app/BlockLink";
+import {BlockLink} from "@/lib/components/general/BlockLink";
 
 
 interface MediaCardProps {

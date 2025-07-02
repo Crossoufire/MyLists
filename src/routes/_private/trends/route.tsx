@@ -3,7 +3,7 @@ import {useHashTab} from "@/lib/hooks/use-hash-tab";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {TrendsMedia} from "@/lib/server/types/provider.types";
 import {Card, CardContent, CardTitle} from "@/lib/components/ui/card";
@@ -58,7 +58,7 @@ function TrendsPage() {
 
 const TrendItem = ({ media }: { media: TrendsMedia }) => {
     const { apiId, posterPath, displayName, mediaType, releaseDate, overview } = media;
-    
+
     return (
         <Card className="h-full">
             <div className="grid grid-cols-12">

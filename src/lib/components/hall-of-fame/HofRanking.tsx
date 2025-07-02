@@ -1,7 +1,7 @@
 import React from "react";
 import {Progress} from "@/lib/components/ui/progress";
-import {MutedText} from "@/lib/components/app/MutedText";
 import {Card, CardContent} from "@/lib/components/ui/card";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {capitalize, getMediaColor} from "@/lib/utils/functions";
 import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 

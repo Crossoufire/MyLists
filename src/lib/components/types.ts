@@ -50,11 +50,11 @@ export type ToastType = { type: "error" | "success", message: string };
 // --- Types for Media List ------------------------------------------
 type MediaListType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
 export type ListUserData = MediaListType["userData"];
-export type ListUserMedia = MediaListType["results"]["items"][0];
+export type UserMediaItem = MediaListType["results"]["items"][0];
 export type ListPagination = MediaListType["results"]["pagination"];
 
 export type ExtractListByType<T extends MediaType> =
-    T extends typeof MediaType.GAMES ? Extract<ListUserMedia, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<ListUserMedia, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<ListUserMedia, { playtime: number | null } | { currentSeason: number }> :
+    T extends typeof MediaType.GAMES ? Extract<UserMediaItem, { playtime: number | null }> :
+        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMediaItem, { currentSeason: number }> :
+            T extends typeof MediaType.MOVIES ? Exclude<UserMediaItem, { playtime: number | null } | { currentSeason: number }> :
                 never;

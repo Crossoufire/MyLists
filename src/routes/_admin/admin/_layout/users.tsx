@@ -7,7 +7,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {PrivacyType, RoleType} from "@/lib/server/utils/enums";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {TablePagination} from "@/lib/components/app/TablePagination";
+import {TablePagination} from "@/lib/components/general/TablePagination";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";

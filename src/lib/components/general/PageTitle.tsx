@@ -1,6 +1,6 @@
 import React from "react";
 import {Separator} from "@/lib/components/ui/separator";
-import {MutedText} from "@/lib/components/app/MutedText";
+import {MutedText} from "@/lib/components/general/MutedText";
 
 
 interface PageTitleProps {

@@ -2,7 +2,7 @@ import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/components/app/PageTitle";
+import {PageTitle} from "@/lib/components/general/PageTitle";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {AchievementCard} from "@/lib/components/achievements/AchievementCard";
 import {achievementOptions} from "@/lib/react-query/query-options/query-options";

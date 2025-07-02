@@ -1,4 +1,4 @@
-import {Button} from "../ui/button";
+import {Button} from "@/lib/components/ui/button";
 import {ErrorComponent, type ErrorComponentProps, Link, rootRouteId, useMatch, useRouter,} from "@tanstack/react-router";
 
 
