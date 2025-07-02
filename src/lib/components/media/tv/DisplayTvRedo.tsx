@@ -1,19 +1,16 @@
 import {RotateCw} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractFollowsByType, ExtractListByType} from "@/lib/components/types";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 
 interface DisplayTvRedoProps {
-    userData: ExtractFollowsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>
-        | ExtractListByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
+    redoValues: number[];
 }
 
 
-export const DisplayTvRedo = ({ userData }: DisplayTvRedoProps) => {
-    const maxCount = Math.max(...userData.userMedia.redo2);
-    const totalRedo = userData.userMedia.redo2.reduce((a, b) => a + b, 0);
+export const DisplayTvRedo = ({ redoValues }: DisplayTvRedoProps) => {
+    const maxCount = Math.max(...redoValues);
+    const totalRedo = redoValues.reduce((a, b) => a + b, 0);
 
     if (maxCount === 0) {
         return (
@@ -35,7 +32,7 @@ export const DisplayTvRedo = ({ userData }: DisplayTvRedoProps) => {
             <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">
                 <div className=" grid gap-3">
                     <div className="space-y-2">
-                        {userData.userMedia.redo2.map((season, idx) => (
+                        {redoValues.map((season, idx) => (
                             <div key={idx} className="flex gap-3 items-center justify-between">
                                 <div className="text-sm font-medium leading-none">
                                     Season {zeroPad(idx + 1)}

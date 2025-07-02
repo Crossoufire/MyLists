@@ -1,15 +1,14 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {TvDetails} from "@/lib/components/media/tv/TvDetails";
-import {DisplayTvRedo} from "@/lib/components/media/tv/DisplayTvRedo";
+import {TvFollowCard} from "@/lib/components/media/tv/TvFollowCard";
 import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
 import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
-import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
+import {GameFollowCard} from "@/lib/components/media/games/GameFollowCard";
 import {TvUserDetails} from "@/lib/components/user-media/tv/TvUserDetails";
-import {DisplayEpsAndSeasons} from "@/lib/components/media/tv/DisplayEpsAndSeasons";
+import {MovieFollowCard} from "@/lib/components/media/movies/MovieFollowCard";
 import {GamesUserDetails} from "@/lib/components/user-media/games/GamesUserDetails";
 import {MoviesUserDetails} from "@/lib/components/user-media/movies/MoviesUserDetails";
-import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
-import {ExtractFollowsByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
+import {ExtractFollowByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
 
 
 type MediaConfiguration = {
@@ -19,18 +18,15 @@ type MediaConfiguration = {
             queryKey: string[];
             userMedia: ExtractUserMediaByType<T>;
         }>;
-        mediaFollowCards: [
-                React.FC<{ userData: ExtractFollowsByType<T> }> | null,
-                React.FC<{ userData: ExtractFollowsByType<T> }> | null,
-        ];
+        mediaFollowCard: React.FC<{
+            rating: React.ReactNode,
+            followData: ExtractFollowByType<T>,
+        }>;
         mediaDetails: React.FC<{
             mediaType: T,
             mediaData: ExtractMediaDetailsByType<T>,
         }>;
-        listDetailsCards: [
-                React.FC<{ userData: ExtractListByType<T> }> | null,
-                React.FC<{ userData: ExtractListByType<T> }> | null,
-        ];
+        listDetailsCards: null;
     };
 };
 
@@ -38,38 +34,38 @@ type MediaConfiguration = {
 export const mediaConfig: MediaConfiguration = {
     [MediaType.SERIES]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCards: [DisplayTvRedo, DisplayEpsAndSeasons],
+        mediaFollowCard: TvFollowCard,
         mediaDetails: TvDetails,
-        listDetailsCards: [DisplayTvRedo, DisplayEpsAndSeasons],
+        listDetailsCards: null,
     },
     [MediaType.ANIME]: {
         mediaUserDetails: TvUserDetails,
-        mediaFollowCards: [DisplayTvRedo, DisplayEpsAndSeasons],
+        mediaFollowCard: TvFollowCard,
         mediaDetails: TvDetails,
-        listDetailsCards: [DisplayTvRedo, DisplayEpsAndSeasons],
+        listDetailsCards: null,
     },
     [MediaType.MOVIES]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [DisplayRedoValue, null],
+        mediaFollowCard: MovieFollowCard,
         mediaDetails: MoviesDetails,
-        listDetailsCards: [DisplayRedoValue, null],
+        listDetailsCards: null,
     },
     [MediaType.GAMES]: {
         mediaUserDetails: GamesUserDetails,
-        mediaFollowCards: [null, DisplayPlaytime],
+        mediaFollowCard: GameFollowCard,
         mediaDetails: GamesDetails,
-        listDetailsCards: [null, DisplayPlaytime],
+        listDetailsCards: null,
     },
     [MediaType.BOOKS]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [DisplayRedoValue, null],
+        mediaFollowCard: TvFollowCard,
         mediaDetails: MoviesDetails,
-        listDetailsCards: [DisplayRedoValue, null],
+        listDetailsCards: null,
     },
     [MediaType.MANGA]: {
         mediaUserDetails: MoviesUserDetails,
-        mediaFollowCards: [DisplayRedoValue, null],
+        mediaFollowCard: TvFollowCard,
         mediaDetails: MoviesDetails,
-        listDetailsCards: [DisplayRedoValue, null],
+        listDetailsCards: null,
     },
 };

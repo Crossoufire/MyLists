@@ -92,7 +92,7 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
     queryKey: queryKeys.navSearchKey(query, page, apiProvider),
     queryFn: () => getSearchResults({ data: { query, page, apiProvider } }),
     staleTime: 1000 * 60 * 2,
-    enabled: query.trim().length >= 2,
+    enabled: query?.trim().length >= 2,
 });
 
 

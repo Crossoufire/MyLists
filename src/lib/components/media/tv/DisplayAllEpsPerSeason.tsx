@@ -2,12 +2,12 @@ import {EpsPerSeasonType} from "@/lib/server/types/base.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 
-interface DisplayAllTvEpsPerSeasonProps {
+interface DisplayAllEpsPerSeasonProps {
     epsPerSeason: EpsPerSeasonType;
 }
 
 
-export const DisplayAllTvEpsPerSeason = ({ epsPerSeason }: DisplayAllTvEpsPerSeasonProps) => {
+export const DisplayAllEpsPerSeason = ({ epsPerSeason }: DisplayAllEpsPerSeasonProps) => {
     return (
         <div>
             <MediaTitle>Episodes/Seasons</MediaTitle>

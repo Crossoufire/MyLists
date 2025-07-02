@@ -39,7 +39,7 @@ export type ExtractFollowUserMediaByType<T extends MediaType> =
             T extends typeof MediaType.MOVIES ? Exclude<FollowUserMedia, { playtime: number | null } | { currentSeason: number }> :
                 never;
 
-export type ExtractFollowsByType<T extends MediaType> = FollowData & { userMedia: ExtractFollowUserMediaByType<T> };
+export type ExtractFollowByType<T extends MediaType> = FollowData & { userMedia: ExtractFollowUserMediaByType<T> }
 
 
 // --- Types for Label Dialog ------------------------------------------
@@ -53,10 +53,8 @@ export type ListUserData = MediaListType["userData"];
 export type ListUserMedia = MediaListType["results"]["items"][0];
 export type ListPagination = MediaListType["results"]["pagination"];
 
-export type ExtractListMediaByType<T extends MediaType> =
+export type ExtractListByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<ListUserMedia, { playtime: number | null }> :
         T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<ListUserMedia, { currentSeason: number }> :
             T extends typeof MediaType.MOVIES ? Exclude<ListUserMedia, { playtime: number | null } | { currentSeason: number }> :
                 never;
-
-export type ExtractListByType<T extends MediaType> = ListUserMedia & { userMedia: ExtractListMediaByType<T> };

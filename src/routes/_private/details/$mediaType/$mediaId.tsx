@@ -6,10 +6,10 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/app/PageTitle";
 import {MediaType, RoleType} from "@/lib/server/utils/enums";
-import {FollowCard} from "@/lib/components/media/FollowCard";
 import AvatarCircles from "@/lib/components/ui/avatar-circles";
 import {SimilarMedia} from "@/lib/components/media/base/SimilarMedia";
-import {MediaDataDetails} from "@/lib/components/media/MediaDataDetails";
+import {MediaFollowCard} from "@/lib/components/media/base/MediaFollowCard";
+import {MediaDataDetails} from "@/lib/components/media/base/MediaDataDetails";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {UserMediaDetails} from "@/lib/components/user-media/base/UserMediaDetails";
 import {RefreshAndEditMedia} from "@/lib/components/media/base/RefreshAndEditMedia";
@@ -123,15 +123,15 @@ function MediaDetailsPage() {
                                 {apiData.followsData.length !== 0 &&
                                     <div className="mb-10 mt-6">
                                         <div className="grid grid-cols-12 gap-4">
-                                            {apiData.followsData.map((follow) => (
-                                                <div key={follow.id} className="col-span-12 md:col-span-6 lg:col-span-6">
-                                                    <FollowCard
-                                                        follow={follow}
-                                                        key={follow.name}
+                                            {apiData.followsData.map((followData) =>
+                                                <div key={followData.id} className="col-span-12 md:col-span-6 lg:col-span-6">
+                                                    <MediaFollowCard
+                                                        key={followData.name}
                                                         mediaType={mediaType}
+                                                        followData={followData}
                                                     />
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
                                 }

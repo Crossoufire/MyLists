@@ -5,6 +5,15 @@ import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-i
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
 
 
+export const getTextColor = (backColor: string) => {
+    const hex = backColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 2 + 2), 16);
+    const b = parseInt(hex.substring(4, 4 + 2), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 128 ? "#000000" : "#e2e2e2";
+};
+
+
 export const formatRating = (system: RatingSystemType, rating: number | null) => {
     if (system === RatingSystemType.FEELING) {
         return getFeelingIcon(rating, { size: 17 });

@@ -1,14 +1,15 @@
 import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useSearch} from "@tanstack/react-router";
+import {ListUserMedia} from "@/lib/components/types";
 import {BlockLink} from "@/lib/components/app/BlockLink";
 import {CircleCheck, Heart, Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {RedoSystem} from "@/lib/components/media-list/RedoSystem";
 import {TablePagination} from "@/lib/components/app/TablePagination";
+import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 import {DisplayRating} from "@/lib/components/media-list/DisplayRating";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
-import {CommentPopover} from "@/lib/components/media-list/CommentPopover";
 import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
 import {SpecificUserMediaData} from "@/lib/components/media-list/SpecificUserMediaData";
 import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
@@ -85,7 +86,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
                             mediaType={mediaType}
                         />
                         {original.favorite && <Heart className="w-4 h-4 text-red-500"/>}
-                        {original.comment && <CommentPopover content={original.comment}/>}
+                        {original.comment && <DisplayComment content={original.comment}/>}
                     </div>
                 );
             },
@@ -133,7 +134,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
 
     const getCurrentEditingItem = () => {
         if (!editingId) return null;
-        return results.items.find((item) => item.mediaId === editingId);
+        return results.items.find((item) => item.mediaId === editingId) as ListUserMedia;
     };
 
     return (
@@ -182,7 +183,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
                 queryKey={queryKey}
                 mediaType={mediaType}
                 dialogOpen={dialogOpen}
-                userMedia={getCurrentEditingItem()}
+                userMedia={getCurrentEditingItem()!}
                 onOpenChange={() => {
                     setEditingId(null);
                     setDialogOpen(false);

@@ -7,9 +7,9 @@ import {formatRating} from "@/lib/utils/functions";
 import {mediaConfig} from "@/lib/components/media-config";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
-import {DisplayRating} from "@/lib/components/media/DisplayRating";
-import {DisplayComment} from "@/lib/components/media/DisplayComment";
-import {DisplayFavorite} from "@/lib/components/media/DisplayFavorite";
+import {DisplayRating} from "@/lib/components/media/base/DisplayRating";
+import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
+import {DisplayFavorite} from "@/lib/components/media/base/DisplayFavorite";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
@@ -80,7 +80,8 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                 </div>
                 <div className="absolute top-1.5 left-1.5 z-10 bg-gray-950 px-2 rounded-md opacity-85">
                     {DetailsComponent ?
-                        <DetailsComponent userData={userMedia as any}/> : null
+                        //@ts-expect-error
+                        <DetailsComponent userMedia={userMedia as any}/> : null
                     }
                 </div>
                 {isConnected && <MediaCornerCommon isCommon={userMedia.common}/>}
@@ -105,7 +106,8 @@ const MediaItem = ({ isCurrent, isConnected, allStatuses, userMedia, queryKey, m
                                 <DisplayComment content={userMedia.comment}/>
                             }
                             {RedoComponent ?
-                                <RedoComponent userData={userMedia as any}/> : null
+                                //@ts-expect-error
+                                <RedoComponent userMedia={userMedia as any}/> : null
                             }
                         </div>
                     </div>
