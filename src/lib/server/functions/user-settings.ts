@@ -33,7 +33,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
         return generalSettingsSchema.parse(objectFromFormData);
     })
     .handler(async ({ data, context: { currentUser } }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then(c => c.services.user);
         const updatesToApply = { privacy: data.privacy } as Record<string, any>;
 
         if (data.username !== currentUser.name.trim()) {
@@ -82,8 +82,8 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => mediaListSettingsSchema.parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
-        const userService = getContainer().services.user;
-        const userStatsService = getContainer().services.userStats;
+        const userService = await getContainer().then(c => c.services.user);
+        const userStatsService = await getContainer().then(c => c.services.userStats);
 
         const toUpdateinUserStats = {
             anime: data.anime,
@@ -113,9 +113,9 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
         return data as { selectedList: MediaType };
     })
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
-        const mediaService = getContainer().registries.mediaService.getService(selectedList);
-        const data = await mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
-        return data;
+        const container = await getContainer();
+        const mediaService = container.registries.mediaService.getService(selectedList);
+        return mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
     });
 
 

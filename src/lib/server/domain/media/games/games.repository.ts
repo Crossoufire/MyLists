@@ -8,7 +8,7 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
-import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms, movies} from "@/lib/server/database/schema";
+import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
@@ -192,19 +192,14 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .select({
                 ...getTableColumns(games),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),
-                companies: sql`json_group_array(DISTINCT json_object(
-                    'id', ${gamesCompanies.id}, 
-                    'name', ${gamesCompanies.name},
-                    'developer', ${gamesCompanies.developer},
-                    'publisher', ${gamesCompanies.publisher},
-                ))`.mapWith(JSON.parse),
+                companies: sql`json_group_array(DISTINCT json_object('id', ${gamesCompanies.id}, 'name', ${gamesCompanies.name}, 'developer', ${gamesCompanies.developer}, 'publisher', ${gamesCompanies.publisher}))`.mapWith(JSON.parse),
                 platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
             })
             .from(games)
             .innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
             .innerJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
             .innerJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
-            .where(eq(movies.id, mediaId))
+            .where(eq(games.id, mediaId))
             .groupBy(...Object.values(getTableColumns(games)))
             .get();
 

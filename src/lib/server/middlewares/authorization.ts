@@ -27,7 +27,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         return data as BaseDataWithUsername;
     })
     .server(async ({ next, data: { username } }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then(c => c.services.user);
 
         const user = await userService.getUserByUsername(username);
         if (!user) {

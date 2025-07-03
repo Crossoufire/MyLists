@@ -8,8 +8,9 @@ import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 export const getDailyMediadle = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
     .handler(async ({ context: { currentUser } }) => {
-        const mediadleService = getContainer().services.mediadle;
-        const moviesService = getContainer().registries.mediaService.getService(MediaType.MOVIES);
+        const container = await getContainer();
+        const mediadleService = container.services.mediadle;
+        const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
         return mediadleService.getDailyMediadleData(parseInt(currentUser.id), moviesService);
     });
 
@@ -21,8 +22,8 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
         if (query.length < 2) {
             return [];
         }
-
-        const moviesService = getContainer().registries.mediaService.getService(MediaType.MOVIES);
+        const container = await getContainer();
+        const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
         return moviesService.searchByName(query);
     });
 
@@ -31,8 +32,9 @@ export const postAddMediadleGuess = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator((data: any) => data as { guess: string })
     .handler(async ({ data: { guess }, context: { currentUser } }) => {
-        const mediadleService = getContainer().services.mediadle;
-        const moviesService = getContainer().registries.mediaService.getService(MediaType.MOVIES);
+        const container = await getContainer();
+        const mediadleService = container.services.mediadle;
+        const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
 
         // @ts-expect-error
         return mediadleService.addMediadleGuess(currentUser.id, guess, moviesService);

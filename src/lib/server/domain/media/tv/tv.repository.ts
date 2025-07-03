@@ -26,7 +26,10 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         const mainData = await getDbClient()
             .select({
                 ...getTableColumns(mediaTable),
-                epsPerSeason: sql<EpsPerSeasonType>`json_group_array(json_object('season', ${epsPerSeasonTable.season}, 'episodes', ${epsPerSeasonTable.episodes}))`.mapWith(JSON.parse),
+                epsPerSeason: sql<EpsPerSeasonType>`json_group_array(json_object(
+                    'season', ${epsPerSeasonTable.season}, 
+                    'episodes', ${epsPerSeasonTable.episodes}
+                ))`.mapWith(JSON.parse),
             })
             .from(mediaTable)
             .innerJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))

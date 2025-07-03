@@ -7,7 +7,7 @@ export const getUserStats = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .validator((data: any) => data)
     .handler(async ({ data: { mediaType }, context: { user } }) => {
-        const userStatsService = getContainer().services.userStats;
+        const userStatsService = await getContainer().then(c => c.services.userStats);
 
         // if (!mediaType) {
         const userStats = await userStatsService.userAdvancedStatsSummary(user.id);

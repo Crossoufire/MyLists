@@ -8,7 +8,7 @@ export const getPlatformStats = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .validator((data: any) => data)
     .handler(async ({ data: { mediaType } }) => {
-        const userStatsService = getContainer().services.userStats;
+        const userStatsService = await getContainer().then(c => c.services.userStats);
 
         if (!mediaType) {
             const platformStats = await userStatsService.platformAdvancedStatsSummary();

@@ -1,7 +1,7 @@
 import {Command} from "commander";
 import {TasksName} from "@/cli/commands";
 import pinoLogger from "@/lib/server/core/pino-logger";
-import {initializeContainer} from "@/lib/server/core/container";
+import {getContainer} from "@/lib/server/core/container";
 
 
 interface RegisterTaskCommandParams {
@@ -18,7 +18,7 @@ export function registerTaskCommand({ program, taskName, description }: Register
         .description(description)
         .option("-d, --direct", "Directly execute the task without using the queue")
         .action(async (options) => {
-            const container = await initializeContainer();
+            const container = await getContainer();
             const directExecution: boolean = options.direct;
             const cliLogger = pinoLogger.child({ command: taskName });
 
@@ -38,6 +38,7 @@ export function registerTaskCommand({ program, taskName, description }: Register
             else {
                 cliLogger.info(`Enqueueing ${taskName} task via CLI...`);
                 const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+
                 try {
                     const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "cron/cli" });
                     cliLogger.info({ jobId: job.id }, `Task ${taskName} enqueued successfully via CLI.`);

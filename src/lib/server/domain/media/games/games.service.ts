@@ -120,6 +120,7 @@ export class GamesService extends BaseService<Game, GamesList, IGamesRepository>
         const fields: { [key: string]: any } = {};
 
         for (const key in media) {
+            //@ts-expect-error
             if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
                 //@ts-expect-error
                 fields[key] = media[key];
@@ -151,6 +152,7 @@ export class GamesService extends BaseService<Game, GamesList, IGamesRepository>
         }
 
         for (const key in payload) {
+            //@ts-expect-error
             if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
                 fields[key] = payload[key];
             }

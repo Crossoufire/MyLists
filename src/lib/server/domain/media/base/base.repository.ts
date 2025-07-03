@@ -154,7 +154,7 @@ export class BaseRepository<
         const { mediaTable } = this.config;
 
         return getDbClient()
-            .select({ imageCover: sql<string>`${mediaTable.imageCover}` })
+            .select({ imageCover: mediaTable.imageCover })
             .from(mediaTable)
             .execute()
     }
@@ -183,7 +183,7 @@ export class BaseRepository<
             .select({
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
-                mediaCover: sql<string>`${mediaTable.imageCover}`,
+                mediaCover: mediaTable.imageCover,
             })
             .from(similarSub)
             .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
@@ -253,7 +253,7 @@ export class BaseRepository<
             .select({
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
-                mediaCover: sql<string>`${mediaTable.imageCover}`,
+                mediaCover: mediaTable.imageCover,
             })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))

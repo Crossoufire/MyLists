@@ -79,11 +79,10 @@ interface ContainerOptions {
 }
 
 
-let containerInstance: AppContainer | null = null;
 let containerPromise: Promise<AppContainer> | null = null;
 
 
-export async function initializeContainer(options: ContainerOptions = {}) {
+async function initializeContainer(options: ContainerOptions = {}) {
     // Initialize cache manager
     const cacheManager = await initializeCache();
 
@@ -196,20 +195,9 @@ export async function initializeContainer(options: ContainerOptions = {}) {
 }
 
 
-export function getContainer() {
+export function getContainer(options: ContainerOptions = {}) {
     if (!containerPromise) {
-        containerPromise = initializeContainer().then((container) => {
-            containerInstance = container;
-            return container;
-        });
+        containerPromise = initializeContainer(options).then((container) => container);
     }
-    return containerInstance!;
-}
-
-
-if (import.meta.hot) {
-    import.meta.hot.accept(() => {
-        containerPromise = null;
-        containerInstance = null;
-    });
+    return containerPromise;
 }

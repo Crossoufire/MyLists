@@ -8,10 +8,12 @@ import {trendsCacheMiddleware} from "@/lib/server/middlewares/caching";
 export const getTrendsMedia = createServerFn({ method: "GET" })
     .middleware([authMiddleware, trendsCacheMiddleware])
     .handler(async () => {
-        const seriesProviderService = getContainer().registries.mediaProviderService.getService(MediaType.SERIES);
+        const container = await getContainer();
+
+        const seriesProviderService = container.registries.mediaProviderService.getService(MediaType.SERIES);
         const seriesTrends = await seriesProviderService.fetchAndFormatTrends();
 
-        const moviesProviderService = getContainer().registries.mediaProviderService.getService(MediaType.MOVIES);
+        const moviesProviderService = container.registries.mediaProviderService.getService(MediaType.MOVIES);
         const moviesTrends = await moviesProviderService.fetchAndFormatTrends();
 
         return { seriesTrends, moviesTrends };

@@ -1,33 +1,53 @@
 import pino from "pino";
+import Redis from "ioredis";
 import {TasksName} from "@/cli/commands";
 import {Job, Queue, Worker} from "bullmq";
 import pinoLogger from "@/lib/server/core/pino-logger";
-import {connectRedis} from "@/lib/server/core/redis-client";
-import {initializeContainer} from "@/lib/server/core/container";
-
-
-// Create Redis connection even if not in prod
-const connection = await connectRedis({ bypassEnv: true });
-if (!connection) {
-    throw new Error("Failed to connect to Redis.");
-}
-
-
-const queueConnection = connection.duplicate();
-const workerConnection = connection.duplicate();
+import {getContainer} from "@/lib/server/core/container";
 
 
 const QUEUE_NAME = "mylists-long-tasks";
+export let mylistsLongTaskQueue: Queue;
 
 
-export const mylistsLongTaskQueue = new Queue(QUEUE_NAME, {
-    connection: queueConnection,
-    defaultJobOptions: {
-        attempts: 2,
-        removeOnComplete: { count: 25 },
-        removeOnFail: { count: 25 },
-    },
-});
+export const initializeQueue = (connection: Redis) => {
+    if (mylistsLongTaskQueue) return mylistsLongTaskQueue;
+
+    mylistsLongTaskQueue = new Queue(QUEUE_NAME, {
+        connection: connection.duplicate(),
+        defaultJobOptions: {
+            attempts: 2,
+            removeOnComplete: { count: 25 },
+            removeOnFail: { count: 25 },
+        },
+    });
+
+    pinoLogger.info("BullMQ queue initialized.");
+
+    return mylistsLongTaskQueue;
+};
+
+
+export const createWorker = (connection: Redis) => {
+    const worker = new Worker(QUEUE_NAME, taskProcessor, {
+        connection: connection.duplicate(),
+        concurrency: 1,
+    });
+
+    worker.on("completed", (job: Job, returnValue: any) => {
+        pinoLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed job");
+    });
+    worker.on("failed", (job: Job | undefined, error: Error) => {
+        pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed job");
+    });
+    worker.on("error", (err) => {
+        pinoLogger.error({ err }, "Worker encountered an error");
+    });
+
+    pinoLogger.info("Worker instance created and listeners attached.");
+
+    return worker;
+};
 
 
 const taskProcessor = async (job: Job) => {
@@ -59,7 +79,7 @@ const taskProcessor = async (job: Job) => {
     await job.log(`Starting task processing triggered by ${triggeredBy}...`);
 
     try {
-        const container = await initializeContainer({ tasksServiceLogger: taskExecutionLogger });
+        const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
         const tasksService = container.services.tasks;
         await tasksService.runTask(taskName as TasksName);
 
@@ -73,26 +93,4 @@ const taskProcessor = async (job: Job) => {
         await job.log(`Task failed: ${error.message}`);
         throw error;
     }
-};
-
-
-export const createWorker = () => {
-    const worker = new Worker(QUEUE_NAME, taskProcessor, {
-        connection: workerConnection,
-        concurrency: 1,
-    });
-
-    worker.on("completed", (job: Job, returnValue: any) => {
-        pinoLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed job");
-    });
-    worker.on("failed", (job: Job | undefined, error: Error) => {
-        pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed job");
-    });
-    worker.on("error", (err) => {
-        pinoLogger.error({ err }, "Worker encountered an error");
-    });
-
-    pinoLogger.info("Worker instance created and listeners attached.");
-
-    return worker;
 };

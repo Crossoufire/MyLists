@@ -5,7 +5,7 @@ import {Redis} from "ioredis";
 dotenv.config();
 
 
-export let redisInstance: Redis | null = null;
+let redisInstance: Redis | null = null;
 let connectionPromise: Promise<Redis> | null = null;
 
 

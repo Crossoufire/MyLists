@@ -36,7 +36,7 @@ export interface IUniversalRepository<TMedia, TList> {
     findById(mediaId: number): Promise<TMedia | undefined>;
     getCoverFilenames(): Promise<{ imageCover: string }[]>;
     computeTotalMediaLabel(userId?: number): Promise<number>;
-    findSimilarMedia(mediaId: number,): Promise<SimpleMedia[]>;
+    findSimilarMedia(mediaId: number): Promise<SimpleMedia[]>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
     findByApiId(apiId: number | string): Promise<TMedia | undefined>;
     getCommonListFilters(userId: number): Promise<CommonListFilters>;

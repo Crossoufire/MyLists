@@ -10,7 +10,7 @@ import {AdminPaginatedUsers} from "@/lib/server/domain/user/repositories/user.re
 export const getAdminOverview = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminOverview();
     });
 
@@ -19,7 +19,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .validator((data: any) => data as AdminPaginatedUsers)
     .handler(async ({ data }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminPaginatedUsers(data);
     });
 
@@ -27,7 +27,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
 export const getAdminAchievements = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
-        const achievementService = getContainer().services.achievements;
+        const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.allUsersAchievements();
     });
 
@@ -36,7 +36,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .validator((data: any) => data)
     .handler(async ({ data }) => {
-        const mediadleService = getContainer().services.mediadle;
+        const mediadleService = await getContainer().then((c) => c.services.mediadle);
         return mediadleService.getAdminAllUsersStats(data);
     });
 
@@ -45,7 +45,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
     .validator((data: any) => data as { userId: number, payload: Record<string, any> })
     .handler(async ({ data: { userId, payload } }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then((c) => c.services.user);
         return userService.adminUpdateUser(userId, payload);
     });
 
@@ -57,7 +57,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
         payload: Record<string, any>,
     })
     .handler(async ({ data: { achievementId, payload } }) => {
-        const achievementService = getContainer().services.achievements;
+        const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.adminUpdateAchievement(achievementId, payload);
     });
 
@@ -68,7 +68,7 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
         payloads: Record<string, any>[],
     })
     .handler(async ({ data: { payloads } }) => {
-        const achievementService = getContainer().services.achievements;
+        const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.adminUpdateTiers(payloads);
     });
 

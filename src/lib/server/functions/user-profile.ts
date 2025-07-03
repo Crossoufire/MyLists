@@ -10,10 +10,11 @@ export const getUserProfile = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { currentUser, user } }) => {
         const profileOwnerId = user.id;
-        const userService = getContainer().services.user;
-        const userStatsService = getContainer().services.userStats;
-        const userUpdatesService = getContainer().services.userUpdates;
-        const achievementsService = getContainer().services.achievements;
+        const container = await getContainer();
+        const userService = container.services.user;
+        const userStatsService = container.services.userStats;
+        const userUpdatesService = container.services.userUpdates;
+        const achievementsService = container.services.achievements;
 
         // @ts-expect-error
         if (currentUser && currentUser.id !== profileOwnerId) {
@@ -49,8 +50,9 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
     .validator((data: any) => data as { followId: number, followStatus: boolean })
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
-        const userService = getContainer().services.user;
-        const notificationsService = getContainer().services.notifications;
+        const container = await getContainer();
+        const userService = container.services.user;
+        const notificationsService = container.services.notifications;
 
         // @ts-expect-error
         if (currentUser.id === followId) {
@@ -76,7 +78,7 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 export const getUsersFollowers = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user } }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then(c => c.services.user);
         return userService.getUserFollowers(user.id, 999999);
     });
 
@@ -84,7 +86,7 @@ export const getUsersFollowers = createServerFn({ method: "GET" })
 export const getUsersFollows = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .handler(async ({ context: { user } }) => {
-        const userService = getContainer().services.user;
+        const userService = await getContainer().then(c => c.services.user);
         return userService.getUserFollows(user.id, 999999);
     });
 
@@ -93,6 +95,6 @@ export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
     .validator((data: any) => data)
     .handler(async ({ context: { user }, data }) => {
-        const userUpdatesService = getContainer().services.userUpdates;
+        const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.getUserUpdatesPaginated(user.id, { ...data.filters });
     });

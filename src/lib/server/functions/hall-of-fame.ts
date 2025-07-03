@@ -8,6 +8,6 @@ export const getHallOfFame = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .validator((data: any) => data as SearchTypeHoF)
     .handler(async ({ data, context: { currentUser } }) => {
-        const userStatsService = getContainer().services.userStats;
+        const userStatsService = await getContainer().then((c) => c.services.userStats);
         return userStatsService.userHallofFameData(parseInt(currentUser.id!), data);
     });
