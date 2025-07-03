@@ -375,7 +375,9 @@ export class BaseRepository<
             const filterDef = allFilters[key as keyof MediaListArgs];
             if (filterDef?.isActive(filterArgs)) {
                 const condition = filterDef.getCondition(filterArgs);
-                condition ?? conditions.push(condition);
+                if (condition) {
+                    conditions.push(condition);
+                }
             }
         }
 

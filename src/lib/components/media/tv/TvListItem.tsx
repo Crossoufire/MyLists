@@ -22,7 +22,7 @@ export const TvListItem = (props: TvListItemProps) => {
             {...props}
             redoDisplay={
                 //@ts-expect-error
-                props.userMedia.redo2 &&
+                props.userMedia.redo2.reduce((a, c) => a + c, 0) > 0 &&
                 <DisplayTvRedo
                     //@ts-expect-error
                     redoValues={props.userMedia.redo2}

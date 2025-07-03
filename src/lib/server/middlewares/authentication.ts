@@ -6,7 +6,7 @@ import {getWebRequest} from "@tanstack/react-start/server";
 
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getWebRequest()!;
+    const { headers } = getWebRequest();
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session) {
@@ -18,7 +18,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
 
 
 export const managerAuthMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getWebRequest()!;
+    const { headers } = getWebRequest();
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session || !session.user || session.user.role !== RoleType.MANAGER) {

@@ -17,8 +17,8 @@ import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVal
 
 
 export const SearchBar = () => {
-    const commandRef = useRef(null);
     const { currentUser } = useAuth();
+    const commandRef = useRef(null);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);

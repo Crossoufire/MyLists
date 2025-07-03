@@ -232,8 +232,9 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }: CheckboxGroup
                     <div key={item.name} className="flex items-center space-x-2">
                         <Checkbox
                             id={`${item}-id`}
-                            defaultChecked={defaultChecked?.(item.name!)}
-                            onCheckedChange={() => onChange(item.name!)}
+                            //@ts-expect-error
+                            defaultChecked={defaultChecked?.(`${item.name!}`)}
+                            onCheckedChange={() => onChange(`${item.name!}`)}
                         />
                         <label htmlFor={`${item.name}-id`} className="text-sm cursor-pointer line-clamp-1">{item.name}</label>
                     </div>

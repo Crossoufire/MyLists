@@ -2,8 +2,8 @@
 import {Toaster} from "sonner";
 import React, {lazy} from "react";
 import appCSS from "@/styles.css?url";
-import {Footer} from "@/lib/components/general/Footer";
 import {Navbar} from "@/lib/components/navbar/Navbar";
+import {Footer} from "@/lib/components/general/Footer";
 import type {QueryClient} from "@tanstack/react-query";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
 import {authOptions} from "@/lib/react-query/query-options/query-options";

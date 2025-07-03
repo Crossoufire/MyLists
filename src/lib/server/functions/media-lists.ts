@@ -17,13 +17,10 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
 
         const userService = container.services.user;
 
-        // Check targetUser has mediaType active
         const userHasMediaTypeActive = await userService.hasActiveMediaType(user.id, data.mediaType);
-        if (!userHasMediaTypeActive) {
-            throw new Error("MediaType not-activated");
-        }
+        if (!userHasMediaTypeActive) throw new Error("MediaType not-activated");
 
-        if (currentUser && currentUser.id !== targetUserId) {
+        if (currentUser && parseInt(currentUser.id) !== targetUserId) {
             await userService.incrementMediaTypeView(targetUserId, mediaType);
         }
 
