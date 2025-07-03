@@ -13,8 +13,10 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
 
     if (!session?.user) return null;
 
-    // @ts-expect-error
-    const settings = await db.select().from(userMediaSettings).where(eq(userMediaSettings.userId, session.user.id));
+    const settings = await db
+        .select()
+        .from(userMediaSettings)
+        .where(eq(userMediaSettings.userId, parseInt(session.user.id)));
 
     return {
         ...session.user,

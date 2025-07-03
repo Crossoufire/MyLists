@@ -231,7 +231,6 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '': typeof PublicRouteWithChildren
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
@@ -262,7 +261,6 @@ export interface FileRoutesByFullPath {
   '/profile/$username/': typeof PrivateProfileUsernameHeaderIndexRoute
 }
 export interface FileRoutesByTo {
-  '': typeof PrivateRouteWithChildren
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
@@ -329,7 +327,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | ''
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'
@@ -360,7 +357,6 @@ export interface FileRouteTypes {
     | '/profile/$username/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | ''
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'

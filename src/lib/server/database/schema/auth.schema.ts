@@ -8,7 +8,7 @@ const BASE_BACK_IMAGE_PATH = `${process.env.VITE_BASE_URL}/static/back-covers`;
 
 
 export const user = sqliteTable("user", {
-    id: integer("id").$type<number>().primaryKey(),
+    id: integer("id").$type<number>().primaryKey({ autoIncrement: true }),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),

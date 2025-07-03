@@ -3,8 +3,8 @@ import {ChevronDown} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
 

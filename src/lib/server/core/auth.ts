@@ -13,6 +13,7 @@ export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
         provider: "sqlite",
+
     }),
     user: {
         additionalFields: {
@@ -131,7 +132,6 @@ export const auth = betterAuth({
         cookiePrefix: "mylists",
         database: {
             useNumberId: true,
-            generateId: false,
         },
     },
     plugins: [
