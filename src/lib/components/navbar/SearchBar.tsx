@@ -22,7 +22,7 @@ export const SearchBar = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const [debouncedSearch] = useDebounce(search, 350);
+    const debouncedSearch = useDebounce(search, 350);
     const [selectDrop, setSelectDrop] = useState(currentUser?.searchSelector || ApiProviderType.TMDB);
     const { data, isLoading, error }: any = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 

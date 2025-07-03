@@ -30,7 +30,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
     const allStatuses = Status.byMediaType(mediaType);
     const searchFiltersList = JobType.byMediaType(mediaType);
-    const { data: listFilters, isFetching } = useQuery(listFiltersOptions(mediaType, username));
+    const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
+
+    console.log({ listFilters });
 
     const handleRegisterChange = (filterType: string, value: any) => {
         if (Array.isArray(value)) {
@@ -82,19 +84,19 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                 </SheetHeader>
                 <Separator/>
                 <form onSubmit={handleOnSubmit}>
-                    {isFetching ?
+                    {isPending ?
                         <div className="flex items-center justify-center h-[85vh]">
                             <LoaderCircle className="h-7 w-7 animate-spin"/>
                         </div>
                         :
-                        <div className="">
+                        <div>
                             <CheckboxGroup
                                 title="Status"
                                 items={allStatuses.map(s => ({ name: s }))}
                                 onChange={(status) => handleRegisterChange("status", [status])}
                                 defaultChecked={(status) => search?.status?.includes(status as Status)}
                             />
-                            {listFilters && listFilters.platforms &&
+                            {(listFilters && listFilters?.platforms) &&
                                 <>
                                     <Separator/>
                                     <CheckboxGroup
@@ -123,7 +125,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 defaultChecked={(genre: string) => search.genres?.includes(genre)}
                             />
                             <Separator/>
-                            {listFilters && listFilters.langs &&
+                            {(listFilters && listFilters?.langs) &&
                                 <>
                                     <div className="space-y-2">
                                         <h3 className="font-medium">Languages/Countries</h3>
@@ -183,7 +185,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 </div>
                             </div>
                             <Separator/>
-                            {listFilters && listFilters.labels &&
+                            {(listFilters && listFilters?.labels) &&
                                 <>
                                     <CheckboxGroup
                                         title="Labels"
@@ -293,8 +295,9 @@ const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
     const commandRef = useRef(null);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const [debouncedSearch] = useDebounce(search, 300);
+    const debouncedSearch = useDebounce(search, 300);
     const [selectedData, setSelectedData] = useState(dataList ?? []);
+
     const { mediaType, username } = useParams({ from: "/_private/list/$mediaType/$username" });
     const { data: filterResults, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
 

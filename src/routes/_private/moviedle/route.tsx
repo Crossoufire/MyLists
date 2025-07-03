@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_private/moviedle")({
 function MediadlePage() {
     const [guess, setGuess] = useState("");
     const makeGuessMutation = useMoviedleGuessMutation();
-    const [debouncedSearch] = useDebounce(guess, 350);
+    const debouncedSearch = useDebounce(guess, 350);
     const mediadleData = useSuspenseQuery(dailyMediadleOptions()).data;
     const [showSuggestions, setShowSuggestions] = useState(false);
     const { data = [] } = useQuery(mediadleSuggestionsOptions(debouncedSearch));
