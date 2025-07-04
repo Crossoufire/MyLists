@@ -4,7 +4,7 @@ import {useAuth} from "@/lib/hooks/use-auth";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 
 
-//@ts-ignore
+//@ts-expect-error
 export const BlockLink = ({ children, ...props }) => {
     const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ export const BlockLink = ({ children, ...props }) => {
 
     return (
         <>
-            {/*//@ts-ignore*/}
+            {/*//@ts-expect-error*/}
             <Link {...props} onClick={handleClick}>
                 {children}
             </Link>

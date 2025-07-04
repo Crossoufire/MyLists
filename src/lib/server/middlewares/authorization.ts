@@ -30,16 +30,14 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         const userService = await getContainer().then(c => c.services.user);
 
         const user = await userService.getUserByUsername(username);
-        if (!user) {
-            throw notFound();
-        }
+        if (!user) throw notFound();
 
         const { headers } = getWebRequest()!;
         const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
         const isAuthenticated = !!session?.user
 
         if (!isAuthenticated && user.privacy !== PrivacyType.PUBLIC) {
-            throw redirect({ to: "/", reloadDocument: true, replace: true })
+            throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
         }
 
         return next({ context: { user: user, currentUser: session?.user } });

@@ -2,7 +2,7 @@ import {Button} from "@/lib/components/ui/button";
 import {ErrorComponent, type ErrorComponentProps, Link, rootRouteId, useMatch, useRouter,} from "@tanstack/react-router";
 
 
-export function DefaultCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
+export function ErrorCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
     const router = useRouter();
     const isRoot = useMatch({ strict: false, select: (state) => state.id === rootRouteId });
 

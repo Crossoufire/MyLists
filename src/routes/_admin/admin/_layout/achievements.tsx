@@ -27,11 +27,11 @@ function AchievementPage() {
     const [editedName, setEditedName] = useState("");
     const updateTiersMutation = useAdminUpdateTiersMutation();
     const [editableTiers, setEditableTiers] = useState<any[]>([]);
+    const apiData = useSuspenseQuery(adminAchievementsOptions()).data;
+    const updateAchievementMutation = useAdminUpdateAchievementMutation();
     const [editedDescription, setEditedDescription] = useState("");
     const [editedMediaType, setEditedMediaType] = useState<any>("");
     const [isTierDialogOpen, setIsTierDialogOpen] = useState(false);
-    const apiData = useSuspenseQuery(adminAchievementsOptions()).data;
-    const updateAchievementMutation = useAdminUpdateAchievementMutation();
     const [editingAchievement, setEditingAchievement] = useState<any | null>(null);
     const [isAchievementEditDialogOpen, setIsAchievementEditDialogOpen] = useState(false);
 

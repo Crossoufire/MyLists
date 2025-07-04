@@ -1,11 +1,11 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaLevels} from "@/lib/components/user-profile/MediaLevels";
 import {UserUpdates} from "@/lib/components/user-profile/UserUpdates";
 import {GlobalStats} from "@/lib/components/user-profile/GlobalStats";
 import {MediaDetails} from "@/lib/components/user-profile/MediaDetails";
 import {ProfileFollows} from "@/lib/components/user-profile/ProfileFollows";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {ProfileMiscInfo} from "@/lib/components/user-profile/ProfileMiscInfo";
 import {AchievementsDisplay} from "@/lib/components/user-profile/AchievementProfile";
 

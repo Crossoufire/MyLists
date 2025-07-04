@@ -1,0 +1,129 @@
+import {useMemo, useState} from "react";
+import {useAuth} from "@/lib/hooks/use-auth";
+import {useSearch} from "@tanstack/react-router";
+import {MediaType} from "@/lib/server/utils/enums";
+import {mediaConfig} from "@/lib/components/media-config";
+import {ListPagination, UserMediaItem} from "@/lib/components/types";
+import {TablePagination} from "@/lib/components/general/TablePagination";
+import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
+import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+
+
+interface MediaTableProps {
+    queryKey: string[];
+    isCurrent: boolean;
+    mediaType: MediaType;
+    onChangePage: (data: any) => void;
+    results: {
+        items: UserMediaItem[];
+        pagination: ListPagination;
+    };
+}
+
+
+export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePage }: MediaTableProps) => {
+    const { currentUser } = useAuth();
+    const isConnected = !!currentUser;
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const filters = useSearch({ from: "/_private/list/$mediaType/$username" });
+    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+
+    const onPaginationChange = (updater: any) => {
+        onChangePage(updater(paginationState));
+    };
+
+    const handleEdit = (mediaId: number) => {
+        setEditingId(mediaId);
+        setDialogOpen(true);
+    };
+
+    const listColumns = useMemo(() => {
+        const columnGenerator = mediaConfig[mediaType].mediaListColumns;
+        return columnGenerator({ isCurrent, isConnected, mediaType, queryKey, onEdit: handleEdit });
+    }, [isCurrent, isConnected, mediaType, queryKey]);
+
+    const table = useReactTable({
+        manualFiltering: true,
+        manualPagination: true,
+        data: results.items ?? [],
+        columns: listColumns as any,
+        getCoreRowModel: getCoreRowModel(),
+        onPaginationChange: onPaginationChange,
+        state: { pagination: paginationState },
+        rowCount: results.pagination.totalItems ?? 0,
+    });
+
+    const getCurrentEditingItem = () => {
+        if (!editingId) return null;
+        return results.items.find((item) => item.mediaId === editingId);
+    };
+
+    return (
+        <>
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        {table.getHeaderGroups().map(headerGroup =>
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map(header =>
+                                    <TableHead key={header.id}>
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </TableHead>
+                                )}
+                            </TableRow>
+                        )}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows?.length ?
+                            table.getRowModel().rows.map(row =>
+                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                    {row.getVisibleCells().map(cell =>
+                                        <TableCell key={cell.id} style={{ width: getColumnWidth(cell.column.id) }}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            )
+                            :
+                            <TableRow>
+                                <TableCell colSpan={listColumns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
+                            </TableRow>
+                        }
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="mt-3">
+                <TablePagination
+                    table={table}
+                    withSelection={false}
+                />
+            </div>
+            <UserMediaEditDialog
+                queryKey={queryKey}
+                mediaType={mediaType}
+                dialogOpen={dialogOpen}
+                userMedia={getCurrentEditingItem()!}
+                onOpenChange={() => {
+                    setEditingId(null);
+                    setDialogOpen(false);
+                }}
+            />
+        </>
+    );
+};
+
+
+function getColumnWidth(colId: string) {
+    const columnWidths: Record<string, string> = {
+        "Name": "auto",
+        "status": "auto",
+        "Progress": "auto",
+        "Information": "250px",
+        "actions": "80px",
+    };
+    return columnWidths[colId] || "auto";
+}

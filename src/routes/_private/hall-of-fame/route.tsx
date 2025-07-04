@@ -9,7 +9,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {HofCard} from "@/lib/components/hall-of-fame/HoFCard";
+import {HofCard} from "@/lib/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
 import {HofSorting, SearchTypeHoF} from "@/lib/server/types/base.types";

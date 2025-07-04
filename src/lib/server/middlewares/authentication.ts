@@ -10,7 +10,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session) {
-        throw redirect({ to: "/", statusCode: 401, reloadDocument: true, replace: true });
+        throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
 
     return next({ context: { currentUser: session.user } });
@@ -22,7 +22,7 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session || !session.user || session.user.role !== RoleType.MANAGER) {
-        throw redirect({ to: "/", statusCode: 401, reloadDocument: true, replace: true });
+        throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
 
     return next({ context: { currentUser: session.user } });

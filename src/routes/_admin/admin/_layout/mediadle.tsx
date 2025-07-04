@@ -4,11 +4,11 @@ import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {createFileRoute} from "@tanstack/react-router";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {TablePagination} from "@/lib/components/general/TablePagination";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
+import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {adminMediadleOptions} from "@/lib/react-query/query-options/admin-options";
 import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
@@ -26,19 +26,17 @@ export const Route = createFileRoute("/_admin/admin/_layout/mediadle")({
 
 
 function AdminMediadlePage() {
-    const navigate = useNavigate();
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const paginationState = { pageIndex: filters?.pageIndex ?? 0, pageSize: filters?.pageSize ?? 25 };
 
     const setFilters = async (filtersData: Record<string, any>) => {
-        //@ts-expect-error
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
     };
 
     const resetFilters = async () => {
-        //@ts-expect-error
         await navigate({ search: {} });
         setCurrentSearch("");
     };

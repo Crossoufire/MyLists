@@ -1,15 +1,20 @@
+import {ColumnDef} from "@tanstack/react-table";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {TvDetails} from "@/lib/components/media/tv/TvDetails";
 import {TvListItem} from "@/lib/components/media/tv/TvListItem";
 import {TvFollowCard} from "@/lib/components/media/tv/TvFollowCard";
+import {getTvColumns} from "@/lib/components/media/tv/TvListColumns";
 import {TvUserDetails} from "@/lib/components/media/tv/TvUserDetails";
 import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
 import {GameListItem} from "@/lib/components/media/games/GameListItem";
 import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
 import {MovieListItem} from "@/lib/components/media/movies/MovieListItem";
 import {GameFollowCard} from "@/lib/components/media/games/GameFollowCard";
+import {ColumnConfigProps} from "@/lib/components/media/base/BaseListTable";
+import {getGamesColumns} from "@/lib/components/media/games/GamesListColumns";
 import {MovieFollowCard} from "@/lib/components/media/movies/MovieFollowCard";
 import {GamesUserDetails} from "@/lib/components/media/games/GamesUserDetails";
+import {getMoviesColumns} from "@/lib/components/media/movies/MoviesListColumns";
 import {MoviesUserDetails} from "@/lib/components/media/movies/MoviesUserDetails";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
 
@@ -38,6 +43,7 @@ type MediaConfiguration = {
             rating: React.ReactNode,
             userMedia: ExtractListByType<T>,
         }>;
+        mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
     };
 };
 
@@ -48,35 +54,41 @@ export const mediaConfig: MediaConfiguration = {
         mediaFollowCard: TvFollowCard,
         mediaDetails: TvDetails,
         mediaListCard: TvListItem,
+        mediaListColumns: getTvColumns,
     },
     [MediaType.ANIME]: {
         mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
         mediaDetails: TvDetails,
         mediaListCard: TvListItem,
+        mediaListColumns: getTvColumns,
     },
     [MediaType.MOVIES]: {
         mediaUserDetails: MoviesUserDetails,
         mediaFollowCard: MovieFollowCard,
         mediaDetails: MoviesDetails,
         mediaListCard: MovieListItem,
+        mediaListColumns: getMoviesColumns,
     },
     [MediaType.GAMES]: {
         mediaUserDetails: GamesUserDetails,
         mediaFollowCard: GameFollowCard,
         mediaDetails: GamesDetails,
         mediaListCard: GameListItem,
+        mediaListColumns: getGamesColumns,
     },
     [MediaType.BOOKS]: {
-        mediaUserDetails: MoviesUserDetails,
+        mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
         mediaDetails: MoviesDetails,
         mediaListCard: TvListItem,
+        mediaListColumns: getTvColumns,
     },
     [MediaType.MANGA]: {
-        mediaUserDetails: MoviesUserDetails,
+        mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
         mediaDetails: MoviesDetails,
         mediaListCard: TvListItem,
+        mediaListColumns: getTvColumns,
     },
 };

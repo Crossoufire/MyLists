@@ -24,8 +24,7 @@ function HomePage() {
                 </div>
                 <div className="mt-8">
                     <Button>
-                        {/*//@ts-ignore*/}
-                        <Link to="/profile/DemoProfile" className="flex items-center gap-2">
+                        <Link to="/profile/$username" params={{ username: "DemoProfile" }} className="flex items-center gap-2">
                             Demo Profile <ArrowRight/>
                         </Link>
                     </Button>
@@ -114,7 +113,7 @@ function FeatureCards() {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-            {features.map((feature, idx) => (
+            {features.map((feature, idx) =>
                 <div key={idx} className="flex items-start space-x-4">
                     <div className="flex-shrink-0">{feature.icon}</div>
                     <div>
@@ -122,7 +121,7 @@ function FeatureCards() {
                         <p className="text-gray-300">{feature.description}</p>
                     </div>
                 </div>
-            ))}
+            )}
         </div>
     );
 }

@@ -4,7 +4,7 @@ import {NotFound} from "@/lib/components/general/NotFound";
 import {routerWithQueryClient} from "@tanstack/react-router-with-query";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
-import {DefaultCatchBoundary} from "@/lib/components/general/DefaultCatchBoundary";
+import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
 
 
 export function createRouter() {
@@ -43,7 +43,7 @@ export function createRouter() {
             context: { queryClient },
             defaultPreload: false,
             defaultPreloadStaleTime: 0,
-            defaultErrorComponent: DefaultCatchBoundary,
+            defaultErrorComponent: ErrorCatchBoundary,
             defaultNotFoundComponent: NotFound,
             scrollRestoration: true,
             defaultStructuralSharing: true,

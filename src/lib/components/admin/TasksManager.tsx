@@ -13,7 +13,12 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {adminJobCompletedOptions, adminJobLogsOptions, adminJobsOptions} from "@/lib/react-query/query-options/admin-options";
 
 
-export function TasksManager({ tasksList }: { tasksList: typeof taskDefinitions }) {
+interface TaskCardProps {
+    tasksList: typeof taskDefinitions;
+}
+
+
+export function TasksManager({ tasksList }: TaskCardProps) {
     const taskTriggerMutation = useAdminTriggerTaskMutation();
     const { data: currentJobs = [], isLoading, error } = useQuery(adminJobsOptions({ pollingRateSec: 10 }))
 
