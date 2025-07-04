@@ -9,7 +9,7 @@ import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {TvList, TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AddedMediaDetails, ConfigTopMetric, EpsPerSeasonType} from "@/lib/server/types/base.types";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
 
 
 export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
@@ -400,10 +400,10 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         const { genres, labels } = await super.getCommonListFilters(userId);
 
         const countries = await getDbClient()
-            .selectDistinct({ name: mediaTable.originCountry })
+            .selectDistinct({ name: sql<string>`${mediaTable.originCountry}` })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(eq(listTable.userId, userId));
+            .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.originCountry)));
 
         return { countries, genres, labels };
     }
@@ -416,7 +416,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 .selectDistinct({ name: actorTable.name })
                 .from(actorTable)
                 .innerJoin(listTable, eq(listTable.mediaId, actorTable.mediaId))
-                .where(and(eq(listTable.userId, userId), ilike(actorTable.name, `%${query}%`)));
+                .where(and(eq(listTable.userId, userId), like(actorTable.name, `%${query}%`)));
             return actors
         }
         else if (job === JobType.CREATOR) {
@@ -424,7 +424,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 .selectDistinct({ name: mediaTable.createdBy })
                 .from(mediaTable)
                 .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-                .where(and(eq(listTable.userId, userId), ilike(mediaTable.createdBy, `%${query}%`)));
+                .where(and(eq(listTable.userId, userId), like(mediaTable.createdBy, `%${query}%`)));
 
             const creators = [...new Set(creatorsQuery
                 .filter(c => c.name)

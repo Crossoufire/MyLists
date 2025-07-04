@@ -93,7 +93,7 @@ function MediaList() {
             />
             <AppliedFilters
                 totalItems={apiData.results.pagination.totalItems}
-                onFilterRemove={(filters: Partial<MediaListArgs>) => handleFilterChange(filters)}
+                onFilterRemove={(filters) => handleFilterChange(filters)}
             />
             {isGrid ?
                 <MediaGrid
@@ -108,14 +108,14 @@ function MediaList() {
                     isCurrent={isCurrent}
                     results={apiData.results}
                     queryKey={queryKeys.userListKey(mediaType, username, search)}
-                    onChangePage={(data: any) => handleFilterChange({ page: data.pageIndex + 1 })}
+                    onChangePage={(filters) => handleFilterChange(filters)}
                 />
             }
             {isGrid &&
                 <Pagination
                     currentPage={apiData.results.pagination.page}
                     totalPages={apiData.results.pagination.totalPages}
-                    onChangePage={(page: number) => handleFilterChange({ page })}
+                    onChangePage={(page) => handleFilterChange({ page })}
                 />
             }
             {filtersPanelOpen &&

@@ -6,7 +6,9 @@ import {Button} from "@/lib/components/ui/button";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {Separator} from "@/lib/components/ui/separator";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 import {useParams, useSearch} from "@tanstack/react-router";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {capitalize, getLangCountryName} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
@@ -20,50 +22,46 @@ import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/
 interface FiltersSideSheetProps {
     isCurrent: boolean;
     onClose: () => void;
-    onFilterApply: (filters: Record<string, any>) => void;
+    onFilterApply: (filters: Partial<MediaListArgs>) => void;
 }
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersSideSheetProps) => {
-    let localFilters = {};
+    let localFilters: Partial<MediaListArgs> = {};
     const search = useSearch({ from: "/_private/list/$mediaType/$username" });
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
-    const allStatuses = Status.byMediaType(mediaType);
-    const searchFiltersList = JobType.byMediaType(mediaType);
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
-    console.log({ listFilters });
+    const allStatuses = Status.byMediaType(mediaType);
+    const searchFiltersList = JobType.byMediaType(mediaType);
 
-    const handleRegisterChange = (filterType: string, value: any) => {
+    const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
         if (Array.isArray(value)) {
-            const updatedSearch = { ...localFilters };
-            //@ts-expect-error
-            if (Array.isArray(localFilters[filterType])) {
-                value.forEach(val => {
-                    //@ts-expect-error
-                    if (localFilters[filterType].includes(val)) {
-                        //@ts-expect-error
-                        updatedSearch[filterType] = [...localFilters[filterType].filter(item => item !== val)];
-                        //@ts-expect-error
-                        if (updatedSearch[filterType].length === 0) {
-                            //@ts-expect-error
-                            delete updatedSearch[filterType];
-                        }
+            const prev = localFilters[filterType] as string[] | undefined;
+            let newArr: string[];
+            if (prev) {
+                newArr = [...prev];
+                value.forEach((val) => {
+                    if (newArr.includes(val)) {
+                        newArr = newArr.filter((item) => item !== val);
                     }
                     else {
-                        //@ts-expect-error
-                        updatedSearch[filterType] = [...localFilters[filterType], val];
+                        newArr.push(val);
                     }
                 });
             }
             else {
-                //@ts-expect-error
-                updatedSearch[filterType] = value;
+                newArr = value;
             }
-            localFilters = { ...updatedSearch, };
+            if (newArr.length === 0) {
+                delete localFilters[filterType];
+            }
+            else {
+                localFilters[filterType] = newArr as any;
+            }
         }
         else {
-            localFilters = { ...localFilters, [filterType]: value };
+            localFilters[filterType] = value as any;
         }
     };
 
@@ -75,7 +73,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
     return (
         <Sheet defaultOpen={true} onOpenChange={onClose}>
-            <SheetContent className="max-sm:w-full">
+            <SheetContent className="max-sm:w-full" side="right">
                 <SheetHeader>
                     <SheetTitle className="-mb-2">Additional Filters</SheetTitle>
                     <SheetDescription className="flex items-center gap-1">
@@ -85,8 +83,8 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                 <Separator/>
                 <form onSubmit={handleOnSubmit}>
                     {isPending ?
-                        <div className="flex items-center justify-center h-[85vh]">
-                            <LoaderCircle className="h-7 w-7 animate-spin"/>
+                        <div className="flex items-center justify-center h-[70vh]">
+                            <LoaderCircle className="size-10 animate-spin"/>
                         </div>
                         :
                         <div>
@@ -94,7 +92,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 title="Status"
                                 items={allStatuses.map(s => ({ name: s }))}
                                 onChange={(status) => handleRegisterChange("status", [status])}
-                                defaultChecked={(status) => search?.status?.includes(status as Status)}
+                                defaultChecked={(status) => search?.status?.includes(status as Status) ?? false}
                             />
                             {(listFilters && listFilters?.platforms) &&
                                 <>
@@ -103,7 +101,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         title="Platforms"
                                         items={listFilters.platforms}
                                         onChange={(pt) => handleRegisterChange("platforms", [pt])}
-                                        defaultChecked={(pt) => search.platforms?.includes(pt as GamesPlatformsEnum)}
+                                        defaultChecked={(pt) => search.platforms?.includes(pt as GamesPlatformsEnum) ?? false}
                                     />
                                 </>
                             }
@@ -111,10 +109,10 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                             {searchFiltersList.map(job =>
                                 <SearchFilter
                                     key={job}
-                                    job={job}
-                                    //@ts-expect-error
-                                    dataList={search[`${job}s`]}
+                                    jobType={job}
                                     registerChange={handleRegisterChange}
+                                    //@ts-expect-error
+                                    dataList={search?.[`${job}s` as keyof MediaListArgs] ?? []}
                                 />
                             )}
                             <Separator/>
@@ -122,7 +120,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                 title="Genres"
                                 items={listFilters?.genres ?? []}
                                 onChange={(genre) => handleRegisterChange("genres", [genre])}
-                                defaultChecked={(genre: string) => search.genres?.includes(genre)}
+                                defaultChecked={(genre) => search.genres?.includes(genre) ?? false}
                             />
                             <Separator/>
                             {(listFilters && listFilters?.langs) &&
@@ -130,10 +128,10 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                     <div className="space-y-2">
                                         <h3 className="font-medium">Languages/Countries</h3>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {listFilters.langs.map((lang: any) =>
-                                                <div key={lang} className="flex items-center space-x-2">
+                                            {listFilters.langs.map((lang) =>
+                                                <div key={lang.name} className="flex items-center space-x-2">
                                                     <Checkbox
-                                                        id={`${lang.name}-id`}
+                                                        id={lang.name + "-id"}
                                                         defaultChecked={search.langs?.includes(lang.name)}
                                                         onCheckedChange={() => handleRegisterChange("langs", [lang.name])}
                                                     />
@@ -174,12 +172,10 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="commonCheck"
-                                                defaultChecked={search.hideCommon}
-                                                onCheckedChange={() => handleRegisterChange("common", search.hideCommon)}
+                                                defaultChecked={search?.hideCommon ?? false}
+                                                onCheckedChange={() => handleRegisterChange("hideCommon", search?.hideCommon ?? false)}
                                             />
-                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">
-                                                Hide Common
-                                            </label>
+                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
                                         </div>
                                     }
                                 </div>
@@ -191,7 +187,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                         title="Labels"
                                         items={listFilters.labels}
                                         onChange={(label) => handleRegisterChange("labels", [label])}
-                                        defaultChecked={(label) => search.labels?.includes(label)}
+                                        defaultChecked={(label) => search.labels?.includes(label) ?? false}
                                     />
                                     <Separator/>
                                 </>
@@ -210,9 +206,9 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
 interface CheckboxGroupProps {
     title: string;
-    defaultChecked: (v: string | Status | GamesPlatformsEnum) => void;
-    onChange: (v: string | Status | GamesPlatformsEnum | null) => void;
-    items: { name: string | number | null }[] | { name: GamesPlatformsEnum | null }[];
+    items: { name: string }[] | { name: GamesPlatformsEnum }[];
+    onChange: (v: string | Status | GamesPlatformsEnum) => void;
+    defaultChecked: (v: string | Status | GamesPlatformsEnum) => boolean;
 }
 
 
@@ -228,26 +224,33 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked }: CheckboxGroup
 
     return (
         <div className="space-y-2">
-            <h3 className="font-medium">{title}</h3>
+            <h3 className="font-medium">
+                {title}
+            </h3>
             <div className="grid grid-cols-2 gap-2">
-                {visibleItems.map(item =>
-                    <div key={item.name} className="flex items-center space-x-2">
-                        <Checkbox
-                            id={`${item}-id`}
-                            //@ts-expect-error
-                            defaultChecked={defaultChecked?.(`${item.name!}`)}
-                            onCheckedChange={() => onChange(`${item.name!}`)}
-                        />
-                        <label htmlFor={`${item.name}-id`} className="text-sm cursor-pointer line-clamp-1">{item.name}</label>
-                    </div>
-                )}
+                {visibleItems.length === 0 ?
+                    <MutedText>Nothing to display.</MutedText>
+                    :
+                    visibleItems.map(item =>
+                        <div key={item.name} className="flex items-center space-x-2">
+                            <Checkbox
+                                id={item.name + "-id"}
+                                defaultChecked={defaultChecked?.(item.name)}
+                                onCheckedChange={() => onChange(item.name)}
+                            />
+                            <label htmlFor={item.name + "-id"} className="text-sm cursor-pointer line-clamp-1">
+                                {item.name}
+                            </label>
+                        </div>
+                    )
+                }
             </div>
             {items.length > initVisibleItems &&
                 <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
                     {showAll ?
-                        <>Show Less <ChevronUp className="ml-1" size={17}/></>
+                        <>Show Less <ChevronUp className="size-5"/></>
                         :
-                        <>Show More <ChevronDown className="ml-1" size={17}/></>
+                        <>Show More <ChevronDown className="size-5"/></>
                     }
                 </Button>
             }
@@ -285,13 +288,13 @@ const FilterInfoPopover = () => (
 
 
 interface SearchFilterProps {
-    job: JobType;
+    jobType: JobType;
     dataList: string[];
-    registerChange: any;
+    registerChange: (filterType: keyof MediaListArgs, value: string[] | boolean) => void;
 }
 
 
-const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
+const SearchFilter = ({ jobType, dataList, registerChange }: SearchFilterProps) => {
     const commandRef = useRef(null);
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
@@ -299,7 +302,7 @@ const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
     const [selectedData, setSelectedData] = useState(dataList ?? []);
 
     const { mediaType, username } = useParams({ from: "/_private/list/$mediaType/$username" });
-    const { data: filterResults, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
+    const { data: filterResults, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, jobType));
 
     const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
         setIsOpen(true);
@@ -314,12 +317,12 @@ const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
     const handleAddClicked = (data: string) => {
         resetSearch();
         if (selectedData.includes(data)) return;
-        registerChange(job, [data]);
+        registerChange(jobType + "s" as keyof MediaListArgs, [data]);
         setSelectedData([...selectedData, data]);
     };
 
     const handleRemoveData = (data: string) => {
-        registerChange(job, [data]);
+        registerChange(jobType + "s" as keyof MediaListArgs, [data]);
         setSelectedData(selectedData.filter(d => d !== data));
     };
 
@@ -327,7 +330,7 @@ const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
 
     return (
         <div>
-            <h3 className="font-medium">{capitalize(job)}</h3>
+            <h3 className="font-medium">{capitalize(jobType)}</h3>
             <div ref={commandRef} className="mt-1 w-56 relative">
                 <div className="relative">
                     <Search size={18} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
@@ -335,7 +338,7 @@ const SearchFilter = ({ job, dataList, registerChange }: SearchFilterProps) => {
                         value={search}
                         className={"w-[280px] pl-8"}
                         onChange={handleInputChange}
-                        placeholder={`Search ${job} in this collection`}
+                        placeholder={`Search ${jobType} in this collection`}
                     />
                 </div>
                 {isOpen && (debouncedSearch.length >= 2 || isLoading) &&

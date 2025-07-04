@@ -114,15 +114,15 @@ export type AddedMediaDetails = {
 
 
 export type CommonListFilters = {
-    genres: { name: string | null }[];
-    labels: { name: string | null }[];
+    genres: { name: string }[];
+    labels: { name: string }[];
 };
 
 
 export type ExpandedListFilters = CommonListFilters & {
-    langs?: { name: string | null }[];
-    countries?: { name: string | null }[];
-    platforms?: { name: GamesPlatformsEnum | null }[];
+    langs?: { name: string }[];
+    countries?: { name: string }[];
+    platforms?: { name: GamesPlatformsEnum }[];
 };
 
 

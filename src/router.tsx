@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {routeTree} from "./routeTree.gen";
+import {routeTree} from "@/routeTree.gen";
 import {NotFound} from "@/lib/components/general/NotFound";
 import {routerWithQueryClient} from "@tanstack/react-router-with-query";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";

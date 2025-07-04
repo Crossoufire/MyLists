@@ -19,7 +19,7 @@ export const MovieListItem = (props: MovieListItemProps) => {
     return (
         <BaseMediaListItem
             {...props}
-            redoDisplay={props.userMedia.redo &&
+            redoDisplay={!!props.userMedia.redo &&
                 <DisplayRedoValue
                     redoValue={props.userMedia.redo}
                 />

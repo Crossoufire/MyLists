@@ -9,7 +9,7 @@ import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types"
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
 export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchemaConfig> implements IGamesRepository {
@@ -277,7 +277,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
         const { genres, labels } = await super.getCommonListFilters(userId);
 
         const platforms = await getDbClient()
-            .selectDistinct({ name: gamesList.platform })
+            .selectDistinct({ name: sql<GamesPlatformsEnum>`${gamesList.platform}` })
             .from(gamesList)
             .where(and(eq(gamesList.userId, userId), isNotNull(gamesList.platform)));
 
@@ -319,7 +319,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .innerJoin(games, eq(gamesList.mediaId, games.id))
 
         const conditions = [
-            ilike(games.gameModes, `%${achievement.value}%`),
+            like(games.gameModes, `%${achievement.value}%`),
             notInArray(gamesList.status, [Status.DROPPED, Status.PLAN_TO_PLAY]),
         ]
 

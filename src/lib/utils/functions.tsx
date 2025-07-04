@@ -14,11 +14,16 @@ export const getTextColor = (backColor: string) => {
 };
 
 
-export const formatRating = (system: RatingSystemType, rating: number | null) => {
+export const formatRating = (system: RatingSystemType, rating: number | null, returnNull: boolean = false) => {
     if (system === RatingSystemType.FEELING) {
         return getFeelingIcon(rating, { size: 17 });
     }
-    return rating === null ? "--" : rating.toFixed(1);
+
+    if (returnNull) {
+        return rating === null ? null : rating.toFixed(1);
+    }
+
+    return (rating === null) ? "--" : rating.toFixed(1);
 }
 
 

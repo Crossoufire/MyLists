@@ -3,18 +3,19 @@ import {useAuth} from "@/lib/hooks/use-auth";
 import {useSearch} from "@tanstack/react-router";
 import {MediaType} from "@/lib/server/utils/enums";
 import {mediaConfig} from "@/lib/components/media-config";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 import {ListPagination, UserMediaItem} from "@/lib/components/types";
 import {TablePagination} from "@/lib/components/general/TablePagination";
-import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
 
 interface MediaTableProps {
     queryKey: string[];
     isCurrent: boolean;
     mediaType: MediaType;
-    onChangePage: (data: any) => void;
+    onChangePage: (filters: Partial<MediaListArgs>) => void;
     results: {
         items: UserMediaItem[];
         pagination: ListPagination;
@@ -30,8 +31,9 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
     const filters = useSearch({ from: "/_private/list/$mediaType/$username" });
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
 
-    const onPaginationChange = (updater: any) => {
-        onChangePage(updater(paginationState));
+    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
+        onChangePage({ page: newPagination.pageIndex + 1 });
     };
 
     const handleEdit = (mediaId: number) => {
@@ -62,7 +64,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
 
     return (
         <>
-            <div className="rounded-md border">
+            <div className="rounded-md border p-3 pt-0">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map(headerGroup =>

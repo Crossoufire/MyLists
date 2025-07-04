@@ -14,7 +14,7 @@ export const DisplayTvRedo = ({ redoValues }: DisplayTvRedoProps) => {
 
     if (maxCount === 0) {
         return (
-            <div className="flex items-center gap-x-2">
+            <div className="flex items-center gap-x-1">
                 <RotateCw size={15} className="text-green-500"/>
                 <div>{totalRedo} {totalRedo > 1 ? "S." : ""}</div>
             </div>
@@ -24,9 +24,9 @@ export const DisplayTvRedo = ({ redoValues }: DisplayTvRedoProps) => {
     return (
         <Popover>
             <PopoverTrigger>
-                <div className="flex items-center gap-x-2">
+                <div className="flex items-center gap-x-1">
                     <RotateCw size={15} className="text-green-500"/>
-                    <div>{totalRedo} {totalRedo > 1 ? "S." : ""}</div>
+                    <div>{totalRedo} S.</div>
                 </div>
             </PopoverTrigger>
             <PopoverContent className="w-40 px-5 pt-3 pb-3 max-h-[210px] overflow-auto" align="center">

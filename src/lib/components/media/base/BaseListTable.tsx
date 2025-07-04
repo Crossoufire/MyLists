@@ -1,12 +1,9 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {formatRating} from "@/lib/utils/functions";
 import {UserMediaItem} from "@/lib/components/types";
-import {CircleCheck, Heart, Settings2} from "lucide-react";
+import {CircleCheck, Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/general/BlockLink";
-import {DisplayRating} from "@/lib/components/media/base/DisplayRating";
 import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
-import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 
 
 export interface ColumnConfigProps {
@@ -34,21 +31,6 @@ export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected
     {
         accessorKey: "status",
         header: "Status",
-    },
-    {
-        id: "information",
-        header: "Information",
-        cell: ({ row: { original } }) => {
-            const rating = formatRating(original.ratingSystem, original.rating);
-
-            return (
-                <div className="flex items-center gap-3">
-                    <DisplayRating rating={rating}/>
-                    {original.favorite && <Heart className="w-4 h-4 text-red-500"/>}
-                    {original.comment && <DisplayComment content={original.comment}/>}
-                </div>
-            )
-        },
     },
     {
         id: "actions",

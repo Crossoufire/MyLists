@@ -77,7 +77,7 @@ export const queryKeys: QueryKeys = {
 
 export const authOptions = () => queryOptions({
     queryKey: queryKeys.authKey(),
-    queryFn: (({ signal }) => getCurrentUser({ signal })),
+    queryFn: () => getCurrentUser(),
     staleTime: 10 * 60 * 1000,
 });
 

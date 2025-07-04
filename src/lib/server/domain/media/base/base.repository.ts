@@ -5,7 +5,7 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalRepository} from "@/lib/server/types/repositories.types";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {and, asc, count, desc, eq, getTableColumns, gte, ilike, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     ConfigTopMetric,
     EditUserLabels,
@@ -66,7 +66,7 @@ export class BaseRepository<
         return {
             search: {
                 isActive: (args: MediaListArgs) => !!args.search,
-                getCondition: (args: MediaListArgs) => ilike(mediaTable.name, `%${args.search}%`),
+                getCondition: (args: MediaListArgs) => like(mediaTable.name, `%${args.search}%`),
             },
             status: {
                 isActive: (args: MediaListArgs) => isValidFilter(args.status),
@@ -315,21 +315,21 @@ export class BaseRepository<
         const { genreTable, labelTable, listTable } = this.config;
 
         const genresPromise = getDbClient()
-            .selectDistinct({ name: sql<string | null>`${genreTable.name}` })
+            .selectDistinct({ name: sql<string>`${genreTable.name}` })
             .from(genreTable)
             .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
             .where(eq(listTable.userId, userId))
             .orderBy(asc(genreTable.name));
 
         const labelsPromise = getDbClient()
-            .selectDistinct({ name: sql<string | null>`${labelTable.name}` })
+            .selectDistinct({ name: sql<string>`${labelTable.name}` })
             .from(labelTable)
             .where(and(eq(labelTable.userId, userId)))
             .orderBy(asc(labelTable.name));
 
-        const [genreResult, labelsResult] = await Promise.all([genresPromise, labelsPromise]);
+        const [genres, labels] = await Promise.all([genresPromise, labelsPromise]);
 
-        return { genres: genreResult || [], labels: labelsResult || [] };
+        return { genres, labels };
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
