@@ -83,6 +83,8 @@
 - TODO: Abstract JobType (if/else) with "strategy pattern" (see Gemini 2.5 pro on Google for details)
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
 - TODO: Remove countries in Anime in SideFilterSheet
+- TODO: READ new better-sqlite3 - new dotenv - new recharts 3
+- TODO: Create A 404 page and a 500 page for DefaultErrorBoundary
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract Repetitive Stat Calculation Logic (see if still true after adding every mediaType)

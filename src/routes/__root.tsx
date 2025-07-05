@@ -12,7 +12,7 @@ import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstac
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
     beforeLoad: async ({ context: { queryClient } }) => {
-        return queryClient.fetchQuery(authOptions())
+        return queryClient.fetchQuery(authOptions());
     },
     head: () => ({
         meta: [

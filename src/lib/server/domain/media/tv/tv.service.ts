@@ -95,7 +95,7 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
             if (!mediaWithDetails) throw new Error("TV media not found");
 
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
+            if (userMedia) (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);

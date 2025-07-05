@@ -235,14 +235,22 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
                 actors: sql`json_group_array(DISTINCT json_object('id', ${moviesActors.id}, 'name', ${moviesActors.name}))`.mapWith(JSON.parse),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${moviesGenre.id}, 'name', ${moviesGenre.name}))`.mapWith(JSON.parse),
                 collection: sql`
-                    SELECT (json_group_array(json_object('mediaId', m2.id,'mediaName', m2.name, 'mediaCover', m2.imageCover))
-                    FROM ${movies} m2
-                    WHERE m2.collectionId = ${movies.collectionId} AND m2.id != ${movies.id}
-                    ORDER BY m2.releaseDate ASC
-                    )
+                    CASE 
+                        WHEN ${movies.collectionId} IS NULL 
+                        THEN json_array()
+                        ELSE (
+                            SELECT COALESCE(json_group_array(json_object(
+                                'mediaId', m2.id, 
+                                'mediaName', m2.name, 
+                                'mediaCover', m2.image_cover
+                            )), json_array())
+                            FROM movies m2
+                            WHERE m2.collection_id = ${movies.collectionId} 
+                            AND m2.id != ${movies.id}
+                        )
+                    END
                 `.mapWith(JSON.parse),
-            })
-            .from(movies)
+            }).from(movies)
             .innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id))
             .innerJoin(moviesGenre, eq(moviesGenre.mediaId, movies.id))
             .where(eq(movies.id, mediaId))
