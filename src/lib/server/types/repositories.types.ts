@@ -47,6 +47,7 @@ export interface IUniversalRepository<TMedia, TList> {
     findUserMedia(userId: number, mediaId: number): Promise<UserMediaWithLabels<TList> | null>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getUserFollowsMediaData(userId: number, mediaId: number): Promise<UserFollowsMediaData<TList>[]>;
+    updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TList>): Promise<TList>;
     getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TList>>;
 
     // --- Achievements ----------------------------------------------------------
@@ -72,7 +73,6 @@ export interface ICommonRepository<TMedia, TList> extends IUniversalRepository<T
     getListFilters(userId: number): Promise<ExpandedListFilters>;
     addMediaToUserList(userId: number, media: TMedia, newStatus: Status): Promise<TList>;
     findAllAssociatedDetails(mediaId: number): Promise<(TMedia & AddedMediaDetails) | undefined>;
-    updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TList>): Promise<TList>;
     getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
     getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit?: number): Promise<JobDetails>;
 }

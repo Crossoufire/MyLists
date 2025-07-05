@@ -124,7 +124,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .execute();
     }
 
-    async addMediaToUserList(userId: number, media: any, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: Game, newStatus: Status) {
         const [newMedia] = await getDbClient()
             .insert(gamesList)
             .values({ userId, mediaId: media.id, status: newStatus, playtime: 0 })
@@ -296,16 +296,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
         else {
             throw notFound();
         }
-    }
-
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<GamesList>) {
-        const [result] = await getDbClient()
-            .update(gamesList)
-            .set(updateData)
-            .where(and(eq(gamesList.userId, userId), eq(gamesList.mediaId, mediaId)))
-            .returning();
-
-        return result;
     }
 
     // --- Achievements ----------------------------------------------------------

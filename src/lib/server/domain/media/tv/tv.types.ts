@@ -15,7 +15,7 @@ export type TvList = SeriesList | AnimeList;
 
 export type AnimeAchCodeName = typeof animeAchievements[number]["codeName"];
 export type SeriesAchCodeName = typeof seriesAchievements[number]["codeName"];
-
+export type TvAchCodeName = AnimeAchCodeName | SeriesAchCodeName;
 
 export type UpsertTvWithDetails = {
     mediaData: typeof series.$inferInsert | typeof anime.$inferInsert,

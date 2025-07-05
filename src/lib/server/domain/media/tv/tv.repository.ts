@@ -167,7 +167,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .execute();
     }
 
-    async addMediaToUserList(userId: number, media: any, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
         const { listTable } = this.config;
 
         let newTotal = 1;
@@ -175,9 +175,9 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         let newEpisode = 1;
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = media.epsPerSeason[-1].season;
-            newEpisode = media.epsPerSeason[-1].episodes;
-            newTotal = media.epsPerSeason.reduce((acc: number, curr: any) => acc + curr.episodes, 0);
+            newSeason = media.epsPerSeason![-1].season;
+            newEpisode = media.epsPerSeason![-1].episodes;
+            newTotal = media.epsPerSeason!.reduce((acc: number, curr: any) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
             newTotal = 0;
@@ -193,7 +193,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 lastEpisodeWatched: newEpisode,
                 total: newTotal,
                 status: newStatus,
-                redo2: Array(media.epsPerSeason.length).fill(0),
+                redo2: Array(media.epsPerSeason!.length).fill(0),
             })
             .returning();
 
@@ -446,18 +446,6 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         else {
             throw new Error("Job type not supported");
         }
-    }
-
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TvList>) {
-        const { listTable } = this.config;
-
-        const [result] = await getDbClient()
-            .update(listTable)
-            .set(updateData)
-            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .returning();
-
-        return result;
     }
 
     // --- Achievements ----------------------------------------------------------

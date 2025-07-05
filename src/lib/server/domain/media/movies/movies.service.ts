@@ -13,8 +13,8 @@ import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 
 
-export class MoviesService extends BaseService<Movie, MoviesList, IMoviesRepository> implements IMoviesService {
-    private readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
+export class MoviesService extends BaseService<Movie, MoviesList, MoviesAchCodeName, IMoviesRepository> implements IMoviesService {
+    readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: MoviesRepository) {
         super(repository);
@@ -37,14 +37,6 @@ export class MoviesService extends BaseService<Movie, MoviesList, IMoviesReposit
 
     async lockOldMovies() {
         return this.repository.lockOldMovies();
-    }
-
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as MoviesAchCodeName];
-        if (!handler) {
-            throw new Error("Invalid Achievement codeName");
-        }
-        return handler(achievement, userId);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {

@@ -9,13 +9,13 @@ import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
-import {AnimeAchCodeName, SeriesAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 
 
-export class TvService extends BaseService<TvType, TvList, ITvRepository> implements ITvService {
-    private readonly achievementHandlers: Record<SeriesAchCodeName | AnimeAchCodeName, (achievement: Achievement, userId?: number) => any>;
+export class TvService extends BaseService<TvType, TvList, TvAchCodeName, ITvRepository> implements ITvService {
+    readonly achievementHandlers: Record<TvAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: TvRepository) {
         super(repository);
@@ -41,14 +41,6 @@ export class TvService extends BaseService<TvType, TvList, ITvRepository> implem
             drama_series: this.repository.specificGenreAchievementCte.bind(this.repository),
             network_series: this.repository.getNetworkAchievementCte.bind(this.repository),
         };
-    }
-
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as SeriesAchCodeName | AnimeAchCodeName];
-        if (!handler) {
-            throw new Error("Invalid Achievement codeName");
-        }
-        return handler(achievement, userId);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {

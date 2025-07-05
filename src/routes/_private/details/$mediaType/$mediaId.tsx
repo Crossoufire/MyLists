@@ -47,8 +47,6 @@ function MediaDetailsPage() {
         addMediaToListMutation.mutate({});
     };
 
-    console.log(apiData.media?.collection)
-
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">

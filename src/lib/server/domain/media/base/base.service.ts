@@ -1,11 +1,15 @@
 import {JobType} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalService} from "@/lib/server/types/services.types";
 import {ICommonRepository} from "@/lib/server/types/repositories.types";
 import {EditUserLabels, MediaListArgs, SearchType} from "@/lib/server/types/base.types";
 
 
-export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TList>> implements IUniversalService<TMedia, TList> {
+export abstract class BaseService<
+    TMedia, TList, TCodeName extends string, R extends ICommonRepository<TMedia, TList>
+> implements IUniversalService<TMedia, TList> {
     protected repository: R;
+    protected abstract readonly achievementHandlers: Record<TCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: R) {
         this.repository = repository;
@@ -13,6 +17,14 @@ export class BaseService<TMedia, TList, R extends ICommonRepository<TMedia, TLis
 
     async findById(mediaId: number) {
         return this.repository.findById(mediaId);
+    }
+
+    getAchievementCte(achievement: Achievement, userId?: number) {
+        const handler = this.achievementHandlers[achievement.codeName as TCodeName];
+        if (!handler) {
+            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
+        }
+        return handler(achievement, userId);
     }
 
     async downloadMediaListAsCSV(userId: number) {

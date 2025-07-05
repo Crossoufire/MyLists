@@ -363,16 +363,6 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
         }
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<MoviesList>) {
-        const [result] = await getDbClient()
-            .update(moviesList)
-            .set(updateData)
-            .where(and(eq(moviesList.userId, userId), eq(moviesList.mediaId, mediaId)))
-            .returning();
-
-        return result;
-    }
-
     // --- Achievements ----------------------------------------------------------
 
     getDurationAchievementCte(achievement: Achievement, userId?: number) {

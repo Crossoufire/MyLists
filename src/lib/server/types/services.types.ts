@@ -35,6 +35,7 @@ export interface IUniversalService<TMedia, TList> {
     computeTotalMediaLabel(userId?: number): Promise<number>;
     getListFilters(userId: number): Promise<ExpandedListFilters>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
+    getAchievementCte(achievement: Achievement, userId?: number): any;
     editUserLabel(args: EditUserLabels): Promise<Label | void | undefined>;
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
@@ -46,7 +47,6 @@ export interface IUniversalService<TMedia, TList> {
 
 // Level 2 - Common patterns (implemented in each MediaService)
 export interface ICommonService<TMedia, TList> extends IUniversalService<TMedia, TList> {
-    getAchievementCte(achievement: Achievement, userId?: number): any;
     getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
     calculateAdvancedMediaStats(userId?: number): Promise<AdvancedMediaStats>;
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;

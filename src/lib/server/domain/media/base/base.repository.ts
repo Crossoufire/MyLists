@@ -36,30 +36,6 @@ export class BaseRepository<
         this.baseFilterDefs = this.baseListFiltersDefs();
     }
 
-    async findById(mediaId: number) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.id, mediaId))
-            .get();
-
-        return result as TMedia | undefined;
-    }
-
-    async findByApiId(apiId: number | string) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.apiId, apiId))
-            .get()
-
-        return result as TMedia | undefined;
-    }
-
     private baseListFiltersDefs = () => {
         const { listTable, mediaTable, genreTable } = this.config;
 
@@ -97,6 +73,42 @@ export class BaseRepository<
                 filterColumn: genreTable.name,
             }),
         } as FilterDefinitions;
+    }
+
+    async findById(mediaId: number) {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.id, mediaId))
+            .get();
+
+        return result as TMedia | undefined;
+    }
+
+    async findByApiId(apiId: number | string) {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.apiId, apiId))
+            .get()
+
+        return result as TMedia | undefined;
+    }
+
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TList>) {
+        const { listTable } = this.config;
+
+        const [result] = await getDbClient()
+            .update(listTable)
+            .set(updateData)
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .returning();
+
+        return result as TList;
     }
 
     async downloadMediaListAsCSV(userId: number) {

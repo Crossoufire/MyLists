@@ -13,8 +13,8 @@ import {MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
 
 
-export class GamesService extends BaseService<Game, GamesList, IGamesRepository> implements IGamesService {
-    private readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
+export class GamesService extends BaseService<Game, GamesList, GamesAchCodeName, IGamesRepository> implements IGamesService {
+    readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: GamesRepository) {
         super(repository);
@@ -34,14 +34,6 @@ export class GamesService extends BaseService<Game, GamesList, IGamesRepository>
             publisher_games: this.repository.getCompanyAchievementCte.bind(this.repository),
             first_person_games: this.repository.getPerspectiveAchievementCte.bind(this.repository),
         };
-    }
-
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as GamesAchCodeName];
-        if (!handler) {
-            throw new Error("Invalid Achievement codeName");
-        }
-        return handler(achievement, userId);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {
