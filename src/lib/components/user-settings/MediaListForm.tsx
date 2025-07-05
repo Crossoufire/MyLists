@@ -93,7 +93,7 @@ export const MediaListForm = () => {
             onError: () => toast.error("An error occurred querying the CSV data"),
             onSuccess: (data) => {
                 try {
-                    const formattedData = jsonToCsv(data);
+                    const formattedData = jsonToCsv(data as any);
                     downloadFile(formattedData, selectedListForExport, "text/csv");
                 }
                 catch {

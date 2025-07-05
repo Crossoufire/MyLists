@@ -121,7 +121,6 @@ export type CommonListFilters = {
 
 export type ExpandedListFilters = CommonListFilters & {
     langs?: { name: string }[];
-    countries?: { name: string }[];
     platforms?: { name: GamesPlatformsEnum }[];
 };
 

@@ -399,13 +399,13 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         const { mediaTable, listTable } = this.config;
         const { genres, labels } = await super.getCommonListFilters(userId);
 
-        const countries = await getDbClient()
+        const langs = await getDbClient()
             .selectDistinct({ name: sql<string>`${mediaTable.originCountry}` })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.originCountry)));
 
-        return { countries, genres, labels };
+        return { langs, genres, labels };
     }
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {
@@ -436,10 +436,10 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             return creators
         }
         else if (job === JobType.PLATFORM) {
-            const networks = await db
+            const networks = await getDbClient()
                 .selectDistinct({ name: networkTable.name })
                 .from(networkTable)
-                .innerJoin(networkTable, eq(networkTable.mediaId, listTable.mediaId))
+                .innerJoin(listTable, eq(listTable.mediaId, networkTable.mediaId))
                 .where(and(eq(listTable.userId, userId), like(networkTable.name, `%${query}%`)));
             return networks
         }

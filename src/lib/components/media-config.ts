@@ -11,12 +11,15 @@ import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
 import {MovieListItem} from "@/lib/components/media/movies/MovieListItem";
 import {GameFollowCard} from "@/lib/components/media/games/GameFollowCard";
 import {ColumnConfigProps} from "@/lib/components/media/base/BaseListTable";
+import {getTvActiveFilters} from "@/lib/components/media/tv/TvActiveFilters";
 import {getGamesColumns} from "@/lib/components/media/games/GamesListColumns";
 import {MovieFollowCard} from "@/lib/components/media/movies/MovieFollowCard";
 import {GamesUserDetails} from "@/lib/components/media/games/GamesUserDetails";
 import {getMoviesColumns} from "@/lib/components/media/movies/MoviesListColumns";
 import {MoviesUserDetails} from "@/lib/components/media/movies/MoviesUserDetails";
-import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/components/types";
+import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
+import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
+import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType, FilterConfig} from "@/lib/components/types";
 
 
 type MediaConfiguration = {
@@ -44,6 +47,7 @@ type MediaConfiguration = {
             userMedia: ExtractListByType<T>,
         }>;
         mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
+        sheetFilters: () => FilterConfig[];
     };
 };
 
@@ -55,6 +59,7 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: TvDetails,
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
+        sheetFilters: getTvActiveFilters,
     },
     [MediaType.ANIME]: {
         mediaUserDetails: TvUserDetails,
@@ -62,6 +67,7 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: TvDetails,
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
+        sheetFilters: getTvActiveFilters,
     },
     [MediaType.MOVIES]: {
         mediaUserDetails: MoviesUserDetails,
@@ -69,6 +75,7 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: MoviesDetails,
         mediaListCard: MovieListItem,
         mediaListColumns: getMoviesColumns,
+        sheetFilters: getMoviesActiveFilters,
     },
     [MediaType.GAMES]: {
         mediaUserDetails: GamesUserDetails,
@@ -76,6 +83,7 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: GamesDetails,
         mediaListCard: GameListItem,
         mediaListColumns: getGamesColumns,
+        sheetFilters: getGamesActiveFilters,
     },
     [MediaType.BOOKS]: {
         mediaUserDetails: TvUserDetails,
@@ -83,6 +91,7 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: MoviesDetails,
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
+        sheetFilters: getTvActiveFilters,
     },
     [MediaType.MANGA]: {
         mediaUserDetails: TvUserDetails,
@@ -90,5 +99,6 @@ export const mediaConfig: MediaConfiguration = {
         mediaDetails: MoviesDetails,
         mediaListCard: TvListItem,
         mediaListColumns: getTvColumns,
+        sheetFilters: getTvActiveFilters,
     },
 };

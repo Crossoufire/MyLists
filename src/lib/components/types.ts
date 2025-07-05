@@ -1,5 +1,6 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {historyOptions, mediaDetailsOptions, mediaListOptions} from "@/lib/react-query/query-options/query-options";
+import {JobType, MediaType} from "@/lib/server/utils/enums";
+import {MediaListArgs} from "@/lib/server/types/base.types";
+import {historyOptions, listFiltersOptions, mediaDetailsOptions, mediaListOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export type Prettify<T> = {
@@ -58,3 +59,15 @@ export type ExtractListByType<T extends MediaType> =
         T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMediaItem, { currentSeason: number }> :
             T extends typeof MediaType.MOVIES ? Exclude<UserMediaItem, { playtime: number | null } | { currentSeason: number }> :
                 never;
+
+
+// --- Types for Filters Side Sheet ------------------------------------
+export type ListFiltersData = Awaited<ReturnType<NonNullable<ReturnType<typeof listFiltersOptions>["queryFn"]>>>;
+export type FilterConfig = {
+    job?: JobType;
+    title: string;
+    key: keyof MediaListArgs;
+    type: "checkbox" | "search";
+    renderLabel?: (name: string, mediaType: MediaType) => string;
+    getItems?: (data: ListFiltersData) => { name: string }[] | undefined;
+};

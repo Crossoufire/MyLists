@@ -10,8 +10,8 @@ import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {MediaGrid} from "@/lib/components/media/base/MediaGrid";
 import {MediaTable} from "@/lib/components/media/base/MediaTable";
-import {AppliedFilters} from "@/lib/components/media-list/AppliedFilters";
-import {FiltersSideSheet} from "@/lib/components/media-list/FiltersSideSheet";
+import {AppliedFilters} from "@/lib/components/media/base/AppliedFilters";
+import {FiltersSideSheet} from "@/lib/components/media/base/FiltersSideSheet";
 import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 
 

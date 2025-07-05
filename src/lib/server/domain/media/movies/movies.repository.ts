@@ -317,10 +317,10 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
         const { genres, labels } = await super.getCommonListFilters(userId);
 
         const langs = await getDbClient()
-            .selectDistinct({ name: movies.originalLanguage })
+            .selectDistinct({ name: sql<string>`${movies.originalLanguage}` })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(eq(moviesList.userId, userId));
+            .where(and(eq(moviesList.userId, userId), isNotNull(movies.originalLanguage)));
 
         return { langs, genres, labels };
     }
