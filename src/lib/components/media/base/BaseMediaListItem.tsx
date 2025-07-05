@@ -4,12 +4,12 @@ import {Badge} from "@/lib/components/ui/badge";
 import {UserMediaItem} from "@/lib/components/types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
-import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
+import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";
 import {DisplayRating} from "@/lib/components/media/base/DisplayRating";
 import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/components/media/base/DisplayFavorite";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
-import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
+import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
 
 
 interface BaseMediaListItemProps {

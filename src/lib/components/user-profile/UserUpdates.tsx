@@ -6,9 +6,9 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {UserUpdate} from "@/lib/components/general/UserUpdate";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {UserUpdatesType} from "@/routes/_private/profile/$username/_header/index";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {UserUpdatesType} from "@/lib/components/types";
 
 
 interface UserUpdatesProps {

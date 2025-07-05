@@ -1,6 +1,6 @@
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {MediaListArgs} from "@/lib/server/types/base.types";
-import {historyOptions, listFiltersOptions, mediaDetailsOptions, mediaListOptions} from "@/lib/react-query/query-options/query-options";
+import {historyOptions, listFiltersOptions, mediaDetailsOptions, mediaListOptions, profileOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export type Prettify<T> = {
@@ -71,3 +71,14 @@ export type FilterConfig = {
     renderLabel?: (name: string, mediaType: MediaType) => string;
     getItems?: (data: ListFiltersData) => { name: string }[] | undefined;
 };
+
+
+// --- Types for ProfileOptions ------------------------------------
+type ProfileOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>;
+export type UserDataType = ProfileOptionsType["userData"];
+export type UserFollowsType = ProfileOptionsType["userFollows"];
+export type UserUpdatesType = ProfileOptionsType["userUpdates"];
+export type AchievementsType = ProfileOptionsType["achievements"];
+export type PerMediaSummaryType = ProfileOptionsType["perMediaSummary"];
+export type MediaGlobalSummaryType = ProfileOptionsType["mediaGlobalSummary"];
+export type UserSettingsType = ProfileOptionsType["userData"]["userMediaSettings"];

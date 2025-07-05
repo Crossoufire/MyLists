@@ -4,7 +4,7 @@ import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Header} from "@/lib/components/media-list/Header";
+import {Header} from "@/lib/components/media/base/Header";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Pagination} from "@/lib/components/general/Pagination";

@@ -4,7 +4,8 @@ import {Separator} from "@/lib/components/ui/separator";
 import {Cell, LabelList, Pie, PieChart} from "recharts";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {MediaGlobalSummaryType, UserDataType} from "@/routes/_private/profile/$username/_header/index";
+
+import {MediaGlobalSummaryType, UserDataType} from "@/lib/components/types";
 
 
 interface GlobalStatsProps {

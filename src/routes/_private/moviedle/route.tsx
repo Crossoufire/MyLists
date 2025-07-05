@@ -18,7 +18,9 @@ import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-quer
 
 
 export const Route = createFileRoute("/_private/moviedle")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(dailyMediadleOptions()),
+    loader: async ({ context: { queryClient } }) => {
+        return queryClient.ensureQueryData(dailyMediadleOptions())
+    },
     component: MediadlePage,
 });
 
@@ -136,7 +138,9 @@ function MediadlePage() {
                                             <span>Attempts</span>
                                             <span>{mediadleData.attempts}/{mediadleData.maxAttempts}</span>
                                         </div>
-                                        <Progress value={(mediadleData.attempts / mediadleData.maxAttempts) * 100}/>
+                                        <Progress
+                                            value={(mediadleData.attempts / mediadleData.maxAttempts) * 100}
+                                        />
                                     </div>
                                 </div>
                             }
@@ -159,26 +163,26 @@ function MediadlePage() {
                             <StatsCard
                                 icon={Trophy}
                                 label="Total Won"
-                                value={mediadleData?.stats?.totalWon ?? 0}
                                 color="text-amber-600"
+                                value={mediadleData?.stats?.totalWon ?? 0}
                             />
                             <StatsCard
                                 icon={Award}
                                 label="Win Rate"
-                                value={`${mediadleData?.stats?.winRate?.toFixed(1) ?? 0.0}%`}
                                 color="text-green-600"
+                                value={`${mediadleData?.stats?.winRate?.toFixed(1) ?? 0.0}%`}
                             />
                             <StatsCard
                                 icon={Flame}
+                                color="text-red-600"
                                 label="Current Streak"
                                 value={mediadleData?.stats?.currentStreak ?? 0}
-                                color="text-red-600"
                             />
                             <StatsCard
                                 icon={Crown}
                                 label="Best Streak"
-                                value={mediadleData?.stats?.bestStreak ?? 0}
                                 color="text-amber-600"
+                                value={mediadleData?.stats?.bestStreak ?? 0}
                             />
                             <StatsCard
                                 icon={Target}

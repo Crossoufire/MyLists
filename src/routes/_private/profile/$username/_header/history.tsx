@@ -2,21 +2,22 @@ import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
 import {formatDateTime} from "@/lib/utils/functions";
-import {Payload} from "@/lib/components/general/Payload";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {Payload} from "@/lib/components/general/Payload";
+import {SearchType} from "@/lib/server/types/base.types";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {TablePagination} from "@/lib/components/general/TablePagination";
 import {createFileRoute, Link} from "@tanstack/react-router";
+import {TablePagination} from "@/lib/components/general/TablePagination";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
-import {flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
 
 export const Route = createFileRoute("/_private/profile/$username/_header/history")({
-    validateSearch: ({ search }) => search as Record<string, any>,
+    validateSearch: ({ search }) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, params: { username }, deps }) => {
         return queryClient.ensureQueryData(allUpdatesOptions(username, deps.search));
@@ -32,12 +33,12 @@ function AllUpdates() {
     const { username } = Route.useParams();
     const isCurrent = (currentUser?.name === username);
     const [rowSelected, setRowSelected] = useState({});
+    const paginationState = { pageIndex: filters?.page ?? 0, pageSize: 25 };
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
-    const paginationState = { pageIndex: filters?.pageIndex ?? 0, pageSize: filters?.pageSize ?? 25 };
     // const deleteMutation = useDeleteUpdateMutation(queryKeys.allUpdatesKey(username, filters));
 
-    const setFilters = async (filtersData: Record<string, any>) => {
+    const setFilters = async (filtersData: SearchType) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), resetScroll: false });
     };
 
@@ -46,8 +47,9 @@ function AllUpdates() {
         setCurrentSearch("");
     };
 
-    const onPaginationChange = (paginateFunc: any) => {
-        setFilters(paginateFunc(paginationState));
+    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
+        setFilters({ page: newPagination.pageIndex + 1 });
     };
 
     const historyColumns = useMemo(() => [

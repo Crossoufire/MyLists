@@ -6,8 +6,9 @@ import {followersOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_private/profile/$username/_header/followers")({
-    loader: ({ context: { queryClient }, params: { username } }) =>
-        queryClient.ensureQueryData(followersOptions(username)),
+    loader: ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(followersOptions(username))
+    },
     component: ProfileFollowers,
 })
 

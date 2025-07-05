@@ -7,8 +7,7 @@ export const CountdownTimer = () => {
     function calculateTimeLeft() {
         const now = new Date();
         const nextMidnight = new Date().setHours(24, 0, 0, 0);
-        // @ts-expect-error
-        const difference = (nextMidnight - now);
+        const difference = (nextMidnight - now.getTime());
 
         const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((difference / 1000 / 60) % 60);

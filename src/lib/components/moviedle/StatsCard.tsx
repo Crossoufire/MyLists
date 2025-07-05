@@ -4,8 +4,8 @@ import {cn} from "@/lib/utils/helpers";
 interface StatsCardProps {
     color: string;
     label: string;
-    icon: React.FC<any>;
     value: number | string;
+    icon: React.ElementType;
 }
 
 

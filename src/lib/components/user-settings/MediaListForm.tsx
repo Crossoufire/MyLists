@@ -14,7 +14,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
-const mediaTypeToggles: any[] = [
+const mediaTypeToggles = [
     {
         label: "Anime",
         name: MediaType.ANIME,

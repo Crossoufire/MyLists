@@ -5,7 +5,8 @@ import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {UserFollowsType} from "@/routes/_private/profile/$username/_header/index";
+
+import {UserFollowsType} from "@/lib/components/types";
 
 
 interface ProfileFollowsProps {

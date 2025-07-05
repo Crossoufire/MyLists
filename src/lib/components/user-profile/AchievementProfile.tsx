@@ -7,7 +7,8 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {AchievementsType} from "@/routes/_private/profile/$username/_header/index";
+
+import {AchievementsType} from "@/lib/components/types";
 
 
 interface AchievementsProps {

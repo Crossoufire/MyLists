@@ -1,8 +1,8 @@
 import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
-import {UserDataType} from "@/routes/_private/profile/$username/_header/index";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {UserDataType} from "@/lib/components/types";
 
 
 export const ProfileMiscInfo = ({ userData }: { userData: UserDataType }) => {

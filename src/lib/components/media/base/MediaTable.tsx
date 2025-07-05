@@ -6,7 +6,7 @@ import {mediaConfig} from "@/lib/components/media-config";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {ListPagination, UserMediaItem} from "@/lib/components/types";
 import {TablePagination} from "@/lib/components/general/TablePagination";
-import {UserMediaEditDialog} from "@/lib/components/media-list/UserMediaEditDialog";
+import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 

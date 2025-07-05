@@ -69,9 +69,9 @@ const TrendItem = ({ media }: { media: TrendsMedia }) => {
                         search={{ external: true }}
                     >
                         <img
-                            className="rounded-md"
                             src={posterPath}
                             alt={displayName}
+                            className="rounded-md"
                         />
                     </Link>
                 </div>

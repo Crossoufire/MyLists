@@ -3,7 +3,8 @@ import {useAuth} from "@/lib/hooks/use-auth";
 import {CalendarDays, Users} from "lucide-react";
 import {computeLevel, formatDateTime} from "@/lib/utils/functions";
 import {FollowButton} from "@/lib/components/user-profile/FollowButton";
-import {UserDataType} from "@/routes/_private/profile/$username/_header/index";
+
+import {UserDataType} from "@/lib/components/types";
 
 
 interface ProfileHeaderProps {

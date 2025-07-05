@@ -3,7 +3,7 @@ import {UserMediaItem} from "@/lib/components/types";
 import {CircleCheck, Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/general/BlockLink";
-import {QuickAddMedia} from "@/lib/components/media-list/QuickAddMedia";
+import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";
 
 
 export interface ColumnConfigProps {

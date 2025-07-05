@@ -4,7 +4,10 @@ import {Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAx
 
 interface AttemptsGraphProps {
     avgAttempts: number;
-    attemptsData: Record<string, any>[];
+    attemptsData: {
+        attempts: number | null,
+        completionTime: string,
+    }[];
 }
 
 
