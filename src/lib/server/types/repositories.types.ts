@@ -144,8 +144,8 @@ export interface IGamesRepository extends ICommonRepository<Game, GamesList> {
     getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number): any;
 
     // --- Advanced Stats --------------------------------------------------------
-    gameAvgPlaytime(userId?: number): Promise<any>;
-    gamePlaytimeDistrib(userId?: number): Promise<any>;
     specificTopMetrics(userId?: number): Promise<GamesTopMetricStats>;
-    gameModesCount(userId?: number): Promise<any>;
+    gameAvgPlaytime(userId?: number): Promise<number | null | undefined>;
+    gamePlaytimeDistrib(userId?: number): Promise<{ name: number, value: number }[]>;
+    gameModesCount(userId?: number): Promise<{ topValues: { name: string, value: number }[] }>;
 }

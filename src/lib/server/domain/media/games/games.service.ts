@@ -9,11 +9,13 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
-import {MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
+import {GamesAdvancedStats, MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
-export class GamesService extends BaseService<Game, GamesList, GamesAchCodeName, IGamesRepository> implements IGamesService {
+export class GamesService extends BaseService<
+    Game, GamesList, GamesAdvancedStats, GamesAchCodeName, IGamesRepository
+> implements IGamesService {
     readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: GamesRepository) {
@@ -62,15 +64,15 @@ export class GamesService extends BaseService<Game, GamesList, GamesAchCodeName,
             totalLabels,
             genresStats,
             releaseDates,
-            gameModes,
             avgDuration,
             durationDistrib,
+            gameModes,
             developersStats,
             publishersStats,
             platformsStats,
             enginesStats,
             perspectivesStats,
-        };
+        } as GamesAdvancedStats;
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {

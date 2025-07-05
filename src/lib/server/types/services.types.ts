@@ -1,3 +1,4 @@
+import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
@@ -7,21 +8,22 @@ import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {
     AddMediaToUserList,
-    AdvancedMediaStats,
     ComingNext,
     EditUserLabels,
     ExpandedListFilters,
+    GamesAdvancedStats,
     ItemForNotification,
     JobDetails,
     MediaAndUserDetails,
     MediaListArgs,
     MediaListData,
+    MoviesAdvancedStats,
     SearchType,
+    TvAdvancedStats,
     UpdateUserMediaDetails,
     UserMediaStats,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
-import {Label} from "@/lib/components/types";
 
 
 // Level 1 - Universal methods (implemented in BaseService)
@@ -46,9 +48,9 @@ export interface IUniversalService<TMedia, TList> {
 
 
 // Level 2 - Common patterns (implemented in each MediaService)
-export interface ICommonService<TMedia, TList> extends IUniversalService<TMedia, TList> {
+export interface ICommonService<TMedia, TList, TStats> extends IUniversalService<TMedia, TList> {
+    calculateAdvancedMediaStats(userId?: number): Promise<TStats>;
     getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
-    calculateAdvancedMediaStats(userId?: number): Promise<AdvancedMediaStats>;
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
     getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
     updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
@@ -61,18 +63,18 @@ export interface ICommonService<TMedia, TList> extends IUniversalService<TMedia,
 
 
 // Level 3 - Subset-specific methods (only some mediaTypes)
-export interface IMoviesService extends ICommonService<Movie, MoviesList> {
+export interface IMoviesService extends ICommonService<Movie, MoviesList, MoviesAdvancedStats> {
     lockOldMovies(): Promise<number>;
     getComingNext(userId: number): Promise<ComingNext[]>;
 }
 
 
-export interface ITvService extends ICommonService<TvType, TvList> {
+export interface ITvService extends ICommonService<TvType, TvList, TvAdvancedStats> {
     getComingNext(userId: number): Promise<ComingNext[]>;
 }
 
 
-export interface IGamesService extends ICommonService<Game, GamesList> {
+export interface IGamesService extends ICommonService<Game, GamesList, GamesAdvancedStats> {
     getComingNext(userId: number): Promise<ComingNext[]>;
     // updateIGDBToken(): Promise<any>;
 }

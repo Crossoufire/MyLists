@@ -191,23 +191,33 @@ export type AdvancedMediaStats = {
     releaseDates: NameValuePair[],
     durationDistrib: NameValuePair[];
     avgDuration: number | null | undefined;
-
-    // TMDB Specifics
-    actorsStats?: TopMetricStats;
-
-    // Movies Specifics
-    langsStats?: TopMetricStats
-    directorsStats?: TopMetricStats;
-    totalBudget?: number | undefined,
-    totalRevenue?: number | null | undefined;
-
-    // Games Specifics
+}
 
 
-    // TV Specifics
-    networksStats?: TopMetricStats;
-    countriesStats?: TopMetricStats;
-    totalSeasons?: number | null | undefined;
+export type MoviesAdvancedStats = AdvancedMediaStats & {
+    langsStats: TopMetricStats;
+    actorsStats: TopMetricStats;
+    directorsStats: TopMetricStats;
+    totalBudget: number | undefined,
+    totalRevenue: number | null | undefined;
+}
+
+
+export type TvAdvancedStats = AdvancedMediaStats & {
+    actorsStats: TopMetricStats;
+    networksStats: TopMetricStats;
+    countriesStats: TopMetricStats;
+    totalSeasons: number | null | undefined;
+}
+
+
+export type GamesAdvancedStats = AdvancedMediaStats & {
+    enginesStats: TopMetricStats;
+    platformsStats: TopMetricStats;
+    developersStats: TopMetricStats;
+    publishersStats: TopMetricStats;
+    perspectivesStats: TopMetricStats;
+    gameModes: { topValues: { name: string, value: number }[] };
 }
 
 

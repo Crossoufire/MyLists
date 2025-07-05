@@ -3,18 +3,20 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {TvAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
-export class TvService extends BaseService<TvType, TvList, TvAchCodeName, ITvRepository> implements ITvService {
+export class TvService extends BaseService<
+    TvType, TvList, TvAdvancedStats, TvAchCodeName, ITvRepository
+> implements ITvService {
     readonly achievementHandlers: Record<TvAchCodeName, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: TvRepository) {
@@ -69,7 +71,7 @@ export class TvService extends BaseService<TvType, TvList, TvAchCodeName, ITvRep
             networksStats,
             actorsStats,
             countriesStats,
-        };
+        } as TvAdvancedStats;
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {

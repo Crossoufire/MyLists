@@ -6,7 +6,7 @@ import {EditUserLabels, MediaListArgs, SearchType} from "@/lib/server/types/base
 
 
 export abstract class BaseService<
-    TMedia, TList, TCodeName extends string, R extends ICommonRepository<TMedia, TList>
+    TMedia, TList, TStats, TCodeName extends string, R extends ICommonRepository<TMedia, TList>
 > implements IUniversalService<TMedia, TList> {
     protected repository: R;
     protected abstract readonly achievementHandlers: Record<TCodeName, (achievement: Achievement, userId?: number) => any>;

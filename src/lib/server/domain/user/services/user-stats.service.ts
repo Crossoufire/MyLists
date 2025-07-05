@@ -160,7 +160,7 @@ export class UserStatsService {
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesCountPerMonth(mediaType, userId);
         const specificMediaStats = await mediaService.calculateAdvancedMediaStats(userId);
 
-        return { ...userMediaPreComputedStats, ...mediaUpdatesPerMonthStats, ...specificMediaStats };
+        return { ...userMediaPreComputedStats, ...mediaUpdatesPerMonthStats, specificMediaStats };
     }
 
     async userMediaPreComputedStats(userId: number, mediaType: MediaType) {
