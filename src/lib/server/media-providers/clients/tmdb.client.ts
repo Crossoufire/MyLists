@@ -1,5 +1,6 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {connectRedis} from "@/lib/server/core/redis-client";
+import {SearchData} from "@/lib/server/types/provider.types";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 
@@ -21,10 +22,14 @@ export class TmdbClient extends BaseClient {
         return new TmdbClient(tmdbLimiter, TmdbClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1) {
+    async search(query: string, page: number = 1): Promise<SearchData> {
         const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
         const response = await this.call(url);
-        return response.json() as Record<string, any>;
+        return {
+            page,
+            rawData: await response.json(),
+            resultsPerPage: this.resultsPerPage,
+        };
     }
 
     async getMovieDetails(movieId: number) {

@@ -37,7 +37,7 @@ export class BaseRepository<
     }
 
     private baseListFiltersDefs = () => {
-        const { listTable, mediaTable, genreTable } = this.config;
+        const { listTable, mediaTable, labelTable, genreTable } = this.config;
 
         return {
             search: {
@@ -66,6 +66,12 @@ export class BaseRepository<
                     return notInArray(listTable.mediaId, subQuery);
                 },
             },
+            labels: createListFilterDef({
+                argName: "labels",
+                mediaTable: mediaTable,
+                entityTable: labelTable,
+                filterColumn: labelTable.name,
+            }),
             genres: createListFilterDef({
                 argName: "genres",
                 mediaTable: mediaTable,
@@ -345,7 +351,7 @@ export class BaseRepository<
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
-        const { listTable, mediaTable, mediaList } = this.config;
+        const { listTable, mediaTable, labelTable, mediaList } = this.config;
 
         const page = args.page ?? 1;
         const perPage = args.perPage ?? DEFAULT_PER_PAGE;
@@ -360,13 +366,20 @@ export class BaseRepository<
             ...mediaList.filterDefinitions,
         };
 
-        // TODO: Add labels
-
         // Main query builder
         let queryBuilder = getDbClient()
             .select({
                 ...mediaList.baseSelection,
                 ratingSystem: user.ratingSystem,
+                labels: sql` COALESCE((
+                    SELECT json_group_array(DISTINCT json_object(
+                        'id', l.id, 
+                        'name', l.name
+                    ))
+                    FROM ${labelTable} l
+                    WHERE l.media_id = ${listTable.mediaId} AND l.user_id = ${listTable.userId}
+                    ), json_array()
+                )`.mapWith(JSON.parse),
             })
             .from(listTable)
             .innerJoin(user, eq(listTable.userId, user.id))

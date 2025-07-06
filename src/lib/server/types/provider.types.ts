@@ -13,11 +13,25 @@ export interface ITrendsProviderService extends IProviderService {
 }
 
 
+export type SearchData = {
+    page: number;
+    rawData: any;
+    resultsPerPage: number;
+}
+
+
 export interface ProviderSearchResults {
+    hasNextPage: boolean,
+    data: ProviderSearchResult[],
+
+}
+
+
+export type ProviderSearchResult = {
+    name: string
+    image: string
     id: number | string
-    date: string | undefined | null
-    name: string | undefined | null
-    image: string | undefined | null
+    date: string | null
     itemType: MediaType | ApiProviderType
 }
 

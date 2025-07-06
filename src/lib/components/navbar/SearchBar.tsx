@@ -3,7 +3,7 @@ import {useAuth} from "@/lib/hooks/use-auth";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
-import {LoaderCircle, Search} from "lucide-react";
+import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
@@ -24,7 +24,7 @@ export const SearchBar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const debouncedSearch = useDebounce(search, 350);
     const [selectDrop, setSelectDrop] = useState(currentUser?.searchSelector || ApiProviderType.TMDB);
-    const { data, isLoading, error }: any = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
+    const { data: searchResults, isLoading, error } = useQuery(navSearchOptions(debouncedSearch, page, selectDrop));
 
     useEffect(() => {
         setSelectDrop(currentUser?.searchSelector || ApiProviderType.TMDB);
@@ -90,42 +90,43 @@ export const SearchBar = () => {
                                     <LoaderCircle className="h-6 w-6 animate-spin"/>
                                 </div>
                             }
-                            {error && (
-                                error.status === 429 ?
-                                    <CommandEmpty>Too many requests. Please wait a bit and try again.</CommandEmpty>
+                            {error ?
+                                //@ts-expect-error
+                                error?.status === 429 ?
+                                    <CommandEmpty>Too many requests. Please wait and try again.</CommandEmpty>
                                     :
                                     <CommandEmpty>An error occurred. Please try again.</CommandEmpty>
-                            )}
-                            {data && data.length === 0 &&
+                                : null
+                            }
+                            {searchResults && searchResults.data.length === 0 &&
                                 <CommandEmpty>No results found.</CommandEmpty>
                             }
-                            {data && data.length > 0 &&
-                                data.map((item: any) =>
+                            {searchResults && searchResults.data.length > 0 &&
+                                searchResults.data.map((item) =>
                                     <SearchComponent
                                         item={item}
                                         resetSearch={resetSearch}
                                     />
                                 )}
                         </CommandList>
-                        {data && data?.pages > 1 &&
-                            <div className="flex justify-between items-center p-4">
-                                <Button size="sm" variant="outline" disabled={page === 1}
-                                        onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                                    Previous
-                                </Button>
-                                <span className="text-sm text-muted-foreground">
-                                    Page {page} of {data.pages}
-                                </span>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={page === data.pages}
-                                    onClick={() => setPage((p) => Math.min(data.pages, p + 1))}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        }
+                        <div className="flex justify-end gap-2 items-center p-4">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={page === 1}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            >
+                                <ChevronLeft/>
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setPage(page + 1)}
+                                disabled={searchResults?.hasNextPage ? !searchResults.hasNextPage : true}
+                            >
+                                <ChevronRight/>
+                            </Button>
+                        </div>
                     </Command>
                 </div>
             }
@@ -135,15 +136,16 @@ export const SearchBar = () => {
 
 
 interface SearchComponentProps {
-    item: any;
     resetSearch: () => void;
+    item: NonNullable<Awaited<ReturnType<NonNullable<ReturnType<typeof navSearchOptions>["queryFn"]>>>>["data"][0];
 }
 
 
 const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
     const { setSheetOpen } = useSheet();
-    const imageHeight = item.itemType === ApiProviderType.USERS ? 64 : 96;
-    const url = item.itemType === ApiProviderType.USERS ? `/profile/${item.name}` : `/details/${item.itemType}/${item.id}?external=True`;
+    const imageHeight = (item.itemType === ApiProviderType.USERS) ? 64 : 96;
+    const url = (item.itemType === ApiProviderType.USERS) ?
+        `/profile/${item.name}` : `/details/${item.itemType}/${item.id}?external=True`;
 
     const handleLinkClick = () => {
         resetSearch();
@@ -152,7 +154,7 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
 
     return (
         <Link to={url} onClick={handleLinkClick}>
-            <CommandItem key={item.apiId} className="cursor-pointer py-2">
+            <CommandItem key={item.id} className="cursor-pointer py-2">
                 <div className="flex gap-4 items-center">
                     <img
                         alt={item.name}

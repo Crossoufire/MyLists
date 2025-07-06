@@ -153,6 +153,7 @@ export type MediaListData<TList> = {
         mediaName: string;
         imageCover: string;
         ratingSystem: RatingSystemType;
+        labels: { id: number, name: string }[];
     })[];
     pagination: {
         page: number;

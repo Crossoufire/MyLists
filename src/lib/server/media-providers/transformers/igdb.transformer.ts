@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {games} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {ProviderSearchResults} from "@/lib/server/types/provider.types";
+import {ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
 import {GameEntry} from "@/lib/server/media-providers/clients/hltb.client";
 
@@ -13,19 +13,21 @@ export class IgdbTransformer {
     private readonly maxGenres = gamesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/";
 
-    transformSearchResults(rawData: Record<string, any>[]) {
-        const results = rawData ?? [];
-        const transformedResults = results.map((item: any) => {
+    transformSearchResults(searchData: SearchData) {
+        const results = searchData.rawData?.[1]?.result ?? [];
+        const hasNextPage = (searchData.rawData?.[0]?.count ?? 0) > (searchData.page * searchData.resultsPerPage);
+
+        const transformedResults = results.map((item: any): ProviderSearchResult => {
             return {
                 id: item.id,
                 name: item?.name,
                 itemType: MediaType.GAMES,
                 date: item?.first_release_date,
                 image: item?.cover?.image_id ? `${this.imageBaseUrl}${item?.cover?.image_id}.jpg` : "default.jpg",
-            } as ProviderSearchResults;
+            };
         });
 
-        return transformedResults as ProviderSearchResults[];
+        return { data: transformedResults, hasNextPage } as ProviderSearchResults;
     }
 
     async transformGamesDetailsResults(rawData: Record<string, any>) {

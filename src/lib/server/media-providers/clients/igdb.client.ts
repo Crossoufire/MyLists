@@ -1,6 +1,7 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
+import {SearchData} from "../../types/provider.types";
 
 
 export class IgdbClient extends BaseClient {
@@ -9,6 +10,7 @@ export class IgdbClient extends BaseClient {
     private readonly secretId = process.env.SECRET_IGDB!;
     private readonly clientId = process.env.CLIENT_IGDB!;
     private readonly baseUrl = "https://api.igdb.com/v4/games";
+    private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "igdbAPI" };
     private readonly headers = {
         "Client-ID": this.clientId,
@@ -26,13 +28,27 @@ export class IgdbClient extends BaseClient {
         return new IgdbClient(igdbLimiter, IgdbClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1) {
-        const data = (
-            "fields id, name, cover.image_id, first_release_date; limit 10; " +
-            `offset ${(page - 1) * this.resultsPerPage}; search "${query}";`
-        )
-        const response = await this.call(this.baseUrl, "post", { headers: this.headers, body: data })
-        return response.json();
+    async search(query: string, page: number = 1): Promise<SearchData> {
+        const offset = (page - 1) * this.resultsPerPage;
+
+        const data = `
+            query games/count "totalResults" {
+                where name ~ *"${query}"*;
+            };
+            query games "results" {
+                fields id, name, cover.image_id, first_release_date;
+                limit ${this.resultsPerPage};
+                offset ${offset};
+                where name ~ *"${query}"*;
+            };
+        `;
+
+        const response = await this.call(this.searchUrl, "post", { headers: this.headers, body: data });
+        return {
+            page,
+            rawData: await response.json(),
+            resultsPerPage: this.resultsPerPage,
+        }
     }
 
     async getGameDetails(apiId: number) {

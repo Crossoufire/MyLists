@@ -78,8 +78,6 @@
     - Update platform stats
     - Run all scheduled tasks
 
-- TODO: Add page results to search
-- TODO: Add Labels to be returned in media lists
 - TODO: Abstract JobType (if/else) with "strategy pattern" (see Gemini 2.5 pro on Google for details)
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
 - TODO: Remove countries in Anime in SideFilterSheet

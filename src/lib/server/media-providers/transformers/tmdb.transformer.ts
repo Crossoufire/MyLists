@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {ProviderSearchResults, TrendsMedia} from "@/lib/server/types/provider.types";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
+import {ProviderSearchResult, ProviderSearchResults, SearchData, TrendsMedia} from "@/lib/server/types/provider.types";
 
 
 type Options = {
@@ -19,8 +19,10 @@ export class TmdbTransformer {
     private readonly maxGenres = moviesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
 
-    transformSearchResults(rawData: Record<string, any>) {
-        const results = rawData?.results ?? [];
+    transformSearchResults(searchData: SearchData) {
+        const results = searchData?.rawData?.results ?? [];
+        const hasNextPage = searchData?.rawData?.total_pages > searchData.page;
+
         const filteredResults = results.filter((item: any) =>
             !item.known_for_department && (item.media_type === "tv" || item.media_type === "movie")
         );
@@ -35,10 +37,10 @@ export class TmdbTransformer {
             if (item.media_type === "tv") details = this.processSearchTv(item);
             if (item.media_type === "movie") details = this.processSearchMovie(item);
 
-            return { ...baseInfo, ...details } as ProviderSearchResults;
+            return { ...baseInfo, ...details } as ProviderSearchResult;
         });
 
-        return transformedResults as ProviderSearchResults[];
+        return { data: transformedResults, hasNextPage } as ProviderSearchResults;
     }
 
     processCreatedBy(rawData: Record<string, any>) {
@@ -77,7 +79,7 @@ export class TmdbTransformer {
             itemType = MediaType.ANIME;
         }
 
-        return { name, date, itemType } as ProviderSearchResults;
+        return { name, date, itemType };
     }
 
     private processSearchMovie(item: Record<string, any>) {
@@ -85,7 +87,7 @@ export class TmdbTransformer {
         const itemType = MediaType.MOVIES;
         const name = item.original_title || item.title;
 
-        return { name, date, itemType } as ProviderSearchResults;
+        return { name, date, itemType };
     }
 
     async transformMoviesDetailsResults(rawData: Record<string, any>) {

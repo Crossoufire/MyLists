@@ -18,18 +18,6 @@ export class JikanClient extends BaseClient {
         return new JikanClient(tmdbLimiter, JikanClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1) {
-        const url = `${this.mangaUrl}?q=${query}&page=${page}`;
-        const response = await this.call(url);
-        return response.json() as Record<string, any>;
-    }
-
-    async getMangaDetails(mangaId: number) {
-        const url = `${this.mangaUrl}/${mangaId}/full`;
-        const response = await this.call(url);
-        return response.json();
-    }
-
     async getAnimeGenresAndDemographics(animeName: string) {
         const url = `${this.animeUrl}?q=${animeName}`;
         const response = await this.call(url);

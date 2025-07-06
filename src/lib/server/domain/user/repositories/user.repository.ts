@@ -1,7 +1,7 @@
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
-import {ProviderSearchResults} from "@/lib/server/types/provider.types";
+import {ProviderSearchResult, ProviderSearchResults} from "@/lib/server/types/provider.types";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
@@ -345,7 +345,15 @@ export class UserRepository {
         return { total: total, follows: followedUsers };
     }
 
-    static async searchUsers(query: string, page: number = 1) {
+    static async searchUsers(query: string, page: number = 1): Promise<ProviderSearchResults> {
+        const countUsers = await getDbClient()
+            .select({ count: count() })
+            .from(user)
+            .where(like(user.name, `%${query}%`))
+            .get()
+
+        const hasNextPage = (countUsers?.count ?? 0) > page * 20;
+
         const dbUsers = await getDbClient()
             .select({
                 id: user.id,
@@ -359,7 +367,8 @@ export class UserRepository {
             .limit(20)
             .offset((page - 1) * 20);
 
-        return dbUsers.map((user) =>
-            ({ ...user, itemType: ApiProviderType.USERS })) as ProviderSearchResults[]
+        const users = dbUsers.map((user) => ({ ...user, itemType: ApiProviderType.USERS }) as ProviderSearchResult);
+
+        return { data: users, hasNextPage };
     }
 }
