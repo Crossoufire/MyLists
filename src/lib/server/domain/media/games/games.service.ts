@@ -72,7 +72,7 @@ export class GamesService extends BaseService<
             platformsStats,
             enginesStats,
             perspectivesStats,
-        } as GamesAdvancedStats;
+        };
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
@@ -105,8 +105,6 @@ export class GamesService extends BaseService<
     }
 
     async getMediaEditableFields(mediaId: number) {
-        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
-
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
@@ -125,8 +123,6 @@ export class GamesService extends BaseService<
     }
 
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
-
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 

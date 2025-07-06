@@ -71,7 +71,7 @@ export class TvService extends BaseService<
             networksStats,
             actorsStats,
             countriesStats,
-        } as TvAdvancedStats;
+        };
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {

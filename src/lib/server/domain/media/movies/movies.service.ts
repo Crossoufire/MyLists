@@ -68,7 +68,7 @@ export class MoviesService extends BaseService<
             directorsStats,
             actorsStats,
             langsStats,
-        } as MoviesAdvancedStats;
+        };
     }
 
     async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
