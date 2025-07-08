@@ -17,7 +17,6 @@ export const HofCard = ({ userData }: HofCardProps) => {
     const { currentUser } = useAuth();
 
     return (
-        //@ts-expect-error
         <Card key={userData.name} className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-teal-950")}>
             <CardContent className="p-0">
                 <div className="grid grid-cols-12 py-4">

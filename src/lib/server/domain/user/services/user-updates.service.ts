@@ -3,6 +3,7 @@ import {userMediaUpdate} from "@/lib/server/database/schema";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 
 
 interface LogUpdateParams {
@@ -42,7 +43,7 @@ export class UserUpdatesService {
         return this.repository.deleteMediaUpdates(mediaType, mediaIds);
     }
 
-    async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
+    async getUserUpdatesPaginated(userId: number, filters: AllUpdatesSearch) {
         return this.repository.getUserUpdatesPaginated(userId, filters)
     }
 

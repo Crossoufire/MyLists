@@ -20,7 +20,6 @@ export const getNotifications = createServerFn({ method: "GET" })
 
 export const getNotificationsCount = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => data as { query: string })
     .handler(async ({ context: { currentUser } }) => {
         const container = await getContainer();
         const notificationsService = container.services.notifications;

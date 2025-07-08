@@ -4,9 +4,9 @@ import {Badge} from "@/lib/components/ui/badge";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {useEffect, useRef, useState} from "react";
-import {MediaType} from "@/lib/server/utils/enums";
 import {Label, ToastType} from "@/lib/components/types";
 import {MutedText} from "@/lib/components/general/MutedText";
+import {LabelAction, MediaType} from "@/lib/server/utils/enums";
 import {userMediaLabelsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditUserLabelMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
@@ -53,7 +53,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
             return showToast("This label name already exists", "error");
         }
 
-        editUserLabelMutation.mutate({ label: { name: labelName }, action: "add" }, {
+        editUserLabelMutation.mutate({ label: { name: labelName }, action: LabelAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: async (data: Label) => updateUserMediaLabels([...mediaLabels, data]),
             onSettled: () => setInputAddNewLabel(""),
@@ -61,7 +61,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
     };
 
     const removeFromMedia = (label: Label) => {
-        editUserLabelMutation.mutate({ label, action: "deleteOne" }, {
+        editUserLabelMutation.mutate({ label, action: LabelAction.DELETE_ONE }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => updateUserMediaLabels(mediaLabels.filter(l => l.name !== label.name)),
         });
@@ -80,7 +80,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
 
         const newLabel = { name: editedNewLabelName };
 
-        editUserLabelMutation.mutate({ label: { oldName: oldLabel.name, name: editedNewLabelName }, action: "rename" }, {
+        editUserLabelMutation.mutate({ label: { oldName: oldLabel.name, name: editedNewLabelName }, action: LabelAction.RENAME }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 if (mediaLabels.map(l => l.name).includes(oldLabel.name)) {
@@ -97,7 +97,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
 
     const addLabelToMedia = (label: Label) => {
         if (mediaLabels.map(l => l.name).includes(label.name)) return;
-        editUserLabelMutation.mutate({ label, action: "add" }, {
+        editUserLabelMutation.mutate({ label, action: LabelAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => updateUserMediaLabels([...mediaLabels, label]),
         });
@@ -112,7 +112,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
     const deleteLabelTotally = (label: Label) => {
         if (!window.confirm("Do you really want to delete this label?")) return;
 
-        editUserLabelMutation.mutate({ label, action: "deleteAll" }, {
+        editUserLabelMutation.mutate({ label, action: LabelAction.DELETE_ALL }, {
             onError: () => showToast("An unexpected error occurred", "error"),
             onSuccess: () => {
                 showToast("Label successfully deleted", "success");

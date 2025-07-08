@@ -135,7 +135,7 @@ export class UserRepository {
             .select()
             .from(user)
             .where(eq(user.name, name))
-            .execute();
+            .get();
     }
 
     static async updateUserSettings(userId: number, payload: Record<string, any>) {
@@ -143,7 +143,6 @@ export class UserRepository {
             .update(user)
             .set(payload)
             .where(eq(user.id, userId))
-            .execute();
     }
 
     static async getAdminPaginatedUsers(data: AdminPaginatedUsers) {

@@ -5,6 +5,26 @@ import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
 
 
+export const StatusUtils = {
+    getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
+    byMediaType: (mediaType: MediaType) => {
+        switch (mediaType) {
+            case MediaType.SERIES:
+            case MediaType.ANIME:
+                return [Status.WATCHING, Status.COMPLETED, Status.ON_HOLD, Status.RANDOM, Status.DROPPED, Status.PLAN_TO_WATCH];
+            case MediaType.MOVIES:
+                return [Status.COMPLETED, Status.PLAN_TO_WATCH];
+            case MediaType.GAMES:
+                return [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.DROPPED, Status.PLAN_TO_PLAY];
+            case MediaType.BOOKS:
+                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
+            case MediaType.MANGA:
+                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
+        }
+    },
+};
+
+
 export const getTextColor = (backColor: string) => {
     const hex = backColor.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);

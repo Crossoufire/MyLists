@@ -2,13 +2,13 @@ import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Link, useParams} from "@tanstack/react-router";
+import {UserUpdatesType} from "@/lib/components/types";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {UserUpdate} from "@/lib/components/general/UserUpdate";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {UserUpdatesType} from "@/lib/components/types";
 
 
 interface UserUpdatesProps {
@@ -63,7 +63,6 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                             username={followers && update?.username}
                             mediaIdBeingDeleted={mediaIdBeingDeleted}
                             isPending={deleteUpdatesMutation.isPending}
-                            //@ts-expect-error
                             canDelete={(currentUser?.id === update.userId) && !followers}
                         />
                     )

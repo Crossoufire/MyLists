@@ -1,36 +1,10 @@
+import * as z from "zod/v4";
 import {Column, SQL} from "drizzle-orm";
-import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaTable} from "@/lib/server/types/media-lists.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
-import {GamesPlatformsEnum, MediaType, NotificationType, RatingSystemType, Status} from "@/lib/server/utils/enums";
-
-
-export interface MediaListArgs {
-    page?: number;
-    perPage?: number;
-    search?: string;
-    sort?: string,
-    status?: Status[];
-    genres?: string[];
-    labels?: string[];
-    langs?: string[];
-    favorite?: boolean;
-    comment?: boolean;
-    hideCommon?: boolean;
-    sorting?: string;
-    directors?: string[];
-    platforms?: GamesPlatformsEnum[];
-    publishers?: string[];
-    actors?: string[];
-    authors?: string[];
-    companies?: string[];
-    networks?: string[];
-    creators?: string[];
-    currentUserId?: number;
-    userId?: number;
-}
+import {ApiProviderType, GamesPlatformsEnum, JobType, LabelAction, MediaType, NotificationType, PrivacyType, RatingSystemType, Status, UpdateType} from "@/lib/server/utils/enums";
 
 
 export type ComingNext = {
@@ -166,14 +140,6 @@ export type MediaListData<TList> = {
 }
 
 
-export type EditUserLabels = {
-    label: Label;
-    userId: number;
-    mediaId: number;
-    action: "add" | "rename" | "deleteOne" | "deleteAll";
-}
-
-
 export type ConfigTopMetric = {
     limit?: number,
     minRatingCount?: number,
@@ -270,15 +236,216 @@ export type FilterDefinition = {
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
 
-export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
-export type EpsPerSeasonType = { season: number, episodes: number }[];
 type NameValuePair = { name: string | number, value: number };
-export type HofSorting = "normalized" | "profile" | MediaType;
-export type SearchTypeHoF = SearchType & Omit<SearchType, "sorting"> & { sorting?: HofSorting };
+export type EpsPerSeasonType = { season: number, episodes: number }[];
 
-export type SearchType = {
-    page?: number;
-    search?: string;
-    sorting?: string;
-    perPage?: number;
-}
+export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
+
+export type SearchType = z.infer<typeof searchTypeSchema>;
+export type HofSorting = z.infer<typeof hofSortingSchema>;
+export type SearchTypeHoF = z.infer<typeof searchTypeHoFSchema>;
+export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
+export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
+export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
+// --- ZOD Schema -----------------------------------------------------------------------------------------------
+
+export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)] as const).optional().catch("normalized");
+
+export const searchTypeSchema = z.object({
+    search: z.string().optional().catch(undefined),
+    sorting: z.string().optional().catch(undefined),
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+});
+
+export const searchTypeHoFSchema = searchTypeSchema.extend({
+    sorting: hofSortingSchema,
+});
+
+export const mediaDetailsSchema = z.object({
+    external: z.boolean(),
+    mediaId: z.coerce.string(),
+    mediaType: z.enum(MediaType),
+});
+
+export const refreshMediaDetailsSchema = z.object({
+    apiId: z.coerce.string(),
+    mediaType: z.enum(MediaType),
+});
+
+export const mediaDetailsToEditSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const editMediaDetailsSchema = z.object({
+    mediaType: z.enum(MediaType),
+    payload: z.record(z.any(), z.any()),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const jobDetailsSchema = z.object({
+    name: z.string(),
+    job: z.enum(JobType),
+    search: searchTypeSchema,
+    mediaType: z.enum(MediaType),
+});
+
+export const mediaListArgsSchema = z.object({
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+    search: z.string().optional().catch(undefined),
+    sort: z.string().optional().catch(undefined),
+    sorting: z.string().optional().catch(undefined),
+    currentUserId: z.coerce.number().int().optional().catch(undefined),
+    userId: z.coerce.number().int().optional().catch(undefined),
+    favorite: z.coerce.boolean().optional().catch(undefined),
+    comment: z.coerce.boolean().optional().catch(undefined),
+    hideCommon: z.coerce.boolean().optional().catch(undefined),
+    status: z.array(z.enum(Status)).optional().catch(undefined),
+    genres: z.array(z.string()).optional().catch(undefined),
+    labels: z.array(z.string()).optional().catch(undefined),
+    langs: z.array(z.string()).optional().catch(undefined),
+    directors: z.array(z.string()).optional().catch(undefined),
+    publishers: z.array(z.string()).optional().catch(undefined),
+    actors: z.array(z.string()).optional().catch(undefined),
+    authors: z.array(z.string()).optional().catch(undefined),
+    companies: z.array(z.string()).optional().catch(undefined),
+    networks: z.array(z.string()).optional().catch(undefined),
+    creators: z.array(z.string()).optional().catch(undefined),
+    platforms: z.array(z.enum(GamesPlatformsEnum)).optional().catch(undefined),
+})
+
+export const mediaListSchema = z.object({
+    mediaType: z.enum(MediaType),
+    args: mediaListArgsSchema,
+});
+
+export const mediaListFiltersSchema = z.object({
+    mediaType: z.enum(MediaType),
+});
+
+export const mediaListSearchFiltersSchema = z.object({
+    job: z.enum(JobType),
+    mediaType: z.enum(MediaType),
+    query: z.string().min(1),
+});
+
+export const mediadleSuggestionsSchema = z.object({
+    query: z.string(),
+});
+
+export const addMediadleGuessSchema = z.object({
+    guess: z.string(),
+});
+
+export const plaftformStatsSchema = z.object({
+    mediaType: z.enum(MediaType).optional().catch(undefined),
+});
+
+export const navbarSearchSchema = z.object({
+    query: z.string(),
+    apiProvider: z.enum(ApiProviderType),
+    page: z.coerce.number().int().positive(),
+});
+
+export const labelSchema = z.object({
+    name: z.string(),
+    oldName: z.string().optional(),
+});
+
+export const mediaActionSchema = z.object({
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const addMediaToListSchema = z.object({
+    mediaType: z.enum(MediaType),
+    status: z.enum(Status).optional(),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const updateUserMediaSchema = z.object({
+    mediaType: z.enum(MediaType),
+    payload: z.record(z.any(), z.any()),
+    mediaId: z.coerce.number().int().positive(),
+}).transform((data) => {
+    let updateType: UpdateType | undefined = undefined;
+    if (data.payload?.status) {
+        updateType = UpdateType.STATUS;
+    }
+    else if (data.payload?.redo) {
+        updateType = UpdateType.REDO;
+    }
+    else if (data.payload?.redo2) {
+        updateType = UpdateType.REDOTV;
+    }
+    else if (data.payload?.currentSeason || data.payload?.lastEpisodeWatched) {
+        updateType = UpdateType.TV;
+    }
+    else if (data.payload?.playtime) {
+        updateType = UpdateType.PLAYTIME;
+    }
+    return { ...data, updateType };
+});
+
+export const deleteUserUpdatesSchema = z.object({
+    returnData: z.coerce.boolean(),
+    updateIds: z.array(z.number().int().positive()),
+});
+
+export const userMediaLabelsSchema = z.object({
+    mediaType: z.enum(MediaType),
+});
+
+export const editUserLabelSchema = z.object({
+    label: labelSchema,
+    action: z.enum(LabelAction),
+    mediaType: z.enum(MediaType),
+    mediaId: z.coerce.number().int().positive(),
+});
+
+export const baseUsernameSchema = z.looseObject({
+    username: z.string(),
+});
+
+export const allUpdatesHistorySchema = searchTypeSchema.extend({
+    username: z.string(),
+});
+
+export const updateFollowStatusSchema = z.object({
+    followStatus: z.boolean(),
+    followId: z.coerce.number().int(),
+});
+
+export const generalSettingsSchema = z.object({
+    profileImage: z.instanceof(File).optional(),
+    backgroundImage: z.instanceof(File).optional(),
+    privacy: z.enum(Object.values(PrivacyType) as [PrivacyType, ...PrivacyType[]]),
+    username: z.string().trim()
+        .min(3, "Username too short (3 min)")
+        .max(15, "Username too long (15 max)"),
+});
+
+export const mediaListSettingsSchema = z.object({
+    anime: z.boolean(),
+    games: z.boolean(),
+    manga: z.boolean(),
+    books: z.boolean(),
+    gridListView: z.boolean(),
+    searchSelector: z.enum(Object.values(ApiProviderType) as [ApiProviderType, ...ApiProviderType[]]),
+    ratingSystem: z.enum(Object.values(RatingSystemType) as [RatingSystemType, ...RatingSystemType[]]),
+});
+
+export const passwordSettingsSchema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string().min(8, "Password too short (8 min)").max(50, "Password too long (50 max)"),
+});
+
+export const downloadListAsCsvSchema = z.object({
+    selectedList: z.enum(MediaType),
+});
+
+export const getUserStatsSchema = z.object({
+    mediaType: z.enum(MediaType).optional().catch(undefined),
+})

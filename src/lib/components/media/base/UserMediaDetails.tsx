@@ -69,7 +69,6 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                             queryKey={queryKey}
                             mediaType={mediaType}
                             mediaId={userMedia.mediaId}
-                            //@ts-expect-error
                             mediaLabels={userMedia?.labels ?? []}
                         />
                     </div>

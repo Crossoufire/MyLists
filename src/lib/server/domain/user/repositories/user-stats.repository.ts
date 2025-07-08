@@ -20,16 +20,15 @@ export class UserStatsRepository {
             .execute();
     }
 
-    static async updateUserMediaListSettings(userId: number, payload: Record<MediaType, boolean>) {
+    static async updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
         const updateCases = Object.entries(payload).map(([mediaType, active]) => {
-            return sql`${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
+            return sql`WHEN ${userMediaSettings.mediaType} = ${mediaType} THEN ${active}`;
         });
 
         await getDbClient()
             .update(userMediaSettings)
-            .set({ active: sql`CASE ${sql.join(updateCases, sql` WHEN `)} END` })
+            .set({ active: sql`CASE ${sql.join(updateCases, sql` `)} ELSE ${userMediaSettings.active} END` })
             .where(eq(userMediaSettings.userId, userId))
-            .execute();
     }
 
     static async updateUserPreComputedStatsWithDelta(userId: number, mediaType: MediaType, delta: DeltaStats) {

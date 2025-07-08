@@ -17,6 +17,7 @@ import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
+import {StatusUtils} from "@/lib/utils/functions";
 
 
 interface FiltersSideSheetProps {
@@ -32,7 +33,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
     let localFilters: Partial<MediaListArgs> = {};
-    const allStatuses = Status.byMediaType(mediaType);
+    const allStatuses = StatusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
@@ -73,7 +74,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
     return (
         <Sheet defaultOpen={true} onOpenChange={onClose}>
-            <SheetContent className="max-sm:w-full" side="right">
+            <SheetContent className="max-sm:w-full overflow-y-auto" side="right">
                 <SheetHeader>
                     <SheetTitle className="-mb-2">Additional Filters</SheetTitle>
                     <SheetDescription className="flex items-center gap-1">

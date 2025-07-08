@@ -1,9 +1,11 @@
 import {toast} from "sonner";
 import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
+import {useEffect, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
+import {PrivacyType} from "@/lib/server/utils/enums";
 import {ImageCropper} from "@/lib/components/user-settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useGeneralSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
@@ -11,24 +13,43 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
 
+type FormValues = {
+    username: string;
+    profileImage?: File;
+    privacy: PrivacyType;
+    backgroundImage?: File;
+};
+
+
 export const GeneralForm = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const generalSettingsMutation = useGeneralSettingsMutation();
-    const form = useForm({
+    const [imageCropperKey, setImageCropperKey] = useState(Date.now());
+    const form = useForm<FormValues>({
         defaultValues: {
-            username: currentUser?.name,
-            privacy: currentUser?.privacy,
-            profileImage: undefined as File | undefined,
-            backgroundImage: undefined as File | undefined,
+            profileImage: undefined,
+            backgroundImage: undefined,
+            username: currentUser?.name ?? "",
+            privacy: currentUser?.privacy ?? PrivacyType.RESTRICTED,
         },
     });
 
-    const onSubmit = async (submittedData: any) => {
+    useEffect(() => {
+        if (currentUser) {
+            form.reset({
+                username: currentUser.name,
+                privacy: currentUser.privacy as PrivacyType,
+            });
+        }
+    }, [currentUser, form]);
+
+    const onSubmit = async (submittedData: FormValues) => {
         const formData = new FormData();
 
-        Object.keys(submittedData).forEach((key) => {
-            if (submittedData[key] === undefined) return;
-            formData.append(key, submittedData[key]);
+        Object.entries(submittedData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value);
+            }
         });
 
         generalSettingsMutation.mutate({ data: formData }, {
@@ -48,19 +69,16 @@ export const GeneralForm = () => {
             },
             onSuccess: async () => {
                 await setCurrentUser();
-                form.reset({
-                    profileImage: undefined,
-                    backgroundImage: undefined,
-                    username: currentUser?.name,
-                    privacy: currentUser?.privacy,
-                });
+                setImageCropperKey(Date.now());
+                form.resetField("profileImage");
+                form.resetField("backgroundImage");
                 toast.success("Settings successfully updated");
             },
         });
     };
 
     return (
-        <Form {...form} key={currentUser?.id}>
+        <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full">
                 <div className="space-y-5">
                     <FormField
@@ -99,9 +117,9 @@ export const GeneralForm = () => {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="public">Public</SelectItem>
-                                        <SelectItem value="restricted">Restricted</SelectItem>
-                                        <SelectItem value="private" disabled>Private</SelectItem>
+                                        <SelectItem value={PrivacyType.PUBLIC}>Public</SelectItem>
+                                        <SelectItem value={PrivacyType.RESTRICTED}>Restricted</SelectItem>
+                                        <SelectItem value={PrivacyType.PRIVATE} disabled>Private</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage/>
@@ -119,6 +137,7 @@ export const GeneralForm = () => {
                                         aspect={1}
                                         cropShape={"round"}
                                         fileName={field.name}
+                                        key={imageCropperKey}
                                         onCropApplied={field.onChange}
                                         resultClassName="h-[150px] rounded-full"
                                     />
@@ -138,6 +157,7 @@ export const GeneralForm = () => {
                                         cropShape={"rect"}
                                         aspect={1304 / 288}
                                         fileName={field.name}
+                                        key={imageCropperKey + 1}
                                         onCropApplied={field.onChange}
                                         resultClassName={"h-[100px] object-contain"}
                                     />
@@ -169,7 +189,7 @@ const PrivacyPopover = () => {
             </PopoverTrigger>
             <PopoverContent className="p-5 w-80">
                 <div className="mb-3 text-sm font-medium text-muted-foreground">
-                    Determine who can see your profile, lists, stats, and media updates.
+                    Determine who can see your profile, lists, stats, media updates, etc...
                 </div>
                 <ul className="text-sm list-disc space-y-3 pl-4">
                     <li>

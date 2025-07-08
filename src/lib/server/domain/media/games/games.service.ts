@@ -87,7 +87,7 @@ export class GamesService extends BaseService<
 
         if (internalMediaId) {
             const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw new Error("Game not found");
+            if (!mediaWithDetails) throw notFound();
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
@@ -101,7 +101,7 @@ export class GamesService extends BaseService<
             } as MediaAndUserDetails<Game, GamesList>;
         }
 
-        throw new Error("Game not found");
+        throw notFound();
     }
 
     async getMediaEditableFields(mediaId: number) {
@@ -161,8 +161,8 @@ export class GamesService extends BaseService<
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) throw new Error("Media already in your list");
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (oldState) throw new Error("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
         const delta = this.calculateDeltaStats(null, newState);

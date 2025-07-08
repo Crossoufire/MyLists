@@ -1,8 +1,7 @@
-import {MediaType, Status} from "@/lib/server/utils/enums";
+import {LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
-import {EditUserLabels} from "@/lib/server/types/base.types";
 import {Label} from "@/lib/components/types";
 
 
@@ -130,7 +129,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
 export const useEditUserLabelMutation = (mediaType: MediaType, mediaId: number) => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { label: Label, action: EditUserLabels["action"] }>({
+    return useMutation<any, Error, { label: Label, action: LabelAction }>({
         mutationFn: ({ label, action }) => {
             return postEditUserLabel({ data: { mediaType, mediaId, label, action } });
         },

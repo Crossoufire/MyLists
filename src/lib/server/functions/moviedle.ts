@@ -3,6 +3,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/server/types/base.types";
 
 
 export const getDailyMediadle = createServerFn({ method: "GET" })
@@ -17,11 +18,10 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
 
 export const getMediadleSuggestions = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => data as { query: string })
+    .validator(data => mediadleSuggestionsSchema.parse(data))
     .handler(async ({ data: { query } }) => {
-        if (query.length < 2) {
-            return [];
-        }
+        if (query.length < 2) return [];
+
         const container = await getContainer();
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
         return moviesService.searchByName(query);
@@ -30,7 +30,7 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
 
 export const postAddMediadleGuess = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => data as { guess: string })
+    .validator(data => addMediadleGuessSchema.parse(data))
     .handler(async ({ data: { guess }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediadleService = container.services.mediadle;

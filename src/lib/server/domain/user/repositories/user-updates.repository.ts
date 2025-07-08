@@ -1,3 +1,4 @@
+import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
@@ -13,11 +14,11 @@ export class UserUpdatesRepository {
         });
     }
 
-    static async getUserUpdatesPaginated(userId: number, filters: Record<string, any>) {
-        const pageIndex = filters?.pageIndex ?? 0;
-        const limit = filters?.pageSize ?? 25;
+    static async getUserUpdatesPaginated(userId: number, filters: AllUpdatesSearch) {
+        const page = filters?.page ?? 1;
+        const limit = filters?.perPage ?? 25;
         const search = filters?.search ?? "";
-        const offset = pageIndex * limit;
+        const offset = (page - 1) * limit;
 
         const totalCountResult = await getDbClient()
             .select({ count: sql<number>`count()` })
@@ -154,7 +155,7 @@ export class UserUpdatesRepository {
                 .orderBy(desc(userMediaUpdate.timestamp))
                 .limit(8)
                 .execute();
-            
+
             return newUpdateToReturn?.at(-1) ?? null;
         }
     }

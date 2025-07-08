@@ -1,16 +1,14 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {addMediaToListSchema, deleteUserUpdatesSchema, editUserLabelSchema, mediaActionSchema, updateUserMediaSchema, userMediaLabelsSchema} from "@/lib/server/types/base.types";
+import {UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-
-import {EditUserLabels} from "@/lib/server/types/base.types";
-import {Label} from "@/lib/components/types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => data as { mediaType: MediaType, mediaId: number })
+    .validator(data => mediaActionSchema.parse(data))
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         // @ts-expect-error
@@ -20,13 +18,7 @@ export const getUserMediaHistory = createServerFn({ method: "GET" })
 
 export const postAddMediaToList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => {
-        return data as {
-            status?: Status,
-            mediaId: number,
-            mediaType: MediaType,
-        }
-    })
+    .validator((data => addMediaToListSchema.parse(data)))
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
         const container = await getContainer();
         const currentUserId = parseInt(currentUser.id);
@@ -53,36 +45,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => {
-        data as {
-            mediaId: number,
-            mediaType: MediaType,
-            payload: Record<string, any>,
-        };
-
-        if (data.payload?.status) {
-            data.updateType = UpdateType.STATUS;
-        }
-        else if (data.payload?.redo) {
-            data.updateType = UpdateType.REDO;
-        }
-        else if (data.payload?.redo2) {
-            data.updateType = UpdateType.REDOTV;
-        }
-        else if (data.payload?.currentSeason || data.payload?.lastEpisodeWatched) {
-            data.updateType = UpdateType.TV;
-        }
-        else if (data.payload?.playtime) {
-            data.updateType = UpdateType.PLAYTIME;
-        }
-
-        return data as {
-            mediaId: number,
-            mediaType: MediaType,
-            updateType?: UpdateType,
-            payload: Record<string, any>,
-        };
-    })
+    .validator(data => updateUserMediaSchema.parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload, updateType } = data;
 
@@ -106,7 +69,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
 export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => data as { mediaId: number, mediaType: MediaType })
+    .validator(data => mediaActionSchema.parse(data))
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
         const currentUserId = parseInt(currentUser.id);
@@ -124,7 +87,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
 
 export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => data as { updateIds: number[], returnData: boolean })
+    .validator(data => deleteUserUpdatesSchema.parse(data))
     .handler(async ({ data: { updateIds, returnData }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         //@ts-expect-error
@@ -134,7 +97,7 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
 
 export const getUserMediaLabels = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => data as { mediaType: MediaType })
+    .validator(data => userMediaLabelsSchema.parse(data))
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
         const userId = parseInt(currentUser.id);
@@ -146,18 +109,11 @@ export const getUserMediaLabels = createServerFn({ method: "GET" })
 
 export const postEditUserLabel = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => {
-        return data as {
-            label: Label,
-            mediaId: number,
-            mediaType: MediaType,
-            action: EditUserLabels["action"],
-        };
-    })
+    .validator(data => editUserLabelSchema.parse(data))
     .handler(async ({ data: { mediaType, label, action, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
         const userId = parseInt(currentUser.id);
-        
+
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.editUserLabel({ userId, label, mediaId, action });
+        return mediaService.editUserLabel(userId, label, mediaId, action);
     });

@@ -1,5 +1,6 @@
+import {StatusUtils} from "@/lib/utils/functions";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaType, Status} from "@/lib/server/utils/enums";
+import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
@@ -16,7 +17,7 @@ export class UserStatsService {
     ) {
     }
 
-    async updateUserMediaListSettings(userId: number, payload: Record<string, any>) {
+    async updateUserMediaListSettings(userId: number, payload: Partial<Record<MediaType, boolean>>) {
         await this.repository.updateUserMediaListSettings(userId, payload);
     }
 
@@ -85,7 +86,7 @@ export class UserStatsService {
     }
 
     async userPerMediaSummaryStats(userId: number, _limit = 10) {
-        const excludedStatuses = Status.getNoPlanTo();
+        const excludedStatuses = StatusUtils.getNoPlanTo();
         const activeSettings = await this.repository.userActiveMediaSettings(userId);
 
         const data = [];
@@ -185,7 +186,13 @@ export class UserStatsService {
 
         const totalLabels = 4;
 
-        return { ...platformPreComputedStats, totalLabels, platinumAchievements, updatesPerMonth: mediaUpdatesPerMonth };
+        return {
+            ...platformPreComputedStats,
+            totalLabels,
+            platinumAchievements,
+            updatesPerMonth: mediaUpdatesPerMonth,
+            ratingSystem: RatingSystemType.SCORE,
+        };
     }
 
     async platformMediaAdvancedStats(mediaType: MediaType) {
@@ -195,7 +202,12 @@ export class UserStatsService {
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesCountPerMonth(mediaType);
         const specificMediaStats = await mediaService.calculateAdvancedMediaStats();
 
-        return { ...platformMediaPreComputedStats, ...mediaUpdatesPerMonthStats, ...specificMediaStats };
+        return {
+            ...platformMediaPreComputedStats,
+            ...mediaUpdatesPerMonthStats,
+            ...specificMediaStats,
+            ratingSystem: RatingSystemType.SCORE,
+        };
     }
 
     async platformPreComputedStatsSummary() {
@@ -220,7 +232,7 @@ export class UserStatsService {
         const totalRedo = settings.reduce((sum, s) => sum + s.totalRedo, 0);
         const timePerMedia = settings.map((s) => s.timeSpent / 60);
 
-        const excludedStatuses = Status.getNoPlanTo();
+        const excludedStatuses = StatusUtils.getNoPlanTo();
         const totalEntriesNoPlan = settings.reduce((sum, setting) => {
             let settingSum = 0;
             for (const [status, count] of Object.entries(setting.statusCounts)) {

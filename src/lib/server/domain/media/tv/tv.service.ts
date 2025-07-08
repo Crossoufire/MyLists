@@ -86,7 +86,7 @@ export class TvService extends BaseService<
 
         if (internalMediaId) {
             const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw new Error("TV media not found");
+            if (!mediaWithDetails) throw notFound();
 
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
             if (userMedia) (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
@@ -102,7 +102,7 @@ export class TvService extends BaseService<
             };
         }
 
-        throw new Error("TV media not found");
+        throw notFound();
     }
 
     async getMediaEditableFields(mediaId: number) {

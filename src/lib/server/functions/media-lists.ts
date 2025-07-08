@@ -1,13 +1,13 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {MediaListArgs} from "@/lib/server/types/base.types";
-import {JobType, MediaType} from "@/lib/server/utils/enums";
+import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/server/types/base.types";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => data as { mediaType: MediaType, args: MediaListArgs })
+    .validator(data => tryNotFound(() => mediaListSchema.parse(data)))
     .handler(async ({ data, context: { currentUser, user } }) => {
         const { mediaType, args } = data;
         const container = await getContainer();
@@ -33,18 +33,17 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
 
 export const getMediaListFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator((data: any) => data as { mediaType: MediaType })
+    .validator(data => mediaListFiltersSchema.parse(data))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        const filters = await mediaService.getListFilters(user.id);
-        return filters;
+        return mediaService.getListFilters(user.id);
     });
 
 
 export const getMediaListSearchFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator((data: any) => data as { mediaType: MediaType, query: string, job: JobType })
+    .validator(data => mediaListSearchFiltersSchema.parse(data))
     .handler(async ({ data: { mediaType, query, job }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

@@ -1,5 +1,5 @@
 import {SQL} from "drizzle-orm";
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
@@ -13,7 +13,6 @@ import {
     ComingNext,
     CommonListFilters,
     ConfigTopMetric,
-    EditUserLabels,
     EpsPerSeasonType,
     ExpandedListFilters,
     ItemForNotification,
@@ -40,7 +39,6 @@ export interface IUniversalRepository<TMedia, TList> {
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
     findByApiId(apiId: number | string): Promise<TMedia | undefined>;
     getCommonListFilters(userId: number): Promise<CommonListFilters>;
-    editUserLabel(args: EditUserLabels): Promise<Label | undefined | void>;
     removeMediaFromUserList(userId: number, mediaId: number): Promise<void>;
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
     getUserFavorites(userId: number, limit?: number): Promise<SimpleMedia[]>;
@@ -49,6 +47,7 @@ export interface IUniversalRepository<TMedia, TList> {
     getUserFollowsMediaData(userId: number, mediaId: number): Promise<UserFollowsMediaData<TList>[]>;
     updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TList>): Promise<TList>;
     getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TList>>;
+    editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction): Promise<Label | undefined | void>;
 
     // --- Achievements ----------------------------------------------------------
     countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;

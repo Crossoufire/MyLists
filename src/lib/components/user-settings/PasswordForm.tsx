@@ -6,9 +6,16 @@ import {usePasswordSettingsMutation} from "@/lib/react-query/query-mutations/use
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 
 
+type FormValues = {
+    newPassword: string;
+    currentPassword: string;
+    confirmNewPassword: string;
+}
+
+
 export const PasswordForm = () => {
     const passwordSettingsMutation = usePasswordSettingsMutation();
-    const form = useForm({
+    const form = useForm<FormValues>({
         defaultValues: {
             newPassword: "",
             currentPassword: "",
@@ -16,7 +23,7 @@ export const PasswordForm = () => {
         },
     });
 
-    const onSubmit = async (submittedData: any) => {
+    const onSubmit = async (submittedData: FormValues) => {
         passwordSettingsMutation.mutate({
             newPassword: submittedData.newPassword,
             currentPassword: submittedData.currentPassword,
@@ -109,7 +116,7 @@ export const PasswordForm = () => {
                         {form.formState.errors.root.message}
                     </p>
                 )}
-                <Button className="mt-5">
+                <Button className="mt-5" disabled={passwordSettingsMutation.isPending || !form.formState.isDirty}>
                     Update
                 </Button>
             </form>

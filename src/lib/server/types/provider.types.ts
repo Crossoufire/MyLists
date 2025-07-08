@@ -3,8 +3,8 @@ import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 
 export interface IProviderService {
     bulkProcessAndRefreshMedia(): Promise<PromiseSettledResult<boolean>[]>;
-    fetchAndRefreshMediaDetails(apiId: number, isBulk?: boolean): Promise<boolean>;
-    fetchAndStoreMediaDetails(apiId: number, isBulk?: boolean): Promise<number | undefined>;
+    fetchAndRefreshMediaDetails(apiId: number | string, isBulk?: boolean): Promise<boolean>;
+    fetchAndStoreMediaDetails(apiId: number | string, isBulk?: boolean): Promise<number | undefined>;
 }
 
 

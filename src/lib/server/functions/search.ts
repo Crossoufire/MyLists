@@ -1,12 +1,13 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {ApiProviderType} from "@/lib/server/utils/enums";
+import {navbarSearchSchema} from "@/lib/server/types/base.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getSearchResults = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any): { query: string, page: number, apiProvider: ApiProviderType } => data)
+    .validator(data => navbarSearchSchema.parse(data))
     .handler(async ({ data: { query, page, apiProvider } }) => {
         const container = await getContainer();
         const igdbClient = container.clients.igdb;

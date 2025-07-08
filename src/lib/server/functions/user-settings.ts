@@ -1,46 +1,26 @@
-import {z} from "zod";
 import {auth} from "@/lib/server/core/auth";
+import {MediaType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {saveUploadedImage} from "@/lib/server/utils/save-image";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {ApiProviderType, MediaType, PrivacyType, RatingSystemType} from "@/lib/server/utils/enums";
-
-
-const generalSettingsSchema = z.object({
-    profileImage: z.instanceof(File).optional(),
-    backgroundImage: z.instanceof(File).optional(),
-    privacy: z.enum(Object.values(PrivacyType) as [PrivacyType, ...PrivacyType[]]),
-    username: z.string().trim()
-        .min(3, "Username too short (3 min)")
-        .max(15, "Username too long (15 max)"),
-});
+import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/server/types/base.types";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: unknown) => {
-        if (!(data instanceof FormData)) {
-            throw new Error("Expected FormData");
-        }
-
-        const objectFromFormData: Record<string, unknown> = {};
-        for (const [key, value] of data.entries()) {
-            objectFromFormData[key] = value;
-        }
-
-        return generalSettingsSchema.parse(objectFromFormData);
+    .validator(data => {
+        if (!(data instanceof FormData)) throw new Error("Expected FormData");
+        return generalSettingsSchema.parse(Object.fromEntries(data.entries()));
     })
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
-        const updatesToApply = { privacy: data.privacy } as Record<string, any>;
+        const updatesToApply: Record<string, string> = { privacy: data.privacy };
 
         if (data.username !== currentUser.name.trim()) {
-            const isUsernameTaken = await userService.getUserByName(data.username);
-            if (isUsernameTaken) {
-                throw new Error("Username invalid. Please choose another one.");
-            }
+            const isUsernameTaken = await userService.findUserByName(data.username);
+            if (isUsernameTaken) throw new Error("Username invalid. Please choose another one.");
             updatesToApply.name = data.username;
         }
 
@@ -67,51 +47,35 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
     });
 
 
-const mediaListSettingsSchema = z.object({
-    anime: z.boolean(),
-    games: z.boolean(),
-    manga: z.boolean(),
-    books: z.boolean(),
-    gridListView: z.boolean(),
-    searchSelector: z.enum(Object.values(ApiProviderType) as [ApiProviderType, ...ApiProviderType[]]),
-    ratingSystem: z.enum(Object.values(RatingSystemType) as [RatingSystemType, ...RatingSystemType[]]),
-});
-
-
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: any) => mediaListSettingsSchema.parse(data))
+    .validator(data => mediaListSettingsSchema.parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
+        const userId = parseInt(currentUser.id)
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
-        const toUpdateinUserStats = {
+        const toUpdateinUserStats: Partial<Record<MediaType, boolean>> = {
             anime: data.anime,
             manga: data.manga,
             games: data.games,
             books: data.books,
         }
+
         const toUpdateInUser = {
+            ratingSystem: data.ratingSystem,
             gridListView: data.gridListView,
             searchSelector: data.searchSelector,
-            ratingSystem: data.ratingSystem,
         }
 
-        //@ts-expect-error
-        await userService.updateUserSettings(currentUser.id, toUpdateInUser);
-        //@ts-expect-error
-        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateinUserStats);
+        await userService.updateUserSettings(userId, toUpdateInUser);
+        await userStatsService.updateUserMediaListSettings(userId, toUpdateinUserStats);
     });
 
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: any) => {
-        if (!data.selectedList.includes(MediaType)) {
-            throw new Error("Invalid media type");
-        }
-        return data as { selectedList: MediaType };
-    })
+    .validator(data => downloadListAsCsvSchema.parse(data))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -119,15 +83,9 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     });
 
 
-const passwordSettingsSchema = z.object({
-    newPassword: z.string().min(8).max(50),
-    currentPassword: z.string().min(8).max(50),
-});
-
-
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator((data: any) => passwordSettingsSchema.parse(data))
+    .validator(data => passwordSettingsSchema.parse(data))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id);

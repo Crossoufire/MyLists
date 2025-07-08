@@ -75,6 +75,7 @@ function HallOfFamePage() {
                             {search && <Button size="sm" onClick={resetSearch}>Cancel</Button>}
                         </div>
                         <div>
+                            {/*//@ts-expect-error*/}
                             <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
                                 <SelectTrigger className="w-[130px] font-medium bg-outline border">
                                     <SelectValue/>

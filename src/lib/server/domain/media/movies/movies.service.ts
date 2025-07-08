@@ -83,7 +83,7 @@ export class MoviesService extends BaseService<
 
         if (internalMediaId) {
             const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw new Error("Movie not found");
+            if (!mediaWithDetails) throw notFound();
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
@@ -97,7 +97,7 @@ export class MoviesService extends BaseService<
             };
         }
 
-        throw new Error("Movie not found")
+        throw notFound();
     }
 
     async getMediaEditableFields(mediaId: number) {

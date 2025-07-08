@@ -1,7 +1,8 @@
 import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns, sql} from "drizzle-orm";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 import {TVSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {asc, desc, getTableColumns, inArray, sql} from "drizzle-orm";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
@@ -40,6 +41,18 @@ export const seriesConfig: SeriesSchemaConfig = {
             ...getTableColumns(schema.seriesList),
         },
         filterDefinitions: {
+            creators: {
+                isActive: (args: MediaListArgs) => !!args.creators,
+                getCondition: (args: MediaListArgs) => {
+                    return inArray(schema.series.createdBy, args.creators!.filter((c) => c !== "All"))
+                },
+            },
+            langs: {
+                isActive: (args: MediaListArgs) => !!args.langs,
+                getCondition: (args: MediaListArgs) => {
+                    return inArray(schema.series.originCountry, args.langs!.filter((l) => l !== "All"))
+                },
+            },
             actors: createListFilterDef({
                 argName: "actors",
                 mediaTable: schema.series,

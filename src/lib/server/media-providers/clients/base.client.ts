@@ -1,3 +1,4 @@
+import {notFound} from "@tanstack/react-router";
 import {RateLimiterAbstract, RateLimiterRes} from "rate-limiter-flexible";
 
 
@@ -29,6 +30,8 @@ export class BaseClient {
                 catch {
                 }
 
+                if (response.status === 404) throw notFound();
+
                 const error = new Error(`API Error: ${response.status} ${errorBody}`);
                 (error as any).status = response.status;
 
@@ -49,7 +52,10 @@ export class BaseClient {
             }
             else {
                 const typedRejRes = rejRes as RateLimiterRes;
-                console.warn(`Rate limit exceeded for key "${this.consumeKey}". Request blocked. Available in ${typedRejRes.msBeforeNext} ms.`);
+                console.warn(
+                    `Rate limit exceeded for key "${this.consumeKey}". 
+                    Request blocked. Available in ${typedRejRes.msBeforeNext} ms.`
+                );
                 const error = new Error(`Rate limit exceeded for ${this.consumeKey}. Please try again later.`);
                 (error as any).status = 429;
                 (error as any).msBeforeNext = typedRejRes.msBeforeNext;

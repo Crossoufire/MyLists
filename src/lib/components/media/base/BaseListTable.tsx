@@ -4,6 +4,7 @@ import {CircleCheck, Settings2} from "lucide-react";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";
+import {StatusUtils} from "@/lib/utils/functions";
 
 
 export interface ColumnConfigProps {
@@ -50,7 +51,7 @@ export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected
                             queryKey={queryKey}
                             mediaType={mediaType}
                             mediaId={original.mediaId}
-                            allStatuses={Status.byMediaType(mediaType)}
+                            allStatuses={StatusUtils.byMediaType(mediaType)}
                         />
                     </div>
                 );

@@ -4,6 +4,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {NotificationType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/server/types/base.types";
 
 
 export const getUserProfile = createServerFn({ method: "GET" })
@@ -48,7 +49,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
 
 export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator((data: any) => data as { followId: number, followStatus: boolean })
+    .validator(data => updateFollowStatusSchema.parse(data))
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -93,8 +94,8 @@ export const getUsersFollows = createServerFn({ method: "GET" })
 
 export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator((data: any) => data)
+    .validator(data => allUpdatesHistorySchema.parse(data))
     .handler(async ({ context: { user }, data }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
-        return userUpdatesService.getUserUpdatesPaginated(user.id, { ...data.filters });
+        return userUpdatesService.getUserUpdatesPaginated(user.id, data);
     });

@@ -1,15 +1,14 @@
 import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
-import {JobType, MediaType, Status} from "@/lib/server/utils/enums";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {Game, GamesList} from "@/lib/server/domain/media/games/games.types";
 import {Movie, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
+import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {
     AddMediaToUserList,
     ComingNext,
-    EditUserLabels,
     ExpandedListFilters,
     GamesAdvancedStats,
     ItemForNotification,
@@ -38,12 +37,12 @@ export interface IUniversalService<TMedia, TList> {
     getListFilters(userId: number): Promise<ExpandedListFilters>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
     getAchievementCte(achievement: Achievement, userId?: number): any;
-    editUserLabel(args: EditUserLabels): Promise<Label | void | undefined>;
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
     getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType): Promise<JobDetails>;
     getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TList>>;
+    editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction): Promise<Label | void | undefined>;
 }
 
 

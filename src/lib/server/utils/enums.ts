@@ -49,27 +49,17 @@ export const Status = {
     PLAN_TO_WATCH: "Plan to Watch",
     PLAN_TO_PLAY: "Plan to Play",
     PLAN_TO_READ: "Plan to Read",
-    getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
-    byMediaType: (mediaType: MediaType) => {
-        switch (mediaType) {
-            case MediaType.SERIES:
-            case MediaType.ANIME:
-                return [Status.WATCHING, Status.COMPLETED, Status.ON_HOLD, Status.RANDOM, Status.DROPPED, Status.PLAN_TO_WATCH];
-            case MediaType.MOVIES:
-                return [Status.COMPLETED, Status.PLAN_TO_WATCH];
-            case MediaType.GAMES:
-                return [Status.PLAYING, Status.COMPLETED, Status.ENDLESS, Status.MULTIPLAYER, Status.DROPPED, Status.PLAN_TO_PLAY];
-            case MediaType.BOOKS:
-                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
-            case MediaType.MANGA:
-                return [Status.READING, Status.COMPLETED, Status.ON_HOLD, Status.DROPPED, Status.PLAN_TO_READ];
-        }
-    },
 } as const;
-type StatusWithoutFn = Omit<typeof Status, "getNoPlanTo" | "byMediaType">;
-type StatusValues<T> = T[keyof T];
-export type Status = StatusValues<StatusWithoutFn>;
+export type Status = (typeof Status)[keyof typeof Status];
 
+
+export const LabelAction = {
+    ADD: "add",
+    RENAME: "rename",
+    DELETE_ONE: "deleteOne",
+    DELETE_ALL: "deleteAll",
+} as const;
+export type LabelAction = (typeof LabelAction)[keyof typeof LabelAction];
 
 export const JobType = {
     ACTOR: "actor",
@@ -77,25 +67,8 @@ export const JobType = {
     PLATFORM: "platform",
     PUBLISHER: "publisher",
     COMPOSITOR: "compositor",
-    byMediaType: (mediaType: MediaType) => {
-        switch (mediaType) {
-            case MediaType.SERIES:
-            case MediaType.ANIME:
-                return [JobType.ACTOR, JobType.CREATOR, JobType.PLATFORM];
-            case MediaType.MOVIES:
-                return [JobType.ACTOR, JobType.CREATOR, JobType.COMPOSITOR];
-            case MediaType.GAMES:
-                return [JobType.CREATOR];
-            case MediaType.BOOKS:
-                return [JobType.CREATOR];
-            case MediaType.MANGA:
-                return [JobType.CREATOR, JobType.PUBLISHER];
-        }
-    },
 } as const;
-type JobTypeWithoutFn = Omit<typeof JobType, "byMediaType">;
-type JobTypeValues<T> = T[keyof T];
-export type JobType = JobTypeValues<JobTypeWithoutFn>;
+export type JobType = (typeof JobType)[keyof typeof JobType];
 
 
 export const GamesPlatformsEnum = {

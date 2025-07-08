@@ -320,6 +320,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
     async storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
 
+        // TODO: this cause sqlite busy error
         const result = await db.transaction(async (tx) => {
             const [media] = await tx
                 .insert(mediaTable)

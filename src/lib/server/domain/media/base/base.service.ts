@@ -1,8 +1,9 @@
-import {JobType} from "@/lib/server/utils/enums";
+import {Label} from "@/lib/components/types";
+import {JobType, LabelAction} from "@/lib/server/utils/enums";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {IUniversalService} from "@/lib/server/types/services.types";
 import {ICommonRepository} from "@/lib/server/types/repositories.types";
-import {EditUserLabels, MediaListArgs, SearchType} from "@/lib/server/types/base.types";
+import {MediaListArgs, SearchType} from "@/lib/server/types/base.types";
 
 
 export abstract class BaseService<
@@ -64,8 +65,8 @@ export abstract class BaseService<
         return await this.repository.getUserMediaLabels(userId);
     }
 
-    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
-        return this.repository.editUserLabel({ userId, label, mediaId, action });
+    async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
+        return this.repository.editUserLabel(userId, label, mediaId, action);
     }
 
     async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {

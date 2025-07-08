@@ -1,5 +1,5 @@
 import {Label} from "@/lib/components/types";
-import {Status} from "@/lib/server/utils/enums";
+import {LabelAction, Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
@@ -8,7 +8,6 @@ import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "
 import {and, asc, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     ConfigTopMetric,
-    EditUserLabels,
     FilterDefinition,
     FilterDefinitions,
     ListFilterDefinition,
@@ -218,17 +217,17 @@ export class BaseRepository<
             .orderBy(asc(labelTable.name));
     }
 
-    async editUserLabel({ userId, label, mediaId, action }: EditUserLabels) {
+    async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
         const { labelTable } = this.config;
 
-        if (action === "add") {
+        if (action === LabelAction.ADD) {
             const [labelData] = await getDbClient()
                 .insert(labelTable)
                 .values({ userId, name: label.name, mediaId })
                 .returning({ name: labelTable.name })
             return labelData as Label;
         }
-        else if (action === "rename") {
+        else if (action === LabelAction.RENAME) {
             const [labelData] = await getDbClient()
                 .update(labelTable)
                 .set({ name: label.name })
@@ -236,13 +235,13 @@ export class BaseRepository<
                 .returning({ name: labelTable.name })
             return labelData as Label;
         }
-        else if (action === "deleteOne") {
+        else if (action === LabelAction.DELETE_ONE) {
             await getDbClient()
                 .delete(labelTable)
                 .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name), eq(labelTable.mediaId, mediaId)))
                 .execute();
         }
-        else if (action === "deleteAll") {
+        else if (action === LabelAction.DELETE_ALL) {
             await getDbClient()
                 .delete(labelTable)
                 .where(and(eq(labelTable.userId, userId), eq(labelTable.name, label.name)))

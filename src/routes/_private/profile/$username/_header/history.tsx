@@ -33,11 +33,10 @@ function AllUpdates() {
     const { username } = Route.useParams();
     const isCurrent = (currentUser?.name === username);
     const [rowSelected, setRowSelected] = useState({});
-    const paginationState = { pageIndex: filters?.page ?? 0, pageSize: 25 };
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
+    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
     // const deleteMutation = useDeleteUpdateMutation(queryKeys.allUpdatesKey(username, filters));
-
     const setFilters = async (filtersData: SearchType) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), resetScroll: false });
     };

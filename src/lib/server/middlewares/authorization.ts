@@ -4,28 +4,12 @@ import {createMiddleware} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {notFound, redirect} from "@tanstack/react-router";
 import {getWebRequest} from "@tanstack/react-start/server";
-
-
-export interface BaseDataWithUsername {
-    username: string;
-    [key: string]: any;
-}
+import {tryNotFound} from "@/lib/server/utils/try-not-found";
+import {baseUsernameSchema} from "@/lib/server/types/base.types";
 
 
 export const authorizationMiddleware = createMiddleware({ type: "function" })
-    .validator((rawData: any): BaseDataWithUsername => {
-        if (typeof rawData !== "object" || rawData === null) {
-            throw new Error("Bad request");
-        }
-
-        const data = rawData as Record<string, any>;
-
-        if (!data.username) {
-            throw notFound();
-        }
-
-        return data as BaseDataWithUsername;
-    })
+    .validator(data => tryNotFound(() => baseUsernameSchema.parse(data)))
     .server(async ({ next, data: { username } }) => {
         const userService = await getContainer().then(c => c.services.user);
 

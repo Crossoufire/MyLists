@@ -17,7 +17,7 @@ interface ProfileHeaderProps {
 export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderProps) => {
     const { currentUser } = useAuth();
     const isConnected = (!!currentUser);
-    const isCurrent = (currentUser?.id === user.id.toString());
+    const isCurrent = (currentUser?.id === user.id);
     const userLevel = computeLevel(user.userMediaSettings.reduce((acc, cur) => cur.active ? acc + cur.timeSpent : acc, 0));
 
     return (
