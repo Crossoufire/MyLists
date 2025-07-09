@@ -229,7 +229,7 @@ export class UserRepository {
     static async updateNotificationsReadTime(userId: number) {
         return getDbClient()
             .update(user)
-            .set({ lastNotifReadTime: sql`CURRENT_TIMESTAMP` })
+            .set({ lastNotifReadTime: sql`datetime('now')` })
             .where(eq(user.id, userId))
             .execute();
     }

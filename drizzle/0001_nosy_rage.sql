@@ -1,7 +1,9 @@
+DROP TABLE `alembic_version`;--> statement-breakpoint
+DROP TABLE `token`;--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
 CREATE TABLE `__new_games` (
 	`id` integer PRIMARY KEY NOT NULL,
-	`name` text,
+	`name` text NOT NULL,
 	`image_cover` text NOT NULL,
 	`game_engine` text,
 	`game_modes` text,
@@ -14,7 +16,7 @@ CREATE TABLE `__new_games` (
 	`hltb_main_time` real,
 	`hltb_main_and_extra_time` real,
 	`hltb_total_complete_time` real,
-	`api_id` integer,
+	`api_id` integer NOT NULL,
 	`lock_status` integer,
 	`last_api_update` text
 );
@@ -22,6 +24,7 @@ CREATE TABLE `__new_games` (
 INSERT INTO `__new_games`("id", "name", "image_cover", "game_engine", "game_modes", "player_perspective", "vote_average", "vote_count", "release_date", "synopsis", "igdb_url", "hltb_main_time", "hltb_main_and_extra_time", "hltb_total_complete_time", "api_id", "lock_status", "last_api_update") SELECT "id", "name", "image_cover", "game_engine", "game_modes", "player_perspective", "vote_average", "vote_count", "release_date", "synopsis", "igdb_url", "hltb_main_time", "hltb_main_and_extra_time", "hltb_total_complete_time", "api_id", "lock_status", "last_api_update" FROM `games`;--> statement-breakpoint
 DROP TABLE `games`;--> statement-breakpoint
 ALTER TABLE `__new_games` RENAME TO `games`;--> statement-breakpoint
+PRAGMA foreign_keys=ON;--> statement-breakpoint
 CREATE TABLE `__new_followers` (
 	`follower_id` integer,
 	`followed_id` integer,
@@ -214,6 +217,18 @@ CREATE TABLE `__new_series_labels` (
 INSERT INTO `__new_series_labels`("id", "user_id", "media_id", "name") SELECT "id", "user_id", "media_id", "name" FROM `series_labels`;--> statement-breakpoint
 DROP TABLE `series_labels`;--> statement-breakpoint
 ALTER TABLE `__new_series_labels` RENAME TO `series_labels`;--> statement-breakpoint
+CREATE TABLE `__new_anime_labels` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`user_id` integer NOT NULL,
+	`media_id` integer NOT NULL,
+	`name` text NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`media_id`) REFERENCES `anime`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+INSERT INTO `__new_anime_labels`("id", "user_id", "media_id", "name") SELECT "id", "user_id", "media_id", "name" FROM `anime_labels`;--> statement-breakpoint
+DROP TABLE `anime_labels`;--> statement-breakpoint
+ALTER TABLE `__new_anime_labels` RENAME TO `anime_labels`;--> statement-breakpoint
 CREATE TABLE `__new_movies_labels` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
@@ -255,8 +270,8 @@ CREATE TABLE `__new_notifications` (
 	`user_id` integer,
 	`media_type` text,
 	`media_id` integer,
-	`payload` text,
-	`timestamp` text,
+	`payload` text NOT NULL,
+	`timestamp` text DEFAULT (datetime('now')) NOT NULL,
 	`notification_type` text,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -273,9 +288,9 @@ CREATE TABLE `__new_series` (
 	`last_air_date` text,
 	`homepage` text,
 	`created_by` text,
-	`duration` integer,
-	`total_seasons` integer,
-	`total_episodes` integer,
+	`duration` integer NOT NULL,
+	`total_seasons` integer NOT NULL,
+	`total_episodes` integer NOT NULL,
 	`origin_country` text,
 	`prod_status` text,
 	`vote_average` real,
@@ -285,8 +300,8 @@ CREATE TABLE `__new_series` (
 	`image_cover` text NOT NULL,
 	`api_id` integer NOT NULL,
 	`lock_status` integer,
-	`episode_to_air` text,
-	`season_to_air` text,
+	`episode_to_air` integer,
+	`season_to_air` integer,
 	`next_episode_to_air` text,
 	`last_api_update` text
 );
@@ -312,9 +327,9 @@ CREATE TABLE `__new_anime` (
 	`last_air_date` text,
 	`homepage` text,
 	`created_by` text,
-	`duration` integer,
-	`total_seasons` integer,
-	`total_episodes` integer,
+	`duration` integer NOT NULL,
+	`total_seasons` integer NOT NULL,
+	`total_episodes` integer NOT NULL,
 	`origin_country` text,
 	`prod_status` text,
 	`vote_average` real,
@@ -324,8 +339,8 @@ CREATE TABLE `__new_anime` (
 	`image_cover` text NOT NULL,
 	`api_id` integer NOT NULL,
 	`lock_status` integer,
-	`season_to_air` text,
-	`episode_to_air` text,
+	`season_to_air` integer,
+	`episode_to_air` integer,
 	`next_episode_to_air` text,
 	`last_api_update` text
 );
@@ -360,7 +375,7 @@ CREATE TABLE `__new_daily_mediadle` (
 	`media_type` text NOT NULL,
 	`media_id` integer NOT NULL,
 	`date` text NOT NULL,
-	`pixelation_levels` integer
+	`pixelation_levels` integer DEFAULT 5
 );
 --> statement-breakpoint
 INSERT INTO `__new_daily_mediadle`("id", "media_type", "media_id", "date", "pixelation_levels") SELECT "id", "media_type", "media_id", "date", "pixelation_levels" FROM `daily_mediadle`;--> statement-breakpoint
@@ -385,7 +400,7 @@ CREATE TABLE `__new_achievement_tier` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`achievement_id` integer NOT NULL,
 	`difficulty` text NOT NULL,
-	`criteria` numeric NOT NULL,
+	`criteria` text NOT NULL,
 	`rarity` real,
 	FOREIGN KEY (`achievement_id`) REFERENCES `achievement`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -397,9 +412,9 @@ CREATE TABLE `__new_user_mediadle_progress` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
 	`daily_mediadle_id` integer NOT NULL,
-	`attempts` integer,
-	`completed` integer,
-	`succeeded` integer,
+	`attempts` integer DEFAULT 0,
+	`completed` integer DEFAULT false,
+	`succeeded` integer DEFAULT false,
 	`completion_time` text,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`daily_mediadle_id`) REFERENCES `daily_mediadle`(`id`) ON UPDATE no action ON DELETE no action
@@ -456,7 +471,7 @@ CREATE TABLE `__new_manga_list` (
 	`user_id` integer NOT NULL,
 	`current_chapter` integer NOT NULL,
 	`total` integer,
-	`redo` integer NOT NULL,
+	`redo` integer DEFAULT 0 NOT NULL,
 	`status` text NOT NULL,
 	`rating` real,
 	`favorite` integer,
@@ -473,7 +488,7 @@ CREATE INDEX `ix_manga_list_id` ON `manga_list` (`id`);--> statement-breakpoint
 CREATE TABLE `__new_manga_authors` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`media_id` integer NOT NULL,
-	`name` text,
+	`name` text NOT NULL,
 	FOREIGN KEY (`media_id`) REFERENCES `manga`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -625,7 +640,7 @@ CREATE TABLE `__new_movies` (
 	`original_name` text,
 	`release_date` text,
 	`homepage` text,
-	`duration` integer,
+	`duration` integer NOT NULL,
 	`original_language` text,
 	`synopsis` text,
 	`vote_average` real,
@@ -646,6 +661,26 @@ CREATE TABLE `__new_movies` (
 INSERT INTO `__new_movies`("id", "name", "original_name", "release_date", "homepage", "duration", "original_language", "synopsis", "vote_average", "vote_count", "popularity", "budget", "revenue", "tagline", "image_cover", "api_id", "collection_id", "director_name", "compositor_name", "lock_status", "last_api_update") SELECT "id", "name", "original_name", "release_date", "homepage", "duration", "original_language", "synopsis", "vote_average", "vote_count", "popularity", "budget", "revenue", "tagline", "image_cover", "api_id", "collection_id", "director_name", "compositor_name", "lock_status", "last_api_update" FROM `movies`;--> statement-breakpoint
 DROP TABLE `movies`;--> statement-breakpoint
 ALTER TABLE `__new_movies` RENAME TO `movies`;--> statement-breakpoint
+CREATE TABLE `__new_account` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`account_id` integer,
+	`provider_id` text,
+	`user_id` integer NOT NULL,
+	`access_token` text,
+	`refresh_token` text,
+	`id_token` text,
+	`access_token_expires_at` integer,
+	`refresh_token_expires_at` integer,
+	`scope` text,
+	`password` text,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+INSERT INTO `__new_account`("id", "account_id", "provider_id", "user_id", "access_token", "refresh_token", "id_token", "access_token_expires_at", "refresh_token_expires_at", "scope", "password", "created_at", "updated_at") SELECT "id", "account_id", "provider_id", "user_id", "access_token", "refresh_token", "id_token", "access_token_expires_at", "refresh_token_expires_at", "scope", "password", "created_at", "updated_at" FROM `account`;--> statement-breakpoint
+DROP TABLE `account`;--> statement-breakpoint
+ALTER TABLE `__new_account` RENAME TO `account`;--> statement-breakpoint
 CREATE TABLE `__new_session` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -674,26 +709,6 @@ CREATE TABLE `__new_verification` (
 INSERT INTO `__new_verification`("id", "identifier", "value", "expires_at", "created_at", "updated_at") SELECT "id", "identifier", "value", "expires_at", "created_at", "updated_at" FROM `verification`;--> statement-breakpoint
 DROP TABLE `verification`;--> statement-breakpoint
 ALTER TABLE `__new_verification` RENAME TO `verification`;--> statement-breakpoint
-CREATE TABLE `__new_account` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`account_id` integer,
-	`provider_id` text,
-	`user_id` integer NOT NULL,
-	`access_token` text,
-	`refresh_token` text,
-	`id_token` text,
-	`access_token_expires_at` integer,
-	`refresh_token_expires_at` integer,
-	`scope` text,
-	`password` text,
-	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-INSERT INTO `__new_account`("id", "account_id", "provider_id", "user_id", "access_token", "refresh_token", "id_token", "access_token_expires_at", "refresh_token_expires_at", "scope", "password", "created_at", "updated_at") SELECT "id", "account_id", "provider_id", "user_id", "access_token", "refresh_token", "id_token", "access_token_expires_at", "refresh_token_expires_at", "scope", "password", "created_at", "updated_at" FROM `account`;--> statement-breakpoint
-DROP TABLE `account`;--> statement-breakpoint
-ALTER TABLE `__new_account` RENAME TO `account`;--> statement-breakpoint
 CREATE TABLE `__new_user` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -710,22 +725,10 @@ CREATE TABLE `__new_user` (
 	`grid_list_view` integer,
 	`privacy` text DEFAULT 'restricted',
 	`search_selector` text DEFAULT 'tmdb',
-	`rating_system` text DEFAULT 'score'
+	`rating_system` text DEFAULT 'score' NOT NULL
 );
 --> statement-breakpoint
 INSERT INTO `__new_user`("id", "name", "email", "email_verified", "image", "created_at", "updated_at", "profile_views", "background_image", "role", "last_notif_read_time", "show_update_modal", "grid_list_view", "privacy", "search_selector", "rating_system") SELECT "id", "name", "email", "email_verified", "image", "created_at", "updated_at", "profile_views", "background_image", "role", "last_notif_read_time", "show_update_modal", "grid_list_view", "privacy", "search_selector", "rating_system" FROM `user`;--> statement-breakpoint
 DROP TABLE `user`;--> statement-breakpoint
 ALTER TABLE `__new_user` RENAME TO `user`;--> statement-breakpoint
-CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
-CREATE TABLE `__new_anime_labels` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`user_id` integer NOT NULL,
-	`media_id` integer NOT NULL,
-	`name` text NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`media_id`) REFERENCES `anime`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-INSERT INTO `__new_anime_labels`("id", "user_id", "media_id", "name") SELECT "id", "user_id", "media_id", "name" FROM `anime_labels`;--> statement-breakpoint
-DROP TABLE `anime_labels`;--> statement-breakpoint
-ALTER TABLE `__new_anime_labels` RENAME TO `anime_labels`;
+CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);

@@ -80,7 +80,7 @@ export class UserUpdatesService {
             mediaType: mediaType,
             mediaName: media.name,
             updateType: updateType,
-            timestamp: sql<string>`CURRENT_TIMESTAMP`,
+            timestamp: sql<string>`datetime('now')`,
             payload: { old_value: oldValue, new_value: newValue },
         };
 

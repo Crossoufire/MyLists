@@ -60,10 +60,6 @@ async function migrateUsers() {
         }
 
         console.log("Migration completed successfully!");
-
-        // 3. Drop old table after successful migration
-        // await db.run(sql`DROP TABLE user_info`);
-        // console.log("Removed old user_info table");
     }
     catch (error) {
         console.error("Migration failed:", error);
@@ -74,9 +70,7 @@ async function migrateUsers() {
 
 // Run migration
 migrateUsers()
-    .then(() => {
-        console.log("Migration process completed");
-    })
+    .then(() => console.log("Migration process completed"))
     .catch((err) => {
         console.error("Migration process failed:", err);
         process.exit(1);

@@ -10,10 +10,10 @@
     - Add cache system
 - User Media Stats page
     - Make it work (needs other mediaTypes)
+- Missing mutations
 
 ## Backend Logic to implement
 
-- Add `zod` validation on `createServerFn` functions
 - Add rate limiter in `nginx` for prod (for spam protection)
 - Add `ON CASCADE` for many things to avoid `FK` errors and simplify code
 
@@ -27,6 +27,8 @@
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
 - TODO: Create a 500 page from DefaultErrorBoundary
 - TODO: Check external=true external=false search
+- TODO: Reduce number of useEffect if possible
+- TODO: Check all `any` and `@ts-expect-error`
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)

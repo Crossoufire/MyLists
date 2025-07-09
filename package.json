@@ -13,7 +13,7 @@
         "dev": "vite dev --port 3000",
         "build": "vite build",
         "start": "node .output/server/index.mjs",
-        "db": "drizzle-kit",
+        "dk": "drizzle-kit",
         "ui": "npx shadcn@latest",
         "cli": "npx tsx src/cli/index.ts",
         "auth:generate": "npx @better-auth/cli@latest generate --y --output src/lib/server/database/schema/auth.schema.ts"

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4d93644a-e2e7-4a0c-b482-c8e92bfa5564",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "1672e282-01d4-4c7d-9d50-0d0a8aeafe39",
+  "prevId": "4d93644a-e2e7-4a0c-b482-c8e92bfa5564",
   "tables": {
     "achievement": {
       "name": "achievement",
@@ -2514,7 +2514,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(datetime('now'))"
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "notification_type": {
           "name": "notification_type",
@@ -3960,9 +3960,7 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {
-      "\"games\".\"IGDB_url\"": "\"games\".\"igdb_url\""
-    }
+    "columns": {}
   },
   "internal": {
     "indexes": {}

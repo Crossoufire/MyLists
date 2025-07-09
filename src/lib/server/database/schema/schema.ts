@@ -22,7 +22,6 @@ export const animeActors = sqliteTable("anime_actors", {
     id: integer().primaryKey().notNull(),
     mediaId: integer().notNull().references(() => anime.id),
     name: text().notNull(),
-    toto: integer().notNull(),
 });
 
 export const animeEpisodesPerSeason = sqliteTable("anime_episodes_per_season", {
@@ -173,7 +172,7 @@ export const notifications = sqliteTable("notifications", {
         mediaType: text().$type<MediaType>(),
         mediaId: integer(),
         payload: customJson<Record<string, any>>("payload").notNull(),
-        timestamp: text().default(sql`datetime('now')`).notNull(),
+        timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
         notificationType: text().$type<NotificationType>(),
     },
     (table) => [index("ix_notifications_timestamp").on(table.timestamp)]);

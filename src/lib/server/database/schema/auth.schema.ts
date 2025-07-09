@@ -8,7 +8,7 @@ const BASE_BACK_IMAGE_PATH = `${process.env.VITE_BASE_URL}/static/back-covers`;
 
 
 export const user = sqliteTable("user", {
-    id: integer("id").$type<number>().primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<number>().primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
@@ -35,7 +35,7 @@ export const session = sqliteTable("session", {
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
-    userId: integer("user_id").notNull().references(() => user.id, { onDelete: 'cascade' })
+    userId: integer("user_id").notNull().references(() => user.id, { onDelete: "cascade" })
 });
 
 
@@ -58,9 +58,9 @@ export const account = sqliteTable("account", {
 
 export const verification = sqliteTable("verification", {
     id: integer("id").$type<number>().primaryKey(),
-    identifier: text('identifier').notNull(),
-    value: text('value').notNull(),
-    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp' }),
-    updatedAt: integer('updated_at', { mode: 'timestamp' })
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
 });

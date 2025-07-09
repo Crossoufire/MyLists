@@ -56,7 +56,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .where(and(
                 eq(listTable.userId, userId),
                 notInArray(listTable.status, [Status.DROPPED, Status.RANDOM]),
-                gte(mediaTable.nextEpisodeToAir, sql`CURRENT_TIMESTAMP`),
+                gte(mediaTable.nextEpisodeToAir, sql`datetime('now')`),
             ))
             .orderBy(asc(mediaTable.nextEpisodeToAir))
             .execute();
@@ -278,7 +278,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .from(mediaTable)
             .where(and(
                 inArray(mediaTable.apiId, apiIds),
-                lte(mediaTable.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-1 day')`),
+                lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`),
             ));
 
         return mediaIds.map((m) => m.apiId);
@@ -363,7 +363,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
 
         const [media] = await tx
             .update(mediaTable)
-            .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
             .where(eq(mediaTable.apiId, mediaData.apiId))
             .returning({ id: mediaTable.id })
 

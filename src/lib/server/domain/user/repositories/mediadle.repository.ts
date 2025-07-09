@@ -114,7 +114,7 @@ export class MediadleRepository {
                 attempts,
                 completed,
                 succeeded,
-                completionTime: completed ? sql`CURRENT_TIMESTAMP` : undefined,
+                completionTime: completed ? sql`datetime('now')` : undefined,
             })
             .where(and(eq(userMediadleProgress.userId, userId), eq(userMediadleProgress.dailyMediadleId, mediadleId)))
             .returning();
@@ -238,7 +238,7 @@ export class MediadleRepository {
                 completed: isCompleted,
                 succeeded: isSucceeded,
                 attempts: sql`${userMediadleProgress.attempts} + 1`,
-                completionTime: isCompleted ? sql`CURRENT_TIMESTAMP` : undefined,
+                completionTime: isCompleted ? sql`datetime('now')` : undefined,
             })
             .where(and(
                 eq(userMediadleProgress.userId, userId),

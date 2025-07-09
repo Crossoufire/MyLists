@@ -33,7 +33,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .where(and(
                 eq(gamesList.userId, userId),
                 notInArray(gamesList.status, [Status.DROPPED]),
-                gte(games.releaseDate, sql`CURRENT_TIMESTAMP`),
+                gte(games.releaseDate, sql`datetime('now')`),
             ))
             .orderBy(asc(games.releaseDate))
             .execute();
@@ -180,8 +180,8 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .select({ apiId: games.apiId })
             .from(games)
             .where(and(
-                lte(games.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-6 days')`),
-                or(gte(games.releaseDate, sql`CURRENT_TIMESTAMP`), isNull(games.releaseDate))
+                lte(games.lastApiUpdate, sql`datetime('now', '-6 days')`),
+                or(gte(games.releaseDate, sql`datetime('now')`), isNull(games.releaseDate))
             ));
 
         return results.map((r) => r.apiId);
@@ -249,7 +249,7 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
 
         const [media] = await tx
             .update(games)
-            .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
             .where(eq(games.apiId, mediaData.apiId))
             .returning({ id: games.id })
 

@@ -29,7 +29,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
             })
             .from(movies)
             .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(eq(moviesList.userId, userId), gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`)))
+            .where(and(eq(moviesList.userId, userId), gte(movies.releaseDate, sql`datetime('now')`)))
             .orderBy(asc(movies.releaseDate))
             .execute();
 
@@ -219,10 +219,10 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
             .select({ apiId: movies.apiId })
             .from(movies)
             .where(and(
-                lte(movies.lastApiUpdate, sql`datetime(CURRENT_TIMESTAMP, '-2 days')`),
+                lte(movies.lastApiUpdate, sql`datetime('now', '-2 days')`),
                 or(
-                    gte(movies.releaseDate, sql`CURRENT_TIMESTAMP`),
-                    gte(movies.releaseDate, sql`datetime(CURRENT_TIMESTAMP, '-6 months')`),
+                    gte(movies.releaseDate, sql`datetime('now')`),
+                    gte(movies.releaseDate, sql`datetime('now', '-6 months')`),
                 )));
 
         return results.map((r) => r.apiId);
@@ -300,7 +300,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
 
         const [media] = await tx
             .update(movies)
-            .set({ ...mediaData, lastApiUpdate: sql`CURRENT_TIMESTAMP` })
+            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
             .where(eq(movies.apiId, mediaData.apiId))
             .returning({ id: movies.id })
 
