@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
@@ -26,22 +26,11 @@ export const GeneralForm = () => {
     const generalSettingsMutation = useGeneralSettingsMutation();
     const [imageCropperKey, setImageCropperKey] = useState(Date.now());
     const form = useForm<FormValues>({
-        defaultValues: {
-            profileImage: undefined,
-            backgroundImage: undefined,
+        values: {
             username: currentUser?.name ?? "",
             privacy: currentUser?.privacy ?? PrivacyType.RESTRICTED,
         },
     });
-
-    useEffect(() => {
-        if (currentUser) {
-            form.reset({
-                username: currentUser.name,
-                privacy: currentUser.privacy as PrivacyType,
-            });
-        }
-    }, [currentUser, form]);
 
     const onSubmit = async (submittedData: FormValues) => {
         const formData = new FormData();
@@ -54,12 +43,12 @@ export const GeneralForm = () => {
 
         generalSettingsMutation.mutate({ data: formData }, {
             onError: (error: any) => {
-                if (error?.name === "ZodError" && error?.issues && Array.isArray(error.issues)) {
-                    error.issues.forEach((issue: any) => {
+                if (error?.name === "FormZodError" && error?.issues && Array.isArray(error?.issues)) {
+                    error?.issues.forEach((issue: any) => {
                         form.setError(issue.path[0], { type: "server", message: issue.message });
                     });
                 }
-                else if (error?.message?.includes("Username invalid")) {
+                else if (error?.name === "FormattedError") {
                     form.setError("username", { type: "server", message: error.message });
                 }
                 else {
@@ -87,7 +76,7 @@ export const GeneralForm = () => {
                         rules={{
                             required: { value: true, message: "Username is required." },
                             minLength: { value: 3, message: "Username too short (3 min)." },
-                            maxLength: { value: 15, message: "Username too long (15 max)." },
+                            // maxLength: { value: 15, message: "Username too long (15 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>

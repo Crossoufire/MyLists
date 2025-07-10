@@ -17,11 +17,11 @@ export class FormattedError extends Error {
 
 
 export class FormZodError extends Error {
-    public readonly zodError: z.ZodError;
+    public readonly issues: any[];
 
     constructor(zodError: z.ZodError, message?: string) {
         super(message || "Form validation failed");
         this.name = "FormZodError";
-        this.zodError = zodError;
+        this.issues = zodError.issues;
     }
 }
