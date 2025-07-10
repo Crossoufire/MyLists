@@ -36,10 +36,6 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
         error && showToast("An unexpected error occurred. Please try again later.", "error");
     }, [error]);
 
-    useEffect(() => {
-        if (isEditing) inputRef.current?.focus();
-    }, [isEditing]);
-
     const showToast = (message: string, type: "error" | "success") => {
         setToast({ message, type });
     };
@@ -141,9 +137,10 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                 <div className="space-y-8 mt-8 max-sm:mt-4 max-sm:p-6">
                     <div className="flex items-center gap-3">
                         <Input
+                            autoFocus={true}
                             value={inputAddNewLabel}
-                            disabled={editUserLabelMutation.isPending}
                             placeholder={"Create a new label"}
+                            disabled={editUserLabelMutation.isPending}
                             onChange={(ev) => setInputAddNewLabel(ev.target.value.trim())}
                             onKeyDown={(ev) => {
                                 if (ev.key === "Enter") {

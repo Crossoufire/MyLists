@@ -13,7 +13,7 @@ import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-m
 
 interface UserUpdatesProps {
     followers?: boolean;
-    updates: (UserUpdateType & { username?: string })[];
+    updates: (UserUpdateType & { username?: string | null })[];
 }
 
 

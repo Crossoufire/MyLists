@@ -9,6 +9,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {
     AddMediaToUserList,
     ComingNext,
+    ExpandedListFilters,
     GamesAdvancedStats,
     ItemForNotification,
     JobDetails,
@@ -46,6 +47,7 @@ export interface IUniversalService<TMedia, TList> {
 
 // Level 2 - Common patterns (implemented in each MediaService)
 export interface ICommonService<TMedia, TList, TStats> extends IUniversalService<TMedia, TList> {
+    getListFilters(userId: number): Promise<ExpandedListFilters>;
     calculateAdvancedMediaStats(userId?: number): Promise<TStats>;
     getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
     removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;

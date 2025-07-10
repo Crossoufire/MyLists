@@ -1,6 +1,5 @@
 import z from "zod/v4";
 import {createMiddleware} from "@tanstack/react-start";
-import {sendAdminErrorMail} from "@/lib/server/utils/mail-sender";
 import {FormattedError, FormZodError} from "@/lib/server/utils/error-classes";
 
 
@@ -29,20 +28,20 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
     }
     catch (err: any) {
         if (err instanceof FormattedError) {
-            if (err?.sendMail) {
-                await sendAdminErrorMail(err, "A Specific Formatted Error occurred");
-            }
+            // if (err?.sendMail) {
+            //     await sendAdminErrorMail(err, "A Specific Formatted Error occurred");
+            // }
             throw createCleanError(err);
         }
         else if (err instanceof FormZodError) {
             throw err;
         }
         else if (err instanceof z.ZodError) {
-            await sendAdminErrorMail(err, "A Validation error occurred");
+            // await sendAdminErrorMail(err, "A Validation error occurred");
             throw createCleanError(err, "A Validation error occurred. Please try again later.");
         }
         else {
-            await sendAdminErrorMail(err, "Unexpected error occurred");
+            // await sendAdminErrorMail(err, "Unexpected error occurred");
             throw createCleanError(err, "An Unexpected error occurred. Please try again later.");
         }
     }

@@ -1,5 +1,5 @@
 import {toast} from "sonner";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Button} from "@/lib/components/ui/button";
 import {Switch} from "@/lib/components/ui/switch";
@@ -44,36 +44,27 @@ export const MediaListForm = () => {
     const downloadListAsCSVMutation = useDownloadListAsCSVMutation();
     const [selectedListForExport, setSelectedListForExport] = useState<MediaType | "">("");
     const form = useForm<ListSettings>({
-        defaultValues: {
-            gridListView: currentUser?.gridListView,
-            ratingSystem: currentUser?.ratingSystem,
-            searchSelector: currentUser?.searchSelector,
-            [MediaType.ANIME]: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active,
-            [MediaType.GAMES]: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active,
-            [MediaType.BOOKS]: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active,
-            [MediaType.MANGA]: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active,
+        values: {
+            gridListView: currentUser?.gridListView ?? true,
+            ratingSystem: currentUser?.ratingSystem ?? RatingSystemType.SCORE,
+            searchSelector: currentUser?.searchSelector ?? ApiProviderType.TMDB,
+            [MediaType.ANIME]: currentUser?.settings.find(s => s.mediaType === MediaType.ANIME)?.active ?? false,
+            [MediaType.GAMES]: currentUser?.settings.find(s => s.mediaType === MediaType.GAMES)?.active ?? false,
+            [MediaType.BOOKS]: currentUser?.settings.find(s => s.mediaType === MediaType.BOOKS)?.active ?? false,
+            [MediaType.MANGA]: currentUser?.settings.find(s => s.mediaType === MediaType.MANGA)?.active ?? false,
         }
     });
 
-    const searchSelector = useWatch({ control: form.control, name: "searchSelector" });
     const isGamesActive = useWatch({ control: form.control, name: MediaType.GAMES });
     const isBooksActive = useWatch({ control: form.control, name: MediaType.BOOKS });
     const isMangaActive = useWatch({ control: form.control, name: MediaType.MANGA });
-
-    useEffect(() => {
-        const checkAndResetSelector = () => {
-            const selectorMap: Partial<Record<ApiProviderType, boolean>> = {
-                [ApiProviderType.IGDB]: isGamesActive,
-                [ApiProviderType.BOOKS]: isBooksActive,
-                [ApiProviderType.MANGA]: isMangaActive,
-            };
-            if (selectorMap.hasOwnProperty(searchSelector) && !selectorMap[searchSelector]) {
-                form.setValue("searchSelector", ApiProviderType.TMDB, { shouldDirty: true });
-            }
-        };
-
-        checkAndResetSelector();
-    }, [searchSelector, isGamesActive, isBooksActive, isMangaActive, form.setValue]);
+    
+    const handleCheckedChange = (field: any, checked: boolean, apiProvider?: ApiProviderType) => {
+        field.onChange(checked);
+        if (!checked && apiProvider && form.getValues("searchSelector") === apiProvider) {
+            form.setValue("searchSelector", ApiProviderType.TMDB, { shouldDirty: true });
+        }
+    };
 
     const onSubmit = (submittedData: ListSettings) => {
         listSettingsMutation.mutate({ data: submittedData }, {
@@ -129,7 +120,7 @@ export const MediaListForm = () => {
                                         <FormControl>
                                             <Switch
                                                 checked={field.value}
-                                                onCheckedChange={field.onChange}
+                                                onCheckedChange={(checked) => handleCheckedChange(field, checked, config.apiProvider)}
                                             />
                                         </FormControl>
                                     </FormItem>

@@ -29,7 +29,6 @@ function ProfileMain() {
                 <div className="mt-4"/>
                 <UserUpdates
                     followers={false}
-                    username={username}
                     updates={apiData.userUpdates}
                 />
                 <div className="mt-4"/>
@@ -63,7 +62,6 @@ function ProfileMain() {
                 <div className="mt-4"/>
                 <UserUpdates
                     followers={true}
-                    username={username}
                     updates={apiData.followsUpdates}
                 />
             </div>

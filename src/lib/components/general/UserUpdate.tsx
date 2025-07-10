@@ -10,9 +10,9 @@ import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 
 
 interface UserUpdateProps {
-    username?: string;
     canDelete: boolean;
     isPending?: boolean;
+    username?: string | null;
     mediaIdBeingDeleted?: number;
     onDelete: (updateId: number) => void;
     update: Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>["userUpdates"][0];

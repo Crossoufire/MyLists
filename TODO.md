@@ -29,6 +29,7 @@
 - TODO: db error adding series to list
 - TODO: db sqlite busy error when adding anything from search navbar
 - TODO: refresh of anime does not seems to use jikan for the genres
+- TODO: correct sum redo not correct for series in user updates
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)
