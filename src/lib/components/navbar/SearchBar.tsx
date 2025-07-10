@@ -1,4 +1,4 @@
-import {Link} from "@tanstack/react-router";
+import {Link, LinkProps} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/components/ui/input";
@@ -142,17 +142,27 @@ interface SearchComponentProps {
 
 const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
     const { setSheetOpen } = useSheet();
+    const destination = createDestParams();
     const imageHeight = (item.itemType === ApiProviderType.USERS) ? 64 : 96;
-    const url = (item.itemType === ApiProviderType.USERS) ?
-        `/profile/${item.name}` : `/details/${item.itemType}/${item.id}?external=True`;
 
     const handleLinkClick = () => {
         resetSearch();
         setSheetOpen(false);
     };
 
+    function createDestParams(): LinkProps {
+        if (item.itemType === ApiProviderType.USERS) {
+            return { to: "/profile/$username", params: { username: item.name } };
+        }
+        return {
+            to: "/details/$mediaType/$mediaId",
+            params: { mediaType: item.itemType as MediaType, mediaId: item.id },
+            search: { external: true },
+        };
+    }
+
     return (
-        <Link to={url} onClick={handleLinkClick}>
+        <Link {...destination} onClick={handleLinkClick}>
             <CommandItem key={item.id} className="cursor-pointer py-2">
                 <div className="flex gap-4 items-center">
                     <img

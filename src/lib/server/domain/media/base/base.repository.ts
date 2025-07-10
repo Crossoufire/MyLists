@@ -24,8 +24,7 @@ const SIMILAR_MAX_GENRES = 12;
 
 
 export class BaseRepository<
-    TMedia, TList,
-    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>
+    TMedia, TList, TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>
 > implements IUniversalRepository<TMedia, TList> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;

@@ -21,11 +21,13 @@
     - Update platform stats
     - Run all scheduled tasks
 
+- TODO: Better types for admin parts
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
-- TODO: Check external=true external=false search
 - TODO: Reduce number of useEffect if possible
 - TODO: Check all `any` and `@ts-expect-error`
 - TODO: Better admin panel (types, checks, zod, etc...)
+- TODO: db error adding series to list
+- TODO: db sqlite busy error when adding anything from search navbar
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)

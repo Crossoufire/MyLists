@@ -13,7 +13,8 @@ export const getComingNextMedia = createServerFn({ method: "GET" })
             Object.values(MediaType).map(mediaType => {
                 const mediaService = container.registries.mediaService.getService(mediaType);
                 if (typeof mediaService?.getComingNext === "function") {
-                    return mediaService.getComingNext(parseInt(currentUser.id)).then(items => ({ items, mediaType }));
+                    //@ts-expect-error
+                    return mediaService.getComingNext(currentUser.id).then(items => ({ items, mediaType }));
                 }
                 return null;
             }).filter(Boolean)

@@ -40,6 +40,17 @@ export abstract class BaseService<
         return this.repository.removeMediaByIds(mediaIds);
     }
 
+    async calculateAdvancedMediaStats(userId?: number) {
+        // If userId not provided, calculations are platform-wide
+        // Specific media stats but calculation common
+        const ratings = await this.repository.computeRatingStats(userId);
+        const genresStats = await this.repository.computeTopGenresStats(userId);
+        const totalLabels = await this.repository.computeTotalMediaLabel(userId);
+        const releaseDates = await this.repository.computeReleaseDateStats(userId);
+
+        return { ratings, genresStats, totalLabels, releaseDates };
+    }
+
     async getNonListMediaIds() {
         return this.repository.getNonListMediaIds();
     }

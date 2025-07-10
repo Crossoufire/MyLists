@@ -42,23 +42,14 @@ export class GamesService extends BaseService<
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        // Specific media stats but calculation common
-        const ratings = await this.repository.computeRatingStats(userId);
-        const genresStats = await this.repository.computeTopGenresStats(userId);
-        const totalLabels = await this.repository.computeTotalMediaLabel(userId);
-        const releaseDates = await this.repository.computeReleaseDateStats(userId);
+        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
 
         // Specific stats
         const gameModes = await this.repository.gameModesCount(userId);
         const avgDuration = await this.repository.gameAvgPlaytime(userId);
         const durationDistrib = await this.repository.gamePlaytimeDistrib(userId);
-        const {
-            developersStats,
-            publishersStats,
-            platformsStats,
-            enginesStats,
-            perspectivesStats
-        } = await this.repository.specificTopMetrics(userId);
+        const { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats } =
+            await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,

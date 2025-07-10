@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Button} from "@/lib/components/ui/button";
 import {Separator} from "@/lib/components/ui/separator";
 import {MinusCircle, Pencil, PlusCircle} from "lucide-react";
@@ -18,13 +18,11 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
     const [draftRedo, setDraftRedo] = useState(redoValues);
     const totalRedo = redoValues.reduce((a, b) => a + b, 0);
 
-    useEffect(() => {
-        setDraftRedo(redoValues);
-    }, [redoValues]);
-
     const onOpenChange = (open: boolean) => {
         setOpen(open);
-        setDraftRedo([...redoValues]);
+        if (open) {
+            setDraftRedo([...redoValues]);
+        }
     };
 
     const updateSeason = (idx: number, value: number) => {
@@ -46,8 +44,8 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                 <div className="ml-1.5 text-sm">{totalRedo} Seas.</div>
                 <Pencil
                     role="button"
-                    onClick={() => setOpen(true)}
                     className={"w-4 h-4 text-gray-400"}
+                    onClick={() => onOpenChange(true)}
                 />
             </div>
             <Credenza open={open} onOpenChange={onOpenChange}>

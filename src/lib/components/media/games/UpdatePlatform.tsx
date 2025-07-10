@@ -1,5 +1,5 @@
+import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
-import {useEffect, useState} from "react";
 import {Check, ChevronDown} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
 import {GamesPlatformsEnum} from "@/lib/server/utils/enums";
@@ -34,27 +34,30 @@ export const UpdatePlatform = ({ platform, updatePlatform }: UpdatePlatformProps
 
 const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(resetValue);
     const allPlatforms = Object.values(GamesPlatformsEnum).map(p => ({ value: p, label: p }));
+    const displayedLabel = allPlatforms.find((pt) => pt.value === resetValue)?.label || "--";
 
-    useEffect(() => {
-        setValue(resetValue);
-    }, [resetValue]);
-
-    const onSelect = async (currentValue: GamesPlatformsEnum) => {
+    const onSelect = (currentValue: GamesPlatformsEnum) => {
         setOpen(false);
-        setValue(currentValue === value ? "" : currentValue);
-        await callback(currentValue);
+        if (resetValue !== currentValue) {
+            callback(currentValue);
+        }
     };
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button role="combobox" variant="outline" className="flex h-7 pl-2 w-[130px] items-center justify-between
-                whitespace-nowrap rounded-md focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground
-                focus:outline-none focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
-                bg-transparent border-none font-normal pr-0 hover:bg-transparent" aria-expanded={open} disabled={isPending}>
-                    {value ? allPlatforms.find(pt => pt.value === value)?.label : "--"}
+                <Button
+                    role="combobox"
+                    variant="outline"
+                    className="flex h-7 pl-2 w-[130px] items-center justify-between
+                    whitespace-nowrap rounded-md focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground
+                    focus:outline-none focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
+                    bg-transparent border-none font-normal pr-0 hover:bg-transparent"
+                    aria-expanded={open}
+                    disabled={isPending}
+                >
+                    {displayedLabel}
                     <ChevronDown className="h-3 w-3 opacity-80"/>
                 </Button>
             </PopoverTrigger>
@@ -67,7 +70,7 @@ const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
                             {allPlatforms.map(pt =>
                                 <CommandItem key={pt.value} value={pt.value} onSelect={() => onSelect(pt.value)}>
                                     {pt.label}
-                                    <Check className={cn("ml-auto h-4 w-4", value === pt.value ? "opacity-100" : "opacity-0")}/>
+                                    <Check className={cn("ml-auto h-4 w-4", resetValue === pt.value ? "opacity-100" : "opacity-0")}/>
                                 </CommandItem>
                             )}
                         </CommandGroup>

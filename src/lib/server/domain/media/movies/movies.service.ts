@@ -45,11 +45,7 @@ export class MoviesService extends BaseService<
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
 
-        // Specific media stats but calculation common
-        const ratings = await this.repository.computeRatingStats(userId);
-        const genresStats = await this.repository.computeTopGenresStats(userId);
-        const totalLabels = await this.repository.computeTotalMediaLabel(userId);
-        const releaseDates = await this.repository.computeReleaseDateStats(userId);
+        const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
 
         // Specific stats
         const avgDuration = await this.repository.avgMovieDuration(userId);
@@ -117,8 +113,6 @@ export class MoviesService extends BaseService<
     }
 
     async updateMediaEditableFields(mediaId: number, payload: Record<string, any>) {
-        // TODO: MAYBE MOVE TO BASE SERVICE (SEE LATER AFTER ADDING BOOKS AND MANGA)
-
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 

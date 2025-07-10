@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {Separator} from "@/lib/components/ui/separator";
@@ -13,22 +13,21 @@ interface CommentaryProps {
 
 
 export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
-    const [commentInput, setCommentInput] = useState(false);
-    const [updatedContent, setUpdatedContent] = useState(content);
+    const [comment, setComment] = useState(content);
+    const [isEditing, setIsEditing] = useState(false);
 
-    useEffect(() => {
-        setUpdatedContent(content);
-    }, [content]);
-
-    const handleComment = () => {
-        setCommentInput(!commentInput);
-        setUpdatedContent(content);
+    const handleEditToggle = () => {
+        if (!isEditing) {
+            setComment(content);
+        }
+        setIsEditing(!isEditing);
     };
 
     const handleSave = () => {
-        if (content === updatedContent) return;
-        updateComment.mutate({ payload: { comment: updatedContent } });
-        setCommentInput(false);
+        if (content === comment) return;
+        updateComment.mutate({ payload: { comment: comment } }, {
+            onSuccess: () => setIsEditing(false),
+        });
     };
 
     return (
@@ -36,31 +35,33 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
             <h4 className="text-lg flex justify-between items-center mt-5 font-semibold">
                 Comment
                 <MutedText className="text-sm mt-1">
-                    <span role="button" onClick={handleComment}>{content ? "Edit" : "Add"}</span>
+                    <span role="button" onClick={handleEditToggle}>
+                        {content ? "Edit" : "Add"}
+                    </span>
                 </MutedText>
             </h4>
             <Separator/>
-            {commentInput ?
+            {isEditing ?
                 <>
                     <Textarea
+                        value={comment ?? ""}
                         className={"w-full h-20"}
-                        value={updatedContent ?? ""}
                         disabled={updateComment.isPending}
                         placeholder={"Enter your comment..."}
-                        onChange={(ev) => setUpdatedContent(ev.target.value)}
+                        onChange={(ev) => setComment(ev.target.value)}
                     />
                     <div className="flex justify-end gap-2 mt-2">
-                        <Button variant="outline" size="sm" onClick={handleComment} disabled={updateComment.isPending}>
+                        <Button variant="outline" size="sm" onClick={handleEditToggle} disabled={updateComment.isPending}>
                             Cancel
                         </Button>
-                        <Button size="sm" onClick={handleSave} disabled={(content === updatedContent) || updateComment.isPending}>
+                        <Button size="sm" onClick={handleSave} disabled={(content === comment) || updateComment.isPending}>
                             Save
                         </Button>
                     </div>
                 </>
                 :
                 <MutedText className="text-sm break-words max-h-[150px] overflow-y-auto">
-                    {updatedContent ? `${updatedContent}` : "No comments added yet"}
+                    {content ? `${content}` : "No comments added yet"}
                 </MutedText>
             }
         </>

@@ -9,7 +9,6 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {
     AddMediaToUserList,
     ComingNext,
-    ExpandedListFilters,
     GamesAdvancedStats,
     ItemForNotification,
     JobDetails,
@@ -34,7 +33,6 @@ export interface IUniversalService<TMedia, TList> {
     removeMediaByIds(mediaIds: number[]): Promise<void>;
     findById(mediaId: number): Promise<TMedia | undefined>;
     computeTotalMediaLabel(userId?: number): Promise<number>;
-    getListFilters(userId: number): Promise<ExpandedListFilters>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
     getAchievementCte(achievement: Achievement, userId?: number): any;
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
