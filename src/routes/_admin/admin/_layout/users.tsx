@@ -6,10 +6,10 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {PrivacyType, RoleType} from "@/lib/server/utils/enums";
-import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {TablePagination} from "@/lib/components/general/TablePagination";
+import {createFileRoute} from "@tanstack/react-router";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
+import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
@@ -38,8 +38,8 @@ export const Route = createFileRoute("/_admin/admin/_layout/users")({
 
 
 function UserManagementPage() {
-    const navigate = useNavigate();
     const filters = Route.useSearch();
+    const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const updateUserMutation = useAdminUpdateUserMutation(adminQueryKeys.adminUsersKeys(filters));
@@ -47,12 +47,10 @@ function UserManagementPage() {
     const sortingState = [{ id: filters?.sortBy ?? "updatedAt", desc: filters?.sortDesc === "true" }];
 
     const setFilters = async (filtersData: Record<string, any>) => {
-        //@ts-expect-error
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
     };
 
     const resetFilters = async () => {
-        //@ts-expect-error
         await navigate({ search: { sortBy: filters?.sortBy, sortDesc: filters?.sortDesc } });
         setCurrentSearch("");
     };
@@ -72,6 +70,17 @@ function UserManagementPage() {
     };
 
     const usersColumns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [
+        {
+            accessorKey: "id",
+            header: ({ column }) => {
+                return (
+                    <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
+                        Id <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                    </Button>
+                );
+            },
+            cell: ({ row: { original } }) => <div>{original.id}</div>,
+        },
         {
             accessorKey: "name",
             header: ({ column }) => {
@@ -193,17 +202,17 @@ function UserManagementPage() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem onClick={() => updateUser(original.id, { active: !original.emailVerified })}>
-                            {original.emailVerified ? (
+                            {original.emailVerified ?
                                 <>
                                     <UserX className="mr-2 h-4 w-4"/>
                                     <span>Disable account</span>
                                 </>
-                            ) : (
+                                :
                                 <>
                                     <UserCheck className="mr-2 h-4 w-4"/>
                                     <span>Enable account</span>
                                 </>
-                            )}
+                            }
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
                         <DropdownMenuLabel>Privacy Settings</DropdownMenuLabel>

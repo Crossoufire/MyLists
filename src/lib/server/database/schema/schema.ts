@@ -14,8 +14,8 @@ const BASE_MANGA_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/manga
 
 
 export const followers = sqliteTable("followers", {
-    followerId: integer().references(() => user.id),
-    followedId: integer().references(() => user.id),
+    followerId: integer().references(() => user.id, { onDelete: "cascade" }),
+    followedId: integer().references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const animeActors = sqliteTable("anime_actors", {
@@ -72,7 +72,7 @@ export const booksAuthors = sqliteTable("books_authors", {
 
 export const userMediaUpdate = sqliteTable("user_media_update", {
         id: integer().primaryKey().notNull(),
-        userId: integer().notNull().references(() => user.id),
+        userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
         mediaId: integer().notNull(),
         mediaName: text().notNull(),
         mediaType: text().$type<MediaType>().notNull(),
@@ -133,42 +133,42 @@ export const booksGenre = sqliteTable("books_genre", {
 
 export const seriesLabels = sqliteTable("series_labels", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => series.id),
     name: text().notNull(),
 });
 
 export const animeLabels = sqliteTable("anime_labels", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => anime.id),
     name: text().notNull(),
 });
 
 export const moviesLabels = sqliteTable("movies_labels", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => movies.id),
     name: text().notNull(),
 });
 
 export const gamesLabels = sqliteTable("games_labels", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => games.id),
     name: text().notNull(),
 });
 
 export const booksLabels = sqliteTable("books_labels", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => books.id),
     name: text().notNull(),
 });
 
 export const notifications = sqliteTable("notifications", {
         id: integer().primaryKey().notNull(),
-        userId: integer().references(() => user.id),
+        userId: integer().references(() => user.id, { onDelete: "cascade" }),
         mediaType: text().$type<MediaType>(),
         mediaId: integer(),
         payload: customJson<Record<string, any>>("payload").notNull(),
@@ -275,12 +275,12 @@ export const dailyMediadle = sqliteTable("daily_mediadle", {
     mediaType: text().$type<MediaType>().notNull(),
     mediaId: integer().notNull(),
     date: text().notNull(),
-    pixelationLevels: integer().default(5),
+    pixelationLevels: integer().default(5).notNull(),
 });
 
 export const mediadleStats = sqliteTable("mediadle_stats", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaType: text().$type<MediaType>().notNull(),
     totalPlayed: integer(),
     totalWon: integer(),
@@ -299,17 +299,17 @@ export const achievementTier = sqliteTable("achievement_tier", {
 
 export const userMediadleProgress = sqliteTable("user_mediadle_progress", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     dailyMediadleId: integer().notNull().references(() => dailyMediadle.id),
-    attempts: integer().default(0),
-    completed: integer({ mode: "boolean" }).default(false),
-    succeeded: integer({ mode: "boolean" }).default(false),
+    attempts: integer().default(0).notNull(),
+    completed: integer({ mode: "boolean" }).default(false).notNull(),
+    succeeded: integer({ mode: "boolean" }).default(false).notNull(),
     completionTime: text(),
 });
 
 export const userAchievement = sqliteTable("user_achievement", {
     id: integer().primaryKey().notNull(),
-    userId: integer().references(() => user.id),
+    userId: integer().references(() => user.id, { onDelete: "cascade" }),
     achievementId: integer().references(() => achievement.id),
     tierId: integer().references(() => achievementTier.id),
     progress: real(),
@@ -343,7 +343,7 @@ export const manga = sqliteTable("manga", {
 export const mangaList = sqliteTable("manga_list", {
         id: integer().primaryKey().notNull(),
         mediaId: integer().notNull().references(() => manga.id),
-        userId: integer().notNull().references(() => user.id),
+        userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
         currentChapter: integer().notNull(),
         total: integer(),
         redo: integer().notNull().default(0),
@@ -372,14 +372,14 @@ export const mangaGenre = sqliteTable("manga_genre", {
 export const mangaLabels = sqliteTable("manga_labels", {
         mediaId: integer().notNull().references(() => manga.id),
         id: integer().primaryKey().notNull(),
-        userId: integer().notNull().references(() => user.id),
+        userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
         name: text().notNull(),
     },
     (table) => [index("ix_manga_labels_user_id").on(table.userId)]);
 
 export const moviesList = sqliteTable("movies_list", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => movies.id),
     status: text().$type<Status>().notNull(),
     redo: integer().default(0),
@@ -391,7 +391,7 @@ export const moviesList = sqliteTable("movies_list", {
 
 export const gamesList = sqliteTable("games_list", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => games.id),
     status: text().$type<Status>().notNull(),
     playtime: integer().default(0),
@@ -403,7 +403,7 @@ export const gamesList = sqliteTable("games_list", {
 
 export const booksList = sqliteTable("books_list", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => books.id),
     status: text().$type<Status>().notNull(),
     redo: integer().default(0),
@@ -417,7 +417,7 @@ export const booksList = sqliteTable("books_list", {
 
 export const userMediaSettings = sqliteTable("user_media_settings", {
         id: integer().primaryKey().notNull(),
-        userId: integer().notNull().references(() => user.id),
+        userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
         mediaType: text().$type<MediaType>().notNull(),
         timeSpent: integer().notNull(),
         views: integer().notNull(),
@@ -439,7 +439,7 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
 
 export const animeList = sqliteTable("anime_list", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => anime.id),
     currentSeason: integer().notNull(),
     lastEpisodeWatched: integer().notNull(),
@@ -454,7 +454,7 @@ export const animeList = sqliteTable("anime_list", {
 
 export const seriesList = sqliteTable("series_list", {
     id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id),
+    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => series.id),
     currentSeason: integer().notNull(),
     lastEpisodeWatched: integer().notNull(),

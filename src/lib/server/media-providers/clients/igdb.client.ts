@@ -2,6 +2,7 @@ import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
 import {SearchData} from "../../types/provider.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export class IgdbClient extends BaseClient {
@@ -66,7 +67,7 @@ export class IgdbClient extends BaseClient {
 
         const rawData = await response.json();
         if (rawData.length === 0) {
-            throw new Error("Game not found");
+            throw new FormattedError("Games not found");
         }
 
         return rawData[0] as Record<string, any>;

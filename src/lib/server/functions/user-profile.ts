@@ -5,6 +5,7 @@ import {NotificationType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/server/types/base.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export const getUserProfile = createServerFn({ method: "GET" })
@@ -57,7 +58,7 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 
         // @ts-expect-error
         if (currentUser.id === followId) {
-            throw new Error("You cannot follow yourself ;)");
+            throw new FormattedError("You cannot follow yourself ;)");
         }
 
         const targetUser = await userService.getUserById(followId);

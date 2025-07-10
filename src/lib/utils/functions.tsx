@@ -148,18 +148,18 @@ export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
 
 export const getStatusColor = (status: Status) => {
     const colors = {
-        "Playing": "#334d5c",
-        "Reading": "#334d5c",
-        "Watching": "#334d5c",
-        "Completed": "#45b29d",
-        "On Hold": "#efc94c",
-        "Multiplayer": "#efc94c",
-        "Random": "#e27a3f",
-        "Dropped": "#df5a49",
-        "Endless": "#48792c",
-        "Plan to Watch": "#962d3e",
-        "Plan to Read": "#962d3e",
-        "Plan to Play": "#962d3e",
+        [Status.PLAYING]: "#334d5c",
+        [Status.READING]: "#334d5c",
+        [Status.WATCHING]: "#334d5c",
+        [Status.COMPLETED]: "#45b29d",
+        [Status.ON_HOLD]: "#efc94c",
+        [Status.MULTIPLAYER]: "#efc94c",
+        [Status.RANDOM]: "#e27a3f",
+        [Status.DROPPED]: "#df5a49",
+        [Status.ENDLESS]: "#48792c",
+        [Status.PLAN_TO_WATCH]: "#962d3e",
+        [Status.PLAN_TO_READ]: "#962d3e",
+        [Status.PLAN_TO_PLAY]: "#962d3e",
     };
     return colors[status];
 };

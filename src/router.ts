@@ -1,3 +1,4 @@
+import "./global-middleware";
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {NotFound} from "@/lib/components/general/NotFound";

@@ -195,9 +195,11 @@ export class UserRepository {
             .execute();
     }
 
-    static async adminDeleteUser(_userId: number) {
-        // TODO: Delete user (cascade with verification, session, and account), notifications, userMediaSettings, followers,
-        //  all media Types, userMediaUpdates...
+    static async adminDeleteUser(userId: number) {
+        await getDbClient()
+            .delete(user)
+            .where(eq(user.id, userId))
+            .execute();
     }
 
     static async adminUpdateFeaturesFlag(showUpdateModal: boolean) {

@@ -84,8 +84,8 @@ export interface IMoviesRepository extends ICommonRepository<Movie, MoviesList> 
     lockOldMovies(): Promise<number>;
     getMediaIdsToBeRefreshed(): Promise<number[]>;
     getComingNext(userId: number): Promise<ComingNext[]>;
+    storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails): Promise<number>;
     updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails): Promise<boolean>;
-    storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails): Promise<number | undefined>;
 
     // --- Achievements ----------------------------------------------------------
     getActorAchievementCte(_achievement: Achievement, userId?: number): any;
@@ -108,8 +108,8 @@ export interface ITvRepository extends ICommonRepository<TvType, TvList> {
     findByIdAndAddEpsPerSeason(mediaId: number): Promise<TvType>;
     getMediaIdsToBeRefreshed(apiIds: number[]): Promise<number[]>;
     getMediaEpsPerSeason(mediaId: number): Promise<EpsPerSeasonType>;
+    storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number>;
     updateMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<boolean>;
-    storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number | undefined>;
 
     // --- Achievements ----------------------------------------------------------
     getDurationAchievementCte(achievement: Achievement, userId?: number): any;
@@ -129,8 +129,8 @@ export interface IGamesRepository extends ICommonRepository<Game, GamesList> {
 
     getMediaIdsToBeRefreshed(): Promise<number[]>;
     getComingNext(userId: number): Promise<ComingNext[]>;
+    storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number>;
     updateMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<boolean>;
-    storeMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<number | undefined>;
     // updateIGDBToken(): Promise<any>;
 
     // --- Achievements ----------------------------------------------------------

@@ -2,6 +2,7 @@ import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
 import {promises as fsPromises} from "node:fs";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 interface ResizeOptions {
@@ -57,10 +58,7 @@ export const saveUploadedImage = async ({ file, saveLocation, resize }: SaveUplo
         return processAndSaveImage({ buffer, saveLocation, resize });
     }
     catch (error) {
-        if (error instanceof Error) {
-            throw new Error(error.message);
-        }
-        throw new Error("This image could not be processed");
+        throw new FormattedError("This image could not be processed");
     }
 };
 

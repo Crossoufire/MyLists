@@ -1,3 +1,4 @@
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IMoviesService} from "@/lib/server/types/services.types";
 import {pixelateImage} from "@/lib/server/utils/image-pixelation";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
@@ -32,7 +33,7 @@ export class MediadleService {
         if (!userProgress) userProgress = await this.repository.createUserProgress(userId, dailyMediadle.id);
 
         const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
-        if (!selectedMovie) throw new Error("No Movie available for today");
+        if (!selectedMovie) throw new Error("mediaId for mediadle not found");
 
         const pixelationLevel = Math.min(dailyMediadle.pixelationLevels!, userProgress.attempts! + 1);
         const userMediadleStats = await this.getUserMediadleStats(userId);
@@ -52,33 +53,25 @@ export class MediadleService {
         };
     }
 
-    async addMediadleGuess(userId: number, guess: string, mediaService: any) {
+    async addMediadleGuess(userId: number, guess: string, movieService: IMoviesService) {
         const dailyMediadle = await this.repository.getTodayMoviedle();
-        if (!dailyMediadle) {
-            throw new Error("No game available for today");
-        }
+        if (!dailyMediadle) throw new FormattedError("Today's mediadle not found", true);
 
         const progress = await this.repository.getUserProgress(userId, dailyMediadle.id);
-        if (!progress || progress.completed) {
-            throw new Error("User progress not found or game already completed");
-        }
+        if (!progress) throw new FormattedError("Progress not found", true);
+        if (progress.completed) throw new FormattedError("Mediadle already completed");
 
-        const selectedMovie = await mediaService.findById(dailyMediadle.mediaId);
+        const selectedMovie = await movieService.findById(dailyMediadle.mediaId);
+        if (!selectedMovie) throw new Error("mediaId for mediadle not found");
+
         const correct = selectedMovie.name.toLowerCase().trim() === guess.toLowerCase().trim();
-
-        const potentialAttempts = progress.attempts! + 1;
-        const isCompleted = correct || (potentialAttempts >= dailyMediadle.pixelationLevels!);
+        const potentialAttempts = progress.attempts + 1;
+        const isCompleted = correct || (potentialAttempts >= dailyMediadle.pixelationLevels);
 
         const updatedProgress = await this.repository.incrementUserAttempts(userId, dailyMediadle.id, isCompleted, correct);
-        if (!updatedProgress) {
-            throw new Error("Game is already completed.");
-        }
-
         if (updatedProgress.completed) {
             let stats = await this.repository.getUserMediadleStats(userId);
-            if (!stats) {
-                stats = await this.repository.createMediadleStats(userId, dailyMediadle.mediaType);
-            }
+            if (!stats) stats = await this.repository.createMediadleStats(userId, dailyMediadle.mediaType);
             await this.repository.updateMediadleStats(stats.id, isCompleted, correct, updatedProgress.attempts!);
         }
 

@@ -3,6 +3,8 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {saveUploadedImage} from "@/lib/server/utils/save-image";
+import {FormattedError} from "@/lib/server/utils/error-classes";
+import {tryFormZodError} from "@/lib/server/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/server/types/base.types";
@@ -12,7 +14,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator(data => {
         if (!(data instanceof FormData)) throw new Error("Expected FormData");
-        return generalSettingsSchema.parse(Object.fromEntries(data.entries()));
+        return tryFormZodError(() => generalSettingsSchema.parse(Object.fromEntries(data.entries())));
     })
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
@@ -20,7 +22,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
         if (data.username !== currentUser.name.trim()) {
             const isUsernameTaken = await userService.findUserByName(data.username);
-            if (isUsernameTaken) throw new Error("Username invalid. Please choose another one.");
+            if (isUsernameTaken) throw new FormattedError("Username invalid. Please select another one.");
             updatesToApply.name = data.username;
         }
 
@@ -49,7 +51,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => mediaListSettingsSchema.parse(data))
+    .validator(data => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
     .handler(async ({ data, context: { currentUser } }) => {
         const userId = parseInt(currentUser.id)
         const userService = await getContainer().then(c => c.services.user);
@@ -75,7 +77,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(data => downloadListAsCsvSchema.parse(data))
+    .validator(data => tryFormZodError(() => downloadListAsCsvSchema.parse(data)))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -85,14 +87,14 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(data => passwordSettingsSchema.parse(data))
+    .validator(data => tryFormZodError(() => passwordSettingsSchema.parse(data)))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id);
 
         const isValid = await ctx.password.verify({ hash: userAccount?.password ?? "", password: currentPassword });
         if (!isValid) {
-            throw new Error("Current password is incorrect");
+            throw new FormattedError("Current password incorrect");
         }
 
         const hash = await ctx.password.hash(newPassword);

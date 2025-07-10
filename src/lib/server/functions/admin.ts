@@ -5,6 +5,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {taskDefinitions, TasksName} from "@/cli/commands";
 import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {AdminPaginatedUsers} from "@/lib/server/domain/user/repositories/user.repository";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
@@ -91,7 +92,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
             return { success: true, jobId: job.id, message: "Task enqueued." };
         }
         catch (error) {
-            throw new Error("Failed to enqueue task.");
+            throw new FormattedError("Failed to enqueue task.");
         }
     });
 
@@ -120,7 +121,7 @@ export const getAdminJobs = createServerFn({ method: "GET" })
             }));
         }
         catch (error) {
-            throw new Error("Failed to fetch jobs.");
+            throw new FormattedError("Failed to fetch jobs.");
         }
     });
 
@@ -135,7 +136,7 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
             return mylistsLongTaskQueue.getJobLogs(jobId);
         }
         catch (error) {
-            throw new Error("Failed to fetch job logs.");
+            throw new FormattedError("Failed to fetch job logs.");
         }
     });
 

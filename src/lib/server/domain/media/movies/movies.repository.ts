@@ -1,4 +1,5 @@
 import {db} from "@/lib/server/database/db";
+import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
@@ -192,7 +193,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
             filterCondition = like(movies.compositorName, `%${name}%`);
         }
         else {
-            throw new Error("Job type not supported");
+            throw notFound();
         }
 
         if (filterCondition) {
@@ -276,7 +277,6 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
                 .values(mediaData)
                 .returning()
 
-            if (!media) return;
             const mediaId = media.id;
 
             if (actorsData && actorsData.length > 0) {
@@ -359,7 +359,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
             return compositors
         }
         else {
-            throw new Error("Job type not supported");
+            throw new Error("JobType not supported");
         }
     }
 

@@ -3,6 +3,7 @@ import {getContainer} from "@/lib/server/core/container";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/server/types/base.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
@@ -18,7 +19,7 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
         const userService = container.services.user;
 
         const userHasMediaTypeActive = await userService.hasActiveMediaType(user.id, data.mediaType);
-        if (!userHasMediaTypeActive) throw new Error("MediaType not-activated");
+        if (!userHasMediaTypeActive) throw new FormattedError("MediaType not-activated");
 
         if (currentUser && parseInt(currentUser.id) !== targetUserId) {
             await userService.incrementMediaTypeView(targetUserId, mediaType);

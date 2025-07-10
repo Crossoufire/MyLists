@@ -16,7 +16,7 @@ export const getUserStats = createServerFn({ method: "GET" })
         // }
 
         // if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
-        //     throw new Error("MediaType not activated");
+        //     throw new FormattedError("MediaType not activated");
         // }
         //
         // return userStatsService.userMediaAdvancedStats(user.id, mediaType);

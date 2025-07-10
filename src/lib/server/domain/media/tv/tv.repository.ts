@@ -327,9 +327,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 .values(mediaData)
                 .returning()
 
-            if (!media) return;
             const mediaId = media.id;
-
             if (actorsData && actorsData.length > 0) {
                 const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
                 await tx.insert(actorTable).values(actorsToAdd)
@@ -427,12 +425,15 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
                 .where(and(eq(listTable.userId, userId), like(mediaTable.createdBy, `%${query}%`)));
 
-            const creators = [...new Set(creatorsQuery
-                .filter(c => c.name)
-                .flatMap(c => c.name!.split(","))
-                .filter(Boolean)
-                .map(n => ({ name: n.trim() }))
-            )];
+            const creators = Array.from(
+                new Map(creatorsQuery
+                    .filter(c => c.name)
+                    .flatMap(c => c.name!.split(","))
+                    .map(n => n.trim())
+                    .filter(Boolean)
+                    .map(n => [n, { name: n }])
+                ).values()
+            );
 
             return creators
         }
@@ -445,7 +446,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             return networks
         }
         else {
-            throw new Error("Job type not supported");
+            throw new Error("JobType not supported");
         }
     }
 

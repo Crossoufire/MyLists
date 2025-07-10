@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {AdminPaginatedUsers, UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export class UserService {
@@ -16,8 +17,8 @@ export class UserService {
             return;
         }
 
-        if (payload.delete) {
-            await this.userRepository.adminDeleteUser(userId!);
+        if (payload.delete && userId) {
+            await this.userRepository.adminDeleteUser(userId);
             return;
         }
 
@@ -25,7 +26,7 @@ export class UserService {
 
         const isValidPayload = Object.keys(payload).every(key => availablePayloads.includes(key));
         if (!isValidPayload) {
-            throw new Error("Invalid payload");
+            throw new FormattedError("Invalid payload");
         }
 
         await this.userRepository.adminUpdateUser(userId!, payload);

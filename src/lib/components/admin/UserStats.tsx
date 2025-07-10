@@ -3,10 +3,10 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card
 
 
 interface UserStatsProps {
-    title: string
-    description: string
-    value: string | number
-    icon: "users" | "activity" | "userPlus" | "shield"
+    title: string;
+    description: string;
+    value: string | number;
+    icon: "users" | "activity" | "userPlus" | "shield";
 }
 
 
@@ -17,7 +17,6 @@ export function UserStats({ title, value, description, icon }: UserStatsProps) {
         activity: Activity,
         userPlus: UserPlus,
     }
-
     const Icon = icons[icon]
 
     return (

@@ -15,10 +15,7 @@
 ## Backend Logic to implement
 
 - Add rate limiter in `nginx` for prod (for spam protection)
-- Add `ON CASCADE` for many things to avoid `FK` errors and simplify code
 
-- Create admin dashboard
-    - Delete users
 - Create small CLI for scheduled tasks
     - Update IGDB token
     - Update platform stats
@@ -29,6 +26,7 @@
 - TODO: Check external=true external=false search
 - TODO: Reduce number of useEffect if possible
 - TODO: Check all `any` and `@ts-expect-error`
+- TODO: Better admin panel (types, checks, zod, etc...)
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)

@@ -222,8 +222,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
                 .values(mediaData)
                 .returning()
 
-            if (!media) return;
-
             const mediaId = media.id;
             if (companiesData && companiesData.length > 0) {
                 const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));

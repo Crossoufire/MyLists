@@ -1,3 +1,4 @@
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
@@ -25,7 +26,7 @@ export class GamesProviderService implements IProviderService {
             return this.repository.updateMediaWithDetails(details);
         }
         catch (err: any) {
-            throw new Error(`Error refreshing game with apiId ${apiId}: ${err.message}`);
+            throw new FormattedError(`Game can't be refreshed`);
         }
     }
 

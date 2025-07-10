@@ -247,6 +247,6 @@ export class MediadleRepository {
             ))
             .returning();
 
-        return updatedProgress!;
+        return updatedProgress;
     }
 }

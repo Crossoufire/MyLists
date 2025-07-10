@@ -2,6 +2,7 @@ import {Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IGamesService} from "@/lib/server/types/services.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {IGamesRepository} from "@/lib/server/types/repositories.types";
@@ -162,7 +163,7 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (oldState) throw new Error("Media already in your list");
+        if (oldState) throw new FormattedError("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
         const delta = this.calculateDeltaStats(null, newState);
@@ -175,7 +176,7 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new Error("Media not in your list");
+        if (!oldState) throw new FormattedError("Media not in your list");
 
         const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
@@ -195,7 +196,7 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new Error("Media not in your list");
+        if (!oldState) throw new FormattedError("Media not in your list");
 
         await this.repository.removeMediaFromUserList(userId, mediaId);
         const delta = this.calculateDeltaStats(oldState, null);
