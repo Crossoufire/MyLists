@@ -1,16 +1,16 @@
-import {Link, LinkProps} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
-import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {useSheet} from "@/lib/contexts/sheet-context";
+import {Link, LinkProps} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import React, {useEffect, useRef, useState} from "react";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
+import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
 import {navSearchOptions} from "@/lib/react-query/query-options/query-options";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";

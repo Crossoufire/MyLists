@@ -28,6 +28,7 @@
 - TODO: Better admin panel (types, checks, zod, etc...)
 - TODO: db error adding series to list
 - TODO: db sqlite busy error when adding anything from search navbar
+- TODO: refresh of anime does not seems to use jikan for the genres
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)

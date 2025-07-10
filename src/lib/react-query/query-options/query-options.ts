@@ -179,6 +179,7 @@ export const notificationsOptions = () => queryOptions({
     queryKey: queryKeys.notificationsKey(),
     queryFn: () => getNotifications(),
     meta: { errorMessage: "An error occurred fetching the notifications" },
+    refetchInterval: 30 * 60 * 1000,
     enabled: false,
 });
 

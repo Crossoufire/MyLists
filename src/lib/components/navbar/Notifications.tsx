@@ -2,7 +2,7 @@ import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSheet} from "@/lib/contexts/sheet-context";
@@ -33,13 +33,6 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
         popRef?.current?.click();
         setSheetOpen(false);
     };
-
-    useEffect(() => {
-        const intervalId = setInterval(async () => {
-            await queryClient.invalidateQueries({ queryKey: queryKeys.notificationCountKey() });
-        }, 30 * 60 * 1000);
-        return () => clearInterval(intervalId);
-    }, [queryClient]);
 
     return (
         <Popover modal={isMobile} open={isOpen} onOpenChange={setIsOpen}>
