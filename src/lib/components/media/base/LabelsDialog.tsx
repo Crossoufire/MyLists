@@ -123,7 +123,6 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
 
     return (
         <Credenza>
-            {/*//@ts-expect-error*/}
             <CredenzaTrigger onClick={() => setIsOpen(true)}>
                 <MutedText className="text-sm mt-1">Manage</MutedText>
             </CredenzaTrigger>

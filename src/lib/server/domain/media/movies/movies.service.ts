@@ -106,12 +106,12 @@ export class MoviesService extends BaseService<
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields = {} as Record<string, any>;
-        for (const key in media) {
-            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key as keyof Movie)) {
-                fields[key as keyof typeof media] = media[key as keyof typeof media];
+        const fields = editableFields.reduce((acc, field) => {
+            if (field in media) {
+                (acc as any)[field] = media[field];
             }
-        }
+            return acc;
+        }, {} as Pick<typeof media, typeof editableFields[number]>);
 
         return { fields };
     }

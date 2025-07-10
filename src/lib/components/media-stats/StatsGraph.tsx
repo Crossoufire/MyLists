@@ -22,7 +22,7 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
     function transformDataList(dataList: any[]) {
         const validValues = [0, 2, 4, 6, 8, 10];
         const validIndices = validValues.map(value => value * 2);
-        const transformedList = validValues.map((value, index) => ({ name: index * 2, value: 0 }));
+        const transformedList = validValues.map((_, index) => ({ name: index * 2, value: 0 }));
         dataList.forEach((item: any, idx: number) => {
             if (item.value !== 0) {
                 const closestValidIndex = validIndices.reduce((prev, curr) => {
@@ -62,14 +62,12 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
                 <ResponsiveContainer>
                     <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
                         {title === "Rating" && ratingSystem === RatingSystemType.FEELING ?
-                            //@ts-expect-error
-                            <XAxis dataKey="name" stroke="#e2e2e2" tick={<CustomXAxisTick/>}/>
+                            <XAxis dataKey="name" stroke="#e2e2e2" tick={CustomXAxisTick}/>
                             :
                             <XAxis dataKey="name" stroke="#e2e2e2"/>
                         }
                         <YAxis dataKey="value" stroke="#e2e2e2"/>
-                        {/*//@ts-expect-error*/}
-                        <RechartsTooltip cursor={{ fill: "#373535" }} content={<CustomTooltip/>}/>
+                        <RechartsTooltip cursor={{ fill: "#373535" }} content={CustomTooltip}/>
                         <Bar dataKey="value" fill={getMediaColor(filters.mt)}>
                             {newDataList.map((entry, idx) =>
                                 <Cell key={idx} fill={getMediaColor(filters.mt ?? entry.name)}/>
@@ -85,9 +83,9 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
 
 
 interface CustomTooltipProps {
-    label: string;
-    payload: any[];
-    active: boolean;
+    payload?: any[];
+    active?: boolean;
+    label?: string | number;
 }
 
 

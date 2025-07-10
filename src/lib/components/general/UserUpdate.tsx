@@ -35,7 +35,11 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                     className="mt-1 row-span-3"
                 />
                 <div className="col-span-2">
-                    <BlockLink to={`/details/${update.mediaType}/${update.mediaId}`} disabled={isPending}>
+                    <BlockLink
+                        disabled={isPending}
+                        to="/details/$mediaType/$mediaId"
+                        params={{ mediaType: update.mediaType, mediaId: update.mediaId }}
+                    >
                         <div className="truncate hover:underline hover:underline-offset-2" title={update.mediaName}>
                             {update.mediaName}
                         </div>
@@ -47,9 +51,11 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                     <div className="text-sm text-muted-foreground">
                         {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}
                         {username &&
-                            <> by <BlockLink to={`/profile/${username}`} className="text-blue-500">
-                                {username}
-                            </BlockLink></>
+                            <> by{" "}
+                                <BlockLink to="/profile/$username" params={{ username }} className="text-blue-500">
+                                    {username}
+                                </BlockLink>
+                            </>
                         }
                     </div>
                 </div>

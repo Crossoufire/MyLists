@@ -110,15 +110,12 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
-
-        for (const key in media) {
-            //@ts-expect-error
-            if (Object.prototype.hasOwnProperty.call(media, key) && editableFields.includes(key)) {
-                //@ts-expect-error
-                fields[key] = media[key];
+        const fields = editableFields.reduce((acc, field) => {
+            if (field in media) {
+                (acc as any)[field] = media[field];
             }
-        }
+            return acc;
+        }, {} as Pick<typeof media, typeof editableFields[number]>);
 
         return { fields };
     }

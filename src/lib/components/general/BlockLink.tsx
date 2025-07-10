@@ -1,18 +1,25 @@
-import React, {useState} from "react";
-import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
+import React, {ReactNode, useState} from "react";
+import {PrivacyType} from "@/lib/server/utils/enums";
+import {Link, LinkProps} from "@tanstack/react-router";
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 
 
-//@ts-expect-error
-export const BlockLink = ({ children, ...props }) => {
+interface BlockLinkProps extends LinkProps {
+    className?: string;
+    children: ReactNode;
+    privacy?: PrivacyType;
+}
+
+
+export const BlockLink = ({ children, ...props }: BlockLinkProps) => {
     const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClick = (ev: React.MouseEvent<HTMLAnchorElement>) => {
         if (currentUser) return;
 
-        if (!props.privacy || props.privacy !== "public") {
+        if (!props.privacy || props.privacy !== PrivacyType.PUBLIC) {
             ev.preventDefault();
             setIsOpen(true);
         }
@@ -20,7 +27,6 @@ export const BlockLink = ({ children, ...props }) => {
 
     return (
         <>
-            {/*//@ts-expect-error*/}
             <Link {...props} onClick={handleClick}>
                 {children}
             </Link>

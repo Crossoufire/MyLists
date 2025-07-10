@@ -67,7 +67,10 @@ export class UserUpdatesRepository {
         }
 
         const followsUpdates = await getDbClient()
-            .select({ ...getTableColumns(userMediaUpdate), username: user.name })
+            .select({
+                username: user.name,
+                ...getTableColumns(userMediaUpdate),
+            })
             .from(userMediaUpdate)
             .leftJoin(user, eq(userMediaUpdate.userId, user.id))
             .where(inArray(userMediaUpdate.userId, allowedUserIdsQuery))

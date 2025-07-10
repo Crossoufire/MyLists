@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useCollapse} from "@/lib/hooks/use-collapse";
+import {UserUpdateType} from "@/lib/components/types";
 import {Link, useParams} from "@tanstack/react-router";
-import {UserUpdatesType} from "@/lib/components/types";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {UserUpdate} from "@/lib/components/general/UserUpdate";
@@ -12,9 +12,8 @@ import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-m
 
 
 interface UserUpdatesProps {
-    username: string;
     followers?: boolean;
-    updates: UserUpdatesType;
+    updates: (UserUpdateType & { username?: string })[];
 }
 
 
@@ -59,10 +58,9 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
                             key={update.id}
                             update={update}
                             onDelete={deleteUpdate}
-                            //@ts-expect-error
-                            username={followers && update?.username}
                             mediaIdBeingDeleted={mediaIdBeingDeleted}
                             isPending={deleteUpdatesMutation.isPending}
+                            username={followers ? update?.username : ""}
                             canDelete={(currentUser?.id === update.userId) && !followers}
                         />
                     )

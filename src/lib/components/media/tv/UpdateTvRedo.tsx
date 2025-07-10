@@ -1,9 +1,10 @@
+import * as React from "react";
+import {useEffect, useState} from "react";
 import {Button} from "@/lib/components/ui/button";
-import {useEffect, useRef, useState} from "react";
 import {Separator} from "@/lib/components/ui/separator";
 import {MinusCircle, Pencil, PlusCircle} from "lucide-react";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {Credenza, CredenzaClose, CredenzaContent, CredenzaDescription, CredenzaFooter, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
+import {Credenza, CredenzaContent, CredenzaDescription, CredenzaFooter, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
 
 
 interface UpdateTvRedoProps {
@@ -15,7 +16,6 @@ interface UpdateTvRedoProps {
 export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps) => {
     const [open, setOpen] = useState(false);
     const [draftRedo, setDraftRedo] = useState(redoValues);
-    const credRef = useRef<HTMLDivElement | null>(null);
     const totalRedo = redoValues.reduce((a, b) => a + b, 0);
 
     useEffect(() => {
@@ -51,8 +51,6 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                 />
             </div>
             <Credenza open={open} onOpenChange={onOpenChange}>
-                {/*//@ts-expect-error*/}
-                <CredenzaClose ref={credRef} className="absolute"/>
                 <CredenzaContent>
                     <CredenzaHeader>
                         <CredenzaTitle>Re-watched Seasons Manager</CredenzaTitle>

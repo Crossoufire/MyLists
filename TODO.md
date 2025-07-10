@@ -22,7 +22,6 @@
     - Run all scheduled tasks
 
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
-- TODO: Create a 500 page from DefaultErrorBoundary
 - TODO: Check external=true external=false search
 - TODO: Reduce number of useEffect if possible
 - TODO: Check all `any` and `@ts-expect-error`
@@ -31,11 +30,3 @@
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)
 - POTENTIAL TODO: Abstract Repetitive Stat Calculation Logic (see if still true after adding every mediaType)
-
-Create different types of error in Global error handler middleware:
-
-- If error is `notFound` or `FormattedError` or `FormZodError` -> just throw the error (format already ok).
-- If error is `z.ZodError` -> throw new Error("A validation error occurred") and send a mail.
-- If error is anything else -> throw new Error("An Unexpected error occurred") and send a mail.
-- Need to create a `FormattedError` instance for, well, expected error like "media already in your list".
-- Need to create a wrapper arround ZodError for Form server function -> Return error to user for display on form.

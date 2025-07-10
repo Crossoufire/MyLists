@@ -333,8 +333,8 @@ export class UserRepository {
         const followedUsers = await getDbClient()
             .select({
                 id: user.id,
-                username: user.name,
                 image: user.image,
+                username: user.name,
                 privacy: user.privacy,
             })
             .from(followers)

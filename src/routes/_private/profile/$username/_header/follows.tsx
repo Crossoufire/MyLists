@@ -20,7 +20,7 @@ function ProfileFollows() {
     return (
         <PageTitle title="Follows">
             <div className="flex justify-start flex-wrap gap-11">
-                {apiData.follows.map(user =>
+                {apiData.follows.map((user) =>
                     <BlockLink
                         key={user.id}
                         privacy={user.privacy}

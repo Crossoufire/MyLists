@@ -2,10 +2,10 @@ import {notFound} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {NotificationType} from "@/lib/server/utils/enums";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/server/types/base.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export const getUserProfile = createServerFn({ method: "GET" })

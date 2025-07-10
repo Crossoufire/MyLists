@@ -139,7 +139,12 @@ function MediaFavorites({ media, username }: { media: any, username: string }) {
                 :
                 <div className="grid grid-cols-10 max-sm:grid-cols-5 gap-1">
                     {media.favoritesList.map((m: any) =>
-                        <BlockLink key={m.mediaName} to={`/details/${media.mediaType}/${m.mediaId}`} className="col-span-1 md:col-span-1 mt-2">
+                        <BlockLink
+                            key={m.mediaName}
+                            to="/details/$mediaType/$mediaId"
+                            className="col-span-1 md:col-span-1 mt-2"
+                            params={{ mediaType: media.mediaType, mediaId: m.mediaId }}
+                        >
                             <Tooltip text={m.mediaName}>
                                 <img
                                     alt={m.mediaName}

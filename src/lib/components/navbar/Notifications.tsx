@@ -7,19 +7,19 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
-import {MutedText} from "@/lib/components/general/MutedText";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {notificationsCountOptions, notificationsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
-    const popRef = useRef(null);
     const { setSheetOpen } = useSheet();
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
+    const popRef = useRef<HTMLButtonElement>(null);
     const { data: notifCount = 0 } = useQuery(notificationsCountOptions());
     const { data: notifs = [], isLoading, refetch } = useQuery(notificationsOptions());
 
@@ -30,7 +30,6 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
     };
 
     const handlePopoverClose = () => {
-        // @ts-expect-error
         popRef?.current?.click();
         setSheetOpen(false);
     };

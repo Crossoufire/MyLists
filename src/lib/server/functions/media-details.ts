@@ -26,6 +26,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
         return { media, userMedia, followsData, similarMedia };
     });
 
+
 export const refreshMediaDetails = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
     .validator((data: unknown) => refreshMediaDetailsSchema.parse(data))

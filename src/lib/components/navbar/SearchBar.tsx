@@ -91,8 +91,7 @@ export const SearchBar = () => {
                                 </div>
                             }
                             {error ?
-                                //@ts-expect-error
-                                error?.status === 429 ?
+                                (error as any)?.status === 429 ?
                                     <CommandEmpty>Too many requests. Please wait and try again.</CommandEmpty>
                                     :
                                     <CommandEmpty>An error occurred. Please try again.</CommandEmpty>

@@ -8,6 +8,7 @@ function createCleanError(originalError: Error, message?: string): Error {
     const cleanError = new Error(message ? message : originalError.message);
     cleanError.name = originalError.name;
     delete cleanError.stack;
+
     return cleanError;
 }
 
