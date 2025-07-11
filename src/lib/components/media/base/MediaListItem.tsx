@@ -2,15 +2,16 @@ import {formatRating} from "@/lib/utils/functions";
 import {ExtractListByType} from "@/lib/components/types";
 import {mediaConfig} from "@/lib/components/media-config";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaListItemProps<T extends MediaType> {
     mediaType: T;
-    queryKey: string[];
     isCurrent: boolean;
     isConnected: boolean;
     allStatuses: Status[];
     userMedia: ExtractListByType<T>;
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

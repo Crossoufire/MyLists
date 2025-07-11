@@ -244,6 +244,7 @@ export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
 export type SearchType = z.infer<typeof searchTypeSchema>;
 export type HofSorting = z.infer<typeof hofSortingSchema>;
 export type SearchTypeHoF = z.infer<typeof searchTypeHoFSchema>;
+export type SearchTypeAdmin = z.infer<typeof searchTypeAdminSchema>;
 export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
 export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
@@ -260,6 +261,11 @@ export const searchTypeSchema = z.object({
 
 export const searchTypeHoFSchema = searchTypeSchema.extend({
     sorting: hofSortingSchema,
+});
+
+export const searchTypeAdminSchema = searchTypeSchema.extend({
+    total: z.coerce.number().int().positive().optional().catch(undefined),
+    sortDesc: z.boolean().optional().catch(true),
 });
 
 export const mediaDetailsSchema = z.object({

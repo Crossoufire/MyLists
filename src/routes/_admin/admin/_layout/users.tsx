@@ -5,17 +5,18 @@ import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {PrivacyType, RoleType} from "@/lib/server/utils/enums";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
-import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
-import {adminQueryKeys, userAdminOptions} from "@/lib/react-query/query-options/admin-options";
+import {userAdminOptions} from "@/lib/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX, X} from "lucide-react";
+import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, SortingState, useReactTable} from "@tanstack/react-table";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -28,7 +29,7 @@ import {
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/users")({
-    validateSearch: (search) => search as Record<string, any>,
+    validateSearch: (search) => search as SearchTypeAdmin,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(userAdminOptions(search));
@@ -40,28 +41,29 @@ export const Route = createFileRoute("/_admin/admin/_layout/users")({
 function UserManagementPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
+    const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const updateUserMutation = useAdminUpdateUserMutation(adminQueryKeys.adminUsersKeys(filters));
-    const paginationState = { pageIndex: filters?.pageIndex ?? 0, pageSize: filters?.pageSize ?? 25 };
-    const sortingState = [{ id: filters?.sortBy ?? "updatedAt", desc: filters?.sortDesc === "true" }];
+    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+    const sortingState = [{ id: filters?.sorting ?? "updatedAt", desc: filters?.sortDesc === true }];
 
-    const setFilters = async (filtersData: Record<string, any>) => {
+    const setFilters = async (filtersData: SearchTypeAdmin) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
     };
 
     const resetFilters = async () => {
-        await navigate({ search: { sortBy: filters?.sortBy, sortDesc: filters?.sortDesc } });
+        await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
         setCurrentSearch("");
     };
 
-    const onPaginationChange = (updater: any) => {
-        setFilters(updater(paginationState));
+    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
+        setFilters({ page: newPagination.pageIndex + 1 });
     };
 
-    const onSortingChange = (updater: any) => {
-        const newState = updater(sortingState);
-        setFilters({ sortBy: newState[0]?.id ?? "updatedAt", sortDesc: newState[0]?.desc ?? true, pageIndex: 0 });
+    const onSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+        const newSorting = typeof updaterOrValue === "function" ? updaterOrValue(sortingState) : updaterOrValue;
+        setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
     };
 
     const updateUser = (userId: number | undefined, payload: Record<string, any>) => {
@@ -276,7 +278,7 @@ function UserManagementPage() {
         state: { pagination: paginationState, sorting: sortingState },
     });
 
-    useDebounceCallback(currentSearch, 300, setFilters, { ...filters, search: currentSearch, pageIndex: 0 });
+    useDebounceCallback<SearchTypeAdmin>(currentSearch, 300, setFilters, { ...filters, search: currentSearch, page: 1 });
 
     return (
         <DashboardShell>

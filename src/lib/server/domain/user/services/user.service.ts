@@ -1,13 +1,14 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {AdminPaginatedUsers, UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
+import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 
 
 export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
 
-    async getAdminPaginatedUsers(data: AdminPaginatedUsers) {
+    async getAdminPaginatedUsers(data: SearchTypeAdmin) {
         return this.userRepository.getAdminPaginatedUsers(data);
     }
 
@@ -18,7 +19,7 @@ export class UserService {
         }
 
         if (payload.delete && userId) {
-            await this.userRepository.adminDeleteUser(userId);
+            await this.deleteUserAccount(userId);
             return;
         }
 
@@ -30,6 +31,10 @@ export class UserService {
         }
 
         await this.userRepository.adminUpdateUser(userId!, payload);
+    }
+
+    async deleteUserAccount(userId: number) {
+        return this.userRepository.deleteUserAccount(userId);
     }
 
     async updateUserSettings(userId: number, payload: Record<string, any>) {
@@ -88,6 +93,10 @@ export class UserService {
 
     async findUserByName(name: string) {
         return this.userRepository.findUserByName(name);
+    }
+
+    async updateFeatureFlag(userId: number) {
+        return this.userRepository.updateFeatureFlag(userId);
     }
 
     async updateFollowStatus(userId: number, followedId: number) {

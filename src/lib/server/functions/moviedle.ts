@@ -12,7 +12,7 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
         const container = await getContainer();
         const mediadleService = container.services.mediadle;
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
-        return mediadleService.getDailyMediadleData(parseInt(currentUser.id), moviesService);
+        return mediadleService.getDailyMediadleData(currentUser.id, moviesService);
     });
 
 
@@ -35,7 +35,5 @@ export const postAddMediadleGuess = createServerFn({ method: "POST" })
         const container = await getContainer();
         const mediadleService = container.services.mediadle;
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
-
-        // @ts-expect-error
         return mediadleService.addMediadleGuess(currentUser.id, guess, moviesService);
     });

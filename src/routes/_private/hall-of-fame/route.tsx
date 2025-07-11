@@ -48,11 +48,12 @@ function HallOfFamePage() {
         await fetchData({ page, sorting, search });
     };
 
-    const onSortChanged = async (sorting: HofSorting) => {
+    const onSortChanged = async (value: string) => {
+        const sorting: HofSorting = value as HofSorting;
         await fetchData({ page: 1, sorting, search });
     };
 
-    useDebounceCallback(currentSearch, 400, fetchData, { search: currentSearch, page: DEFAULT.page, sorting });
+    useDebounceCallback<SearchTypeHoF>(currentSearch, 400, fetchData, { search: currentSearch, sorting, page: DEFAULT.page });
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of profiles ranked by profile level">
@@ -75,7 +76,6 @@ function HallOfFamePage() {
                             {search && <Button size="sm" onClick={resetSearch}>Cancel</Button>}
                         </div>
                         <div>
-                            {/*//@ts-expect-error*/}
                             <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
                                 <SelectTrigger className="w-[130px] font-medium bg-outline border">
                                     <SelectValue/>

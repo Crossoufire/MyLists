@@ -6,12 +6,13 @@ import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
 import {UpdateSeasonsEps} from "@/lib/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface TvUserDetailsProps {
-    queryKey: string[];
     mediaType: MediaType;
     userMedia: ExtractUserMediaByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
+    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 

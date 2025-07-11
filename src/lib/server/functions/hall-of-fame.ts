@@ -9,5 +9,5 @@ export const getHallOfFame = createServerFn({ method: "GET" })
     .validator((data: unknown) => searchTypeHoFSchema.parse(data))
     .handler(async ({ data, context: { currentUser } }) => {
         const userStatsService = await getContainer().then((c) => c.services.userStats);
-        return userStatsService.userHallofFameData(parseInt(currentUser.id), data);
+        return userStatsService.userHallofFameData(currentUser.id, data);
     });

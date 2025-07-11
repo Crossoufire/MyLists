@@ -14,14 +14,13 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
         const container = await getContainer();
 
         const targetUserId = user.id;
-        const currentUserId = currentUser?.id ? parseInt(currentUser.id) : undefined;
-
         const userService = container.services.user;
+        const currentUserId = currentUser?.id ? currentUser.id : undefined;
 
         const userHasMediaTypeActive = await userService.hasActiveMediaType(user.id, data.mediaType);
         if (!userHasMediaTypeActive) throw new FormattedError("MediaType not-activated");
 
-        if (currentUser && parseInt(currentUser.id) !== targetUserId) {
+        if (currentUser && currentUser.id !== targetUserId) {
             await userService.incrementMediaTypeView(targetUserId, mediaType);
         }
 

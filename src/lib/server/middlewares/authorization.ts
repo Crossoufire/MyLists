@@ -24,5 +24,10 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
             throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
         }
 
-        return next({ context: { user: user, currentUser: session?.user } });
+        return next({
+            context: {
+                user: user,
+                currentUser: session?.user ? { ...session.user, id: parseInt(session.user.id) } : undefined,
+            }
+        });
     });

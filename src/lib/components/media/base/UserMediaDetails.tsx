@@ -15,9 +15,9 @@ import {useRemoveMediaFromListMutation, useUpdateUserMediaMutation} from "@/lib/
 
 
 interface UserMediaDetailsProps {
-    queryKey: string[];
     mediaType: MediaType;
     userMedia: UserMedia | UserMediaItem;
+    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 

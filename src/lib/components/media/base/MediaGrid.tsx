@@ -1,15 +1,16 @@
 import {useAuth} from "@/lib/hooks/use-auth";
-import {UserMediaItem} from "@/lib/components/types";
-import {MediaType} from "@/lib/server/utils/enums";
-import {MediaListItem} from "@/lib/components/media/base/MediaListItem";
 import {StatusUtils} from "@/lib/utils/functions";
+import {MediaType} from "@/lib/server/utils/enums";
+import {UserMediaItem} from "@/lib/components/types";
+import {MediaListItem} from "@/lib/components/media/base/MediaListItem";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaGridProps {
-    queryKey: string[];
     isCurrent: boolean;
     mediaType: MediaType;
     mediaItems: UserMediaItem[];
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

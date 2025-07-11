@@ -13,7 +13,14 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
         throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
 
-    return next({ context: { currentUser: session.user } });
+    return next({
+        context: {
+            currentUser: {
+                ...session.user,
+                id: parseInt(session.user.id),
+            }
+        }
+    });
 });
 
 
@@ -25,5 +32,12 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
         throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
 
-    return next({ context: { currentUser: session.user } });
+    return next({
+        context: {
+            currentUser: {
+                ...session.user,
+                id: parseInt(session.user.id),
+            }
+        }
+    });
 });

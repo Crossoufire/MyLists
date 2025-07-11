@@ -37,7 +37,7 @@ export class NotificationsRepository {
             .execute();
     }
 
-    static async countUnreadNotifications(userId: number, lastReadTime: string | null) {
+    static async countUnreadNotifications(userId: number, lastReadTime: Date | null) {
         const lastNotifReadTime = lastReadTime ? lastReadTime : new Date(1900, 0, 1);
 
         const notificationsCount = await getDbClient()

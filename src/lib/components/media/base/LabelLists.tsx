@@ -7,13 +7,14 @@ import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {LabelsDialog} from "@/lib/components/media/base/LabelsDialog";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface LabelListsProps {
     mediaId: number;
-    queryKey: string[];
     mediaLabels: Label[];
     mediaType: MediaType;
+    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 

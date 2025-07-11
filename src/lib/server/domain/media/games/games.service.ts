@@ -116,8 +116,8 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
-        fields.apiId = media.apiId;
+        type FieldsType = typeof editableFields[number];
+        const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
@@ -126,14 +126,15 @@ export class GamesService extends BaseService<
                 resize: { width: 300, height: 450 },
                 saveLocation: "public/static/covers/games-covers",
             });
-            fields.imageCover = imageName;
+            if (editableFields.includes("imageCover" as FieldsType)) {
+                fields.imageCover = imageName;
+            }
             delete payload.imageCover;
         }
 
         for (const key in payload) {
-            //@ts-expect-error
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
-                fields[key] = payload[key];
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as FieldsType)) {
+                fields[key as FieldsType] = payload[key];
             }
         }
 

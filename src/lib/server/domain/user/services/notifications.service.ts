@@ -65,7 +65,7 @@ export class NotificationsService {
         return this.repository.getLastNotifications(userId, limit);
     }
 
-    async countUnreadNotifications(userId: number, lastReadTime: string | null) {
+    async countUnreadNotifications(userId: number, lastReadTime: Date | null) {
         return this.repository.countUnreadNotifications(userId, lastReadTime);
     }
 

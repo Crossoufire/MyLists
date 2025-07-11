@@ -1,35 +1,21 @@
 import {queryOptions} from "@tanstack/react-query";
+import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, getAdminMediadleStats, getAdminOverview, getAdminTasks} from "@/lib/server/functions/admin";
 
 
-type AdminQueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
-
-
-export type AdminQueryKeys = {
-    adminUsersKeys: AdminQueryKeyFunction<[Record<string, any>]>;
-    adminOverviewKey: AdminQueryKeyFunction<[]>;
-    adminAchievementsKey: AdminQueryKeyFunction<[]>;
-    adminMediadleKey: AdminQueryKeyFunction<[Record<string, any>]>;
-    adminTasksKey: AdminQueryKeyFunction<[]>;
-    adminJobsKey: AdminQueryKeyFunction<[]>;
-    adminJobLogsKey: AdminQueryKeyFunction<[string | null | undefined]>;
-    adminJobCompletedKey: AdminQueryKeyFunction<[]>;
+export const adminQueryKeys = {
+    adminAchievementsKey: () => ["adminAchievements"] as const,
+    adminMediadleKey: (search: Record<string, any>) => ["adminMediadle", search] as const,
+    adminOverviewKey: () => ["adminOverview"] as const,
+    adminTasksKey: () => ["adminTasks"] as const,
+    adminUsersKeys: (search: SearchTypeAdmin) => ["adminUpdateUsers", search] as const,
+    adminJobsKey: () => ["adminJobs"] as const,
+    adminJobLogsKey: (jobId: string | null | undefined) => ["adminJobs", jobId, "Logs"] as const,
+    adminJobCompletedKey: () => ["adminJobs", "Completed"] as const,
 };
 
 
-export const adminQueryKeys: AdminQueryKeys = {
-    adminAchievementsKey: () => ["adminAchievements"],
-    adminMediadleKey: (search) => ["adminMediadle", search],
-    adminOverviewKey: () => ["adminOverview"],
-    adminTasksKey: () => ["adminTasks"],
-    adminUsersKeys: (search) => ["adminUpdateUsers", search],
-    adminJobsKey: () => ["adminJobs"],
-    adminJobLogsKey: (jobId) => ["adminJobs", jobId, "Logs"],
-    adminJobCompletedKey: () => ["adminJobs", "Completed"],
-};
-
-
-export const userAdminOptions = (search: Record<string, any>) => queryOptions({
+export const userAdminOptions = (search: SearchTypeAdmin) => queryOptions({
     queryKey: adminQueryKeys.adminUsersKeys(search),
     queryFn: () => getAdminAllUsers({ data: search }),
 });

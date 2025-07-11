@@ -339,11 +339,19 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
                                         <LoaderCircle className="h-6 w-6 animate-spin"/>
                                     </div>
                                 }
-                                {error && <CommandEmpty>An error occurred. Please try again.</CommandEmpty>}
-                                {filterResults && filterResults.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
+                                {error &&
+                                    <CommandEmpty>
+                                        An error occurred. Please try again.
+                                    </CommandEmpty>
+                                }
+                                {filterResults && filterResults.length === 0 &&
+                                    <CommandEmpty>
+                                        No results found.
+                                    </CommandEmpty>
+                                }
                                 {filterResults && filterResults.length > 0 &&
-                                    filterResults.map((item: any, idx: number) =>
-                                        <div key={idx} role="button" onClick={() => handleAddClicked(item.name)}>
+                                    filterResults.map((item, idx) =>
+                                        <div key={idx} role="button" onClick={() => handleAddClicked(item.name!)}>
                                             <CommandItem>{item.name}</CommandItem>
                                         </div>
                                     )

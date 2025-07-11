@@ -40,8 +40,7 @@ function MediaList() {
     const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
     const apiData = useSuspenseQuery(mediaListOptions(mediaType, username, search)).data;
 
-    // @ts-expect-error
-    const isCurrent = (parseInt(currentUser?.id) === apiData.userData.id);
+    const isCurrent = (currentUser?.id === apiData.userData.id);
 
     const handleFilterChange = async (newFilters: Partial<MediaListArgs>) => {
         const page = newFilters.page || 1;

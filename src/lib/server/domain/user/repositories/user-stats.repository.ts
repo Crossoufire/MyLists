@@ -72,7 +72,6 @@ export class UserStatsRepository {
 
         if (Object.keys(setUpdates).length === 0) return;
 
-        // Execute query
         await getDbClient()
             .update(userMediaSettings)
             .set(setUpdates)

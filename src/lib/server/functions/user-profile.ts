@@ -18,7 +18,6 @@ export const getUserProfile = createServerFn({ method: "GET" })
         const userUpdatesService = container.services.userUpdates;
         const achievementsService = container.services.achievements;
 
-        // @ts-expect-error
         if (currentUser && currentUser.id !== profileOwnerId) {
             await userService.incrementProfileView(profileOwnerId);
         }
@@ -26,7 +25,6 @@ export const getUserProfile = createServerFn({ method: "GET" })
         const userFollows = await userService.getUserFollows(profileOwnerId);
         const userUpdates = await userUpdatesService.getUserUpdates(profileOwnerId);
         const followsUpdates = await userUpdatesService.getFollowsUpdates(profileOwnerId, !currentUser);
-        // @ts-expect-error
         const isFollowing = currentUser ? await userService.isFollowing(currentUser.id, profileOwnerId) : false;
         const preComputedStatsSummary = await userStatsService.userPreComputedStatsSummary(profileOwnerId);
         const perMediaSummary = await userStatsService.userPerMediaSummaryStats(profileOwnerId);
@@ -56,7 +54,6 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
         const userService = container.services.user;
         const notificationsService = container.services.notifications;
 
-        // @ts-expect-error
         if (currentUser.id === followId) {
             throw new FormattedError("You cannot follow yourself ;)");
         }
@@ -66,12 +63,10 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
             throw notFound();
         }
 
-        // @ts-expect-error
         await userService.updateFollowStatus(currentUser.id, targetUser.id);
 
         if (followStatus) {
             const payload = { username: currentUser.name, message: `${currentUser.name} is following you` }
-            //@ts-expect-error
             notificationsService.sendNotification(currentUser.id, NotificationType.FOLLOW, payload);
         }
     });

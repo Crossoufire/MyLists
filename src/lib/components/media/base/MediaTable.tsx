@@ -9,12 +9,13 @@ import {TablePagination} from "@/lib/components/general/TablePagination";
 import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaTableProps {
-    queryKey: string[];
     isCurrent: boolean;
     mediaType: MediaType;
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
     onChangePage: (filters: Partial<MediaListArgs>) => void;
     results: {
         items: UserMediaItem[];

@@ -64,7 +64,6 @@ export class UserStatsService {
             userRanks.push({ rank, active, mediaType, percent });
         }
 
-        // Format Final Results
         const items = rankedUsers.map((row) => {
             return {
                 id: row.id,

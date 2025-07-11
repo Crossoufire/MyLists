@@ -7,12 +7,13 @@ import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
 import {UpdatePlatform} from "@/lib/components/media/games/UpdatePlatform";
 import {UpdatePlaytime} from "@/lib/components/media/games/UpdatePlaytime";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface GamesUserDetailsProps {
-    queryKey: string[];
     mediaType: MediaType;
     userMedia: ExtractUserMediaByType<typeof MediaType.GAMES>;
+    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 

@@ -5,7 +5,6 @@ import {Pencil, RefreshCw} from "lucide-react";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {formatDateTime} from "@/lib/utils/functions";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useRefreshMediaMutation} from "@/lib/react-query/query-mutations/media.mutations";
 
 
@@ -18,7 +17,7 @@ interface RefreshAndEditMediaProps {
 
 
 export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: RefreshAndEditMediaProps) => {
-    const refreshMutation = useRefreshMediaMutation(queryKeys.detailsKey(mediaType, mediaId.toString()));
+    const refreshMutation = useRefreshMediaMutation(mediaType, mediaId);
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
 
     const handleRefresh = () => {

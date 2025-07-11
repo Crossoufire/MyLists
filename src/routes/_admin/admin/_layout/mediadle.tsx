@@ -5,18 +5,19 @@ import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {SearchType} from "@/lib/server/types/base.types";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {adminMediadleOptions} from "@/lib/react-query/query-options/admin-options";
-import {ColumnDef, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/mediadle")({
-    validateSearch: (search) => search as Record<string, any>,
+    validateSearch: (search) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, deps: { search } }) => {
         return queryClient.ensureQueryData(adminMediadleOptions(search));
@@ -30,9 +31,9 @@ function AdminMediadlePage() {
     const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const paginationState = { pageIndex: filters?.pageIndex ?? 0, pageSize: filters?.pageSize ?? 25 };
+    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
 
-    const setFilters = async (filtersData: Record<string, any>) => {
+    const setFilters = async (filtersData: SearchType) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
     };
 
@@ -41,8 +42,9 @@ function AdminMediadlePage() {
         setCurrentSearch("");
     };
 
-    const onPaginationChange = (updater: any) => {
-        setFilters(updater(paginationState));
+    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+        const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
+        setFilters({ page: newPagination.pageIndex + 1 });
     };
 
     const mediadleColumns = useMemo((): ColumnDef<typeof apiData.items[0]>[] => [
@@ -132,7 +134,7 @@ function AdminMediadlePage() {
         onPaginationChange: onPaginationChange,
     });
 
-    useDebounceCallback(currentSearch, 300, setFilters, { ...filters, search: currentSearch, pageIndex: 0 });
+    useDebounceCallback<SearchType>(currentSearch, 300, setFilters, { ...filters, search: currentSearch, page: 1 });
 
     return (
         <DashboardShell>

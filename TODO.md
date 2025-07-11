@@ -1,35 +1,29 @@
-# MyLists TODO
+# MyLists TODO and FIXES
 
-## Logic (GET and mutations) to implement
+## Fixes
 
-- Settings Page
-    - Add List Settings
-    - Add Delete User
-- Platform Media Stats
-    - Add GET page
-    - Add cache system
-- User Media Stats page
-    - Make it work (needs other mediaTypes)
-- Missing mutations
+- FIX: db error adding series to list
+- FIX: db sqlite busy error when adding anything from search navbar
+- FIX: refresh of anime does not seems to use jikan for the genres
+- FIX: correct sum redo not correct for series in user updates
 
-## Backend Logic to implement
+## TODO
 
-- Add rate limiter in `nginx` for prod (for spam protection)
-
-- Create small CLI for scheduled tasks
-    - Update IGDB token
-    - Update platform stats
-    - Run all scheduled tasks
-
-- TODO: Better types for admin parts
-- TODO: Add Dispatcher for Media Edit system (Extract etc...)
-- TODO: Reduce number of useEffect if possible
+- TODO: Make User Media Stats page work
+- TODO: Add GET page in Platform Media Stats
 - TODO: Check all `any` and `@ts-expect-error`
+- TODO: Add cache system in Platform Media Stats
+
+## TODO LATER
+
+- TODO: Add Update IGDB token in CLI/tasks
+- TODO: Update platform stats in CLI/tasks
+- TODO: Add a Run All Scheduled Tasks in CLI/tasks
 - TODO: Better admin panel (types, checks, zod, etc...)
-- TODO: db error adding series to list
-- TODO: db sqlite busy error when adding anything from search navbar
-- TODO: refresh of anime does not seems to use jikan for the genres
-- TODO: correct sum redo not correct for series in user updates
+- TODO: Add Dispatcher for Media Edit system (Extract etc...)
+- TODO: Add rate limiter in `nginx` for prod (for spam protection)
+
+## POTENTIAL TODO
 
 - POTENTIAL TODO: Merge SeriesProvider and AnimeProvider
 - POTENTIAL TODO: Abstract JobType (getMediaJobDetails, getSearchListFilters)

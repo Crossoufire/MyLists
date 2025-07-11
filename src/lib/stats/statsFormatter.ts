@@ -3,7 +3,6 @@ import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
-// Constants for common configurations
 const MAIN_CARDS_CONFIG = {
     cardsPerRow: 4,
     cardsPerPage: 8,

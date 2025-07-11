@@ -1,6 +1,7 @@
 import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
+import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -11,7 +12,8 @@ import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
-import {allUpdatesOptions} from "@/lib/react-query/query-options/query-options";
+import {allUpdatesOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
+import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
@@ -36,7 +38,8 @@ function AllUpdates() {
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
     const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
-    // const deleteMutation = useDeleteUpdateMutation(queryKeys.allUpdatesKey(username, filters));
+    const deleteUpdateMutation = useDeleteUpdatesMutation(queryKeys.allUpdatesKey(username, filters));
+
     const setFilters = async (filtersData: SearchType) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), resetScroll: false });
     };
@@ -116,19 +119,16 @@ function AllUpdates() {
         getCoreRowModel: getCoreRowModel(),
         onRowSelectionChange: setRowSelected,
         onPaginationChange: onPaginationChange,
-        state: {
-            rowSelection: rowSelected,
-            pagination: paginationState,
-        },
+        state: { rowSelection: rowSelected, pagination: paginationState },
     });
 
     const deleteSelectedRows = async () => {
         const selectedIds = Object.keys(rowSelected).map(key => table.getRow(key).original.id);
-        // await deleteMutation.mutateAsync({ updateIds: selectedIds });
+        await deleteUpdateMutation.mutateAsync({ updateIds: selectedIds });
         setRowSelected({});
     };
 
-    useDebounceCallback(currentSearch, 300, setFilters, { search: currentSearch, pageIndex: 0 });
+    useDebounceCallback<SearchType>(currentSearch, 300, setFilters, { search: currentSearch, page: 1 });
 
     return (
         <PageTitle title="History" subtitle="History of all my media updates">
@@ -139,20 +139,20 @@ function AllUpdates() {
                             className="w-56"
                             value={currentSearch}
                             placeholder="Search by name..."
-                            // disabled={deleteMutation.isPending}
+                            disabled={deleteUpdateMutation.isPending}
                             onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
-                        {/*{currentSearch &&*/}
-                        {/*    <Button size="sm" onClick={resetFilters} disabled={deleteMutation.isPending}>*/}
-                        {/*        Cancel*/}
-                        {/*    </Button>*/}
-                        {/*}*/}
+                        {currentSearch &&
+                            <Button size="sm" onClick={resetFilters} disabled={deleteUpdateMutation.isPending}>
+                                Cancel
+                            </Button>
+                        }
                     </div>
-                    {/*{isCurrent &&*/}
-                    {/*    <Button disabled={Object.keys(rowSelected).length === 0 || deleteMutation.isPending} onClick={deleteSelectedRows}>*/}
-                    {/*        Delete Selected*/}
-                    {/*    </Button>*/}
-                    {/*}*/}
+                    {isCurrent &&
+                        <Button disabled={Object.keys(rowSelected).length === 0 || deleteUpdateMutation.isPending} onClick={deleteSelectedRows}>
+                            Delete Selected
+                        </Button>
+                    }
                 </div>
                 <div className="rounded-md border">
                     <Table>
@@ -171,8 +171,10 @@ function AllUpdates() {
                             {table.getRowModel().rows?.length ?
                                 table.getRowModel().rows.map(row => {
                                     return (
-                                        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}
-                                            // className={(deleteMutation.isPending && row.getIsSelected()) ? "opacity-50" : ""}
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                            className={(deleteUpdateMutation.isPending && row.getIsSelected()) ? "opacity-50" : ""}
                                         >
                                             {row.getVisibleCells().map(cell =>
                                                 <TableCell key={cell.id}>

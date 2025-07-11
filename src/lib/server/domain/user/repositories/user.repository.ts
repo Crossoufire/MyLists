@@ -1,8 +1,9 @@
+import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
-import {ProviderSearchResult, ProviderSearchResults} from "@/lib/server/types/provider.types";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
+import {ProviderSearchResult, ProviderSearchResults} from "@/lib/server/types/provider.types";
 
 
 export type AdminUserStats = {
@@ -11,16 +12,6 @@ export type AdminUserStats = {
     currentMonthStart: string;
     twoMonthsAgoStart: string;
     previousMonthStart: string;
-}
-
-
-export type AdminPaginatedUsers = {
-    total: number;
-    search: string;
-    sortBy: string;
-    pageSize: number;
-    pageIndex: number;
-    sortDesc: boolean;
 }
 
 
@@ -145,12 +136,12 @@ export class UserRepository {
             .where(eq(user.id, userId))
     }
 
-    static async getAdminPaginatedUsers(data: AdminPaginatedUsers) {
-        const page = data.pageIndex ?? 0;
+    static async getAdminPaginatedUsers(data: SearchTypeAdmin) {
+        const page = data.page ?? 1;
         const search = data.search ?? "";
-        const perPage = data.pageSize ?? 25;
-        const sortBy = data.sortBy ?? "updatedAt";
+        const perPage = data.perPage ?? 25;
         const sortDesc = data.sortDesc ?? true;
+        const sorting = data.sorting ?? "updatedAt";
         const offset = page * perPage;
 
         const totalUsers = await getDbClient()
@@ -160,30 +151,19 @@ export class UserRepository {
             .get();
 
         const users = await getDbClient()
-            .select({
-                id: user.id,
-                name: user.name,
-                role: user.role,
-                email: user.email,
-                image: user.image,
-                privacy: user.privacy,
-                updatedAt: user.updatedAt,
-                createdAt: user.createdAt,
-                emailVerified: user.emailVerified,
-                showUpdateModal: user.showUpdateModal,
-            })
+            .select()
             .from(user)
             .offset(offset)
             .limit(perPage)
-            // @ts-expect-error
-            .orderBy(sortDesc ? desc(user[sortBy]) : asc(user[sortBy]))
+            //@ts-expect-error
+            .orderBy(sortDesc ? desc(user[sorting]) : asc(user[sorting]))
             .where(like(user.name, `%${search}%`))
             .execute();
 
         return {
             items: users,
-            pages: Math.ceil(users.length / perPage),
             total: totalUsers?.count || 0,
+            pages: Math.ceil((totalUsers?.count || 0) / perPage),
         };
     }
 
@@ -195,7 +175,15 @@ export class UserRepository {
             .execute();
     }
 
-    static async adminDeleteUser(userId: number) {
+    static async updateFeatureFlag(userId: number) {
+        await getDbClient()
+            .update(user)
+            .set({ showUpdateModal: false })
+            .where(eq(user.id, userId))
+            .execute();
+    }
+
+    static async deleteUserAccount(userId: number) {
         await getDbClient()
             .delete(user)
             .where(eq(user.id, userId))

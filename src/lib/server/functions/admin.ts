@@ -3,9 +3,9 @@ import {createServerFn} from "@tanstack/react-start";
 import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
 import {taskDefinitions, TasksName} from "@/cli/commands";
+import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {AdminPaginatedUsers} from "@/lib/server/domain/user/repositories/user.repository";
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
@@ -18,7 +18,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as AdminPaginatedUsers)
+    .validator((data: any) => data as SearchTypeAdmin)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminPaginatedUsers(data);

@@ -5,14 +5,15 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";
 import {StatusUtils} from "@/lib/utils/functions";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 export interface ColumnConfigProps {
-    queryKey: string[];
     isCurrent: boolean;
     isConnected: boolean;
     mediaType: MediaType;
     onEdit: (mediaId: number) => void;
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

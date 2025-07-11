@@ -44,7 +44,6 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
             updatesToApply.backgroundImage = backgroundImageName;
         }
 
-        //@ts-expect-error
         await userService.updateUserSettings(currentUser.id, updatesToApply);
     });
 
@@ -53,7 +52,6 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
     .validator(data => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
     .handler(async ({ data, context: { currentUser } }) => {
-        const userId = parseInt(currentUser.id)
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
@@ -70,8 +68,8 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
             searchSelector: data.searchSelector,
         }
 
-        await userService.updateUserSettings(userId, toUpdateInUser);
-        await userStatsService.updateUserMediaListSettings(userId, toUpdateinUserStats);
+        await userService.updateUserSettings(currentUser.id, toUpdateInUser);
+        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateinUserStats);
     });
 
 
@@ -81,7 +79,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
-        return mediaService.downloadMediaListAsCSV(parseInt(currentUser.id));
+        return mediaService.downloadMediaListAsCSV(currentUser.id);
     });
 
 
@@ -90,7 +88,7 @@ export const postPasswordSettings = createServerFn({ method: "POST" })
     .validator(data => tryFormZodError(() => passwordSettingsSchema.parse(data)))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
-        const userAccount = await ctx.internalAdapter.findAccount(currentUser.id);
+        const userAccount = await ctx.internalAdapter.findAccount(currentUser.id.toString());
 
         const isValid = await ctx.password.verify({ hash: userAccount?.password ?? "", password: currentPassword });
         if (!isValid) {
@@ -98,5 +96,21 @@ export const postPasswordSettings = createServerFn({ method: "POST" })
         }
 
         const hash = await ctx.password.hash(newPassword);
-        await ctx.internalAdapter.updatePassword(currentUser.id, hash)
+        await ctx.internalAdapter.updatePassword(currentUser.id.toString(), hash)
+    });
+
+
+export const postDeleteUserAccount = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .handler(async ({ context: { currentUser } }) => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.deleteUserAccount(currentUser.id);
+    });
+
+
+export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .handler(async ({ context: { currentUser } }) => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.updateFeatureFlag(currentUser.id);
     });

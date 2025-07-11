@@ -21,7 +21,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
             userMedia,
             followsData,
             similarMedia,
-        } = await mediaService.getMediaAndUserDetails(parseInt(currentUser.id), mediaId, external, mediaProviderService);
+        } = await mediaService.getMediaAndUserDetails(currentUser.id, mediaId, external, mediaProviderService);
 
         return { media, userMedia, followsData, similarMedia };
     });
@@ -67,5 +67,5 @@ export const getJobDetails = createServerFn({ method: "GET" })
     .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
-        return mediaService.getMediaJobDetails(parseInt(currentUser.id), job, name, search);
+        return mediaService.getMediaJobDetails(currentUser.id, job, name, search);
     });

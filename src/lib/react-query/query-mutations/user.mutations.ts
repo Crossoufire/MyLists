@@ -1,16 +1,25 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
-import {getDownloadListAsCSV, postGeneralSettings, postMediaListSettings, postPasswordSettings} from "@/lib/server/functions/user-settings";
+import {useAuth} from "@/lib/hooks/use-auth";
 import {ListSettings} from "@/lib/server/types/base.types";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
+import {
+    getDownloadListAsCSV,
+    postDeleteUserAccount,
+    postGeneralSettings,
+    postMediaListSettings,
+    postPasswordSettings,
+    postUpdateFeatureFlag
+} from "@/lib/server/functions/user-settings";
 
 
-export const useFollowMutation = (queryKey: string[]) => {
+export const useFollowMutation = (username: string) => {
     const queryClient = useQueryClient();
 
     return useMutation<void, Error, { followId: number, followStatus: boolean }>({
         mutationFn: ({ followId, followStatus }) => postUpdateFollowStatus({ data: { followId, followStatus } }),
         onSuccess: (_data, variables) => {
-            queryClient.setQueryData(queryKey, (oldData: any) => {
+            queryClient.setQueryData(queryKeys.profileKey(username), (oldData: any) => {
                 return {
                     ...oldData,
                     isFollowing: variables.followStatus,
@@ -53,11 +62,18 @@ export const usePasswordSettingsMutation = () => {
 };
 
 
-// export const useDeleteAccountMutation = () => {
-//     return useMutation({
-//         mutationFn: () =>
-//             postFetcher({
-//                 url: settingsUrls.deleteAccount(),
-//             }),
-//     });
-// };
+export const useDeleteAccountMutation = () => {
+    return useMutation({
+        mutationFn: () => postDeleteUserAccount()
+    });
+};
+
+
+export const useFeatureFlagMutation = () => {
+    const { setCurrentUser } = useAuth();
+
+    return useMutation({
+        mutationFn: () => postUpdateFeatureFlag(),
+        onSuccess: () => setCurrentUser(),
+    });
+};

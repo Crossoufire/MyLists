@@ -24,7 +24,6 @@ export class TvService extends BaseService<
         super(repository);
 
         this.achievementHandlers = {
-            // Anime Achievements
             completed_anime: this.repository.countCompletedAchievementCte.bind(this.repository),
             rated_anime: this.repository.countRatedAchievementCte.bind(this.repository),
             comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
@@ -35,7 +34,6 @@ export class TvService extends BaseService<
             network_anime: this.repository.getNetworkAchievementCte.bind(this.repository),
             actor_anime: this.repository.getActorAchievementCte.bind(this.repository),
 
-            // Series Achievements
             completed_series: this.repository.countCompletedAchievementCte.bind(this.repository),
             rated_series: this.repository.countRatedAchievementCte.bind(this.repository),
             short_series: this.repository.getDurationAchievementCte.bind(this.repository),
@@ -124,8 +122,8 @@ export class TvService extends BaseService<
         }
 
         const editableFields = this.repository.config.editableFields;
-        const fields: { [key: string]: any } = {};
-        fields.apiId = media.apiId;
+        type FieldsType = typeof editableFields[number];
+        const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
@@ -139,9 +137,8 @@ export class TvService extends BaseService<
         }
 
         for (const key in payload) {
-            //@ts-expect-error
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key)) {
-                fields[key] = payload[key];
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as FieldsType)) {
+                fields[key as FieldsType] = payload[key];
             }
         }
 
@@ -174,7 +171,6 @@ export class TvService extends BaseService<
         const oldState = await this.repository.findUserMedia(userId, mediaId);
         if (!oldState) throw new FormattedError("Media not in your list");
 
-        // Add eps per season to oldState
         const mediaEpsPerSeason = await this.repository.getMediaEpsPerSeason(mediaId);
         (media as any).epsPerSeason = mediaEpsPerSeason;
         (oldState as any).epsPerSeason = mediaEpsPerSeason;

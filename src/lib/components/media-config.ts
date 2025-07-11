@@ -20,14 +20,15 @@ import {MoviesUserDetails} from "@/lib/components/media/movies/MoviesUserDetails
 import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType, FilterConfig} from "@/lib/components/types";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 type MediaConfiguration = {
     [T in MediaType]: {
         mediaUserDetails: React.FC<{
             mediaType: T;
-            queryKey: string[];
             userMedia: ExtractUserMediaByType<T>;
+            queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
         }>;
         mediaFollowCard: React.FC<{
             rating: React.ReactNode,
@@ -39,12 +40,12 @@ type MediaConfiguration = {
         }>;
         mediaListCard: React.FC<{
             mediaType: T,
-            queryKey: string[],
             isCurrent: boolean,
             isConnected: boolean,
             allStatuses: Status[],
             rating: React.ReactNode,
             userMedia: ExtractListByType<T>,
+            queryKey: ReturnType<typeof queryKeys.userListKey>;
         }>;
         mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
         sheetFilters: () => FilterConfig[];

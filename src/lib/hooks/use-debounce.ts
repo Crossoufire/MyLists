@@ -1,14 +1,14 @@
 import {useEffect, useState} from "react";
 
 
-export const useDebounceCallback = (value: any, delay: number, callback: (...args: any[]) => void, ...args: any[]) => {
+export const useDebounceCallback = <T>(value: unknown, delay: number, callback: (args: T) => void, args: T) => {
     const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         clearTimer();
 
         if (value && callback) {
-            const newTimer = setTimeout(() => callback(...args), delay);
+            const newTimer = setTimeout(() => callback(args), delay);
             setTimer(newTimer);
         }
 

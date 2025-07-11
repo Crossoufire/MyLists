@@ -1,30 +1,36 @@
+import {toast} from "sonner";
+import authClient from "@/lib/utils/auth-client";
 import {Button} from "@/lib/components/ui/button";
+import {useQueryClient} from "@tanstack/react-query";
+import {useNavigate, useRouter} from "@tanstack/react-router";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {useDeleteAccountMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
 export const DangerForm = () => {
-    // const deleteAccountMutation = useDeleteAccountMutation();
+    const router = useRouter();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const deleteAccountMutation = useDeleteAccountMutation();
 
     const onSubmit = async () => {
-        const firstConfirm = window.confirm("Are you really sure?");
+        const firstConfirm = window.confirm("Are you sure?");
         if (!firstConfirm) return;
 
-        const secondConfirm = window.confirm("All your data will be permanently deleted. Are you sure?");
+        const secondConfirm = window.confirm("All your data will be permanently deleted. Are you really sure?");
         if (!secondConfirm) return;
 
-        // deleteAccountMutation.mutate({}, {
-        //     onError: () => toast.error("An error occurred while deleting your account. Please try again later."),
-        //     onSuccess: async () => {
-        //         logout.mutate(undefined, {
-        //             onSuccess: async () => {
-        //                 queryClient.clear();
-        //                 await router.invalidate().then(() => {
-        //                     navigate({ to: "/" });
-        //                 });
-        //             },
-        //         });
-        //         toast.success("Your account has been deleted successfully");
-        //     }
-        // });
+        deleteAccountMutation.mutate(undefined, {
+            onError: () => toast.error("An error occurred while deleting your account. Please try again later."),
+            onSuccess: async () => {
+                await authClient.signOut();
+                await router.invalidate();
+                queryClient.setQueryData(queryKeys.authKey(), null);
+                await navigate({ to: "/", replace: true });
+                queryClient.removeQueries();
+                toast.success("Your account has been deleted successfully");
+            }
+        });
     };
 
     return (

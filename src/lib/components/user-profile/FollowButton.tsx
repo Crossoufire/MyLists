@@ -2,7 +2,6 @@ import {toast} from "sonner";
 import {useParams} from "@tanstack/react-router";
 import {UserMinus, UserPlus} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useFollowMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
@@ -14,7 +13,7 @@ interface FollowButtonProps {
 
 export const FollowButton = ({ followStatus, followId }: FollowButtonProps) => {
     const { username } = useParams({ from: "/_private/profile/$username" });
-    const updateFollowMutation = useFollowMutation(queryKeys.profileKey(username));
+    const updateFollowMutation = useFollowMutation(username);
 
     const handleFollow = () => {
         updateFollowMutation.mutate({ followId, followStatus: !followStatus }, {

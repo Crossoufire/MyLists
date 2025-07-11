@@ -5,9 +5,9 @@ import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
-import {SearchType, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
+import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
@@ -16,62 +16,41 @@ import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 
 
-type QueryKeyFunction<T extends any[]> = (...args: T) => (string | any)[];
-
-
-type QueryKeys = {
-    achievementPageKey: QueryKeyFunction<[string]>;
-    authKey: QueryKeyFunction<[]>;
-    allUpdatesKey: QueryKeyFunction<[string, Record<string, any>]>;
-    dailyMediadleKey: QueryKeyFunction<[]>;
-    detailsKey: QueryKeyFunction<[MediaType, string | number]>;
-    editDetailsKey: QueryKeyFunction<[MediaType, string | number]>;
-    filterSearchKey: QueryKeyFunction<[MediaType, string, string, JobType]>;
-    followersKey: QueryKeyFunction<[string]>;
-    followsKey: QueryKeyFunction<[string]>;
-    globalStatsKey: QueryKeyFunction<[Record<string, any>]>;
-    historyKey: QueryKeyFunction<[MediaType, string | number]>;
-    hofKey: QueryKeyFunction<[Record<string, any>]>;
-    jobDetailsKey: QueryKeyFunction<[MediaType, JobType, string, Record<string, any>]>;
-    labelsKey: QueryKeyFunction<[MediaType]>;
-    navSearchKey: QueryKeyFunction<[string, number, string]>;
-    notificationCountKey: QueryKeyFunction<[]>;
-    notificationsKey: QueryKeyFunction<[]>;
-    mediadleSuggestionsKey: QueryKeyFunction<[string]>;
-    profileKey: QueryKeyFunction<[string]>;
-    listFiltersKey: QueryKeyFunction<[MediaType, string]>;
-    userStatsKey: QueryKeyFunction<[string, Record<string, any>]>;
-    trendsKey: QueryKeyFunction<[]>;
-    upcomingKey: QueryKeyFunction<[]>;
-    userListKey: QueryKeyFunction<[MediaType, string, Record<string, any>]>;
-};
-
-
-export const queryKeys: QueryKeys = {
-    achievementPageKey: (username) => ["achievementPage", username],
-    authKey: () => ["currentUser"],
-    allUpdatesKey: (username, filters) => ["allUpdates", username, filters],
-    dailyMediadleKey: () => ["dailyMediadle"],
-    detailsKey: (mediaType, mediaId) => ["details", mediaType, mediaId],
-    editDetailsKey: (mediaType, mediaId) => ["editDetails", mediaType, mediaId],
-    filterSearchKey: (mediaType, username, query, job) => ["filterSearch", mediaType, username, query, job],
-    followersKey: (username) => ["followers", username],
-    followsKey: (username) => ["follows", username],
-    globalStatsKey: (search) => ["globalStats", search],
-    historyKey: (mediaType, mediaId) => ["onOpenHistory", mediaType, mediaId],
-    hofKey: (search) => ["hof", search],
-    jobDetailsKey: (mediaType, job, name, search) => ["jobDetails", mediaType, job, name, search],
-    labelsKey: (mediaType) => ["labels", mediaType],
-    listFiltersKey: (mediaType, username) => ["listFilters", mediaType, username],
-    mediadleSuggestionsKey: (query) => ["mediadleSuggestions", query],
-    navSearchKey: (query, page, selector) => ["navSearch", query, page, selector],
-    notificationCountKey: () => ["notificationCount"],
-    notificationsKey: () => ["notifications"],
-    profileKey: (username) => ["profile", username],
-    trendsKey: () => ["trends"],
-    upcomingKey: () => ["upcoming"],
-    userListKey: (mediaType, username, search) => ["userList", mediaType, username, search],
-    userStatsKey: (username, search) => ["userStats", username, search],
+export const queryKeys = {
+    achievementPageKey: (username: string) => ["achievementPage", username] as const,
+    authKey: () => ["currentUser"] as const,
+    allUpdatesKey: (username: string, filters: SearchType) => ["allUpdates", username, filters] as const,
+    dailyMediadleKey: () => ["dailyMediadle"] as const,
+    detailsKey: (mediaType: MediaType, mediaId: string | number) => ["details", mediaType, mediaId] as const,
+    editDetailsKey: (mediaType: MediaType, mediaId: string | number) => ["editDetails", mediaType, mediaId] as const,
+    filterSearchKey: (
+        mediaType: MediaType,
+        username: string,
+        query: string,
+        job: JobType,
+    ) => ["filterSearch", mediaType, username, query, job] as const,
+    followersKey: (username: string) => ["followers", username] as const,
+    followsKey: (username: string) => ["follows", username] as const,
+    globalStatsKey: (search: Record<string, any>) => ["globalStats", search] as const,
+    historyKey: (mediaType: MediaType, mediaId: string | number) => ["onOpenHistory", mediaType, mediaId] as const,
+    hofKey: (search: Record<string, any>) => ["hof", search] as const,
+    jobDetailsKey: (
+        mediaType: MediaType,
+        job: JobType,
+        name: string,
+        search: Record<string, any>,
+    ) => ["jobDetails", mediaType, job, name, search] as const,
+    labelsKey: (mediaType: MediaType) => ["labels", mediaType] as const,
+    listFiltersKey: (mediaType: MediaType, username: string) => ["listFilters", mediaType, username] as const,
+    mediadleSuggestionsKey: (query: string) => ["mediadleSuggestions", query] as const,
+    navSearchKey: (query: string, page: number, selector: string) => ["navSearch", query, page, selector] as const,
+    notificationCountKey: () => ["notificationCount"] as const,
+    notificationsKey: () => ["notifications"] as const,
+    profileKey: (username: string) => ["profile", username] as const,
+    trendsKey: () => ["trends"] as const,
+    upcomingKey: () => ["upcoming"] as const,
+    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs,) => ["userList", mediaType, username, search] as const,
+    userStatsKey: (username: string, search: Record<string, any>) => ["userStats", username, search] as const,
 };
 
 

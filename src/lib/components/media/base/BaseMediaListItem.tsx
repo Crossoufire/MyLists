@@ -10,11 +10,11 @@ import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/components/media/base/DisplayFavorite";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface BaseMediaListItemProps {
     isCurrent: boolean;
-    queryKey: string[];
     isConnected: boolean;
     mediaType: MediaType;
     allStatuses: Status[];
@@ -22,6 +22,7 @@ interface BaseMediaListItemProps {
     userMedia: UserMediaItem;
     redoDisplay?: React.ReactNode;
     mediaDetailsDisplay?: React.ReactNode;
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

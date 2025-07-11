@@ -4,6 +4,7 @@ import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {NavigationMenuLink} from "@/lib/components/ui/navigation-menu";
+import {useFeatureFlagMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
 interface NavMediaItemProps {
@@ -18,7 +19,7 @@ interface NavMediaItemProps {
 export const NavMediaItem = ({ to, icon, text, className, popRef }: NavMediaItemProps) => {
     const { currentUser } = useAuth();
     const { setSheetOpen } = useSheet();
-    // const modalUpdate = useUpdateModalMutation();
+    const featureFlagMutation = useFeatureFlagMutation();
 
     const handleClosePopover = () => {
         popRef?.current?.click();
@@ -27,8 +28,7 @@ export const NavMediaItem = ({ to, icon, text, className, popRef }: NavMediaItem
 
     const handleNewFeatures = () => {
         if (currentUser?.showUpdateModal && text === "Features") {
-            // TODO - update modal
-            // modalUpdate.mutate(undefined);
+            featureFlagMutation.mutate(undefined);
         }
     };
 

@@ -68,9 +68,9 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
                         }
                         <YAxis dataKey="value" stroke="#e2e2e2"/>
                         <RechartsTooltip cursor={{ fill: "#373535" }} content={CustomTooltip}/>
-                        <Bar dataKey="value" fill={getMediaColor(filters.mt)}>
+                        <Bar dataKey="value" fill={getMediaColor(filters.mediaType)}>
                             {newDataList.map((entry, idx) =>
-                                <Cell key={idx} fill={getMediaColor(filters.mt ?? entry.name)}/>
+                                <Cell key={idx} fill={getMediaColor(filters.mediaType ?? entry.name)}/>
                             )}
                             <LabelList dataKey="value" position="center" content={renderCustomLabel}/>
                         </Bar>

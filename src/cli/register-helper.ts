@@ -8,7 +8,6 @@ interface RegisterTaskCommandParams {
     program: Command;
     taskName: TasksName;
     description: string;
-    queuePayload?: Record<string, any>;
 }
 
 

@@ -3,13 +3,14 @@ import {Button} from "@/lib/components/ui/button";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface QuickAddMediaProps {
     mediaId: number;
-    queryKey: string[];
     mediaType: MediaType;
     allStatuses: Status[];
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

@@ -1,29 +1,33 @@
-import {LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
+import {Label} from "@/lib/components/types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
-import {Label} from "@/lib/components/types";
 
 
-export const useDeleteUpdatesMutation = (queryKey: string[]) => {
+const deleteUpdatesKeys = [queryKeys.profileKey, queryKeys.allUpdatesKey, queryKeys.historyKey] as const;
+export type DeleteUpdatesKeys = ReturnType<(typeof deleteUpdatesKeys)[number]>;
+
+const detailsUserListKeys = [queryKeys.detailsKey, queryKeys.userListKey] as const
+export type DetailsUserListKeys = ReturnType<(typeof detailsUserListKeys)[number]>;
+
+
+export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
     const queryClient = useQueryClient();
     return useMutation<any, Error, { updateIds: number[], returnData?: boolean }>({
         mutationFn: ({ updateIds, returnData = false }) => postDeleteUserUpdates({ data: { updateIds, returnData } }),
         meta: { errorMessage: "The update(s) could not be deleted" },
         onSuccess: async (data, variables) => {
-            //@ts-expect-error
-            if (queryKey[0] === queryKeys.profileKey(undefined)[0]) {
+            if (queryKey[0] === "profile") {
                 return queryClient.setQueryData(queryKey, (oldData: any) => ({
                     ...oldData,
                     userUpdates: [...oldData.userUpdates.filter((up: any) => up.id !== variables.updateIds[0]), data],
                 }));
             }
-            //@ts-expect-error
-            else if (queryKey[0] === queryKeys.allUpdatesKey(undefined, undefined)[0]) {
+            else if (queryKey[0] === "allUpdates") {
                 await queryClient.invalidateQueries({ queryKey });
             }
-            //@ts-expect-error
-            else if (queryKey[0] === queryKeys.historyKey(undefined, undefined)[0]) {
+            else if (queryKey[0] === "onOpenHistory") {
                 return queryClient.setQueryData(queryKey, (oldData: any) => {
                     return [...oldData.filter((history: any) => history.id !== variables.updateIds[0])];
                 });
@@ -33,7 +37,7 @@ export const useDeleteUpdatesMutation = (queryKey: string[]) => {
 };
 
 
-export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: string[]) => {
+export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation<any, Error, { status?: Status }>({
@@ -46,26 +50,27 @@ export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number 
         },
         onSuccess: (data) => {
             queryClient.setQueryData(queryKey, (oldData: any) => {
-                //@ts-expect-error
-                if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {
+                if (queryKey[0] === "details") {
                     return { ...oldData, userMedia: data };
                 }
-                return {
-                    ...oldData,
-                    results: {
-                        ...oldData.results,
-                        items: oldData.results.items.map((media: any) => (
-                            media.mediaId === mediaId ? { ...media, common: true } : media),
-                        )
-                    },
-                };
+                else if (queryKey[0] === "userList") {
+                    return {
+                        ...oldData,
+                        results: {
+                            ...oldData.results,
+                            items: oldData.results.items.map((media: any) => (
+                                media.mediaId === mediaId ? { ...media, common: true } : media),
+                            )
+                        },
+                    };
+                }
             });
         }
     });
 };
 
 
-export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: string[]) => {
+export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation<any, Error, {}>({
@@ -73,25 +78,26 @@ export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: nu
         meta: { errorMessage: "Failed to remove this media from your list" },
         onSuccess: () => {
             queryClient.setQueryData(queryKey, (oldData: any) => {
-                // @ts-expect-error
-                if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {
+                if (queryKey[0] === "details") {
                     const { userMedia, ...rest } = oldData;
                     return rest;
                 }
-                return {
-                    ...oldData,
-                    results: {
-                        ...oldData.results,
-                        items: [...oldData.results.items.filter((media: any) => media.mediaId !== mediaId)],
-                    },
-                };
+                else if (queryKey[0] === "userList") {
+                    return {
+                        ...oldData,
+                        results: {
+                            ...oldData.results,
+                            items: [...oldData.results.items.filter((media: any) => media.mediaId !== mediaId)],
+                        },
+                    };
+                }
             });
         }
     });
 };
 
 
-export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryKey: string[]) => {
+export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number, queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation<Record<string, any>, Error, { payload: Record<string, any> }>({
@@ -101,13 +107,10 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
             queryClient.setQueryData(queryKey, (oldData: Record<string, any>) => {
-                // @ts-expect-error
-                if (queryKey[0] === queryKeys.detailsKey(undefined, undefined)[0]) {
+                if (queryKey[0] === "details") {
                     return { ...oldData, userMedia: { ...oldData.userMedia, ...data } };
                 }
-
-                // @ts-expect-error
-                if (queryKey[0] === queryKeys.userListKey(undefined, undefined, undefined)[0]) {
+                else if (queryKey[0] === "userList") {
                     return {
                         ...oldData,
                         results: {
@@ -118,8 +121,6 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
                         }
                     };
                 }
-
-                return oldData;
             });
         },
     });

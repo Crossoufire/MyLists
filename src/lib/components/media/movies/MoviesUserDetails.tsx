@@ -5,12 +5,13 @@ import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface MoviesUserDetailsProps {
-    queryKey: string[];
     mediaType: MediaType;
     userMedia: ExtractUserMediaByType<typeof MediaType.MOVIES>;
+    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
 }
 
 

@@ -49,6 +49,7 @@ function MediaEditPage() {
             duration: apiData.fields?.duration,
             homepage: apiData.fields?.homepage,
             createdBy: apiData.fields?.createdBy,
+            allGenres: apiData.fields?.allGenres,
             lockStatus: apiData.fields?.lockStatus,
             releaseDate: apiData.fields?.releaseDate,
             lastAirDate: apiData.fields?.lastAirDate,
@@ -143,9 +144,8 @@ function MediaEditPage() {
                                             <FormControl>
                                                 <EditGenresSelector
                                                     selectedGenres={field.value}
-                                                    //@ts-expect-error
-                                                    genresList={apiData?.allGenres}
                                                     setSelectedGenres={field.onChange}
+                                                    genresList={apiData?.fields.allGenres}
                                                 />
                                             </FormControl>
                                             <FormMessage/>
