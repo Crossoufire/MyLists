@@ -189,8 +189,8 @@ export const diffColors = (difficulty: AchievementDifficulty | "total", variant:
 
 
 export const globalStatsTimeFormat = (minutes: number) => {
-    const MINUTES_PER_HOUR = 60;
     const HOURS_PER_DAY = 24;
+    const MINUTES_PER_HOUR = 60;
     const DAYS_PER_YEAR = 365.25;
     const MONTHS_ARRAY = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -246,6 +246,27 @@ export const formatMinutes = (minutes: number | string | null | undefined, onlyH
 
 
 // --- GENERIC FUNCTIONS -------------------------------------------------------------------------------------
+
+
+export const intToMoney = (value: number | undefined | null) => {
+    const suffixes: string[] = ["", "K", "M", "B"];
+
+    if (value === null || value === undefined) {
+        return "-";
+    }
+
+    if (value < 1000) {
+        return `${value} $`;
+    }
+
+    let exp: number = 0;
+    while (value >= 1000 && exp < suffixes.length - 1) {
+        value /= 1000;
+        exp += 1;
+    }
+
+    return `${Math.floor(value)} ${suffixes[exp]}$`;
+}
 
 
 export const computeLevel = (totalTime: number) => {

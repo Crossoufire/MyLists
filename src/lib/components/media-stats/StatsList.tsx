@@ -1,21 +1,29 @@
+import {NameValuePair} from "@/lib/server/types/base.types";
 import {StatsGraph} from "@/lib/components/media-stats/StatsGraph";
 import {StatsTable} from "@/lib/components/media-stats/StatsTable";
 
 
-export const StatsList = ({ data, asGraph }: { data: any, asGraph: boolean }) => {
+interface StatsListProps {
+    title: string
+    asGraph: boolean,
+    data: NameValuePair[],
+}
+
+
+export const StatsList = ({ title, data, asGraph }: StatsListProps) => {
+    if (asGraph) {
+        return (
+            <StatsGraph
+                title={title}
+                dataList={data}
+            />
+        )
+    }
+
     return (
-        <>
-            {asGraph ?
-                <StatsGraph
-                    title={data.title}
-                    dataList={data.data}
-                />
-                :
-                <StatsTable
-                    title={data.title}
-                    dataList={data.data}
-                />
-            }
-        </>
+        <StatsTable
+            title={title}
+            dataList={data}
+        />
     );
 };

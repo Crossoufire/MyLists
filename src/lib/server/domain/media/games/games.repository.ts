@@ -1,4 +1,3 @@
-import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
@@ -196,9 +195,9 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
                 platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
             })
             .from(games)
-            .innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
-            .innerJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
-            .innerJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
+            .leftJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
+            .leftJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
+            .leftJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
             .where(eq(games.id, mediaId))
             .groupBy(...Object.values(getTableColumns(games)))
             .get();
@@ -216,30 +215,31 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
     }
 
     async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
-        const result = await db.transaction(async (tx) => {
-            const [media] = await tx
-                .insert(games)
-                .values(mediaData)
-                .returning()
+        const tx = getDbClient();
 
-            const mediaId = media.id;
-            if (companiesData && companiesData.length > 0) {
-                const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
-                await tx.insert(gamesCompanies).values(companiesToAdd)
-            }
-            if (platformsData && platformsData.length > 0) {
-                const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
-                await tx.insert(gamesPlatforms).values(platformsToAdd)
-            }
-            if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-                await tx.insert(gamesGenre).values(genresToAdd)
-            }
+        const [media] = await tx
+            .insert(games)
+            .values({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
+            .returning()
 
-            return mediaId;
-        });
+        const mediaId = media.id;
+        if (companiesData && companiesData.length > 0) {
+            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
+            await tx.insert(gamesCompanies).values(companiesToAdd)
+        }
+        if (platformsData && platformsData.length > 0) {
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
+            await tx.insert(gamesPlatforms).values(platformsToAdd)
+        }
+        if (genresData && genresData.length > 0) {
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            await tx.insert(gamesGenre).values(genresToAdd)
+        }
 
-        return result;
+        return mediaId;
     }
 
     async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
@@ -418,36 +418,40 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
 
         const avgDuration = await getDbClient()
             .select({
-                average: sql<number | null>`avg(${gamesList.playtime})`.as("avg_playtime")
+                average: sql<number | null>`avg(${gamesList.playtime} / 60)`.as("avg_playtime")
             })
             .from(gamesList)
             .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
             .get();
 
-        return avgDuration?.average;
+        return avgDuration?.average ? avgDuration.average : 0;
     }
 
     async gamePlaytimeDistrib(userId?: number) {
         const forUser = userId ? eq(gamesList.userId, userId) : undefined;
 
-        return getDbClient()
+        const playtimeHoursLog = sql<number>`floor(log(max(${gamesList.playtime} / 60, 1)) / log(2))`;
+
+        const playtimeDistrib = await getDbClient()
             .select({
-                name: sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`,
+                name: playtimeHoursLog,
                 value: count(games.id).as("count"),
             })
             .from(games)
             .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
             .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
-            .groupBy(sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`)
-            .orderBy(asc(sql<number>`floor(log2(greatest(${gamesList.playtime} / 60, 1)))`));
+            .groupBy(playtimeHoursLog)
+            .orderBy(asc(playtimeHoursLog));
+
+        return playtimeDistrib.map((p) => ({ name: Math.pow(2, p.name), value: p.value }));
     }
 
     async specificTopMetrics(userId?: number) {
         const developersConfig: ConfigTopMetric = {
-            metricIdColumn: games.id,
+            metricIdCol: games.id,
             metricTable: gamesCompanies,
-            mediaLinkColumn: gamesList.mediaId,
-            metricNameColumn: gamesCompanies.name,
+            mediaLinkCol: gamesList.mediaId,
+            metricNameCol: gamesCompanies.name,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
         };
         const publishersConfig: ConfigTopMetric = {
@@ -456,23 +460,23 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
         };
         const platformsConfig: ConfigTopMetric = {
             metricTable: gamesList,
-            metricNameColumn: gamesList.platform,
-            metricIdColumn: games.id,
-            mediaLinkColumn: gamesList.mediaId,
+            metricNameCol: gamesList.platform,
+            metricIdCol: games.id,
+            mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
         const enginesConfig: ConfigTopMetric = {
             metricTable: games,
-            metricNameColumn: games.gameEngine,
-            metricIdColumn: games.id,
-            mediaLinkColumn: gamesList.mediaId,
+            metricNameCol: games.gameEngine,
+            metricIdCol: games.id,
+            mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
         const perspectivesConfig: ConfigTopMetric = {
             metricTable: games,
-            metricNameColumn: games.playerPerspective,
-            metricIdColumn: games.id,
-            mediaLinkColumn: gamesList.mediaId,
+            metricNameCol: games.playerPerspective,
+            metricIdCol: games.id,
+            mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
 

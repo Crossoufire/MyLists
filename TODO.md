@@ -2,17 +2,17 @@
 
 ## Fixes
 
-- FIX: db error adding series to list
-- FIX: db sqlite busy error when adding anything from search navbar
-- FIX: refresh of anime does not seems to use jikan for the genres
-- FIX: correct sum redo not correct for series in user updates
+- FIX: Top rated dev and publishers stats in games bug
 
 ## TODO
 
-- TODO: Make User Media Stats page work
-- TODO: Add GET page in Platform Media Stats
-- TODO: Check all `any` and `@ts-expect-error`
-- TODO: Add cache system in Platform Media Stats
+- TODO: Add GET page in `PlatformStats`
+- TODO: Add cache system in `PlatformStats`
+- TODO: [~DONE] Make User Media Stats page work
+- TODO: Add `totalUsers` for `globalStats` in platform
+- TODO: change original name to english name when not latin in search
+- TODO: `statsPage`: send user's settings to add activated mediaTypes in sidebar
+- TODO: add `onCascade` for media removal from list (and simplify functions accordingly)
 
 ## TODO LATER
 
@@ -22,6 +22,10 @@
 - TODO: Better admin panel (types, checks, zod, etc...)
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)
 - TODO: Add rate limiter in `nginx` for prod (for spam protection)
+- TODO: type the APIs for the transformation of each media type and for search
+- TODO: be more logical on where I create the transformation (backend or frontend) for the stats  ("--" / null etc)
+- TODO: Redo `logUpdate` using the `UpdateType` in each `mediaService`'s `calculateStats` method and then pass old and new values
+  to `userMediaUpdates` service
 
 ## POTENTIAL TODO
 

@@ -5,8 +5,8 @@ import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IMoviesService} from "@/lib/server/types/services.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
-import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {IMoviesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
@@ -17,7 +17,7 @@ import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/mo
 export class MoviesService extends BaseService<
     Movie, MoviesList, MoviesAdvancedStats, MoviesAchCodeName, IMoviesRepository
 > implements IMoviesService {
-    readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => any>;
+    readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: MoviesRepository) {
         super(repository);

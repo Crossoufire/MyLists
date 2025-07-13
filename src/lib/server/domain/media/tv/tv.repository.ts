@@ -1,4 +1,3 @@
-import {db} from "@/lib/server/database/db";
 import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -67,7 +66,6 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
     async computeAllUsersStats() {
         const { mediaTable, listTable } = this.config;
 
-        // TODO: Change timeSpent and totalSpecific to be real calculation
         const results = await getDbClient()
             .select({
                 userId: listTable.userId,
@@ -89,7 +87,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 entriesFavorites: sql<number>`
                     COALESCE(SUM(CASE WHEN ${listTable.favorite} = 1 THEN 1 ELSE 0 END), 0)
                 `.as("entriesFavorites"),
-                totalRedo: sql<number>`COALESCE(SUM(${listTable.redo}), 0)`.as("totalRedo"),
+                totalRedo: sql<number>`(SELECT COALESCE(SUM(value), 0) FROM json_each(${listTable.redo2}))`.as("totalRedo"),
                 entriesCommented: sql<number>`
                     COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${listTable.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
                 `.as("entriesCommented"),
@@ -175,9 +173,9 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         let newEpisode = 1;
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = media.epsPerSeason![-1].season;
-            newEpisode = media.epsPerSeason![-1].episodes;
-            newTotal = media.epsPerSeason!.reduce((acc: number, curr: any) => acc + curr.episodes, 0);
+            newSeason = media.epsPerSeason!.at(-1)!.season;
+            newEpisode = media.epsPerSeason!.at(-1)!.episodes;
+            newTotal = media.epsPerSeason!.reduce((acc, curr) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
             newTotal = 0;
@@ -296,12 +294,11 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 networks: sql`json_group_array(DISTINCT json_object('id', ${networkTable.id}, 'name', ${networkTable.name}))`.mapWith(JSON.parse),
             })
             .from(mediaTable)
-            .innerJoin(actorTable, eq(actorTable.mediaId, mediaTable.id))
-            .innerJoin(genreTable, eq(genreTable.mediaId, mediaTable.id))
-            .innerJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))
-            .innerJoin(networkTable, eq(networkTable.mediaId, mediaTable.id))
+            .leftJoin(actorTable, eq(actorTable.mediaId, mediaTable.id))
+            .leftJoin(genreTable, eq(genreTable.mediaId, mediaTable.id))
+            .leftJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))
+            .leftJoin(networkTable, eq(networkTable.mediaId, mediaTable.id))
             .where(eq(mediaTable.id, mediaId))
-            .groupBy(...Object.values(getTableColumns(mediaTable)))
             .get();
 
         if (!details) return;
@@ -319,39 +316,38 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
 
     async storeMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
         const { mediaTable, actorTable, genreTable, epsPerSeasonTable, networkTable } = this.config;
+        const tx = getDbClient();
 
-        // TODO: this cause sqlite busy error
-        const result = await db.transaction(async (tx) => {
-            const [media] = await tx
-                .insert(mediaTable)
-                .values(mediaData)
-                .returning()
+        const [media] = await tx
+            .insert(mediaTable)
+            .values({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
+            .returning()
 
-            const mediaId = media.id;
-            if (actorsData && actorsData.length > 0) {
-                const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
-                await tx.insert(actorTable).values(actorsToAdd)
-            }
+        const mediaId = media.id;
+        if (actorsData && actorsData.length > 0) {
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
+            await tx.insert(actorTable).values(actorsToAdd)
+        }
 
-            if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-                await tx.insert(genreTable).values(genresToAdd)
-            }
+        if (genresData && genresData.length > 0) {
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            await tx.insert(genreTable).values(genresToAdd)
+        }
 
-            if (seasonsData && seasonsData.length > 0) {
-                const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
-                await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd)
-            }
+        if (seasonsData && seasonsData.length > 0) {
+            const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
+            await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd)
+        }
 
-            if (networkData && networkData.length > 0) {
-                const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
-                await tx.insert(networkTable).values(networkToAdd)
-            }
+        if (networkData && networkData.length > 0) {
+            const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
+            await tx.insert(networkTable).values(networkToAdd)
+        }
 
-            return mediaId;
-        });
-
-        return result
+        return mediaId;
     }
 
     async updateMediaWithDetails({ mediaData, actorsData, seasonsData, networkData, genresData }: UpsertTvWithDetails) {
@@ -529,24 +525,23 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
 
         const avgDuration = await getDbClient()
             .select({
-                average: sql<number | null>`avg(${mediaTable.duration} * ${listTable.total})`.as("avg_duration")
+                average: sql<number | null>`AVG(${mediaTable.duration} * ${listTable.total})`
             })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
             .get();
 
-        return avgDuration?.average;
+        return avgDuration?.average ? (avgDuration.average / 60) : 0;
     }
 
     async tvDurationDistrib(userId?: number) {
         const { mediaTable, listTable } = this.config;
-
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 
         return getDbClient()
             .select({
-                name: sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`,
+                name: sql<number>`(floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600) / 60`,
                 value: count(mediaTable.id).as("count"),
             })
             .from(mediaTable)
@@ -559,26 +554,30 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
     async specificTopMetrics(userId?: number) {
         const { mediaTable, listTable, networkTable, actorTable } = this.config;
 
+        const filters = [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])]
+
         const networkConfig: ConfigTopMetric = {
             metricTable: networkTable,
-            metricNameColumn: networkTable.name,
-            metricIdColumn: mediaTable.id,
-            mediaLinkColumn: listTable.mediaId,
-            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+            metricNameCol: networkTable.name,
+            metricIdCol: networkTable.mediaId,
+            mediaLinkCol: listTable.mediaId,
+            minRatingCount: 3,
+            filters,
         };
         const countriesConfig: ConfigTopMetric = {
             metricTable: mediaTable,
-            metricNameColumn: mediaTable.originCountry,
-            metricIdColumn: mediaTable.id,
-            mediaLinkColumn: listTable.mediaId,
-            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+            metricIdCol: mediaTable.id,
+            mediaLinkCol: listTable.mediaId,
+            metricNameCol: mediaTable.originCountry,
+            filters,
         };
         const actorsConfig: ConfigTopMetric = {
             metricTable: actorTable,
-            metricNameColumn: actorTable.name,
-            metricIdColumn: actorTable.mediaId,
-            mediaLinkColumn: listTable.mediaId,
-            filters: [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])],
+            metricNameCol: actorTable.name,
+            metricIdCol: actorTable.mediaId,
+            mediaLinkCol: listTable.mediaId,
+            minRatingCount: 3,
+            filters,
         };
 
         const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);

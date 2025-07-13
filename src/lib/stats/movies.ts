@@ -1,56 +1,61 @@
-import {formatNumberWithKM} from "@/lib/utils/functions";
-import type {ApiData, StatSection} from "@/lib/stats/types";
+import {StatSection} from "@/lib/stats/types";
+import {MediaType} from "@/lib/server/utils/enums";
+import {SpecificMediaData} from "@/lib/stats/index";
+import {formatNumberWithKM, intToMoney} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/stats/helpers";
 
 
-export const moviesData = (apiData: ApiData): StatSection[] => {
-    const data = apiData as any;
-    const topLanguage = data.languages?.topValues?.[0];
+type MoviesStats = SpecificMediaData<typeof MediaType.MOVIES>;
+
+
+export const moviesData = (data: MoviesStats): StatSection[] => {
+    const sp = data.specificMediaStats;
+    const topLang = sp.langsStats.topValues[0];
 
     return [
         {
             sidebarTitle: "Main Statistics",
             cards: {
                 ...MAIN_CARDS_CONFIG,
-                dataList: [
+                cardStatsList: [
                     createStatCard("Total Entries", data.totalEntries, `And ${data.totalRedo} Re-watched`),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.totalHours), `Watched ${data.totalDays} days`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Watched ${data.timeSpentHours / 24} days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Duration", data.avgDuration, "Duration in minutes"),
+                    createStatCard("Avg. Duration", sp.avgDuration.toFixed(2), "Duration in minutes"),
                     createStatCard("Avg. Updates / Month", data.avgUpdates, `With ${data.totalUpdates} updates`),
-                    createStatCard("Top Language", topLanguage?.name, `With ${topLanguage?.value} media`, topLanguage?.name == null ? null : data.languages?.topValues),
-                    createStatCard("Total Budgets", data.totalBudget, "Cumulated budget"),
-                    createStatCard("Total Revenue", data.totalRevenue, "Cumulated revenue"),
+                    createStatCard("Top Language", topLang.name, `With ${topLang.value} media`, sp.langsStats.topValues),
+                    createStatCard("Total Budgets", intToMoney(sp.totalBudget), "Cumulated budget"),
+                    createStatCard("Total Revenue", intToMoney(sp.totalRevenue), "Cumulated revenue"),
                     createStatCard("Total Favorites", data.totalFavorites, "The best ones"),
-                    createStatCard("Total Labels", data.totalLabels, "Order maniac"),
+                    createStatCard("Total Labels", sp.totalLabels, "Order maniac"),
                 ],
             },
             lists: {
                 ...MAIN_GRAPHS_CONFIG,
                 dataList: [
-                    createStatList("Release dates", data.releaseDates),
-                    createStatList("Durations", data.durations),
-                    createStatList("Rating", data.ratings),
-                    createStatList("Updates / Month", data.updates),
+                    createStatList("Release dates", sp.releaseDates),
+                    createStatList("Durations", sp.durationDistrib),
+                    createStatList("Rating", sp.ratings),
+                    createStatList("Updates / Month", data.updatesDistribution),
                 ],
             },
-            status: data.statusCounts,
+            statuses: data.statusesCounts,
         },
         {
             sidebarTitle: "Directors Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.directors) },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.directors) },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.directorsStats) },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.directorsStats) },
         },
         {
             sidebarTitle: "Actors Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.actors) },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.actors) },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.actorsStats) },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.actorsStats) },
         },
         {
             sidebarTitle: "Genres Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.genres) },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.genres) },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.genresStats) },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.genresStats) },
         },
     ];
 };

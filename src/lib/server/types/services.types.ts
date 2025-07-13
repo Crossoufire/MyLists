@@ -1,5 +1,6 @@
 import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
+import {StatsCTE} from "@/lib/server/types/repositories.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {Game, GamesList} from "@/lib/server/domain/media/games/games.types";
@@ -35,7 +36,7 @@ export interface IUniversalService<TMedia, TList> {
     findById(mediaId: number): Promise<TMedia | undefined>;
     computeTotalMediaLabel(userId?: number): Promise<number>;
     getUserMediaLabels(userId: number): Promise<{ name: string }[]>;
-    getAchievementCte(achievement: Achievement, userId?: number): any;
+    getAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
     searchByName(query: string, limit?: number): Promise<{ name: string }[]>;
     downloadMediaListAsCSV(userId: number): Promise<(TMedia & { mediaName: string })[] | undefined>;
     getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;

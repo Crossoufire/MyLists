@@ -1,4 +1,5 @@
 import {SQL} from "drizzle-orm";
+import {Label} from "@/lib/components/types";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
@@ -25,7 +26,9 @@ import {
     UserMediaStats,
     UserMediaWithLabels
 } from "@/lib/server/types/base.types";
-import {Label} from "@/lib/components/types";
+
+
+export type StatsCTE = any;
 
 
 // Level 1 - Universal methods (implemented in BaseRepository)
@@ -50,11 +53,11 @@ export interface IUniversalRepository<TMedia, TList> {
     editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction): Promise<Label | undefined | void>;
 
     // --- Achievements ----------------------------------------------------------
-    countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;
-    specificGenreAchievementCte(achievement: Achievement, userId?: number): Promise<any>;
-    countCompletedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;
-    countCommentedAchievementCte(achievement: Achievement, userId?: number): Promise<any>;
-    applyWhereConditionsAndGrouping(cte: any, baseConditions: SQL[], userId?: number): any;
+    countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
+    specificGenreAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
+    countCompletedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
+    countCommentedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
+    applyWhereConditionsAndGrouping(cte: StatsCTE, baseConditions: SQL[], userId?: number): StatsCTE;
 
     // --- Advanced Stats ---------------------------------------------------
     computeTotalMediaLabel(userId?: number): Promise<number>;
@@ -94,8 +97,8 @@ export interface IMoviesRepository extends ICommonRepository<Movie, MoviesList> 
     getLanguageAchievementCte(achievement: Achievement, userId?: number): any;
 
     // --- Advanced Stats --------------------------------------------------------
+    avgMovieDuration(userId?: number): Promise<number>;
     specificTopMetrics(userId?: number): Promise<MoviesTopMetricStats>;
-    avgMovieDuration(userId?: number): Promise<number | null | undefined>;
     movieDurationDistrib(userId?: number): Promise<{ name: number, value: number }[]>;
     budgetRevenueStats(userId?: number): Promise<{ totalBudget: number | undefined, totalRevenue: number | undefined }>;
 }
@@ -117,9 +120,9 @@ export interface ITvRepository extends ICommonRepository<TvType, TvList> {
     getActorAchievementCte(achievement: Achievement, userId?: number): any;
 
     // --- Advanced Stats ---------------------------------------------------------
+    avgTvDuration(userId?: number): Promise<number>;
     specificTopMetrics(userId?: number): Promise<TvTopMetricStats>;
     computeTotalSeasons(userId?: number): Promise<number | undefined>;
-    avgTvDuration(userId?: number): Promise<number | null | undefined>;
     tvDurationDistrib(userId?: number): Promise<{ name: number, value: number }[]>;
 }
 
@@ -143,8 +146,8 @@ export interface IGamesRepository extends ICommonRepository<Game, GamesList> {
     getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number): any;
 
     // --- Advanced Stats --------------------------------------------------------
+    gameAvgPlaytime(userId?: number): Promise<number>;
     specificTopMetrics(userId?: number): Promise<GamesTopMetricStats>;
-    gameAvgPlaytime(userId?: number): Promise<number | null | undefined>;
     gamePlaytimeDistrib(userId?: number): Promise<{ name: number, value: number }[]>;
     gameModesCount(userId?: number): Promise<{ topValues: { name: string, value: number }[] }>;
 }

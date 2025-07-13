@@ -23,34 +23,27 @@ export const queryKeys = {
     dailyMediadleKey: () => ["dailyMediadle"] as const,
     detailsKey: (mediaType: MediaType, mediaId: string | number) => ["details", mediaType, mediaId] as const,
     editDetailsKey: (mediaType: MediaType, mediaId: string | number) => ["editDetails", mediaType, mediaId] as const,
-    filterSearchKey: (
-        mediaType: MediaType,
-        username: string,
-        query: string,
-        job: JobType,
-    ) => ["filterSearch", mediaType, username, query, job] as const,
+    filterSearchKey: (mediaType: MediaType, username: string, query: string, job: JobType) =>
+        ["filterSearch", mediaType, username, query, job] as const,
     followersKey: (username: string) => ["followers", username] as const,
     followsKey: (username: string) => ["follows", username] as const,
     globalStatsKey: (search: Record<string, any>) => ["globalStats", search] as const,
     historyKey: (mediaType: MediaType, mediaId: string | number) => ["onOpenHistory", mediaType, mediaId] as const,
-    hofKey: (search: Record<string, any>) => ["hof", search] as const,
-    jobDetailsKey: (
-        mediaType: MediaType,
-        job: JobType,
-        name: string,
-        search: Record<string, any>,
-    ) => ["jobDetails", mediaType, job, name, search] as const,
+    hofKey: (search: SearchTypeHoF) => ["hof", search] as const,
+    jobDetailsKey: (mediaType: MediaType, job: JobType, name: string, search: SearchType) =>
+        ["jobDetails", mediaType, job, name, search] as const,
     labelsKey: (mediaType: MediaType) => ["labels", mediaType] as const,
     listFiltersKey: (mediaType: MediaType, username: string) => ["listFilters", mediaType, username] as const,
     mediadleSuggestionsKey: (query: string) => ["mediadleSuggestions", query] as const,
-    navSearchKey: (query: string, page: number, selector: string) => ["navSearch", query, page, selector] as const,
+    navSearchKey: (query: string, page: number, selector: ApiProviderType) => ["navSearch", query, page, selector] as const,
     notificationCountKey: () => ["notificationCount"] as const,
     notificationsKey: () => ["notifications"] as const,
     profileKey: (username: string) => ["profile", username] as const,
     trendsKey: () => ["trends"] as const,
     upcomingKey: () => ["upcoming"] as const,
-    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs,) => ["userList", mediaType, username, search] as const,
-    userStatsKey: (username: string, search: Record<string, any>) => ["userStats", username, search] as const,
+    userListKey: (mediaType: MediaType, username: string, search: MediaListArgs) =>
+        ["userList", mediaType, username, search] as const,
+    userStatsKey: (username: string, search: { mediaType: MediaType }) => ["userStats", username, search] as const,
 };
 
 
@@ -82,7 +75,7 @@ export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | stri
 });
 
 
-export const mediaListOptions = (mediaType: MediaType, username: string, search: Record<string, any>) => queryOptions({
+export const mediaListOptions = (mediaType: MediaType, username: string, search: MediaListArgs) => queryOptions({
     queryKey: queryKeys.userListKey(mediaType, username, search),
     queryFn: () => getMediaListServerFunction({ data: { mediaType, username, args: search } }),
 });
@@ -169,9 +162,9 @@ export const achievementOptions = (username: string) => queryOptions({
 });
 
 
-export const userStatsOptions = (username: string, search: Record<string, any>) => queryOptions({
+export const userStatsOptions = (username: string, search: { mediaType: MediaType }) => queryOptions({
     queryKey: queryKeys.userStatsKey(username, search),
-    queryFn: () => getUserStats({ data: { username, search } }),
+    queryFn: () => getUserStats({ data: { username, ...search } }),
 });
 
 

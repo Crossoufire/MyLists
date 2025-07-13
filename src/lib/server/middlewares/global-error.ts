@@ -27,6 +27,9 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
         return results;
     }
     catch (err: any) {
+        if (process.env.NODE_ENV !== "production") {
+            console.error("Error:", err);
+        }
         if (err instanceof FormattedError) {
             // if (err?.sendMail) {
             //     await sendAdminErrorMail(err, "A Specific Formatted Error occurred");

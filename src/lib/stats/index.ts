@@ -4,29 +4,50 @@ import {gamesData} from "@/lib/stats/games";
 import {mangaData} from "@/lib/stats/manga";
 import {globalData} from "@/lib/stats/global";
 import {moviesData} from "@/lib/stats/movies";
+import {StatSection} from "@/lib/stats/types";
 import {MediaType} from "@/lib/server/utils/enums";
-import type {ApiData, DataToLoadProps, StatSection} from "@/lib/stats/types";
+import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
+import {GamesAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
 
 
-const mediaDataFunctions: { [key in MediaType]?: (apiData: ApiData) => StatSection[]; } = {
-    [MediaType.ANIME]: tvData,
-    [MediaType.SERIES]: tvData,
-    [MediaType.BOOKS]: booksData,
-    [MediaType.GAMES]: gamesData,
-    [MediaType.MANGA]: mangaData,
-    [MediaType.MOVIES]: moviesData,
-};
+export interface MediaSpecificStatsMap {
+    [MediaType.SERIES]: TvAdvancedStats;
+    [MediaType.ANIME]: TvAdvancedStats;
+    [MediaType.MOVIES]: MoviesAdvancedStats;
+    [MediaType.GAMES]: GamesAdvancedStats;
+    [MediaType.BOOKS]: TvAdvancedStats;
+    [MediaType.MANGA]: TvAdvancedStats;
+}
 
 
-export const dataToLoad = ({ mediaType, apiData, forUser = false }: DataToLoadProps): StatSection[] => {
-    if (!mediaType) {
-        return globalData({ apiData, forUser });
+export type ApiData = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
+type MediaStatsContainer = Extract<ApiData, { specificMediaStats: object }>;
+type MediaStatsBase = Omit<MediaStatsContainer, "specificMediaStats">;
+export type SpecificMediaData<T extends MediaType> = MediaStatsBase & { mediaType: T; specificMediaStats: MediaSpecificStatsMap[T]; };
+
+
+interface DataToLoadProps {
+    apiData: ApiData;
+    forUser?: boolean;
+}
+
+
+export const dataToLoad = ({ apiData, forUser = false }: DataToLoadProps): StatSection[] => {
+    switch (apiData.mediaType) {
+        case undefined:
+            return globalData(apiData, forUser);
+        case MediaType.SERIES:
+        case MediaType.ANIME:
+            return tvData(apiData as any);
+        case MediaType.MOVIES:
+            return moviesData(apiData as any);
+        case MediaType.GAMES:
+            return gamesData(apiData as any);
+        case MediaType.BOOKS:
+            return booksData(apiData);
+        case MediaType.MANGA:
+            return mangaData(apiData);
+        default:
+            return [];
     }
-
-    const dataFunction = mediaDataFunctions[mediaType];
-    if (dataFunction) {
-        return dataFunction(apiData);
-    }
-
-    return [];
 };

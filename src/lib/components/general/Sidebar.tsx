@@ -8,14 +8,14 @@ import {Separator} from "@/lib/components/ui/separator";
 
 
 interface SidebarItem {
-    component: JSX.Element;
     sidebarTitle: string;
+    component: JSX.Element;
 }
 
 
 interface SidebarItem2 {
-    sidebarTitle: string;
     [key: string]: any;
+    sidebarTitle: string;
 }
 
 

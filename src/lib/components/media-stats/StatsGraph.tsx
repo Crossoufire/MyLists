@@ -1,25 +1,27 @@
 import {useSearch} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
-import {RatingSystemType} from "@/lib/server/utils/enums";
+import {NameValuePair} from "@/lib/server/types/base.types";
 import {useRatingSystem} from "@/lib/contexts/rating-context";
+import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/lib/utils/functions";
 import {Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis} from "recharts";
 
 
 interface StatsGraphProps {
     title: string;
-    dataList: any[];
+    dataList: NameValuePair[] | undefined | null;
 }
 
 
 export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
-    return null;
+    if (!dataList) return null;
 
     const ratingSystem = useRatingSystem();
     const filters = useSearch({ strict: false });
-    let newDataList = (title === "Rating" && ratingSystem === RatingSystemType.FEELING) ? transformDataList(dataList) : dataList;
+    let newDataList = (title === "Rating" && ratingSystem === RatingSystemType.FEELING) ?
+        transformDataList(dataList) : dataList;
 
-    function transformDataList(dataList: any[]) {
+    function transformDataList(dataList: NameValuePair[]) {
         const validValues = [0, 2, 4, 6, 8, 10];
         const validIndices = validValues.map(value => value * 2);
         const transformedList = validValues.map((_, index) => ({ name: index * 2, value: 0 }));
@@ -70,9 +72,16 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
                         <RechartsTooltip cursor={{ fill: "#373535" }} content={CustomTooltip}/>
                         <Bar dataKey="value" fill={getMediaColor(filters.mediaType)}>
                             {newDataList.map((entry, idx) =>
-                                <Cell key={idx} fill={getMediaColor(filters.mediaType ?? entry.name)}/>
+                                <Cell
+                                    key={idx}
+                                    fill={getMediaColor(filters.mediaType ?? entry.name.toString() as MediaType)}
+                                />
                             )}
-                            <LabelList dataKey="value" position="center" content={renderCustomLabel}/>
+                            <LabelList
+                                dataKey="value"
+                                position="center"
+                                content={renderCustomLabel}
+                            />
                         </Bar>
                     </BarChart>
                 </ResponsiveContainer>

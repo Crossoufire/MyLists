@@ -5,8 +5,8 @@ import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IGamesService} from "@/lib/server/types/services.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
-import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {IGamesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
@@ -17,7 +17,7 @@ import {GamesAdvancedStats, MediaAndUserDetails, UserMediaWithLabels} from "@/li
 export class GamesService extends BaseService<
     Game, GamesList, GamesAdvancedStats, GamesAchCodeName, IGamesRepository
 > implements IGamesService {
-    readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => any>;
+    readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: GamesRepository) {
         super(repository);
@@ -48,6 +48,7 @@ export class GamesService extends BaseService<
         const gameModes = await this.repository.gameModesCount(userId);
         const avgDuration = await this.repository.gameAvgPlaytime(userId);
         const durationDistrib = await this.repository.gamePlaytimeDistrib(userId);
+
         const { developersStats, publishersStats, platformsStats, enginesStats, perspectivesStats } =
             await this.repository.specificTopMetrics(userId);
 

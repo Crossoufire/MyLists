@@ -1,4 +1,5 @@
-import type {ApiData, StatSection} from "@/lib/stats/types";
+import {ApiData} from ".";
+import type {StatSection} from "@/lib/stats/types";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/stats/helpers";
@@ -13,7 +14,7 @@ export const booksData = (apiData: ApiData): StatSection[] => {
             sidebarTitle: "Main Statistics",
             cards: {
                 ...MAIN_CARDS_CONFIG,
-                dataList: [
+                cardStatsList: [
                     createStatCard("Total Entries", data.totalMedia?.unique, `And ${data.total_media?.redo} Re-read`),
                     createStatCard("Time Spent (h)", formatNumberWithKM(data.total_hours), `Read ${data.total_days} days`),
                     createRatingStatCard(data.rating_system, data.avg_rating, data.total_rated),
@@ -36,21 +37,21 @@ export const booksData = (apiData: ApiData): StatSection[] => {
                     createStatList("Updates / Month", data.updates),
                 ],
             },
-            status: data.status_counts,
+            statuses: data.status_counts,
         },
         {
             sidebarTitle: "Authors Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.authors, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.authors, "Read"), },
             lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.authors, "Read"), },
         },
         {
             sidebarTitle: "Publishers Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.publishers, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.publishers, "Read"), },
             lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.publishers, "Read"), },
         },
         {
             sidebarTitle: "Genres Statistics",
-            cards: { ...SIDE_CARD_CONFIG, dataList: getCardsData(data.genres, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.genres, "Read"), },
             lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.genres, "Read"), },
         },
     ];

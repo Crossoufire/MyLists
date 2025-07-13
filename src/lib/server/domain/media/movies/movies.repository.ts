@@ -252,8 +252,8 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
                     END
                 `.mapWith(JSON.parse),
             }).from(movies)
-            .innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id))
-            .innerJoin(moviesGenre, eq(moviesGenre.mediaId, movies.id))
+            .leftJoin(moviesActors, eq(moviesActors.mediaId, movies.id))
+            .leftJoin(moviesGenre, eq(moviesGenre.mediaId, movies.id))
             .where(eq(movies.id, mediaId))
             .groupBy(...Object.values(getTableColumns(movies)))
             .get();
@@ -271,28 +271,29 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
     }
 
     async storeMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
-        const result = await db.transaction(async (tx) => {
-            const [media] = await tx
-                .insert(movies)
-                .values(mediaData)
-                .returning()
+        const tx = getDbClient();
 
-            const mediaId = media.id;
+        const [media] = await tx
+            .insert(movies)
+            .values({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
+            .returning()
 
-            if (actorsData && actorsData.length > 0) {
-                const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
-                await tx.insert(moviesActors).values(actorsToAdd)
-            }
+        const mediaId = media.id;
 
-            if (genresData && genresData.length > 0) {
-                const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-                await tx.insert(moviesGenre).values(genresToAdd)
-            }
+        if (actorsData && actorsData.length > 0) {
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
+            await tx.insert(moviesActors).values(actorsToAdd)
+        }
 
-            return mediaId;
-        });
+        if (genresData && genresData.length > 0) {
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            await tx.insert(moviesGenre).values(genresToAdd)
+        }
 
-        return result;
+        return mediaId;
     }
 
     async updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails) {
@@ -449,7 +450,7 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
             .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
             .get();
 
-        return avgDuration?.average;
+        return avgDuration?.average ? avgDuration.average : 0;
     }
 
     async movieDurationDistrib(userId?: number) {
@@ -486,23 +487,23 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
     async specificTopMetrics(userId?: number) {
         const langsConfig: ConfigTopMetric = {
             metricTable: movies,
-            metricNameColumn: movies.originalLanguage,
-            metricIdColumn: movies.id,
-            mediaLinkColumn: moviesList.mediaId,
+            metricNameCol: movies.originalLanguage,
+            metricIdCol: movies.id,
+            mediaLinkCol: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const directorsConfig: ConfigTopMetric = {
             metricTable: movies,
-            metricNameColumn: movies.directorName,
-            metricIdColumn: movies.id,
-            mediaLinkColumn: moviesList.mediaId,
+            metricNameCol: movies.directorName,
+            metricIdCol: movies.id,
+            mediaLinkCol: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
         const actorsConfig: ConfigTopMetric = {
             metricTable: moviesActors,
-            metricNameColumn: moviesActors.name,
-            metricIdColumn: moviesActors.mediaId,
-            mediaLinkColumn: moviesList.mediaId,
+            metricNameCol: moviesActors.name,
+            metricIdCol: moviesActors.mediaId,
+            mediaLinkCol: moviesList.mediaId,
             filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
         };
 

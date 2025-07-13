@@ -64,8 +64,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         variant="invisible"
                         disabled={isPending}
                         onClick={() => handleDeleteUpdate(update.id)}
-                        className={"p-0 m-0 h-4 absolute top-2.5 right-0 opacity-0 hover:opacity-100 group-hover:opacity-30 " +
-                            "transition-opacity"}
+                        className="p-0 m-0 h-4 absolute top-2.5 right-0 opacity-0 hover:opacity-100 group-hover:opacity-30 transition-opacity"
                     >
                         <Trash2 className="w-4 h-4"/>
                     </Button>

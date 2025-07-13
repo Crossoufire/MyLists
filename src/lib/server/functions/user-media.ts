@@ -29,12 +29,12 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         await userUpdatesService.logUpdate({
-            userId: currentUser.id,
-            mediaType,
             media,
-            updateType: UpdateType.STATUS,
             os: null,
+            mediaType,
             ns: newState,
+            userId: currentUser.id,
+            updateType: UpdateType.STATUS,
         });
 
         return newState;
@@ -75,8 +75,6 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
-
-        // TODO: DELETE NOTIFICATIONS ???
     });
 
 

@@ -183,8 +183,8 @@ export class TmdbTransformer {
         return tvTrends
     }
 
-    addAnimeSpecificGenres(jikanData: Record<string, any>[], genresData: { name: string }[] | null) {
-        const { genres = [], demographics = [] } = jikanData?.[0] || {};
+    addAnimeSpecificGenres(jikanData: Record<string, any>, genresData: { name: string }[] | null) {
+        const { genres = [], demographics = [] } = jikanData?.data?.[0] || {};
         const genreList = genres.map((g: any) => ({ name: g.name })) as { name: string }[];
         const demoList = demographics.map((d: any) => ({ name: d.name })) as { name: string }[];
 

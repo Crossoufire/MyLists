@@ -1,12 +1,12 @@
 import {dataToLoad} from "@/lib/stats";
 import {useEffect, useState} from "react";
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Sidebar} from "@/lib/components/general/Sidebar";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {RatingProvider} from "@/lib/contexts/rating-context";
+import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
@@ -26,7 +26,7 @@ function StatsPage() {
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(userStatsOptions(username, filters)).data;
     const [selectedTab, setSelectedTab] = useState("Main Statistics");
-    const statsData = dataToLoad({ mediaType: filters.mediaType, apiData: apiData!, forUser: true });
+    const statsData = dataToLoad({ apiData, forUser: true });
 
     useEffect(() => {
         setSelectedTab(statsData[0].sidebarTitle)
@@ -65,9 +65,9 @@ function StatsPage() {
                     onTabChange={setSelectedTab}
                 />
                 <div>
-                    <RatingProvider value={apiData.ratingSystem}>
+                    <RatingProvider value={RatingSystemType.SCORE}>
                         <StatsDisplay
-                            statsData={statsData.find((data) => data.sidebarTitle === selectedTab)}
+                            statsData={statsData.find((data) => data.sidebarTitle === selectedTab)!}
                         />
                     </RatingProvider>
                 </div>

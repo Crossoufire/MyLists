@@ -1,16 +1,16 @@
 import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
+import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
-import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 
 
 interface LogUpdateParams {
-    os: any,
-    ns: any,
+    ns: any;
     media: any;
     userId: number;
+    os: any | null;
     mediaType: MediaType;
     updateType: UpdateType;
 }
@@ -20,7 +20,7 @@ type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: an
 
 
 export class UserUpdatesService {
-    private readonly updateThreshold = 300;
+    private readonly updateThresholdSec = 300;
 
     constructor(private repository: typeof UserUpdatesRepository) {
     }
@@ -71,7 +71,7 @@ export class UserUpdatesService {
 
         let timeDifference = Number.POSITIVE_INFINITY;
         if (previousEntry) {
-            timeDifference = (new Date().getTime() - new Date(previousEntry.timestamp).getTime()) / 1000;
+            timeDifference = (Date.now() - new Date(previousEntry.timestamp + "Z").getTime()) / 1000;
         }
 
         const newUpdateData = {
@@ -84,7 +84,7 @@ export class UserUpdatesService {
             payload: { old_value: oldValue, new_value: newValue },
         };
 
-        if (timeDifference > this.updateThreshold) {
+        if (timeDifference > this.updateThresholdSec) {
             await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
         }
         else {
@@ -96,14 +96,17 @@ export class UserUpdatesService {
     extractLogValues(updateType: UpdateType) {
         const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
             redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
-            redoTv: (os, ns) => ({ oldValue: os?.redo2 ?? 0, newValue: ns.redo2 }),
+            redoTv: (os, ns) => ({
+                oldValue: os?.redo2.reduce((a: number, c: number) => a + c, 0) ?? 0,
+                newValue: ns.redo2.reduce((a: number, c: number) => a + c, 0) ?? 0,
+            }),
             status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
             playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
             page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
             chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
             tv: (os, ns) => ({
-                oldValue: { season: os?.season ?? null, episode: os?.episode ?? null },
-                newValue: { season: ns.season, episode: ns.episode },
+                oldValue: [os?.currentSeason ?? null, os?.lastEpisodeWatched ?? null],
+                newValue: [ns.currentSeason, ns.lastEpisodeWatched],
             }),
         }
 

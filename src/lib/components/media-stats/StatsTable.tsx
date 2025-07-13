@@ -1,13 +1,16 @@
+import {NameValuePair} from "@/lib/server/types/base.types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 
 
 interface StatsTableProps {
     title: string;
-    dataList: any[];
+    dataList: NameValuePair[] | undefined | null;
 }
 
 
 export const StatsTable = ({ title, dataList }: StatsTableProps) => {
+    if (!dataList) return null;
+
     return (
         <Table>
             <TableHeader>
@@ -18,11 +21,11 @@ export const StatsTable = ({ title, dataList }: StatsTableProps) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {dataList.map((data, idx) => (
+                {dataList.map((item, idx) => (
                     <TableRow key={idx} className="text-base">
                         <TableCell>{idx + 1}</TableCell>
-                        <TableCell title={data.name}>{data.name}</TableCell>
-                        <TableCell>{data.value}</TableCell>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.value}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

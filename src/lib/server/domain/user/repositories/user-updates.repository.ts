@@ -80,67 +80,27 @@ export class UserUpdatesRepository {
         return followsUpdates;
     }
 
-    static async allMediaUpdatesCountPerMonth(userId?: number) {
-        const forUser = userId ? eq(userMediaUpdate.userId, userId) : undefined;
+    static async mediaUpdatesStatsPerMonth({ mediaType, userId }: { mediaType?: MediaType, userId?: number }) {
+        const conditions = [];
+        if (userId) conditions.push(eq(userMediaUpdate.userId, userId));
+        if (mediaType) conditions.push(eq(userMediaUpdate.mediaType, mediaType));
 
-        const monthlyCountsQuery = getDbClient()
+        const monthlyCounts = await getDbClient()
             .select({
-                month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
-                count: count(userMediaUpdate.mediaId).as("count"),
+                name: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("name"),
+                value: count(userMediaUpdate.mediaId).as("value"),
             })
             .from(userMediaUpdate)
-            .where(forUser)
+            .where(conditions.length > 0 ? and(...conditions) : undefined)
             .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
-            .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
-        const results = await monthlyCountsQuery;
+            .orderBy(sql`strftime('%Y-%m', ${userMediaUpdate.timestamp})`);
 
-        const updatesPerMonth: Record<string, number> = {};
-        let totalUpdates = 0;
-        let numberOfMonths = 0;
-        results.forEach((row) => {
-            if (row.month && typeof row.count === "number") {
-                updatesPerMonth[row.month] = row.count;
-                totalUpdates += row.count;
-                numberOfMonths += 1;
-            }
-        });
+        const totalUpdates = monthlyCounts.reduce((a, c) => a + c.value, 0);
 
         return {
-            updatesDistribution: updatesPerMonth,
-            avgUpdates: numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null,
+            updatesDistribution: monthlyCounts,
+            avgUpdates: monthlyCounts.length > 0 ? (totalUpdates / monthlyCounts.length).toFixed(1) : "--",
             totalUpdates,
-        };
-    }
-
-    static async mediaUpdatesCountPerMonth(mediaType: MediaType, userId?: number) {
-        const forUser = userId ? eq(userMediaUpdate.userId, userId) : undefined;
-
-        const monthlyCountsQuery = getDbClient()
-            .select({
-                month: sql<string>`strftime('%m-%Y', ${userMediaUpdate.timestamp})`.as("month"),
-                count: count(userMediaUpdate.mediaId).as("count"),
-            })
-            .from(userMediaUpdate)
-            .where(and(forUser, eq(userMediaUpdate.mediaType, mediaType)))
-            .groupBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
-            .orderBy(sql`strftime('%m-%Y', ${userMediaUpdate.timestamp})`)
-
-        const results = await monthlyCountsQuery.execute();
-
-        const updatesPerMonth: Record<string, number> = {};
-        let totalUpdates = 0;
-        let numberOfMonths = 0;
-        results.forEach((row) => {
-            if (row.month && typeof row.count === "number") {
-                updatesPerMonth[row.month] = row.count;
-                totalUpdates += row.count;
-                numberOfMonths += 1;
-            }
-        });
-
-        return {
-            updatesDistribution: updatesPerMonth,
-            avgUpdates: numberOfMonths > 0 ? (totalUpdates / numberOfMonths) : null,
         };
     }
 

@@ -22,7 +22,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
 
     return {
         ...session.user,
-        id: session.user.id as unknown as number,
+        id: parseInt(session.user.id),
         privacy: session.user.privacy as PrivacyType,
         ratingSystem: session.user.ratingSystem as RatingSystemType,
         searchSelector: session.user.searchSelector as ApiProviderType,

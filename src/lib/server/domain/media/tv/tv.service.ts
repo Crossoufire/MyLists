@@ -5,9 +5,9 @@ import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IProviderService} from "@/lib/server/types/provider.types";
-import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {ITvRepository, StatsCTE} from "@/lib/server/types/repositories.types";
 import {TvAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
@@ -18,7 +18,7 @@ import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievemen
 export class TvService extends BaseService<
     TvType, TvList, TvAdvancedStats, TvAchCodeName, ITvRepository
 > implements ITvService {
-    readonly achievementHandlers: Record<TvAchCodeName, (achievement: Achievement, userId?: number) => any>;
+    readonly achievementHandlers: Record<TvAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: TvRepository) {
         super(repository);
@@ -46,7 +46,6 @@ export class TvService extends BaseService<
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
-
         const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
 
         // Specific stats
@@ -215,10 +214,14 @@ export class TvService extends BaseService<
             if (completeUpdateData.status === Status.COMPLETED) {
                 completeUpdateData = {
                     ...completeUpdateData,
-                    currentSeason: userMedia.epsPerSeason![-1].season,
-                    lastEpisodeWatched: userMedia.epsPerSeason![-1].episodes,
+                    currentSeason: userMedia.epsPerSeason!.at(-1)!.season,
+                    lastEpisodeWatched: userMedia.epsPerSeason!.at(-1)!.episodes,
                 };
             }
+        }
+
+        if (completeUpdateData.currentSeason) {
+            completeUpdateData = { ...completeUpdateData, lastEpisodeWatched: 1 };
         }
 
         return completeUpdateData;

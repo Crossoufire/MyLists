@@ -142,22 +142,22 @@ export type MediaListData<TList> = {
 
 export type ConfigTopMetric = {
     limit?: number,
-    minRatingCount?: number,
     filters: SQL[],
+    minRatingCount?: number,
     metricTable: SQLiteTable,
-    metricIdColumn: SQLiteColumn,
-    mediaLinkColumn: SQLiteColumn,
-    metricNameColumn: SQLiteColumn,
+    metricIdCol: SQLiteColumn,
+    mediaLinkCol: SQLiteColumn,
+    metricNameCol: SQLiteColumn,
 }
 
 
 export type AdvancedMediaStats = {
     totalLabels: number,
+    avgDuration: number;
     ratings: NameValuePair[],
     genresStats: TopMetricStats,
     releaseDates: NameValuePair[],
     durationDistrib: NameValuePair[];
-    avgDuration: number | null | undefined;
 }
 
 
@@ -236,7 +236,7 @@ export type FilterDefinition = {
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
 
-type NameValuePair = { name: string | number, value: number };
+export type NameValuePair = { name: string | number, value: number };
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 
 export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];

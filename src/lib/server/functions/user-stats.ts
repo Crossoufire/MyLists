@@ -1,5 +1,6 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {getUserStatsSchema} from "@/lib/server/types/base.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 
@@ -10,14 +11,15 @@ export const getUserStats = createServerFn({ method: "GET" })
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
-        // if (!mediaType) {
-        const userStats = await userStatsService.userAdvancedStatsSummary(user.id);
-        return { ...userStats, ratingSystem: user.ratingSystem };
-        // }
+        if (!mediaType) {
+            const userStats = await userStatsService.userAdvancedStatsSummary(user.id);
+            return { ...userStats, ratingSystem: user.ratingSystem, mediaType: undefined };
+        }
 
-        // if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
-        //     throw new FormattedError("MediaType not activated");
-        // }
-        //
-        // return userStatsService.userMediaAdvancedStats(user.id, mediaType);
+        if (user.userMediaSettings.find((s) => s.mediaType === mediaType)?.active === false) {
+            throw new FormattedError("MediaType not activated");
+        }
+
+        const mediaStats = await userStatsService.userMediaAdvancedStats(user.id, mediaType);
+        return { ...mediaStats, ratingSystem: user.ratingSystem, mediaType };
     });

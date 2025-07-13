@@ -20,14 +20,6 @@ export abstract class BaseService<
         return this.repository.findById(mediaId);
     }
 
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as TCodeName];
-        if (!handler) {
-            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
-        }
-        return handler(achievement, userId);
-    }
-
     async downloadMediaListAsCSV(userId: number) {
         return this.repository.downloadMediaListAsCSV(userId);
     }
@@ -98,5 +90,13 @@ export abstract class BaseService<
 
     async getSearchListFilters(userId: number, query: string, job: JobType) {
         return this.repository.getSearchListFilters(userId, query, job);
+    }
+
+    getAchievementCte(achievement: Achievement, userId?: number) {
+        const handler = this.achievementHandlers[achievement.codeName as TCodeName];
+        if (!handler) {
+            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
+        }
+        return handler(achievement, userId);
     }
 }

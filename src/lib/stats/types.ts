@@ -1,34 +1,18 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
-
-
-export type ApiData = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
-
-
-export interface DataToLoadProps {
-    apiData: ApiData;
-    forUser?: boolean;
-    mediaType: MediaType;
-}
-
-
-export interface GlobalDataProps {
-    apiData: ApiData;
-    forUser?: boolean;
-}
+import {JSX} from "react";
+import {NameValuePair} from "@/lib/server/types/base.types";
 
 
 export interface StatCardData {
-    data?: any;
-    value: any;
     title: string;
     subtitle: string;
+    valuesList?: NameValuePair[];
+    value: string | number | JSX.Element;
 }
 
 
 export interface StatListData {
-    data: any;
     title: string;
+    data: NameValuePair[];
 }
 
 
@@ -37,13 +21,16 @@ export interface StatSection {
     cards: {
         cardsPerRow: number;
         cardsPerPage: number;
-        dataList: StatCardData[];
         isCarouselActive: boolean;
+        cardStatsList: StatCardData[];
     };
     lists: {
         asGraph: boolean;
         listsPerRow: number;
         dataList: StatListData[];
     };
-    status?: any;
+    statuses?: {
+        count: number;
+        status: string;
+    }[];
 }
