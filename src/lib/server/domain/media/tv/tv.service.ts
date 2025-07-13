@@ -1,3 +1,4 @@
+import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {ITvService} from "@/lib/server/types/services.types";
@@ -23,10 +24,12 @@ export class TvService extends BaseService<
     constructor(repository: TvRepository) {
         super(repository);
 
+        const { listTable } = this.repository.config;
+
         this.achievementHandlers = {
-            completed_anime: this.repository.countCompletedAchievementCte.bind(this.repository),
-            rated_anime: this.repository.countRatedAchievementCte.bind(this.repository),
-            comment_anime: this.repository.countCommentedAchievementCte.bind(this.repository),
+            completed_anime: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
+            rated_anime: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
+            comment_anime: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.comment)),
             short_anime: this.repository.getDurationAchievementCte.bind(this.repository),
             long_anime: this.repository.getDurationAchievementCte.bind(this.repository),
             shonen_anime: this.repository.specificGenreAchievementCte.bind(this.repository),
@@ -34,8 +37,8 @@ export class TvService extends BaseService<
             network_anime: this.repository.getNetworkAchievementCte.bind(this.repository),
             actor_anime: this.repository.getActorAchievementCte.bind(this.repository),
 
-            completed_series: this.repository.countCompletedAchievementCte.bind(this.repository),
-            rated_series: this.repository.countRatedAchievementCte.bind(this.repository),
+            completed_series: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
+            rated_series: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
             short_series: this.repository.getDurationAchievementCte.bind(this.repository),
             long_series: this.repository.getDurationAchievementCte.bind(this.repository),
             comedy_series: this.repository.specificGenreAchievementCte.bind(this.repository),

@@ -12,6 +12,7 @@ import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.reposito
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 import {MoviesAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
+import {eq, isNotNull} from "drizzle-orm";
 
 
 export class MoviesService extends BaseService<
@@ -22,10 +23,14 @@ export class MoviesService extends BaseService<
     constructor(repository: MoviesRepository) {
         super(repository);
 
+        const { listTable } = this.repository.config;
+
         this.achievementHandlers = {
-            completed_movies: this.repository.countCompletedAchievementCte.bind(this.repository),
-            rated_movies: this.repository.countRatedAchievementCte.bind(this.repository),
-            comment_movies: this.repository.countCommentedAchievementCte.bind(this.repository),
+            completed_movies: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
+            rated_movies: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
+            comment_movies: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.comment)),
+            long_movies: this.repository.getDurationAchievementCte.bind(this.repository),
+            short_movies: this.repository.getDurationAchievementCte.bind(this.repository),
             director_movies: this.repository.getDirectorAchievementCte.bind(this.repository),
             actor_movies: this.repository.getActorAchievementCte.bind(this.repository),
             origin_lang_movies: this.repository.getLanguageAchievementCte.bind(this.repository),
@@ -33,8 +38,6 @@ export class MoviesService extends BaseService<
             family_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             sci_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             animation_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
-            long_movies: this.repository.getDurationAchievementCte.bind(this.repository),
-            short_movies: this.repository.getDurationAchievementCte.bind(this.repository),
         };
     }
 

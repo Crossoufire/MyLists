@@ -53,11 +53,9 @@ export interface IUniversalRepository<TMedia, TList> {
     editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction): Promise<Label | undefined | void>;
 
     // --- Achievements ----------------------------------------------------------
-    countRatedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
     specificGenreAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
-    countCompletedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
-    countCommentedAchievementCte(achievement: Achievement, userId?: number): Promise<StatsCTE>;
     applyWhereConditionsAndGrouping(cte: StatsCTE, baseConditions: SQL[], userId?: number): StatsCTE;
+    countAchievementCte(condition: SQL, achievement: Achievement, userId?: number): Promise<StatsCTE>;
 
     // --- Advanced Stats ---------------------------------------------------
     computeTotalMediaLabel(userId?: number): Promise<number>;
@@ -91,10 +89,10 @@ export interface IMoviesRepository extends ICommonRepository<Movie, MoviesList> 
     updateMediaWithDetails({ mediaData, actorsData, genresData }: UpsertMovieWithDetails): Promise<boolean>;
 
     // --- Achievements ----------------------------------------------------------
-    getActorAchievementCte(_achievement: Achievement, userId?: number): any;
-    getDurationAchievementCte(achievement: Achievement, userId?: number): any;
-    getDirectorAchievementCte(_achievement: Achievement, userId?: number): any;
-    getLanguageAchievementCte(achievement: Achievement, userId?: number): any;
+    getActorAchievementCte(_achievement: Achievement, userId?: number): StatsCTE;
+    getDurationAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getLanguageAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getDirectorAchievementCte(_achievement: Achievement, userId?: number): StatsCTE;
 
     // --- Advanced Stats --------------------------------------------------------
     avgMovieDuration(userId?: number): Promise<number>;
@@ -115,9 +113,9 @@ export interface ITvRepository extends ICommonRepository<TvType, TvList> {
     updateMediaWithDetails({ mediaData, actorsData, genresData }: any): Promise<boolean>;
 
     // --- Achievements ----------------------------------------------------------
-    getDurationAchievementCte(achievement: Achievement, userId?: number): any;
-    getNetworkAchievementCte(achievement: Achievement, userId?: number): any;
-    getActorAchievementCte(achievement: Achievement, userId?: number): any;
+    getActorAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getNetworkAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getDurationAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
 
     // --- Advanced Stats ---------------------------------------------------------
     avgTvDuration(userId?: number): Promise<number>;
@@ -137,13 +135,13 @@ export interface IGamesRepository extends ICommonRepository<Game, GamesList> {
     // updateIGDBToken(): Promise<any>;
 
     // --- Achievements ----------------------------------------------------------
-    getCompanyAchievementCte(achievement: Achievement, userId?: number): any;
-    getDurationAchievementCte(achievement: Achievement, userId?: number): any;
-    getGameModeAchievementCte(achievement: Achievement, userId?: number): any;
-    getPlatformAchievementCte(achievement: Achievement, userId?: number): any;
-    getTimeSpentAchievementCte(achievement: Achievement, userId?: number): any;
-    getPerspectiveAchievementCte(achievement: Achievement, userId?: number): any;
-    getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number): any;
+    getCompanyAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getDurationAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getGameModeAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getPlatformAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getTimeSpentAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getPerspectiveAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
+    getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number): StatsCTE;
 
     // --- Advanced Stats --------------------------------------------------------
     gameAvgPlaytime(userId?: number): Promise<number>;

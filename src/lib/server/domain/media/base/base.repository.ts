@@ -461,46 +461,16 @@ export class BaseRepository<
             .as("calculation");
     }
 
-    countCompletedAchievementCte(_achievement: Achievement, userId?: number) {
+    countAchievementCte(condition: SQL, _achievement: Achievement, userId?: number) {
         const { listTable } = this.config;
 
-        let baseCTE = getDbClient()
-            .select({
-                userId: listTable.userId,
-                value: count(listTable.mediaId).as("value"),
-            }).from(listTable)
-
-        const conditions = [eq(listTable.status, Status.COMPLETED)]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    countRatedAchievementCte(_achievement: Achievement, userId?: number) {
-        const { listTable } = this.config;
-
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: listTable.userId,
                 value: count(listTable.mediaId).as("value"),
             }).from(listTable);
 
-        const conditions = [isNotNull(listTable.rating)]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    countCommentedAchievementCte(_achievement: Achievement, userId?: number) {
-        const { listTable } = this.config;
-
-        let baseCTE = getDbClient()
-            .select({
-                userId: listTable.userId,
-                value: count(listTable.mediaId).as("value"),
-            }).from(listTable);
-
-        const conditions = [isNotNull(listTable.comment)]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+        return this.applyWhereConditionsAndGrouping(baseCTE, [condition], userId);
     }
 
     specificGenreAchievementCte(achievement: Achievement, userId?: number) {

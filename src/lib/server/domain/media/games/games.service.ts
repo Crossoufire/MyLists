@@ -12,6 +12,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
 import {GamesAdvancedStats, MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {eq, isNotNull} from "drizzle-orm";
 
 
 export class GamesService extends BaseService<
@@ -22,10 +23,12 @@ export class GamesService extends BaseService<
     constructor(repository: GamesRepository) {
         super(repository);
 
+        const { listTable } = this.repository.config;
+        
         this.achievementHandlers = {
-            completed_games: this.repository.countCompletedAchievementCte.bind(this.repository),
-            rated_games: this.repository.countRatedAchievementCte.bind(this.repository),
-            comment_games: this.repository.countCommentedAchievementCte.bind(this.repository),
+            completed_games: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
+            rated_games: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
+            comment_games: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.comment)),
             hack_slash_games: this.repository.specificGenreAchievementCte.bind(this.repository),
             multiplayer_games: this.repository.getGameModeAchievementCte.bind(this.repository),
             log_hours_games: this.repository.getTimeSpentAchievementCte.bind(this.repository),
