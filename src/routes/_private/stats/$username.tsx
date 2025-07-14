@@ -7,7 +7,7 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {RatingProvider} from "@/lib/contexts/rating-context";
 import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
-import {Sidebar, SidebarLinkItem} from "@/lib/components/general/Sidebar";
+import {Sidebar, SideBarItem} from "@/lib/components/general/Sidebar";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_private/stats/$username")({
         return queryClient.ensureQueryData(userStatsOptions(username, search));
     },
     component: StatsPage,
+    errorComponent: () => <div>404</div>,
 });
 
 
@@ -25,42 +26,50 @@ function StatsPage() {
     const filters = Route.useSearch();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(userStatsOptions(username, filters)).data;
-    const [selectedTab, setSelectedTab] = useState("Main Statistics");
     const statsData = dataToLoad({ apiData, forUser: true });
+    const [selectedData, setSelectedData] = useState(() => statsData[0]);
 
     useEffect(() => {
-        setSelectedTab(statsData[0].sidebarTitle)
-    }, [filters.mediaType]);
+        setSelectedData(statsData[0]);
+    }, [filters.mediaType, statsData]);
 
-    if (statsData.find((data) => data.sidebarTitle === selectedTab) === undefined) {
+    if (!selectedData) {
         return null;
     }
 
-    const mediaLinks: SidebarLinkItem[] = apiData.activatedMediaTypes.map((mt) => ({
-        mediaType: mt,
-        params: { username },
-        to: "/stats/$username",
-        search: { mediaType: mt },
-        isSelected: mt === filters.mediaType,
-        sidebarTitle: `${capitalize(mt)} stats`,
-    }));
-
-    const linkItemsSidebar: SidebarLinkItem[] = [
+    const sidebarItems: SideBarItem<typeof selectedData>[] = [
+        ...statsData.map((data): SideBarItem<typeof selectedData> => ({
+            is: "tab",
+            data: data,
+        })),
+        "separator",
         {
+            is: "link",
             mediaType: undefined,
             params: { username },
             to: "/stats/$username",
             sidebarTitle: "Overall stats",
             isSelected: filters.mediaType === undefined,
         },
-        ...mediaLinks,
+        ...apiData.activatedMediaTypes.map((mt): SideBarItem<typeof selectedData> => ({
+            is: "link",
+            mediaType: mt,
+            params: { username },
+            to: "/stats/$username",
+            search: { mediaType: mt },
+            isSelected: mt === filters.mediaType,
+            sidebarTitle: `${capitalize(mt)} stats`,
+        })),
+        "separator",
         {
+            is: "link",
             external: true,
             params: { username },
             to: "/profile/$username",
             sidebarTitle: "User's profile",
         },
         {
+            is: "link",
             external: true,
             params: { username },
             to: "/achievements/$username",
@@ -72,16 +81,13 @@ function StatsPage() {
         <PageTitle title={`${username} ${capitalize(filters.mediaType) ?? "Overall"} Stats`} subtitle="Detailed stats for the user">
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
                 <Sidebar
-                    items={statsData}
-                    selectedTab={selectedTab}
-                    linkItems={linkItemsSidebar}
-                    onTabChange={setSelectedTab}
+                    items={sidebarItems}
+                    selectedItem={selectedData}
+                    onTabChange={setSelectedData}
                 />
                 <div>
                     <RatingProvider value={apiData.ratingSystem}>
-                        <StatsDisplay
-                            statsData={statsData.find((data) => data.sidebarTitle === selectedTab)!}
-                        />
+                        <StatsDisplay statsData={selectedData}/>
                     </RatingProvider>
                 </div>
             </div>

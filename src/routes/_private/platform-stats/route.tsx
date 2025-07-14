@@ -1,11 +1,12 @@
 import {dataToLoad} from "@/lib/stats";
 import {useEffect, useState} from "react";
+import {capitalize} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {Sidebar} from "@/lib/components/general/Sidebar";
 import {RatingProvider} from "@/lib/contexts/rating-context";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
+import {Sidebar, SideBarItem} from "@/lib/components/general/Sidebar";
 import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
 import {platformStatsOptions} from "@/lib/react-query/query-options/query-options";
 
@@ -23,50 +24,51 @@ export const Route = createFileRoute("/_private/platform-stats")({
 function GlobalStatsPage() {
     const filters = Route.useSearch();
     const apiData = useSuspenseQuery(platformStatsOptions(filters)).data;
-    const [selectedTab, setSelectedTab] = useState("Main Statistics");
     const statsData = dataToLoad({ apiData, forUser: false });
-
-    console.log({ apiData })
+    const [selectedData, setSelectedData] = useState(() => statsData[0]);
 
     useEffect(() => {
-        setSelectedTab(statsData[0].sidebarTitle)
-    }, [filters.mediaType]);
+        setSelectedData(statsData[0]);
+    }, [filters.mediaType, statsData]);
 
-    if (statsData.find((data) => data.sidebarTitle === selectedTab) === undefined) {
+    if (!selectedData) {
         return null;
     }
 
-    // const otherStats = apiData.settings.map((s) => ({
-    //     sidebarTitle: `${capitalize(s.media_type)} stats`,
-    //     to: `/global-stats?mt=${s.media_type}`,
-    //     isSelected: s.media_type === filters.mt,
-    //     mediaType: s.media_type,
-    // }));
-
-    const linkItemsSidebar = [
+    const sidebarItems: SideBarItem<typeof selectedData>[] = [
+        ...statsData.map((data): SideBarItem<typeof selectedData> => ({
+            is: "tab",
+            data: data,
+        })),
+        "separator",
         {
-            sidebarTitle: "Overall stats",
+            is: "link",
             to: "/platform-stats",
+            sidebarTitle: "Overall stats",
             isSelected: filters.mediaType === undefined,
             mediaType: undefined,
         },
-        // ...otherStats,
+        ...Object.values(MediaType).map((mt): SideBarItem<typeof selectedData> => ({
+            is: "link",
+            mediaType: mt,
+            to: "/platform-stats",
+            search: { mediaType: mt },
+            isSelected: mt === filters.mediaType,
+            sidebarTitle: `${capitalize(mt)} stats`,
+        })),
     ];
 
     return (
         <PageTitle title="Platform Statistics" subtitle="The statistics from all the users using MyLists.info">
             <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
                 <Sidebar
-                    items={statsData}
-                    selectedTab={selectedTab}
-                    linkItems={linkItemsSidebar}
-                    onTabChange={setSelectedTab}
+                    items={sidebarItems}
+                    selectedItem={selectedData}
+                    onTabChange={setSelectedData}
                 />
                 <div>
                     <RatingProvider value={RatingSystemType.SCORE}>
-                        <StatsDisplay
-                            statsData={statsData.find((data) => data.sidebarTitle === selectedTab)!}
-                        />
+                        <StatsDisplay statsData={selectedData}/>
                     </RatingProvider>
                 </div>
             </div>

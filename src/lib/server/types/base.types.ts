@@ -453,5 +453,5 @@ export const downloadListAsCsvSchema = z.object({
 });
 
 export const getUserStatsSchema = z.object({
-    mediaType: z.enum(MediaType).optional().catch(undefined),
+    mediaType: z.enum(MediaType).optional(),
 })
