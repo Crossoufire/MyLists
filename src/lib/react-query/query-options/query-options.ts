@@ -5,6 +5,7 @@ import {getUserStats} from "@/lib/server/functions/user-stats";
 import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
+import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
 import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/server/types/base.types";
@@ -14,7 +15,6 @@ import {getNotifications, getNotificationsCount} from "@/lib/server/functions/no
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
-import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 
 
 export const queryKeys = {

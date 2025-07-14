@@ -1,4 +1,5 @@
 import {useAuth} from "@/lib/hooks/use-auth";
+import {ProfileOptionsType} from "@/lib/components/types";
 import {ListSettings} from "@/lib/server/types/base.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
@@ -16,10 +17,14 @@ import {
 export const useFollowMutation = (username: string) => {
     const queryClient = useQueryClient();
 
-    return useMutation<void, Error, { followId: number, followStatus: boolean }>({
-        mutationFn: ({ followId, followStatus }) => postUpdateFollowStatus({ data: { followId, followStatus } }),
-        onSuccess: (_data, variables) => {
-            queryClient.setQueryData(queryKeys.profileKey(username), (oldData: any) => {
+    return useMutation({
+        mutationFn: ({ followId, followStatus }: { followId: number, followStatus: boolean }) => {
+            return postUpdateFollowStatus({ data: { followId, followStatus } })
+        },
+        onSuccess: (_, variables) => {
+            queryClient.setQueryData<ProfileOptionsType>(queryKeys.profileKey(username), (oldData) => {
+                if (!oldData) return;
+
                 return {
                     ...oldData,
                     isFollowing: variables.followStatus,
@@ -35,29 +40,33 @@ export const useFollowMutation = (username: string) => {
 
 
 export const useGeneralSettingsMutation = () => {
-    return useMutation<void, Error, { data: FormData }>({
-        mutationFn: ({ data }) => postGeneralSettings({ data }),
+    return useMutation({
+        mutationFn: ({ data }: { data: FormData }) => postGeneralSettings({ data }),
     });
 };
 
 
 export const useListSettingsMutation = () => {
-    return useMutation<void, Error, { data: ListSettings }>({
-        mutationFn: ({ data }) => postMediaListSettings({ data })
+    return useMutation({
+        mutationFn: ({ data }: { data: ListSettings }) => postMediaListSettings({ data })
     });
 };
 
 
 export const useDownloadListAsCSVMutation = () => {
-    return useMutation<Awaited<ReturnType<NonNullable<typeof getDownloadListAsCSV>>>, Error, { selectedList: string }>({
-        mutationFn: ({ selectedList }) => getDownloadListAsCSV({ data: { selectedList } }),
+    return useMutation({
+        mutationFn: ({ selectedList }: { selectedList: string }) => {
+            return getDownloadListAsCSV({ data: { selectedList } })
+        },
     });
 };
 
 
 export const usePasswordSettingsMutation = () => {
-    return useMutation<void, Error, { currentPassword: string, newPassword: string }>({
-        mutationFn: ({ currentPassword, newPassword }) => postPasswordSettings({ data: { currentPassword, newPassword } }),
+    return useMutation({
+        mutationFn: ({ currentPassword, newPassword }: { currentPassword: string, newPassword: string }) => {
+            return postPasswordSettings({ data: { currentPassword, newPassword } })
+        },
     });
 };
 

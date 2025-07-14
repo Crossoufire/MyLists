@@ -27,7 +27,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
 
 export const refreshMediaDetails = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
-    .validator((data: unknown) => refreshMediaDetailsSchema.parse(data))
+    .validator(data => refreshMediaDetailsSchema.parse(data))
     .handler(async ({ data: { mediaType, apiId } }) => {
         const container = await getContainer();
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);

@@ -1,14 +1,17 @@
 import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
-export abstract class BaseService<TConfig extends MediaSchemaConfig<any, any, any, any>, R extends BaseRepository<TConfig>> {
+export abstract class BaseService<
+    TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>,
+    R extends BaseRepository<TConfig>
+> {
     protected repository: R;
     protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
 
@@ -114,7 +117,9 @@ export abstract class BaseService<TConfig extends MediaSchemaConfig<any, any, an
 
     abstract completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any): Record<string, any>;
 
-    abstract addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<AddMediaToUserList<any, any>>;
+    abstract addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<
+        AddMediaToUserList<TConfig["mediaTable"]["$inferSelect"], TConfig["listTable"]["$inferSelect"]>
+    >;
 
     abstract updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<any, any>>;
 

@@ -29,7 +29,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
 
     const handleRemoveMediaFromList = () => {
         if (!window.confirm(`Do you want to remove this ${mediaType} from your list?`)) return;
-        removeMediaFromListMutation.mutate({}, {
+        removeMediaFromListMutation.mutate(undefined, {
             onSuccess: () => {
                 toast.success(`${capitalize(mediaType)} removed from your list`);
                 queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.mediaId) });

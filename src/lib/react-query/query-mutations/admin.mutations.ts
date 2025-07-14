@@ -8,9 +8,13 @@ import {postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser, p
 export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { userId: number | undefined, payload: Record<string, any> }>({
-        mutationFn: ({ userId, payload }) => postAdminUpdateUser({ data: { userId, payload } }),
-        onSuccess: async () => await queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminUsersKeys(filters) }),
+    return useMutation({
+        mutationFn: ({ userId, payload }: { userId?: number, payload: Record<string, any> }) => {
+            return postAdminUpdateUser({ data: { userId, payload } })
+        },
+        onSuccess: async () => {
+            return queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminUsersKeys(filters) })
+        },
     });
 };
 
@@ -18,9 +22,13 @@ export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {
 export const useAdminUpdateAchievementMutation = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { achievementId: number, payload: Record<string, any> }>({
-        mutationFn: ({ achievementId, payload }) => postAdminUpdateAchievement({ data: { achievementId, payload } }),
-        onSuccess: async () => await queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminAchievementsKey() }),
+    return useMutation({
+        mutationFn: ({ achievementId, payload }: { achievementId: number, payload: Record<string, any> }) => {
+            return postAdminUpdateAchievement({ data: { achievementId, payload } })
+        },
+        onSuccess: () => {
+            return queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminAchievementsKey() })
+        },
     });
 };
 
@@ -28,9 +36,11 @@ export const useAdminUpdateAchievementMutation = () => {
 export const useAdminUpdateTiersMutation = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { payloads: Record<string, any>[] }>({
-        mutationFn: ({ payloads }) => postAdminUpdateTiers({ data: { payloads } }),
-        onSuccess: async () => {
+    return useMutation({
+        mutationFn: ({ payloads }: { payloads: Record<string, any>[] }) => {
+            return postAdminUpdateTiers({ data: { payloads } });
+        },
+        onSuccess: () => {
             return queryClient.invalidateQueries({ queryKey: adminQueryKeys.adminAchievementsKey() })
         },
     });
@@ -40,11 +50,13 @@ export const useAdminUpdateTiersMutation = () => {
 export const useAdminTriggerTaskMutation = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { taskName: TasksName }>({
-        mutationFn: ({ taskName }) => postTriggerLongTasks({ data: { taskName } }),
-        onSuccess: async () => {
-            // Invalidate adminJobsKey, adminJobLogsKey queries (contain "adminJobs" in key definition)
-            await queryClient.invalidateQueries({ queryKey: ["adminJobs"] });
+    return useMutation({
+        mutationFn: ({ taskName }: { taskName: TasksName }) => {
+            return postTriggerLongTasks({ data: { taskName } })
+        },
+        onSuccess: () => {
+            // Invalidate `adminJobsKey`, `adminJobLogsKey` queries (contain `adminJobs` in key definition)
+            return queryClient.invalidateQueries({ queryKey: ["adminJobs"] });
         },
     });
 };

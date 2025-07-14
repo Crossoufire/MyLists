@@ -6,9 +6,11 @@ import {queryKeys} from "@/lib/react-query/query-options/query-options";
 export const useMoviedleGuessMutation = () => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { guess: string }>({
-        mutationFn: ({ guess }) => postAddMediadleGuess({ data: { guess } }),
-        onSuccess: async () => {
+    return useMutation({
+        mutationFn: ({ guess }: { guess: string }) => {
+            return postAddMediadleGuess({ data: { guess } })
+        },
+        onSuccess: () => {
             return queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() })
         },
     });

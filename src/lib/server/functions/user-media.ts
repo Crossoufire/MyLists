@@ -74,7 +74,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
-        
+
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
         await notifService.deleteUserMediaNotifications(currentUser.id, mediaType, mediaId);
 

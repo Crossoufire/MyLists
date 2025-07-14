@@ -7,15 +7,21 @@ import {postEditMediaDetails, refreshMediaDetails} from "@/lib/server/functions/
 export const useRefreshMediaMutation = (mediaType: MediaType, mediaId: number) => {
     const queryClient = useQueryClient();
 
-    return useMutation<any, Error, { mediaType: MediaType, apiId: number }>({
-        mutationFn: ({ mediaType, apiId }) => refreshMediaDetails({ data: { mediaType, apiId } }),
-        onSuccess: async () => await queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId.toString()) }),
+    return useMutation({
+        mutationFn: ({ mediaType, apiId }: { mediaType: MediaType, apiId: number }) => {
+            return refreshMediaDetails({ data: { mediaType, apiId } });
+        },
+        onSuccess: async () => {
+            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId) });
+        },
     });
 };
 
 
 export const useEditMediaMutation = () => {
-    return useMutation<any, Error, { mediaType: MediaType, mediaId: number, payload: Record<string, any> }>({
-        mutationFn: ({ mediaType, mediaId, payload }) => postEditMediaDetails({ data: { mediaType, mediaId, payload } }),
+    return useMutation({
+        mutationFn: ({ mediaType, mediaId, payload }: { mediaType: MediaType, mediaId: number, payload: Record<string, any> }) => {
+            return postEditMediaDetails({ data: { mediaType, mediaId, payload } })
+        },
     });
 };

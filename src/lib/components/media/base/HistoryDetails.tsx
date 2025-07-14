@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {HistoryType} from "@/lib/components/types";
+import {HistoryOptionsType} from "@/lib/components/types";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {UserUpdate} from "@/lib/components/general/UserUpdate";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
@@ -7,7 +7,7 @@ import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-m
 
 
 interface HistoryDetailsProps {
-    history: HistoryType;
+    history: HistoryOptionsType;
     queryKey: ReturnType<typeof queryKeys.historyKey>;
 }
 
