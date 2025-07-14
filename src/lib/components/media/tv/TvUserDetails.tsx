@@ -28,6 +28,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
             />
             {(userMedia.status !== Status.PLAN_TO_WATCH && userMedia.status !== Status.RANDOM) &&
                 <UpdateSeasonsEps
+                    //@ts-expect-error
                     epsPerSeason={userMedia.epsPerSeason}
                     currentSeason={userMedia.currentSeason}
                     onUpdateMutation={updateUserMediaMutation}

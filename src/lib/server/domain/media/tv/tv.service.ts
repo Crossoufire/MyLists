@@ -161,6 +161,8 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         if (userMedia) throw new FormattedError("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
+        (newState as any).epsPerSeason = media.epsPerSeason;
+
         const delta = this.calculateDeltaStats(null, newState, media as TvTypeWithEps);
 
         return { newState, media, delta };
@@ -238,11 +240,11 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         const oldStatus = oldState?.status;
         const oldRating = oldState?.rating;
         const oldComment = oldState?.comment;
-        const oldRedo = oldState?.redo2 ?? [];
         const oldFavorite = oldState?.favorite ?? false;
         const oldTotalSpecificValue = oldState?.total ?? 0;
         const oldTotalTimeSpent = oldTotalSpecificValue * media.duration;
-        const oldSumRedo = oldState?.redo2.reduce((a, c) => a + c, 0) ?? 0;
+        const oldRedo = oldState?.redo2 ?? Array(media.epsPerSeason.length).fill(0);
+        const oldSumRedo = oldRedo.reduce((a, c) => a + c, 0) ?? 0;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
@@ -262,7 +264,6 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
         const redoDiff = newRedo?.map((val, idx) => val - oldRedo[idx]);
         const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason[i].episodes, 0);
-
         const newTotalSpecificValue = oldTotalSpecificValue + (valuesToApply ?? 0);
         const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 

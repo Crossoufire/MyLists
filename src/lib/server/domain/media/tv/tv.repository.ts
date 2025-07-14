@@ -356,11 +356,11 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .insert(listTable)
             .values({
                 userId,
+                total: newTotal,
                 mediaId: media.id,
+                status: newStatus,
                 currentSeason: newSeason,
                 lastEpisodeWatched: newEpisode,
-                total: newTotal,
-                status: newStatus,
                 redo2: Array(media.epsPerSeason.length).fill(0),
             })
             .returning();

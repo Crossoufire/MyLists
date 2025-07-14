@@ -11,6 +11,8 @@ interface UpdateSeasonsEpsProps {
 
 
 export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason, currentEpisode }: UpdateSeasonsEpsProps) => {
+    console.log({ onUpdateMutation, epsPerSeason, currentSeason, currentEpisode })
+    
     const episodes = [...Array(epsPerSeason[currentSeason - 1].episodes).keys()].map(v => (v + 1).toString());
 
     const handleSeasonUpdate = (season: string) => {
