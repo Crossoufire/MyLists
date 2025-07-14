@@ -3,21 +3,36 @@ import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {IMoviesRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
-import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
+import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {Movie, MoviesList, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
+import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, like, lte, max, ne, or, sql} from "drizzle-orm";
 
 
-export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSchemaConfig> implements IMoviesRepository {
+export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     config: MovieSchemaConfig;
 
     constructor() {
         super(moviesConfig);
         this.config = moviesConfig;
+    }
+
+    async lockOldMovies() {
+        const [{ count }] = await getDbClient()
+            .select({ count: sql<number>`count(*)` })
+            .from(movies)
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+
+        await getDbClient()
+            .update(movies)
+            .set({ lockStatus: true })
+            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
+            .execute();
+
+        return count;
     }
 
     async getComingNext(userId: number) {
@@ -37,21 +52,171 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
         return comingNext;
     }
 
-    async lockOldMovies() {
-        const [{ count }] = await getDbClient()
-            .select({ count: sql<number>`count(*)` })
+    async getMediaIdsToBeRefreshed() {
+        const results = await getDbClient()
+            .select({ apiId: movies.apiId })
             .from(movies)
-            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
-            .execute();
+            .where(and(
+                lte(movies.lastApiUpdate, sql`datetime('now', '-2 days')`),
+                or(
+                    gte(movies.releaseDate, sql`datetime('now')`),
+                    gte(movies.releaseDate, sql`datetime('now', '-6 months')`),
+                )));
 
-        await getDbClient()
-            .update(movies)
-            .set({ lockStatus: true })
-            .where(and(eq(movies.lockStatus, false), lte(movies.releaseDate, sql`datetime('now', '-6 months')`)))
-            .execute();
-
-        return count;
+        return results.map((r) => r.apiId);
     }
+
+    // --- Achievements ----------------------------------------------------------
+
+    getDurationAchievementCte(achievement: Achievement, userId?: number) {
+        const value = parseInt(achievement.value!);
+        const isLong = achievement.codeName.includes("long");
+        const condition = isLong ? gte(movies.duration, value) : lte(movies.duration, value);
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                value: count(moviesList.mediaId).as("value"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+
+        const conditions = [eq(moviesList.status, Status.COMPLETED), condition]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
+        let subQ = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                count: count(moviesList.mediaId).as("count"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+            .where(eq(moviesList.status, Status.COMPLETED))
+            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, movies.directorName)
+            .as("sub");
+
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+
+    getActorAchievementCte(_achievement: Achievement, userId?: number) {
+        let subQ = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                count: count(moviesList.mediaId).as("count"),
+            }).from(moviesList)
+            .innerJoin(moviesActors, eq(moviesList.mediaId, moviesActors.mediaId))
+            .where(eq(moviesList.status, Status.COMPLETED))
+            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, moviesActors.name)
+            .as("sub");
+
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+
+    getLanguageAchievementCte(_achievement: Achievement, userId?: number) {
+        let baseCTE = getDbClient()
+            .select({
+                userId: moviesList.userId,
+                value: countDistinct(movies.originalLanguage).as("value"),
+            }).from(moviesList)
+            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
+
+        const conditions = [eq(moviesList.status, Status.COMPLETED)]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    // --- Advanced Stats  --------------------------------------------------
+
+    async avgMovieDuration(userId?: number) {
+        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
+
+        const avgDuration = await getDbClient()
+            .select({
+                average: sql<number | null>`avg(${movies.duration})`
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
+            .get();
+
+        return avgDuration?.average ? avgDuration.average : 0;
+    }
+
+    async movieDurationDistrib(userId?: number) {
+        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
+
+        return getDbClient()
+            .select({
+                name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
+                value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
+            .groupBy(sql<number>`floor(${movies.duration} / 30.0) * 30`)
+            .orderBy(asc(sql<number>`floor(${movies.duration} / 30.0) * 30`));
+    }
+
+    async budgetRevenueStats(userId?: number) {
+        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
+
+        const data = await getDbClient()
+            .select({
+                totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)`.as("total_budget"),
+                totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)`.as("total_revenue"),
+            })
+            .from(movies)
+            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
+            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH)))
+            .get();
+
+        return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
+    }
+
+    async specificTopMetrics(userId?: number) {
+        const langsConfig: ConfigTopMetric = {
+            metricTable: movies,
+            metricNameCol: movies.originalLanguage,
+            metricIdCol: movies.id,
+            mediaLinkCol: moviesList.mediaId,
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
+        };
+        const directorsConfig: ConfigTopMetric = {
+            metricTable: movies,
+            metricNameCol: movies.directorName,
+            metricIdCol: movies.id,
+            mediaLinkCol: moviesList.mediaId,
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
+        };
+        const actorsConfig: ConfigTopMetric = {
+            metricTable: moviesActors,
+            metricNameCol: moviesActors.name,
+            metricIdCol: moviesActors.mediaId,
+            mediaLinkCol: moviesList.mediaId,
+            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
+        };
+
+        const langsStats = await this.computeTopMetricStats(langsConfig, userId);
+        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
+        const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
+
+        return { directorsStats, actorsStats, langsStats };
+    }
+
+    // --- Implemented Methods ------------------------------------------------
 
     async computeAllUsersStats() {
         const results = await getDbClient()
@@ -215,20 +380,6 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
         };
     }
 
-    async getMediaIdsToBeRefreshed() {
-        const results = await getDbClient()
-            .select({ apiId: movies.apiId })
-            .from(movies)
-            .where(and(
-                lte(movies.lastApiUpdate, sql`datetime('now', '-2 days')`),
-                or(
-                    gte(movies.releaseDate, sql`datetime('now')`),
-                    gte(movies.releaseDate, sql`datetime('now', '-6 months')`),
-                )));
-
-        return results.map((r) => r.apiId);
-    }
-
     async findAllAssociatedDetails(mediaId: number) {
         const details = await getDbClient()
             .select({
@@ -362,155 +513,5 @@ export class MoviesRepository extends BaseRepository<Movie, MoviesList, MovieSch
         else {
             throw new Error("JobType not supported");
         }
-    }
-
-    // --- Achievements ----------------------------------------------------------
-
-    getDurationAchievementCte(achievement: Achievement, userId?: number) {
-        const value = parseInt(achievement.value!);
-        const isLong = achievement.codeName.includes("long");
-        const condition = isLong ? gte(movies.duration, value) : lte(movies.duration, value);
-
-        let baseCTE = getDbClient()
-            .select({
-                userId: moviesList.userId,
-                value: count(moviesList.mediaId).as("value"),
-            }).from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-
-        const conditions = [eq(moviesList.status, Status.COMPLETED), condition]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
-            .select({
-                userId: moviesList.userId,
-                count: count(moviesList.mediaId).as("count"),
-            }).from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-            .where(eq(moviesList.status, Status.COMPLETED))
-            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, movies.directorName)
-            .as("sub");
-
-        return getDbClient()
-            .select({
-                userId: subQ.userId,
-                value: max(subQ.count).as("value"),
-            }).from(subQ)
-            .groupBy(subQ.userId)
-            .as("calculation");
-    }
-
-    getActorAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
-            .select({
-                userId: moviesList.userId,
-                count: count(moviesList.mediaId).as("count"),
-            }).from(moviesList)
-            .innerJoin(moviesActors, eq(moviesList.mediaId, moviesActors.mediaId))
-            .where(eq(moviesList.status, Status.COMPLETED))
-            .groupBy(userId ? eq(moviesList.userId, userId) : moviesList.userId, moviesActors.name)
-            .as("sub");
-
-        return getDbClient()
-            .select({
-                userId: subQ.userId,
-                value: max(subQ.count).as("value"),
-            }).from(subQ)
-            .groupBy(subQ.userId)
-            .as("calculation");
-    }
-
-    getLanguageAchievementCte(_achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
-            .select({
-                userId: moviesList.userId,
-                value: countDistinct(movies.originalLanguage).as("value"),
-            }).from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-
-        const conditions = [eq(moviesList.status, Status.COMPLETED)]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    // --- Advanced Stats  --------------------------------------------------
-
-    async avgMovieDuration(userId?: number) {
-        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-
-        const avgDuration = await getDbClient()
-            .select({
-                average: sql<number | null>`avg(${movies.duration})`
-            })
-            .from(movies)
-            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
-            .get();
-
-        return avgDuration?.average ? avgDuration.average : 0;
-    }
-
-    async movieDurationDistrib(userId?: number) {
-        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-
-        return getDbClient()
-            .select({
-                name: sql<number>`floor(${movies.duration} / 30.0) * 30`,
-                value: sql<number>`cast(count(${movies.id}) as int)`.as("count"),
-            })
-            .from(movies)
-            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
-            .groupBy(sql<number>`floor(${movies.duration} / 30.0) * 30`)
-            .orderBy(asc(sql<number>`floor(${movies.duration} / 30.0) * 30`));
-    }
-
-    async budgetRevenueStats(userId?: number) {
-        const forUser = userId ? eq(moviesList.userId, userId) : undefined;
-
-        const data = await getDbClient()
-            .select({
-                totalBudget: sql<number>`coalesce(sum(${movies.budget}), 0)`.as("total_budget"),
-                totalRevenue: sql<number>`coalesce(sum(${movies.revenue}), 0)`.as("total_revenue"),
-            })
-            .from(movies)
-            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH)))
-            .get();
-
-        return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
-    }
-
-    async specificTopMetrics(userId?: number) {
-        const langsConfig: ConfigTopMetric = {
-            metricTable: movies,
-            metricNameCol: movies.originalLanguage,
-            metricIdCol: movies.id,
-            mediaLinkCol: moviesList.mediaId,
-            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
-        };
-        const directorsConfig: ConfigTopMetric = {
-            metricTable: movies,
-            metricNameCol: movies.directorName,
-            metricIdCol: movies.id,
-            mediaLinkCol: moviesList.mediaId,
-            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
-        };
-        const actorsConfig: ConfigTopMetric = {
-            metricTable: moviesActors,
-            metricNameCol: moviesActors.name,
-            metricIdCol: moviesActors.mediaId,
-            mediaLinkCol: moviesList.mediaId,
-            filters: [ne(moviesList.status, Status.PLAN_TO_WATCH)],
-        };
-
-        const langsStats = await this.computeTopMetricStats(langsConfig, userId);
-        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-        const directorsStats = await this.computeTopMetricStats(directorsConfig, userId);
-
-        return { directorsStats, actorsStats, langsStats };
     }
 }

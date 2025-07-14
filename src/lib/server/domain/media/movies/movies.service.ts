@@ -1,23 +1,20 @@
-import {Status} from "@/lib/server/utils/enums";
+import {eq, isNotNull} from "drizzle-orm";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IMoviesService} from "@/lib/server/types/services.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {IMoviesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
+import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-import {MoviesAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
-import {eq, isNotNull} from "drizzle-orm";
 
 
-export class MoviesService extends BaseService<
-    Movie, MoviesList, MoviesAdvancedStats, MoviesAchCodeName, IMoviesRepository
-> implements IMoviesService {
+export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {
     readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: MoviesRepository) {
@@ -44,6 +41,12 @@ export class MoviesService extends BaseService<
     async lockOldMovies() {
         return this.repository.lockOldMovies();
     }
+
+    async getComingNext(userId: number) {
+        return this.repository.getComingNext(userId);
+    }
+
+    // --- Implements Methods --------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -141,10 +144,6 @@ export class MoviesService extends BaseService<
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -309,7 +308,7 @@ export class MoviesService extends BaseService<
         return delta;
     }
 
-    getAchievementsDefinition() {
+    getAchievementsDefinition(_mediaType?: MediaType) {
         return moviesAchievements as unknown as AchievementData[];
     }
 }

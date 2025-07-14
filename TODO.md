@@ -2,17 +2,11 @@
 
 ## Fixes
 
-- FIX: Top rated dev and publishers stats in games bug
-
 ## TODO
 
-- TODO: Add GET page in `PlatformStats`
+- TODO: Change all precomputed stats for user and platform to be done, most of them, in sql (at least for platform!)
 - TODO: Add cache system in `PlatformStats`
-- TODO: [~DONE] Make User Media Stats page work
-- TODO: Add `totalUsers` for `globalStats` in platform
-- TODO: change original name to english name when not latin in search
 - TODO: `statsPage`: send user's settings to add activated mediaTypes in sidebar
-- TODO: add `onCascade` for media removal from list (and simplify functions accordingly)
 
 ## TODO LATER
 

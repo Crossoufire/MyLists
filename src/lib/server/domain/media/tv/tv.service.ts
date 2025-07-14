@@ -1,24 +1,22 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {ITvService} from "@/lib/server/types/services.types";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {ITvRepository, StatsCTE} from "@/lib/server/types/repositories.types";
-import {TvAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
+import {TvAchCodeName, TvList, TvListWithEps, TvTypeWithEps} from "@/lib/server/domain/media/tv/tv.types";
 
 
-export class TvService extends BaseService<
-    TvType, TvList, TvAdvancedStats, TvAchCodeName, ITvRepository
-> implements ITvService {
+export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfig, TvRepository> {
     readonly achievementHandlers: Record<TvAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: TvRepository) {
@@ -46,6 +44,12 @@ export class TvService extends BaseService<
             network_series: this.repository.getNetworkAchievementCte.bind(this.repository),
         };
     }
+
+    async getComingNext(userId: number) {
+        return this.repository.getComingNext(userId);
+    }
+
+    // --- Implemented Methods ----------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -144,11 +148,7 @@ export class TvService extends BaseService<
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
+        await this.repository.updateMediaWithDetails({ mediaData: fields as any });
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -161,7 +161,7 @@ export class TvService extends BaseService<
         if (userMedia) throw new FormattedError("Media already in your list");
 
         const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState, media);
+        const delta = this.calculateDeltaStats(null, newState, media as TvTypeWithEps);
 
         return { newState, media, delta };
     }
@@ -177,9 +177,9 @@ export class TvService extends BaseService<
         (media as any).epsPerSeason = mediaEpsPerSeason;
         (oldState as any).epsPerSeason = mediaEpsPerSeason;
 
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData, oldState);
+        const completeUpdateData = this.completePartialUpdateData(partialUpdateData, oldState as any);
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState, media);
+        const delta = this.calculateDeltaStats(oldState, newState, media as TvTypeWithEps);
 
         return { os: oldState, ns: newState, media, delta, updateData: completeUpdateData };
     }
@@ -197,7 +197,7 @@ export class TvService extends BaseService<
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia: TvList) {
+    completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia: TvListWithEps) {
         let completeUpdateData = { ...partialUpdateData };
 
         if (completeUpdateData.status) {
@@ -210,15 +210,15 @@ export class TvService extends BaseService<
                     ...completeUpdateData,
                     currentSeason: 1,
                     lastEpisodeWatched: 1,
-                    redo2: Array(userMedia.epsPerSeason!.length).fill(0)
+                    redo2: Array(userMedia.epsPerSeason.length).fill(0)
                 };
             }
 
             if (completeUpdateData.status === Status.COMPLETED) {
                 completeUpdateData = {
                     ...completeUpdateData,
-                    currentSeason: userMedia.epsPerSeason!.at(-1)!.season,
-                    lastEpisodeWatched: userMedia.epsPerSeason!.at(-1)!.episodes,
+                    currentSeason: userMedia.epsPerSeason.at(-1)!.season,
+                    lastEpisodeWatched: userMedia.epsPerSeason.at(-1)!.episodes,
                 };
             }
         }
@@ -230,7 +230,7 @@ export class TvService extends BaseService<
         return completeUpdateData;
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvType) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvTypeWithEps) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
@@ -261,7 +261,7 @@ export class TvService extends BaseService<
         const isRated = isCompleted && newRating != null;
 
         const redoDiff = newRedo?.map((val, idx) => val - oldRedo[idx]);
-        const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason![i].episodes, 0);
+        const valuesToApply = redoDiff?.reduce((sum, diff, i) => sum + diff * media.epsPerSeason[i].episodes, 0);
 
         const newTotalSpecificValue = oldTotalSpecificValue + (valuesToApply ?? 0);
         const newTotalTimeSpent = newTotalSpecificValue * media.duration;

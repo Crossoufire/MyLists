@@ -56,11 +56,11 @@ export type GenreTable = Table & GenreTableColumns;
 export type TableWithMediaId = Table & { mediaId: Column<any, any, any> };
 
 type BaseSelection<TListTable, TMediaTable> = {
-    [K in keyof TListTable]: SQLiteColumn
+    [K in keyof TListTable]: SQLiteColumn | SQL
 } | {
-    [K in keyof TMediaTable]: SQLiteColumn
+    [K in keyof TMediaTable]: SQLiteColumn | SQL
 } | {
-    mediaName: SQLiteColumn
+    mediaName: SQLiteColumn | SQL
 }
 
 
@@ -89,21 +89,16 @@ export interface MediaSchemaConfig<
 }
 
 
-export type TActorTableParam = Table;
-export type TNetworkTableParam = Table;
-export type TEpsPerSeasonTableParam = Table;
-
-
-export interface TVSchemaConfig<
+export interface TvSchemaConfig<
     TMediaTable extends MediaTable,
     TListTable extends ListTable,
     TGenreTable extends GenreTable,
     TLabelTable extends LabelTable,
-    TActorTableParam extends Table,
-    TNetworkTableParam extends Table,
-    TEpsPerSeasonTableParam extends Table,
+    TActorTable extends Table,
+    TNetworkTable extends Table,
+    TEpsPerSeasonTable extends Table,
 > extends MediaSchemaConfig<TMediaTable, TListTable, TGenreTable, TLabelTable> {
-    actorTable: TActorTableParam;
-    networkTable: TNetworkTableParam;
-    epsPerSeasonTable: TEpsPerSeasonTableParam;
+    actorTable: TActorTable;
+    networkTable: TNetworkTable;
+    epsPerSeasonTable: TEpsPerSeasonTable;
 }

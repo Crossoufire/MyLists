@@ -1,17 +1,16 @@
 import {notFound} from "@tanstack/react-router";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {IGamesRepository} from "@/lib/server/types/repositories.types";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
+import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
-import {Game, GamesList, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, max, ne, notInArray, or, sql} from "drizzle-orm";
 
 
-export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchemaConfig> implements IGamesRepository {
+export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     config: GamesSchemaConfig;
 
     constructor() {
@@ -38,142 +37,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .execute();
     }
 
-    async computeAllUsersStats() {
-        const results = await getDbClient()
-            .select({
-                userId: gamesList.userId,
-                timeSpent: sql<number>`COALESCE(SUM(${gamesList.playtime}), 0)`.as("timeSpent"),
-                totalSpecific: sql<number>`0`.as("totalSpecific"),
-                statusCounts: sql`
-                    COALESCE((
-                        SELECT 
-                            JSON_GROUP_OBJECT(status, count_per_status) 
-                        FROM (
-                            SELECT 
-                                status,
-                                COUNT(*) as count_per_status 
-                            FROM ${gamesList} as sub_list 
-                            WHERE sub_list.user_id = ${gamesList.userId} GROUP BY status
-                        )
-                    ), '{}')
-                `.as("statusCounts"),
-                entriesFavorites: sql<number>`
-                    COALESCE(SUM(CASE WHEN ${gamesList.favorite} = 1 THEN 1 ELSE 0 END), 0)
-                `.as("entriesFavorites"),
-                totalRedo: sql<number>`0`.as("totalRedo"),
-                entriesCommented: sql<number>`
-                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${gamesList.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
-                `.as("entriesCommented"),
-                totalEntries: count(gamesList.mediaId).as("totalEntries"),
-                entriesRated: count(gamesList.rating).as("entriesRated"),
-                sumEntriesRated: sql<number>`COALESCE(SUM(${gamesList.rating}), 0)`.as("sumEntriesRated"),
-                averageRating: sql<number>`
-                    COALESCE(SUM(${gamesList.rating}) * 1.0 / NULLIF(COUNT(${gamesList.rating}), 0), 0.0)
-                `.as("averageRating"),
-            })
-            .from(gamesList)
-            .innerJoin(games, eq(gamesList.mediaId, games.id))
-            .groupBy(gamesList.userId)
-            .execute();
-
-        return results.map((row) => {
-            let statusCounts: Record<string, number> = {};
-            try {
-                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
-                if (typeof parsed === "object" && parsed !== null) {
-                    statusCounts = parsed;
-                }
-            }
-            catch (e) {
-                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
-            }
-
-            return {
-                userId: row.userId,
-                statusCounts: statusCounts,
-                timeSpent: Number(row.timeSpent) || 0,
-                totalRedo: Number(row.totalRedo) || 0,
-                totalEntries: Number(row.totalEntries) || 0,
-                entriesRated: Number(row.entriesRated) || 0,
-                totalSpecific: Number(row.totalSpecific) || 0,
-                averageRating: Number(row.averageRating) || 0,
-                sumEntriesRated: Number(row.sumEntriesRated) || 0,
-                entriesFavorites: Number(row.entriesFavorites) || 0,
-                entriesCommented: Number(row.entriesCommented) || 0,
-            };
-        });
-    }
-
-    async getMediaToNotify() {
-        return getDbClient()
-            .select({
-                mediaId: games.id,
-                mediaName: games.name,
-                releaseDate: games.releaseDate,
-                userId: gamesList.userId,
-            })
-            .from(games)
-            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(and(
-                isNotNull(games.releaseDate),
-                gte(games.releaseDate, sql`datetime('now')`),
-                lte(games.releaseDate, sql`datetime('now', '+7 days')`),
-            ))
-            .orderBy(games.releaseDate)
-            .execute();
-    }
-
-    async addMediaToUserList(userId: number, media: Game, newStatus: Status) {
-        const [newMedia] = await getDbClient()
-            .insert(gamesList)
-            .values({ userId, mediaId: media.id, status: newStatus, playtime: 0 })
-            .returning();
-
-        return newMedia;
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
-        let dataQuery = getDbClient()
-            .selectDistinct({
-                mediaId: games.id,
-                mediaName: games.name,
-                imageCover: games.imageCover,
-                inUserList: isNotNull(gamesList.userId).mapWith(Boolean).as("inUserList"),
-            })
-            .from(games)
-            .leftJoin(gamesList, and(eq(gamesList.mediaId, games.id), eq(gamesList.userId, userId)))
-            .$dynamic();
-
-        let countQuery = getDbClient()
-            .select({ value: countDistinct(games.id) })
-            .from(games)
-            .$dynamic();
-
-        let filterConditions: any[] = [];
-        if (job === JobType.CREATOR) {
-            dataQuery = dataQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
-            countQuery = countQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
-            filterConditions = [like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true)];
-        }
-        else {
-            throw notFound();
-        }
-
-        if (filterConditions.length > 0) {
-            dataQuery = dataQuery.where(and(...filterConditions));
-            countQuery = countQuery.where(and(...filterConditions));
-        }
-
-        const [totalResult, results] = await Promise.all([
-            countQuery.execute(),
-            dataQuery.orderBy(asc(games.releaseDate)).limit(limit).offset(offset).execute(),
-        ]);
-
-        const totalCount = totalResult[0]?.value ?? 0;
-
-        return { items: results, total: totalCount, pages: Math.ceil(totalCount / limit) };
-    }
-
     async getMediaIdsToBeRefreshed() {
         const results = await getDbClient()
             .select({ apiId: games.apiId })
@@ -184,116 +47,6 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             ));
 
         return results.map((r) => r.apiId);
-    }
-
-    async findAllAssociatedDetails(mediaId: number) {
-        const details = await getDbClient()
-            .select({
-                ...getTableColumns(games),
-                genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),
-                companies: sql`json_group_array(DISTINCT json_object('id', ${gamesCompanies.id}, 'name', ${gamesCompanies.name}, 'developer', ${gamesCompanies.developer}, 'publisher', ${gamesCompanies.publisher}))`.mapWith(JSON.parse),
-                platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
-            })
-            .from(games)
-            .leftJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
-            .leftJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
-            .leftJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
-            .where(eq(games.id, mediaId))
-            .groupBy(...Object.values(getTableColumns(games)))
-            .get();
-
-        if (!details) return;
-
-        const result: Game & AddedMediaDetails = {
-            ...details,
-            genres: details.genres || [],
-            companies: details.companies || [],
-            platforms: details.platforms || [],
-        };
-
-        return result;
-    }
-
-    async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
-        const tx = getDbClient();
-
-        const [media] = await tx
-            .insert(games)
-            .values({
-                ...mediaData,
-                lastApiUpdate: sql`datetime('now')`,
-            })
-            .returning()
-
-        const mediaId = media.id;
-        if (companiesData && companiesData.length > 0) {
-            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
-            await tx.insert(gamesCompanies).values(companiesToAdd)
-        }
-        if (platformsData && platformsData.length > 0) {
-            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
-            await tx.insert(gamesPlatforms).values(platformsToAdd)
-        }
-        if (genresData && genresData.length > 0) {
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(gamesGenre).values(genresToAdd)
-        }
-
-        return mediaId;
-    }
-
-    async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
-        const tx = getDbClient();
-
-        const [media] = await tx
-            .update(games)
-            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
-            .where(eq(games.apiId, mediaData.apiId))
-            .returning({ id: games.id })
-
-        const mediaId = media.id;
-        if (companiesData && companiesData.length > 0) {
-            await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
-            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
-            await tx.insert(gamesCompanies).values(companiesToAdd)
-        }
-        if (platformsData && platformsData.length > 0) {
-            await tx.delete(gamesPlatforms).where(eq(gamesPlatforms.mediaId, mediaId));
-            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
-            await tx.insert(gamesPlatforms).values(platformsToAdd)
-        }
-        if (genresData && genresData.length > 0) {
-            await tx.delete(gamesGenre).where(eq(gamesGenre.mediaId, mediaId));
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(gamesGenre).values(genresToAdd)
-        }
-
-        return true;
-    }
-
-    async getListFilters(userId: number) {
-        const { genres, labels } = await super.getCommonListFilters(userId);
-
-        const platforms = await getDbClient()
-            .selectDistinct({ name: sql<GamesPlatformsEnum>`${gamesList.platform}` })
-            .from(gamesList)
-            .where(and(eq(gamesList.userId, userId), isNotNull(gamesList.platform)));
-
-        return { platforms, genres, labels };
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        if (job === JobType.CREATOR) {
-            const companies = await getDbClient()
-                .selectDistinct({ name: gamesCompanies.name })
-                .from(gamesCompanies)
-                .innerJoin(gamesList, eq(gamesList.mediaId, gamesCompanies.mediaId))
-                .where(and(eq(gamesList.userId, userId), like(gamesCompanies.name, `%${query}%`)));
-            return companies
-        }
-        else {
-            throw notFound();
-        }
     }
 
     // --- Achievements ----------------------------------------------------------
@@ -448,12 +201,14 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
 
     async specificTopMetrics(userId?: number) {
         const developersConfig: ConfigTopMetric = {
+            minRatingCount: 3,
             metricIdCol: games.id,
             metricTable: gamesCompanies,
-            mediaLinkCol: gamesList.mediaId,
+            mediaLinkCol: gamesCompanies.mediaId,
             metricNameCol: gamesCompanies.name,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
         };
+
         const publishersConfig: ConfigTopMetric = {
             ...developersConfig,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
@@ -510,5 +265,255 @@ export class GamesRepository extends BaseRepository<Game, GamesList, GamesSchema
             .map(([name, value]) => ({ name, value: Number(value) || 0 }));
 
         return { topValues: topValuesResult };
+    }
+
+    // --- Implemented Methods ----------------------------------------------
+
+    async computeAllUsersStats() {
+        const results = await getDbClient()
+            .select({
+                userId: gamesList.userId,
+                timeSpent: sql<number>`COALESCE(SUM(${gamesList.playtime}), 0)`.as("timeSpent"),
+                totalSpecific: sql<number>`0`.as("totalSpecific"),
+                statusCounts: sql`
+                    COALESCE((
+                        SELECT 
+                            JSON_GROUP_OBJECT(status, count_per_status) 
+                        FROM (
+                            SELECT 
+                                status,
+                                COUNT(*) as count_per_status 
+                            FROM ${gamesList} as sub_list 
+                            WHERE sub_list.user_id = ${gamesList.userId} GROUP BY status
+                        )
+                    ), '{}')
+                `.as("statusCounts"),
+                entriesFavorites: sql<number>`
+                    COALESCE(SUM(CASE WHEN ${gamesList.favorite} = 1 THEN 1 ELSE 0 END), 0)
+                `.as("entriesFavorites"),
+                totalRedo: sql<number>`0`.as("totalRedo"),
+                entriesCommented: sql<number>`
+                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${gamesList.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
+                `.as("entriesCommented"),
+                totalEntries: count(gamesList.mediaId).as("totalEntries"),
+                entriesRated: count(gamesList.rating).as("entriesRated"),
+                sumEntriesRated: sql<number>`COALESCE(SUM(${gamesList.rating}), 0)`.as("sumEntriesRated"),
+                averageRating: sql<number>`
+                    COALESCE(SUM(${gamesList.rating}) * 1.0 / NULLIF(COUNT(${gamesList.rating}), 0), 0.0)
+                `.as("averageRating"),
+            })
+            .from(gamesList)
+            .innerJoin(games, eq(gamesList.mediaId, games.id))
+            .groupBy(gamesList.userId)
+            .execute();
+
+        return results.map((row) => {
+            let statusCounts: Record<string, number> = {};
+            try {
+                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
+                if (typeof parsed === "object" && parsed !== null) {
+                    statusCounts = parsed;
+                }
+            }
+            catch (e) {
+                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
+            }
+
+            return {
+                userId: row.userId,
+                statusCounts: statusCounts,
+                timeSpent: Number(row.timeSpent) || 0,
+                totalRedo: Number(row.totalRedo) || 0,
+                totalEntries: Number(row.totalEntries) || 0,
+                entriesRated: Number(row.entriesRated) || 0,
+                totalSpecific: Number(row.totalSpecific) || 0,
+                averageRating: Number(row.averageRating) || 0,
+                sumEntriesRated: Number(row.sumEntriesRated) || 0,
+                entriesFavorites: Number(row.entriesFavorites) || 0,
+                entriesCommented: Number(row.entriesCommented) || 0,
+            };
+        });
+    }
+
+    async getMediaToNotify() {
+        return getDbClient()
+            .select({
+                mediaId: games.id,
+                mediaName: games.name,
+                releaseDate: games.releaseDate,
+                userId: gamesList.userId,
+            })
+            .from(games)
+            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
+            .where(and(
+                isNotNull(games.releaseDate),
+                gte(games.releaseDate, sql`datetime('now')`),
+                lte(games.releaseDate, sql`datetime('now', '+7 days')`),
+            ))
+            .orderBy(games.releaseDate)
+            .execute();
+    }
+
+    async addMediaToUserList(userId: number, media: Game, newStatus: Status) {
+        const [newMedia] = await getDbClient()
+            .insert(gamesList)
+            .values({ userId, mediaId: media.id, status: newStatus, playtime: 0 })
+            .returning();
+
+        return newMedia;
+    }
+
+    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
+        let dataQuery = getDbClient()
+            .selectDistinct({
+                mediaId: games.id,
+                mediaName: games.name,
+                imageCover: games.imageCover,
+                inUserList: isNotNull(gamesList.userId).mapWith(Boolean).as("inUserList"),
+            })
+            .from(games)
+            .leftJoin(gamesList, and(eq(gamesList.mediaId, games.id), eq(gamesList.userId, userId)))
+            .$dynamic();
+
+        let countQuery = getDbClient()
+            .select({ value: countDistinct(games.id) })
+            .from(games)
+            .$dynamic();
+
+        let filterConditions: any[] = [];
+        if (job === JobType.CREATOR) {
+            dataQuery = dataQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
+            countQuery = countQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
+            filterConditions = [like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true)];
+        }
+        else {
+            throw notFound();
+        }
+
+        if (filterConditions.length > 0) {
+            dataQuery = dataQuery.where(and(...filterConditions));
+            countQuery = countQuery.where(and(...filterConditions));
+        }
+
+        const [totalResult, results] = await Promise.all([
+            countQuery.execute(),
+            dataQuery.orderBy(asc(games.releaseDate)).limit(limit).offset(offset).execute(),
+        ]);
+
+        const totalCount = totalResult[0]?.value ?? 0;
+
+        return { items: results, total: totalCount, pages: Math.ceil(totalCount / limit) };
+    }
+
+    async findAllAssociatedDetails(mediaId: number) {
+        const details = await getDbClient()
+            .select({
+                ...getTableColumns(games),
+                genres: sql`json_group_array(DISTINCT json_object('id', ${gamesGenre.id}, 'name', ${gamesGenre.name}))`.mapWith(JSON.parse),
+                companies: sql`json_group_array(DISTINCT json_object('id', ${gamesCompanies.id}, 'name', ${gamesCompanies.name}, 'developer', ${gamesCompanies.developer}, 'publisher', ${gamesCompanies.publisher}))`.mapWith(JSON.parse),
+                platforms: sql`json_group_array(DISTINCT json_object('id', ${gamesPlatforms.id}, 'name', ${gamesPlatforms.name}))`.mapWith(JSON.parse),
+            })
+            .from(games)
+            .leftJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id))
+            .leftJoin(gamesPlatforms, eq(gamesPlatforms.mediaId, games.id))
+            .leftJoin(gamesGenre, eq(gamesGenre.mediaId, games.id))
+            .where(eq(games.id, mediaId))
+            .groupBy(...Object.values(getTableColumns(games)))
+            .get();
+
+        if (!details) return;
+
+        const result: Game & AddedMediaDetails = {
+            ...details,
+            genres: details.genres || [],
+            companies: details.companies || [],
+            platforms: details.platforms || [],
+        };
+
+        return result;
+    }
+
+    async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
+        const tx = getDbClient();
+
+        // TODO: check how to resolve this
+
+        const [media] = await tx
+            .insert(games)
+            .values({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
+            .returning()
+
+        const mediaId = media.id;
+        if (companiesData && companiesData.length > 0) {
+            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
+            await tx.insert(gamesCompanies).values(companiesToAdd)
+        }
+        if (platformsData && platformsData.length > 0) {
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
+            await tx.insert(gamesPlatforms).values(platformsToAdd)
+        }
+        if (genresData && genresData.length > 0) {
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            await tx.insert(gamesGenre).values(genresToAdd)
+        }
+
+        return mediaId;
+    }
+
+    async updateMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
+        const tx = getDbClient();
+
+        const [media] = await tx
+            .update(games)
+            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
+            .where(eq(games.apiId, mediaData.apiId))
+            .returning({ id: games.id })
+
+        const mediaId = media.id;
+        if (companiesData && companiesData.length > 0) {
+            await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
+            const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
+            await tx.insert(gamesCompanies).values(companiesToAdd)
+        }
+        if (platformsData && platformsData.length > 0) {
+            await tx.delete(gamesPlatforms).where(eq(gamesPlatforms.mediaId, mediaId));
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
+            await tx.insert(gamesPlatforms).values(platformsToAdd)
+        }
+        if (genresData && genresData.length > 0) {
+            await tx.delete(gamesGenre).where(eq(gamesGenre.mediaId, mediaId));
+            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            await tx.insert(gamesGenre).values(genresToAdd)
+        }
+
+        return true;
+    }
+
+    async getListFilters(userId: number) {
+        const { genres, labels } = await super.getCommonListFilters(userId);
+
+        const platforms = await getDbClient()
+            .selectDistinct({ name: sql<GamesPlatformsEnum>`${gamesList.platform}` })
+            .from(gamesList)
+            .where(and(eq(gamesList.userId, userId), isNotNull(gamesList.platform)));
+
+        return { platforms, genres, labels };
+    }
+
+    async getSearchListFilters(userId: number, query: string, job: JobType) {
+        if (job === JobType.CREATOR) {
+            const companies = await getDbClient()
+                .selectDistinct({ name: gamesCompanies.name })
+                .from(gamesCompanies)
+                .innerJoin(gamesList, eq(gamesList.mediaId, gamesCompanies.mediaId))
+                .where(and(eq(gamesList.userId, userId), like(gamesCompanies.name, `%${query}%`)));
+            return companies
+        }
+        else {
+            throw notFound();
+        }
     }
 }

@@ -3,7 +3,7 @@ import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
-import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
+import {and, count, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 
@@ -86,11 +86,36 @@ export class UserStatsRepository {
             .get();
     }
 
-    static async allUsersAllMediaSettings() {
-        return getDbClient()
-            .select()
+    static async platformPreComputedStatsSummary() {
+        const totalUsers = await getDbClient()
+            .select({
+                count: count(user.id),
+            }).from(user)
+            .get()
+
+        const [preComputedStats] = await getDbClient()
+            .select({
+                totalHours: sql<number>`sum(${userMediaSettings.timeSpent})`,
+                totalDays: sql<number>`sum(${userMediaSettings.timeSpent} / 60 / 24)`,
+                totalEntries: sql<number>`sum(${userMediaSettings.totalEntries})`,
+                totalFavorites: sql<number>`sum(${userMediaSettings.entriesFavorites})`,
+                totalComments: sql<number>`sum(${userMediaSettings.entriesCommented})`,
+                totalRedo: sql<number>`sum(${userMediaSettings.totalRedo})`,
+                totalRated: sql<number>`sum(${userMediaSettings.entriesRated})`,
+                sumOfAllRatings: sql<number>`sum(${userMediaSettings.sumEntriesRated})`,
+                avgRated: sql<number>`sum(${userMediaSettings.sumEntriesRated}) / sum(${userMediaSettings.entriesRated})`,
+            })
             .from(userMediaSettings)
-            .execute()!;
+
+        const mediaTimeDistribution = await getDbClient()
+            .select({
+                name: userMediaSettings.mediaType,
+                value: sql<number>`sum(${userMediaSettings.timeSpent} / 60)`,
+            })
+            .from(userMediaSettings)
+            .groupBy(userMediaSettings.mediaType)
+
+        return { preComputedStats, mediaTimeDistribution, totalUsers: totalUsers?.count ?? 0 }
     }
 
     static async allUsersMediaSettings(mediaType: MediaType) {

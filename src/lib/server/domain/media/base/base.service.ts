@@ -1,27 +1,36 @@
 import {Label} from "@/lib/components/types";
-import {JobType, LabelAction} from "@/lib/server/utils/enums";
-import {Achievement} from "@/lib/server/types/achievements.types";
-import {IUniversalService} from "@/lib/server/types/services.types";
-import {ICommonRepository} from "@/lib/server/types/repositories.types";
-import {MediaListArgs, SearchType} from "@/lib/server/types/base.types";
+import {DeltaStats} from "@/lib/server/types/stats.types";
+import {IProviderService} from "@/lib/server/types/provider.types";
+import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
+import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
-export abstract class BaseService<
-    TMedia, TList, TStats, TCodeName extends string, R extends ICommonRepository<TMedia, TList>
-> implements IUniversalService<TMedia, TList> {
+export abstract class BaseService<TConfig extends MediaSchemaConfig<any, any, any, any>, R extends BaseRepository<TConfig>> {
     protected repository: R;
-    protected abstract readonly achievementHandlers: Record<TCodeName, (achievement: Achievement, userId?: number) => any>;
+    protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
 
     constructor(repository: R) {
         this.repository = repository;
     }
 
-    async findById(mediaId: number) {
-        return this.repository.findById(mediaId);
+    async getCoverFilenames() {
+        const coverFilenames = await this.repository.getCoverFilenames();
+        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
     }
 
-    async downloadMediaListAsCSV(userId: number) {
-        return this.repository.downloadMediaListAsCSV(userId);
+    async getNonListMediaIds() {
+        return this.repository.getNonListMediaIds();
+    }
+
+    async getMediaToNotify() {
+        return this.repository.getMediaToNotify();
+    }
+
+    async computeAllUsersStats() {
+        return this.repository.computeAllUsersStats();
     }
 
     async searchByName(query: string) {
@@ -30,6 +39,34 @@ export abstract class BaseService<
 
     async removeMediaByIds(mediaIds: number[]) {
         return this.repository.removeMediaByIds(mediaIds);
+    }
+
+    async getListFilters(userId: number) {
+        return this.repository.getListFilters(userId);
+    }
+
+    async computeTotalMediaLabel(userId?: number) {
+        return this.repository.computeTotalMediaLabel(userId);
+    }
+
+    async getUserMediaLabels(userId: number) {
+        return await this.repository.getUserMediaLabels(userId);
+    }
+
+    getAchievementCte(achievement: Achievement, userId?: number) {
+        const handler = this.achievementHandlers[achievement.codeName as string];
+        if (!handler) {
+            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
+        }
+        return handler(achievement, userId);
+    }
+
+    async findById(mediaId: number) {
+        return this.repository.findById(mediaId);
+    }
+
+    async downloadMediaListAsCSV(userId: number) {
+        return this.repository.downloadMediaListAsCSV(userId);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {
@@ -43,41 +80,8 @@ export abstract class BaseService<
         return { ratings, genresStats, totalLabels, releaseDates };
     }
 
-    async getNonListMediaIds() {
-        return this.repository.getNonListMediaIds();
-    }
-
-    async getCoverFilenames() {
-        const coverFilenames = await this.repository.getCoverFilenames();
-        return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
-    }
-
-    async getMediaToNotify() {
-        return this.repository.getMediaToNotify();
-    }
-
-    async computeAllUsersStats() {
-        return this.repository.computeAllUsersStats();
-    }
-
-    async computeTotalMediaLabel(userId?: number) {
-        return this.repository.computeTotalMediaLabel(userId);
-    }
-
-    async getUserMediaLabels(userId: number) {
-        return await this.repository.getUserMediaLabels(userId);
-    }
-
-    async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
-        return this.repository.editUserLabel(userId, label, mediaId, action);
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
-        return this.repository.getMediaList(currentUserId, userId, args);
-    }
-
-    async getListFilters(userId: number) {
-        return this.repository.getListFilters(userId);
+    async getSearchListFilters(userId: number, query: string, job: JobType) {
+        return this.repository.getSearchListFilters(userId, query, job);
     }
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType) {
@@ -88,15 +92,31 @@ export abstract class BaseService<
         return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);
     }
 
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        return this.repository.getSearchListFilters(userId, query, job);
+    async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
+        return this.repository.editUserLabel(userId, label, mediaId, action);
     }
 
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as TCodeName];
-        if (!handler) {
-            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
-        }
-        return handler(achievement, userId);
+    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
+        return this.repository.getMediaList(currentUserId, userId, args);
     }
+
+    // --- Abstract Methods --------------------------------------------------------------------
+
+    abstract getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
+
+    abstract removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
+
+    abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
+
+    abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
+
+    abstract calculateDeltaStats(oldState: UserMediaWithLabels<any>, newState: any, media: any): DeltaStats;
+
+    abstract completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any): Record<string, any>;
+
+    abstract addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<AddMediaToUserList<any, any>>;
+
+    abstract updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<any, any>>;
+
+    abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService): Promise<MediaAndUserDetails<any, any>>;
 }

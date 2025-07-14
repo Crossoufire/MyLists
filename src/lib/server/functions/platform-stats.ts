@@ -12,7 +12,7 @@ export const getPlatformStats = createServerFn({ method: "GET" })
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
         if (!mediaType) {
-            const platformStats = userStatsService.platformAdvancedStatsSummary();
+            const platformStats = await userStatsService.platformAdvancedStatsSummary();
             return { ...platformStats, ratingSystem: RatingSystemType.SCORE, mediaType: undefined };
         }
 

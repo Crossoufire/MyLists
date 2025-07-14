@@ -8,9 +8,7 @@ import {editMediaDetailsSchema, jobDetailsSchema, mediaDetailsSchema, mediaDetai
 
 export const getMediaDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator((data: unknown) => {
-        return tryNotFound(() => mediaDetailsSchema.parse(data))
-    })
+    .validator(data => tryNotFound(() => mediaDetailsSchema.parse(data)))
     .handler(async ({ data: { mediaType, mediaId, external }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

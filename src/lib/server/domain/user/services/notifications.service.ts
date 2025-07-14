@@ -72,4 +72,8 @@ export class NotificationsService {
     async deleteNotifications(mediaType: MediaType, mediaIds: number[]) {
         return this.repository.deleteNotifications(mediaType, mediaIds);
     }
+
+    async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
+        return this.repository.deleteUserMediaNotifications(userId, mediaType, mediaId);
+    }
 }

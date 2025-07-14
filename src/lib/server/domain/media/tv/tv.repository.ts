@@ -2,16 +2,15 @@ import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {ITvRepository} from "@/lib/server/types/repositories.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {TvList, TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
+import {TvType, TvTypeWithEps, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AddedMediaDetails, ConfigTopMetric, EpsPerSeasonType} from "@/lib/server/types/base.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
 
 
-export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaConfig | AnimeSchemaConfig> implements ITvRepository {
+export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchemaConfig> {
     config: SeriesSchemaConfig | AnimeSchemaConfig;
 
     constructor(config: SeriesSchemaConfig | AnimeSchemaConfig) {
@@ -35,7 +34,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .where(eq(mediaTable.id, mediaId))
             .get();
 
-        return mainData as TvType;
+        return mainData as TvTypeWithEps;
     }
 
     async getComingNext(userId: number) {
@@ -62,6 +61,177 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
 
         return comingNext;
     }
+
+    async getMediaEpsPerSeason(mediaId: number) {
+        const { epsPerSeasonTable } = this.config;
+
+        return getDbClient()
+            .select({
+                season: epsPerSeasonTable.season,
+                episodes: epsPerSeasonTable.episodes,
+            })
+            .from(epsPerSeasonTable)
+            .where(eq(epsPerSeasonTable.mediaId, mediaId))
+            .orderBy(asc(epsPerSeasonTable.season))
+            .execute();
+    }
+
+    async getMediaIdsToBeRefreshed(apiIds: number[]) {
+        const { mediaTable } = this.config;
+
+        const mediaIds = await getDbClient()
+            .select({ apiId: mediaTable.apiId })
+            .from(mediaTable)
+            .where(and(
+                inArray(mediaTable.apiId, apiIds),
+                lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`),
+            ));
+
+        return mediaIds.map((m) => m.apiId);
+    }
+
+    // --- Achievements ----------------------------------------------------------
+
+    getDurationAchievementCte(achievement: Achievement, userId?: number) {
+        const { mediaTable, listTable } = this.config;
+
+        const value = parseInt(achievement.value!);
+        const isLong = achievement.codeName.includes("long");
+        const condition = isLong ? gte(mediaTable.totalEpisodes, value) : lte(mediaTable.totalEpisodes, value);
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+
+        const conditions = [eq(listTable.status, Status.COMPLETED), condition]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getNetworkAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable, networkTable } = this.config;
+
+        let baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: countDistinct(networkTable.name).as("value"),
+            }).from(listTable)
+            .innerJoin(networkTable, eq(listTable.mediaId, networkTable.mediaId))
+
+        const conditions = [ne(listTable.status, Status.PLAN_TO_WATCH)]
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    getActorAchievementCte(_achievement: Achievement, userId?: number) {
+        const { listTable, actorTable } = this.config;
+
+        let subQ = getDbClient()
+            .select({
+                userId: listTable.userId,
+                count: count(listTable.mediaId).as("count"),
+            }).from(listTable)
+            .innerJoin(actorTable, eq(listTable.mediaId, actorTable.mediaId))
+            .where(eq(listTable.status, Status.COMPLETED))
+            .groupBy(userId ? eq(listTable.userId, userId) : listTable.userId, actorTable.name)
+            .as("sub");
+
+        return getDbClient()
+            .select({
+                userId: subQ.userId,
+                value: max(subQ.count).as("value"),
+            }).from(subQ)
+            .groupBy(subQ.userId)
+            .as("calculation");
+    }
+
+    // --- Advanced Stats  --------------------------------------------------
+
+    async computeTotalSeasons(userId?: number) {
+        const { listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const totalSeasons = await getDbClient()
+            .select({ totalSeasons: sql<number>`coalesce(sum(${listTable.currentSeason}), 0)` })
+            .from(listTable)
+            .where(and(forUser, ne(listTable.status, Status.PLAN_TO_WATCH)))
+            .get();
+
+        return totalSeasons?.totalSeasons;
+    }
+
+    async avgTvDuration(userId?: number) {
+        const { mediaTable, listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        const avgDuration = await getDbClient()
+            .select({
+                average: sql<number | null>`AVG(${mediaTable.duration} * ${listTable.total})`
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
+            .get();
+
+        return avgDuration?.average ? (avgDuration.average / 60) : 0;
+    }
+
+    async tvDurationDistrib(userId?: number) {
+        const { mediaTable, listTable } = this.config;
+        const forUser = userId ? eq(listTable.userId, userId) : undefined;
+
+        return getDbClient()
+            .select({
+                name: sql<number>`(floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600) / 60`,
+                value: count(mediaTable.id).as("count"),
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
+            .groupBy(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`)
+            .orderBy(asc(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`));
+    }
+
+    async specificTopMetrics(userId?: number) {
+        const { mediaTable, listTable, networkTable, actorTable } = this.config;
+
+        const filters = [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])]
+
+        const networkConfig: ConfigTopMetric = {
+            metricTable: networkTable,
+            metricNameCol: networkTable.name,
+            metricIdCol: networkTable.mediaId,
+            mediaLinkCol: listTable.mediaId,
+            minRatingCount: 3,
+            filters,
+        };
+        const countriesConfig: ConfigTopMetric = {
+            metricTable: mediaTable,
+            metricIdCol: mediaTable.id,
+            mediaLinkCol: listTable.mediaId,
+            metricNameCol: mediaTable.originCountry,
+            filters,
+        };
+        const actorsConfig: ConfigTopMetric = {
+            metricTable: actorTable,
+            metricNameCol: actorTable.name,
+            metricIdCol: actorTable.mediaId,
+            mediaLinkCol: listTable.mediaId,
+            minRatingCount: 3,
+            filters,
+        };
+
+        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
+        const networksStats = await this.computeTopMetricStats(networkConfig, userId);
+        const countriesStats = await this.computeTopMetricStats(countriesConfig, userId);
+
+        return { countriesStats, actorsStats, networksStats };
+    }
+
+    // --- Implemented Methods ------------------------------------------------
 
     async computeAllUsersStats() {
         const { mediaTable, listTable } = this.config;
@@ -165,7 +335,7 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             .execute();
     }
 
-    async addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: TvTypeWithEps, newStatus: Status) {
         const { listTable } = this.config;
 
         let newTotal = 1;
@@ -173,9 +343,9 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         let newEpisode = 1;
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = media.epsPerSeason!.at(-1)!.season;
-            newEpisode = media.epsPerSeason!.at(-1)!.episodes;
-            newTotal = media.epsPerSeason!.reduce((acc, curr) => acc + curr.episodes, 0);
+            newSeason = media.epsPerSeason.at(-1)!.season;
+            newEpisode = media.epsPerSeason.at(-1)!.episodes;
+            newTotal = media.epsPerSeason.reduce((acc, curr) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
             newTotal = 0;
@@ -191,25 +361,11 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
                 lastEpisodeWatched: newEpisode,
                 total: newTotal,
                 status: newStatus,
-                redo2: Array(media.epsPerSeason!.length).fill(0),
+                redo2: Array(media.epsPerSeason.length).fill(0),
             })
             .returning();
 
         return newMedia;
-    }
-
-    async getMediaEpsPerSeason(mediaId: number) {
-        const { epsPerSeasonTable } = this.config;
-
-        return getDbClient()
-            .select({
-                season: epsPerSeasonTable.season,
-                episodes: epsPerSeasonTable.episodes,
-            })
-            .from(epsPerSeasonTable)
-            .where(eq(epsPerSeasonTable.mediaId, mediaId))
-            .orderBy(asc(epsPerSeasonTable.season))
-            .execute();
     }
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
@@ -266,20 +422,6 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
             total: totalCount,
             pages: Math.ceil(totalCount / limit),
         };
-    }
-
-    async getMediaIdsToBeRefreshed(apiIds: number[]) {
-        const { mediaTable } = this.config;
-
-        const mediaIds = await getDbClient()
-            .select({ apiId: mediaTable.apiId })
-            .from(mediaTable)
-            .where(and(
-                inArray(mediaTable.apiId, apiIds),
-                lte(mediaTable.lastApiUpdate, sql`datetime('now', '-1 day')`),
-            ));
-
-        return mediaIds.map((m) => m.apiId);
     }
 
     async findAllAssociatedDetails(mediaId: number) {
@@ -444,146 +586,5 @@ export class TvRepository extends BaseRepository<TvType, TvList, SeriesSchemaCon
         else {
             throw new Error("JobType not supported");
         }
-    }
-
-    // --- Achievements ----------------------------------------------------------
-
-    getDurationAchievementCte(achievement: Achievement, userId?: number) {
-        const { mediaTable, listTable } = this.config;
-
-        const value = parseInt(achievement.value!);
-        const isLong = achievement.codeName.includes("long");
-        const condition = isLong ? gte(mediaTable.totalEpisodes, value) : lte(mediaTable.totalEpisodes, value);
-
-        let baseCTE = getDbClient()
-            .select({
-                userId: listTable.userId,
-                value: count(listTable.mediaId).as("value"),
-            }).from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-
-        const conditions = [eq(listTable.status, Status.COMPLETED), condition]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    getNetworkAchievementCte(_achievement: Achievement, userId?: number) {
-        const { listTable, networkTable } = this.config;
-
-        let baseCTE = getDbClient()
-            .select({
-                userId: listTable.userId,
-                value: countDistinct(networkTable.name).as("value"),
-            }).from(listTable)
-            .innerJoin(networkTable, eq(listTable.mediaId, networkTable.mediaId))
-
-        const conditions = [ne(listTable.status, Status.PLAN_TO_WATCH)]
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
-    }
-
-    getActorAchievementCte(_achievement: Achievement, userId?: number) {
-        const { listTable, actorTable } = this.config;
-
-        let subQ = getDbClient()
-            .select({
-                userId: listTable.userId,
-                count: count(listTable.mediaId).as("count"),
-            }).from(listTable)
-            .innerJoin(actorTable, eq(listTable.mediaId, actorTable.mediaId))
-            .where(eq(listTable.status, Status.COMPLETED))
-            .groupBy(userId ? eq(listTable.userId, userId) : listTable.userId, actorTable.name)
-            .as("sub");
-
-        return getDbClient()
-            .select({
-                userId: subQ.userId,
-                value: max(subQ.count).as("value"),
-            }).from(subQ)
-            .groupBy(subQ.userId)
-            .as("calculation");
-    }
-
-    // --- Advanced Stats  --------------------------------------------------
-
-    async computeTotalSeasons(userId?: number) {
-        const { listTable } = this.config;
-        const forUser = userId ? eq(listTable.userId, userId) : undefined;
-
-        const totalSeasons = await getDbClient()
-            .select({ totalSeasons: sql<number>`coalesce(sum(${listTable.currentSeason}), 0)` })
-            .from(listTable)
-            .where(and(forUser, ne(listTable.status, Status.PLAN_TO_WATCH)))
-            .get();
-
-        return totalSeasons?.totalSeasons;
-    }
-
-    async avgTvDuration(userId?: number) {
-        const { mediaTable, listTable } = this.config;
-        const forUser = userId ? eq(listTable.userId, userId) : undefined;
-
-        const avgDuration = await getDbClient()
-            .select({
-                average: sql<number | null>`AVG(${mediaTable.duration} * ${listTable.total})`
-            })
-            .from(mediaTable)
-            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
-            .get();
-
-        return avgDuration?.average ? (avgDuration.average / 60) : 0;
-    }
-
-    async tvDurationDistrib(userId?: number) {
-        const { mediaTable, listTable } = this.config;
-        const forUser = userId ? eq(listTable.userId, userId) : undefined;
-
-        return getDbClient()
-            .select({
-                name: sql<number>`(floor((${mediaTable.duration} * ${mediaTable.totalEpisodes}) / 600.0) * 600) / 60`,
-                value: count(mediaTable.id).as("count"),
-            })
-            .from(mediaTable)
-            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
-            .groupBy(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`)
-            .orderBy(asc(sql<number>`floor((${mediaTable.duration} * ${listTable.total}) / 600.0) * 600`));
-    }
-
-    async specificTopMetrics(userId?: number) {
-        const { mediaTable, listTable, networkTable, actorTable } = this.config;
-
-        const filters = [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])]
-
-        const networkConfig: ConfigTopMetric = {
-            metricTable: networkTable,
-            metricNameCol: networkTable.name,
-            metricIdCol: networkTable.mediaId,
-            mediaLinkCol: listTable.mediaId,
-            minRatingCount: 3,
-            filters,
-        };
-        const countriesConfig: ConfigTopMetric = {
-            metricTable: mediaTable,
-            metricIdCol: mediaTable.id,
-            mediaLinkCol: listTable.mediaId,
-            metricNameCol: mediaTable.originCountry,
-            filters,
-        };
-        const actorsConfig: ConfigTopMetric = {
-            metricTable: actorTable,
-            metricNameCol: actorTable.name,
-            metricIdCol: actorTable.mediaId,
-            mediaLinkCol: listTable.mediaId,
-            minRatingCount: 3,
-            filters,
-        };
-
-        const actorsStats = await this.computeTopMetricStats(actorsConfig, userId);
-        const networksStats = await this.computeTopMetricStats(networkConfig, userId);
-        const countriesStats = await this.computeTopMetricStats(countriesConfig, userId);
-
-        return { countriesStats, actorsStats, networksStats };
     }
 }

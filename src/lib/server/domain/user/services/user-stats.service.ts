@@ -1,7 +1,7 @@
 import {StatusUtils} from "@/lib/utils/functions";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
@@ -137,8 +137,8 @@ export class UserStatsService {
 
     async userAdvancedStatsSummary(userId: number) {
         const userPreComputedStats = await this.userPreComputedStatsSummary(userId);
-        const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ userId });
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
+        const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ userId });
 
         // TODO: Commented because it needs all media types to be registered
         // const labelCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
@@ -204,18 +204,14 @@ export class UserStatsService {
         const platformMediaPreComputedStats = await this.platformMediaPreComputedStats(mediaType);
         const mediaUpdatesPerMonthStats = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ mediaType });
 
-        return {
-            ...platformMediaPreComputedStats,
-            ...mediaUpdatesPerMonthStats,
-            ...specificMediaStats,
-        };
+        return { ...platformMediaPreComputedStats, ...mediaUpdatesPerMonthStats, specificMediaStats };
     }
 
     async platformPreComputedStatsSummary() {
-        const allSettings = await this.repository.allUsersAllMediaSettings();
-        // For platform, divisor for avgs is number of users.
-        const userCount = new Set(allSettings.map((s) => s.userId)).size;
-        return this._computePreComputedStatsSummary(allSettings, userCount);
+        const { preComputedStats, mediaTimeDistribution, totalUsers } = await this.repository.platformPreComputedStatsSummary();
+        const avgComments = totalUsers === 0 ? 0 : (preComputedStats.totalComments / totalUsers);
+        const avgFavorites = totalUsers === 0 ? 0 : (preComputedStats.totalFavorites / totalUsers);
+        return { ...preComputedStats, mediaTimeDistribution, totalUsers, avgComments, avgFavorites };
     }
 
     async platformMediaPreComputedStats(mediaType: MediaType) {

@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
-import {MediaService} from "@/lib/server/types/services.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {MediaService} from "@/lib/server/domain/media/registries/registries";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {Achievement, AchievementData, AchievementStats, TierStat, UserAchievementDetails, UserTierProgress} from "@/lib/server/types/achievements.types";
 

@@ -1,9 +1,11 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {IProviderService, ITrendsProviderService} from "@/lib/server/types/provider.types";
+import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {GamesService} from "@/lib/server/domain/media/games/games.service";
+import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {IGamesService, IMoviesService, ITvService} from "@/lib/server/types/services.types";
+import {IProviderService, ITrendsProviderService} from "@/lib/server/types/provider.types";
 
 
 export interface MediaRepositoryMap {
@@ -17,13 +19,16 @@ export interface MediaRepositoryMap {
 
 
 export interface MediaServiceMap {
-    [MediaType.SERIES]: ITvService;
-    [MediaType.ANIME]: ITvService;
-    [MediaType.MOVIES]: IMoviesService;
-    [MediaType.GAMES]: IGamesService;
-    [MediaType.BOOKS]: IMoviesService;
-    [MediaType.MANGA]: IMoviesService;
+    [MediaType.SERIES]: TvService;
+    [MediaType.ANIME]: TvService;
+    [MediaType.MOVIES]: MoviesService;
+    [MediaType.GAMES]: GamesService;
+    [MediaType.BOOKS]: MoviesService;
+    [MediaType.MANGA]: MoviesService;
 }
+
+
+export type MediaService = TvService | MoviesService | GamesService;
 
 
 export interface MediaProviderServiceMap {

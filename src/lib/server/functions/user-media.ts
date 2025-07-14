@@ -68,12 +68,16 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .validator(data => mediaActionSchema.parse(data))
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
+        const notifService = container.services.notifications;
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
+        
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
+        await notifService.deleteUserMediaNotifications(currentUser.id, mediaType, mediaId);
+
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
     });
 

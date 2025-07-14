@@ -22,6 +22,7 @@ import { Route as UniversalAboutRouteImport } from './routes/_universal/about'
 import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PrivateTrendsRouteRouteImport } from './routes/_private/trends/route'
 import { Route as PrivateSettingsRouteRouteImport } from './routes/_private/settings/route'
+import { Route as PrivatePlatformStatsRouteRouteImport } from './routes/_private/platform-stats/route'
 import { Route as PrivateMoviedleRouteRouteImport } from './routes/_private/moviedle/route'
 import { Route as PrivateHallOfFameRouteRouteImport } from './routes/_private/hall-of-fame/route'
 import { Route as PrivateComingNextRouteRouteImport } from './routes/_private/coming-next/route'
@@ -103,6 +104,12 @@ const PrivateSettingsRouteRoute = PrivateSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => PrivateRoute,
 } as any)
+const PrivatePlatformStatsRouteRoute =
+  PrivatePlatformStatsRouteRouteImport.update({
+    id: '/platform-stats',
+    path: '/platform-stats',
+    getParentRoute: () => PrivateRoute,
+  } as any)
 const PrivateMoviedleRouteRoute = PrivateMoviedleRouteRouteImport.update({
   id: '/moviedle',
   path: '/moviedle',
@@ -234,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
+  '/platform-stats': typeof PrivatePlatformStatsRouteRoute
   '/settings': typeof PrivateSettingsRouteRoute
   '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
@@ -264,6 +272,7 @@ export interface FileRoutesByTo {
   '/coming-next': typeof PrivateComingNextRouteRoute
   '/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/moviedle': typeof PrivateMoviedleRouteRoute
+  '/platform-stats': typeof PrivatePlatformStatsRouteRoute
   '/settings': typeof PrivateSettingsRouteRoute
   '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
@@ -296,6 +305,7 @@ export interface FileRoutesById {
   '/_private/coming-next': typeof PrivateComingNextRouteRoute
   '/_private/hall-of-fame': typeof PrivateHallOfFameRouteRoute
   '/_private/moviedle': typeof PrivateMoviedleRouteRoute
+  '/_private/platform-stats': typeof PrivatePlatformStatsRouteRoute
   '/_private/settings': typeof PrivateSettingsRouteRoute
   '/_private/trends': typeof PrivateTrendsRouteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'
+    | '/platform-stats'
     | '/settings'
     | '/trends'
     | '/forgot-password'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/coming-next'
     | '/hall-of-fame'
     | '/moviedle'
+    | '/platform-stats'
     | '/settings'
     | '/trends'
     | '/forgot-password'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_private/coming-next'
     | '/_private/hall-of-fame'
     | '/_private/moviedle'
+    | '/_private/platform-stats'
     | '/_private/settings'
     | '/_private/trends'
     | '/_public/forgot-password'
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof PrivateSettingsRouteRouteImport
+      parentRoute: typeof PrivateRoute
+    }
+    '/_private/platform-stats': {
+      id: '/_private/platform-stats'
+      path: '/platform-stats'
+      fullPath: '/platform-stats'
+      preLoaderRoute: typeof PrivatePlatformStatsRouteRouteImport
       parentRoute: typeof PrivateRoute
     }
     '/_private/moviedle': {
@@ -783,6 +803,7 @@ interface PrivateRouteChildren {
   PrivateComingNextRouteRoute: typeof PrivateComingNextRouteRoute
   PrivateHallOfFameRouteRoute: typeof PrivateHallOfFameRouteRoute
   PrivateMoviedleRouteRoute: typeof PrivateMoviedleRouteRoute
+  PrivatePlatformStatsRouteRoute: typeof PrivatePlatformStatsRouteRoute
   PrivateSettingsRouteRoute: typeof PrivateSettingsRouteRoute
   PrivateTrendsRouteRoute: typeof PrivateTrendsRouteRoute
   PrivateAchievementsUsernameRoute: typeof PrivateAchievementsUsernameRoute
@@ -798,6 +819,7 @@ const PrivateRouteChildren: PrivateRouteChildren = {
   PrivateComingNextRouteRoute: PrivateComingNextRouteRoute,
   PrivateHallOfFameRouteRoute: PrivateHallOfFameRouteRoute,
   PrivateMoviedleRouteRoute: PrivateMoviedleRouteRoute,
+  PrivatePlatformStatsRouteRoute: PrivatePlatformStatsRouteRoute,
   PrivateSettingsRouteRoute: PrivateSettingsRouteRoute,
   PrivateTrendsRouteRoute: PrivateTrendsRouteRoute,
   PrivateAchievementsUsernameRoute: PrivateAchievementsUsernameRoute,

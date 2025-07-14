@@ -1,11 +1,11 @@
 import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {asc, desc, getTableColumns, sql} from "drizzle-orm";
-import {TVSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
-export type AnimeSchemaConfig = TVSchemaConfig<
+export type AnimeSchemaConfig = TvSchemaConfig<
     typeof schema.anime,
     typeof schema.animeList,
     typeof schema.animeGenre,

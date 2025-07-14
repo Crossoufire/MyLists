@@ -44,7 +44,7 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
                 <Separator className="mt-3"/>
                 <div className="flex items-center justify-end">
                     <Link to="/achievements/$username" params={{ username }} className="font-medium hover:underline">
-                        All achievements <ArrowRight className="inline-block ml-1 w-4 h-4"/>
+                        All Achievements<ArrowRight className="inline-block ml-2 w-4 h-4"/>
                     </Link>
                 </div>
             </CardContent>

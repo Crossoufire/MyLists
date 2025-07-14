@@ -1,30 +1,27 @@
-import {Status} from "@/lib/server/utils/enums";
+import {eq, isNotNull} from "drizzle-orm";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IGamesService} from "@/lib/server/types/services.types";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {IGamesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
+import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {GamesAdvancedStats, MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
-import {eq, isNotNull} from "drizzle-orm";
+import {MediaAndUserDetails, StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
-export class GamesService extends BaseService<
-    Game, GamesList, GamesAdvancedStats, GamesAchCodeName, IGamesRepository
-> implements IGamesService {
+export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
     readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: GamesRepository) {
         super(repository);
 
         const { listTable } = this.repository.config;
-        
+
         this.achievementHandlers = {
             completed_games: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
             rated_games: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
@@ -41,6 +38,12 @@ export class GamesService extends BaseService<
             first_person_games: this.repository.getPerspectiveAchievementCte.bind(this.repository),
         };
     }
+
+    async getComingNext(userId: number) {
+        return this.repository.getComingNext(userId);
+    }
+
+    // --- Implemented Methods ------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -104,6 +107,8 @@ export class GamesService extends BaseService<
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
+        type Toto = typeof media;
+
         const editableFields = this.repository.config.editableFields;
         const fields = editableFields.reduce((acc, field) => {
             if (field in media) {
@@ -142,11 +147,7 @@ export class GamesService extends BaseService<
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
+        await this.repository.updateMediaWithDetails({ mediaData: fields as any });
     }
 
     async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
@@ -307,7 +308,7 @@ export class GamesService extends BaseService<
         return delta;
     }
 
-    getAchievementsDefinition() {
+    getAchievementsDefinition(_mediaType?: MediaType) {
         return gamesAchievements as unknown as AchievementData[];
     }
 }

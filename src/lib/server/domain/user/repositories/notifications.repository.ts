@@ -55,4 +55,15 @@ export class NotificationsRepository {
             .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)))
             .execute();
     }
+
+    static async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
+        await getDbClient()
+            .delete(notifications)
+            .where(and(
+                eq(notifications.userId, userId),
+                eq(notifications.mediaId, mediaId),
+                eq(notifications.mediaType, mediaType),
+            ))
+            .execute();
+    }
 }

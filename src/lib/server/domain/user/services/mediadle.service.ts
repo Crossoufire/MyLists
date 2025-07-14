@@ -1,6 +1,6 @@
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IMoviesService} from "@/lib/server/types/services.types";
 import {pixelateImage} from "@/lib/server/utils/image-pixelation";
+import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 
 
@@ -23,7 +23,7 @@ export class MediadleService {
         return { ...userMediadleStats, attempts };
     }
 
-    async getDailyMediadleData(userId: number, mediaService: IMoviesService) {
+    async getDailyMediadleData(userId: number, mediaService: MoviesService) {
         let dailyMediadle = await this.repository.getTodayMoviedle();
         if (!dailyMediadle) {
             dailyMediadle = await this.repository.createDailyMoviedle();
@@ -53,7 +53,7 @@ export class MediadleService {
         };
     }
 
-    async addMediadleGuess(userId: number, guess: string, movieService: IMoviesService) {
+    async addMediadleGuess(userId: number, guess: string, movieService: MoviesService) {
         const dailyMediadle = await this.repository.getTodayMoviedle();
         if (!dailyMediadle) throw new FormattedError("Today's mediadle not found", true);
 

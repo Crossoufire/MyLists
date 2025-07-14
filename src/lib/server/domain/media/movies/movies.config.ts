@@ -1,8 +1,8 @@
 import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {asc, desc, getTableColumns} from "drizzle-orm";
+import {createListFilterDef} from "../base/base.repository";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<

@@ -9,9 +9,9 @@ export type GamesList = typeof gamesList.$inferSelect;
 
 export type UpsertGameWithDetails = {
     mediaData: typeof games.$inferInsert,
-    genresData: { name: string }[],
-    platformsData: { name: string }[],
-    companiesData: { name: string, developer: boolean, publisher: boolean }[],
+    genresData?: { name: string }[],
+    platformsData?: { name: string }[],
+    companiesData?: { name: string, developer: boolean, publisher: boolean }[],
 };
 
 

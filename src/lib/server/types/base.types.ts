@@ -235,7 +235,7 @@ export type FilterDefinition = {
 
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
-
+export type StatsCTE = any;
 export type NameValuePair = { name: string | number, value: number };
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 

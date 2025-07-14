@@ -2,6 +2,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {ProviderSearchResult, ProviderSearchResults, SearchData, TrendsMedia} from "@/lib/server/types/provider.types";
+import {isLatin1} from "@/lib/server/utils/check-latin";
 
 
 type Options = {
@@ -67,7 +68,7 @@ export class TmdbTransformer {
 
     private processSearchTv(item: Record<string, any>) {
         const date = item.first_air_date;
-        const name = item.original_name || item.name;
+        const name = isLatin1(item.original_name) ? item.original_name : item.name;
 
         let itemType: MediaType = MediaType.SERIES;
 
@@ -85,7 +86,7 @@ export class TmdbTransformer {
     private processSearchMovie(item: Record<string, any>) {
         const date = item.release_date;
         const itemType = MediaType.MOVIES;
-        const name = item.original_title || item.title;
+        const name = isLatin1(item.original_title) ? item.original_title : item.title;
 
         return { name, date, itemType };
     }

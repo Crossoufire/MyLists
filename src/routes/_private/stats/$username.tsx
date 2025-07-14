@@ -1,18 +1,18 @@
 import {dataToLoad} from "@/lib/stats";
 import {useEffect, useState} from "react";
 import {capitalize} from "@/lib/utils/functions";
+import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Sidebar} from "@/lib/components/general/Sidebar";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {RatingProvider} from "@/lib/contexts/rating-context";
-import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
+import {Sidebar, SidebarLinkItem} from "@/lib/components/general/Sidebar";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_private/stats/$username")({
-    validateSearch: (search: any) => search as { mediaType: MediaType },
+    validateSearch: (search) => search as { mediaType?: MediaType },
     loaderDeps: ({ search }) => ({ search }),
     loader: async ({ context: { queryClient }, params: { username }, deps: { search } }) => {
         return queryClient.ensureQueryData(userStatsOptions(username, search));
@@ -36,23 +36,36 @@ function StatsPage() {
         return null;
     }
 
-    // const otherStats = apiData.settings.map(s => ({
-    //     mediaType: s.mediaType,
-    //     isSelected: s.mediaType === filters.mediaType,
-    //     sidebarTitle: `${capitalize(s.mediaType)} stats`,
-    //     to: `/stats/${username}?mediaType=${s.mediaType}`,
-    // }));
+    const mediaLinks: SidebarLinkItem[] = apiData.activatedMediaTypes.map((mt) => ({
+        mediaType: mt,
+        params: { username },
+        to: "/stats/$username",
+        search: { mediaType: mt },
+        isSelected: mt === filters.mediaType,
+        sidebarTitle: `${capitalize(mt)} stats`,
+    }));
 
-    const linkItemsSidebar = [
+    const linkItemsSidebar: SidebarLinkItem[] = [
         {
             mediaType: undefined,
-            to: `/stats/${username}`,
+            params: { username },
+            to: "/stats/$username",
             sidebarTitle: "Overall stats",
             isSelected: filters.mediaType === undefined,
         },
-        // ...otherStats,
-        { sidebarTitle: "User's profile", to: `/profile/${username}`, external: true },
-        { sidebarTitle: "User's achievements", to: `/achievements/${username}`, external: true },
+        ...mediaLinks,
+        {
+            external: true,
+            params: { username },
+            to: "/profile/$username",
+            sidebarTitle: "User's profile",
+        },
+        {
+            external: true,
+            params: { username },
+            to: "/achievements/$username",
+            sidebarTitle: "User's achievements",
+        },
     ];
 
     return (
@@ -65,7 +78,7 @@ function StatsPage() {
                     onTabChange={setSelectedTab}
                 />
                 <div>
-                    <RatingProvider value={RatingSystemType.SCORE}>
+                    <RatingProvider value={apiData.ratingSystem}>
                         <StatsDisplay
                             statsData={statsData.find((data) => data.sidebarTitle === selectedTab)!}
                         />

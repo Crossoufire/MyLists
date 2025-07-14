@@ -6,7 +6,7 @@ import {globalData} from "@/lib/stats/global";
 import {moviesData} from "@/lib/stats/movies";
 import {StatSection} from "@/lib/stats/types";
 import {MediaType} from "@/lib/server/utils/enums";
-import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
+import {platformStatsOptions, userStatsOptions} from "@/lib/react-query/query-options/query-options";
 import {GamesAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
 
 
@@ -20,7 +20,10 @@ export interface MediaSpecificStatsMap {
 }
 
 
-export type ApiData = Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>>;
+export type ApiData =
+    Awaited<ReturnType<NonNullable<ReturnType<typeof userStatsOptions>["queryFn"]>>> |
+    Awaited<ReturnType<NonNullable<ReturnType<typeof platformStatsOptions>["queryFn"]>>>;
+
 type MediaStatsContainer = Extract<ApiData, { specificMediaStats: object }>;
 type MediaStatsBase = Omit<MediaStatsContainer, "specificMediaStats">;
 export type SpecificMediaData<T extends MediaType> = MediaStatsBase & { mediaType: T; specificMediaStats: MediaSpecificStatsMap[T]; };

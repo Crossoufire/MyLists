@@ -14,6 +14,7 @@ import {getNotifications, getNotificationsCount} from "@/lib/server/functions/no
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
+import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 
 
 export const queryKeys = {
@@ -27,7 +28,7 @@ export const queryKeys = {
         ["filterSearch", mediaType, username, query, job] as const,
     followersKey: (username: string) => ["followers", username] as const,
     followsKey: (username: string) => ["follows", username] as const,
-    globalStatsKey: (search: Record<string, any>) => ["globalStats", search] as const,
+    platformStatsKey: (search: { mediaType?: MediaType }) => ["platformStats", search] as const,
     historyKey: (mediaType: MediaType, mediaId: string | number) => ["onOpenHistory", mediaType, mediaId] as const,
     hofKey: (search: SearchTypeHoF) => ["hof", search] as const,
     jobDetailsKey: (mediaType: MediaType, job: JobType, name: string, search: SearchType) =>
@@ -43,7 +44,7 @@ export const queryKeys = {
     upcomingKey: () => ["upcoming"] as const,
     userListKey: (mediaType: MediaType, username: string, search: MediaListArgs) =>
         ["userList", mediaType, username, search] as const,
-    userStatsKey: (username: string, search: { mediaType: MediaType }) => ["userStats", username, search] as const,
+    userStatsKey: (username: string, search: { mediaType?: MediaType }) => ["userStats", username, search] as const,
 };
 
 
@@ -162,7 +163,7 @@ export const achievementOptions = (username: string) => queryOptions({
 });
 
 
-export const userStatsOptions = (username: string, search: { mediaType: MediaType }) => queryOptions({
+export const userStatsOptions = (username: string, search: { mediaType?: MediaType }) => queryOptions({
     queryKey: queryKeys.userStatsKey(username, search),
     queryFn: () => getUserStats({ data: { username, ...search } }),
 });
@@ -201,4 +202,10 @@ export const trendsOptions = () => queryOptions({
     queryKey: queryKeys.trendsKey(),
     queryFn: () => getTrendsMedia(),
     meta: { errorMessage: "An error occurred fetching the trends. Please try again later." },
+});
+
+
+export const platformStatsOptions = (search: { mediaType?: MediaType }) => queryOptions({
+    queryKey: queryKeys.platformStatsKey(search),
+    queryFn: () => getPlatformStats({ data: search }),
 });

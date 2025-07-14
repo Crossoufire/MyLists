@@ -13,7 +13,7 @@ import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Notifications} from "@/lib/components/navbar/Notifications";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
-import {ChevronDown, LogOut, Menu, Settings, Sparkles, User} from "lucide-react";
+import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
@@ -76,9 +76,9 @@ export const Navbar = () => {
                                 </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
-                                {/*<NavLink to="/global-stats" className={navStyle()}>*/}
-                                {/*    Stats*/}
-                                {/*</NavLink>*/}
+                                <NavLink to="/platform-stats" className={navStyle()}>
+                                    Stats
+                                </NavLink>
                             </NavigationMenuItem>
                             <NavigationMenuItem>
                                 <NavLink to="/trends" className={navStyle()}>
@@ -127,13 +127,25 @@ export const Navbar = () => {
                                         </div>
                                     </PopoverTrigger>
                                     <PopoverClose ref={popRef} className="absolute"/>
-                                    <PopoverContent align="end" className="w-36 p-2">
+                                    <PopoverContent align="end" className="w-42 p-2">
                                         <ul>
                                             <NavMediaItem
                                                 popRef={popRef}
                                                 text={"Profile"}
                                                 icon={<User className="w-4 h-4"/>}
                                                 to={`/profile/${currentUser.name}`}
+                                            />
+                                            <NavMediaItem
+                                                popRef={popRef}
+                                                text="Achievements"
+                                                to={`/achievements/${currentUser.name}`}
+                                                icon={<Medal className="w-4 h-4"/>}
+                                            />
+                                            <NavMediaItem
+                                                popRef={popRef}
+                                                text="My Stats"
+                                                to={`/stats/${currentUser.name}`}
+                                                icon={<ChartLine className="w-4 h-4"/>}
                                             />
                                             <NavMediaItem
                                                 to="/settings"
@@ -192,9 +204,9 @@ export const Navbar = () => {
                                         </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
-                                        {/*<NavLink to="/global-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>*/}
-                                        {/*    Stats*/}
-                                        {/*</NavLink>*/}
+                                        <NavLink to="/platform-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Stats
+                                        </NavLink>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
                                         <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>

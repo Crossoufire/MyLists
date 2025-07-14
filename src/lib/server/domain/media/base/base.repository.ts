@@ -1,20 +1,26 @@
 import {Label} from "@/lib/components/types";
-import {LabelAction, Status} from "@/lib/server/utils/enums";
 import {followers, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {IUniversalRepository, StatsCTE} from "@/lib/server/types/repositories.types";
+import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, avgDistinct, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
+    AddedMediaDetails,
+    CommonListFilters,
     ConfigTopMetric,
+    ExpandedListFilters,
     FilterDefinition,
     FilterDefinitions,
+    ItemForNotification,
+    JobDetails,
     ListFilterDefinition,
     MediaListArgs,
     MediaListData,
+    SimpleMedia,
     UserFollowsMediaData,
-    UserMediaWithLabels
+    UserMediaStats,
+    UserMediaWithLabels,
 } from "@/lib/server/types/base.types";
 
 
@@ -22,9 +28,7 @@ const DEFAULT_PER_PAGE = 25;
 const SIMILAR_MAX_GENRES = 12;
 
 
-export class BaseRepository<
-    TMedia, TList, TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>
-> implements IUniversalRepository<TMedia, TList> {
+export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> {
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
@@ -78,82 +82,18 @@ export class BaseRepository<
         } as FilterDefinitions;
     }
 
-    async findById(mediaId: number) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.id, mediaId))
-            .get();
-
-        return result as TMedia | undefined;
-    }
-
-    async findByApiId(apiId: number | string) {
-        const { mediaTable } = this.config;
-
-        const result = await getDbClient()
-            .select()
-            .from(mediaTable)
-            .where(eq(mediaTable.apiId, apiId))
-            .get()
-
-        return result as TMedia | undefined;
-    }
-
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: Partial<TList>) {
-        const { listTable } = this.config;
-
-        const [result] = await getDbClient()
-            .update(listTable)
-            .set(updateData)
-            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .returning();
-
-        return result as TList;
-    }
-
-    async downloadMediaListAsCSV(userId: number) {
-        const { mediaTable, listTable } = this.config;
-
-        const data = await getDbClient()
-            .select({
-                ...getTableColumns(listTable),
-                mediaName: sql<string>`${mediaTable.name}`,
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .where(eq(listTable.userId, userId));
-
-        return data as (TMedia & { mediaName: string })[] | undefined;
-    }
-
-    async searchByName(query: string, limit: number = 20) {
-        const { mediaTable } = this.config;
+    async getCoverFilenames() {
+        const mediaTable = this.config.mediaTable;
 
         return getDbClient()
-            .select({ name: sql<string>`${mediaTable.name}` })
+            .select({ imageCover: mediaTable.imageCover })
             .from(mediaTable)
-            .where(like(mediaTable.name, `%${query}%`))
-            .orderBy(mediaTable.name)
-            .limit(limit)
-            .execute();
-    }
-
-    async removeMediaByIds(mediaIds: number[]) {
-        const { tablesForDeletion } = this.config;
-
-        for (const table of tablesForDeletion) {
-            await getDbClient()
-                .delete(table)
-                .where(inArray(table.mediaId, mediaIds))
-                .execute();
-        }
+            .execute()
     }
 
     async getNonListMediaIds() {
-        const { mediaTable, listTable } = this.config;
+        const listTable = this.config.listTable;
+        const mediaTable = this.config.mediaTable;
 
         const mediaToDelete = await getDbClient()
             .select({ id: sql<number>`${mediaTable.id}` })
@@ -165,16 +105,53 @@ export class BaseRepository<
         return mediaToDelete.map((media) => media.id);
     }
 
-    async getCoverFilenames() {
+    async getUserMediaLabels(userId: number) {
+        const labelTable = this.config.labelTable;
+
+        return getDbClient()
+            .selectDistinct({ name: sql<string>`${labelTable.name}` })
+            .from(labelTable)
+            .where(eq(labelTable.userId, userId))
+            .orderBy(asc(labelTable.name));
+    }
+
+    async removeMediaByIds(mediaIds: number[]) {
+        const tablesForDeletion = this.config.tablesForDeletion;
+
+        for (const table of tablesForDeletion) {
+            await getDbClient()
+                .delete(table)
+                .where(inArray(table.mediaId, mediaIds))
+                .execute();
+        }
+    }
+
+    async searchByName(query: string, limit: number = 20) {
         const { mediaTable } = this.config;
 
         return getDbClient()
-            .select({ imageCover: mediaTable.imageCover })
+            .select({ name: sql<string>`${mediaTable.name}` })
             .from(mediaTable)
-            .execute()
+            .where(like(mediaTable.name, `%${query}%`))
+            .orderBy(mediaTable.name)
+            .limit(limit);
     }
 
-    async findSimilarMedia(mediaId: number) {
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const { listTable, labelTable } = this.config;
+
+        await getDbClient()
+            .delete(listTable)
+            .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
+            .execute();
+
+        await getDbClient()
+            .delete(labelTable)
+            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)))
+            .execute();
+    }
+
+    async findSimilarMedia(mediaId: number): Promise<SimpleMedia[]> {
         const { mediaTable, genreTable } = this.config;
 
         const targetGenresSubQuery = getDbClient()
@@ -184,7 +161,7 @@ export class BaseRepository<
 
         const similarSub = getDbClient()
             .select({
-                movieId: genreTable.mediaId,
+                mediaId: genreTable.mediaId,
                 commonGenreCount: count(genreTable.name).as("common_genre_count")
             })
             .from(genreTable)
@@ -196,27 +173,53 @@ export class BaseRepository<
 
         return getDbClient()
             .select({
+                mediaCover: mediaTable.imageCover,
+                mediaId: sql<number>`${mediaTable.id}`,
+                mediaName: sql<string>`${mediaTable.name}`,
+            })
+            .from(similarSub)
+            .innerJoin(mediaTable, eq(mediaTable.id, similarSub.mediaId))
+            .orderBy(desc(similarSub.commonGenreCount));
+    }
+
+    async getCommonListFilters(userId: number): Promise<CommonListFilters> {
+        const { genreTable, labelTable, listTable } = this.config;
+
+        const genresPromise = getDbClient()
+            .selectDistinct({ name: sql<string>`${genreTable.name}` })
+            .from(genreTable)
+            .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
+            .where(eq(listTable.userId, userId))
+            .orderBy(asc(genreTable.name));
+
+        const labelsPromise = getDbClient()
+            .selectDistinct({ name: sql<string>`${labelTable.name}` })
+            .from(labelTable)
+            .where(and(eq(labelTable.userId, userId)))
+            .orderBy(asc(labelTable.name));
+
+        const [genres, labels] = await Promise.all([genresPromise, labelsPromise]);
+
+        return { genres, labels };
+    }
+
+    async getUserFavorites(userId: number, limit = 8): Promise<SimpleMedia[]> {
+        const { listTable, mediaTable } = this.config;
+
+        return getDbClient()
+            .select({
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
                 mediaCover: mediaTable.imageCover,
             })
-            .from(similarSub)
-            .innerJoin(mediaTable, eq(mediaTable.id, similarSub.movieId))
-            .orderBy(desc(similarSub.commonGenreCount));
-    }
-
-    async getUserMediaLabels(userId: number) {
-        const { labelTable } = this.config;
-
-        return getDbClient()
-            .selectDistinct({ name: sql<string>`${labelTable.name}` })
-            .from(labelTable)
-            .where(eq(labelTable.userId, userId))
-            .orderBy(asc(labelTable.name));
+            .from(listTable)
+            .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
+            .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .limit(limit)
     }
 
     async editUserLabel(userId: number, label: Label, mediaId: number, action: LabelAction) {
-        const { labelTable } = this.config;
+        const labelTable = this.config.labelTable;
 
         if (action === LabelAction.ADD) {
             const [labelData] = await getDbClient()
@@ -247,36 +250,43 @@ export class BaseRepository<
         }
     }
 
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const { listTable, labelTable } = this.config;
+    async findById(mediaId: number): Promise<TConfig["mediaTable"]["$inferSelect"] | undefined> {
+        const { mediaTable } = this.config;
 
-        await getDbClient()
-            .delete(listTable)
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.id, mediaId))
+            .get();
+
+        return result;
+    }
+
+    async findByApiId(apiId: number | string): Promise<TConfig["mediaTable"]["$inferSelect"] | undefined> {
+        const { mediaTable } = this.config;
+
+        const result = await getDbClient()
+            .select()
+            .from(mediaTable)
+            .where(eq(mediaTable.apiId, apiId))
+            .get()
+
+        return result;
+    }
+
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: any): Promise<TConfig["listTable"]["$inferSelect"]> {
+        const { listTable } = this.config;
+
+        const [result] = await getDbClient()
+            .update(listTable)
+            .set(updateData)
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
-            .execute();
+            .returning();
 
-        await getDbClient()
-            .delete(labelTable)
-            .where(and(eq(labelTable.userId, userId), eq(labelTable.mediaId, mediaId)))
-            .execute();
+        return result;
     }
 
-    async getUserFavorites(userId: number, limit = 8) {
-        const { listTable, mediaTable } = this.config;
-
-        return getDbClient()
-            .select({
-                mediaId: sql<number>`${mediaTable.id}`,
-                mediaName: sql<string>`${mediaTable.name}`,
-                mediaCover: mediaTable.imageCover,
-            })
-            .from(listTable)
-            .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
-            .leftJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .limit(limit)
-    }
-
-    async findUserMedia(userId: number, mediaId: number) {
+    async findUserMedia(userId: number, mediaId: number): Promise<UserMediaWithLabels<TConfig["listTable"]["$inferSelect"]> | null> {
         const { listTable, labelTable } = this.config;
 
         const mainUserMediaData = await getDbClient()
@@ -304,10 +314,25 @@ export class BaseRepository<
             return null;
         }
 
-        return { ...mainUserMediaData, labels: associatedLabels } as UserMediaWithLabels<TList>;
+        return { ...mainUserMediaData, labels: associatedLabels };
     }
 
-    async getUserFollowsMediaData(userId: number, mediaId: number) {
+    async downloadMediaListAsCSV(userId: number): Promise<(TConfig["mediaTable"]["$inferSelect"] & { mediaName: string })[] | undefined> {
+        const { mediaTable, listTable } = this.config;
+
+        const data = await getDbClient()
+            .select({
+                mediaName: sql<string>`${mediaTable.name}`,
+                ...getTableColumns(listTable),
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .where(eq(listTable.userId, userId));
+
+        return data;
+    }
+
+    async getUserFollowsMediaData(userId: number, mediaId: number): Promise<UserFollowsMediaData<TConfig["listTable"]["$inferSelect"]>[]> {
         const { listTable } = this.config;
 
         const inFollowsLists = await getDbClient()
@@ -323,31 +348,10 @@ export class BaseRepository<
             .innerJoin(listTable, eq(listTable.userId, followers.followedId))
             .where(and(eq(followers.followerId, userId), eq(listTable.mediaId, mediaId)));
 
-        return inFollowsLists as UserFollowsMediaData<TList>[];
+        return inFollowsLists;
     }
 
-    async getCommonListFilters(userId: number) {
-        const { genreTable, labelTable, listTable } = this.config;
-
-        const genresPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${genreTable.name}` })
-            .from(genreTable)
-            .innerJoin(listTable, eq(listTable.mediaId, genreTable.mediaId))
-            .where(eq(listTable.userId, userId))
-            .orderBy(asc(genreTable.name));
-
-        const labelsPromise = getDbClient()
-            .selectDistinct({ name: sql<string>`${labelTable.name}` })
-            .from(labelTable)
-            .where(and(eq(labelTable.userId, userId)))
-            .orderBy(asc(labelTable.name));
-
-        const [genres, labels] = await Promise.all([genresPromise, labelsPromise]);
-
-        return { genres, labels };
-    }
-
-    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs) {
+    async getMediaList(currentUserId: number | undefined, userId: number, args: MediaListArgs): Promise<MediaListData<TConfig["listTable"]["$inferSelect"]>> {
         const { listTable, mediaTable, labelTable, mediaList } = this.config;
 
         const page = args.page ?? 1;
@@ -447,31 +451,10 @@ export class BaseRepository<
                 sorting: sortKeyName,
                 availableSorting: Object.keys(mediaList.availableSorts),
             },
-        } as MediaListData<TList>;
+        };
     }
 
     // --- Achievements ----------------------------------------------------------
-
-    applyWhereConditionsAndGrouping(cte: StatsCTE, baseConditions: SQL[], userId?: number) {
-        const { listTable } = this.config;
-        const conditions = userId ? [...baseConditions] : [...baseConditions, eq(listTable.userId, userId)];
-
-        return cte.where(and(...conditions))
-            .groupBy(listTable.userId)
-            .as("calculation");
-    }
-
-    countAchievementCte(condition: SQL, _achievement: Achievement, userId?: number) {
-        const { listTable } = this.config;
-
-        const baseCTE = getDbClient()
-            .select({
-                userId: listTable.userId,
-                value: count(listTable.mediaId).as("value"),
-            }).from(listTable);
-
-        return this.applyWhereConditionsAndGrouping(baseCTE, [condition], userId);
-    }
 
     specificGenreAchievementCte(achievement: Achievement, userId?: number) {
         const { mediaTable, listTable, genreTable } = this.config;
@@ -488,6 +471,27 @@ export class BaseRepository<
         const conditions = [eq(listTable.status, Status.COMPLETED), eq(genreTable.name, achievement.value)];
 
         return this.applyWhereConditionsAndGrouping(baseCTE, conditions, userId);
+    }
+
+    countAchievementCte(condition: SQL, _achievement: Achievement, userId?: number) {
+        const { listTable } = this.config;
+
+        const baseCTE = getDbClient()
+            .select({
+                userId: listTable.userId,
+                value: count(listTable.mediaId).as("value"),
+            }).from(listTable);
+
+        return this.applyWhereConditionsAndGrouping(baseCTE, [condition], userId);
+    }
+
+    applyWhereConditionsAndGrouping(cte: any, baseConditions: SQL[], userId?: number) {
+        const { listTable } = this.config;
+        const conditions = userId ? [...baseConditions] : [...baseConditions, eq(listTable.userId, userId)];
+
+        return cte.where(and(...conditions))
+            .groupBy(listTable.userId)
+            .as("calculation");
     }
 
     // --- Advanced Stats ---------------------------------------------------
@@ -630,6 +634,26 @@ export class BaseRepository<
             topFavorited: topFavorited.map((row) => ({ name: row.name, value: row.value || 0 })),
         };
     }
+
+    // --- Abstract Methods -----------------------------------------------------------------
+
+    abstract computeAllUsersStats(): Promise<UserMediaStats[]>;
+
+    abstract getMediaToNotify(): Promise<ItemForNotification[]>;
+
+    abstract getListFilters(userId: number): Promise<ExpandedListFilters>;
+
+    abstract storeMediaWithDetails(params: Record<string, any>): Promise<number>;
+
+    abstract updateMediaWithDetails(params: Record<string, any>): Promise<boolean>;
+
+    abstract getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
+
+    abstract addMediaToUserList(userId: number, media: any, newStatus: Status): Promise<TConfig["listTable"]["$inferSelect"]>;
+
+    abstract getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit?: number): Promise<JobDetails>;
+
+    abstract findAllAssociatedDetails(mediaId: number): Promise<(TConfig["mediaTable"]["$inferSelect"] & AddedMediaDetails) | undefined>;
 }
 
 
