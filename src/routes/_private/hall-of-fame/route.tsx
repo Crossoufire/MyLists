@@ -56,7 +56,7 @@ function HallOfFamePage() {
     useDebounceCallback<SearchTypeHoF>(currentSearch, 400, fetchData, { search: currentSearch, sorting, page: DEFAULT.page });
 
     return (
-        <PageTitle title="Hall of Fame" subtitle="Showcase of profiles ranked by profile level">
+        <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
             <div className="grid grid-cols-12 mx-auto w-[1000px] gap-x-10 max-sm:w-full max-sm:grid-cols-1">
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
                     <div className="flex items-center justify-between mt-5 mb-3">

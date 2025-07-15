@@ -131,6 +131,7 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const tasksLogger = options.tasksServiceLogger || pinoLogger;
     const tasksService = new TasksService(
         tasksLogger,
+        userRepository,
         MediaServiceRegistry,
         MediaProviderServiceRegistry,
         achievementsService,

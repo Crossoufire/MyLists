@@ -11,7 +11,7 @@ interface PaginationProps {
 }
 
 
-export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 6 }: PaginationProps) => {
+export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 8 }: PaginationProps) => {
     if (totalPages <= 1) {
         return null;
     }
@@ -19,45 +19,30 @@ export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = tr
     const safePage = Math.max(1, Math.min(currentPage, totalPages));
 
     const generatePages = (): ("..." | number)[] => {
-        const pages: ("..." | number)[] = [];
-
         if (totalPages <= maxVisible) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);
         }
 
-        const sidePages = Math.floor((maxVisible - 3) / 2);
-        pages.push(1);
+        const siblingCount = Math.floor((maxVisible - 5) / 2);
 
-        let start = Math.max(2, safePage - sidePages);
-        let end = Math.min(totalPages - 1, safePage + sidePages);
-
-        if (start <= 3) {
-            start = 2;
-            end = Math.min(totalPages - 1, maxVisible - 1);
+        // Case 1 - Start. e.g., [1, 2, 3, 4, ..., 10]
+        if (safePage < 3 + siblingCount) {
+            const leftRange = Array.from({ length: maxVisible - 2 }, (_, i) => i + 1);
+            return [...leftRange, "...", totalPages];
         }
 
-        if (end >= totalPages - 2) {
-            end = totalPages - 1;
-            start = Math.max(2, totalPages - maxVisible + 2);
+        // Case 2 - End. e.g., [1, ..., 7, 8, 9, 10]
+        if (safePage > totalPages - (2 + siblingCount)) {
+            const rightRange = Array.from({ length: maxVisible - 2 }, (_, i) => totalPages - (maxVisible - 3) + i);
+            return [1, "...", ...rightRange];
         }
 
-        if (start > 2) {
-            pages.push("...");
-        }
+        // Case 3 - Middle. e.g., [1, ..., 4, 5, 6, ..., 10]
+        const middleRangeStart = safePage - siblingCount;
+        const middleRangeEnd = safePage + siblingCount;
+        const middleRange = Array.from({ length: middleRangeEnd - middleRangeStart + 1 }, (_, i) => middleRangeStart + i);
 
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-
-        if (end < totalPages - 1) {
-            pages.push("...");
-        }
-
-        if (totalPages > 1) {
-            pages.push(totalPages);
-        }
-
-        return pages;
+        return [1, "...", ...middleRange, "...", totalPages];
     };
 
     const pages = generatePages();

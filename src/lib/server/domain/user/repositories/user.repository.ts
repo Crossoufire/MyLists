@@ -16,6 +16,15 @@ export type AdminUserStats = {
 
 
 export class UserRepository {
+    static async deleteNonActivatedOldUsers() {
+        const result = await getDbClient()
+            .delete(user)
+            .where(and(eq(user.emailVerified, false), sql`${user.createdAt} < datetime('now', '-7 days')`))
+            .returning({ id: user.id });
+
+        return result.length;
+    }
+
     static async getAdminUserStatistics(dates: AdminUserStats) {
         const { now, currentMonthStart, previousMonthStart, twoMonthsAgoStart, threeMonthsAgo } = dates;
 

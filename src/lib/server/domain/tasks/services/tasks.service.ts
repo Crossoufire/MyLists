@@ -6,6 +6,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
 import {IProviderService} from "@/lib/server/types/provider.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
+import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
@@ -22,6 +23,7 @@ export class TasksService {
 
     constructor(
         logger: pino.Logger,
+        private userRepository: typeof UserRepository,
         private mediaServiceRegistry: typeof MediaServiceRegistry,
         private mediaProviderRegistry: typeof MediaProviderServiceRegistry,
         private achievementsService: AchievementsService,
@@ -272,17 +274,40 @@ export class TasksService {
         this.logger.info("Completed: UpdateIgdbToken execution.");
     }
 
+    protected async runDeleteNonActivatedUsers() {
+        this.logger.info("Starting: DeleteNonActivatedUsers execution.");
+
+        const deletedCount = await this.userRepository.deleteNonActivatedOldUsers();
+
+        this.logger.info({ deletedCount }, `Deleted ${deletedCount} non-activated users older than a week.`);
+        this.logger.info("Completed: DeleteNonActivatedUsers execution.");
+    }
+
+    protected async runMaintenanceTasks() {
+        this.logger.info("Starting: MaintenanceTasks execution.");
+
+        await this.runDeleteNonActivatedUsers();
+        await this.runRemoveNonListMedia();
+        await this.runRemoveUnusedMediaCovers();
+        await this.runBulkMediaRefresh();
+        await this.runAddMediaNotifications();
+        await this.runLockOldMovies();
+        await this.runComputeAllUsersStats();
+        await this.runCalculateAchievements();
+        await this.runVacuumDB();
+        await this.runAnalyzeDB();
+
+        this.logger.info("Completed: MaintenanceTasks execution.");
+    }
+
     private async _updateEnvFile(key: string, value: string) {
         const envPath = path.resolve(process.cwd(), ".env");
+
         let envContent = "";
-
-        if (fs.existsSync(envPath)) {
-            envContent = await fs.promises.readFile(envPath, "utf8");
-        }
-
+        if (fs.existsSync(envPath)) envContent = await fs.promises.readFile(envPath, "utf8");
         const lines = envContent.split("\n");
-        let keyFound = false;
 
+        let keyFound = false;
         for (let i = 0; i < lines.length; i++) {
             if (lines[i].startsWith(`${key}=`)) {
                 lines[i] = `${key}=${value}`;
@@ -292,7 +317,7 @@ export class TasksService {
         }
 
         if (!keyFound) {
-            lines.push(`${key}=${value}`);
+            throw new Error(`Key ${key} not found in .env file.`);
         }
 
         await fs.promises.writeFile(envPath, lines.join("\n"));

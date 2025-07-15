@@ -8,6 +8,11 @@ export type TaskDefinition = (typeof taskDefinitions)[number];
 
 export const taskDefinitions = [
     {
+        name: "deleteNonActivatedUsers",
+        description: "Delete non-activated users older than a week",
+        handlerMethod: "runDeleteNonActivatedUsers",
+    },
+    {
         name: "vacuumDB",
         description: "Vacuum the database",
         handlerMethod: "runVacuumDB",
@@ -61,6 +66,11 @@ export const taskDefinitions = [
         name: "updateIgdbToken",
         description: "Update the IGDB API token",
         handlerMethod: "runUpdateIgdbToken",
+    },
+    {
+        name: "maintenanceTasks",
+        description: "Run all maintenance tasks in sequence",
+        handlerMethod: "runMaintenanceTasks",
     },
 ] as const;
 
