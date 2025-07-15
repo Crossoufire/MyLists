@@ -1,17 +1,18 @@
-import {IProviderService} from "@/lib/server/types/provider.types";
+import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {JikanClient} from "@/lib/server/media-providers/clients/jikan.client";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
 
 
-export class AnimeProviderService implements IProviderService {
+export class AnimeProviderService extends ProviderService {
     constructor(
         private client: TmdbClient,
         private jikanClient: JikanClient,
         private transformer: TmdbTransformer,
         private repository: TvRepository,
     ) {
+        super();
     }
 
     async fetchAndStoreMediaDetails(apiId: number, isBulk: boolean = false) {

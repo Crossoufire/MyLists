@@ -1,15 +1,16 @@
-import {ITrendsProviderService} from "@/lib/server/types/provider.types";
 import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {TrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class MoviesProviderService implements ITrendsProviderService {
+export class MoviesProviderService extends TrendsProviderService {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,
         private repository: MoviesRepository,
     ) {
+        super();
     }
 
     async fetchAndStoreMediaDetails(apiId: number) {

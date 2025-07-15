@@ -1,18 +1,19 @@
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IProviderService} from "@/lib/server/types/provider.types";
+import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
 import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.transformer";
 
 
-export class GamesProviderService implements IProviderService {
+export class GamesProviderService extends ProviderService {
     constructor(
         private readonly client: IgdbClient,
         private readonly hltbClient: HltbClient,
         private readonly transformer: IgdbTransformer,
         private readonly repository: GamesRepository
     ) {
+        super();
     }
 
     async fetchNewIgdbToken() {

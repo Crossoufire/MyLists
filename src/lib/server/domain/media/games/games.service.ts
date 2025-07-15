@@ -1,10 +1,10 @@
 import {eq, isNotNull} from "drizzle-orm";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {notFound} from "@tanstack/react-router";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IProviderService} from "@/lib/server/types/provider.types";
+import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
@@ -74,7 +74,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: ProviderService) {
         const media = external ?
             await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
