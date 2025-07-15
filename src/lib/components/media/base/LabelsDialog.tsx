@@ -20,7 +20,7 @@ interface LabelsDialogProps {
     mediaId: number;
     mediaLabels: Label[];
     mediaType: MediaType;
-    updateUserMediaLabels: (mediaLabels: Label[]) => void;
+    updateUserMediaLabels: (mediaLabels: (Label | undefined)[]) => void;
 }
 
 
@@ -54,7 +54,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
 
         editUserLabelMutation.mutate({ label: { name: labelName }, action: LabelAction.ADD }, {
             onError: () => showToast("An unexpected error occurred", "error"),
-            onSuccess: async (data: Label) => updateUserMediaLabels([...mediaLabels, data]),
+            onSuccess: (data: Label | undefined) => updateUserMediaLabels([...mediaLabels, data]),
             onSettled: () => setInputAddNewLabel(""),
         });
     };

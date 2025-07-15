@@ -436,8 +436,6 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     async storeMediaWithDetails({ mediaData, companiesData, platformsData, genresData }: UpsertGameWithDetails) {
         const tx = getDbClient();
 
-        // TODO: check how to resolve this
-
         const [media] = await tx
             .insert(games)
             .values({

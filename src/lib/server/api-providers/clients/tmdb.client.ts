@@ -1,8 +1,16 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {connectRedis} from "@/lib/server/core/redis-client";
-import {SearchData} from "@/lib/server/types/provider.types";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
+import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {
+    SearchData,
+    TmdbChangesResponse,
+    TmdbMovieDetails,
+    TmdbMultiSearchResponse,
+    TmdbTrendingMoviesResponse,
+    TmdbTrendingTvResponse,
+    TmdbTvDetails
+} from "@/lib/server/types/provider.types";
 
 
 export class TmdbClient extends BaseClient {
@@ -22,7 +30,7 @@ export class TmdbClient extends BaseClient {
         return new TmdbClient(tmdbLimiter, TmdbClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1): Promise<SearchData> {
+    async search(query: string, page: number = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
         const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
         const response = await this.call(url);
         return {
@@ -32,25 +40,25 @@ export class TmdbClient extends BaseClient {
         };
     }
 
-    async getMovieDetails(movieId: number) {
+    async getMovieDetails(movieId: number): Promise<TmdbMovieDetails> {
         const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}&append_to_response=credits`;
         const response = await this.call(url);
         return response.json();
     }
 
-    async getTvDetails(tvId: number) {
+    async getTvDetails(tvId: number): Promise<TmdbTvDetails> {
         const url = `${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}`;
         const response = await this.call(url);
         return response.json();
     }
 
-    async getTvTrending() {
+    async getTvTrending(): Promise<TmdbTrendingTvResponse> {
         const url = `${this.baseUrl}/trending/tv/week?api_key=${this.apiKey}`;
         const response = await this.call(url);
         return response.json();
     }
 
-    async getMoviesTrending() {
+    async getMoviesTrending(): Promise<TmdbTrendingMoviesResponse> {
         const url = `${this.baseUrl}/trending/movie/week?api_key=${this.apiKey}`;
         const response = await this.call(url);
         return response.json();
@@ -58,8 +66,6 @@ export class TmdbClient extends BaseClient {
 
     async getTvChangedIds() {
         const redis = await connectRedis();
-
-        // Try return cached data
         const cached = await redis?.get(TmdbClient.tvChangedIdsCacheKey);
         if (cached) {
             try {
@@ -78,12 +84,10 @@ export class TmdbClient extends BaseClient {
             try {
                 const url = `${this.baseUrl}/tv/changes?api_key=${this.apiKey}&page=${page}`
                 const response = await this.call(url);
-                const data: Record<string, any> = response.json();
+                const data: TmdbChangesResponse = await response.json();
 
                 if (data && data.results) {
-                    const ids = data.results
-                        .map((item: any) => item.id)
-                        .filter((id: any) => typeof id === "number") as number[];
+                    const ids = data.results.map(item => item.id);
                     changedApiIds.push(...ids);
                 }
 

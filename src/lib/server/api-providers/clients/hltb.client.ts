@@ -3,7 +3,7 @@ import UserAgent from "user-agents";
 import {closest} from "fastest-levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
+import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 
 
 export class HltbClient extends BaseClient {

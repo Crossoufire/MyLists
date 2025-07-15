@@ -1,7 +1,7 @@
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
+import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {TrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 
 
 export class SeriesProviderService extends TrendsProviderService {

@@ -1,6 +1,6 @@
-import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
+import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {TrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 

@@ -1,6 +1,7 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
+import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {JikanAnimeSearchResponse} from "@/lib/server/types/provider.types";
 
 
 export class JikanClient extends BaseClient {
@@ -18,7 +19,7 @@ export class JikanClient extends BaseClient {
         return new JikanClient(tmdbLimiter, JikanClient.consumeKey);
     }
 
-    async getAnimeGenresAndDemographics(animeName: string) {
+    async getAnimeGenresAndDemographics(animeName: string): Promise<JikanAnimeSearchResponse> {
         const url = `${this.animeUrl}?q=${animeName}`;
         const response = await this.call(url);
         return response.json();

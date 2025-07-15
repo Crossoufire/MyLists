@@ -1,8 +1,21 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {isLatin1} from "@/lib/server/utils/check-latin";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {ProviderSearchResult, ProviderSearchResults, SearchData, TrendsMedia} from "@/lib/server/types/provider.types";
-import {isLatin1} from "@/lib/server/utils/check-latin";
+import {
+    JikanAnimeSearchResponse,
+    ProviderSearchResult,
+    ProviderSearchResults,
+    SearchData,
+    TmdbMovieDetails,
+    TmdbMovieSearchResult,
+    TmdbMultiSearchResponse,
+    TmdbTrendingMoviesResponse,
+    TmdbTrendingTvResponse,
+    TmdbTvDetails,
+    TmdbTvSearchResult,
+    TrendsMedia
+} from "@/lib/server/types/provider.types";
 
 
 type Options = {
@@ -20,23 +33,23 @@ export class TmdbTransformer {
     private readonly maxGenres = moviesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://image.tmdb.org/t/p/w300";
 
-    transformSearchResults(searchData: SearchData) {
+    transformSearchResults(searchData: SearchData<TmdbMultiSearchResponse>) {
         const results = searchData?.rawData?.results ?? [];
         const hasNextPage = searchData?.rawData?.total_pages > searchData.page;
 
-        const filteredResults = results.filter((item: any) =>
-            !item.known_for_department && (item.media_type === "tv" || item.media_type === "movie")
+        const filteredResults = results.filter((item) =>
+            item.media_type !== "person" && (item.media_type === "tv" || item.media_type === "movie")
         );
 
-        const transformedResults = filteredResults.map((item: any) => {
+        const transformedResults = filteredResults.map((item) => {
             const baseInfo = {
                 id: item.id,
                 image: item.poster_path ? `${this.imageBaseUrl}${item.poster_path}` : "default.jpg",
             };
 
-            let details = {};
+            let details: {};
             if (item.media_type === "tv") details = this.processSearchTv(item);
-            if (item.media_type === "movie") details = this.processSearchMovie(item);
+            else details = this.processSearchMovie(item);
 
             return { ...baseInfo, ...details } as ProviderSearchResult;
         });
@@ -44,29 +57,27 @@ export class TmdbTransformer {
         return { data: transformedResults, hasNextPage } as ProviderSearchResults;
     }
 
-    processCreatedBy(rawData: Record<string, any>) {
+    processCreatedBy(rawData: TmdbTvDetails) {
         const creators = rawData?.created_by;
         if (creators?.length) {
-            return creators.map((creator: any) => creator.name).join(", ");
+            return creators.map((creator) => creator.name).join(", ");
         }
 
-        const writers = rawData?.credits?.crew?.filter((m: any) => m.department === "Writing" && m.known_for_department === "Writing");
-        if (!writers?.length) {
-            return;
-        }
+        const writers = rawData?.credits?.crew?.filter((m) => m.department === "Writing" && m.known_for_department === "Writing");
+        if (!writers?.length) return;
 
-        const uniqueWriterNames = Array.from(new Set(writers.map((writer: any) => writer.name)));
+        const uniqueWriterNames = Array.from(new Set(writers.map((writer) => writer.name)));
         const topWriters = uniqueWriterNames
             .sort((nameA, nameB) => {
-                const popularityA = writers.find((w: any) => w.name === nameA)?.popularity || 0;
-                const popularityB = writers.find((w: any) => w.name === nameB)?.popularity || 0;
+                const popularityA = writers.find((w) => w.name === nameA)?.popularity || 0;
+                const popularityB = writers.find((w) => w.name === nameB)?.popularity || 0;
                 return popularityB - popularityA;
             }).slice(0, 2);
 
         return topWriters.join(", ");
     }
 
-    private processSearchTv(item: Record<string, any>) {
+    private processSearchTv(item: TmdbTvSearchResult) {
         const date = item.first_air_date;
         const name = isLatin1(item.original_name) ? item.original_name : item.name;
 
@@ -83,7 +94,7 @@ export class TmdbTransformer {
         return { name, date, itemType };
     }
 
-    private processSearchMovie(item: Record<string, any>) {
+    private processSearchMovie(item: TmdbMovieSearchResult) {
         const date = item.release_date;
         const itemType = MediaType.MOVIES;
         const name = isLatin1(item.original_title) ? item.original_title : item.title;
@@ -91,7 +102,7 @@ export class TmdbTransformer {
         return { name, date, itemType };
     }
 
-    async transformMoviesDetailsResults(rawData: Record<string, any>) {
+    async transformMoviesDetailsResults(rawData: TmdbMovieDetails) {
         const mediaData = {
             apiId: rawData.id,
             name: rawData?.title,
@@ -108,8 +119,8 @@ export class TmdbTransformer {
             collectionId: rawData?.belongs_to_collection?.id,
             duration: rawData?.runtime ?? this.moviesDefaultDuration,
             releaseDate: new Date(rawData?.release_date).toISOString(),
-            directorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Director")?.name,
-            compositorName: rawData?.credits?.crew?.find((crew: any) => crew.job === "Original Music Composer")?.name,
+            directorName: rawData?.credits?.crew?.find((crew) => crew.job === "Director")?.name,
+            compositorName: rawData?.credits?.crew?.find((crew) => crew.job === "Original Music Composer")?.name,
             imageCover: await saveImageFromUrl({
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
@@ -118,28 +129,28 @@ export class TmdbTransformer {
             }),
         }
 
-        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre: any) => ({ name: genre.name }));
-        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
+        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre) => ({ name: genre.name }));
+        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast) => ({ name: cast.name }));
 
         return { mediaData, actorsData, genresData }
     }
 
-    async transformAnimeDetailsResults(rawData: Record<string, any>) {
+    async transformAnimeDetailsResults(rawData: TmdbTvDetails) {
         return this._transformTvDetailsResults(rawData, {
             defaultDuration: this.animeDefaultDuration,
             imageSaveLocation: "public/static/covers/anime-covers",
         });
     }
 
-    async transformSeriesDetailsResults(rawData: Record<string, any>) {
+    async transformSeriesDetailsResults(rawData: TmdbTvDetails) {
         return this._transformTvDetailsResults(rawData, {
             defaultDuration: this.seriesDefaultDuration,
             imageSaveLocation: "public/static/covers/series-covers",
         });
     }
 
-    async transformMoviesTrends(rawData: Record<string, any>) {
-        const moviesTrends = [];
+    async transformMoviesTrends(rawData: TmdbTrendingMoviesResponse) {
+        const moviesTrends: TrendsMedia[] = [];
 
         const rawResults = rawData?.results ?? [];
         for (const result of rawResults) {
@@ -158,8 +169,8 @@ export class TmdbTransformer {
         return moviesTrends
     }
 
-    async transformSeriesTrends(rawData: Record<string, any>) {
-        const tvTrends = [];
+    async transformSeriesTrends(rawData: TmdbTrendingTvResponse) {
+        const tvTrends: TrendsMedia[] = [];
 
         const rawResults = rawData?.results ?? [];
         for (const result of rawResults) {
@@ -184,10 +195,10 @@ export class TmdbTransformer {
         return tvTrends
     }
 
-    addAnimeSpecificGenres(jikanData: Record<string, any>, genresData: { name: string }[] | null) {
+    addAnimeSpecificGenres(jikanData: JikanAnimeSearchResponse, genresData: { name: string }[] | null) {
         const { genres = [], demographics = [] } = jikanData?.data?.[0] || {};
-        const genreList = genres.map((g: any) => ({ name: g.name })) as { name: string }[];
-        const demoList = demographics.map((d: any) => ({ name: d.name })) as { name: string }[];
+        const genreList = genres.map((g) => ({ name: g.name })) as { name: string }[];
+        const demoList = demographics.map((d) => ({ name: d.name })) as { name: string }[];
 
         const newGenres = demoList.length >= 5
             ? demoList.slice(0, 5) : [...genreList.slice(0, 5 - demoList.length), ...demoList];
@@ -195,7 +206,7 @@ export class TmdbTransformer {
         return newGenres.length ? newGenres : genresData;
     }
 
-    private async _transformTvDetailsResults(rawData: Record<string, any>, options: Options) {
+    private async _transformTvDetailsResults(rawData: TmdbTvDetails, options: Options) {
         const { defaultDuration, imageSaveLocation } = options;
 
         const mediaData = {
@@ -227,16 +238,17 @@ export class TmdbTransformer {
         };
 
         const seasonsData = rawData?.seasons
-            ?.filter((season: any) => season.season_number && season.season_number > 0)
-            .map((season: any) => ({
+            ?.filter((season) => season.season_number && season.season_number > 0)
+            .map((season) => ({
                 season: season.season_number,
                 episodes: season.episode_count,
             })) || [{ season: 1, episodes: 1 }];
 
-        const networkData = rawData?.networks?.slice(0, this.maxNetworks).map((network: any) => ({ name: network.name }));
-        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast: any) => ({ name: cast.name }));
-        const genresData = rawData?.genres
-            ?.slice(0, this.maxGenres).map((genre: any) => ({ name: genre.name })) as { name: string }[] | null;
+        const networkData = rawData?.networks?.slice(0, this.maxNetworks).map((network) => ({ name: network.name }));
+        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast) => ({ name: cast.name }));
+        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre) =>
+            ({ name: genre.name })
+        ) as { name: string }[] | null;
 
         return {
             mediaData,

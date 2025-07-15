@@ -1,8 +1,8 @@
 import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
-import {JikanClient} from "@/lib/server/media-providers/clients/jikan.client";
-import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
+import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
+import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 
 
 export class AnimeProviderService extends ProviderService {

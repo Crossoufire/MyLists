@@ -1,9 +1,9 @@
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
-import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
+import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
+import {IgdbClient} from "@/lib/server/api-providers/clients/igdb.client";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.transformer";
+import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 
 
 export class GamesProviderService extends ProviderService {

@@ -48,7 +48,7 @@ export class BaseClient {
             await this.limiter.consume(this.consumeKey);
             return await fetchOperation();
         }
-        catch (rejRes: any) {
+        catch (rejRes) {
             if (rejRes instanceof Error) {
                 console.error(`Rate limiter encountered an unexpected error for key "${this.consumeKey}":`, rejRes);
                 throw rejRes;

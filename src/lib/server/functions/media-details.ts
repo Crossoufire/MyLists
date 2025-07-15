@@ -31,6 +31,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
     .handler(async ({ data: { mediaType, apiId } }) => {
         const container = await getContainer();
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);
+        //@ts-expect-error
         await mediaProviderService.fetchAndRefreshMediaDetails(apiId);
     });
 

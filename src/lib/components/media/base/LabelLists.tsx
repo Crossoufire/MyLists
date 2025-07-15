@@ -1,6 +1,5 @@
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
-import {Label} from "@/lib/components/types";
 import {Badge} from "@/lib/components/ui/badge";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useQueryClient} from "@tanstack/react-query";
@@ -8,6 +7,7 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {LabelsDialog} from "@/lib/components/media/base/LabelsDialog";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {Label, MediaDetailsOptionsType, MediaListOptionsType} from "@/lib/components/types";
 
 
 interface LabelListsProps {
@@ -22,18 +22,24 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
     const { currentUser } = useAuth();
     const queryClient = useQueryClient();
 
-    const updateUserMediaLabels = (newLabelsList: Label[]) => {
-        queryClient.setQueryData(queryKey, (oldData: any) => {
-            if (queryKey[0] === "details") {
-                return { ...oldData, userMedia: { ...oldData.userMedia, labels: newLabelsList } };
-            }
-            return {
-                ...oldData,
-                mediaData: oldData.mediaData.map((media: any) => (
-                    media.mediaId === mediaId ? { ...media, labels: newLabelsList } : media
-                ))
-            }
-        });
+    const updateUserMediaLabels = (newLabelsList: (Label | undefined)[]) => {
+        if (queryKey[0] === "details") {
+            queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
+                if (!oldData) return;
+                return { ...oldData, userMedia: { ...oldData.userMedia, labels: newLabelsList } as any };
+            })
+        }
+        else if (queryKey[0] === "userList") {
+            queryClient.setQueryData<MediaListOptionsType>(queryKey, (oldData) => {
+                if (!oldData) return;
+                return {
+                    ...oldData,
+                    mediaData: oldData.results.items.map((media: any) => (
+                        media.mediaId === mediaId ? { ...media, labels: newLabelsList } : media
+                    ))
+                }
+            });
+        }
     };
 
     return (

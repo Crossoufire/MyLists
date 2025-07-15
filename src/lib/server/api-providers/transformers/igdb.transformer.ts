@@ -1,9 +1,9 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {games} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {GameEntry} from "@/lib/server/api-providers/clients/hltb.client";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
-import {GameEntry} from "@/lib/server/media-providers/clients/hltb.client";
+import {IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
 
 
 type Games = typeof games.$inferInsert;
@@ -13,11 +13,11 @@ export class IgdbTransformer {
     private readonly maxGenres = gamesConfig.apiProvider.maxGenres;
     private readonly imageBaseUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/";
 
-    transformSearchResults(searchData: SearchData) {
+    transformSearchResults(searchData: SearchData<IgdbSearchResponse>): ProviderSearchResults {
         const results = searchData.rawData?.[1]?.result ?? [];
         const hasNextPage = (searchData.rawData?.[0]?.count ?? 0) > (searchData.page * searchData.resultsPerPage);
 
-        const transformedResults = results.map((item: any): ProviderSearchResult => {
+        const transformedResults = results.map((item): ProviderSearchResult => {
             return {
                 id: item.id,
                 name: item?.name,
@@ -27,10 +27,10 @@ export class IgdbTransformer {
             };
         });
 
-        return { data: transformedResults, hasNextPage } as ProviderSearchResults;
+        return { data: transformedResults, hasNextPage };
     }
 
-    async transformGamesDetailsResults(rawData: Record<string, any>) {
+    async transformGamesDetailsResults(rawData: IgdbGameDetails) {
         const mediaData: Games = {
             apiId: rawData.id,
             name: rawData?.name,
@@ -53,8 +53,8 @@ export class IgdbTransformer {
             }),
         }
 
-        const part1GenreData = rawData?.genres?.map((genre: any) => ({ name: genre.name }));
-        const part2GenreData = rawData?.themes?.map((theme: any) => ({ name: theme.name }));
+        const part1GenreData = rawData?.genres?.map((genre) => ({ name: genre.name })) || [];
+        const part2GenreData = rawData?.themes?.map((theme) => ({ name: theme.name })) || [];
         let genresData = [...part1GenreData, ...part2GenreData];
         const renameGenresMap: Record<string, string> = {
             "4X (explore, expand, exploit, and exterminate)": "4X",
@@ -69,15 +69,13 @@ export class IgdbTransformer {
         }
 
         genresData = genresData.slice(0, this.maxGenres);
-        const companiesData = rawData?.involved_companies?.map((company: any) => {
-            if (company.developer === false && company.publisher === false) return null;
-            return {
+        const companiesData = rawData?.involved_companies?.filter(company => company.developer || company.publisher)
+            .map(company => ({
                 name: company.company.name,
                 developer: company.developer,
                 publisher: company.publisher,
-            };
-        }).filter(Boolean);
-        const platformsData = rawData?.platforms?.map((platform: any) => ({ name: platform.name }));
+            }));
+        const platformsData = rawData?.platforms?.map((platform) => ({ name: platform.name }));
 
         return { mediaData, companiesData, platformsData, genresData }
     }

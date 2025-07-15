@@ -1,8 +1,8 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {createRateLimiter} from "@/lib/server/core/rate-limiter";
-import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
-import {IgdbTokenResponse, SearchData} from "../../types/provider.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {createRateLimiter} from "@/lib/server/core/rate-limiter";
+import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from "@/lib/server/types/provider.types";
 
 
 export class IgdbClient extends BaseClient {
@@ -29,7 +29,7 @@ export class IgdbClient extends BaseClient {
         return new IgdbClient(igdbLimiter, IgdbClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1): Promise<SearchData> {
+    async search(query: string, page: number = 1): Promise<SearchData<IgdbSearchResponse>> {
         const offset = (page - 1) * this.resultsPerPage;
 
         const data = `
@@ -52,7 +52,7 @@ export class IgdbClient extends BaseClient {
         }
     }
 
-    async getGameDetails(apiId: number) {
+    async getGameDetails(apiId: number): Promise<IgdbGameDetails> {
         const data = (
             "fields name, cover.image_id, game_engines.name, game_modes.name, platforms.name, genres.name, " +
             "player_perspectives.name, total_rating, total_rating_count, first_release_date, " +
@@ -65,12 +65,12 @@ export class IgdbClient extends BaseClient {
             body: data,
         });
 
-        const rawData = await response.json();
+        const rawData = await response.json() as IgdbGameDetails[];
         if (rawData.length === 0) {
             throw new FormattedError("Games not found");
         }
 
-        return rawData[0] as Record<string, any>;
+        return rawData[0];
     }
 
     async fetchNewIgdbToken(): Promise<IgdbTokenResponse> {
