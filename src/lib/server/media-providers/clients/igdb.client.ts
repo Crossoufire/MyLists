@@ -1,7 +1,7 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/media-providers/clients/base.client";
-import {SearchData} from "../../types/provider.types";
+import {IgdbTokenResponse, SearchData} from "../../types/provider.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
@@ -73,7 +73,7 @@ export class IgdbClient extends BaseClient {
         return rawData[0] as Record<string, any>;
     }
 
-    async updateToken() {
+    async fetchNewIgdbToken(): Promise<IgdbTokenResponse> {
         const url = `https://id.twitch.tv/oauth2/token?client_id=${this.clientId}&client_secret=${this.secretId}&grant_type=client_credentials`
         const response = await this.call(url)
         return response.json();

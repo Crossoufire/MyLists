@@ -12,7 +12,7 @@
     "scripts": {
         "dev": "vite dev --port 3000",
         "build": "vite build",
-        "start": "node .output/server/index.mjs",
+        "server": "node .output/server/index.mjs",
         "dk": "drizzle-kit",
         "ui": "npx shadcn@latest",
         "cli": "npx tsx src/cli/index.ts",

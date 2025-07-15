@@ -10,8 +10,6 @@
 
 ## TODO LATER
 
-- TODO: Add Update IGDB token in CLI/tasks
-- TODO: Update platform stats in CLI/tasks**
 - TODO: Add a Run All Scheduled Tasks in CLI/tasks
 - TODO: Better admin panel (types, checks, zod, etc...)
 - TODO: Add Dispatcher for Media Edit system (Extract etc...)

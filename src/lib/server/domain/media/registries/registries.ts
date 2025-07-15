@@ -6,6 +6,7 @@ import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {IProviderService, ITrendsProviderService} from "@/lib/server/types/provider.types";
+import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 
 
 export interface MediaRepositoryMap {
@@ -35,7 +36,7 @@ export interface MediaProviderServiceMap {
     [MediaType.SERIES]: ITrendsProviderService;
     [MediaType.ANIME]: IProviderService;
     [MediaType.MOVIES]: ITrendsProviderService;
-    [MediaType.GAMES]: IProviderService;
+    [MediaType.GAMES]: GamesProviderService;
     [MediaType.BOOKS]: IProviderService;
     [MediaType.MANGA]: IProviderService;
 }

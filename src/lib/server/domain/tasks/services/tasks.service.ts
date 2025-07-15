@@ -1,6 +1,6 @@
 import pino from "pino";
 import path from "path";
-import fs from "node:fs/promises";
+import * as fs from "fs";
 import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
@@ -116,7 +116,7 @@ export class TasksService {
             const dbCoverFilenames = await mediaService.getCoverFilenames();
             const dbCoverSet = new Set(dbCoverFilenames);
 
-            const filesOnDisk = await fs.readdir(coversDirectoryPath);
+            const filesOnDisk = await fs.promises.readdir(coversDirectoryPath);
             this.logger.info(`Found ${filesOnDisk.length} files in directory:`);
 
             const coversToDelete = filesOnDisk.filter((filename) => !dbCoverSet.has(filename));
@@ -132,7 +132,7 @@ export class TasksService {
             for (const cover of coversToDelete) {
                 const filePath = path.join(coversDirectoryPath, cover);
                 try {
-                    await fs.unlink(filePath);
+                    await fs.promises.unlink(filePath);
                     this.logger.info(`Deleted: ${cover}`);
                     deletionCount += 1;
                 }
@@ -257,6 +257,46 @@ export class TasksService {
 
         this.logger.info("Completed: ComputeAllUsersStats execution.");
     }
+
+    protected async runUpdateIgdbToken() {
+        this.logger.info("Starting: UpdateIgdbToken execution.");
+
+        const gamesProviderService = this.mediaProviderRegistry.getService(MediaType.GAMES);
+        const accessToken = await gamesProviderService.fetchNewIgdbToken();
+        if (!accessToken) throw new Error("Failed to fetch new IGDB token.");
+
+        await this._updateEnvFile("IGDB_API_KEY", "oui");
+        process.env.IGDB_API_KEY = accessToken;
+
+        this.logger.info("IGDB token updated successfully.");
+        this.logger.info("Completed: UpdateIgdbToken execution.");
+    }
+
+    private async _updateEnvFile(key: string, value: string) {
+        const envPath = path.resolve(process.cwd(), ".env");
+        let envContent = "";
+
+        if (fs.existsSync(envPath)) {
+            envContent = await fs.promises.readFile(envPath, "utf8");
+        }
+
+        const lines = envContent.split("\n");
+        let keyFound = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith(`${key}=`)) {
+                lines[i] = `${key}=${value}`;
+                keyFound = true;
+                break;
+            }
+        }
+
+        if (!keyFound) {
+            lines.push(`${key}=${value}`);
+        }
+
+        await fs.promises.writeFile(envPath, lines.join("\n"));
+    }
 }
 
 
@@ -270,7 +310,7 @@ const findProjectRoot = async (markerFilename: string = "package.json") => {
     while (true) {
         const markerPath = path.join(currentDir, markerFilename);
         try {
-            await fs.access(markerPath);
+            await fs.promises.access(markerPath);
             return currentDir;
         }
         catch {

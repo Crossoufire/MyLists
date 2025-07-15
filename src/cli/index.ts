@@ -6,10 +6,17 @@ import {registerAllCommands} from "@/cli/commands";
 const program = new Command();
 
 
+const description = `
+CLI commands for MyLists.
+To execute a command: 
+'npm run cli -- <command> -- <option> -- <option> ...'
+`;
+
+
 program
     .name("mylists-cli")
-    .description("CLI tools for MyLists")
-    .version("0.0.1");
+    .description(description)
+    .version("1.0.0");
 
 
 registerAllCommands(program);

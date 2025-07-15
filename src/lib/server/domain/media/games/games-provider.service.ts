@@ -15,6 +15,11 @@ export class GamesProviderService implements IProviderService {
     ) {
     }
 
+    async fetchNewIgdbToken() {
+        const response = await this.client.fetchNewIgdbToken();
+        return response?.access_token;
+    }
+
     async fetchAndStoreMediaDetails(apiId: number, isBulk: boolean = false) {
         const details = await this._getMediaDetails(apiId, isBulk);
         return this.repository.storeMediaWithDetails(details);

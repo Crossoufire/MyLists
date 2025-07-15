@@ -44,3 +44,10 @@ export type TrendsMedia = {
     releaseDate: string,
     mediaType: MediaType,
 }
+
+
+export type IgdbTokenResponse = {
+    access_token?: string,
+    expires_in: number,
+    token_type: string,
+}

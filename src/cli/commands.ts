@@ -57,6 +57,11 @@ export const taskDefinitions = [
         description: "Compute all users Achievements",
         handlerMethod: "runCalculateAchievements",
     },
+    {
+        name: "updateIgdbToken",
+        description: "Update the IGDB API token",
+        handlerMethod: "runUpdateIgdbToken",
+    },
 ] as const;
 
 
