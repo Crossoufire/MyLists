@@ -1,10 +1,9 @@
 import {toast} from "sonner";
-import {JobType} from "bullmq";
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
-import {taskDefinitions, TasksName} from "@/cli/commands";
+import {TaskDefinition, TasksName} from "@/cli/commands";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {CheckCircle, Clock, Eye, EyeOff, Loader2, Play, Terminal} from "lucide-react";
@@ -13,12 +12,15 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {adminJobCompletedOptions, adminJobLogsOptions, adminJobsOptions} from "@/lib/react-query/query-options/admin-options";
 
 
-interface TaskCardProps {
-    tasksList: typeof taskDefinitions;
+type JobCompleted = Awaited<ReturnType<NonNullable<ReturnType<typeof adminJobCompletedOptions>["queryFn"]>>>[0];
+
+
+interface TasksManagerProps {
+    tasksList: TaskDefinition[];
 }
 
 
-export function TasksManager({ tasksList }: TaskCardProps) {
+export function TasksManager({ tasksList }: TasksManagerProps) {
     const taskTriggerMutation = useAdminTriggerTaskMutation();
     const { data: currentJobs = [], isLoading, error } = useQuery(adminJobsOptions({ pollingRateSec: 10 }))
 
@@ -53,11 +55,7 @@ export function TasksManager({ tasksList }: TaskCardProps) {
                                 </CardHeader>
                                 <CardContent>
                                     <Button size="sm" disabled={isDisabled} onClick={() => executeTask(task.name)}>
-                                        {isDisabled ?
-                                            <Loader2 className="h-4 w-4 animate-spin"/>
-                                            :
-                                            <Play className="h-4 w-4"/>
-                                        }
+                                        {isDisabled ? <Loader2 className="size-4 animate-spin"/> : <Play className="size-4"/>}
                                         {isRunning ? "Running" : "Run Task"}
                                     </Button>
                                 </CardContent>
@@ -117,7 +115,11 @@ function CompletedJobs() {
             }
             {!isLoading && !error && completedData.length > 0 &&
                 <div className="space-y-4">
-                    {completedData.sort((a, b) => b.finishedOn - a.finishedOn).map((job) =>
+                    {completedData.sort((a, b) => {
+                        const finishedA = a.finishedOn ?? Number.MIN_SAFE_INTEGER;
+                        const finishedB = b.finishedOn ?? Number.MIN_SAFE_INTEGER;
+                        return finishedB - finishedA;
+                    }).map((job) =>
                         <JobCard
                             job={job}
                             key={job.id}
@@ -130,11 +132,11 @@ function CompletedJobs() {
 }
 
 
-function JobCard({ job }: { job: any }) {
+function JobCard({ job }: { job: JobCompleted }) {
     const [showLogs, setShowLogs] = useState(false);
     const { data: logsData, isLoading, error, isFetching } = useQuery(adminJobLogsOptions(job.id, showLogs && !!job.id));
 
-    const getStatusColor = (status: JobType) => {
+    const getStatusColor = (status: string) => {
         switch (status) {
             case "active":
                 return "bg-blue-900 text-blue-200";
@@ -195,7 +197,7 @@ function JobCard({ job }: { job: any }) {
                 {showLogs &&
                     <div className="mt-4 bg-zinc-950 rounded-md border border-zinc-800 p-3 font-mono text-sm">
                         <div className="flex items-center gap-2 mb-2 text-zinc-400">
-                            <Terminal className="h-4 w-4"/>
+                            <Terminal className="size-4"/>
                             <span>Logs</span>
                         </div>
                         <pre className="whitespace-pre-wrap break-words text-xs font-mono">

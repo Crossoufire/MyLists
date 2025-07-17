@@ -1,5 +1,6 @@
 import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
+import {AchievementTier} from "@/lib/server/types/base.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {MediaService} from "@/lib/server/domain/media/registries/registries";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
@@ -14,12 +15,12 @@ export class AchievementsService {
         return this.repository.seedAchievements(achievements);
     }
 
-    async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        await this.repository.adminUpdateAchievement(achievementId, payload);
+    async adminUpdateAchievement(achievementId: number, name: string, description: string) {
+        await this.repository.adminUpdateAchievement(achievementId, name, description);
     }
 
-    async adminUpdateTiers(payloads: Record<string, any>[]) {
-        return this.repository.adminUpdateTiers(payloads);
+    async adminUpdateTiers(tiers: AchievementTier[]) {
+        return this.repository.adminUpdateTiers(tiers);
     }
 
     async getDifficultySummary(userId: number) {

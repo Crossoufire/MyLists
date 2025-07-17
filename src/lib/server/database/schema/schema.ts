@@ -266,7 +266,7 @@ export const achievement = sqliteTable("achievement", {
     name: text().notNull(),
     codeName: text().notNull(),
     description: text().notNull(),
-    mediaType: text().$type<MediaType>(),
+    mediaType: text().$type<MediaType>().notNull(),
     value: text(),
 });
 

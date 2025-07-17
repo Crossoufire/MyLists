@@ -4,7 +4,7 @@ import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {createFileRoute} from "@tanstack/react-router";
+import {createFileRoute, Link} from "@tanstack/react-router";
 import {SearchType} from "@/lib/server/types/base.types";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
@@ -31,7 +31,7 @@ function AdminMediadlePage() {
     const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
     const setFilters = async (filtersData: SearchType) => {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
@@ -59,7 +59,9 @@ function AdminMediadlePage() {
                             <AvatarFallback>{original.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                            {original.name}
+                            <Link to="/profile/$username" params={{ username: original.name }}>
+                                {original.name}
+                            </Link>
                             <p className="text-sm text-gray-500">
                                 {original.email}
                             </p>
@@ -150,7 +152,7 @@ function AdminMediadlePage() {
                             placeholder="Search users..."
                             onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
-                        {currentSearch && (
+                        {currentSearch &&
                             <Button
                                 size="sm"
                                 variant="ghost"
@@ -160,7 +162,7 @@ function AdminMediadlePage() {
                                 <X className="h-4 w-4"/>
                                 <span className="sr-only">Clear search</span>
                             </Button>
-                        )}
+                        }
                     </div>
                 </div>
             </div>

@@ -4,12 +4,12 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
@@ -75,7 +75,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: ProviderService) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
         const media = external ?
             await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 

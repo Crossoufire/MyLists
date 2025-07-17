@@ -1,15 +1,16 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {SearchType} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
 
 
 export class MediadleRepository {
-    static async getAdminAllUsersStats(data: Record<string, any>) {
-        const page = data.pageIndex ?? 0;
+    static async getAdminAllUsersStats(data: SearchType) {
+        const page = data.page ?? 1;
         const search = data.search ?? "";
-        const perPage = data.pageSize ?? 25;
-        const offset = page * perPage;
+        const perPage = data.perPage ?? 25;
+        const offset = (page - 1) * perPage;
 
         const totalResult = await getDbClient()
             .select({ count: count() })

@@ -4,7 +4,6 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
@@ -12,6 +11,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
 import {MediaAndUserDetails, StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
 export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
@@ -74,7 +74,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: ProviderService) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
         const media = external ?
             await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 

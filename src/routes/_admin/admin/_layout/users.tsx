@@ -5,15 +5,15 @@ import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {PrivacyType, RoleType} from "@/lib/server/utils/enums";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
-import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {userAdminOptions} from "@/lib/react-query/query-options/admin-options";
+import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX, X} from "lucide-react";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, SortingState, useReactTable} from "@tanstack/react-table";
@@ -44,7 +44,7 @@ function UserManagementPage() {
     const updateUserMutation = useAdminUpdateUserMutation(filters);
     const apiData = useSuspenseQuery(userAdminOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
-    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
     const sortingState = [{ id: filters?.sorting ?? "updatedAt", desc: filters?.sortDesc === true }];
 
     const setFilters = async (filtersData: SearchTypeAdmin) => {
@@ -66,8 +66,8 @@ function UserManagementPage() {
         setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
     };
 
-    const updateUser = (userId: number | undefined, payload: Record<string, any>) => {
-        if (payload.delete && !window.confirm("Are you sure you want to delete this user?")) return;
+    const updateUser = (userId: number | undefined, payload: AdminUpdatePayload) => {
+        if (payload.deleteUser && !window.confirm("Are you sure you want to delete this user?")) return;
         updateUserMutation.mutate({ userId, payload });
     };
 
@@ -186,6 +186,22 @@ function UserManagementPage() {
             },
         },
         {
+            accessorKey: "emailVerified",
+            header: ({ column }) => {
+                return (
+                    <Button variant="invisible" size="xs" onClick={() => column.toggleSorting()}>
+                        Active <ChevronsUpDown className="ml-1 h-4 w-4"/>
+                    </Button>
+                )
+            },
+            cell: ({ row: { original } }) => {
+                return original.emailVerified ?
+                    <Badge variant="outline" className="text-green-600">Yes</Badge>
+                    :
+                    <Badge variant="outline" className="text-red-600">No</Badge>
+            },
+        },
+        {
             id: "actions",
             header: "Actions",
             enableSorting: false,
@@ -203,7 +219,7 @@ function UserManagementPage() {
                             <span className="text-yellow-500">{original.name}</span>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem onClick={() => updateUser(original.id, { active: !original.emailVerified })}>
+                        <DropdownMenuItem onClick={() => updateUser(original.id, { emailVerified: !original.emailVerified })}>
                             {original.emailVerified ?
                                 <>
                                     <UserX className="mr-2 h-4 w-4"/>
@@ -253,7 +269,7 @@ function UserManagementPage() {
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem
                             className="text-red-600 focus:text-red-600"
-                            onSelect={() => updateUser(original.id, { delete: true })}
+                            onSelect={() => updateUser(original.id, { deleteUser: true })}
                         >
                             <Trash2 className="mr-2 h-4 w-4"/>
                             <span>Delete user</span>
@@ -294,7 +310,7 @@ function UserManagementPage() {
                             placeholder="Search users..."
                             onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
-                        {currentSearch && (
+                        {currentSearch &&
                             <Button
                                 size="sm"
                                 variant="ghost"
@@ -304,11 +320,11 @@ function UserManagementPage() {
                                 <X className="h-4 w-4"/>
                                 <span className="sr-only">Clear search</span>
                             </Button>
-                        )}
+                        }
                     </div>
                 </div>
                 <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
-                    <CheckCircle className="h-4 w-4 mr-2"/> Activate FeaturesFlag
+                    <CheckCircle className="size-4"/> Activate Features Flag
                 </Button>
             </div>
             <div className="rounded-md border">
@@ -326,10 +342,10 @@ function UserManagementPage() {
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ?
-                            table.getRowModel().rows.map(row => {
+                            table.getRowModel().rows.map((row) => {
                                 return (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                        {row.getVisibleCells().map(cell =>
+                                        {row.getVisibleCells().map((cell) =>
                                             <TableCell key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>

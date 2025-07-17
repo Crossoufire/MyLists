@@ -1,5 +1,6 @@
 import {twMerge} from "tailwind-merge";
 import {type ClassValue, clsx} from "clsx";
+import {TypedJob} from "@/lib/server/core/bullMQ-queue";
 
 
 export const mail = "contact.us.at.mylists@gmail.com";
@@ -10,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 
-export function deriveMQJobStatus(job: any) {
+export function deriveMQJobStatus(job: TypedJob) {
     if (job.failedReason) return "failed";
     if (job.finishedOn) return "completed";
     if (job.processedOn) return "active";

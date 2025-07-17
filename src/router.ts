@@ -11,7 +11,10 @@ import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
 export function createRouter() {
     const queryClient = new QueryClient({
         queryCache: new QueryCache({
-            onError: (_error, query) => {
+            onError: (error, query) => {
+                if (query?.meta?.displayErrorMsg) {
+                    toast.error(error.message);
+                }
                 if (query?.meta?.errorMessage) {
                     toast.error(query.meta.errorMessage.toString());
                 }

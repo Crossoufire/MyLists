@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 
 
 export class UserService {
@@ -12,25 +12,26 @@ export class UserService {
         return this.userRepository.getAdminPaginatedUsers(data);
     }
 
-    async adminUpdateUser(userId: number | undefined, payload: Record<string, any>) {
+    async adminUpdateUser(userId: number | undefined, payload: AdminUpdatePayload) {
         if (!userId && payload.showUpdateModal) {
-            await this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
-            return;
+            return this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
         }
 
-        if (payload.delete && userId) {
-            await this.deleteUserAccount(userId);
-            return;
+        if (!userId) return;
+
+        if (payload.deleteUser) {
+            return this.deleteUserAccount(userId);
         }
 
-        const availablePayloads = ["privacy", "role", "emailVerified"];
+        const allowedKeys = new Set<keyof AdminUpdatePayload>(["emailVerified", "role", "privacy"]);
+        const isValidPayload = Object.keys(payload).every((k) =>
+            allowedKeys.has(k as keyof AdminUpdatePayload) || ["deleteUser", "showUpdateModal"].includes(k));
 
-        const isValidPayload = Object.keys(payload).every(key => availablePayloads.includes(key));
         if (!isValidPayload) {
             throw new FormattedError("Invalid payload");
         }
 
-        await this.userRepository.adminUpdateUser(userId!, payload);
+        await this.userRepository.adminUpdateUser(userId, payload);
     }
 
     async deleteUserAccount(userId: number) {

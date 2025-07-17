@@ -19,7 +19,7 @@ export function AdminSidebar() {
             <SidebarHeader>
                 <div className="flex items-center gap-2 px-4 py-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                        <Settings className="h-4 w-4"/>
+                        <Settings className="size-4"/>
                     </div>
                     <div className="font-semibold">Admin Dashboard</div>
                 </div>
@@ -32,15 +32,15 @@ export function AdminSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin">
-                                        <Home className="h-4 w-4"/>
-                                        <span>Dashboard</span>
+                                        <Home className="size-4"/>
+                                        <span>Overview</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/users">
-                                        <Users className="h-4 w-4"/>
+                                        <Users className="size-4"/>
                                         <span>Users</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -55,7 +55,7 @@ export function AdminSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/achievements">
-                                        <Award className="h-4 w-4"/>
+                                        <Award className="size-4"/>
                                         <span>Achievements</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -63,7 +63,7 @@ export function AdminSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/mediadle">
-                                        <Film className="h-4 w-4"/>
+                                        <Film className="size-4"/>
                                         <span>Mediadle Stats</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -78,7 +78,7 @@ export function AdminSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/tasks">
-                                        <CheckCheck className="h-4 w-4"/>
+                                        <CheckCheck className="size-4"/>
                                         <span>Long Running Tasks</span>
                                     </Link>
                                 </SidebarMenuButton>

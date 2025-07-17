@@ -1,3 +1,4 @@
+import {AchievementTier} from "@/lib/server/types/base.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 
 
@@ -28,15 +29,6 @@ export interface Achievement {
     value: string | null
     tiers: AchievementTier[]
     mediaType: MediaType | null
-}
-
-
-export interface AchievementTier {
-    id: number
-    achievementId: number
-    rarity: number | null
-    criteria: { count: any }
-    difficulty: AchievementDifficulty
 }
 
 

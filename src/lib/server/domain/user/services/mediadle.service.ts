@@ -1,3 +1,4 @@
+import {SearchType} from "@/lib/server/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {pixelateImage} from "@/lib/server/utils/image-pixelation";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
@@ -8,7 +9,7 @@ export class MediadleService {
     constructor(private repository: typeof MediadleRepository) {
     }
 
-    async getAdminAllUsersStats(data: Record<string, any>) {
+    async getAdminAllUsersStats(data: SearchType) {
         return this.repository.getAdminAllUsersStats(data);
     }
 

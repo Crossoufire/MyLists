@@ -4,8 +4,8 @@ import * as fs from "fs";
 import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
 import {taskDefinitions, TasksName} from "@/cli/commands";
-import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
+import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
@@ -325,7 +325,7 @@ export class TasksService {
 }
 
 
-const isRefreshable = (service: ProviderService) => {
+const isRefreshable = (service: BaseProviderService<any>) => {
     return service && typeof service.bulkProcessAndRefreshMedia === "function";
 }
 

@@ -122,8 +122,8 @@ export class UserRepository {
     static async getAdminUsersPerPrivacyValue() {
         return getDbClient()
             .select({
-                privacy: user.privacy,
                 count: count(),
+                privacy: user.privacy,
             })
             .from(user)
             .groupBy(user.privacy)
@@ -151,7 +151,7 @@ export class UserRepository {
         const perPage = data.perPage ?? 25;
         const sortDesc = data.sortDesc ?? true;
         const sorting = data.sorting ?? "updatedAt";
-        const offset = page * perPage;
+        const offset = (page - 1) * perPage;
 
         const totalUsers = await getDbClient()
             .select({ count: count() })
@@ -200,7 +200,7 @@ export class UserRepository {
     }
 
     static async adminUpdateFeaturesFlag(showUpdateModal: boolean) {
-        return getDbClient()
+        await getDbClient()
             .update(user)
             .set({ showUpdateModal })
             .execute();

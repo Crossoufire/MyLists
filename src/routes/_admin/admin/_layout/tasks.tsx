@@ -20,7 +20,9 @@ function AdminTasksPage() {
     return (
         <DashboardShell>
             <DashboardHeader heading="Long Running Tasks" description="Manage and execute maintenance and background tasks."/>
-            <TasksManager tasksList={tasksList}/>
+            <TasksManager
+                tasksList={tasksList}
+            />
         </DashboardShell>
     )
 }

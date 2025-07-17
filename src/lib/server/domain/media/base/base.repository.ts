@@ -641,11 +641,11 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
     abstract getMediaToNotify(): Promise<ItemForNotification[]>;
 
+    abstract storeMediaWithDetails(params: any): Promise<number>;
+
+    abstract updateMediaWithDetails(params: any): Promise<boolean>;
+
     abstract getListFilters(userId: number): Promise<ExpandedListFilters>;
-
-    abstract storeMediaWithDetails(params: Record<string, any>): Promise<number>;
-
-    abstract updateMediaWithDetails(params: Record<string, any>): Promise<boolean>;
 
     abstract getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
 

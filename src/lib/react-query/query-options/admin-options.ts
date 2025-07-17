@@ -1,5 +1,5 @@
 import {queryOptions} from "@tanstack/react-query";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {SearchType, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, getAdminMediadleStats, getAdminOverview, getAdminTasks} from "@/lib/server/functions/admin";
 
 
@@ -33,7 +33,7 @@ export const adminAchievementsOptions = () => queryOptions({
 });
 
 
-export const adminMediadleOptions = (search: Record<string, any>) => queryOptions({
+export const adminMediadleOptions = (search: SearchType) => queryOptions({
     queryKey: adminQueryKeys.adminMediadleKey(search),
     queryFn: () => getAdminMediadleStats({ data: search }),
 });
@@ -49,6 +49,7 @@ export const adminTasksOptions = () => queryOptions({
 export const adminJobsOptions = ({ pollingRateSec }: { pollingRateSec: number }) => queryOptions({
     queryKey: adminQueryKeys.adminJobsKey(),
     queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
+    meta: { displayErrorMsg: true },
     refetchInterval: pollingRateSec * 1000,
     placeholderData: (previousData) => previousData,
 });
@@ -57,6 +58,7 @@ export const adminJobsOptions = ({ pollingRateSec }: { pollingRateSec: number })
 export const adminJobLogsOptions = (jobId: string | null | undefined, isEnabled: boolean) => queryOptions({
     queryKey: adminQueryKeys.adminJobLogsKey(jobId),
     queryFn: () => getAdminJobLogs({ data: { jobId: jobId! } }),
+    meta: { displayErrorMsg: true },
     enabled: isEnabled,
 });
 
@@ -64,4 +66,5 @@ export const adminJobLogsOptions = (jobId: string | null | undefined, isEnabled:
 export const adminJobCompletedOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminJobCompletedKey(),
     queryFn: () => getAdminJobs({ data: { types: ["completed", "failed"] } }),
+    meta: { displayErrorMsg: true },
 });

@@ -1,9 +1,9 @@
 import {Label} from "@/lib/components/types";
 import {DeltaStats} from "@/lib/server/types/stats.types";
-import {ProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
@@ -123,5 +123,5 @@ export abstract class BaseService<
 
     abstract updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<any, any>>;
 
-    abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: ProviderService): Promise<MediaAndUserDetails<any, any>>;
+    abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>): Promise<MediaAndUserDetails<any, any>>;
 }

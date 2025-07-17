@@ -1,10 +1,25 @@
 import * as z from "zod/v4";
 import {Column, SQL} from "drizzle-orm";
+import {taskNames} from "@/cli/commands";
+import {JobType as MqJobType} from "bullmq";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaTable} from "@/lib/server/types/media-lists.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
-import {ApiProviderType, GamesPlatformsEnum, JobType, LabelAction, MediaType, NotificationType, PrivacyType, RatingSystemType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {
+    AchievementDifficulty,
+    ApiProviderType,
+    GamesPlatformsEnum,
+    JobType,
+    LabelAction,
+    MediaType,
+    NotificationType,
+    PrivacyType,
+    RatingSystemType,
+    RoleType,
+    Status,
+    UpdateType
+} from "@/lib/server/utils/enums";
 
 
 export type ComingNext = {
@@ -232,6 +247,16 @@ export type FilterDefinition = {
     getCondition: (args: MediaListArgs) => SQL | undefined;
 }
 
+export const mqJobTypes = [
+    "completed",
+    "waiting",
+    "active",
+    "delayed",
+    "failed",
+    "paused",
+    "repeat",
+    "wait"
+] as const satisfies readonly MqJobType[];
 
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
@@ -248,6 +273,8 @@ export type SearchTypeAdmin = z.infer<typeof searchTypeAdminSchema>;
 export type MediaListArgs = z.infer<typeof mediaListArgsSchema>;
 export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
+export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
+export type AchievementTier = z.infer<typeof tierAchievementSchema>;
 // --- ZOD Schema -----------------------------------------------------------------------------------------------
 
 export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)] as const).optional().catch("normalized");
@@ -454,4 +481,49 @@ export const downloadListAsCsvSchema = z.object({
 
 export const getUserStatsSchema = z.object({
     mediaType: z.enum(MediaType).optional(),
+})
+
+const adminUpdatePayloadSchema = z.object({
+    role: z.enum(RoleType).optional(),
+    deleteUser: z.boolean().optional(),
+    emailVerified: z.boolean().optional(),
+    privacy: z.enum(PrivacyType).optional(),
+    showUpdateModal: z.boolean().optional(),
+});
+
+export const postAdminUpdateUserSchema = z.object({
+    userId: z.number().int().positive().optional(),
+    payload: adminUpdatePayloadSchema,
+});
+
+export const adminUpdateAchievementSchema = z.object({
+    achievementId: z.number().int().positive(),
+    name: z.string(),
+    description: z.string(),
+});
+
+const tierAchievementSchema = z.object({
+    id: z.number(),
+    achievementId: z.number(),
+    rarity: z.number().nullable(),
+    difficulty: z.enum(AchievementDifficulty),
+    criteria: z.object({
+        count: z.number(),
+    }),
+});
+
+export const postAdminUpdateTiersSchema = z.object({
+    tiers: z.array(tierAchievementSchema),
+});
+
+export const postTriggerLongTasksSchema = z.object({
+    taskName: z.enum(taskNames),
+});
+
+export const getAdminJobsSchema = z.object({
+    types: z.array(z.enum(mqJobTypes)),
+})
+
+export const getAdminJobSchema = z.object({
+    jobId: z.number().int().positive(),
 })

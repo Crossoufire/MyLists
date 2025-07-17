@@ -84,3 +84,6 @@ export const registerAllCommands = (program: Command) => {
         });
     }
 }
+
+
+export const taskNames = taskDefinitions.map(task => task.name);

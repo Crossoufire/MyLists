@@ -1,9 +1,10 @@
 import {db} from "@/lib/server/database/db";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {AchievementData} from "@/lib/server/types/achievements.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
-import {AchievementData, AchievementTier} from "@/lib/server/types/achievements.types";
 import {and, asc, count, eq, getTableColumns, inArray, max, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
+import {AchievementTier} from "@/lib/server/types/base.types";
 
 
 export class AchievementsRepository {
@@ -118,20 +119,20 @@ export class AchievementsRepository {
         });
     }
 
-    static async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
+    static async adminUpdateAchievement(achievementId: number, name: string, description: string) {
         await getDbClient()
             .update(achievement)
-            .set(payload)
+            .set({ name, description })
             .where(eq(achievement.id, achievementId));
     }
 
-    static async adminUpdateTiers(payloads: Record<string, any>[]) {
+    static async adminUpdateTiers(tiers: AchievementTier[]) {
         return db.transaction(async (tx) => {
-            for (const payload of payloads) {
+            for (const tier of tiers) {
                 await tx
                     .update(achievementTier)
-                    .set({ criteria: payload.criteria })
-                    .where(eq(achievementTier.id, payload.id));
+                    .set({ criteria: tier.criteria })
+                    .where(eq(achievementTier.id, tier.id));
             }
         });
     }

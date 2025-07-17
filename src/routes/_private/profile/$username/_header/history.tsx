@@ -37,7 +37,7 @@ function AllUpdates() {
     const [rowSelected, setRowSelected] = useState({});
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const apiData = useSuspenseQuery(allUpdatesOptions(username, filters)).data;
-    const paginationState = { pageIndex: filters?.page ? filters.page - 1 : 0, pageSize: 25 };
+    const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
     const deleteUpdateMutation = useDeleteUpdatesMutation(queryKeys.allUpdatesKey(username, filters));
 
     const setFilters = async (filtersData: SearchType) => {

@@ -1,11 +1,19 @@
-import {JobType} from "bullmq";
+import {taskDefinitions} from "@/cli/commands";
 import {createServerFn} from "@tanstack/react-start";
 import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
-import {taskDefinitions, TasksName} from "@/cli/commands";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {
+    adminUpdateAchievementSchema,
+    getAdminJobSchema,
+    getAdminJobsSchema,
+    postAdminUpdateTiersSchema,
+    postAdminUpdateUserSchema,
+    postTriggerLongTasksSchema,
+    searchTypeAdminSchema,
+    searchTypeSchema
+} from "@/lib/server/types/base.types";
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
@@ -18,7 +26,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as SearchTypeAdmin)
+    .validator(data => searchTypeAdminSchema.parse(data))
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminPaginatedUsers(data);
@@ -35,7 +43,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data)
+    .validator(data => searchTypeSchema.parse(data))
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
         return mediadleService.getAdminAllUsersStats(data);
@@ -44,7 +52,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { userId: number, payload: Record<string, any> })
+    .validator(data => postAdminUpdateUserSchema.parse(data))
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.adminUpdateUser(userId, payload);
@@ -53,43 +61,36 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as {
-        achievementId: number,
-        payload: Record<string, any>,
-    })
-    .handler(async ({ data: { achievementId, payload } }) => {
+    .validator(data => adminUpdateAchievementSchema.parse(data))
+    .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateAchievement(achievementId, payload);
+        return achievementService.adminUpdateAchievement(achievementId, name, description);
     });
 
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as {
-        payloads: Record<string, any>[],
-    })
-    .handler(async ({ data: { payloads } }) => {
+    .validator(data => postAdminUpdateTiersSchema.parse(data))
+    .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateTiers(payloads);
+        return achievementService.adminUpdateTiers(tiers);
     });
 
 
 export const getAdminTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .handler(async () => {
-        return taskDefinitions;
-    });
+    .handler(async () => taskDefinitions);
 
 
 export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { taskName: TasksName })
+    .validator(data => postTriggerLongTasksSchema.parse(data))
     .handler(async ({ data: { taskName } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
-            return { success: true, jobId: job.id, message: "Task enqueued." };
+            return { jobId: job.id, success: true, message: "Task enqueued." };
         }
         catch (error) {
             throw new FormattedError("Failed to enqueue task.");
@@ -99,7 +100,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
 
 export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { types: JobType[] })
+    .validator(data => getAdminJobsSchema.parse(data))
     .handler(async ({ data: { types } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
@@ -121,24 +122,21 @@ export const getAdminJobs = createServerFn({ method: "GET" })
             }));
         }
         catch (error) {
-            throw new FormattedError("Failed to fetch jobs.");
+            throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
         }
     });
 
 
 export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { jobId: string })
+    .validator(data => getAdminJobSchema.parse(data))
     .handler(async ({ data: { jobId } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
 
         try {
-            return mylistsLongTaskQueue.getJobLogs(jobId);
+            return mylistsLongTaskQueue.getJobLogs(jobId.toString());
         }
         catch (error) {
             throw new FormattedError("Failed to fetch job logs.");
         }
     });
-
-
-

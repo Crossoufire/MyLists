@@ -28,13 +28,12 @@ import {GamesProviderService} from "@/lib/server/domain/media/games/games-provid
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
-import {AnimeProviderService} from "@/lib/server/domain/media/tv/anime/anime-provider.service";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {SeriesProviderService} from "@/lib/server/domain/media/tv/series/series-provider.service";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
 
 
 interface AppContainer {
@@ -151,14 +150,13 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const jikanClient = await JikanClient.create();
 
     // Media Providers Services
-    const gamesProviderService = new GamesProviderService(igdbClient, hltbClient, igdbTransformer, gamesRepository)
+    const gamesProviderService = new GamesProviderService(igdbClient, igdbTransformer, gamesRepository, hltbClient)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
-    const seriesProviderService = new SeriesProviderService(tmdbClient, tmdbTransformer, seriesRepository);
-    const animeProviderService = new AnimeProviderService(tmdbClient, jikanClient, tmdbTransformer, animeRepository);
+    const tvProviderService = new TvProviderService(tmdbClient, tmdbTransformer, seriesRepository, jikanClient);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.ANIME, tvProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.SERIES, tvProviderService);
 
     return {
         cacheManager: cacheManager,

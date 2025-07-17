@@ -169,7 +169,7 @@ export class TmdbTransformer {
         return moviesTrends
     }
 
-    async transformSeriesTrends(rawData: TmdbTrendingTvResponse) {
+    async transformTvTrends(rawData: TmdbTrendingTvResponse) {
         const tvTrends: TrendsMedia[] = [];
 
         const rawResults = rawData?.results ?? [];
@@ -195,7 +195,7 @@ export class TmdbTransformer {
         return tvTrends
     }
 
-    addAnimeSpecificGenres(jikanData: JikanAnimeSearchResponse, genresData: { name: string }[] | null) {
+    addAnimeSpecificGenres(jikanData: JikanAnimeSearchResponse, genresData: { name: string }[] | null | undefined) {
         const { genres = [], demographics = [] } = jikanData?.data?.[0] || {};
         const genreList = genres.map((g) => ({ name: g.name })) as { name: string }[];
         const demoList = demographics.map((d) => ({ name: d.name })) as { name: string }[];
@@ -244,11 +244,9 @@ export class TmdbTransformer {
                 episodes: season.episode_count,
             })) || [{ season: 1, episodes: 1 }];
 
-        const networkData = rawData?.networks?.slice(0, this.maxNetworks).map((network) => ({ name: network.name }));
-        const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast) => ({ name: cast.name }));
-        const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre) =>
-            ({ name: genre.name })
-        ) as { name: string }[] | null;
+        const networkData = rawData.networks.slice(0, this.maxNetworks).map((n) => ({ name: n.name }));
+        const actorsData = rawData.credits.cast.slice(0, this.maxActors).map((c) => ({ name: c.name }));
+        const genresData = rawData.genres.slice(0, this.maxGenres).map((g) => ({ name: g.name }));
 
         return {
             mediaData,

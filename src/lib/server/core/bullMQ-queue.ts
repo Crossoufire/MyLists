@@ -6,8 +6,14 @@ import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
 
 
+export type TypedJob = Job<LongTaskJobData, any, TasksName>;
+type LongTaskJobData = {
+    triggeredBy: string;
+}
+
+
 const QUEUE_NAME = "mylists-long-tasks";
-export let mylistsLongTaskQueue: Queue;
+export let mylistsLongTaskQueue: Queue<LongTaskJobData, any, TasksName>;
 
 
 export const initializeQueue = (connection: Redis) => {
@@ -29,15 +35,15 @@ export const initializeQueue = (connection: Redis) => {
 
 
 export const createWorker = (connection: Redis) => {
-    const worker = new Worker(QUEUE_NAME, taskProcessor, {
+    const worker = new Worker<LongTaskJobData, any, TasksName>(QUEUE_NAME, taskProcessor, {
         connection: connection.duplicate(),
         concurrency: 1,
     });
 
-    worker.on("completed", (job: Job, returnValue: any) => {
+    worker.on("completed", (job: TypedJob, returnValue: any) => {
         pinoLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed job");
     });
-    worker.on("failed", (job: Job | undefined, error: Error) => {
+    worker.on("failed", (job: TypedJob | undefined, error: Error) => {
         pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed job");
     });
     worker.on("error", (err) => {
@@ -50,7 +56,7 @@ export const createWorker = (connection: Redis) => {
 };
 
 
-const taskProcessor = async (job: Job) => {
+const taskProcessor = async (job: TypedJob) => {
     const { name: taskName } = job;
     const { triggeredBy } = job.data;
 
@@ -66,7 +72,7 @@ const taskProcessor = async (job: Job) => {
         pino.multistream([
             {
                 stream: process.stdout,
-                level: baseJobLogger.level as pino.Level,
+                level: baseJobLogger.level,
             },
             {
                 stream: { write: (msg: string) => job.log(msg.replace(/\n$/, "")) },
@@ -81,7 +87,7 @@ const taskProcessor = async (job: Job) => {
     try {
         const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
         const tasksService = container.services.tasks;
-        await tasksService.runTask(taskName as TasksName);
+        await tasksService.runTask(taskName);
 
         taskExecutionLogger.info("Task completed successfully.");
         await job.log("Task completed successfully.");

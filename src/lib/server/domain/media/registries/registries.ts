@@ -5,8 +5,9 @@ import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {ProviderService, TrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
+import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
+import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
 export interface MediaRepositoryMap {
@@ -33,12 +34,12 @@ export type MediaService = TvService | MoviesService | GamesService;
 
 
 export interface MediaProviderServiceMap {
-    [MediaType.SERIES]: TrendsProviderService;
-    [MediaType.ANIME]: ProviderService;
-    [MediaType.MOVIES]: TrendsProviderService;
+    [MediaType.SERIES]: TvProviderService;
+    [MediaType.ANIME]: TvProviderService;
+    [MediaType.MOVIES]: MoviesProviderService;
     [MediaType.GAMES]: GamesProviderService;
-    [MediaType.BOOKS]: ProviderService;
-    [MediaType.MANGA]: ProviderService;
+    [MediaType.BOOKS]: MoviesProviderService;
+    [MediaType.MANGA]: MoviesProviderService;
 }
 
 
