@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
-import {TaskDefinition, TasksName} from "@/cli/commands";
+import {taskDefinitions, TasksName} from "@/cli/commands";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {CheckCircle, Clock, Eye, EyeOff, Loader2, Play, Terminal} from "lucide-react";
@@ -16,7 +16,7 @@ type JobCompleted = Awaited<ReturnType<NonNullable<ReturnType<typeof adminJobCom
 
 
 interface TasksManagerProps {
-    tasksList: TaskDefinition[];
+    tasksList: typeof taskDefinitions;
 }
 
 

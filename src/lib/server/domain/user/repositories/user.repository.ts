@@ -1,4 +1,4 @@
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
@@ -176,7 +176,7 @@ export class UserRepository {
         };
     }
 
-    static async adminUpdateUser(userId: number, payload: Record<string, any>) {
+    static async adminUpdateUser(userId: number, payload: Omit<AdminUpdatePayload, "deleteUser">) {
         await getDbClient()
             .update(user)
             .set(payload)
