@@ -77,7 +77,7 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
         mediaName: text().notNull(),
         mediaType: text().$type<MediaType>().notNull(),
         updateType: text().$type<UpdateType>().notNull(),
-        payload: customJson<Record<string, any>>("payload"),
+        payload: customJson<{ old_value: any, new_value: any }>("payload"),
         timestamp: text().notNull(),
     },
     (table) => [

@@ -31,6 +31,7 @@ interface ListTableColumns {
     favorite: Column<any, any, any>;
     comment: Column<any, any, any>;
     rating: Column<any, any, any>;
+    redo?: Column<any, any, any>;
 }
 
 

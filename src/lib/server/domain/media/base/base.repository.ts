@@ -1,10 +1,10 @@
 import {Label} from "@/lib/components/types";
-import {followers, user} from "@/lib/server/database/schema";
+import {followers, games, user} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {and, asc, avgDistinct, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, avgDistinct, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     CommonListFilters,
@@ -12,12 +12,12 @@ import {
     ExpandedListFilters,
     FilterDefinition,
     FilterDefinitions,
-    ItemForNotification,
     JobDetails,
     ListFilterDefinition,
     MediaListArgs,
     MediaListData,
     SimpleMedia,
+    UpComingMedia,
     UserFollowsMediaData,
     UserMediaStats,
     UserMediaWithLabels,
@@ -454,6 +454,112 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         };
     }
 
+    async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {
+        const { listTable, mediaTable } = this.config;
+
+        const toto = await getDbClient()
+            .select({
+                mediaId: mediaTable.id,
+                userId: listTable.userId,
+                status: listTable.status,
+                mediaName: mediaTable.name,
+                date: mediaTable.releaseDate,
+                imageCover: mediaTable.imageCover,
+            })
+            .from(mediaTable)
+            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
+            .where(and(
+                notInArray(listTable.status, [Status.DROPPED]),
+                userId ? eq(listTable.userId, userId) : undefined,
+                gte(mediaTable.releaseDate, sql`datetime('now')`),
+                maxAWeek ? lte(games.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
+            ))
+            .orderBy(asc(mediaTable.releaseDate))
+            .execute();
+
+        console.log({ toto })
+        return toto
+    }
+
+    protected async _computeAllUsersStats(timeSpentStat: SQL, totalSpecificStat: SQL, totalRedoStat?: SQL) {
+        const { listTable, mediaTable } = this.config;
+
+        let redoStat;
+        if (totalRedoStat) {
+            redoStat = totalRedoStat;
+        }
+        else if (listTable?.redo) {
+            redoStat = sql<number>`COALESCE(SUM(${listTable.redo}), 0)`
+        }
+        else {
+            redoStat = sql<number>`0`;
+        }
+
+        const results = await getDbClient()
+            .select({
+                userId: sql<number>`${listTable.userId}`,
+                timeSpent: timeSpentStat.as("timeSpent"),
+                totalSpecific: totalSpecificStat.as("totalSpecific"),
+                statusCounts: sql`
+                    COALESCE((
+                        SELECT 
+                            JSON_GROUP_OBJECT(status, count_per_status) 
+                        FROM (
+                            SELECT 
+                                status,
+                                COUNT(*) as count_per_status 
+                            FROM ${listTable} as sub_list 
+                            WHERE sub_list.user_id = ${listTable.userId} GROUP BY status
+                        )
+                    ), '{}')
+                `.as("statusCounts"),
+                entriesFavorites: sql<number>`
+                    COALESCE(SUM(CASE WHEN ${listTable.favorite} = 1 THEN 1 ELSE 0 END), 0)
+                `.as("entriesFavorites"),
+                totalRedo: redoStat.as("totalRedo"),
+                entriesCommented: sql<number>`
+                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${listTable.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
+                `.as("entriesCommented"),
+                totalEntries: count(listTable.mediaId).as("totalEntries"),
+                entriesRated: count(listTable.rating).as("entriesRated"),
+                sumEntriesRated: sql<number>`COALESCE(SUM(${listTable.rating}), 0)`.as("sumEntriesRated"),
+                averageRating: sql<number>`
+                    COALESCE(SUM(${listTable.rating}) * 1.0 / NULLIF(COUNT(${listTable.rating}), 0), 0.0)
+                `.as("averageRating"),
+            })
+            .from(listTable)
+            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
+            .groupBy(listTable.userId)
+            .execute();
+
+        return results.map((row) => {
+            let statusCounts: Record<string, number> = {};
+            try {
+                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
+                if (typeof parsed === "object" && parsed !== null) {
+                    statusCounts = parsed;
+                }
+            }
+            catch (e) {
+                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
+            }
+
+            return {
+                userId: row.userId,
+                statusCounts: statusCounts,
+                timeSpent: Number(row.timeSpent) || 0,
+                totalRedo: Number(row.totalRedo) || 0,
+                totalEntries: Number(row.totalEntries) || 0,
+                entriesRated: Number(row.entriesRated) || 0,
+                totalSpecific: Number(row.totalSpecific) || 0,
+                averageRating: Number(row.averageRating) || 0,
+                sumEntriesRated: Number(row.sumEntriesRated) || 0,
+                entriesFavorites: Number(row.entriesFavorites) || 0,
+                entriesCommented: Number(row.entriesCommented) || 0,
+            };
+        });
+    }
+
     // --- Achievements ----------------------------------------------------------
 
     specificGenreAchievementCte(achievement: Achievement, userId?: number) {
@@ -638,8 +744,6 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     // --- Abstract Methods -----------------------------------------------------------------
 
     abstract computeAllUsersStats(): Promise<UserMediaStats[]>;
-
-    abstract getMediaToNotify(): Promise<ItemForNotification[]>;
 
     abstract storeMediaWithDetails(params: any): Promise<number>;
 

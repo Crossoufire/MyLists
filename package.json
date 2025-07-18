@@ -104,7 +104,7 @@
         "eslint-plugin-react-hooks": "^5.2.0",
         "globals": "^16.3.0",
         "tailwindcss": "^4.1.11",
-        "typescript": "^5.8.3",
+        "typescript": "^5.9.0-beta",
         "typescript-eslint": "^8.35.1",
         "vite-tsconfig-paths": "^5.1.4"
     }

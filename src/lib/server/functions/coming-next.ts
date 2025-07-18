@@ -9,15 +9,14 @@ export const getComingNextMedia = createServerFn({ method: "GET" })
     .handler(async ({ context: { currentUser } }) => {
         const container = await getContainer()
 
+        const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES, MediaType.GAMES]
         const comingNextData = await Promise.all(
-            Object.values(MediaType).map(mediaType => {
+            mediaTypes.map(async (mediaType) => {
                 const mediaService = container.registries.mediaService.getService(mediaType);
-                if (typeof mediaService?.getComingNext === "function") {
-                    return mediaService.getComingNext(currentUser.id).then(items => ({ items, mediaType }));
-                }
-                return null;
-            }).filter(Boolean)
+                const items = await mediaService.getUpcomingMedia(currentUser.id);
+                return ({ items, mediaType });
+            })
         );
 
-        return comingNextData.filter(data => data !== null);
+        return comingNextData;
     });

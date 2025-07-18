@@ -18,25 +18,6 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         this.config = gamesConfig;
     }
 
-    async getComingNext(userId: number) {
-        return getDbClient()
-            .select({
-                mediaId: games.id,
-                mediaName: games.name,
-                date: games.releaseDate,
-                imageCover: games.imageCover,
-            })
-            .from(games)
-            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(and(
-                eq(gamesList.userId, userId),
-                notInArray(gamesList.status, [Status.DROPPED]),
-                gte(games.releaseDate, sql`datetime('now')`),
-            ))
-            .orderBy(asc(games.releaseDate))
-            .execute();
-    }
-
     async getMediaIdsToBeRefreshed() {
         const results = await getDbClient()
             .select({ apiId: games.apiId })
@@ -270,88 +251,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     // --- Implemented Methods ----------------------------------------------
 
     async computeAllUsersStats() {
-        const results = await getDbClient()
-            .select({
-                userId: gamesList.userId,
-                timeSpent: sql<number>`COALESCE(SUM(${gamesList.playtime}), 0)`.as("timeSpent"),
-                totalSpecific: sql<number>`0`.as("totalSpecific"),
-                statusCounts: sql`
-                    COALESCE((
-                        SELECT 
-                            JSON_GROUP_OBJECT(status, count_per_status) 
-                        FROM (
-                            SELECT 
-                                status,
-                                COUNT(*) as count_per_status 
-                            FROM ${gamesList} as sub_list 
-                            WHERE sub_list.user_id = ${gamesList.userId} GROUP BY status
-                        )
-                    ), '{}')
-                `.as("statusCounts"),
-                entriesFavorites: sql<number>`
-                    COALESCE(SUM(CASE WHEN ${gamesList.favorite} = 1 THEN 1 ELSE 0 END), 0)
-                `.as("entriesFavorites"),
-                totalRedo: sql<number>`0`.as("totalRedo"),
-                entriesCommented: sql<number>`
-                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${gamesList.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
-                `.as("entriesCommented"),
-                totalEntries: count(gamesList.mediaId).as("totalEntries"),
-                entriesRated: count(gamesList.rating).as("entriesRated"),
-                sumEntriesRated: sql<number>`COALESCE(SUM(${gamesList.rating}), 0)`.as("sumEntriesRated"),
-                averageRating: sql<number>`
-                    COALESCE(SUM(${gamesList.rating}) * 1.0 / NULLIF(COUNT(${gamesList.rating}), 0), 0.0)
-                `.as("averageRating"),
-            })
-            .from(gamesList)
-            .innerJoin(games, eq(gamesList.mediaId, games.id))
-            .groupBy(gamesList.userId)
-            .execute();
+        const timeSpentStat = sql<number>`COALESCE(SUM(${gamesList.playtime}), 0)`;
+        const totalSpecificStat = sql<number>`0`;
 
-        return results.map((row) => {
-            let statusCounts: Record<string, number> = {};
-            try {
-                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
-                if (typeof parsed === "object" && parsed !== null) {
-                    statusCounts = parsed;
-                }
-            }
-            catch (e) {
-                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
-            }
-
-            return {
-                userId: row.userId,
-                statusCounts: statusCounts,
-                timeSpent: Number(row.timeSpent) || 0,
-                totalRedo: Number(row.totalRedo) || 0,
-                totalEntries: Number(row.totalEntries) || 0,
-                entriesRated: Number(row.entriesRated) || 0,
-                totalSpecific: Number(row.totalSpecific) || 0,
-                averageRating: Number(row.averageRating) || 0,
-                sumEntriesRated: Number(row.sumEntriesRated) || 0,
-                entriesFavorites: Number(row.entriesFavorites) || 0,
-                entriesCommented: Number(row.entriesCommented) || 0,
-            };
-        });
-    }
-
-    async getMediaToNotify() {
-        return getDbClient()
-            .select({
-                mediaId: games.id,
-                mediaName: games.name,
-                releaseDate: games.releaseDate,
-                userId: gamesList.userId,
-            })
-            .from(games)
-            .innerJoin(gamesList, eq(gamesList.mediaId, games.id))
-            .where(and(
-                isNotNull(games.releaseDate),
-                gte(games.releaseDate, sql`datetime('now')`),
-                lte(games.releaseDate, sql`datetime('now', '+7 days')`),
-            ))
-            .orderBy(games.releaseDate)
-            .execute();
+        return this._computeAllUsersStats(timeSpentStat, totalSpecificStat);
     }
 
     async addMediaToUserList(userId: number, media: Game, newStatus: Status) {

@@ -35,23 +35,6 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return count;
     }
 
-    async getComingNext(userId: number) {
-        const comingNext = await getDbClient()
-            .select({
-                mediaId: movies.id,
-                mediaName: movies.name,
-                date: movies.releaseDate,
-                imageCover: movies.imageCover,
-            })
-            .from(movies)
-            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(eq(moviesList.userId, userId), gte(movies.releaseDate, sql`datetime('now')`)))
-            .orderBy(asc(movies.releaseDate))
-            .execute();
-
-        return comingNext;
-    }
-
     async getMediaIdsToBeRefreshed() {
         const results = await getDbClient()
             .select({ apiId: movies.apiId })
@@ -219,102 +202,24 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     // --- Implemented Methods ------------------------------------------------
 
     async computeAllUsersStats() {
-        const results = await getDbClient()
-            .select({
-                userId: moviesList.userId,
-                timeSpent: sql<number>`
-                    COALESCE(SUM(
-                        CASE 
-                            WHEN ${moviesList.status} = ${Status.COMPLETED} THEN (1 + ${moviesList.redo}) * ${movies.duration}
-                            ELSE 0
-                        END
-                    ), 0)
-                `.as("timeSpent"),
-                totalSpecific: sql<number>`
-                    COALESCE(SUM(
-                        CASE 
-                            WHEN ${moviesList.status} = ${Status.COMPLETED} THEN 1 + ${moviesList.redo}
-                            ELSE 0
-                        END
-                    ), 0)
-                `.as("totalSpecific"),
-                statusCounts: sql`
-                    COALESCE((
-                        SELECT 
-                            JSON_GROUP_OBJECT(status, count_per_status) 
-                        FROM (
-                            SELECT 
-                                status,
-                                COUNT(*) as count_per_status 
-                            FROM ${moviesList} as sub_list 
-                            WHERE sub_list.user_id = ${moviesList.userId} GROUP BY status
-                        )
-                    ), '{}')
-                `.as("statusCounts"),
-                entriesFavorites: sql<number>`
-                    COALESCE(SUM(CASE WHEN ${moviesList.favorite} = 1 THEN 1 ELSE 0 END), 0)
-                `.as("entriesFavorites"),
-                totalRedo: sql<number>`COALESCE(SUM(${moviesList.redo}), 0)`.as("totalRedo"),
-                entriesCommented: sql<number>`
-                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${moviesList.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
-                `.as("entriesCommented"),
-                totalEntries: count(moviesList.mediaId).as("totalEntries"),
-                entriesRated: count(moviesList.rating).as("entriesRated"),
-                sumEntriesRated: sql<number>`COALESCE(SUM(${moviesList.rating}), 0)`.as("sumEntriesRated"),
-                averageRating: sql<number>`
-                    COALESCE(SUM(${moviesList.rating}) * 1.0 / NULLIF(COUNT(${moviesList.rating}), 0), 0.0)
-                `.as("averageRating"),
-            })
-            .from(moviesList)
-            .innerJoin(movies, eq(moviesList.mediaId, movies.id))
-            .groupBy(moviesList.userId)
-            .execute();
+        const timeSpentStat = sql<number>`
+            COALESCE(SUM(
+                CASE 
+                    WHEN ${moviesList.status} = ${Status.COMPLETED} THEN (1 + ${moviesList.redo}) * ${movies.duration}
+                    ELSE 0
+                END
+            ), 0)
+        `
+        const totalSpecificStat = sql<number>`
+            COALESCE(SUM(
+                CASE 
+                    WHEN ${moviesList.status} = ${Status.COMPLETED} THEN 1 + ${moviesList.redo}
+                    ELSE 0
+                END
+            ), 0)
+        `
 
-        return results.map((row) => {
-            let statusCounts: Record<string, number> = {};
-            try {
-                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
-                if (typeof parsed === "object" && parsed !== null) {
-                    statusCounts = parsed;
-                }
-            }
-            catch (e) {
-                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
-            }
-
-            return {
-                userId: row.userId,
-                statusCounts: statusCounts,
-                timeSpent: Number(row.timeSpent) || 0,
-                totalRedo: Number(row.totalRedo) || 0,
-                totalEntries: Number(row.totalEntries) || 0,
-                entriesRated: Number(row.entriesRated) || 0,
-                totalSpecific: Number(row.totalSpecific) || 0,
-                averageRating: Number(row.averageRating) || 0,
-                sumEntriesRated: Number(row.sumEntriesRated) || 0,
-                entriesFavorites: Number(row.entriesFavorites) || 0,
-                entriesCommented: Number(row.entriesCommented) || 0,
-            };
-        });
-    }
-
-    async getMediaToNotify() {
-        return getDbClient()
-            .select({
-                mediaId: movies.id,
-                mediaName: movies.name,
-                releaseDate: movies.releaseDate,
-                userId: moviesList.userId,
-            })
-            .from(movies)
-            .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-            .where(and(
-                isNotNull(movies.releaseDate),
-                gte(movies.releaseDate, sql`datetime('now')`),
-                lte(movies.releaseDate, sql`datetime('now', '+7 days')`),
-            ))
-            .orderBy(movies.releaseDate)
-            .execute();
+        return this._computeAllUsersStats(timeSpentStat, totalSpecificStat)
     }
 
     async addMediaToUserList(userId: number, media: Movie, newStatus: Status) {

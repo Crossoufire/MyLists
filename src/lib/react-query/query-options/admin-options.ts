@@ -5,7 +5,7 @@ import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, g
 
 export const adminQueryKeys = {
     adminAchievementsKey: () => ["adminAchievements"] as const,
-    adminMediadleKey: (search: Record<string, any>) => ["adminMediadle", search] as const,
+    adminMediadleKey: (search: SearchType) => ["adminMediadle", search] as const,
     adminOverviewKey: () => ["adminOverview"] as const,
     adminTasksKey: () => ["adminTasks"] as const,
     adminUsersKeys: (search: SearchTypeAdmin) => ["adminUpdateUsers", search] as const,

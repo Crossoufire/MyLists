@@ -229,12 +229,12 @@ export class TasksService {
     protected async runAddMediaNotifications() {
         this.logger.info("Starting: AddMediaNotifications execution.");
 
-        const mediaTypes = [MediaType.MOVIES];
+        const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES];
         for (const mediaType of mediaTypes) {
             this.logger.info(`Adding ${mediaType} notifications to users...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const allMediaToNotify = await mediaService.getMediaToNotify();
+            const allMediaToNotify = await mediaService.getUpcomingMedia(undefined, true);
             await this.notificationsService.sendMediaNotifications(mediaType, allMediaToNotify);
 
             this.logger.info(`Adding ${mediaType} notifications completed.`);

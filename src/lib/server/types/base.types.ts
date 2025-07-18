@@ -47,11 +47,13 @@ export type UserMediaStats = {
 };
 
 
-export type ItemForNotification = {
+export type UpComingMedia = {
     userId: number;
+    status: Status;
     mediaId: number;
     mediaName: string;
-    releaseDate: string | null;
+    imageCover: string;
+    date: string | null;
     lastEpisode?: number | null;
     seasonToAir?: number | null;
     episodeToAir?: number | null;

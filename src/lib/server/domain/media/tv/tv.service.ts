@@ -45,10 +45,6 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         };
     }
 
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
-    }
-
     // --- Implemented Methods ----------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {

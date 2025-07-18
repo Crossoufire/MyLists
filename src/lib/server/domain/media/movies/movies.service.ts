@@ -42,10 +42,6 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return this.repository.lockOldMovies();
     }
 
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
-    }
-
     // --- Implements Methods --------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {

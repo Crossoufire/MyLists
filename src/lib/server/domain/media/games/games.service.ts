@@ -39,10 +39,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         };
     }
 
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
-    }
-
     // --- Implemented Methods ------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {

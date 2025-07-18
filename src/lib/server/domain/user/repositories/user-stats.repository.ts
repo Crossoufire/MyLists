@@ -309,18 +309,12 @@ export class UserStatsRepository {
                     .update(userMediaSettings)
                     .set({
                         mediaType: mediaType,
-                        timeSpent: stat.timeSpent,
-                        totalRedo: stat.totalRedo,
-                        statusCounts: stat.statusCounts,
-                        totalEntries: stat.totalEntries,
-                        entriesRated: stat.entriesRated,
-                        totalSpecific: stat.totalSpecific,
-                        averageRating: stat.averageRating,
-                        sumEntriesRated: stat.sumEntriesRated,
-                        entriesFavorites: stat.entriesFavorites,
-                        entriesCommented: stat.entriesCommented,
+                        ...userStats
                     })
-                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+                    .where(and(
+                        eq(userMediaSettings.userId, stat.userId),
+                        eq(userMediaSettings.mediaType, mediaType)
+                    ));
             }
         });
     }

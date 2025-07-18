@@ -28,8 +28,8 @@ export abstract class BaseService<
         return this.repository.getNonListMediaIds();
     }
 
-    async getMediaToNotify() {
-        return this.repository.getMediaToNotify();
+    async getUpcomingMedia(userId?: number, maxAWeek?: boolean,) {
+        return this.repository.getUpcomingMedia(userId, maxAWeek);
     }
 
     async computeAllUsersStats() {

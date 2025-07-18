@@ -1,5 +1,5 @@
-import {ItemForNotification, UpdateMediaNotification} from "@/lib/server/types/base.types";
 import {MediaType, NotificationType} from "@/lib/server/utils/enums";
+import {UpComingMedia, UpdateMediaNotification} from "@/lib/server/types/base.types";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 
 
@@ -7,7 +7,7 @@ export class NotificationsService {
     constructor(private repository: typeof NotificationsRepository) {
     }
 
-    async sendMediaNotifications(mediaType: MediaType, mediaArray: ItemForNotification[]) {
+    async sendMediaNotifications(mediaType: MediaType, mediaArray: UpComingMedia[]) {
         for (const item of mediaArray) {
             const notification = await this.repository.searchNotification(item.userId, mediaType, item.mediaId);
 
@@ -15,7 +15,7 @@ export class NotificationsService {
             if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
                 if (
                     notification &&
-                    item.releaseDate === notification.payload.releaseDate &&
+                    item.date === notification.payload.releaseDate &&
                     item.episodeToAir === notification.payload.releaseDate &&
                     item.seasonToAir === notification.payload.season
                 ) {
@@ -29,9 +29,9 @@ export class NotificationsService {
                     notificationType: NotificationType.TV,
                     payload: {
                         name: item.mediaName,
+                        releaseDate: item.date,
                         season: item.seasonToAir,
                         episode: item.episodeToAir,
-                        releaseDate: item.releaseDate,
                         final: (item.lastEpisode === item.episodeToAir && item.episodeToAir !== 1),
                     },
                 };
@@ -48,7 +48,7 @@ export class NotificationsService {
                     notificationType: NotificationType.MEDIA,
                     payload: {
                         name: item.mediaName,
-                        releaseDate: item.releaseDate,
+                        releaseDate: item.date,
                     },
                 };
 

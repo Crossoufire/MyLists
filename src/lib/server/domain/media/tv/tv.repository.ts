@@ -37,31 +37,6 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         return mainData as TvTypeWithEps;
     }
 
-    async getComingNext(userId: number) {
-        const { mediaTable, listTable } = this.config;
-
-        const comingNext = await getDbClient()
-            .select({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                date: mediaTable.nextEpisodeToAir,
-                imageCover: mediaTable.imageCover,
-                seasonToAir: mediaTable.seasonToAir,
-                episodeToAir: mediaTable.episodeToAir,
-            })
-            .from(mediaTable)
-            .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-            .where(and(
-                eq(listTable.userId, userId),
-                notInArray(listTable.status, [Status.DROPPED, Status.RANDOM]),
-                gte(mediaTable.nextEpisodeToAir, sql`datetime('now')`),
-            ))
-            .orderBy(asc(mediaTable.nextEpisodeToAir))
-            .execute();
-
-        return comingNext;
-    }
-
     async getMediaEpsPerSeason(mediaId: number) {
         const { epsPerSeasonTable } = this.config;
 
@@ -236,72 +211,14 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     async computeAllUsersStats() {
         const { mediaTable, listTable } = this.config;
 
-        const results = await getDbClient()
-            .select({
-                userId: listTable.userId,
-                timeSpent: sql<number>`COALESCE(SUM(${listTable.total} * ${mediaTable.duration}), 0)`.as("timeSpent"),
-                totalSpecific: sql<number>`COALESCE(SUM(${listTable.total}), 0)`.as("totalSpecific"),
-                statusCounts: sql`
-                    COALESCE((
-                        SELECT 
-                            JSON_GROUP_OBJECT(status, count_per_status) 
-                        FROM (
-                            SELECT 
-                                status,
-                                COUNT(*) as count_per_status 
-                            FROM ${listTable} as sub_list 
-                            WHERE sub_list.user_id = ${listTable.userId} GROUP BY status
-                        )
-                    ), '{}')
-                `.as("statusCounts"),
-                entriesFavorites: sql<number>`
-                    COALESCE(SUM(CASE WHEN ${listTable.favorite} = 1 THEN 1 ELSE 0 END), 0)
-                `.as("entriesFavorites"),
-                totalRedo: sql<number>`(SELECT COALESCE(SUM(value), 0) FROM json_each(${listTable.redo2}))`.as("totalRedo"),
-                entriesCommented: sql<number>`
-                    COALESCE(SUM(CASE WHEN LENGTH(TRIM(COALESCE(${listTable.comment}, ''))) > 0 THEN 1 ELSE 0 END), 0)
-                `.as("entriesCommented"),
-                totalEntries: count(listTable.mediaId).as("totalEntries"),
-                entriesRated: count(listTable.rating).as("entriesRated"),
-                sumEntriesRated: sql<number>`COALESCE(SUM(${listTable.rating}), 0)`.as("sumEntriesRated"),
-                averageRating: sql<number>`
-                    COALESCE(SUM(${listTable.rating}) * 1.0 / NULLIF(COUNT(${listTable.rating}), 0), 0.0)
-                `.as("averageRating"),
-            })
-            .from(listTable)
-            .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
-            .groupBy(listTable.userId)
-            .execute();
+        const timeSpentStat = sql<number>`COALESCE(SUM(${listTable.total} * ${mediaTable.duration}), 0)`;
+        const totalSpecificStat = sql<number>`COALESCE(SUM(${listTable.total}), 0)`;
+        const totalRedoStat = sql<number>`(SELECT COALESCE(SUM(value), 0) FROM json_each(${listTable.redo2}))`;
 
-        return results.map((row) => {
-            let statusCounts: Record<string, number> = {};
-            try {
-                const parsed = typeof row.statusCounts === "string" ? JSON.parse(row.statusCounts) : row.statusCounts;
-                if (typeof parsed === "object" && parsed !== null) {
-                    statusCounts = parsed;
-                }
-            }
-            catch (e) {
-                console.error(`Failed to parse statusCounts for user ${row.userId}:`, row.statusCounts, e);
-            }
-
-            return {
-                userId: row.userId,
-                statusCounts: statusCounts,
-                timeSpent: Number(row.timeSpent) || 0,
-                totalRedo: Number(row.totalRedo) || 0,
-                totalEntries: Number(row.totalEntries) || 0,
-                entriesRated: Number(row.entriesRated) || 0,
-                totalSpecific: Number(row.totalSpecific) || 0,
-                averageRating: Number(row.averageRating) || 0,
-                sumEntriesRated: Number(row.sumEntriesRated) || 0,
-                entriesFavorites: Number(row.entriesFavorites) || 0,
-                entriesCommented: Number(row.entriesCommented) || 0,
-            };
-        });
+        return this._computeAllUsersStats(timeSpentStat, totalSpecificStat, totalRedoStat)
     }
 
-    async getMediaToNotify() {
+    async getUpcomingMedia(userId?: number, maxAWeek?: boolean) {
         const { mediaTable, listTable, epsPerSeasonTable } = this.config;
 
         const epsSubq = getDbClient()
@@ -317,21 +234,24 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .select({
                 mediaId: mediaTable.id,
                 userId: listTable.userId,
+                status: listTable.status,
                 mediaName: mediaTable.name,
                 lastEpisode: epsSubq.lastEpisode,
+                date: mediaTable.nextEpisodeToAir,
+                imageCover: mediaTable.imageCover,
                 seasonToAir: mediaTable.seasonToAir,
                 episodeToAir: mediaTable.episodeToAir,
-                releaseDate: mediaTable.nextEpisodeToAir,
             })
             .from(mediaTable)
             .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
             .innerJoin(epsSubq, eq(mediaTable.id, epsSubq.mediaId))
             .where(and(
-                isNotNull(mediaTable.nextEpisodeToAir),
-                gte(mediaTable.releaseDate, sql`datetime('now')`),
-                lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`),
+                userId ? eq(listTable.userId, userId) : undefined,
+                notInArray(listTable.status, [Status.DROPPED, Status.RANDOM]),
+                gte(mediaTable.nextEpisodeToAir, sql`datetime('now')`),
+                maxAWeek ? lte(mediaTable.nextEpisodeToAir, sql`datetime('now', '+7 days')`) : undefined,
             ))
-            .orderBy(mediaTable.nextEpisodeToAir)
+            .orderBy(asc(mediaTable.nextEpisodeToAir))
             .execute();
     }
 
