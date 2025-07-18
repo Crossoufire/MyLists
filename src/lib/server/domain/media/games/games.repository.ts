@@ -266,48 +266,6 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         return newMedia;
     }
 
-    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
-        let dataQuery = getDbClient()
-            .selectDistinct({
-                mediaId: games.id,
-                mediaName: games.name,
-                imageCover: games.imageCover,
-                inUserList: isNotNull(gamesList.userId).mapWith(Boolean).as("inUserList"),
-            })
-            .from(games)
-            .leftJoin(gamesList, and(eq(gamesList.mediaId, games.id), eq(gamesList.userId, userId)))
-            .$dynamic();
-
-        let countQuery = getDbClient()
-            .select({ value: countDistinct(games.id) })
-            .from(games)
-            .$dynamic();
-
-        let filterConditions: any[] = [];
-        if (job === JobType.CREATOR) {
-            dataQuery = dataQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
-            countQuery = countQuery.innerJoin(gamesCompanies, eq(gamesCompanies.mediaId, games.id));
-            filterConditions = [like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true)];
-        }
-        else {
-            throw notFound();
-        }
-
-        if (filterConditions.length > 0) {
-            dataQuery = dataQuery.where(and(...filterConditions));
-            countQuery = countQuery.where(and(...filterConditions));
-        }
-
-        const [totalResult, results] = await Promise.all([
-            countQuery.execute(),
-            dataQuery.orderBy(asc(games.releaseDate)).limit(limit).offset(offset).execute(),
-        ]);
-
-        const totalCount = totalResult[0]?.value ?? 0;
-
-        return { items: results, total: totalCount, pages: Math.ceil(totalCount / limit) };
-    }
-
     async findAllAssociatedDetails(mediaId: number) {
         const details = await getDbClient()
             .select({

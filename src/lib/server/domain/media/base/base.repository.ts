@@ -4,7 +4,7 @@ import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {and, asc, avgDistinct, count, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     CommonListFilters,
@@ -12,7 +12,6 @@ import {
     ExpandedListFilters,
     FilterDefinition,
     FilterDefinitions,
-    JobDetails,
     ListFilterDefinition,
     MediaListArgs,
     MediaListData,
@@ -22,6 +21,7 @@ import {
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/server/types/base.types";
+import {notFound} from "@tanstack/react-router";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -481,6 +481,52 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return toto
     }
 
+    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
+        const { mediaTable, listTable, jobDefinitions } = this.config;
+
+        const jobHandler = jobDefinitions[job];
+        if (!jobHandler) throw notFound();
+
+        let dataQuery = getDbClient()
+            .selectDistinct({
+                mediaId: mediaTable.id,
+                mediaName: mediaTable.name,
+                imageCover: mediaTable.imageCover,
+                inUserList: isNotNull(listTable.userId).mapWith(Boolean).as("inUserList"),
+            })
+            .from(mediaTable)
+            .leftJoin(listTable, and(eq(listTable.mediaId, mediaTable.id), eq(listTable.userId, userId)))
+            .$dynamic();
+
+        let countQuery = getDbClient()
+            .select({ value: countDistinct(mediaTable.id) })
+            .from(mediaTable)
+            .$dynamic();
+
+        if (jobHandler.joinTable) {
+            const joinCondition = eq(jobHandler.joinTable.mediaId, mediaTable.id);
+            dataQuery.innerJoin(jobHandler.joinTable, joinCondition);
+            countQuery.innerJoin(jobHandler.joinTable, joinCondition);
+        }
+
+        const filterCondition = jobHandler.getFilter(name);
+        dataQuery = dataQuery.where(filterCondition);
+        countQuery = countQuery.where(filterCondition);
+
+        const [totalResult, results] = await Promise.all([
+            countQuery.execute(),
+            dataQuery.orderBy(asc(mediaTable.releaseDate)).limit(limit).offset(offset).execute(),
+        ]);
+
+        const totalCount = totalResult[0]?.value ?? 0;
+
+        return {
+            items: results,
+            total: totalCount,
+            pages: Math.ceil(totalCount / limit),
+        };
+    };
+
     protected async _computeAllUsersStats(timeSpentStat: SQL, totalSpecificStat: SQL, totalRedoStat?: SQL) {
         const { listTable, mediaTable } = this.config;
 
@@ -754,8 +800,6 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     abstract getSearchListFilters(userId: number, query: string, job: JobType): Promise<{ name: string | null }[]>;
 
     abstract addMediaToUserList(userId: number, media: any, newStatus: Status): Promise<TConfig["listTable"]["$inferSelect"]>;
-
-    abstract getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit?: number): Promise<JobDetails>;
 
     abstract findAllAssociatedDetails(mediaId: number): Promise<(TConfig["mediaTable"]["$inferSelect"] & AddedMediaDetails) | undefined>;
 }

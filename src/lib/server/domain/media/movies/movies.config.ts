@@ -1,6 +1,6 @@
-import {Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns} from "drizzle-orm";
+import {asc, desc, getTableColumns, like} from "drizzle-orm";
 import {createListFilterDef} from "../base/base.repository";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 
@@ -55,5 +55,17 @@ export const moviesConfig: MovieSchemaConfig = {
         "originalName", "name", "directorName", "releaseDate", "duration", "synopsis",
         "budget", "revenue", "tagline", "originalLanguage", "lockStatus", "homepage",
     ],
+    jobDefinitions: {
+        [JobType.ACTOR]: {
+            joinTable: schema.moviesActors,
+            getFilter: (name: string) => like(schema.moviesActors.name, `%${name}%`),
+        },
+        [JobType.CREATOR]: {
+            getFilter: (name: string) => like(schema.movies.directorName, `%${name}%`),
+        },
+        [JobType.COMPOSITOR]: {
+            getFilter: (name: string) => like(schema.movies.compositorName, `%${name}%`),
+        },
+    },
     tablesForDeletion: [schema.moviesActors, schema.moviesGenre, schema.moviesLabels],
 };

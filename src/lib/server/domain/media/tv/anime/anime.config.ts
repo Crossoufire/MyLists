@@ -1,6 +1,6 @@
-import {Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns, sql} from "drizzle-orm";
+import {asc, desc, getTableColumns, like, sql} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
@@ -74,5 +74,18 @@ export const animeConfig: AnimeSchemaConfig = {
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
         "createdBy", "duration", "originCountry", "prodStatus", "synopsis"
     ],
+    jobDefinitions: {
+        [JobType.ACTOR]: {
+            joinTable: schema.animeActors,
+            getFilter: (name) => like(schema.animeActors.name, `%${name}%`),
+        },
+        [JobType.CREATOR]: {
+            getFilter: (name) => like(schema.anime.createdBy, `%${name}%`),
+        },
+        [JobType.PLATFORM]: {
+            joinTable: schema.animeNetwork,
+            getFilter: (name) => like(schema.animeNetwork.name, `%${name}%`),
+        }
+    },
     tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],
 };

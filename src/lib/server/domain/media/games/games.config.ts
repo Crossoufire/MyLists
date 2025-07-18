@@ -1,6 +1,6 @@
-import {Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns} from "drizzle-orm";
+import {JobType, Status} from "@/lib/server/utils/enums";
+import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
@@ -60,5 +60,11 @@ export const gamesConfig: GamesSchemaConfig = {
         "name", "gameEngine", "gameModes", "playerPerspective", "releaseDate", "synopsis",
         "hltbMainTime", "hltbMainAndExtraTime", "hltbTotalCompleteTime"
     ],
+    jobDefinitions: {
+        [JobType.CREATOR]: {
+            joinTable: schema.gamesCompanies,
+            getFilter: (name) => and(like(schema.gamesCompanies.name, `%${name}%`), eq(schema.gamesCompanies.developer, true))
+        }
+    },
     tablesForDeletion: [schema.gamesCompanies, schema.gamesPlatforms, schema.gamesGenre, schema.gamesLabels],
 };

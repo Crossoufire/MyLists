@@ -1,8 +1,8 @@
-import {Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {asc, desc, getTableColumns, inArray, sql} from "drizzle-orm";
+import {asc, desc, getTableColumns, inArray, like, sql} from "drizzle-orm";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
@@ -87,5 +87,18 @@ export const seriesConfig: SeriesSchemaConfig = {
         "name", "originalName", "releaseDate", "lastAirDate", "homepage",
         "createdBy", "duration", "originCountry", "prodStatus", "synopsis"
     ],
+    jobDefinitions: {
+        [JobType.ACTOR]: {
+            joinTable: schema.seriesActors,
+            getFilter: (name) => like(schema.seriesActors.name, `%${name}%`),
+        },
+        [JobType.CREATOR]: {
+            getFilter: (name) => like(schema.series.createdBy, `%${name}%`),
+        },
+        [JobType.PLATFORM]: {
+            joinTable: schema.seriesNetwork,
+            getFilter: (name) => like(schema.seriesNetwork.name, `%${name}%`),
+        }
+    },
     tablesForDeletion: [schema.seriesActors, schema.seriesGenre, schema.seriesLabels],
 };

@@ -1,4 +1,3 @@
-import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
@@ -286,62 +285,6 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .returning();
 
         return newMedia;
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
-        const { mediaTable, listTable, actorTable, networkTable } = this.config;
-
-        let dataQuery = getDbClient()
-            .selectDistinct({
-                mediaId: mediaTable.id,
-                mediaName: mediaTable.name,
-                imageCover: mediaTable.imageCover,
-                inUserList: isNotNull(listTable.userId).mapWith(Boolean).as("inUserList"),
-            })
-            .from(mediaTable)
-            .leftJoin(listTable, and(eq(listTable.mediaId, mediaTable.id), eq(listTable.userId, userId)))
-            .$dynamic();
-
-        let countQuery = getDbClient()
-            .select({ value: countDistinct(mediaTable.id) })
-            .from(mediaTable)
-            .$dynamic();
-
-        let filterCondition;
-        if (job === JobType.ACTOR) {
-            dataQuery = dataQuery.innerJoin(actorTable, eq(actorTable.mediaId, mediaTable.id));
-            countQuery = countQuery.innerJoin(actorTable, eq(actorTable.mediaId, mediaTable.id));
-            filterCondition = like(actorTable.name, `%${name}%`);
-        }
-        else if (job === JobType.CREATOR) {
-            filterCondition = like(mediaTable.createdBy, `%${name}%`);
-        }
-        else if (job === JobType.PLATFORM) {
-            dataQuery = dataQuery.innerJoin(networkTable, eq(networkTable.mediaId, mediaTable.id));
-            countQuery = countQuery.innerJoin(networkTable, eq(networkTable.mediaId, mediaTable.id));
-            filterCondition = like(networkTable.name, `%${name}%`);
-        }
-        else {
-            throw notFound();
-        }
-
-        if (filterCondition) {
-            dataQuery = dataQuery.where(filterCondition);
-            countQuery = countQuery.where(filterCondition);
-        }
-
-        const [totalResult, results] = await Promise.all([
-            countQuery.execute(),
-            dataQuery.orderBy(asc(mediaTable.releaseDate)).limit(limit).offset(offset).execute(),
-        ]);
-
-        const totalCount = totalResult[0]?.value ?? 0;
-
-        return {
-            items: results,
-            total: totalCount,
-            pages: Math.ceil(totalCount / limit),
-        };
     }
 
     async findAllAssociatedDetails(mediaId: number) {

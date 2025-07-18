@@ -1,5 +1,5 @@
 import {Column, SQL, Table} from "drizzle-orm";
-import {Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
 
@@ -50,6 +50,12 @@ interface GenreTableColumns {
 }
 
 
+interface JobDefinition {
+    joinTable?: TableWithMediaId;
+    getFilter: (name: string) => SQL | undefined;
+};
+
+
 export type ListTable = Table & ListTableColumns;
 export type MediaTable = Table & MediaTableColumns;
 export type LabelTable = Table & LabelTableColumns;
@@ -86,6 +92,7 @@ export interface MediaSchemaConfig<
         maxGenres: number;
     }
     editableFields: Array<keyof TMediaTable["$inferSelect"]>;
+    jobDefinitions: Partial<Record<JobType, JobDefinition>>;
     tablesForDeletion: TableWithMediaId[];
 }
 

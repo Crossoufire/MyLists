@@ -1,5 +1,4 @@
 import {db} from "@/lib/server/database/db";
-import {notFound} from "@tanstack/react-router";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
@@ -231,58 +230,6 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .returning();
 
         return newMedia;
-    }
-
-    async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
-        let dataQuery = getDbClient()
-            .selectDistinct({
-                mediaId: movies.id,
-                mediaName: movies.name,
-                imageCover: movies.imageCover,
-                inUserList: isNotNull(moviesList.userId).mapWith(Boolean).as("inUserList"),
-            })
-            .from(movies)
-            .leftJoin(moviesList, and(eq(moviesList.mediaId, movies.id), eq(moviesList.userId, userId)))
-            .$dynamic();
-
-        let countQuery = getDbClient()
-            .select({ value: countDistinct(movies.id) })
-            .from(movies)
-            .$dynamic();
-
-        let filterCondition;
-        if (job === JobType.ACTOR) {
-            dataQuery = dataQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
-            countQuery = countQuery.innerJoin(moviesActors, eq(moviesActors.mediaId, movies.id));
-            filterCondition = like(moviesActors.name, `%${name}%`);
-        }
-        else if (job === JobType.CREATOR) {
-            filterCondition = like(movies.directorName, `%${name}%`);
-        }
-        else if (job === JobType.COMPOSITOR) {
-            filterCondition = like(movies.compositorName, `%${name}%`);
-        }
-        else {
-            throw notFound();
-        }
-
-        if (filterCondition) {
-            dataQuery = dataQuery.where(filterCondition);
-            countQuery = countQuery.where(filterCondition);
-        }
-
-        const [totalResult, results] = await Promise.all([
-            countQuery.execute(),
-            dataQuery.orderBy(asc(movies.releaseDate)).limit(limit).offset(offset).execute(),
-        ]);
-
-        const totalCount = totalResult[0]?.value ?? 0;
-
-        return {
-            items: results,
-            total: totalCount,
-            pages: Math.ceil(totalCount / limit),
-        };
     }
 
     async findAllAssociatedDetails(mediaId: number) {
