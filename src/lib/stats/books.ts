@@ -1,4 +1,4 @@
-import {ApiData} from ".";
+import {ApiData} from "@/lib/stats/index";
 import type {StatSection} from "@/lib/stats/types";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/stats/constants";

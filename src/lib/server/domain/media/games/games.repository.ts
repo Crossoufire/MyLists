@@ -1,7 +1,6 @@
-import {notFound} from "@tanstack/react-router";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
-import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
+import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
@@ -308,15 +307,15 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         const mediaId = media.id;
         if (companiesData && companiesData.length > 0) {
             const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
-            await tx.insert(gamesCompanies).values(companiesToAdd)
+            await tx.insert(gamesCompanies).values(companiesToAdd);
         }
         if (platformsData && platformsData.length > 0) {
-            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
-            await tx.insert(gamesPlatforms).values(platformsToAdd)
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, ...plt }));
+            await tx.insert(gamesPlatforms).values(platformsToAdd);
         }
         if (genresData && genresData.length > 0) {
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(gamesGenre).values(genresToAdd)
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
+            await tx.insert(gamesGenre).values(genresToAdd);
         }
 
         return mediaId;
@@ -335,17 +334,17 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         if (companiesData && companiesData.length > 0) {
             await tx.delete(gamesCompanies).where(eq(gamesCompanies.mediaId, mediaId));
             const companiesToAdd = companiesData.map((comp) => ({ mediaId, ...comp }));
-            await tx.insert(gamesCompanies).values(companiesToAdd)
+            await tx.insert(gamesCompanies).values(companiesToAdd);
         }
         if (platformsData && platformsData.length > 0) {
             await tx.delete(gamesPlatforms).where(eq(gamesPlatforms.mediaId, mediaId));
-            const platformsToAdd = platformsData.map((plt) => ({ mediaId, name: plt.name }));
-            await tx.insert(gamesPlatforms).values(platformsToAdd)
+            const platformsToAdd = platformsData.map((plt) => ({ mediaId, ...plt }));
+            await tx.insert(gamesPlatforms).values(platformsToAdd);
         }
         if (genresData && genresData.length > 0) {
             await tx.delete(gamesGenre).where(eq(gamesGenre.mediaId, mediaId));
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(gamesGenre).values(genresToAdd)
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
+            await tx.insert(gamesGenre).values(genresToAdd);
         }
 
         return true;
@@ -360,19 +359,5 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .where(and(eq(gamesList.userId, userId), isNotNull(gamesList.platform)));
 
         return { platforms, genres, labels };
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        if (job === JobType.CREATOR) {
-            const companies = await getDbClient()
-                .selectDistinct({ name: gamesCompanies.name })
-                .from(gamesCompanies)
-                .innerJoin(gamesList, eq(gamesList.mediaId, gamesCompanies.mediaId))
-                .where(and(eq(gamesList.userId, userId), like(gamesCompanies.name, `%${query}%`)));
-            return companies
-        }
-        else {
-            throw notFound();
-        }
     }
 }

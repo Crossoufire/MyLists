@@ -62,7 +62,9 @@ export const gamesConfig: GamesSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.CREATOR]: {
-            joinTable: schema.gamesCompanies,
+            sourceTable: schema.gamesCompanies,
+            nameColumn: schema.gamesCompanies.name,
+            mediaIdColumn: schema.gamesCompanies.mediaId,
             getFilter: (name) => and(like(schema.gamesCompanies.name, `%${name}%`), eq(schema.gamesCompanies.developer, true))
         }
     },

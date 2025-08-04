@@ -2,7 +2,7 @@ import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {asc, desc, getTableColumns, inArray, like, sql} from "drizzle-orm";
+import {asc, desc, getTableColumns, inArray, sql} from "drizzle-orm";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
 
@@ -89,15 +89,30 @@ export const seriesConfig: SeriesSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.ACTOR]: {
-            joinTable: schema.seriesActors,
-            getFilter: (name) => like(schema.seriesActors.name, `%${name}%`),
+            sourceTable: schema.seriesActors,
+            nameColumn: schema.seriesActors.name,
+            mediaIdColumn: schema.seriesActors.mediaId,
         },
         [JobType.CREATOR]: {
-            getFilter: (name) => like(schema.series.createdBy, `%${name}%`),
+            mediaIdColumn: schema.series.id,
+            sourceTable: schema.series,
+            nameColumn: schema.series.createdBy,
+            postProcess: (results: { name: string | null }[]) => {
+                return Array.from(
+                    new Map(results
+                        .filter((c) => c.name)
+                        .flatMap((c) => c.name!.split(","))
+                        .map((n) => n.trim())
+                        .filter(Boolean)
+                        .map((n) => [n, { name: n }])
+                    ).values()
+                );
+            },
         },
         [JobType.PLATFORM]: {
-            joinTable: schema.seriesNetwork,
-            getFilter: (name) => like(schema.seriesNetwork.name, `%${name}%`),
+            sourceTable: schema.seriesNetwork,
+            nameColumn: schema.seriesNetwork.name,
+            mediaIdColumn: schema.seriesNetwork.mediaId,
         }
     },
     tablesForDeletion: [schema.seriesActors, schema.seriesGenre, schema.seriesLabels],

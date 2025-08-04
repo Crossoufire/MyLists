@@ -1,5 +1,4 @@
-import {db} from "@/lib/server/database/db";
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
@@ -7,7 +6,7 @@ import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types"
 import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, like, lte, max, ne, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, or, sql} from "drizzle-orm";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
@@ -285,14 +284,13 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .returning()
 
         const mediaId = media.id;
-
         if (actorsData && actorsData.length > 0) {
-            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
             await tx.insert(moviesActors).values(actorsToAdd)
         }
 
         if (genresData && genresData.length > 0) {
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
             await tx.insert(moviesGenre).values(genresToAdd)
         }
 
@@ -306,20 +304,20 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .update(movies)
             .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
             .where(eq(movies.apiId, mediaData.apiId))
-            .returning({ id: movies.id })
+            .returning({ id: movies.id });
 
         const mediaId = media.id;
 
         if (actorsData && actorsData.length > 0) {
             await tx.delete(moviesActors).where(eq(moviesActors.mediaId, mediaId));
-            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
-            await tx.insert(moviesActors).values(actorsToAdd)
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
+            await tx.insert(moviesActors).values(actorsToAdd);
         }
 
         if (genresData && genresData.length > 0) {
             await tx.delete(moviesGenre).where(eq(moviesGenre.mediaId, mediaId));
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(moviesGenre).values(genresToAdd)
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
+            await tx.insert(moviesGenre).values(genresToAdd);
         }
 
         return true;
@@ -335,35 +333,5 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(eq(moviesList.userId, userId), isNotNull(movies.originalLanguage)));
 
         return { langs, genres, labels };
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        if (job === JobType.ACTOR) {
-            const actors = await db
-                .selectDistinct({ name: moviesActors.name })
-                .from(moviesActors)
-                .innerJoin(moviesList, eq(moviesList.mediaId, moviesActors.mediaId))
-                .where(and(eq(moviesList.userId, userId), like(moviesActors.name, `%${query}%`)));
-            return actors
-        }
-        else if (job === JobType.CREATOR) {
-            const directors = await db
-                .selectDistinct({ name: movies.directorName })
-                .from(movies)
-                .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-                .where(and(eq(moviesList.userId, userId), like(movies.directorName, `%${query}%`)));
-            return directors
-        }
-        else if (job === JobType.COMPOSITOR) {
-            const compositors = await db
-                .selectDistinct({ name: movies.compositorName })
-                .from(movies)
-                .innerJoin(moviesList, eq(moviesList.mediaId, movies.id))
-                .where(and(eq(moviesList.userId, userId), like(movies.compositorName, `%${query}%`)));
-            return compositors
-        }
-        else {
-            throw new Error("JobType not supported");
-        }
     }
 }

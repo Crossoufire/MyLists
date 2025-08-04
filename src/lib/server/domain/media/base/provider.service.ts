@@ -1,16 +1,14 @@
-import {TrendsMedia} from "@/lib/server/types/provider.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {IgdbGameDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/server/types/provider.types";
 
 
 export abstract class BaseProviderService<R extends BaseRepository<any>> {
-    protected constructor(
-        protected repository: R,
-    ) {
+    protected constructor(protected repository: R) {
     }
 
     protected abstract _transformDetails(rawData: any): Promise<any>;
 
-    protected abstract _fetchRawDetails(apiId: number | string): Promise<any>;
+    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails>;
 
     protected abstract _getMediaIdsForBulkRefresh(): Promise<(number | string)[]>;
 

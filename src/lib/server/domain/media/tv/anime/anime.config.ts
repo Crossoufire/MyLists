@@ -1,6 +1,6 @@
 import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns, like, sql} from "drizzle-orm";
+import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 
@@ -76,15 +76,30 @@ export const animeConfig: AnimeSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.ACTOR]: {
-            joinTable: schema.animeActors,
-            getFilter: (name) => like(schema.animeActors.name, `%${name}%`),
+            sourceTable: schema.animeActors,
+            nameColumn: schema.animeActors.name,
+            mediaIdColumn: schema.animeActors.mediaId,
         },
         [JobType.CREATOR]: {
-            getFilter: (name) => like(schema.anime.createdBy, `%${name}%`),
+            sourceTable: schema.anime,
+            mediaIdColumn: schema.anime.id,
+            nameColumn: schema.anime.createdBy,
+            postProcess: (results: { name: string | null }[]) => {
+                return Array.from(
+                    new Map(results
+                        .filter((c) => c.name)
+                        .flatMap((c) => c.name!.split(","))
+                        .map((n) => n.trim())
+                        .filter(Boolean)
+                        .map((n) => [n, { name: n }])
+                    ).values()
+                );
+            },
         },
         [JobType.PLATFORM]: {
-            joinTable: schema.animeNetwork,
-            getFilter: (name) => like(schema.animeNetwork.name, `%${name}%`),
+            sourceTable: schema.animeNetwork,
+            nameColumn: schema.animeNetwork.name,
+            mediaIdColumn: schema.animeNetwork.mediaId,
         }
     },
     tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],

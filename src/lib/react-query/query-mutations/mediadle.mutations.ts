@@ -8,10 +8,10 @@ export const useMoviedleGuessMutation = () => {
 
     return useMutation({
         mutationFn: ({ guess }: { guess: string }) => {
-            return postAddMediadleGuess({ data: { guess } })
+            return postAddMediadleGuess({ data: { guess } });
         },
         onSuccess: () => {
-            return queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() })
+            return queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() });
         },
     });
 };

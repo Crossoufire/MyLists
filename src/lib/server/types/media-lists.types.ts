@@ -51,8 +51,11 @@ interface GenreTableColumns {
 
 
 interface JobDefinition {
-    joinTable?: TableWithMediaId;
-    getFilter: (name: string) => SQL | undefined;
+    sourceTable: Table,
+    nameColumn: Column<any, any, any>,
+    mediaIdColumn: Column<any, any, any>,
+    getFilter?: (name: string) => SQL | undefined;
+    postProcess?: (results: { name: string | null }[]) => { name: string | null }[];
 };
 
 
@@ -60,7 +63,7 @@ export type ListTable = Table & ListTableColumns;
 export type MediaTable = Table & MediaTableColumns;
 export type LabelTable = Table & LabelTableColumns;
 export type GenreTable = Table & GenreTableColumns;
-export type TableWithMediaId = Table & { mediaId: Column<any, any, any> };
+export type TableWithMediaId = Table & { mediaId: Column<any, any, any>, name: Column<any, any, any> };
 
 type BaseSelection<TListTable, TMediaTable> = {
     [K in keyof TListTable]: SQLiteColumn | SQL

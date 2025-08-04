@@ -1,4 +1,4 @@
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
@@ -6,7 +6,7 @@ import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {TvType, TvTypeWithEps, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AddedMediaDetails, ConfigTopMetric, EpsPerSeasonType} from "@/lib/server/types/base.types";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, like, lte, max, ne, notInArray, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, sql} from "drizzle-orm";
 
 
 export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchemaConfig> {
@@ -333,12 +333,12 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
         const mediaId = media.id;
         if (actorsData && actorsData.length > 0) {
-            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
             await tx.insert(actorTable).values(actorsToAdd)
         }
 
         if (genresData && genresData.length > 0) {
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
             await tx.insert(genreTable).values(genresToAdd)
         }
 
@@ -348,7 +348,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         }
 
         if (networkData && networkData.length > 0) {
-            const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
+            const networkToAdd = networkData.map((n) => ({ mediaId, ...n }));
             await tx.insert(networkTable).values(networkToAdd)
         }
 
@@ -364,32 +364,32 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .update(mediaTable)
             .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
             .where(eq(mediaTable.apiId, mediaData.apiId))
-            .returning({ id: mediaTable.id })
+            .returning({ id: mediaTable.id });
 
         const mediaId = media.id;
 
         if (actorsData && actorsData.length > 0) {
             await tx.delete(actorTable).where(eq(actorTable.mediaId, mediaId));
-            const actorsToAdd = actorsData.map((a) => ({ mediaId, name: a.name }));
-            await tx.insert(actorTable).values(actorsToAdd)
+            const actorsToAdd = actorsData.map((a) => ({ mediaId, ...a }));
+            await tx.insert(actorTable).values(actorsToAdd);
         }
 
         if (genresData && genresData.length > 0) {
             await tx.delete(genreTable).where(eq(genreTable.mediaId, mediaId));
-            const genresToAdd = genresData.map((g) => ({ mediaId, name: g.name }));
-            await tx.insert(genreTable).values(genresToAdd)
+            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
+            await tx.insert(genreTable).values(genresToAdd);
         }
 
         if (seasonsData && seasonsData.length > 0) {
             await tx.delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId));
             const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
-            await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd)
+            await tx.insert(epsPerSeasonTable).values(epsPerSeasonToAdd);
         }
 
         if (networkData && networkData.length > 0) {
             await tx.delete(networkTable).where(eq(networkTable.mediaId, mediaId));
-            const networkToAdd = networkData.map((n) => ({ mediaId, name: n.name }));
-            await tx.insert(networkTable).values(networkToAdd)
+            const networkToAdd = networkData.map((n) => ({ mediaId, ...n }));
+            await tx.insert(networkTable).values(networkToAdd);
         }
 
         return true;
@@ -406,48 +406,5 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .where(and(eq(listTable.userId, userId), isNotNull(mediaTable.originCountry)));
 
         return { langs, genres, labels };
-    }
-
-    async getSearchListFilters(userId: number, query: string, job: JobType) {
-        const { mediaTable, listTable, actorTable, networkTable } = this.config;
-
-        if (job === JobType.ACTOR) {
-            const actors = await getDbClient()
-                .selectDistinct({ name: actorTable.name })
-                .from(actorTable)
-                .innerJoin(listTable, eq(listTable.mediaId, actorTable.mediaId))
-                .where(and(eq(listTable.userId, userId), like(actorTable.name, `%${query}%`)));
-            return actors
-        }
-        else if (job === JobType.CREATOR) {
-            const creatorsQuery = await getDbClient()
-                .selectDistinct({ name: mediaTable.createdBy })
-                .from(mediaTable)
-                .innerJoin(listTable, eq(listTable.mediaId, mediaTable.id))
-                .where(and(eq(listTable.userId, userId), like(mediaTable.createdBy, `%${query}%`)));
-
-            const creators = Array.from(
-                new Map(creatorsQuery
-                    .filter(c => c.name)
-                    .flatMap(c => c.name!.split(","))
-                    .map(n => n.trim())
-                    .filter(Boolean)
-                    .map(n => [n, { name: n }])
-                ).values()
-            );
-
-            return creators
-        }
-        else if (job === JobType.PLATFORM) {
-            const networks = await getDbClient()
-                .selectDistinct({ name: networkTable.name })
-                .from(networkTable)
-                .innerJoin(listTable, eq(listTable.mediaId, networkTable.mediaId))
-                .where(and(eq(listTable.userId, userId), like(networkTable.name, `%${query}%`)));
-            return networks
-        }
-        else {
-            throw new Error("JobType not supported");
-        }
     }
 }

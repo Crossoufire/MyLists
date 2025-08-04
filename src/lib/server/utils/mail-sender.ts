@@ -63,7 +63,7 @@ export const sendAdminErrorMail = async (error: Error | z.ZodError, message: str
     const mailOptions: Options = {
         to: process.env.MAIL_USERNAME,
         from: process.env.MAIL_USERNAME,
-        subject: "MyLists - An Error Occurerd",
+        subject: "MyLists - An Error Occurred",
         html: JSON.stringify(errorData, null, 4),
     };
 
