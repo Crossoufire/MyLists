@@ -225,7 +225,12 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const [newMedia] = await getDbClient()
             .insert(moviesList)
-            .values({ userId, mediaId: media.id, total: newTotal, status: newStatus })
+            .values({
+                userId,
+                mediaId: media.id,
+                total: newTotal,
+                status: newStatus,
+            })
             .returning();
 
         return newMedia;

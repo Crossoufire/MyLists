@@ -32,7 +32,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     protected readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
-    constructor(config: TConfig) {
+    protected constructor(config: TConfig) {
         this.config = config;
         this.baseFilterDefs = this.baseListFiltersDefs();
     }

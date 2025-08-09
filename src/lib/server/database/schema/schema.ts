@@ -96,7 +96,7 @@ export const books = sqliteTable("books", {
     publishers: text(),
     synopsis: text(),
     imageCover: imageUrl("image_cover", BASE_BOOKS_COVERS_PATH).notNull(),
-    apiId: text(),
+    apiId: text().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     lastApiUpdate: text(),
 });

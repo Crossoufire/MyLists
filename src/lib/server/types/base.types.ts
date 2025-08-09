@@ -96,6 +96,7 @@ export type JobDetail = {
 export type AddedMediaDetails = {
     genres: { id: number, name: string }[];
     actors?: { id: number, name: string }[];
+    authors?: { id: number, name: string }[];
     networks?: { id: number, name: string }[];
     platforms?: { id: number, name: string }[];
     epsPerSeason?: { season: number, episodes: number }[];

@@ -370,3 +370,10 @@ export interface TmdbChangesResponse {
         adult: boolean | null;
     }[];
 }
+
+
+// --- Google Books Provider ----------------------------------------------
+
+export interface GBooksDetails {
+    [p: string]: any,
+}

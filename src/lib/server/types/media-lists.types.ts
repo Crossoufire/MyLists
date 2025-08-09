@@ -70,7 +70,9 @@ type BaseSelection<TListTable, TMediaTable> = {
 } | {
     [K in keyof TMediaTable]: SQLiteColumn | SQL
 } | {
-    mediaName: SQLiteColumn | SQL
+    mediaName: SQLiteColumn | SQL,
+    epsPerSeason?: SQLiteColumn | SQL,
+    authors?: SQLiteColumn | SQL,
 }
 
 
@@ -89,7 +91,7 @@ export interface MediaSchemaConfig<
         defaultSortName: string;
         filterDefinitions: FilterDefinitions;
         availableSorts: Record<string, SQL | SQL[]>;
-        baseSelection: BaseSelection<TListTable, TMediaTable> & { epsPerSeason?: SQL };
+        baseSelection: BaseSelection<TListTable, TMediaTable>;
     }
     apiProvider: {
         maxGenres: number;

@@ -15,7 +15,7 @@ export abstract class BaseService<
     protected repository: R;
     protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
 
-    constructor(repository: R) {
+    protected constructor(repository: R) {
         this.repository = repository;
     }
 

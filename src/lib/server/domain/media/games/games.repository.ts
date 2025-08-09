@@ -259,7 +259,12 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     async addMediaToUserList(userId: number, media: Game, newStatus: Status) {
         const [newMedia] = await getDbClient()
             .insert(gamesList)
-            .values({ userId, mediaId: media.id, status: newStatus, playtime: 0 })
+            .values({
+                userId,
+                mediaId: media.id,
+                status: newStatus,
+                playtime: 0,
+            })
             .returning();
 
         return newMedia;
