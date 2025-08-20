@@ -21,8 +21,8 @@ export const booksConfig: BooksSchemaConfig = {
     mediaList: {
         baseSelection: {
             mediaName: schema.books.name,
-            imageCover: schema.books.imageCover,
             language: schema.books.language,
+            imageCover: schema.books.imageCover,
             authors: sql<{ name: string }[]>`(
                 SELECT json_group_array(json_object('name', ${schema.booksAuthors.name}))
                 FROM ${schema.booksAuthors} 

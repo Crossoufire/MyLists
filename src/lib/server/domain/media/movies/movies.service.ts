@@ -1,9 +1,9 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
@@ -36,6 +36,12 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
             sci_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             animation_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
         };
+
+        this.updateHandlers = {
+            ...this.updateHandlers,
+            [UpdateType.REDO]: this.updateRedoHandler,
+            [UpdateType.STATUS]: this.updateStatusHandler,
+        }
     }
 
     async lockOldMovies() {
@@ -157,26 +163,6 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return { newState, media, delta };
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState, media);
-
-        return {
-            os: oldState,
-            ns: newState,
-            media,
-            delta,
-            updateData: completeUpdateData,
-        };
-    }
-
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
@@ -188,16 +174,6 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         const delta = this.calculateDeltaStats(oldState, null, media);
 
         return delta;
-    }
-
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: MoviesList) {
-        const completeUpdateData = { ...partialUpdateData };
-
-        if (completeUpdateData.status) {
-            return { ...completeUpdateData, redo: 0 };
-        }
-
-        return completeUpdateData;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<MoviesList> | null, newState: MoviesList | null, media: Movie) {
@@ -223,12 +199,12 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         const newRedo = newState?.redo ?? 0;
         const newComment = newState?.comment;
         const newFavorite = newState?.favorite ?? false;
+        const newTotalSpecificValue = newState?.total ?? 0;
+        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
         const isCompleted = newStatus === Status.COMPLETED;
         const isFavorited = isCompleted && newFavorite;
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
-        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
-        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 
         // --- Calculate Deltas ----------------------------------------------------------------
 
@@ -307,4 +283,30 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
     getAchievementsDefinition(_mediaType?: MediaType) {
         return moviesAchievements as unknown as AchievementData[];
     }
+
+    // ---
+
+    updateStatusHandler(currentState: MoviesList, payload: { type: typeof UpdateType.STATUS; status: Status }, _media: Movie) {
+        const newState = { ...currentState, status: payload.status };
+        const logPayload = { oldValue: currentState.status, newValue: payload.status };
+
+        newState.redo = 0;
+        if (payload.status === Status.COMPLETED) {
+            newState.total = 1;
+        }
+        else {
+            newState.total = 0;
+        }
+
+        return [newState, logPayload];
+    };
+
+    updateRedoHandler(currentState: MoviesList, payload: { type: typeof UpdateType.REDO; redo: number }, _media: Movie) {
+        const newState = { ...currentState, redo: payload.redo };
+        const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
+
+        newState.total = payload.redo + 1;
+
+        return [newState, logPayload];
+    };
 }

@@ -1,11 +1,13 @@
 import {Label} from "@/lib/components/types";
+import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/server/types/stats.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
+import {JobType, LabelAction, MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export abstract class BaseService<
@@ -13,10 +15,17 @@ export abstract class BaseService<
     R extends BaseRepository<TConfig>
 > {
     protected repository: R;
+    protected updateHandlers: Partial<Record<UpdateType, (currentState: any, payload: any, media: any) => any>>;
     protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
 
     protected constructor(repository: R) {
         this.repository = repository;
+
+        this.updateHandlers = {
+            [UpdateType.RATING]: this.createSimpleUpdateHandler("rating"),
+            [UpdateType.COMMENT]: this.createSimpleUpdateHandler("comment"),
+            [UpdateType.FAVORITE]: this.createSimpleUpdateHandler("favorite"),
+        }
     }
 
     async getCoverFilenames() {
@@ -54,14 +63,6 @@ export abstract class BaseService<
 
     async getUserMediaLabels(userId: number) {
         return await this.repository.getUserMediaLabels(userId);
-    }
-
-    getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as string];
-        if (!handler) {
-            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
-        }
-        return handler(achievement, userId);
     }
 
     async findById(mediaId: number) {
@@ -103,6 +104,41 @@ export abstract class BaseService<
         return this.repository.getMediaList(currentUserId, userId, args);
     }
 
+    async updateUserMediaDetails(userId: number, mediaId: number, command: { type: UpdateType }): Promise<UpdateUserMediaDetails<any, any>> {
+        const media = await this.repository.findById(mediaId);
+        if (!media) throw notFound();
+
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) throw new FormattedError("Media not in your list");
+
+        const updateHandler = this.updateHandlers[command.type];
+        if (!updateHandler) throw new Error(`No handler found for command type: ${command.type}`);
+        const [completeNewData, logPayload] = updateHandler(oldState, command, media);
+
+        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
+        const delta = this.calculateDeltaStats(oldState, newState, media);
+
+        return {
+            media,
+            delta,
+            logPayload,
+            ns: newState,
+        };
+    }
+
+    getAchievementCte(achievement: Achievement, userId?: number) {
+        const handler = this.achievementHandlers[achievement.codeName as string];
+        if (!handler) {
+            throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
+        }
+        return handler(achievement, userId);
+    }
+
+    createSimpleUpdateHandler = <K extends string>(propName: K): UpdateHandlerFn<any, any, any> => (currentState, payload) => {
+        const newState = { ...currentState, [propName]: payload[propName] };
+        return [newState, null];
+    };
+    
     // --- Abstract Methods --------------------------------------------------------------------
 
     abstract getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
@@ -115,13 +151,9 @@ export abstract class BaseService<
 
     abstract calculateDeltaStats(oldState: UserMediaWithLabels<any>, newState: any, media: any): DeltaStats;
 
-    abstract completePartialUpdateData(partialUpdateData: Record<string, any>, userMedia?: any): Record<string, any>;
-
     abstract addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<
         AddMediaToUserList<TConfig["mediaTable"]["$inferSelect"], TConfig["listTable"]["$inferSelect"]>
     >;
-
-    abstract updateUserMediaDetails(userId: number, mediaId: number, updateData: Record<string, any>): Promise<UpdateUserMediaDetails<any, any>>;
 
     abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>): Promise<MediaAndUserDetails<any, any>>;
 }

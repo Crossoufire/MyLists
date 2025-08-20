@@ -1,9 +1,9 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {BooksSchemaConfig} from "@/lib/server/domain/media/books/books.config";
@@ -14,7 +14,7 @@ import {booksAchievements} from "@/lib/server/domain/media/books/achievements.se
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
 
 
-export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepository> {
+export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository> {
     readonly achievementHandlers: Record<BooksAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: BooksRepository) {
@@ -35,6 +35,12 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
             crime_books: this.repository.specificGenreAchievementCte.bind(this.repository),
             fantasy_books: this.repository.specificGenreAchievementCte.bind(this.repository),
         };
+
+        this.updateHandlers = {
+            ...this.updateHandlers,
+            [UpdateType.REDO]: this.updateRedoHandler,
+            [UpdateType.STATUS]: this.updateStatusHandler,
+        }
     }
 
     // --- Implements Methods --------------------------------------------------------
@@ -149,26 +155,6 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
         return { newState, media, delta };
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState, media);
-
-        return {
-            os: oldState,
-            ns: newState,
-            media,
-            delta,
-            updateData: completeUpdateData,
-        };
-    }
-
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
@@ -182,19 +168,11 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
         return delta;
     }
 
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: BooksList) {
-        const completeUpdateData = { ...partialUpdateData };
-
-        if (completeUpdateData.status) {
-            return { ...completeUpdateData, redo: 0 };
-        }
-
-        return completeUpdateData;
-    }
-
     calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, media: Book) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
+
+        // TODO: Check how to avoid magic number 1.7
 
         // Extract Old State Info
         const oldStatus = oldState?.status;
@@ -203,7 +181,7 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
         const oldComment = oldState?.comment;
         const oldFavorite = oldState?.favorite ?? false;
         const oldTotalSpecificValue = oldState?.total ?? 0;
-        const oldTotalTimeSpent = oldTotalSpecificValue * media.pages * 1.7;
+        const oldTotalTimeSpent = oldTotalSpecificValue * 1.7;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
@@ -219,8 +197,8 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
         const isFavorited = isCompleted && newFavorite;
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
-        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
-        const newTotalTimeSpent = newTotalSpecificValue * media.pages * 1.7;
+        const newTotalSpecificValue = newState?.total ?? 0;
+        const newTotalTimeSpent = newTotalSpecificValue * 1.7;
 
         // --- Calculate Deltas ----------------------------------------------------------------
 
@@ -298,5 +276,30 @@ export class MoviesService extends BaseService<BooksSchemaConfig, BooksRepositor
 
     getAchievementsDefinition(_mediaType?: MediaType) {
         return booksAchievements as unknown as AchievementData[];
+    }
+
+    // ------
+
+    updateRedoHandler(currentState: BooksList, payload: { type: typeof UpdateType.REDO, redo: number }, _media: Book) {
+        const newState = { ...currentState, redo: payload.redo };
+        const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
+
+        newState.total = 0;
+
+        return [newState, logPayload];
+    }
+
+    updateStatusHandler(currentState: BooksList, payload: { type: typeof UpdateType.REDO, status: Status }, media: Book) {
+        const newState = { ...currentState, status: payload.status };
+        const logPayload = { oldValue: currentState.status, newValue: payload.status };
+
+        if (payload.status === Status.COMPLETED) {
+            newState.actualPage = media.pages;
+        }
+        else if (payload.status === Status.PLAN_TO_READ) {
+            newState.actualPage = 0;
+        }
+
+        return [newState, logPayload];
     }
 }

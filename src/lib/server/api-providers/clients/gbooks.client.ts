@@ -1,12 +1,12 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
-import {SearchData, TmdbMultiSearchResponse, TmdbTvDetails} from "@/lib/server/types/provider.types";
+import {GBooksDetails, GBooksSearchResults, SearchData} from "@/lib/server/types/provider.types";
 
 
 export class GBooksClient extends BaseClient {
     private static readonly consumeKey = "gBooks-API";
-    private readonly baseUrl = "https://api.themoviedb.org/3";
+    private readonly baseUrl = "https://www.googleapis.com/books/v1/volumes";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "gBooksAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
@@ -18,8 +18,10 @@ export class GBooksClient extends BaseClient {
         return new GBooksClient(gBooksLimiter, GBooksClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
-        const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
+    async search(query: string, page: number = 1): Promise<SearchData<GBooksSearchResults>> {
+        const offset = (page - 1) * this.resultsPerPage;
+
+        const url = `${this.baseUrl}?q=${query}&startIndex=${offset}`;
         const response = await this.call(url);
         return {
             page,
@@ -28,7 +30,7 @@ export class GBooksClient extends BaseClient {
         };
     }
 
-    async getBooksDetails(bookApiId: string): Promise<TmdbTvDetails> {
+    async getBooksDetails(bookApiId: string): Promise<GBooksDetails> {
         const url = `${this.baseUrl}/${bookApiId}`;
         const response = await this.call(url);
         return response.json();

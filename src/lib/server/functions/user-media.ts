@@ -1,9 +1,9 @@
+import {UpdateType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {addMediaToListSchema, deleteUserUpdatesSchema, editUserLabelSchema, mediaActionSchema, updateUserMediaSchema, userMediaLabelsSchema} from "@/lib/server/types/base.types";
-import {UpdateType} from "@/lib/server/utils/enums";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
+import {addMediaToListSchema, deleteUserUpdatesSchema, editUserLabelSchema, mediaActionSchema, updateUserMediaSchema, userMediaLabelsSchema} from "@/lib/server/types/base.types";
 
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
@@ -30,9 +30,8 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
         await userUpdatesService.logUpdate({
             media,
-            os: null,
             mediaType,
-            ns: newState,
+            payload: null,
             userId: currentUser.id,
             updateType: UpdateType.STATUS,
         });
@@ -43,23 +42,29 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => updateUserMediaSchema.parse(data))
+    .validator(updateUserMediaSchema)
     .handler(async ({ data, context: { currentUser } }) => {
-        const { mediaType, mediaId, payload, updateType } = data;
+        const { mediaType, mediaId, payload } = data;
 
         const container = await getContainer();
         const userStatsService = container.services.userStats;
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const { os, ns, media, delta, updateData } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
+        const { ns, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload as any);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
-        if (updateType) {
-            await userUpdatesService.logUpdate({ userId: currentUser.id, media, mediaType, updateType, os, ns });
+        if (logPayload) {
+            await userUpdatesService.logUpdate({
+                media,
+                mediaType,
+                userId: currentUser.id,
+                updateType: payload.type,
+                payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
+            });
         }
 
-        return updateData;
+        return ns;
     });
 
 
@@ -74,10 +79,8 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
         const mediaService = container.registries.mediaService.getService(mediaType);
 
         const delta = await mediaService.removeMediaFromUserList(currentUser.id, mediaId);
-
         await userUpdatesService.deleteMediaUpdatesForUser(currentUser.id, mediaType, mediaId);
         await notifService.deleteUserMediaNotifications(currentUser.id, mediaType, mediaId);
-
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
     });
 

@@ -2,9 +2,10 @@
 
 ## Fixes
 
+- Fix completePartialData / log updates (see gemini answer in t3 chat)
+
 ## TODO
 
-- TODO: DRY services
 - TODO: Redo `logUpdate` using the `UpdateType` in each `mediaService`'s `calculateStats` method and then pass old and new values
   to `userMediaUpdates` service
 - TODO: Change all precomputed stats for user and platform to be done, most of them, in SQL (at least for platform!)

@@ -1,9 +1,9 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
@@ -37,6 +37,12 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
             publisher_games: this.repository.getCompanyAchievementCte.bind(this.repository),
             first_person_games: this.repository.getPerspectiveAchievementCte.bind(this.repository),
         };
+
+        this.updateHandlers = {
+            ...this.updateHandlers,
+            [UpdateType.STATUS]: this.updateStatusHandler,
+            [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
+        }
     }
 
     // --- Implemented Methods ------------------------------------------------------
@@ -159,26 +165,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         return { newState, media, delta };
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState);
-
-        return {
-            os: oldState,
-            ns: newState,
-            media,
-            delta,
-            updateData: completeUpdateData,
-        };
-    }
-
     async removeMediaFromUserList(userId: number, mediaId: number) {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
@@ -190,16 +176,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         const delta = this.calculateDeltaStats(oldState, null);
 
         return delta;
-    }
-
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: GamesList) {
-        const completeUpdateData = { ...partialUpdateData };
-
-        if (completeUpdateData.status && completeUpdateData.status === Status.PLAN_TO_PLAY) {
-            return { ...completeUpdateData, playtime: 0 };
-        }
-
-        return completeUpdateData;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {
@@ -305,4 +281,17 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
     getAchievementsDefinition(_mediaType?: MediaType) {
         return gamesAchievements as unknown as AchievementData[];
     }
+
+    // ----
+
+    updateStatusHandler(currentState: GamesList, payload: { type: typeof UpdateType.STATUS, status: Status }, _media: Game) {
+        const newState = { ...currentState, status: payload.status };
+        const logPayload = { oldValue: currentState.status, newValue: payload.status };
+
+        if (payload.status === Status.PLAN_TO_PLAY) {
+            newState.playtime = 0;
+        }
+
+        return [newState, logPayload];
+    };
 }

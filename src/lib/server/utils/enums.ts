@@ -121,10 +121,14 @@ export const UpdateType = {
     TV: "tv",
     PAGE: "page",
     REDO: "redo",
+    RATING: "rating",
     STATUS: "status",
-    REDOTV: "redoTv",
+    REDO_TV: "redoTv",
     CHAPTER: "chapter",
+    COMMENT: "comment",
     PLAYTIME: "playtime",
+    FAVORITE: "favorite",
+    PLATFORM: "platform",
 } as const;
 export type UpdateType = (typeof UpdateType)[keyof typeof UpdateType];
 

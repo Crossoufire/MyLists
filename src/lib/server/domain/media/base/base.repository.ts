@@ -314,7 +314,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             return null;
         }
 
-        return { ...mainUserMediaData, labels: associatedLabels };
+        return {
+            ...mainUserMediaData,
+            labels: associatedLabels,
+        };
     }
 
     async downloadMediaListAsCSV(userId: number): Promise<(TConfig["mediaTable"]["$inferSelect"] & { mediaName: string })[] | undefined> {

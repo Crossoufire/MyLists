@@ -374,6 +374,56 @@ export interface TmdbChangesResponse {
 
 // --- Google Books Provider ----------------------------------------------
 
-export interface GBooksDetails {
-    [p: string]: any,
+export interface GBooksSearchResults {
+    kind: string;
+    totalItems: number;
+    items: GBooksSearchDetails[];
+}
+
+
+export interface GBooksSearchDetails {
+    id: string;
+    kind: string;
+    etag: string;
+    selfLink: string;
+    volumeInfo: {
+        title: string;
+        subtitle: string;
+        authors: string[];
+        publisher: string;
+        publishedDate: string;
+        description: string;
+        pageCount: number;
+        printType: string;
+        categories: string[];
+        maturityRating: string;
+        imageLinks: {
+            thumbnail: string;
+            smallThumbnail: string;
+        };
+        language: string;
+        previewLink: string;
+        infoLink: string;
+        canonicalVolumeLink: string;
+    };
+}
+
+
+export interface GBooksMoreImageLinks {
+    thumbnail: string;
+    smallThumbnail: string;
+    small?: string;
+    medium?: string;
+    large?: string;
+    extraLarge?: string;
+}
+
+
+export interface GBooksMoreVolumeInfo extends Omit<GBooksSearchDetails["volumeInfo"], "imageLinks"> {
+    imageLinks: GBooksMoreImageLinks;
+}
+
+
+export interface GBooksDetails extends Omit<GBooksSearchDetails, "volumeInfo"> {
+    volumeInfo: GBooksMoreVolumeInfo;
 }

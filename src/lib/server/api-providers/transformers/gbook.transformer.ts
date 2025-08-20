@@ -1,23 +1,25 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {books} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {Book} from "@/lib/server/domain/media/books/books.types";
-import {GBooksDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {cleanHtmlText} from "@/lib/server/utils/clean-html-text";
+import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+
+
+type Book = typeof books.$inferInsert;
 
 
 export class GBooksTransformer {
-    private readonly imageBaseUrl = "https://images.igdb.com/igdb/image/upload/t_1080p/";
-
-    transformSearchResults(searchData: SearchData<IgdbSearchResponse>): ProviderSearchResults {
-        const results = searchData.rawData?.[1]?.result ?? [];
-        const hasNextPage = (searchData.rawData?.[0]?.count ?? 0) > (searchData.page * searchData.resultsPerPage);
+    transformSearchResults(searchData: SearchData<GBooksSearchResults>): ProviderSearchResults {
+        const results = searchData.rawData.items;
+        const hasNextPage = searchData.rawData.totalItems > (searchData.page * searchData.resultsPerPage);
 
         const transformedResults = results.map((item): ProviderSearchResult => {
             return {
                 id: item.id,
-                name: item?.name,
                 itemType: MediaType.BOOKS,
-                date: item?.first_release_date,
-                image: item?.cover?.image_id ? `${this.imageBaseUrl}${item?.cover?.image_id}.jpg` : "default.jpg",
+                name: item.volumeInfo.title,
+                date: item.volumeInfo.publishedDate,
+                image: item.volumeInfo?.imageLinks?.thumbnail ?? "default.jpg",
             };
         });
 
@@ -27,28 +29,22 @@ export class GBooksTransformer {
     async transformBooksDetailsResults(rawData: GBooksDetails) {
         const mediaData: Book = {
             apiId: rawData.id,
-            name: rawData?.name,
-            pages: rawData?.pages,
-            language: rawData?.language,
-            publishers: rawData?.publishers,
-            synopsis: rawData?.summary || null,
-            releaseDate: rawData?.first_release_date ? new Date(rawData?.first_release_date * 1000).toISOString() : null,
+            name: rawData.volumeInfo.title,
+            language: rawData.volumeInfo.language,
+            publishers: rawData.volumeInfo.publisher,
+            pages: rawData.volumeInfo.pageCount ?? 50,
+            synopsis: cleanHtmlText(rawData.volumeInfo.description),
+            releaseDate: rawData.volumeInfo.publishedDate ? new Date(rawData.volumeInfo.publishedDate).toISOString() : null,
             imageCover: await saveImageFromUrl({
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
                 saveLocation: "public/static/covers/books-covers",
-                imageUrl: `${this.imageBaseUrl}${rawData?.cover?.image_id}.jpg`,
+                imageUrl: rawData.volumeInfo.imageLinks.extraLarge ??
+                    rawData.volumeInfo.imageLinks.large ?? rawData.volumeInfo.imageLinks.medium ?? "default.jpg",
             }),
-            lockStatus: null,
-            lastApiUpdate: null,
         }
 
-        const authorsData = rawData?.involved_companies?.filter(company => company.developer || company.publisher)
-            .map(company => ({
-                name: company.company.name,
-                developer: company.developer,
-                publisher: company.publisher,
-            }));
+        const authorsData = rawData?.volumeInfo.authors.map((name) => ({ name }));
 
         return { mediaData, authorsData, genresData: [] }
     }

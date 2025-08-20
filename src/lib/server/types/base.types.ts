@@ -228,13 +228,22 @@ export type AddMediaToUserList<TMedia, TList> = {
 }
 
 
+export type LogPayload = { oldValue: any; newValue: any } | null;
+
+
 export type UpdateUserMediaDetails<TMedia, TList> = {
-    os: UserMediaWithLabels<TList>;
     ns: TList;
     media: TMedia;
     delta: DeltaStats;
-    updateData: Record<string, any>;
+    logPayload: LogPayload;
 }
+
+
+export type UpdateHandlerFn<TState, TPayload, TMedia> = (
+    currentState: TState,
+    payload: TPayload,
+    media: TMedia,
+) => [TState, LogPayload];
 
 
 export type ListFilterDefinition = {
@@ -401,29 +410,98 @@ export const addMediaToListSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
 });
 
+
+const movieUpdatePayloads = z.discriminatedUnion("type", [
+    z.object({
+        type: z.literal(UpdateType.STATUS),
+        status: z.enum(Status),
+    }),
+    z.object({
+        type: z.literal(UpdateType.REDO),
+        redo: z.number().int().min(0),
+    }),
+    z.object({
+        type: z.literal(UpdateType.RATING),
+        rating: z.number().min(0).max(10),
+    }),
+    z.object({
+        type: z.literal(UpdateType.COMMENT),
+        comment: z.string().nullish(),
+    }),
+    z.object({
+        type: z.literal(UpdateType.FAVORITE),
+        favorite: z.boolean(),
+    }),
+]);
+export type MovieUpdatePayload = z.infer<typeof movieUpdatePayloads>;
+
+const gameUpdatePayloads = z.discriminatedUnion("type", [
+    z.object({
+        type: z.literal(UpdateType.STATUS),
+        status: z.enum(Status),
+    }),
+    z.object({
+        type: z.literal(UpdateType.RATING),
+        rating: z.number().min(0).max(10),
+    }),
+    z.object({
+        type: z.literal(UpdateType.PLAYTIME),
+        playtime: z.number().min(0).max(10_000),
+    }),
+    z.object({
+        type: z.literal(UpdateType.PLATFORM),
+        platform: z.enum(GamesPlatformsEnum),
+    }),
+    z.object({
+        type: z.literal(UpdateType.COMMENT),
+        comment: z.string().nullish(),
+    }),
+    z.object({
+        type: z.literal(UpdateType.FAVORITE),
+        favorite: z.boolean(),
+    }),
+]);
+export type GameUpdatePayload = z.infer<typeof gameUpdatePayloads>;
+
+const tvUpdatePayloads = z.discriminatedUnion("type", [
+    z.object({
+        type: z.literal(UpdateType.STATUS),
+        status: z.enum(Status),
+    }),
+    z.object({
+        type: z.literal(UpdateType.REDO),
+        redo: z.number().int().min(0),
+    }),
+    z.object({
+        type: z.literal(UpdateType.TV),
+        currentSeason: z.number().int().min(1).optional(),
+        lastEpisodeWatched: z.number().int().min(0).optional(),
+    }).refine((data) => data.currentSeason !== undefined || data.lastEpisodeWatched !== undefined, {
+        message: "At least one of 'currentSeason' or 'lastEpisodeWatched' must be provided."
+    }),
+    z.object({
+        type: z.literal(UpdateType.RATING),
+        rating: z.number().min(0).max(10),
+    }),
+    z.object({
+        type: z.literal(UpdateType.COMMENT),
+        comment: z.string().nullish(),
+    }),
+    z.object({
+        type: z.literal(UpdateType.FAVORITE),
+        favorite: z.boolean(),
+    }),
+]);
+export type TvUpdatePayload = z.infer<typeof tvUpdatePayloads>;
+
+
 export const updateUserMediaSchema = z.object({
     mediaType: z.enum(MediaType),
-    payload: z.record(z.any(), z.any()),
     mediaId: z.coerce.number().int().positive(),
-}).transform((data) => {
-    let updateType: UpdateType | undefined = undefined;
-    if (data.payload?.status) {
-        updateType = UpdateType.STATUS;
-    }
-    else if (data.payload?.redo) {
-        updateType = UpdateType.REDO;
-    }
-    else if (data.payload?.redo2) {
-        updateType = UpdateType.REDOTV;
-    }
-    else if (data.payload?.currentSeason || data.payload?.lastEpisodeWatched) {
-        updateType = UpdateType.TV;
-    }
-    else if (data.payload?.playtime) {
-        updateType = UpdateType.PLAYTIME;
-    }
-    return { ...data, updateType };
+    payload: z.union([movieUpdatePayloads, tvUpdatePayloads]),
 });
+export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
+
 
 export const deleteUserUpdatesSchema = z.object({
     returnData: z.coerce.boolean(),

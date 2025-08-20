@@ -254,17 +254,18 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .execute();
     }
 
-    async addMediaToUserList(userId: number, media: TvTypeWithEps, newStatus: Status) {
+    async addMediaToUserList(userId: number, media: TvType, newStatus: Status) {
         const { listTable } = this.config;
+        const epsPerSeason = await this.getMediaEpsPerSeason(media.id);
 
         let newTotal = 1;
         let newSeason = 1;
         let newEpisode = 1;
 
         if (newStatus === Status.COMPLETED) {
-            newSeason = media.epsPerSeason.at(-1)!.season;
-            newEpisode = media.epsPerSeason.at(-1)!.episodes;
-            newTotal = media.epsPerSeason.reduce((acc, curr) => acc + curr.episodes, 0);
+            newSeason = epsPerSeason.at(-1)!.season;
+            newEpisode = epsPerSeason.at(-1)!.episodes;
+            newTotal = epsPerSeason.reduce((acc, curr) => acc + curr.episodes, 0);
         }
         else if (newStatus === Status.PLAN_TO_WATCH || newStatus === Status.RANDOM) {
             newTotal = 0;
@@ -280,7 +281,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                 status: newStatus,
                 currentSeason: newSeason,
                 lastEpisodeWatched: newEpisode,
-                redo2: Array(media.epsPerSeason.length).fill(0),
+                redo2: Array(epsPerSeason.length).fill(0),
             })
             .returning();
 

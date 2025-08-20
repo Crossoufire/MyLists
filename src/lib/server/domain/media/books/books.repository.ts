@@ -135,22 +135,8 @@ export class BooksRepository extends BaseRepository<BooksSchemaConfig> {
 
     async computeAllUsersStats() {
         // TODO: check how to add the 1.7 without magic number
-        const timeSpentStat = sql<number>`
-            COALESCE(SUM(
-                CASE 
-                    WHEN ${booksList.status} = ${Status.COMPLETED} THEN (1 + ${booksList.redo}) * ${books.pages} * 1.7
-                    ELSE 0
-                END
-            ), 0)
-        `
-        const totalSpecificStat = sql<number>`
-            COALESCE(SUM(
-                CASE 
-                    WHEN ${booksList.status} = ${Status.COMPLETED} THEN 1 + ${booksList.redo}
-                    ELSE 0
-                END
-            ), 0)
-        `
+        const timeSpentStat = sql<number>`COALESCE(SUM(${booksList.total} * 1.7), 0)`;
+        const totalSpecificStat = sql<number>`COALESCE(SUM(${booksList.total}), 0)`;
 
         return this._computeAllUsersStats(timeSpentStat, totalSpecificStat)
     }
@@ -205,7 +191,7 @@ export class BooksRepository extends BaseRepository<BooksSchemaConfig> {
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
-            .returning()
+            .returning();
 
         const mediaId = media.id;
         if (authorsData && authorsData.length > 0) {

@@ -1,22 +1,18 @@
 import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
-import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {AllUpdatesSearch} from "@/lib/server/types/base.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 
 
 interface LogUpdateParams {
-    ns: any;
     media: any;
     userId: number;
-    os: any | null;
     mediaType: MediaType;
     updateType: UpdateType;
+    payload: { old_value: any; new_value: any };
 }
-
-
-type LogValueExtractor = (oldState: any | null, newState: any) => { oldValue: any; newValue: any };
 
 
 export class UserUpdatesService {
@@ -55,9 +51,7 @@ export class UserUpdatesService {
         return this.repository.deleteUserUpdates(userId, updateIds, returnData);
     }
 
-    async logUpdate({ userId, mediaType, media, updateType, os, ns }: LogUpdateParams) {
-        const { oldValue, newValue } = this.extractLogValues(updateType)(os, ns);
-
+    async logUpdate({ userId, mediaType, media, updateType, payload }: LogUpdateParams) {
         const [previousEntry] = await getDbClient()
             .select()
             .from(userMediaUpdate).where(and(
@@ -75,13 +69,13 @@ export class UserUpdatesService {
         }
 
         const newUpdateData = {
-            userId: userId,
+            userId,
+            payload,
+            mediaType,
+            updateType,
             mediaId: media.id,
-            mediaType: mediaType,
             mediaName: media.name,
-            updateType: updateType,
             timestamp: sql<string>`datetime('now')`,
-            payload: { old_value: oldValue, new_value: newValue },
         };
 
         if (timeDifference > this.updateThresholdSec) {
@@ -91,25 +85,5 @@ export class UserUpdatesService {
             await getDbClient().delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
             await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
         }
-    }
-
-    extractLogValues(updateType: UpdateType) {
-        const logValueExtractors: Record<UpdateType, LogValueExtractor> = {
-            redo: (os, ns) => ({ oldValue: os?.redo ?? 0, newValue: ns.redo }),
-            redoTv: (os, ns) => ({
-                oldValue: os?.redo2.reduce((a: number, c: number) => a + c, 0) ?? 0,
-                newValue: ns.redo2.reduce((a: number, c: number) => a + c, 0) ?? 0,
-            }),
-            status: (os, ns) => ({ oldValue: os?.status ?? null, newValue: ns.status }),
-            playtime: (os, ns) => ({ oldValue: os?.playtime ?? 0, newValue: ns.playtime }),
-            page: (os, ns) => ({ oldValue: os?.actualPage ?? null, newValue: ns.actualPage }),
-            chapter: (os, ns) => ({ oldValue: os?.currentChapter ?? 0, newValue: ns.currentChapter }),
-            tv: (os, ns) => ({
-                oldValue: [os?.currentSeason ?? null, os?.lastEpisodeWatched ?? null],
-                newValue: [ns.currentSeason, ns.lastEpisodeWatched],
-            }),
-        }
-
-        return logValueExtractors[updateType];
     }
 }
