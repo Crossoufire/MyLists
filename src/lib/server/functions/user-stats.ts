@@ -11,15 +11,15 @@ export const getUserStats = createServerFn({ method: "GET" })
     .validator(data => tryNotFound(() => getUserStatsSchema.parse(data)))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
-        const activatedMediaTypes = user.userMediaSettings.filter((s) => s.active === true).map((s) => s.mediaType)
+        const activatedMediaTypes = user.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType)
 
         if (!mediaType) {
             const userStats = await userStatsService.userAdvancedStatsSummary(user.id);
             return {
                 ...userStats,
-                ratingSystem: user.ratingSystem,
-                mediaType: undefined,
                 activatedMediaTypes,
+                mediaType: undefined,
+                ratingSystem: user.ratingSystem,
             };
         }
 
@@ -30,8 +30,8 @@ export const getUserStats = createServerFn({ method: "GET" })
         const mediaStats = await userStatsService.userMediaAdvancedStats(user.id, mediaType);
         return {
             ...mediaStats,
-            ratingSystem: user.ratingSystem,
             mediaType,
             activatedMediaTypes,
+            ratingSystem: user.ratingSystem,
         };
     });

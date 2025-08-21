@@ -16,7 +16,7 @@ export const FollowButton = ({ followStatus, followId }: FollowButtonProps) => {
     const updateFollowMutation = useFollowMutation(username);
 
     const handleFollow = () => {
-        updateFollowMutation.mutate({ followId, followStatus: !followStatus }, {
+        updateFollowMutation.mutate({ data: { followId, followStatus: !followStatus } }, {
             onError: () => toast.error("An error occurred while updating the follow status"),
         });
     };

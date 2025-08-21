@@ -526,7 +526,7 @@ export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
 
 export const deleteUserUpdatesSchema = z.object({
-    returnData: z.coerce.boolean(),
+    returnData: z.coerce.boolean().default(false),
     updateIds: z.array(z.number().int().positive()),
 });
 
@@ -628,5 +628,5 @@ export const getAdminJobsSchema = z.object({
 })
 
 export const getAdminJobSchema = z.object({
-    jobId: z.number().int().positive(),
+    jobId: z.coerce.string(),
 })

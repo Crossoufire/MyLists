@@ -27,7 +27,7 @@ export function TasksManager({ tasksList }: TasksManagerProps) {
     const activeTaskNames = new Set(currentJobs.map((job) => job.name));
 
     const executeTask = (taskName: TasksName) => {
-        taskTriggerMutation.mutate({ taskName }, {
+        taskTriggerMutation.mutate({ data: { taskName } }, {
             onError: (error) => toast.error(`Failed to execute ${taskName}: ${error.message}`),
             onSuccess: () => toast.success(`Task ${taskName} enqueued`),
         })
@@ -44,7 +44,7 @@ export function TasksManager({ tasksList }: TasksManagerProps) {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {tasksList.map((task) => {
                         const isRunning = activeTaskNames.has(task.name);
-                        const isMutating = taskTriggerMutation.isPending && taskTriggerMutation.variables?.taskName === task.name;
+                        const isMutating = taskTriggerMutation.isPending && taskTriggerMutation.variables.data.taskName === task.name;
                         const isDisabled = isRunning || isMutating || isLoading;
 
                         return (

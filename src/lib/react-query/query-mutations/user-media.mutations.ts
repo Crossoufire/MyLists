@@ -1,5 +1,5 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
+import {LabelAction, MediaType} from "@/lib/server/utils/enums";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {HistoryOptionsType, Label, MediaDetailsOptionsType, MediaListOptionsType, ProfileOptionsType, UserMedia} from "@/lib/components/types";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
@@ -15,9 +15,7 @@ export type DetailsUserListKeys = ReturnType<(typeof detailsUserListKeys)[number
 export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ updateIds, returnData = false }: { updateIds: number[], returnData?: boolean }) => {
-            return postDeleteUserUpdates({ data: { updateIds, returnData } })
-        },
+        mutationFn: postDeleteUserUpdates,
         meta: { errorMessage: "The update(s) could not be deleted" },
         onSuccess: async (data, variables) => {
             if (queryKey[0] === "profile") {
@@ -25,7 +23,7 @@ export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
                     if (!oldData || !data) return;
                     return {
                         ...oldData,
-                        userUpdates: [...oldData.userUpdates.filter((up) => up.id !== variables.updateIds[0]), data],
+                        userUpdates: [...oldData.userUpdates.filter((up) => up.id !== variables.data.updateIds[0]), data],
                     }
                 });
             }
@@ -35,7 +33,7 @@ export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
             else if (queryKey[0] === "onOpenHistory") {
                 return queryClient.setQueryData<HistoryOptionsType>(queryKey, (oldData) => {
                     if (!oldData) return;
-                    return [...oldData.filter((history) => history.id !== variables.updateIds[0])];
+                    return [...oldData.filter((history) => history.id !== variables.data.updateIds[0])];
                 });
             }
         },
@@ -43,18 +41,16 @@ export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
 };
 
 
-export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: DetailsUserListKeys) => {
+export const useAddMediaToListMutation = (mediaType: MediaType, queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ status }: { status?: Status }) => {
-            return postAddMediaToList({ data: { mediaId: mediaId, mediaType, status } })
-        },
+        mutationFn: postAddMediaToList,
         meta: {
             successMessage: `${mediaType} added to your list`,
             errorMessage: `Failed to add this ${mediaType} to your list`,
         },
-        onSuccess: (data) => {
+        onSuccess: (data, variables) => {
             if (queryKey[0] === "details") {
                 queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
                     if (!oldData || !data) return;
@@ -69,7 +65,7 @@ export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number 
                         results: {
                             ...oldData.results,
                             items: oldData.results.items.map((media: any) => (
-                                media.mediaId === mediaId ? { ...media, common: true } : media),
+                                media.mediaId === variables.data.mediaId ? { ...media, common: true } : media),
                             )
                         },
                     };
@@ -80,13 +76,13 @@ export const useAddMediaToListMutation = (mediaType: MediaType, mediaId: number 
 };
 
 
-export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: number | string, queryKey: DetailsUserListKeys) => {
+export const useRemoveMediaFromListMutation = (queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: () => postRemoveMediaFromList({ data: { mediaId, mediaType } }),
+        mutationFn: postRemoveMediaFromList,
         meta: { errorMessage: "Failed to remove this media from your list" },
-        onSuccess: () => {
+        onSuccess: (_data, variables) => {
             if (queryKey[0] === "details") {
                 queryClient.setQueryData<MediaDetailsOptionsType>(queryKey, (oldData) => {
                     if (!oldData) return;
@@ -100,7 +96,7 @@ export const useRemoveMediaFromListMutation = (mediaType: MediaType, mediaId: nu
                         ...oldData,
                         results: {
                             ...oldData.results,
-                            items: [...oldData.results.items.filter((media) => media.mediaId !== mediaId)] as any,
+                            items: [...oldData.results.items.filter((media) => media.mediaId !== variables.data.mediaId)] as any,
                         },
                     };
                 })

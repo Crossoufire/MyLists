@@ -18,19 +18,17 @@ export const useFollowMutation = (username: string) => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ followId, followStatus }: { followId: number, followStatus: boolean }) => {
-            return postUpdateFollowStatus({ data: { followId, followStatus } })
-        },
-        onSuccess: (_, variables) => {
+        mutationFn: postUpdateFollowStatus,
+        onSuccess: (_data, variables) => {
             queryClient.setQueryData<ProfileOptionsType>(queryKeys.profileKey(username), (oldData) => {
                 if (!oldData) return;
 
                 return {
                     ...oldData,
-                    isFollowing: variables.followStatus,
+                    isFollowing: variables.data.followStatus,
                     userData: {
                         ...oldData.userData,
-                        followersCount: variables.followStatus ? oldData.userData.followersCount + 1 : oldData.userData.followersCount - 1,
+                        followersCount: variables.data.followStatus ? oldData.userData.followersCount + 1 : oldData.userData.followersCount - 1,
                     }
                 };
             });

@@ -41,10 +41,10 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
-    const addMediaToListMutation = useAddMediaToListMutation(mediaType, apiData.media.id, queryKeys.detailsKey(mediaType, mediaId));
+    const addMediaToListMutation = useAddMediaToListMutation(mediaType, queryKeys.detailsKey(mediaType, mediaId));
 
     const handleAddMediaToUser = () => {
-        addMediaToListMutation.mutate({});
+        addMediaToListMutation.mutate({ data: { mediaType, mediaId: apiData.media.id } });
     };
 
     return (

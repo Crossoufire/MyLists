@@ -111,7 +111,7 @@ export const followsOptions = (username: string) => queryOptions({
 
 export const allUpdatesOptions = (username: string, filters: SearchType) => queryOptions({
     queryKey: queryKeys.allUpdatesKey(username, filters),
-    queryFn: () => getAllUpdatesHistory({ data: { username, filters } }),
+    queryFn: () => getAllUpdatesHistory({ data: { ...filters, username } }),
 });
 
 

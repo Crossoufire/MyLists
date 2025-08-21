@@ -62,7 +62,7 @@ function MediaEditPage() {
     const parts = sliceIntoParts(Object.entries(apiData.fields), 3);
 
     const onSubmit = (submittedData: any) => {
-        editMediaMutation.mutate({ mediaType, mediaId, payload: submittedData }, {
+        editMediaMutation.mutate({ data: { mediaType, mediaId, payload: submittedData } }, {
             onError: () => toast.error("An error occurred while updating the media"),
             onSuccess: async () => {
                 toast.success("Media successfully updated!");

@@ -26,7 +26,7 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
 
     const deleteUpdate = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);
-        deleteUpdatesMutation.mutate({ updateIds: [updateId], returnData: true });
+        deleteUpdatesMutation.mutate({ data: { updateIds: [updateId], returnData: true } });
     };
 
     return (

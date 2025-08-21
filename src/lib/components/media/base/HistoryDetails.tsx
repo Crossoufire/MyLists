@@ -18,7 +18,7 @@ export const HistoryDetails = ({ queryKey, history }: HistoryDetailsProps) => {
 
     const handleDelete = (updateId: number) => {
         setMediaIdBeingDeleted(updateId);
-        deleteHistoryMutation.mutate({ updateIds: [updateId] });
+        deleteHistoryMutation.mutate({ data: { updateIds: [updateId] } });
     };
 
     return (

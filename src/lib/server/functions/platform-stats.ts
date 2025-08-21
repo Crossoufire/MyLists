@@ -8,7 +8,7 @@ import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
 
 export const getPlatformStats = createServerFn({ method: "GET" })
     .middleware([authMiddleware, platformStatsCacheMiddleware])
-    .validator(data => plaftformStatsSchema.parse(data))
+    .validator(plaftformStatsSchema)
     .handler(async ({ data: { mediaType } }) => {
         const userStatsService = await getContainer().then(c => c.services.userStats);
 

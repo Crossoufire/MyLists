@@ -55,7 +55,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
-        const toUpdateinUserStats: Partial<Record<MediaType, boolean>> = {
+        const toUpdateInUserStats: Partial<Record<MediaType, boolean>> = {
             anime: data.anime,
             manga: data.manga,
             games: data.games,
@@ -69,7 +69,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
         }
 
         await userService.updateUserSettings(currentUser.id, toUpdateInUser);
-        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateinUserStats);
+        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateInUserStats);
     });
 
 

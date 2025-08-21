@@ -21,9 +21,9 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: R
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
 
     const handleRefresh = () => {
-        refreshMutation.mutate({ mediaType, apiId }, {
-            onError: () => toast.error("An error occurred while refreshing the mediadata"),
-            onSuccess: () => toast.success("Mediadata successfully refreshed"),
+        refreshMutation.mutate({ data: { mediaType, apiId } }, {
+            onError: () => toast.error("An error occurred while refreshing the MediaData"),
+            onSuccess: () => toast.success("MediaData successfully refreshed"),
         });
     };
 

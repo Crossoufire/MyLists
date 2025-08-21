@@ -24,12 +24,12 @@ interface UserMediaDetailsProps {
 export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDetailsProps) => {
     const queryClient = useQueryClient();
     const history = useQuery(historyOptions(mediaType, userMedia.mediaId)).data;
+    const removeMediaFromListMutation = useRemoveMediaFromListMutation(queryKey);
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
-    const removeMediaFromListMutation = useRemoveMediaFromListMutation(mediaType, userMedia.mediaId, queryKey);
 
     const handleRemoveMediaFromList = () => {
         if (!window.confirm(`Do you want to remove this ${mediaType} from your list?`)) return;
-        removeMediaFromListMutation.mutate(undefined, {
+        removeMediaFromListMutation.mutate({ data: { mediaType, mediaId: userMedia.mediaId } }, {
             onSuccess: () => {
                 toast.success(`${capitalize(mediaType)} removed from your list`);
                 queryClient.removeQueries({ queryKey: queryKeys.historyKey(mediaType, userMedia.mediaId) });

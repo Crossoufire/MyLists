@@ -8,9 +8,7 @@ export const useRefreshMediaMutation = (mediaType: MediaType, mediaId: number) =
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ mediaType, apiId }: { mediaType: MediaType, apiId: number }) => {
-            return refreshMediaDetails({ data: { mediaType, apiId } });
-        },
+        mutationFn: refreshMediaDetails,
         onSuccess: async () => {
             return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId) });
         },
@@ -19,9 +17,5 @@ export const useRefreshMediaMutation = (mediaType: MediaType, mediaId: number) =
 
 
 export const useEditMediaMutation = () => {
-    return useMutation({
-        mutationFn: ({ mediaType, mediaId, payload }: { mediaType: MediaType, mediaId: number, payload: Record<string, any> }) => {
-            return postEditMediaDetails({ data: { mediaType, mediaId, payload } })
-        },
-    });
+    return useMutation({ mutationFn: postEditMediaDetails });
 };

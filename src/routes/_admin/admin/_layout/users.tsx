@@ -56,19 +56,19 @@ function UserManagementPage() {
         setCurrentSearch("");
     };
 
-    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        setFilters({ page: newPagination.pageIndex + 1 });
+        await setFilters({ page: newPagination.pageIndex + 1 });
     };
 
-    const onSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    const onSortingChange: OnChangeFn<SortingState> = async (updaterOrValue) => {
         const newSorting = typeof updaterOrValue === "function" ? updaterOrValue(sortingState) : updaterOrValue;
-        setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
+        await setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
     };
 
     const updateUser = (userId: number | undefined, payload: AdminUpdatePayload) => {
         if (payload.deleteUser && !window.confirm("Are you sure you want to delete this user?")) return;
-        updateUserMutation.mutate({ userId, payload });
+        updateUserMutation.mutate({ data: { userId, payload } });
     };
 
     const usersColumns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [

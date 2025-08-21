@@ -27,7 +27,7 @@ export const getMediaDetails = createServerFn({ method: "GET" })
 
 export const refreshMediaDetails = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
-    .validator(data => refreshMediaDetailsSchema.parse(data))
+    .validator(refreshMediaDetailsSchema)
     .handler(async ({ data: { mediaType, apiId } }) => {
         const container = await getContainer();
         const mediaProviderService = container.registries.mediaProviderService.getService(mediaType);
@@ -37,9 +37,7 @@ export const refreshMediaDetails = createServerFn({ method: "POST" })
 
 export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
-    .validator((data: unknown) => {
-        return tryNotFound(() => mediaDetailsToEditSchema.parse(data))
-    })
+    .validator(data => tryNotFound(() => mediaDetailsToEditSchema.parse(data)))
     .handler(async ({ data: { mediaType, mediaId } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -49,7 +47,7 @@ export const getMediaDetailsToEdit = createServerFn({ method: "GET" })
 
 export const postEditMediaDetails = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, transactionMiddleware])
-    .validator((data: unknown) => editMediaDetailsSchema.parse(data))
+    .validator(editMediaDetailsSchema)
     .handler(async ({ data: { mediaType, mediaId, payload } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -59,9 +57,7 @@ export const postEditMediaDetails = createServerFn({ method: "POST" })
 
 export const getJobDetails = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator((data: unknown) => {
-        return tryNotFound(() => jobDetailsSchema.parse(data));
-    })
+    .validator(data => tryNotFound(() => jobDetailsSchema.parse(data)))
     .handler(async ({ data: { mediaType, job, name, search }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

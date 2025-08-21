@@ -1,9 +1,9 @@
 import {CirclePlus} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType, Status} from "@/lib/server/utils/enums";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface QuickAddMediaProps {
@@ -15,10 +15,10 @@ interface QuickAddMediaProps {
 
 
 export const QuickAddMedia = ({ mediaType, mediaId, allStatuses, queryKey }: QuickAddMediaProps) => {
-    const addToListMutation = useAddMediaToListMutation(mediaType, mediaId, queryKey);
+    const addToListMutation = useAddMediaToListMutation(mediaType, queryKey);
 
     const addMediaToUser = (status: Status) => {
-        addToListMutation.mutate({ status });
+        addToListMutation.mutate({ data: { mediaType, status, mediaId } });
     };
 
     return (

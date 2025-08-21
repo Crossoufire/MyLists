@@ -64,9 +64,11 @@ function AchievementPage() {
         setEditAchievementDialogOpen(false);
 
         updateAchievementMutation.mutate({
-            achievementId: editingAchievement.id,
-            name: editedName,
-            description: editedDescription,
+            data: {
+                name: editedName,
+                description: editedDescription,
+                achievementId: editingAchievement.id,
+            }
         });
     };
 
@@ -96,8 +98,7 @@ function AchievementPage() {
     const handleSaveTierChanges = async () => {
         if (!editingAchievement) return;
         setIsTierDialogOpen(false);
-
-        updateTiersMutation.mutate({ tiers: editableTiers });
+        updateTiersMutation.mutate({ data: { tiers: editableTiers } });
     };
 
     const handleCancelTierEdit = () => {

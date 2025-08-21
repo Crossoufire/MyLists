@@ -7,9 +7,7 @@ export const useMoviedleGuessMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ guess }: { guess: string }) => {
-            return postAddMediadleGuess({ data: { guess } });
-        },
+        mutationFn: postAddMediadleGuess,
         onSuccess: () => {
             return queryClient.invalidateQueries({ queryKey: queryKeys.dailyMediadleKey() });
         },

@@ -49,9 +49,9 @@ function AllUpdates() {
         setCurrentSearch("");
     };
 
-    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        setFilters({ page: newPagination.pageIndex + 1 });
+        await setFilters({ page: newPagination.pageIndex + 1 });
     };
 
     const historyColumns = useMemo(() => [
@@ -123,8 +123,8 @@ function AllUpdates() {
     });
 
     const deleteSelectedRows = async () => {
-        const selectedIds = Object.keys(rowSelected).map(key => table.getRow(key).original.id);
-        await deleteUpdateMutation.mutateAsync({ updateIds: selectedIds });
+        const selectedIds = Object.keys(rowSelected).map((key) => table.getRow(key).original.id);
+        await deleteUpdateMutation.mutateAsync({ data: { updateIds: selectedIds } });
         setRowSelected({});
     };
 

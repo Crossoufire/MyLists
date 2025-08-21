@@ -7,7 +7,7 @@ import {authMiddleware} from "@/lib/server/middlewares/authentication";
 
 export const getSearchResults = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(data => navbarSearchSchema.parse(data))
+    .validator(navbarSearchSchema)
     .handler(async ({ data: { query, page, apiProvider } }) => {
         const container = await getContainer();
         const igdbClient = container.clients.igdb;

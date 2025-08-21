@@ -44,7 +44,7 @@ function MediadlePage() {
     };
 
     const onGuessClick = () => {
-        makeGuessMutation.mutate({ guess }, {
+        makeGuessMutation.mutate({ data: { guess } }, {
             onSuccess: () => {
                 setGuess("");
                 setShowSuggestions(false);

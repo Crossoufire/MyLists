@@ -48,7 +48,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
 
 export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(data => updateFollowStatusSchema.parse(data))
+    .validator(updateFollowStatusSchema)
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -67,7 +67,7 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 
         if (followStatus) {
             const payload = { username: currentUser.name, message: `${currentUser.name} is following you` }
-            notificationsService.sendNotification(currentUser.id, NotificationType.FOLLOW, payload);
+            await notificationsService.sendNotification(currentUser.id, NotificationType.FOLLOW, payload);
         }
     });
 
@@ -90,8 +90,8 @@ export const getUsersFollows = createServerFn({ method: "GET" })
 
 export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => allUpdatesHistorySchema.parse(data))
-    .handler(async ({ context: { user }, data }) => {
+    .validator(allUpdatesHistorySchema)
+    .handler(async ({ data, context: { user } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.getUserUpdatesPaginated(user.id, data);
     });
