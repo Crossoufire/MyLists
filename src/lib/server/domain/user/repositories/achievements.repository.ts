@@ -19,7 +19,7 @@ export class AchievementsRepository {
         END`;
     }
 
-    static async seedAchievements(achievementsDefinition: AchievementData[]) {
+    static async seedAchievements(achievementsDefinition: readonly AchievementData[]) {
         await db.transaction(async (tx) => {
             for (const achievementData of achievementsDefinition) {
                 const existingAchievement = await tx

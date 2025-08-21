@@ -2,6 +2,7 @@ import {Column, SQL, Table} from "drizzle-orm";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
 import {FilterDefinitions} from "@/lib/server/types/base.types";
+import {AchievementData} from "@/lib/server/types/achievements.types";
 
 
 export interface RelatedEntityConfig<TJoinTable extends Table, TEntityTable extends Table> {
@@ -56,7 +57,7 @@ interface JobDefinition {
     mediaIdColumn: Column<any, any, any>,
     getFilter?: (name: string) => SQL | undefined;
     postProcess?: (results: { name: string | null }[]) => { name: string | null }[];
-};
+}
 
 
 export type ListTable = Table & ListTableColumns;
@@ -99,6 +100,7 @@ export interface MediaSchemaConfig<
     editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     jobDefinitions: Partial<Record<JobType, JobDefinition>>;
     tablesForDeletion: TableWithMediaId[];
+    achievements: readonly AchievementData[];
 }
 
 

@@ -174,7 +174,7 @@ export class TasksService {
             this.logger.info(`Seeding ${mediaType} achievements...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const achievementsDefinition = mediaService.getAchievementsDefinition(mediaType);
+            const achievementsDefinition = mediaService.getAchievementsDefinition();
             await this.achievementsService.seedAchievements(achievementsDefinition);
 
             this.logger.info(`Seeding ${mediaType} achievements completed.`);

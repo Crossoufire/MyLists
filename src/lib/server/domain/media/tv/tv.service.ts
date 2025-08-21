@@ -3,16 +3,14 @@ import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 import {EpsSeasonPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
@@ -311,17 +309,5 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             oldValue: "",
             newValue: "",
         };
-    }
-
-    getAchievementsDefinition(mediaType?: MediaType) {
-        if (mediaType === MediaType.ANIME) {
-            return animeAchievements as unknown as AchievementData[];
-        }
-        else if (mediaType === MediaType.SERIES) {
-            return seriesAchievements as unknown as AchievementData[];
-        }
-        else {
-            return [] as AchievementData[];
-        }
     }
 }

@@ -2,13 +2,12 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {BooksSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
 import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
@@ -267,9 +266,5 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         }
 
         return [newState, logPayload];
-    }
-
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return booksAchievements as unknown as AchievementData[];
     }
 }

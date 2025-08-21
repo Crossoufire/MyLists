@@ -3,6 +3,7 @@ import * as schema from "@/lib/server/database/schema";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {createListFilterDef} from "../base/base.repository";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<
@@ -73,4 +74,5 @@ export const moviesConfig: MovieSchemaConfig = {
         },
     },
     tablesForDeletion: [schema.moviesActors, schema.moviesGenre, schema.moviesLabels],
+    achievements: moviesAchievements,
 };

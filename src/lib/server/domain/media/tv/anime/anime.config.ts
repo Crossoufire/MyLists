@@ -3,6 +3,7 @@ import * as schema from "@/lib/server/database/schema";
 import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 
 
 export type AnimeSchemaConfig = TvSchemaConfig<
@@ -103,4 +104,5 @@ export const animeConfig: AnimeSchemaConfig = {
         }
     },
     tablesForDeletion: [schema.animeActors, schema.animeGenre, schema.animeLabels],
+    achievements: animeAchievements,
 };

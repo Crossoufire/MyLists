@@ -3,6 +3,7 @@ import {JobType, Status} from "@/lib/server/utils/enums";
 import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
 export type GamesSchemaConfig = MediaSchemaConfig<
@@ -69,4 +70,5 @@ export const gamesConfig: GamesSchemaConfig = {
         }
     },
     tablesForDeletion: [schema.gamesCompanies, schema.gamesPlatforms, schema.gamesGenre, schema.gamesLabels],
+    achievements: gamesAchievements,
 };

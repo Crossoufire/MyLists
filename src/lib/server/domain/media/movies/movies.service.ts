@@ -2,13 +2,12 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
@@ -272,8 +271,4 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
 
         return [newState, logPayload];
     };
-
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return moviesAchievements as unknown as AchievementData[];
-    }
 }

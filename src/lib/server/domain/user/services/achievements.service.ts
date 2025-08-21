@@ -11,7 +11,7 @@ export class AchievementsService {
     constructor(private repository: typeof AchievementsRepository) {
     }
 
-    async seedAchievements(achievements: AchievementData[]) {
+    async seedAchievements(achievements: readonly AchievementData[]) {
         return this.repository.seedAchievements(achievements);
     }
 

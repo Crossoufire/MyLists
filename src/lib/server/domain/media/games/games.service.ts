@@ -2,13 +2,12 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
 import {MediaAndUserDetails, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
@@ -257,8 +256,4 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
 
         return [newState, logPayload];
     };
-
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return gamesAchievements as unknown as AchievementData[];
-    }
 }

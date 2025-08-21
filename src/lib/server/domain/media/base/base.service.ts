@@ -2,10 +2,10 @@ import {Label} from "@/lib/components/types";
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {JobType, LabelAction, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {JobType, LabelAction, MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMedia, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
@@ -38,7 +38,7 @@ export abstract class BaseService<
         return this.repository.getNonListMediaIds();
     }
 
-    async getUpcomingMedia(userId?: number, maxAWeek?: boolean,) {
+    async getUpcomingMedia(userId?: number, maxAWeek?: boolean) {
         return this.repository.getUpcomingMedia(userId, maxAWeek);
     }
 
@@ -170,14 +170,16 @@ export abstract class BaseService<
         return handler(achievement, userId);
     }
 
+    getAchievementsDefinition() {
+        return this.repository.config.achievements;
+    }
+
     createSimpleUpdateHandler = <K extends string>(propName: K): UpdateHandlerFn<any, any, any> => (currentState, payload) => {
         const newState = { ...currentState, [propName]: payload[propName] };
         return [newState, null];
     };
 
     // --- Abstract Methods --------------------------------------------------------------------
-
-    abstract getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
 
     abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
 

@@ -5,8 +5,10 @@ import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 export type AchievementStats = { [key in MediaType | "all"]: TierStat[] };
 
 
-interface TierData {
-    criteria: { count: number };
+export interface TierData {
+    criteria: {
+        count: number;
+    };
     difficulty: AchievementDifficulty;
 }
 
@@ -14,10 +16,10 @@ interface TierData {
 export interface AchievementData {
     name: string;
     codeName: string;
-    tiers: TierData[];
     description: string;
     mediaType: MediaType;
     value?: number | string;
+    tiers: readonly TierData[];
 }
 
 

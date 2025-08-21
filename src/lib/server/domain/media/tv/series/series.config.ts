@@ -1,9 +1,10 @@
-import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
+import {JobType, Status} from "@/lib/server/utils/enums";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {asc, desc, getTableColumns, inArray, sql} from "drizzle-orm";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
 export type SeriesSchemaConfig = TvSchemaConfig<
@@ -116,4 +117,5 @@ export const seriesConfig: SeriesSchemaConfig = {
         }
     },
     tablesForDeletion: [schema.seriesActors, schema.seriesGenre, schema.seriesLabels],
+    achievements: seriesAchievements,
 };
