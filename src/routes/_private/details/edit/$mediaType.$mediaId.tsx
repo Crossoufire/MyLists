@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_private/details/edit/$mediaType/$mediaId
     params: {
         parse: (params) => {
             return {
-                mediaId: params.mediaId as unknown as number,
+                mediaId: parseInt(params.mediaId),
                 mediaType: params.mediaType as MediaType,
             }
         }

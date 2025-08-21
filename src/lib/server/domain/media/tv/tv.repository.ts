@@ -2,10 +2,10 @@ import {Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
+import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
+import {TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {TvType, TvTypeWithEps, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
-import {AddedMediaDetails, ConfigTopMetric, EpsPerSeasonType} from "@/lib/server/types/base.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, sql} from "drizzle-orm";
 
 
@@ -15,25 +15,6 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     constructor(config: SeriesSchemaConfig | AnimeSchemaConfig) {
         super(config);
         this.config = config;
-    }
-
-    async findByIdAndAddEpsPerSeason(mediaId: number) {
-        const { mediaTable, epsPerSeasonTable } = this.config;
-
-        const mainData = await getDbClient()
-            .select({
-                ...getTableColumns(mediaTable),
-                epsPerSeason: sql<EpsPerSeasonType>`json_group_array(json_object(
-                    'season', ${epsPerSeasonTable.season}, 
-                    'episodes', ${epsPerSeasonTable.episodes}
-                ))`.mapWith(JSON.parse),
-            })
-            .from(mediaTable)
-            .innerJoin(epsPerSeasonTable, eq(epsPerSeasonTable.mediaId, mediaTable.id))
-            .where(eq(mediaTable.id, mediaId))
-            .get();
-
-        return mainData as TvTypeWithEps;
     }
 
     async getMediaEpsPerSeason(mediaId: number) {

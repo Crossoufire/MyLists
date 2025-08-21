@@ -4,7 +4,8 @@ import {db} from "@/lib/server/database/db";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
-import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
+import {userMediaSettings} from "@/lib/server/database/schema";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
 
 
 export const auth = betterAuth({
@@ -13,8 +14,24 @@ export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
         provider: "sqlite",
-
     }),
+    databaseHooks: {
+        user: {
+            create: {
+                after: async (user, _context) => {
+                    const mediaTypes = Object.values(MediaType);
+
+                    const userMediaSettingsData = mediaTypes.map(mediaType => ({
+                        mediaType,
+                        userId: parseInt(user.id, 10),
+                        active: (mediaType === MediaType.MOVIES || mediaType === MediaType.SERIES),
+                    }));
+
+                    await db.insert(userMediaSettings).values(userMediaSettingsData).onConflictDoNothing();
+                },
+            }
+        },
+    },
     user: {
         additionalFields: {
             profileViews: {

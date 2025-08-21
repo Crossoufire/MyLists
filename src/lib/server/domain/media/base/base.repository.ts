@@ -460,7 +460,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {
         const { listTable, mediaTable } = this.config;
 
-        const toto = await getDbClient()
+        return getDbClient()
             .select({
                 mediaId: mediaTable.id,
                 userId: listTable.userId,
@@ -479,9 +479,6 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             ))
             .orderBy(asc(mediaTable.releaseDate))
             .execute();
-
-        console.log({ toto })
-        return toto
     }
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, offset: number, limit = 25) {
