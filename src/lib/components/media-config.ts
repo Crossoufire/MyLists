@@ -1,3 +1,4 @@
+import React from "react";
 import {ColumnDef} from "@tanstack/react-table";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {TvDetails} from "@/lib/components/media/tv/TvDetails";
@@ -5,22 +6,28 @@ import {TvListItem} from "@/lib/components/media/tv/TvListItem";
 import {TvFollowCard} from "@/lib/components/media/tv/TvFollowCard";
 import {getTvColumns} from "@/lib/components/media/tv/TvListColumns";
 import {TvUserDetails} from "@/lib/components/media/tv/TvUserDetails";
+import {BooksDetails} from "@/lib/components/media/books/BooksDetails";
 import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
 import {GameListItem} from "@/lib/components/media/games/GameListItem";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
 import {MovieListItem} from "@/lib/components/media/movies/MovieListItem";
 import {GameFollowCard} from "@/lib/components/media/games/GameFollowCard";
+import {BookFollowCard} from "@/lib/components/media/books/BookFollowCard";
 import {ColumnConfigProps} from "@/lib/components/media/base/BaseListTable";
 import {getTvActiveFilters} from "@/lib/components/media/tv/TvActiveFilters";
 import {getGamesColumns} from "@/lib/components/media/games/GamesListColumns";
 import {MovieFollowCard} from "@/lib/components/media/movies/MovieFollowCard";
+import {BooksUserDetails} from "@/lib/components/media/books/BookUserDetails";
 import {GamesUserDetails} from "@/lib/components/media/games/GamesUserDetails";
 import {getMoviesColumns} from "@/lib/components/media/movies/MoviesListColumns";
 import {MoviesUserDetails} from "@/lib/components/media/movies/MoviesUserDetails";
 import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType, FilterConfig} from "@/lib/components/types";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {BookListItem} from "@/lib/components/media/books/BookListItem";
+import {getBooksColumns} from "@/lib/components/media/books/BooksListColumns";
+import {getBooksActiveFilters} from "@/lib/components/media/books/BooksActiveFilters";
 
 
 type MediaConfiguration = {
@@ -87,12 +94,12 @@ export const mediaConfig: MediaConfiguration = {
         sheetFilters: getGamesActiveFilters,
     },
     [MediaType.BOOKS]: {
-        mediaUserDetails: TvUserDetails,
-        mediaFollowCard: TvFollowCard,
-        mediaDetails: MoviesDetails,
-        mediaListCard: TvListItem,
-        mediaListColumns: getTvColumns,
-        sheetFilters: getTvActiveFilters,
+        mediaUserDetails: BooksUserDetails,
+        mediaFollowCard: BookFollowCard,
+        mediaDetails: BooksDetails,
+        mediaListCard: BookListItem,
+        mediaListColumns: getBooksColumns,
+        sheetFilters: getBooksActiveFilters,
     },
     [MediaType.MANGA]: {
         mediaUserDetails: TvUserDetails,

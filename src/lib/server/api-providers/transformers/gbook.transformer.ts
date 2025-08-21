@@ -23,6 +23,8 @@ export class GBooksTransformer {
             };
         });
 
+        console.log(searchData);
+
         return { data: transformedResults, hasNextPage };
     }
 

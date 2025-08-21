@@ -20,18 +20,20 @@ export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMedia, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMedia, { currentSeason: number | null }> :
-            T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number | null }> :
-                never;
+        T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<UserMedia, { currentSeason: number | null }> :
+            T extends typeof MediaType.BOOKS ? Extract<UserMedia, { actualPage: number | null }> :
+                T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number | null }> :
+                    never;
 
 
 // --- Media Details Types ------------------------------------------------------------------
 export type MediaDetails = Prettify<MediaDetailsOptionsType["media"]>;
 export type ExtractMediaDetailsByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<MediaDetails, { gameEngine: string | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<MediaDetails, { totalEpisodes: number | null }> :
-            T extends typeof MediaType.MOVIES ? Extract<MediaDetails, { tagline: string | null }> :
-                never;
+        T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<MediaDetails, { totalEpisodes: number | null }> :
+            T extends typeof MediaType.BOOKS ? Extract<MediaDetails, { pages: number }> :
+                T extends typeof MediaType.MOVIES ? Extract<MediaDetails, { tagline: string | null }> :
+                    never;
 
 
 // --- Follows List Types -------------------------------------------------------------------
@@ -41,8 +43,9 @@ export type ExtractFollowByType<T extends MediaType> = FollowData & { userMedia:
 export type ExtractFollowUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<FollowUserMedia, { playtime: number | null }> :
         T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<FollowUserMedia, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<FollowUserMedia, { playtime: number | null } | { currentSeason: number }> :
-                never;
+            T extends typeof MediaType.BOOKS ? Extract<FollowUserMedia, { actualPage: number | null }> :
+                T extends typeof MediaType.MOVIES ? Exclude<FollowUserMedia, { playtime: number | null } | { currentSeason: number } | { actualPage: number | null }> :
+                    never;
 
 
 // --- Media List Types ---------------------------------------------------------------------
@@ -51,9 +54,10 @@ export type UserMediaItem = MediaListOptionsType["results"]["items"][0];
 export type ListPagination = MediaListOptionsType["results"]["pagination"];
 export type ExtractListByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMediaItem, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMediaItem, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<UserMediaItem, { playtime: number | null } | { currentSeason: number }> :
-                never;
+        T extends typeof MediaType.BOOKS ? Extract<UserMediaItem, { actualPage: number | null }> :
+            T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<UserMediaItem, { currentSeason: number }> :
+                T extends typeof MediaType.MOVIES ? Exclude<UserMediaItem, { playtime: number | null } | { currentSeason: number } | { actualPage: number | null }> :
+                    never;
 
 
 // --- Types for Filters Side Sheet ------------------------------------

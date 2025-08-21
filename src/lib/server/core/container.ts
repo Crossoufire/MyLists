@@ -16,14 +16,15 @@ import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {seriesConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
+import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
 import {MediadleService} from "@/lib/server/domain/user/services/mediadle.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
+import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
+import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
-import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
@@ -33,7 +34,11 @@ import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
+import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
+import {BooksService} from "@/lib/server/domain/media/books/books.service";
+import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
+import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
+import {GBooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
 
 
 interface AppContainer {
@@ -42,11 +47,12 @@ interface AppContainer {
         igdb: IgdbClient;
         tmdb: TmdbClient;
         jikan: JikanClient;
+        gBook: GBooksClient;
     };
     transformers: {
         igdb: IgdbTransformer;
         tmdb: TmdbTransformer;
-        // jikan: JikanTransformer;
+        gBook: GBooksTransformer;
     };
     repositories: {
         user: typeof UserRepository;
@@ -95,11 +101,13 @@ async function initializeContainer(options: ContainerOptions = {}) {
 
     // Media Repositories
     const gamesRepository = new GamesRepository();
+    const booksRepository = new BooksRepository();
     const moviesRepository = new MoviesRepository();
     const animeRepository = new TvRepository(animeConfig);
     const seriesRepository = new TvRepository(seriesConfig);
     MediaRepositoryRegistry.registerRepository(MediaType.GAMES, gamesRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.ANIME, animeRepository);
+    MediaRepositoryRegistry.registerRepository(MediaType.BOOKS, booksRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.SERIES, seriesRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
 
@@ -121,10 +129,12 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const moviesService = new MoviesService(moviesRepository);
     const seriesService = new TvService(seriesRepository);
     const animeService = new TvService(animeRepository);
+    const bookService = new BooksService(booksRepository);
     MediaServiceRegistry.registerService(MediaType.GAMES, gamesService);
     MediaServiceRegistry.registerService(MediaType.ANIME, animeService);
     MediaServiceRegistry.registerService(MediaType.SERIES, seriesService);
     MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
+    MediaServiceRegistry.registerService(MediaType.BOOKS, bookService);
 
     // Tasks Service
     const tasksLogger = options.tasksServiceLogger || pinoLogger;
@@ -142,31 +152,37 @@ async function initializeContainer(options: ContainerOptions = {}) {
     // API Transformers
     const igdbTransformer = new IgdbTransformer();
     const tmdbTransformer = new TmdbTransformer();
+    const gBookTransformer = new GBooksTransformer();
 
     // API Clients
     const hltbClient = await HltbClient.create();
     const igdbClient = await IgdbClient.create();
     const tmdbClient = await TmdbClient.create();
     const jikanClient = await JikanClient.create();
+    const gBookClient = await GBooksClient.create();
 
     // Media Providers Services
     const gamesProviderService = new GamesProviderService(igdbClient, igdbTransformer, gamesRepository, hltbClient)
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     const tvProviderService = new TvProviderService(tmdbClient, tmdbTransformer, seriesRepository, jikanClient);
+    const booksProviderService = new BooksProviderService(gBookClient, gBookTransformer, booksRepository);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.ANIME, tvProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.SERIES, tvProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.BOOKS, booksProviderService);
 
     return {
         cacheManager: cacheManager,
         clients: {
             igdb: igdbClient,
             tmdb: tmdbClient,
+            gBook: gBookClient,
         },
         transformers: {
             igdb: igdbTransformer,
             tmdb: tmdbTransformer,
+            gBook: gBookTransformer,
         },
         repositories: {
             user: userRepository,

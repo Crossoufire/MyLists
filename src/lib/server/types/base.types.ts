@@ -28,6 +28,12 @@ export type StatusPayload = {
 }
 
 
+export type PagePayload = {
+    actualPage: number,
+    type: typeof UpdateType.PAGE,
+}
+
+
 export type RedoPayload = {
     redo: number,
     type: typeof UpdateType.REDO,
@@ -452,6 +458,7 @@ export const updateUserMediaSchema = z.object({
         playtime: z.number().min(0).optional(),
         redo: z.number().int().min(0).optional(),
         platform: z.enum(GamesPlatformsEnum).optional(),
+        actualPage: z.number().int().min(0).optional(),
         currentSeason: z.number().int().min(1).optional(),
         redo2: z.array(z.number().int().min(0)).optional(),
         rating: z.number().min(0).max(10).optional(),

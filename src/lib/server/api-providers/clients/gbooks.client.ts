@@ -23,6 +23,7 @@ export class GBooksClient extends BaseClient {
 
         const url = `${this.baseUrl}?q=${query}&startIndex=${offset}`;
         const response = await this.call(url);
+
         return {
             page,
             rawData: await response.json(),

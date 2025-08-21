@@ -12,9 +12,11 @@ export const getSearchResults = createServerFn({ method: "GET" })
         const container = await getContainer();
         const igdbClient = container.clients.igdb;
         const tmdbClient = container.clients.tmdb;
+        const gBookClient = container.clients.gBook;
         const userService = container.services.user;
         const igdbTransformer = container.transformers.igdb;
         const tmdbTransformer = container.transformers.tmdb;
+        const gBookTransformer = container.transformers.gBook;
 
         if (apiProvider === ApiProviderType.USERS) {
             return userService.searchUsers(query, page);
@@ -28,5 +30,10 @@ export const getSearchResults = createServerFn({ method: "GET" })
         if (apiProvider === ApiProviderType.IGDB) {
             const rawResults = await igdbClient.search(query, page);
             return igdbTransformer.transformSearchResults(rawResults);
+        }
+
+        if (apiProvider === ApiProviderType.BOOKS) {
+            const rawResults = await gBookClient.search(query, page);
+            return gBookTransformer.transformSearchResults(rawResults);
         }
     });

@@ -47,7 +47,7 @@ export class TmdbClient extends BaseClient {
     }
 
     async getTvDetails(tvId: number): Promise<TmdbTvDetails> {
-        const url = `${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}`;
+        const url = `${this.baseUrl}/tv/${tvId}?api_key=${this.apiKey}&append_to_response=credits`;
         const response = await this.call(url);
         return response.json();
     }

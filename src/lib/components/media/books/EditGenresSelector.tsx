@@ -2,18 +2,18 @@ import {Button} from "@/lib/components/ui/button";
 
 
 interface EditGenresSelectorProps {
-    genresList: string[];
-    selectedGenres: string[];
-    setSelectedGenres: (genres: string[]) => void;
+    genresList: { name: string }[];
+    selectedGenres: { name: string }[];
+    setSelectedGenres: (genres: { name: string }[]) => void;
 }
 
 
 export function EditGenresSelector({ genresList, selectedGenres, setSelectedGenres }: EditGenresSelectorProps) {
-    const toggleGenre = (ev: any, genre: string) => {
+    const toggleGenre = (ev: any, genre: { name: string }) => {
         ev.preventDefault();
 
         if (selectedGenres.includes(genre)) {
-            setSelectedGenres(selectedGenres.filter(l => l !== genre));
+            setSelectedGenres(selectedGenres.filter((g) => g.name !== genre.name));
         }
         else {
             if (selectedGenres.length >= 5) return;
@@ -25,10 +25,10 @@ export function EditGenresSelector({ genresList, selectedGenres, setSelectedGenr
         <div className="flex flex-wrap items-center justify-start gap-2">
             {genresList.map((genre) =>
                 <Button
-                    key={genre} variant={selectedGenres.includes(genre) ? "default" : "outline"}
+                    key={genre.name} variant={selectedGenres.includes(genre) ? "default" : "outline"}
                     onClick={(ev) => toggleGenre(ev, genre)} className="text-sm rounded-full px-3"
                 >
-                    {genre}
+                    {genre.name}
                 </Button>
             )}
         </div>

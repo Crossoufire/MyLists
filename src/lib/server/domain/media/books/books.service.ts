@@ -1,15 +1,15 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {Status, UpdateType} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {BooksSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository> {
@@ -36,6 +36,7 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
 
         this.updateHandlers = {
             ...this.updateHandlers,
+            [UpdateType.PAGE]: this.updatePageHandler,
             [UpdateType.REDO]: this.updateRedoHandler,
             [UpdateType.STATUS]: this.updateStatusHandler,
         }
@@ -94,16 +95,20 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
     }
 
     async getMediaEditableFields(mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+        const media = await this.repository.findAllAssociatedDetails(mediaId);
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields = editableFields.reduce((acc, field) => {
+        const fields: Record<string, any> = {};
+
+        editableFields.forEach((field) => {
             if (field in media) {
-                (acc as any)[field] = media[field];
+                fields[field] = media[field as keyof typeof media];
             }
-            return acc;
-        }, {} as Pick<typeof media, typeof editableFields[number]>);
+        });
+
+        fields.genres = media.genres;
+        fields.allGenres = this.getAvailableGenres();
 
         return { fields };
     }
@@ -112,31 +117,37 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const editableFields = this.repository.config.editableFields;
-        const fields = {} as Record<Partial<keyof Book>, any>;
-        fields.apiId = media.apiId;
+        const { genres, ...mediaData } = payload;
 
-        if (payload?.imageCover) {
+        if (genres && !Array.isArray(genres)) {
+            throw new Error("Genres must be an array");
+        }
+
+        const editableFields = this.repository.config.editableFields;
+        const fieldsToUpdate = {} as Record<Partial<keyof Book>, any>;
+        fieldsToUpdate.apiId = media.apiId;
+
+        if (mediaData?.imageCover) {
             const imageName = await saveImageFromUrl({
                 defaultName: "default.jpg",
-                imageUrl: payload.imageCover,
+                imageUrl: mediaData.imageCover,
                 resize: { width: 300, height: 450 },
                 saveLocation: "public/static/covers/books-covers",
             });
-            fields.imageCover = imageName;
-            delete payload.imageCover;
+            fieldsToUpdate.imageCover = imageName;
+            delete mediaData.imageCover;
         }
 
-        for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Book)) {
-                fields[key as keyof typeof media] = payload[key as keyof typeof media];
+        for (const key in mediaData) {
+            if (Object.prototype.hasOwnProperty.call(mediaData, key) && editableFields.includes(key as keyof Book)) {
+                fieldsToUpdate[key as keyof typeof media] = mediaData[key as keyof typeof media];
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
+        await this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData: genres });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, media: Book) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, _media: Book) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
@@ -242,6 +253,13 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         return delta;
     }
 
+    getAvailableGenres() {
+        return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
+            "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
+            "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
+            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"].map((name) => ({ name }));
+    }
+
     updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book) {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
@@ -264,6 +282,15 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
             newState.total = 0;
             newState.actualPage = 0;
         }
+
+        return [newState, logPayload];
+    }
+
+    updatePageHandler(currentState: BooksList, payload: PagePayload, _media: Book) {
+        const newState = { ...currentState, actualPage: payload.actualPage };
+        const logPayload = { oldValue: currentState.actualPage, newValue: payload.actualPage };
+
+        // TODO: to complete
 
         return [newState, logPayload];
     }

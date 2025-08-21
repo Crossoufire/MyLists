@@ -15,11 +15,8 @@ export const getTvColumns = (props: ColumnConfigProps): ColumnDef<ExtractListByT
         header: "Progress",
         cell: ({ row: { original } }) => (
             <DisplayEpsAndSeasons
-                //@ts-expect-error
                 status={original.status}
-                //@ts-expect-error
                 currentSeason={original.currentSeason}
-                //@ts-expect-error
                 currentEpisode={original.lastEpisodeWatched}
             />
         )
@@ -33,7 +30,6 @@ export const getTvColumns = (props: ColumnConfigProps): ColumnDef<ExtractListByT
                 <CommonInfoTableCell
                     userMedia={original}
                 />
-                {/*//@ts-expect-error*/}
                 {original.redo2.reduce((a, c) => a + c, 0) > 0 && <DisplayTvRedo redoValues={original.redo2}/>}
             </div>
         ),

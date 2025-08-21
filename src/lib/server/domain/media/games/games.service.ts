@@ -106,12 +106,13 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields = editableFields.reduce((acc, field) => {
+        const fields: Record<string, any> = {};
+
+        editableFields.forEach((field) => {
             if (field in media) {
-                (acc as any)[field] = media[field];
+                fields[field] = media[field as keyof typeof media];
             }
-            return acc;
-        }, {} as Pick<typeof media, typeof editableFields[number]>);
+        });
 
         return { fields };
     }

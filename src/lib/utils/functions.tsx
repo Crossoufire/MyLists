@@ -320,7 +320,7 @@ export const zeroPad = (value: number | string | undefined) => {
 };
 
 
-export const capitalize = (str: string | undefined) => {
+export const capitalize = (str: string | undefined | null) => {
     if (str) return str.charAt(0).toUpperCase() + str.slice(1);
     return str;
 };

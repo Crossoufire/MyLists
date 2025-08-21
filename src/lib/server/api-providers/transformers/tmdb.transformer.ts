@@ -132,7 +132,7 @@ export class TmdbTransformer {
         const genresData = rawData?.genres?.slice(0, this.maxGenres).map((genre) => ({ name: genre.name }));
         const actorsData = rawData?.credits?.cast?.slice(0, this.maxActors).map((cast) => ({ name: cast.name }));
 
-        return { mediaData, actorsData, genresData }
+        return { mediaData, actorsData, genresData };
     }
 
     async transformAnimeDetailsResults(rawData: TmdbTvDetails) {

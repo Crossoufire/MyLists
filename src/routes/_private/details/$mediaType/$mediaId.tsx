@@ -31,7 +31,6 @@ export const Route = createFileRoute("/_private/details/$mediaType/$mediaId")({
     loader: async ({ context: { queryClient }, params: { mediaType, mediaId }, deps: { external } }) => {
         return queryClient.ensureQueryData(mediaDetailsOptions(mediaType, mediaId, external));
     },
-
     component: MediaDetailsPage,
 });
 
@@ -57,6 +56,7 @@ function MediaDetailsPage() {
                             <RefreshAndEditMedia
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
+                                //@ts-expect-error
                                 apiId={apiData.media.apiId}
                                 lastUpdate={apiData.media.lastApiUpdate}
                             />

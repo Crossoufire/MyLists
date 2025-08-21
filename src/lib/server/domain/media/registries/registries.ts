@@ -1,12 +1,15 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {BooksService} from "@/lib/server/domain/media/books/books.service";
 import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
+import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
+import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
@@ -15,7 +18,7 @@ export interface MediaRepositoryMap {
     [MediaType.ANIME]: TvRepository;
     [MediaType.MOVIES]: MoviesRepository;
     [MediaType.GAMES]: GamesRepository;
-    [MediaType.BOOKS]: MoviesRepository;
+    [MediaType.BOOKS]: BooksRepository;
     [MediaType.MANGA]: MoviesRepository;
 }
 
@@ -25,7 +28,7 @@ export interface MediaServiceMap {
     [MediaType.ANIME]: TvService;
     [MediaType.MOVIES]: MoviesService;
     [MediaType.GAMES]: GamesService;
-    [MediaType.BOOKS]: MoviesService;
+    [MediaType.BOOKS]: BooksService;
     [MediaType.MANGA]: MoviesService;
 }
 
@@ -38,7 +41,7 @@ export interface MediaProviderServiceMap {
     [MediaType.ANIME]: TvProviderService;
     [MediaType.MOVIES]: MoviesProviderService;
     [MediaType.GAMES]: GamesProviderService;
-    [MediaType.BOOKS]: MoviesProviderService;
+    [MediaType.BOOKS]: BooksProviderService;
     [MediaType.MANGA]: MoviesProviderService;
 }
 
