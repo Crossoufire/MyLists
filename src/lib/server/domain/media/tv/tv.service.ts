@@ -8,12 +8,12 @@ import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
+import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
-import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
-import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
+import {EpsSeasonPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfig, TvRepository> {
@@ -51,8 +51,6 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             [UpdateType.TV]: this.updateEpsSeasonsHandler,
         }
     }
-
-    // --- Implemented Methods ----------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -152,38 +150,6 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields as any });
-    }
-
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState, media);
-
-        return {
-            media,
-            delta,
-            newState,
-        };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null, media);
-
-        return delta;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<TvList> | null, newState: TvList | null, media: TvType) {
@@ -292,21 +258,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return delta;
     }
 
-    getAchievementsDefinition(mediaType?: MediaType) {
-        if (mediaType === MediaType.ANIME) {
-            return animeAchievements as unknown as AchievementData[];
-        }
-        else if (mediaType === MediaType.SERIES) {
-            return seriesAchievements as unknown as AchievementData[];
-        }
-        else {
-            return [] as AchievementData[];
-        }
-    }
-
-    // -----
-
-    async updateRedoHandler(currentState: TvList, payload: { type: typeof UpdateType.REDO, redo: number[] }, media: TvType) {
+    async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType) {
         const newState = { ...currentState, redo2: payload.redo };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
         const logPayload = {
@@ -321,7 +273,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return [newState, logPayload];
     }
 
-    async updateStatusHandler(currentState: TvList, payload: { type: typeof UpdateType.STATUS; status: Status }, media: TvType) {
+    async updateStatusHandler(currentState: TvList, payload: StatusPayload, media: TvType) {
         const newState = { ...currentState, status: payload.status };
         const specialStatuses: Status[] = [Status.RANDOM, Status.PLAN_TO_WATCH];
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
@@ -348,7 +300,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return [newState, logPayload];
     }
 
-    async updateEpsSeasonsHandler(currentState: TvList, payload: { type: typeof UpdateType.TV, currentSeason?: number, lastEpisodeWatched?: number }, media: TvType) {
+    async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType) {
         const newState = {
             ...currentState,
             currentSeason: payload.currentSeason,
@@ -359,5 +311,17 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             oldValue: "",
             newValue: "",
         };
+    }
+
+    getAchievementsDefinition(mediaType?: MediaType) {
+        if (mediaType === MediaType.ANIME) {
+            return animeAchievements as unknown as AchievementData[];
+        }
+        else if (mediaType === MediaType.SERIES) {
+            return seriesAchievements as unknown as AchievementData[];
+        }
+        else {
+            return [] as AchievementData[];
+        }
     }
 }

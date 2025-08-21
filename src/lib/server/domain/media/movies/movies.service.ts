@@ -2,16 +2,15 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
+import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {
@@ -47,8 +46,6 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
     async lockOldMovies() {
         return this.repository.lockOldMovies();
     }
-
-    // --- Implements Methods --------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -146,34 +143,6 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState, media);
-
-        return { newState, media, delta };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null, media);
-
-        return delta;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<MoviesList> | null, newState: MoviesList | null, media: Movie) {
@@ -280,13 +249,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return delta;
     }
 
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return moviesAchievements as unknown as AchievementData[];
-    }
-
-    // ---
-
-    updateStatusHandler(currentState: MoviesList, payload: { type: typeof UpdateType.STATUS; status: Status }, _media: Movie) {
+    updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie) {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
@@ -301,7 +264,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return [newState, logPayload];
     };
 
-    updateRedoHandler(currentState: MoviesList, payload: { type: typeof UpdateType.REDO; redo: number }, _media: Movie) {
+    updateRedoHandler(currentState: MoviesList, payload: RedoPayload, _media: Movie) {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 
@@ -309,4 +272,8 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
 
         return [newState, logPayload];
     };
+
+    getAchievementsDefinition(_mediaType?: MediaType) {
+        return moviesAchievements as unknown as AchievementData[];
+    }
 }

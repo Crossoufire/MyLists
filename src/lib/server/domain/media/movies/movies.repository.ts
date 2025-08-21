@@ -227,9 +227,9 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .insert(moviesList)
             .values({
                 userId,
-                mediaId: media.id,
                 total: newTotal,
                 status: newStatus,
+                mediaId: media.id,
             })
             .returning();
 

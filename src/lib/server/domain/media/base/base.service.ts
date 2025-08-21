@@ -7,7 +7,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {JobType, LabelAction, MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {AddMediaToUserList, MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export abstract class BaseService<
@@ -104,6 +104,28 @@ export abstract class BaseService<
         return this.repository.getMediaList(currentUserId, userId, args);
     }
 
+    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
+        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
+
+        const media = await this.repository.findById(mediaId);
+        if (!media) throw notFound();
+
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (oldState) throw new FormattedError("Media already in your list");
+
+        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
+        const delta = this.calculateDeltaStats(null, newState, media);
+
+        const logPayload = { oldValue: null, newValue: newState.status };
+
+        return {
+            media,
+            delta,
+            newState,
+            logPayload,
+        };
+    }
+
     async updateUserMediaDetails(userId: number, mediaId: number, command: { type: UpdateType }): Promise<UpdateUserMediaDetails<any, any>> {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
@@ -121,9 +143,22 @@ export abstract class BaseService<
         return {
             media,
             delta,
+            newState,
             logPayload,
-            ns: newState,
         };
+    }
+
+    async removeMediaFromUserList(userId: number, mediaId: number) {
+        const media = await this.repository.findById(mediaId);
+        if (!media) throw notFound();
+
+        const oldState = await this.repository.findUserMedia(userId, mediaId);
+        if (!oldState) throw new FormattedError("Media not in your list");
+
+        await this.repository.removeMediaFromUserList(userId, mediaId);
+        const delta = this.calculateDeltaStats(oldState, null, media);
+
+        return delta;
     }
 
     getAchievementCte(achievement: Achievement, userId?: number) {
@@ -138,22 +173,16 @@ export abstract class BaseService<
         const newState = { ...currentState, [propName]: payload[propName] };
         return [newState, null];
     };
-    
+
     // --- Abstract Methods --------------------------------------------------------------------
 
     abstract getAchievementsDefinition(mediaType?: MediaType): AchievementData[];
-
-    abstract removeMediaFromUserList(userId: number, mediaId: number): Promise<DeltaStats>;
 
     abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
 
     abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
 
     abstract calculateDeltaStats(oldState: UserMediaWithLabels<any>, newState: any, media: any): DeltaStats;
-
-    abstract addMediaToUserList(userId: number, mediaId: number, newStatus?: Status): Promise<
-        AddMediaToUserList<TConfig["mediaTable"]["$inferSelect"], TConfig["listTable"]["$inferSelect"]>
-    >;
 
     abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>): Promise<MediaAndUserDetails<any, any>>;
 }

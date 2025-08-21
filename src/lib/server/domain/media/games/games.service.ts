@@ -2,7 +2,6 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
@@ -11,7 +10,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {MediaAndUserDetails, StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {MediaAndUserDetails, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
@@ -44,8 +43,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
             [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
         }
     }
-
-    // --- Implemented Methods ------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -150,34 +147,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         await this.repository.updateMediaWithDetails({ mediaData: fields as any });
     }
 
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (oldState) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState);
-
-        return { newState, media, delta };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null);
-
-        return delta;
-    }
-
     calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
@@ -278,13 +247,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         return delta;
     }
 
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return gamesAchievements as unknown as AchievementData[];
-    }
-
-    // ----
-
-    updateStatusHandler(currentState: GamesList, payload: { type: typeof UpdateType.STATUS, status: Status }, _media: Game) {
+    updateStatusHandler(currentState: GamesList, payload: StatusPayload, _media: Game) {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
@@ -294,4 +257,8 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
 
         return [newState, logPayload];
     };
+
+    getAchievementsDefinition(_mediaType?: MediaType) {
+        return gamesAchievements as unknown as AchievementData[];
+    }
 }

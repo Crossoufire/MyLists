@@ -2,16 +2,15 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {StatsCTE, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {BooksSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
+import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository> {
@@ -42,8 +41,6 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
             [UpdateType.STATUS]: this.updateStatusHandler,
         }
     }
-
-    // --- Implements Methods --------------------------------------------------------
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
@@ -138,34 +135,6 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState, media);
-
-        return { newState, media, delta };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null, media);
-
-        return delta;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, media: Book) {
@@ -274,32 +243,33 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         return delta;
     }
 
-    getAchievementsDefinition(_mediaType?: MediaType) {
-        return booksAchievements as unknown as AchievementData[];
-    }
-
-    // ------
-
-    updateRedoHandler(currentState: BooksList, payload: { type: typeof UpdateType.REDO, redo: number }, _media: Book) {
+    updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book) {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 
-        newState.total = 0;
+        newState.total = media.pages + (payload.redo * media.pages);
 
         return [newState, logPayload];
     }
 
-    updateStatusHandler(currentState: BooksList, payload: { type: typeof UpdateType.REDO, status: Status }, media: Book) {
+    updateStatusHandler(currentState: BooksList, payload: StatusPayload, media: Book) {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
         if (payload.status === Status.COMPLETED) {
+            newState.total = media.pages;
             newState.actualPage = media.pages;
         }
         else if (payload.status === Status.PLAN_TO_READ) {
+            newState.redo = 0;
+            newState.total = 0;
             newState.actualPage = 0;
         }
 
         return [newState, logPayload];
+    }
+
+    getAchievementsDefinition(_mediaType?: MediaType) {
+        return booksAchievements as unknown as AchievementData[];
     }
 }

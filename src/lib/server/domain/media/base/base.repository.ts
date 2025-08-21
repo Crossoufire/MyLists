@@ -29,7 +29,7 @@ const SIMILAR_MAX_GENRES = 12;
 
 
 export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTable, ListTable, GenreTable, LabelTable>> {
-    protected readonly config: TConfig;
+    readonly config: TConfig;
     protected readonly baseFilterDefs: FilterDefinitions;
 
     protected constructor(config: TConfig) {

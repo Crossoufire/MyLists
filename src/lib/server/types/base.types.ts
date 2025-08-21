@@ -22,6 +22,28 @@ import {
 } from "@/lib/server/utils/enums";
 
 
+export type StatusPayload = {
+    status: Status,
+    type: typeof UpdateType.STATUS,
+}
+
+
+export type RedoPayload = {
+    redo: number,
+    type: typeof UpdateType.REDO,
+}
+
+export type RedoTvPayload = {
+    redo: number[],
+    type: typeof UpdateType.REDO,
+}
+
+export type EpsSeasonPayload = {
+    currentSeason?: number,
+    type: typeof UpdateType.TV,
+    lastEpisodeWatched?: number,
+}
+
 export type ComingNext = {
     mediaId: number,
     mediaName: string,
@@ -232,8 +254,8 @@ export type LogPayload = { oldValue: any; newValue: any } | null;
 
 
 export type UpdateUserMediaDetails<TMedia, TList> = {
-    ns: TList;
     media: TMedia;
+    newState: TList;
     delta: DeltaStats;
     logPayload: LogPayload;
 }

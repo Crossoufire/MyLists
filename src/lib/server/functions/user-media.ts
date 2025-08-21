@@ -25,15 +25,15 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const { newState, media, delta } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
+        const { newState, media, delta, logPayload } = await mediaService.addMediaToUserList(currentUser.id, mediaId, status);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         await userUpdatesService.logUpdate({
             media,
             mediaType,
-            payload: null,
             userId: currentUser.id,
             updateType: UpdateType.STATUS,
+            payload: { old_value: logPayload.oldValue, new_value: logPayload.newValue },
         });
 
         return newState;
@@ -51,7 +51,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const { ns, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload as any);
+        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload as any);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         if (logPayload) {
@@ -64,7 +64,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
             });
         }
 
-        return ns;
+        return newState;
     });
 
 
