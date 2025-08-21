@@ -51,7 +51,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
         const userUpdatesService = container.services.userUpdates;
         const mediaService = container.registries.mediaService.getService(mediaType);
 
-        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload as any);
+        const { newState, media, delta, logPayload } = await mediaService.updateUserMediaDetails(currentUser.id, mediaId, payload);
         await userStatsService.updateUserPreComputedStatsWithDelta(mediaType, currentUser.id, delta);
 
         if (logPayload) {

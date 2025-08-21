@@ -2,7 +2,7 @@ import {useState} from "react";
 import {cn} from "@/lib/utils/helpers";
 import {Check, ChevronDown} from "lucide-react";
 import {Button} from "@/lib/components/ui/button";
-import {GamesPlatformsEnum} from "@/lib/server/utils/enums";
+import {GamesPlatformsEnum, UpdateType} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/lib/components/ui/command";
@@ -16,7 +16,7 @@ interface UpdatePlatformProps {
 
 export const UpdatePlatform = ({ platform, updatePlatform }: UpdatePlatformProps) => {
     const handleSelect = (platform: GamesPlatformsEnum) => {
-        updatePlatform.mutate({ payload: { platform: platform } });
+        updatePlatform.mutate({ payload: { platform: platform, type: UpdateType.PLATFORM } });
     };
 
     return (

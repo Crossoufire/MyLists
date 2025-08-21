@@ -7,7 +7,7 @@ import {Achievement, AchievementData} from "@/lib/server/types/achievements.type
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {JobType, LabelAction, MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMedia, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
 export abstract class BaseService<
@@ -21,6 +21,7 @@ export abstract class BaseService<
     protected constructor(repository: R) {
         this.repository = repository;
 
+        // User progress handlers based on update type
         this.updateHandlers = {
             [UpdateType.RATING]: this.createSimpleUpdateHandler("rating"),
             [UpdateType.COMMENT]: this.createSimpleUpdateHandler("comment"),
@@ -126,16 +127,16 @@ export abstract class BaseService<
         };
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, command: { type: UpdateType }): Promise<UpdateUserMediaDetails<any, any>> {
+    async updateUserMediaDetails(userId: number, mediaId: number, payload: UpdateUserMedia["payload"]): Promise<UpdateUserMediaDetails<any, any>> {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const oldState = await this.repository.findUserMedia(userId, mediaId);
         if (!oldState) throw new FormattedError("Media not in your list");
 
-        const updateHandler = this.updateHandlers[command.type];
-        if (!updateHandler) throw new Error(`No handler found for command type: ${command.type}`);
-        const [completeNewData, logPayload] = updateHandler(oldState, command, media);
+        const updateHandler = this.updateHandlers[payload.type];
+        if (!updateHandler) throw new Error(`No handler found for command type: ${payload.type}`);
+        const [completeNewData, logPayload] = updateHandler(oldState, payload, media);
 
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
         const delta = this.calculateDeltaStats(oldState, newState, media);

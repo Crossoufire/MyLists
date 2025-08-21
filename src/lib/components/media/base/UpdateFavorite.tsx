@@ -1,5 +1,6 @@
 import {Heart} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {UpdateType} from "@/lib/server/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
@@ -12,7 +13,7 @@ interface UpdateFavoriteProps {
 export const UpdateFavorite = ({ updateFavorite, isFavorite }: UpdateFavoriteProps) => {
 
     const handleFavorite = () => {
-        updateFavorite.mutate({ payload: { favorite: !isFavorite } });
+        updateFavorite.mutate({ payload: { favorite: !isFavorite, type: UpdateType.FAVORITE } });
     };
 
     return (

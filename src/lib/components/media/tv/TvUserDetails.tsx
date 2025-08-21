@@ -4,9 +4,9 @@ import {ExtractUserMediaByType} from "@/lib/components/types";
 import {UpdateTvRedo} from "@/lib/components/media/tv/UpdateTvRedo";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {UpdateSeasonsEps} from "@/lib/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface TvUserDetailsProps {

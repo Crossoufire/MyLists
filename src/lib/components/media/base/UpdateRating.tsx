@@ -1,4 +1,4 @@
-import {RatingSystemType} from "@/lib/server/utils/enums";
+import {RatingSystemType, UpdateType} from "@/lib/server/utils/enums";
 import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/functions";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
@@ -17,7 +17,7 @@ export const UpdateRating = ({ rating, ratingSystem, onUpdateMutation }: RatingC
 
     const handleSelectChange = (value: string) => {
         const valueToSend = value === "--" ? null : parseFloat(value);
-        onUpdateMutation.mutate({ payload: { rating: valueToSend } });
+        onUpdateMutation.mutate({ payload: { rating: valueToSend, type: UpdateType.RATING } });
     };
 
     return (

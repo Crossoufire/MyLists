@@ -1,5 +1,5 @@
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {IgdbGameDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/server/types/provider.types";
+import {GBooksDetails, IgdbGameDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/server/types/provider.types";
 
 
 export abstract class BaseProviderService<R extends BaseRepository<any>> {
@@ -8,7 +8,7 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
 
     protected abstract _transformDetails(rawData: any): Promise<any>;
 
-    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails>;
+    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails | GBooksDetails>;
 
     protected abstract _getMediaIdsForBulkRefresh(): Promise<(number | string)[]>;
 

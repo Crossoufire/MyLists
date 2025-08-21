@@ -1,4 +1,5 @@
 import {getRedoList} from "@/lib/utils/functions";
+import {UpdateType} from "@/lib/server/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
@@ -12,7 +13,7 @@ interface RedoDropProps {
 
 export const UpdateRedo = ({ name, redo, updateRedo }: RedoDropProps) => {
     const handleRedoChange = (redo: string) => {
-        updateRedo.mutate({ payload: { redo: parseInt(redo) } });
+        updateRedo.mutate({ payload: { redo: parseInt(redo), type: UpdateType.REDO } });
     };
 
     return (

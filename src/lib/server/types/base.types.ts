@@ -33,16 +33,19 @@ export type RedoPayload = {
     type: typeof UpdateType.REDO,
 }
 
+
 export type RedoTvPayload = {
     redo: number[],
     type: typeof UpdateType.REDO,
 }
+
 
 export type EpsSeasonPayload = {
     currentSeason?: number,
     type: typeof UpdateType.TV,
     lastEpisodeWatched?: number,
 }
+
 
 export type ComingNext = {
     mediaId: number,
@@ -250,7 +253,15 @@ export type AddMediaToUserList<TMedia, TList> = {
 }
 
 
+export type LogPayloadDb = { old_value: any; new_value: any };
 export type LogPayload = { oldValue: any; newValue: any } | null;
+
+export type UpdatePayload = {
+    payload: {
+        type: UpdateType;
+        [key: string]: any;
+    }
+}
 
 
 export type UpdateUserMediaDetails<TMedia, TList> = {
@@ -261,11 +272,7 @@ export type UpdateUserMediaDetails<TMedia, TList> = {
 }
 
 
-export type UpdateHandlerFn<TState, TPayload, TMedia> = (
-    currentState: TState,
-    payload: TPayload,
-    media: TMedia,
-) => [TState, LogPayload];
+export type UpdateHandlerFn<TState, TPayload, TMedia> = (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload];
 
 
 export type ListFilterDefinition = {
@@ -309,6 +316,8 @@ export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
+
+
 // --- ZOD Schema -----------------------------------------------------------------------------------------------
 
 export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)] as const).optional().catch("normalized");
@@ -406,7 +415,7 @@ export const addMediadleGuessSchema = z.object({
     guess: z.string(),
 });
 
-export const plaftformStatsSchema = z.object({
+export const platformStatsSchema = z.object({
     mediaType: z.enum(MediaType).optional().catch(undefined),
 });
 
@@ -432,96 +441,31 @@ export const addMediaToListSchema = z.object({
     mediaId: z.coerce.number().int().positive(),
 });
 
-
-const movieUpdatePayloads = z.discriminatedUnion("type", [
-    z.object({
-        type: z.literal(UpdateType.STATUS),
-        status: z.enum(Status),
-    }),
-    z.object({
-        type: z.literal(UpdateType.REDO),
-        redo: z.number().int().min(0),
-    }),
-    z.object({
-        type: z.literal(UpdateType.RATING),
-        rating: z.number().min(0).max(10),
-    }),
-    z.object({
-        type: z.literal(UpdateType.COMMENT),
-        comment: z.string().nullish(),
-    }),
-    z.object({
-        type: z.literal(UpdateType.FAVORITE),
-        favorite: z.boolean(),
-    }),
-]);
-export type MovieUpdatePayload = z.infer<typeof movieUpdatePayloads>;
-
-const gameUpdatePayloads = z.discriminatedUnion("type", [
-    z.object({
-        type: z.literal(UpdateType.STATUS),
-        status: z.enum(Status),
-    }),
-    z.object({
-        type: z.literal(UpdateType.RATING),
-        rating: z.number().min(0).max(10),
-    }),
-    z.object({
-        type: z.literal(UpdateType.PLAYTIME),
-        playtime: z.number().min(0).max(10_000),
-    }),
-    z.object({
-        type: z.literal(UpdateType.PLATFORM),
-        platform: z.enum(GamesPlatformsEnum),
-    }),
-    z.object({
-        type: z.literal(UpdateType.COMMENT),
-        comment: z.string().nullish(),
-    }),
-    z.object({
-        type: z.literal(UpdateType.FAVORITE),
-        favorite: z.boolean(),
-    }),
-]);
-export type GameUpdatePayload = z.infer<typeof gameUpdatePayloads>;
-
-const tvUpdatePayloads = z.discriminatedUnion("type", [
-    z.object({
-        type: z.literal(UpdateType.STATUS),
-        status: z.enum(Status),
-    }),
-    z.object({
-        type: z.literal(UpdateType.REDO),
-        redo: z.number().int().min(0),
-    }),
-    z.object({
-        type: z.literal(UpdateType.TV),
-        currentSeason: z.number().int().min(1).optional(),
-        lastEpisodeWatched: z.number().int().min(0).optional(),
-    }).refine((data) => data.currentSeason !== undefined || data.lastEpisodeWatched !== undefined, {
-        message: "At least one of 'currentSeason' or 'lastEpisodeWatched' must be provided."
-    }),
-    z.object({
-        type: z.literal(UpdateType.RATING),
-        rating: z.number().min(0).max(10),
-    }),
-    z.object({
-        type: z.literal(UpdateType.COMMENT),
-        comment: z.string().nullish(),
-    }),
-    z.object({
-        type: z.literal(UpdateType.FAVORITE),
-        favorite: z.boolean(),
-    }),
-]);
-export type TvUpdatePayload = z.infer<typeof tvUpdatePayloads>;
-
-
 export const updateUserMediaSchema = z.object({
     mediaType: z.enum(MediaType),
     mediaId: z.coerce.number().int().positive(),
-    payload: z.union([movieUpdatePayloads, tvUpdatePayloads]),
+    payload: z.object({
+        type: z.enum(UpdateType),
+        favorite: z.boolean().optional(),
+        status: z.enum(Status).optional(),
+        comment: z.string().nullish().optional(),
+        playtime: z.number().min(0).optional(),
+        redo: z.number().int().min(0).optional(),
+        platform: z.enum(GamesPlatformsEnum).optional(),
+        currentSeason: z.number().int().min(1).optional(),
+        redo2: z.array(z.number().int().min(0)).optional(),
+        rating: z.number().min(0).max(10).optional(),
+        lastEpisodeWatched: z.number().int().min(0).optional(),
+    }).refine((data) => {
+        const definedFields = Object.entries(data)
+            .filter(([key, value]) => key !== "type" && value !== undefined)
+            .map(([key, _]) => key);
+        return definedFields.length === 1;
+    }, {
+        message: "Exactly one field (besides type) must be provided in the payload."
+    })
 });
+
 export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
 

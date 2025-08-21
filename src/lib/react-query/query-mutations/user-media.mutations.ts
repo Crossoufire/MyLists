@@ -1,5 +1,6 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {UpdatePayload} from "@/lib/server/types/base.types";
 import {LabelAction, MediaType} from "@/lib/server/utils/enums";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {HistoryOptionsType, Label, MediaDetailsOptionsType, MediaListOptionsType, ProfileOptionsType, UserMedia} from "@/lib/components/types";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
@@ -110,9 +111,7 @@ export const useUpdateUserMediaMutation = (mediaType: MediaType, mediaId: number
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ payload }: { payload: Record<string, any> }) => {
-            return postUpdateUserMedia({ data: { mediaType, mediaId, payload } });
-        },
+        mutationFn: ({ payload }: UpdatePayload) => postUpdateUserMedia({ data: { payload, mediaType, mediaId } }),
         meta: { errorMessage: "Failed to update this field value. Please try again later." },
         onSuccess: (data) => {
             if (queryKey[0] === "details") {

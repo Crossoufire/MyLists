@@ -1,3 +1,4 @@
+import {UpdateType} from "@/lib/server/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 
@@ -11,16 +12,14 @@ interface UpdateSeasonsEpsProps {
 
 
 export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason, currentEpisode }: UpdateSeasonsEpsProps) => {
-    console.log({ onUpdateMutation, epsPerSeason, currentSeason, currentEpisode })
-    
     const episodes = [...Array(epsPerSeason[currentSeason - 1].episodes).keys()].map(v => (v + 1).toString());
 
     const handleSeasonUpdate = (season: string) => {
-        onUpdateMutation.mutate({ payload: { currentSeason: parseInt(season) } });
+        onUpdateMutation.mutate({ payload: { currentSeason: parseInt(season), type: UpdateType.TV } });
     };
 
     const handleEpisodeUpdate = (episode: string) => {
-        onUpdateMutation.mutate({ payload: { lastEpisodeWatched: parseInt(episode) } });
+        onUpdateMutation.mutate({ payload: { lastEpisodeWatched: parseInt(episode), type: UpdateType.TV } });
     };
 
     return (

@@ -1,3 +1,4 @@
+import {UpdateType} from "@/lib/server/utils/enums";
 import {getPlaytimeList} from "@/lib/utils/functions";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
@@ -13,7 +14,7 @@ export const UpdatePlaytime = ({ playtime, updatePlaytime }: UpdatePlaytimeProps
     const hoursPlaytime = playtime / 60;
 
     const handleSelect = (playtimeInHours: string) => {
-        updatePlaytime.mutate({ payload: { playtime: parseInt(playtimeInHours) * 60 } });
+        updatePlaytime.mutate({ payload: { playtime: parseInt(playtimeInHours) * 60, type: UpdateType.PLAYTIME } });
     };
 
     return (

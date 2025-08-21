@@ -20,8 +20,8 @@ export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMedia, { playtime: number | null }> :
-        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMedia, { currentSeason: number }> :
-            T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number }> :
+        T extends typeof MediaType.SERIES | typeof MediaType.ANIME ? Extract<UserMedia, { currentSeason: number | null }> :
+            T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number | null }> :
                 never;
 
 

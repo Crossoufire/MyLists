@@ -1,6 +1,7 @@
 import * as React from "react";
 import {useState} from "react";
 import {Button} from "@/lib/components/ui/button";
+import {UpdateType} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
 import {MinusCircle, Pencil, PlusCircle} from "lucide-react";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
@@ -35,7 +36,7 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
 
     const onUpdateRedoValues = () => {
         setOpen(false);
-        onUpdateMutation.mutate({ payload: { redo2: draftRedo } });
+        onUpdateMutation.mutate({ payload: { redo2: draftRedo, type: UpdateType.REDO_TV } });
     };
 
     return (

@@ -2,16 +2,16 @@ import {and, desc, eq, sql} from "drizzle-orm";
 import {userMediaUpdate} from "@/lib/server/database/schema";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {AllUpdatesSearch} from "@/lib/server/types/base.types";
+import {AllUpdatesSearch, LogPayloadDb} from "@/lib/server/types/base.types";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 
 
 interface LogUpdateParams {
     media: any;
     userId: number;
+    payload: LogPayloadDb;
     mediaType: MediaType;
     updateType: UpdateType;
-    payload: { old_value: any; new_value: any };
 }
 
 

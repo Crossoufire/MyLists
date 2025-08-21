@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {Button} from "@/lib/components/ui/button";
+import {UpdateType} from "@/lib/server/utils/enums";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
@@ -25,7 +26,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
 
     const handleSave = () => {
         if (content === comment) return;
-        updateComment.mutate({ payload: { comment: comment } }, {
+        updateComment.mutate({ payload: { comment: comment, type: UpdateType.COMMENT } }, {
             onSuccess: () => setIsEditing(false),
         });
     };
