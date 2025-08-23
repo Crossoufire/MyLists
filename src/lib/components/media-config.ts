@@ -30,7 +30,7 @@ import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActive
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType, FilterConfig} from "@/lib/components/types";
 
 
-type MediaConfiguration = {
+export type MediaConfiguration = {
     [T in MediaType]: {
         mediaUserDetails: React.FC<{
             mediaType: T;
@@ -102,9 +102,12 @@ export const mediaConfig: MediaConfiguration = {
         sheetFilters: getBooksActiveFilters,
     },
     [MediaType.MANGA]: {
+        //@ts-expect-error
         mediaUserDetails: TvUserDetails,
         mediaFollowCard: TvFollowCard,
+        //@ts-expect-error
         mediaDetails: MoviesDetails,
+        //@ts-expect-error
         mediaListCard: TvListItem,
         //@ts-expect-error
         mediaListColumns: getTvColumns,

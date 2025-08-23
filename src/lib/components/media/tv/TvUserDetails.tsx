@@ -1,22 +1,17 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {ExtractUserMediaByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {UpdateTvRedo} from "@/lib/components/media/tv/UpdateTvRedo";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {UpdateSeasonsEps} from "@/lib/components/media/tv/UpdateSeasonsEps";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
-interface TvUserDetailsProps {
-    mediaType: MediaType;
-    userMedia: ExtractUserMediaByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
-    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
-}
+type TvUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
 
 
-export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsProps) => {
+export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     return (
@@ -28,8 +23,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
             />
             {(userMedia.status !== Status.PLAN_TO_WATCH && userMedia.status !== Status.RANDOM) &&
                 <UpdateSeasonsEps
-                    //@ts-expect-error
-                    epsPerSeason={userMedia.epsPerSeason}
+                    epsPerSeason={userMedia.epsPerSeason!}
                     currentSeason={userMedia.currentSeason}
                     onUpdateMutation={updateUserMediaMutation}
                     currentEpisode={userMedia.lastEpisodeWatched}

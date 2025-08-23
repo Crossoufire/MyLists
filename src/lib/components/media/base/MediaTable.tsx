@@ -5,11 +5,11 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {mediaConfig} from "@/lib/components/media-config";
 import {MediaListArgs} from "@/lib/server/types/base.types";
 import {ListPagination, UserMediaItem} from "@/lib/components/types";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaTableProps {
@@ -68,9 +68,9 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
             <div className="rounded-md border p-3 pt-0">
                 <Table>
                     <TableHeader>
-                        {table.getHeaderGroups().map(headerGroup =>
+                        {table.getHeaderGroups().map((headerGroup) =>
                             <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map(header =>
+                                {headerGroup.headers.map((header) =>
                                     <TableHead key={header.id}>
                                         {flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
@@ -80,9 +80,9 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ?
-                            table.getRowModel().rows.map(row =>
+                            table.getRowModel().rows.map((row) =>
                                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                    {row.getVisibleCells().map(cell =>
+                                    {row.getVisibleCells().map((cell) =>
                                         <TableCell key={cell.id} style={{ width: getColumnWidth(cell.column.id) }}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>

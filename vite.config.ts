@@ -14,12 +14,11 @@ export default defineConfig({
             spa: {
                 enabled: true,
             },
-            react: {
-                babel: {
-                    plugins: [["babel-plugin-react-compiler", { target: "19" }]],
-                },
-            }
         }),
-        reactVite(),
+        reactVite({
+            babel: {
+                plugins: [["babel-plugin-react-compiler", { target: "19" }]],
+            },
+        }),
     ]
 })

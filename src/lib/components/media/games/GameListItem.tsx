@@ -1,23 +1,14 @@
 import React from "react";
-import {ExtractListByType} from "@/lib/components/types";
-import {MediaType, Status} from "@/lib/server/utils/enums";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {MediaType} from "@/lib/server/utils/enums";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
 import {BaseMediaListItem} from "@/lib/components/media/base/BaseMediaListItem";
 
 
-interface GameListItemProps {
-    isCurrent: boolean;
-    isConnected: boolean;
-    mediaType: MediaType;
-    allStatuses: Status[];
-    rating: React.ReactNode;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
-    userMedia: ExtractListByType<typeof MediaType.GAMES>;
-}
+type GameListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
 
 
-export const GameListItem = (props: GameListItemProps) => {
+export const GameListItem = (props: GameListItemProps<typeof MediaType.GAMES>) => {
     return (
         <BaseMediaListItem
             {...props}

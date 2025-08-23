@@ -79,8 +79,10 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
             const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
             if (!mediaWithDetails) throw notFound();
 
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+            if (userMedia) userMedia.pages = mediaWithDetails.pages;
+            
+            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
             return {

@@ -1,18 +1,15 @@
 import React from "react";
 import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractFollowByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {DisplayPages} from "@/lib/components/media/books/DisplayPages";
 import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";
 
 
-interface BookFollowCardProps {
-    rating: React.ReactNode;
-    followData: ExtractFollowByType<typeof MediaType.BOOKS>;
-}
+type BookFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
 
 
-export const BookFollowCard = ({ followData, rating }: BookFollowCardProps) => {
+export const BookFollowCard = ({ followData, rating }: BookFollowCardProps<typeof MediaType.BOOKS>) => {
     return (
         <BaseMediaFollowCard
             rating={rating}
@@ -26,7 +23,7 @@ export const BookFollowCard = ({ followData, rating }: BookFollowCardProps) => {
                 <DisplayPages
                     total={150}
                     status={followData.userMedia.status}
-                    pages={followData.userMedia.actualPage}
+                    currentPage={followData.userMedia.actualPage}
                 />
             }
         />

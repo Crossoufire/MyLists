@@ -89,7 +89,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             if (!mediaWithDetails) throw notFound();
 
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            if (userMedia) (userMedia as any).epsPerSeason = mediaWithDetails.epsPerSeason;
+            if (userMedia) userMedia.epsPerSeason = mediaWithDetails.epsPerSeason;
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);

@@ -1,23 +1,14 @@
-import {MediaType, Status} from "@/lib/server/utils/enums";
-import {ExtractListByType} from "@/lib/components/types";
+import {MediaType} from "@/lib/server/utils/enums";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {DisplayTvRedo} from "@/lib/components/media/tv/DisplayTvRedo";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {BaseMediaListItem} from "@/lib/components/media/base/BaseMediaListItem";
 import {DisplayEpsAndSeasons} from "@/lib/components/media/tv/DisplayEpsAndSeasons";
 
 
-interface TvListItemProps {
-    isCurrent: boolean;
-    isConnected: boolean;
-    mediaType: MediaType;
-    allStatuses: Status[];
-    rating: React.ReactNode;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
-    userMedia: ExtractListByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
-}
+type TvListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
 
 
-export const TvListItem = (props: TvListItemProps) => {
+export const TvListItem = (props: TvListItemProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     return (
         <BaseMediaListItem
             {...props}

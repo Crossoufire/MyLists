@@ -2,19 +2,16 @@ import {Star} from "lucide-react";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Separator} from "@/lib/components/ui/separator";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {ExtractMediaDetailsByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
-interface GamesDetailsProps {
-    mediaType: MediaType;
-    mediaData: ExtractMediaDetailsByType<typeof MediaType.GAMES>;
-}
+type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
 
 
-export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps) => {
+export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof MediaType.GAMES>) => {
     const gameModes = mediaData.gameModes?.split(",").map(m => ({ name: m })) || [];
     const developers = mediaData.companies ? mediaData.companies.filter(c => c.developer) : [];
     const publishers = mediaData.companies ? mediaData.companies.filter(c => c.publisher) : [];

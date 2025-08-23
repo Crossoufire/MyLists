@@ -1,29 +1,28 @@
 import React from "react";
-import {ExtractListByType} from "@/lib/components/types";
-import {MediaType, Status} from "@/lib/server/utils/enums";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {MediaType} from "@/lib/server/utils/enums";
+import {MediaConfiguration} from "@/lib/components/media-config";
+import {DisplayPages} from "@/lib/components/media/books/DisplayPages";
 import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {BaseMediaListItem} from "@/lib/components/media/base/BaseMediaListItem";
 
 
-interface BookListItemProps {
-    isCurrent: boolean;
-    isConnected: boolean;
-    mediaType: MediaType;
-    allStatuses: Status[];
-    rating: React.ReactNode;
-    queryKey: ReturnType<typeof queryKeys.userListKey>;
-    userMedia: ExtractListByType<typeof MediaType.BOOKS>;
-}
+type BookListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
 
 
-export const BookListItem = (props: BookListItemProps) => {
+export const BookListItem = (props: BookListItemProps<typeof MediaType.BOOKS>) => {
     return (
         <BaseMediaListItem
             {...props}
             redoDisplay={!!props.userMedia.redo &&
                 <DisplayRedoValue
                     redoValue={props.userMedia.redo}
+                />
+            }
+            mediaDetailsDisplay={
+                <DisplayPages
+                    total={props.userMedia.pages}
+                    status={props.userMedia.status}
+                    currentPage={props.userMedia.actualPage}
                 />
             }
         />

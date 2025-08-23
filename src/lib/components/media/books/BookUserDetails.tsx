@@ -1,23 +1,18 @@
 import React from "react";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {ExtractUserMediaByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
 import {UpdateInput} from "@/lib/components/media/base/UpdateInput";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
-interface BooksUserDetailsProps {
-    mediaType: MediaType;
-    userMedia: ExtractUserMediaByType<typeof MediaType.BOOKS>;
-    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
-}
+type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
 
 
-export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDetailsProps) => {
+export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     return (
@@ -32,7 +27,7 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDe
                     <div className="flex justify-between items-center">
                         <div>Pages</div>
                         <UpdateInput
-                            total={userMedia.total}
+                            total={userMedia.pages!}
                             inputClassName={"w-[60px]"}
                             containerClassName={"w-[135px]"}
                             initValue={userMedia.actualPage}

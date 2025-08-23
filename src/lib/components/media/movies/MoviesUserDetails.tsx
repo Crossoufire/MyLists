@@ -1,21 +1,16 @@
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {ExtractUserMediaByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
-interface MoviesUserDetailsProps {
-    mediaType: MediaType;
-    userMedia: ExtractUserMediaByType<typeof MediaType.MOVIES>;
-    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
-}
+type MoviesUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
 
 
-export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUserDetailsProps) => {
+export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUserDetailsProps<typeof MediaType.MOVIES>) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     return (

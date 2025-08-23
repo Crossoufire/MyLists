@@ -850,7 +850,7 @@ export const createListFilterDef = ({ argName, entityTable, filterColumn, mediaT
 type TListByType = {
     [MediaType.MOVIES]: typeof schema.moviesList.$inferSelect;
     [MediaType.GAMES]: typeof schema.gamesList.$inferSelect;
-    [MediaType.BOOKS]: typeof schema.booksList.$inferSelect;
+    [MediaType.BOOKS]: typeof schema.booksList.$inferSelect & { pages: number };
     [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
     [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
     [MediaType.MANGA]: typeof schema.mangaList.$inferSelect;

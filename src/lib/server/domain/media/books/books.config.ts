@@ -21,6 +21,7 @@ export const booksConfig: BooksSchemaConfig = {
     labelTable: schema.booksLabels,
     mediaList: {
         baseSelection: {
+            pages: schema.books.pages,
             mediaName: schema.books.name,
             language: schema.books.language,
             imageCover: schema.books.imageCover,
@@ -39,7 +40,7 @@ export const booksConfig: BooksSchemaConfig = {
                 filterColumn: schema.booksAuthors.name,
             }),
         },
-        defaultStatus: Status.COMPLETED,
+        defaultStatus: Status.READING,
         defaultSortName: "Title A-Z",
         availableSorts: {
             "Title A-Z": asc(schema.books.name),
@@ -49,6 +50,8 @@ export const booksConfig: BooksSchemaConfig = {
             "Published Date +": [desc(schema.books.releaseDate), asc(schema.books.name)],
             "Published Date -": [asc(schema.books.releaseDate), asc(schema.books.name)],
             "Re-Read": [desc(schema.booksList.redo), asc(schema.books.name)],
+            "Pages +": [desc(schema.books.pages), asc(schema.books.name)],
+            "Pages -": [asc(schema.books.pages), asc(schema.books.name)],
         },
     },
     apiProvider: {

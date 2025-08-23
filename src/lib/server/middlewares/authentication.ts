@@ -3,6 +3,7 @@ import {redirect} from "@tanstack/react-router";
 import {RoleType} from "@/lib/server/utils/enums";
 import {createMiddleware} from "@tanstack/react-start";
 import {getWebRequest} from "@tanstack/react-start/server";
+import {updateLastSeen} from "@/lib/server/utils/last-seen";
 
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
@@ -12,6 +13,8 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
     if (!session) {
         throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
+
+    await updateLastSeen(session.user.name);
 
     return next({
         context: {
@@ -31,6 +34,8 @@ export const managerAuthMiddleware = createMiddleware({ type: "function" }).serv
     if (!session || !session.user || session.user.role !== RoleType.MANAGER) {
         throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
     }
+
+    await updateLastSeen(session.user.name);
 
     return next({
         context: {

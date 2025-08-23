@@ -157,7 +157,8 @@ export class UserStatsRepository {
                 CASE 
                     WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0 
                     THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime} 
-                ELSE 0 END
+                ELSE 0 
+                END
             `,
         ).reduce((acc, curr) => sql`${acc} + ${curr}`);
 
@@ -222,12 +223,20 @@ export class UserStatsRepository {
         }
 
         // Final Query Construction with Search and Pagination
-        const finalQueryBase = getDbClient().with(allUsersRanked).select().from(allUsersRanked);
+        const finalQueryBase = getDbClient()
+            .with(allUsersRanked)
+            .select()
+            .from(allUsersRanked);
+
         if (search)
             finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
         // Get Total Count for Pagination
-        const totalCounter = getDbClient().with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
+        const totalCounter = getDbClient()
+            .with(allUsersRanked)
+            .select({ count: sql<number>`count(*)` })
+            .from(allUsersRanked);
+
         if (search)
             totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 

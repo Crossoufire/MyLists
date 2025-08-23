@@ -1,17 +1,14 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractFollowByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {DisplayTvRedo} from "@/lib/components/media/tv/DisplayTvRedo";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";
 import {DisplayEpsAndSeasons} from "@/lib/components/media/tv/DisplayEpsAndSeasons";
 
 
-interface TvFollowCardProps {
-    rating: React.ReactNode;
-    followData: ExtractFollowByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
-}
+type TvFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
 
 
-export const TvFollowCard = ({ followData, rating }: TvFollowCardProps) => {
+export const TvFollowCard = ({ followData, rating }: TvFollowCardProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     return (
         <BaseMediaFollowCard
             rating={rating}

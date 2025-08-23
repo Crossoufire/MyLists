@@ -1,8 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {UserMediaItem} from "@/lib/components/types";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {UserMediaDetails} from "@/lib/components/media/base/UserMediaDetails";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle} from "@/lib/components/ui/credenza";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface UserMediaEditDialogProps {

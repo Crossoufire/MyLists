@@ -40,11 +40,12 @@ export class UserStatsService {
         // Calculate Current User's Percentile Ranks
         const userRanks = [];
         for (const mediaType of mediaTypes) {
+            let percent: number | null = null;
             const rankKey = `${mediaType}Rank` as keyof typeof currentUserRankData;
+
             const rank = (currentUserRankData[rankKey] as unknown as number) ?? null;
             const mtCount = mediaTypeCountMap.get(mediaType) ?? 0;
             const active = currentUserActiveSettings.has(mediaType);
-            let percent: number | null = null;
 
             if (rank !== null && active) {
                 if (mtCount === 0) {

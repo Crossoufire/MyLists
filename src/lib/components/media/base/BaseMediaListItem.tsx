@@ -6,11 +6,11 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";
 import {DisplayRating} from "@/lib/components/media/base/DisplayRating";
+import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 import {DisplayFavorite} from "@/lib/components/media/base/DisplayFavorite";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 
 interface BaseMediaListItemProps {

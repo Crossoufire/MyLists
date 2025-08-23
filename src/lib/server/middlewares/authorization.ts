@@ -4,6 +4,7 @@ import {createMiddleware} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {notFound, redirect} from "@tanstack/react-router";
 import {getWebRequest} from "@tanstack/react-start/server";
+import {updateLastSeen} from "@/lib/server/utils/last-seen";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {baseUsernameSchema} from "@/lib/server/types/base.types";
 
@@ -22,6 +23,10 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
 
         if (!isAuthenticated && user.privacy !== PrivacyType.PUBLIC) {
             throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
+        }
+
+        if (session?.user) {
+            await updateLastSeen(session.user.name);
         }
 
         return next({

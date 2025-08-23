@@ -17,6 +17,7 @@ export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<
 
 
 // --- User Media Details Types -------------------------------------------------------------
+export type Media = NonNullable<MediaDetailsOptionsType["media"]>;
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<UserMedia, { playtime: number | null }> :
@@ -24,7 +25,6 @@ export type ExtractUserMediaByType<T extends MediaType> =
             T extends typeof MediaType.BOOKS ? Extract<UserMedia, { actualPage: number | null }> :
                 T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: number | null } | { currentSeason: number | null }> :
                     never;
-
 
 // --- Media Details Types ------------------------------------------------------------------
 export type MediaDetails = Prettify<MediaDetailsOptionsType["media"]>;

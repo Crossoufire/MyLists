@@ -1,20 +1,17 @@
 import {Star} from "lucide-react";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {ExtractMediaDetailsByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 import {DisplayAllEpsPerSeason} from "@/lib/components/media/tv/DisplayAllEpsPerSeason";
 
 
-interface TvDetailsProps {
-    mediaType: MediaType;
-    mediaData: ExtractMediaDetailsByType<typeof MediaType.SERIES | typeof MediaType.ANIME>;
-}
+type TvDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
 
 
-export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps) => {
+export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     const creators = mediaData.createdBy?.split(", ").map(c => ({ name: c })) || [];
 
     return (

@@ -21,8 +21,6 @@ export const getMediaDetails = createServerFn({ method: "GET" })
             similarMedia,
         } = await mediaService.getMediaAndUserDetails(currentUser.id, mediaId, external, mediaProviderService);
 
-        console.dir({ media, userMedia, followsData, similarMedia }, { depth: null });
-
         return { media, userMedia, followsData, similarMedia };
     });
 

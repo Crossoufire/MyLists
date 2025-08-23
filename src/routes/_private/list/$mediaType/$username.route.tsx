@@ -106,8 +106,8 @@ function MediaList() {
                     mediaType={mediaType}
                     isCurrent={isCurrent}
                     results={apiData.results}
-                    queryKey={queryKeys.userListKey(mediaType, username, search)}
                     onChangePage={(filters) => handleFilterChange(filters)}
+                    queryKey={queryKeys.userListKey(mediaType, username, search)}
                 />
             }
             {isGrid &&

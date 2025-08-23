@@ -1,16 +1,13 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractFollowByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";
 
 
-interface GameFollowCardProps {
-    rating: React.ReactNode;
-    followData: ExtractFollowByType<typeof MediaType.GAMES>;
-}
+type GameFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
 
 
-export const GameFollowCard = ({ followData, rating }: GameFollowCardProps) => {
+export const GameFollowCard = ({ followData, rating }: GameFollowCardProps<typeof MediaType.GAMES>) => {
     return (
         <BaseMediaFollowCard
             rating={rating}

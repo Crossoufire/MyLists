@@ -158,6 +158,8 @@ export type TopMetricStats = {
 export type UserMediaWithLabels<TList> = TList & {
     labels: { name: string }[],
     ratingSystem: RatingSystemType,
+    pages?: number;
+    epsPerSeason?: { season: number, episodes: number }[];
 };
 
 

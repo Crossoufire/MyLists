@@ -23,8 +23,6 @@ export class GBooksTransformer {
             };
         });
 
-        console.log(searchData);
-
         return { data: transformedResults, hasNextPage };
     }
 
@@ -41,8 +39,8 @@ export class GBooksTransformer {
                 defaultName: "default.jpg",
                 resize: { width: 300, height: 450 },
                 saveLocation: "public/static/covers/books-covers",
-                imageUrl: rawData.volumeInfo.imageLinks.extraLarge ??
-                    rawData.volumeInfo.imageLinks.large ?? rawData.volumeInfo.imageLinks.medium ?? "default.jpg",
+                imageUrl: rawData.volumeInfo.imageLinks?.extraLarge ??
+                    rawData.volumeInfo.imageLinks?.large ?? rawData.volumeInfo.imageLinks?.medium ?? "default.jpg",
             }),
         }
 

@@ -1,19 +1,16 @@
 import {Star} from "lucide-react";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
-import {ExtractMediaDetailsByType} from "@/lib/components/types";
+import {MediaConfiguration} from "@/lib/components/media-config";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
 import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
-interface MoviesDetailsProps {
-    mediaType: MediaType;
-    mediaData: ExtractMediaDetailsByType<typeof MediaType.MOVIES>;
-}
+type MoviesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaDetails"]>[0];
 
 
-export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps) => (
+export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps<typeof MediaType.MOVIES>) => (
     <div className="flex flex-col gap-7 max-sm:mt-5">
         <div className="bg-card rounded-md p-4">
             <div className="grid lg:grid-flow-col lg:auto-cols-fr grid-cols-2">
