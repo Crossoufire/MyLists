@@ -33,7 +33,7 @@ export interface MediaServiceMap {
 }
 
 
-export type MediaService = TvService | MoviesService | GamesService;
+export type MediaService = TvService | MoviesService | GamesService | BooksService;
 
 
 export interface MediaProviderServiceMap {

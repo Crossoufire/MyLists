@@ -254,10 +254,12 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
     }
 
     getAvailableGenres() {
-        return ["Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
+        return [
+            "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
             "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
             "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
-            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"].map((name) => ({ name }));
+            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"
+        ].map((name) => ({ name }));
     }
 
     updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book) {
