@@ -2,8 +2,9 @@ import {Label} from "@/lib/components/types";
 import {notFound} from "@tanstack/react-router";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/server/types/achievements.types";
+import * as schema from "@/lib/server/database/schema";
 import {followers, games, user} from "@/lib/server/database/schema";
-import {JobType, LabelAction, Status} from "@/lib/server/utils/enums";
+import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
 import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
@@ -844,3 +845,17 @@ export const createListFilterDef = ({ argName, entityTable, filterColumn, mediaT
         },
     } as FilterDefinition;
 }
+
+
+type TListByType = {
+    [MediaType.MOVIES]: typeof schema.moviesList.$inferSelect;
+    [MediaType.GAMES]: typeof schema.gamesList.$inferSelect;
+    [MediaType.BOOKS]: typeof schema.booksList.$inferSelect;
+    [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
+    [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
+    [MediaType.MANGA]: typeof schema.mangaList.$inferSelect;
+};
+
+export type MediaListDataByType = {
+    [K in MediaType]: MediaListData<TListByType[K]>;
+};

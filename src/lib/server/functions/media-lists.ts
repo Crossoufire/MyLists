@@ -1,25 +1,10 @@
-import {MediaType} from "@/lib/server/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
-import * as schema from "@/lib/server/database/schema";
 import {getContainer} from "@/lib/server/core/container";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
-import {MediaListData, mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/server/types/base.types";
-
-
-type TListByType = {
-    [MediaType.MOVIES]: typeof schema.moviesList.$inferSelect;
-    [MediaType.GAMES]: typeof schema.gamesList.$inferSelect;
-    [MediaType.BOOKS]: typeof schema.booksList.$inferSelect;
-    [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
-    [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
-    [MediaType.MANGA]: typeof schema.mangaList.$inferSelect;
-};
-
-type MediaListDataByType = {
-    [K in MediaType]: MediaListData<TListByType[K]>;
-};
+import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
+import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/server/types/base.types";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
