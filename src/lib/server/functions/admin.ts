@@ -1,9 +1,12 @@
 import {taskDefinitions} from "@/cli/commands";
+import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {createAdminToken, verifyAdminToken} from "@/lib/server/utils/jwt-utils";
+import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminUpdateAchievementSchema,
     getAdminJobSchema,
@@ -16,8 +19,52 @@ import {
 } from "@/lib/server/types/base.types";
 
 
-export const getAdminOverview = createServerFn({ method: "GET" })
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    maxAge: 1 * 60 * 1000, // 1 minute
+    path: "/"
+};
+
+
+export const checkAdminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
+    .handler(async () => {
+        const adminToken = getCookie(ADMIN_COOKIE_NAME);
+
+        if (!adminToken || !verifyAdminToken(adminToken)) {
+            return false;
+        }
+
+        return true;
+    });
+
+
+export const adminAuth = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware])
+    .validator((data) => data as { password: string })
+    .handler(async ({ data }) => {
+        if (data.password === process.env.ADMIN_PASSWORD as string) {
+            const adminToken = createAdminToken();
+            setCookie(ADMIN_COOKIE_NAME, adminToken, COOKIE_OPTIONS);
+            return { success: true };
+        }
+
+        return { success: false, message: "Incorrect Password" };
+    });
+
+
+export const adminLogout = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware])
+    .handler(async () => {
+        setCookie(ADMIN_COOKIE_NAME, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+        throw redirect({ to: "/" });
+    });
+
+
+export const getAdminOverview = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminOverview();
@@ -25,7 +72,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -34,7 +81,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
 
 
 export const getAdminAchievements = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.allUsersAchievements();
@@ -42,7 +89,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
@@ -51,7 +98,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
@@ -60,7 +107,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(adminUpdateAchievementSchema)
     .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -69,7 +116,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(postAdminUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
@@ -78,12 +125,14 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 
 export const getAdminTasks = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .handler(async () => taskDefinitions);
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        return taskDefinitions;
+    });
 
 
 export const postTriggerLongTasks = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
@@ -103,7 +152,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
 
 
 export const getAdminJobs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
@@ -132,7 +181,7 @@ export const getAdminJobs = createServerFn({ method: "GET" })
 
 
 export const getAdminJobLogs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");

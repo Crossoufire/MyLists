@@ -10,12 +10,12 @@ import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-option
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
-export const Route = createFileRoute("/_admin/admin/_layout/")({
+export const Route = createFileRoute("/_admin/admin/_layout/dashboard")({
     loader: async ({ context: { queryClient } }) => {
         return queryClient.ensureQueryData(adminOverviewOptions());
     },
     component: DashboardPage,
-})
+});
 
 
 export default function DashboardPage() {

@@ -2,10 +2,10 @@ import "./global-middleware";
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {NotFound} from "@/lib/components/general/NotFound";
-import {routerWithQueryClient} from "@tanstack/react-router-with-query";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
 import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
+import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
 
 
 export function createRouter() {
@@ -41,20 +41,24 @@ export function createRouter() {
         },
     });
 
-    return routerWithQueryClient(
-        createTanStackRouter({
-            routeTree,
-            context: { queryClient },
-            defaultPreload: false,
-            defaultPreloadStaleTime: 0,
-            defaultErrorComponent: ErrorCatchBoundary,
-            defaultNotFoundComponent: NotFound,
-            scrollRestoration: true,
-            defaultStructuralSharing: true,
-            defaultSsr: false,
-        }),
+    const router = createTanStackRouter({
+        routeTree,
+        context: { queryClient },
+        defaultPreload: false,
+        defaultPreloadStaleTime: 0,
+        defaultErrorComponent: ErrorCatchBoundary,
+        defaultNotFoundComponent: NotFound,
+        scrollRestoration: true,
+        defaultStructuralSharing: true,
+        defaultSsr: true,
+    });
+
+    setupRouterSsrQueryIntegration({
+        router,
         queryClient,
-    );
+    });
+
+    return router;
 }
 
 

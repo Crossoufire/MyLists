@@ -316,7 +316,7 @@ export type StatsCTE = any;
 export type NameValuePair = { name: string | number, value: number };
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 
-export type CurrentUser = ReturnType<typeof authOptions>["queryFn"];
+export type CurrentUser = Awaited<ReturnType<NonNullable<ReturnType<typeof authOptions>["queryFn"]>>> | undefined;
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
 export type HofSorting = z.infer<typeof hofSortingSchema>;

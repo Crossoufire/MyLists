@@ -22,7 +22,7 @@ export const authorizationMiddleware = createMiddleware({ type: "function" })
         const isAuthenticated = !!session?.user
 
         if (!isAuthenticated && user.privacy !== PrivacyType.PUBLIC) {
-            throw redirect({ to: "/", search: { authExpired: true }, statusCode: 401 });
+            throw redirect({ to: "/", search: { authExpired: true } });
         }
 
         if (session?.user) {

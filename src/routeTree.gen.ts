@@ -26,16 +26,17 @@ import { Route as PrivatePlatformStatsRouteRouteImport } from './routes/_private
 import { Route as PrivateMoviedleRouteRouteImport } from './routes/_private/moviedle/route'
 import { Route as PrivateHallOfFameRouteRouteImport } from './routes/_private/hall-of-fame/route'
 import { Route as PrivateComingNextRouteRouteImport } from './routes/_private/coming-next/route'
+import { Route as AdminAdminIndexRouteImport } from './routes/_admin/admin/index'
 import { Route as PrivateStatsUsernameRouteImport } from './routes/_private/stats/$username'
 import { Route as PrivateAchievementsUsernameRouteImport } from './routes/_private/achievements/$username'
 import { Route as AdminAdminLayoutRouteImport } from './routes/_admin/admin/_layout'
-import { Route as AdminAdminLayoutIndexRouteImport } from './routes/_admin/admin/_layout/index'
 import { Route as PrivateProfileUsernameHeaderRouteImport } from './routes/_private/profile/$username/_header'
 import { Route as PrivateDetailsMediaTypeMediaIdRouteImport } from './routes/_private/details/$mediaType/$mediaId'
 import { Route as AdminAdminLayoutUsersRouteImport } from './routes/_admin/admin/_layout/users'
 import { Route as AdminAdminLayoutTasksRouteImport } from './routes/_admin/admin/_layout/tasks'
 import { Route as AdminAdminLayoutMediadleRouteImport } from './routes/_admin/admin/_layout/mediadle'
 import { Route as AdminAdminLayoutFeaturesRouteImport } from './routes/_admin/admin/_layout/features'
+import { Route as AdminAdminLayoutDashboardRouteImport } from './routes/_admin/admin/_layout/dashboard'
 import { Route as AdminAdminLayoutAchievementsRouteImport } from './routes/_admin/admin/_layout/achievements'
 import { Route as PrivateListMediaTypeUsernameRouteRouteImport } from './routes/_private/list/$mediaType/$username.route'
 import { Route as PrivateProfileUsernameHeaderIndexRouteImport } from './routes/_private/profile/$username/_header/index'
@@ -130,6 +131,11 @@ const PrivateProfileUsernameRoute = PrivateProfileUsernameRouteImport.update({
   path: '/profile/$username',
   getParentRoute: () => PrivateRoute,
 } as any)
+const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminAdminRoute,
+} as any)
 const PrivateStatsUsernameRoute = PrivateStatsUsernameRouteImport.update({
   id: '/stats/$username',
   path: '/stats/$username',
@@ -144,11 +150,6 @@ const PrivateAchievementsUsernameRoute =
 const AdminAdminLayoutRoute = AdminAdminLayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => AdminAdminRoute,
-} as any)
-const AdminAdminLayoutIndexRoute = AdminAdminLayoutIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminAdminLayoutRoute,
 } as any)
 const PrivateProfileUsernameHeaderRoute =
   PrivateProfileUsernameHeaderRouteImport.update({
@@ -181,6 +182,12 @@ const AdminAdminLayoutFeaturesRoute =
   AdminAdminLayoutFeaturesRouteImport.update({
     id: '/features',
     path: '/features',
+    getParentRoute: () => AdminAdminLayoutRoute,
+  } as any)
+const AdminAdminLayoutDashboardRoute =
+  AdminAdminLayoutDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
     getParentRoute: () => AdminAdminLayoutRoute,
   } as any)
 const AdminAdminLayoutAchievementsRoute =
@@ -252,15 +259,16 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminAdminLayoutRouteWithChildren
   '/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/stats/$username': typeof PrivateStatsUsernameRoute
+  '/admin/': typeof AdminAdminIndexRoute
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/admin/achievements': typeof AdminAdminLayoutAchievementsRoute
+  '/admin/dashboard': typeof AdminAdminLayoutDashboardRoute
   '/admin/features': typeof AdminAdminLayoutFeaturesRoute
   '/admin/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/admin/tasks': typeof AdminAdminLayoutTasksRoute
   '/admin/users': typeof AdminAdminLayoutUsersRoute
   '/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/profile/$username': typeof PrivateProfileUsernameHeaderRouteWithChildren
-  '/admin/': typeof AdminAdminLayoutIndexRoute
   '/details/$mediaType/$job/$name': typeof PrivateDetailsMediaTypeJobNameRoute
   '/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/profile/$username/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
@@ -280,11 +288,12 @@ export interface FileRoutesByTo {
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
   '/': typeof PublicIndexRoute
-  '/admin': typeof AdminAdminLayoutIndexRoute
+  '/admin': typeof AdminAdminIndexRoute
   '/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/stats/$username': typeof PrivateStatsUsernameRoute
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/admin/achievements': typeof AdminAdminLayoutAchievementsRoute
+  '/admin/dashboard': typeof AdminAdminLayoutDashboardRoute
   '/admin/features': typeof AdminAdminLayoutFeaturesRoute
   '/admin/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/admin/tasks': typeof AdminAdminLayoutTasksRoute
@@ -317,8 +326,10 @@ export interface FileRoutesById {
   '/_admin/admin/_layout': typeof AdminAdminLayoutRouteWithChildren
   '/_private/achievements/$username': typeof PrivateAchievementsUsernameRoute
   '/_private/stats/$username': typeof PrivateStatsUsernameRoute
+  '/_admin/admin/': typeof AdminAdminIndexRoute
   '/_private/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/_admin/admin/_layout/achievements': typeof AdminAdminLayoutAchievementsRoute
+  '/_admin/admin/_layout/dashboard': typeof AdminAdminLayoutDashboardRoute
   '/_admin/admin/_layout/features': typeof AdminAdminLayoutFeaturesRoute
   '/_admin/admin/_layout/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/_admin/admin/_layout/tasks': typeof AdminAdminLayoutTasksRoute
@@ -326,7 +337,6 @@ export interface FileRoutesById {
   '/_private/details/$mediaType/$mediaId': typeof PrivateDetailsMediaTypeMediaIdRoute
   '/_private/profile/$username': typeof PrivateProfileUsernameRouteWithChildren
   '/_private/profile/$username/_header': typeof PrivateProfileUsernameHeaderRouteWithChildren
-  '/_admin/admin/_layout/': typeof AdminAdminLayoutIndexRoute
   '/_private/details/$mediaType/$job/$name': typeof PrivateDetailsMediaTypeJobNameRoute
   '/_private/details/edit/$mediaType/$mediaId': typeof PrivateDetailsEditMediaTypeMediaIdRoute
   '/_private/profile/$username/_header/followers': typeof PrivateProfileUsernameHeaderFollowersRoute
@@ -351,15 +361,16 @@ export interface FileRouteTypes {
     | '/admin'
     | '/achievements/$username'
     | '/stats/$username'
+    | '/admin/'
     | '/list/$mediaType/$username'
     | '/admin/achievements'
+    | '/admin/dashboard'
     | '/admin/features'
     | '/admin/mediadle'
     | '/admin/tasks'
     | '/admin/users'
     | '/details/$mediaType/$mediaId'
     | '/profile/$username'
-    | '/admin/'
     | '/details/$mediaType/$job/$name'
     | '/details/edit/$mediaType/$mediaId'
     | '/profile/$username/followers'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/stats/$username'
     | '/list/$mediaType/$username'
     | '/admin/achievements'
+    | '/admin/dashboard'
     | '/admin/features'
     | '/admin/mediadle'
     | '/admin/tasks'
@@ -415,8 +427,10 @@ export interface FileRouteTypes {
     | '/_admin/admin/_layout'
     | '/_private/achievements/$username'
     | '/_private/stats/$username'
+    | '/_admin/admin/'
     | '/_private/list/$mediaType/$username'
     | '/_admin/admin/_layout/achievements'
+    | '/_admin/admin/_layout/dashboard'
     | '/_admin/admin/_layout/features'
     | '/_admin/admin/_layout/mediadle'
     | '/_admin/admin/_layout/tasks'
@@ -424,7 +438,6 @@ export interface FileRouteTypes {
     | '/_private/details/$mediaType/$mediaId'
     | '/_private/profile/$username'
     | '/_private/profile/$username/_header'
-    | '/_admin/admin/_layout/'
     | '/_private/details/$mediaType/$job/$name'
     | '/_private/details/edit/$mediaType/$mediaId'
     | '/_private/profile/$username/_header/followers'
@@ -577,6 +590,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateProfileUsernameRouteImport
       parentRoute: typeof PrivateRoute
     }
+    '/_admin/admin/': {
+      id: '/_admin/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminAdminIndexRouteImport
+      parentRoute: typeof AdminAdminRoute
+    }
     '/_private/stats/$username': {
       id: '/_private/stats/$username'
       path: '/stats/$username'
@@ -597,13 +617,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AdminAdminLayoutRouteImport
       parentRoute: typeof AdminAdminRoute
-    }
-    '/_admin/admin/_layout/': {
-      id: '/_admin/admin/_layout/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminAdminLayoutIndexRouteImport
-      parentRoute: typeof AdminAdminLayoutRoute
     }
     '/_private/profile/$username/_header': {
       id: '/_private/profile/$username/_header'
@@ -645,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/features'
       fullPath: '/admin/features'
       preLoaderRoute: typeof AdminAdminLayoutFeaturesRouteImport
+      parentRoute: typeof AdminAdminLayoutRoute
+    }
+    '/_admin/admin/_layout/dashboard': {
+      id: '/_admin/admin/_layout/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminAdminLayoutDashboardRouteImport
       parentRoute: typeof AdminAdminLayoutRoute
     }
     '/_admin/admin/_layout/achievements': {
@@ -719,20 +739,20 @@ declare module '@tanstack/react-start/server' {
 
 interface AdminAdminLayoutRouteChildren {
   AdminAdminLayoutAchievementsRoute: typeof AdminAdminLayoutAchievementsRoute
+  AdminAdminLayoutDashboardRoute: typeof AdminAdminLayoutDashboardRoute
   AdminAdminLayoutFeaturesRoute: typeof AdminAdminLayoutFeaturesRoute
   AdminAdminLayoutMediadleRoute: typeof AdminAdminLayoutMediadleRoute
   AdminAdminLayoutTasksRoute: typeof AdminAdminLayoutTasksRoute
   AdminAdminLayoutUsersRoute: typeof AdminAdminLayoutUsersRoute
-  AdminAdminLayoutIndexRoute: typeof AdminAdminLayoutIndexRoute
 }
 
 const AdminAdminLayoutRouteChildren: AdminAdminLayoutRouteChildren = {
   AdminAdminLayoutAchievementsRoute: AdminAdminLayoutAchievementsRoute,
+  AdminAdminLayoutDashboardRoute: AdminAdminLayoutDashboardRoute,
   AdminAdminLayoutFeaturesRoute: AdminAdminLayoutFeaturesRoute,
   AdminAdminLayoutMediadleRoute: AdminAdminLayoutMediadleRoute,
   AdminAdminLayoutTasksRoute: AdminAdminLayoutTasksRoute,
   AdminAdminLayoutUsersRoute: AdminAdminLayoutUsersRoute,
-  AdminAdminLayoutIndexRoute: AdminAdminLayoutIndexRoute,
 }
 
 const AdminAdminLayoutRouteWithChildren =
@@ -740,10 +760,12 @@ const AdminAdminLayoutRouteWithChildren =
 
 interface AdminAdminRouteChildren {
   AdminAdminLayoutRoute: typeof AdminAdminLayoutRouteWithChildren
+  AdminAdminIndexRoute: typeof AdminAdminIndexRoute
 }
 
 const AdminAdminRouteChildren: AdminAdminRouteChildren = {
   AdminAdminLayoutRoute: AdminAdminLayoutRouteWithChildren,
+  AdminAdminIndexRoute: AdminAdminIndexRoute,
 }
 
 const AdminAdminRouteWithChildren = AdminAdminRoute._addFileChildren(

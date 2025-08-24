@@ -14,12 +14,13 @@ function createCleanError(originalError: Error, message?: string): Error {
 
 /**
  * Error Types and Logic
- * Error - `notFound`: not thrown but returned and handled frontend side by tanstack router.
- * Error - FormattedError: Expected Error with pre-formatted message for frontend side.
- * Error - FormattedError(sendMail: true): Error not supposed to happened but pre-formatted message + send mail.
- * Error - FormZodError: Error occurred during Form submission, return the whole error.
- * Error - ZodError: Unexpected Error on validation, send admin email, return generic error message.
- * Error - Error: Unexpected Error anywhere, send admin email, return generic error message.
+ * redirect: thrown in code but returned and handled frontend side by tanstack router.
+ * notFound: thrown in code but returned and handled frontend side by tanstack router.
+ * FormattedError: Expected Error with pre-formatted message for frontend side.
+ * FormattedError(sendMail: true): Error not supposed to happened but pre-formatted message + send mail.
+ * FormZodError: Error occurred during Form submission, return the whole error.
+ * ZodError: Unexpected Error on validation, send admin email, return generic error message.
+ * Error: Unexpected Error anywhere, send admin email, return generic error message.
  **/
 export const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {

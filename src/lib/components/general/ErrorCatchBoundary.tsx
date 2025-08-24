@@ -4,7 +4,9 @@ import {type ErrorComponentProps,} from "@tanstack/react-router";
 import {ErrorComponent} from "@/lib/components/general/ErrorComponent";
 
 
-export function ErrorCatchBoundary({}: Readonly<ErrorComponentProps>) {
+export function ErrorCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
+    console.error({ error });
+    
     return (
         <ErrorComponent
             title={"Well, This is Awkward"}

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_private/platform-stats")({
     validateSearch: (search) => search as { mediaType?: MediaType },
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context: { queryClient }, deps: { search } }) => {
-        return queryClient.ensureQueryData(platformStatsOptions(search))
+        return queryClient.ensureQueryData(platformStatsOptions(search));
     },
     component: GlobalStatsPage,
 });

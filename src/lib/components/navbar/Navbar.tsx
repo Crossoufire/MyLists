@@ -13,10 +13,11 @@ import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Notifications} from "@/lib/components/navbar/Notifications";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
-import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, Sparkles, User} from "lucide-react";
+import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
+import {RoleType} from "@/lib/server/utils/enums";
 
 
 export const Navbar = () => {
@@ -147,6 +148,14 @@ export const Navbar = () => {
                                                 to={`/stats/${currentUser.name}`}
                                                 icon={<ChartLine className="w-4 h-4"/>}
                                             />
+                                            {currentUser.role === RoleType.MANAGER &&
+                                                <NavMediaItem
+                                                    to="/admin/dashboard"
+                                                    popRef={popRef}
+                                                    text="Admin Panel"
+                                                    icon={<ShieldCheck className="w-4 h-4"/>}
+                                                />
+                                            }
                                             <NavMediaItem
                                                 to="/settings"
                                                 text="Settings"

@@ -18,7 +18,6 @@ export const Route = createFileRoute("/_private/stats/$username")({
         return queryClient.ensureQueryData(userStatsOptions(username, search));
     },
     component: StatsPage,
-    errorComponent: () => <div>404</div>,
 });
 
 
