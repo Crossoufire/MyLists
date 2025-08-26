@@ -242,6 +242,13 @@ export type GamesAdvancedStats = AdvancedMediaStats & {
 }
 
 
+export type BooksAdvancedStats = AdvancedMediaStats & {
+    langsStats: TopMetricStats;
+    authorsStats: TopMetricStats;
+    publishersStats: TopMetricStats;
+}
+
+
 export type SimpleMedia = {
     mediaId: number,
     mediaName: string,

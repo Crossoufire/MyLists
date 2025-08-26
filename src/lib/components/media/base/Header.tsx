@@ -1,6 +1,6 @@
 import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
-import {capitalize, computeLevel, StatusUtils} from "@/lib/utils/functions";
+import {capitalize, computeLevel, statusUtils} from "@/lib/utils/functions";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
 import {ListPagination, ListUserData} from "@/lib/components/types";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
@@ -25,7 +25,7 @@ interface HeaderProps {
 export const Header = (props: HeaderProps) => {
     const { isGrid, userData, pagination, onGridClick, onFilterClick, onStatusChange, onSortChange, onSearchEnter } = props;
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
-    const allStatuses = StatusUtils.byMediaType(mediaType);
+    const allStatuses = statusUtils.byMediaType(mediaType);
     const userLevel = computeLevel(userData?.userMediaSettings.find(s => s.mediaType === mediaType)?.timeSpent ?? 0);
 
     return (

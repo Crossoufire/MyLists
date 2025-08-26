@@ -14,7 +14,7 @@ export const getUserStats = createServerFn({ method: "GET" })
         const activatedMediaTypes = user.userMediaSettings.filter((s) => s.active).map((s) => s.mediaType)
 
         if (!mediaType) {
-            const userStats = await userStatsService.userAdvancedStatsSummary(user.id);
+            const userStats = await userStatsService.userAdvancedSummaryStats(user.id);
             return {
                 ...userStats,
                 activatedMediaTypes,
@@ -27,7 +27,7 @@ export const getUserStats = createServerFn({ method: "GET" })
             throw new FormattedError("MediaType not activated");
         }
 
-        const mediaStats = await userStatsService.userMediaAdvancedStats(user.id, mediaType);
+        const mediaStats = await userStatsService.userAdvancedMediaStats(user.id, mediaType);
         return {
             ...mediaStats,
             mediaType,

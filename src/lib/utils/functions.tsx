@@ -5,7 +5,7 @@ import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
 
 
-export const StatusUtils = {
+export const statusUtils = {
     getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
     byMediaType: (mediaType: MediaType) => {
         switch (mediaType) {

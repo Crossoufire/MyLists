@@ -1,11 +1,10 @@
+import {Cell, Pie, PieChart} from "recharts";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
-import {Cell, LabelList, Pie, PieChart} from "recharts";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-
 import {MediaGlobalSummaryType, UserDataType} from "@/lib/components/types";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface GlobalStatsProps {
@@ -19,29 +18,28 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
     const { caret, toggleCollapse, contentClasses } = useCollapse();
 
     function transformToPieData(global: GlobalStatsProps["global"]) {
-        const timeSummed = global.timePerMedia.reduce((acc, curr) => acc + curr, 0);
-        if (timeSummed === 0) return [];
-
-        return global.timePerMedia.map((time, idx) => ({
-            value: time,
-            color: getMediaColor(global.mediaTypes[idx]),
-            percent: ((time / timeSummed) * 100).toFixed(0) + "%",
+        return global.mediaTimeDistribution.map((data) => ({
+            name: data.name,
+            value: data.value,
+            color: getMediaColor(data.name),
+            percent: ((data.value / global.totalHours) * 100).toFixed(0) + "%",
         }));
     }
 
-    const renderCustomLabel = ({ cx, cy, viewBox, value }: any) => {
-        // No render if angle is less than |20°|
-        if (Math.abs(viewBox.endAngle - viewBox.startAngle) <= 20) return null;
+    const renderCustomLabel = (props: any) => {
+        const { cx, cy, midAngle, outerRadius, startAngle, endAngle, percent } = props;
+
+        // No render if angle <= 20°
+        if (Math.abs(endAngle - startAngle) <= 20) return null;
 
         const RADIAN = Math.PI / 180;
-        const radius = (viewBox.outerRadius / 2) + 8;
-        const midAngle = (viewBox.startAngle + viewBox.endAngle) / 2;
+        const radius = (outerRadius / 2) + 8;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
         return (
             <text x={x} y={y} fill="black" fontSize={14} fontWeight={500} textAnchor="middle" dominantBaseline="central">
-                {value}
+                {percent}
             </text>
         );
     };
@@ -62,15 +60,24 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                     <div className="col-span-12 sm:col-span-5">
                         <div className="flex items-center justify-center h-[180px]">
                             <PieChart width={180} height={180}>
-                                <Pie data={pieData} dataKey="value" outerRadius={80} startAngle={450} endAngle={90}
-                                     animationBegin={0} animationDuration={700}>
+                                <Pie
+                                    data={pieData}
+                                    endAngle={450}
+                                    startAngle={90}
+                                    outerRadius={80}
+                                    dataKey={"value"}
+                                    labelLine={false}
+                                    animationBegin={0}
+                                    animationDuration={700}
+                                    label={renderCustomLabel}
+                                >
                                     {pieData.map((entry, idx) =>
-                                        <Cell key={idx} stroke="#0b262b" fill={entry.color}/>
+                                        <Cell
+                                            key={idx}
+                                            stroke="#0b262b"
+                                            fill={entry.color}
+                                        />
                                     )}
-                                    <LabelList
-                                        dataKey="percent"
-                                        content={renderCustomLabel}
-                                    />
                                 </Pie>
                             </PieChart>
                         </div>
@@ -114,4 +121,3 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
         </Card>
     );
 };
-

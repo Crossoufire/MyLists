@@ -1,13 +1,17 @@
-import {ApiData} from "@/lib/stats/index";
+import {SpecificMediaData} from "@/lib/stats/index";
 import type {StatSection} from "@/lib/stats/types";
+import {MediaType} from "@/lib/server/utils/enums";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/stats/helpers";
 
 
-export const booksData = (apiData: ApiData): StatSection[] => {
-    const data = apiData as any;
-    const topLanguage = data.languages?.top_values?.[0];
+type BooksStats = SpecificMediaData<typeof MediaType.BOOKS>
+
+
+export const booksData = (data: BooksStats): StatSection[] => {
+    const sp = data.specificMediaStats;
+    const topLang = sp.langsStats.topValues[0];
 
     return [
         {
@@ -15,44 +19,42 @@ export const booksData = (apiData: ApiData): StatSection[] => {
             cards: {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
-                    createStatCard("Total Entries", data.totalMedia?.unique, `And ${data.total_media?.redo} Re-read`),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.total_hours), `Read ${data.total_days} days`),
-                    createRatingStatCard(data.rating_system, data.avg_rating, data.total_rated),
-                    createStatCard("Avg. Pages", data.avg_pages, "Big books or small books?"),
-                    createStatCard("Avg. Updates / Month", data.avg_updates, `With ${data.total_updates} updates`),
-                    createStatCard("Top Language", topLanguage?.name, `With ${topLanguage?.value} media`, topLanguage?.name == null ? null : data.languages?.top_values),
-                    createStatCard("Total Pages", formatNumberWithSpaces(data.total_pages), "Cumulated pages"),
-                    createStatCard("Total Favorites", data.total_favorites, "The best ones"),
-                    createStatCard("Total Labels", data.total_labels, "Order maniac"),
-                    createStatCard("Classic", data.misc_genres?.[1]?.value, "Much fancy"),
-                    createStatCard("Young Adult", data.misc_genres?.[0]?.value, "Good to be young"),
+                    createStatCard("Total Entries", data.totalEntries, `With ${data.totalRedo} Re-read`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Read ${data.timeSpentDays} days`),
+                    createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
+                    createStatCard("Avg. Pages", sp.avgDuration, "Big books or small books?"),
+                    createStatCard("Avg. Updates / Month", data.avgUpdates, `With ${data.totalUpdates} updates`),
+                    createStatCard("Top Language", topLang.name, `With ${topLang.value} media`, sp.langsStats.topValues),
+                    createStatCard("Total Pages", formatNumberWithSpaces(data.totalSpecific), "Cumulated pages"),
+                    createStatCard("Total Favorites", data.totalFavorites, "The best ones"),
+                    createStatCard("Total Labels", sp.totalLabels, "Order maniac"),
                 ],
             },
             lists: {
                 ...MAIN_GRAPHS_CONFIG,
                 dataList: [
-                    createStatList("Published Dates", data.release_dates),
-                    createStatList("Pages", data.pages),
-                    createStatList("Rating", data.ratings),
-                    createStatList("Updates / Month", data.updates),
+                    createStatList("Published Dates", sp.releaseDates),
+                    createStatList("Pages", sp.durationDistrib),
+                    createStatList("Rating", sp.ratings),
+                    createStatList("Updates / Month", data.updatesDistribution),
                 ],
             },
-            statuses: data.status_counts,
+            statuses: data.statusesCounts,
         },
         {
             sidebarTitle: "Authors Statistics",
-            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.authors, "Read"), },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.authors, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.authorsStats, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.authorsStats, "Read") },
         },
         {
             sidebarTitle: "Publishers Statistics",
-            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.publishers, "Read"), },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.publishers, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.publishersStats, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.publishersStats, "Read") },
         },
         {
             sidebarTitle: "Genres Statistics",
-            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(data.genres, "Read"), },
-            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(data.genres, "Read"), },
+            cards: { ...SIDE_CARD_CONFIG, cardStatsList: getCardsData(sp.genresStats, "Read") },
+            lists: { ...SIDE_LISTS_CONFIG, dataList: getListsData(sp.genresStats, "Read") },
         },
     ];
 };

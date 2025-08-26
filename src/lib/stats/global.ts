@@ -14,7 +14,6 @@ export const globalData = (data: GlobalStatsData, forUser = false): StatSection[
             cards: {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
-                    //@ts-expect-error
                     ...(forUser ? [] : [createStatCard("Total Active Users", data.totalUsers, "At least one media list")]),
                     createStatCard("Total Entries", data.totalEntries, "Cumulated Media Entries"),
                     createStatCard("Total Time Spent", `${(data.totalDays / 365).toFixed(1)}`, "Cumulated Time (years!)"),

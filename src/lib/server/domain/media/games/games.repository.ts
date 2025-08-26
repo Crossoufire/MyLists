@@ -157,7 +157,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
             .get();
 
-        return avgDuration?.average ? avgDuration.average : 0;
+        return avgDuration?.average ? avgDuration.average.toFixed(2) : 0;
     }
 
     async gamePlaytimeDistrib(userId?: number) {

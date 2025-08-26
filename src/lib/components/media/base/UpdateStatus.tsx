@@ -1,4 +1,4 @@
-import {StatusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/functions";
 import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
@@ -13,7 +13,7 @@ interface StatusDropProps {
 
 
 export const UpdateStatus = ({ status, mediaType, updateStatus, canBeCompleted = true }: StatusDropProps) => {
-    const allStatuses = StatusUtils.byMediaType(mediaType);
+    const allStatuses = statusUtils.byMediaType(mediaType);
 
     const handleStatus = (status: Status) => {
         updateStatus.mutate({ payload: { status, type: UpdateType.STATUS } });

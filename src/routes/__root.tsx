@@ -1,12 +1,15 @@
 /// <reference types="vite/client"/>
+import React from "react";
 import {Toaster} from "sonner";
-import React, {lazy} from "react";
 import appCSS from "@/styles.css?url";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import {Footer} from "@/lib/components/general/Footer";
 import type {QueryClient} from "@tanstack/react-query";
+import {TanStackDevtools} from "@tanstack/react-devtools";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
+import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
+import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
@@ -53,8 +56,25 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
                 {children}
             </main>
             <Footer/>
-            {import.meta.env.DEV && <ReactQueryDevtools/>}
-            {import.meta.env.DEV && <TanStackRouterDevtools/>}
+
+            {import.meta.env.DEV &&
+                <TanStackDevtools
+                    eventBusConfig={{
+                        debug: false,
+                        connectToServerBus: true,
+                    }}
+                    plugins={[
+                        {
+                            name: "TanStack Query",
+                            render: <ReactQueryDevtoolsPanel/>,
+                        },
+                        {
+                            name: "TanStack Router",
+                            render: <TanStackRouterDevtoolsPanel/>,
+                        },
+                    ]}
+                />
+            }
         </div>
 
         <Scripts/>
@@ -62,12 +82,3 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         </html>
     );
 }
-
-
-const TanStackRouterDevtools = lazy(() =>
-    import("@tanstack/react-router-devtools").then((res) => ({ default: res.TanStackRouterDevtools }))
-);
-
-const ReactQueryDevtools = lazy(() =>
-    import("@tanstack/react-query-devtools").then((res) => ({ default: res.ReactQueryDevtools }))
-);

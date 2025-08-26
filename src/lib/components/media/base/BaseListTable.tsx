@@ -1,5 +1,5 @@
 import {ColumnDef} from "@tanstack/react-table";
-import {StatusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/functions";
 import {CircleCheck, Settings2} from "lucide-react";
 import {UserMediaItem} from "@/lib/components/types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
@@ -52,7 +52,7 @@ export const getBaseColumns = <T extends UserMediaItem>({ isCurrent, isConnected
                             queryKey={queryKey}
                             mediaType={mediaType}
                             mediaId={original.mediaId}
-                            allStatuses={StatusUtils.byMediaType(mediaType)}
+                            allStatuses={statusUtils.byMediaType(mediaType)}
                         />
                     </div>
                 );

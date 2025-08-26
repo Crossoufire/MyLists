@@ -7,7 +7,7 @@ import {moviesData} from "@/lib/stats/movies";
 import {StatSection} from "@/lib/stats/types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {platformStatsOptions, userStatsOptions} from "@/lib/react-query/query-options/query-options";
-import {GamesAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
+import {BooksAdvancedStats, GamesAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
 
 
 export interface MediaSpecificStatsMap {
@@ -15,7 +15,7 @@ export interface MediaSpecificStatsMap {
     [MediaType.ANIME]: TvAdvancedStats;
     [MediaType.MOVIES]: MoviesAdvancedStats;
     [MediaType.GAMES]: GamesAdvancedStats;
-    [MediaType.BOOKS]: TvAdvancedStats;
+    [MediaType.BOOKS]: BooksAdvancedStats;
     [MediaType.MANGA]: TvAdvancedStats;
 }
 
@@ -26,7 +26,10 @@ export type ApiData =
 
 type MediaStatsContainer = Extract<ApiData, { specificMediaStats: object }>;
 type MediaStatsBase = Omit<MediaStatsContainer, "specificMediaStats">;
-export type SpecificMediaData<T extends MediaType> = MediaStatsBase & { mediaType: T; specificMediaStats: MediaSpecificStatsMap[T]; };
+export type SpecificMediaData<T extends MediaType> = MediaStatsBase & {
+    mediaType: T,
+    specificMediaStats: MediaSpecificStatsMap[T],
+};
 
 
 interface DataToLoadProps {
@@ -47,7 +50,7 @@ export const dataToLoad = ({ apiData, forUser = false }: DataToLoadProps): StatS
         case MediaType.GAMES:
             return gamesData(apiData as any);
         case MediaType.BOOKS:
-            return booksData(apiData);
+            return booksData(apiData as any);
         case MediaType.MANGA:
             return mangaData(apiData);
         default:

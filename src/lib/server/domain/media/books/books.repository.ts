@@ -83,7 +83,7 @@ export class BooksRepository extends BaseRepository<BooksSchemaConfig> {
             .where(and(forUser, ne(booksList.status, Status.PLAN_TO_READ), isNotNull(books.pages)))
             .get();
 
-        return avgDuration?.average ? avgDuration.average : 0;
+        return avgDuration?.average ? avgDuration.average.toFixed(2) : 0;
     }
 
     async booksDurationDistrib(userId?: number) {

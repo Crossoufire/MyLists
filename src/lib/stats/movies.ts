@@ -22,7 +22,7 @@ export const moviesData = (data: MoviesStats): StatSection[] => {
                     createStatCard("Total Entries", data.totalEntries, `And ${data.totalRedo} Re-watched`),
                     createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Watched ${data.timeSpentHours / 24} days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Duration", sp.avgDuration.toFixed(2), "Duration in minutes"),
+                    createStatCard("Avg. Duration", sp.avgDuration, "Duration in minutes"),
                     createStatCard("Avg. Updates / Month", data.avgUpdates, `With ${data.totalUpdates} updates`),
                     createStatCard("Top Language", topLang.name, `With ${topLang.value} media`, sp.langsStats.topValues),
                     createStatCard("Total Budgets", intToMoney(sp.totalBudget), "Cumulated budget"),

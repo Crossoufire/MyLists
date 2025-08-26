@@ -26,7 +26,9 @@ export const createRatingStatCard = (ratingSystem: RatingSystemType, avgRating: 
 };
 
 
-export const createStatList = (title: string, data: NameValuePair[]): StatListData => ({ title, data });
+export const createStatList = (title: string, data: NameValuePair[]): StatListData => {
+    return ({ title, data });
+}
 
 
 export const getCardsData = (data: TopMetricStats, suffix = "Watched"): StatCardData[] => {

@@ -677,12 +677,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         const { listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
 
-        const ratingDistrib: { [key: string]: number } = {};
-        for (let i = 0; i <= 20; i++) {
-            ratingDistrib[(i * 0.5).toFixed(1)] = 0;
-        }
-
-        const ratingQuery = await getDbClient()
+        const rows = await getDbClient()
             .select({
                 rating: listTable.rating,
                 count: count(listTable.rating),
@@ -693,16 +688,18 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .orderBy(asc(listTable.rating))
             .execute();
 
-        ratingQuery.forEach((result) => {
-            const ratingKey = result?.rating?.toFixed(1);
-            if (ratingKey) {
-                ratingDistrib[ratingKey] = result.count;
-            }
-        });
+        const buckets = Array.from({ length: 21 }, (_, i) => ({
+            name: (i * 0.5).toFixed(1),
+            value: 0,
+        }));
 
-        const ratings = Object.entries(ratingDistrib).map(([name, value]) => ({ name, value }));
+        for (const r of rows) {
+            if (r.rating == null) continue;
+            const idx = Math.round(Number(r.rating) * 2);
+            if (idx >= 0 && idx < buckets.length) buckets[idx].value = r.count;
+        }
 
-        return ratings.sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+        return buckets;
     }
 
     async computeReleaseDateStats(userId?: number) {
@@ -761,7 +758,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         const countAlias = count(metricNameCol);
         let topValuesBuilder = getDbClient()
-            .select({ name: sql<string>`${metricNameCol}`, value: countAlias })
+            .select({
+                name: sql<string>`${metricNameCol}`,
+                value: countAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
@@ -775,7 +775,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         const avgRatingAlias = avgDistinct(listTable.rating);
         const ratingCountAlias = count(listTable.rating);
         let topRatedBuilder = getDbClient()
-            .select({ name: sql<string>`${metricNameCol}`, value: avgRatingAlias })
+            .select({
+                name: sql<string>`${metricNameCol}`,
+                value: avgRatingAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
@@ -789,7 +792,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         const favoriteCountAlias = count(metricNameCol);
         let topFavoritedBuilder = getDbClient()
-            .select({ name: sql<string>`${metricNameCol}`, value: favoriteCountAlias })
+            .select({
+                name: sql<string>`${metricNameCol}`,
+                value: favoriteCountAlias,
+            })
             .from(listTable)
             .innerJoin(mediaTable, eq(listTable.mediaId, mediaTable.id))
             .$dynamic();
@@ -804,10 +810,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         return {
             topValues: topValues.map((row) => ({ name: row.name, value: row.value || 0 })),
-            topRated: topRated.map((row) => ({
-                name: row.name,
-                value: Math.round((Number(row.value) || 0) * 100) / 100,
-            })),
+            topRated: topRated.map((row) => ({ name: row.name, value: Math.round((Number(row.value) || 0) * 100) / 100 })),
             topFavorited: topFavorited.map((row) => ({ name: row.name, value: row.value || 0 })),
         };
     }

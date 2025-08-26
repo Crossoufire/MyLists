@@ -17,7 +17,7 @@ import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
-import {StatusUtils} from "@/lib/utils/functions";
+import {statusUtils} from "@/lib/utils/functions";
 
 
 interface FiltersSideSheetProps {
@@ -33,7 +33,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
     let localFilters: Partial<MediaListArgs> = {};
-    const allStatuses = StatusUtils.byMediaType(mediaType);
+    const allStatuses = statusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {

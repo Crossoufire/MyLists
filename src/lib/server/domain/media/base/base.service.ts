@@ -76,6 +76,7 @@ export abstract class BaseService<
 
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
+
         // Specific media stats but calculation common
         const ratings = await this.repository.computeRatingStats(userId);
         const genresStats = await this.repository.computeTopGenresStats(userId);
@@ -170,14 +171,16 @@ export abstract class BaseService<
         return handler(achievement, userId);
     }
 
+    createSimpleUpdateHandler<K extends string>(propName: K): UpdateHandlerFn<any, any, any> {
+        return (currentState, payload) => {
+            const newState = { ...currentState, [propName]: payload[propName] };
+            return [newState, null];
+        };
+    }
+
     getAchievementsDefinition() {
         return this.repository.config.achievements;
     }
-
-    createSimpleUpdateHandler = <K extends string>(propName: K): UpdateHandlerFn<any, any, any> => (currentState, payload) => {
-        const newState = { ...currentState, [propName]: payload[propName] };
-        return [newState, null];
-    };
 
     // --- Abstract Methods --------------------------------------------------------------------
 
