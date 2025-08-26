@@ -1,5 +1,5 @@
-import {MoveRight} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
+import {MoveRight} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
 import {LogPayloadDb} from "@/lib/server/types/base.types";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
@@ -14,6 +14,7 @@ interface PayloadProps {
 
 export const Payload = ({ update, className }: PayloadProps) => {
     const FormattedPayload = getUpdatePayload(update.updateType);
+
     return (
         <div className={cn("flex flex-row gap-2 items-center", className)}>
             <FormattedPayload
@@ -30,11 +31,11 @@ const getUpdatePayload = (updateType: UpdateType) => {
         tv: TVPayload,
         redo: RedoPayload,
         page: PagePayload,
-        redoTv: RedoPayload,
         status: StatusPayload,
         chapter: ChapterPayload,
         playtime: PlaytimePayload,
     };
+
     //@ts-expect-error
     return choosePayload[updateType];
 };

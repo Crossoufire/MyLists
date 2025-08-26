@@ -63,7 +63,7 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
                 <ResponsiveContainer>
                     <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
                         {title === "Rating" && ratingSystem === RatingSystemType.FEELING ?
-                            <XAxis dataKey="name" stroke="#e2e2e2" tick={CustomXAxisTick}/>
+                            <XAxis dataKey="name" stroke="#e2e2e2" tick={<CustomXAxisTick/>}/>
                             :
                             <XAxis dataKey="name" stroke="#e2e2e2"/>
                         }
@@ -90,14 +90,9 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
 };
 
 
-interface CustomTooltipProps {
-    payload?: any[];
-    active?: boolean;
-    label?: string | number;
-}
+export const CustomTooltip = (props: any) => {
+    const { active, payload, label } = props;
 
-
-export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-gray-800 p-2 rounded-md">
@@ -110,15 +105,10 @@ export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) =>
 };
 
 
-interface CustomXAxisTick {
-    x: number;
-    y: number;
-    payload: any;
-}
+const CustomXAxisTick = (props: any) => {
+    const { x, y, payload } = props;
 
-
-const CustomXAxisTick = ({ x, y, payload }: CustomXAxisTick) => {
-    const getFeelingComponent = (value: any) => {
+    const getFeelingComponent = (value: number) => {
         const feelings = getFeelingList({ size: 18 });
         const feeling = feelings.find((item) => item.value === value);
         return feeling ? feeling.component : "--";

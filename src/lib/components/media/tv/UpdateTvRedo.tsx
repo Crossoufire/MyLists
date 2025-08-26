@@ -36,7 +36,7 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
 
     const onUpdateRedoValues = () => {
         setOpen(false);
-        onUpdateMutation.mutate({ payload: { redo2: draftRedo, type: UpdateType.REDO_TV } });
+        onUpdateMutation.mutate({ payload: { redo2: draftRedo, type: UpdateType.REDO } });
     };
 
     return (

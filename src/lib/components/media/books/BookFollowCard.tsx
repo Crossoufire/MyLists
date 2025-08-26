@@ -21,7 +21,6 @@ export const BookFollowCard = ({ followData, rating }: BookFollowCardProps<typeo
             }
             mediaDetailsDisplay={
                 <DisplayPages
-                    total={150}
                     status={followData.userMedia.status}
                     currentPage={followData.userMedia.actualPage}
                 />

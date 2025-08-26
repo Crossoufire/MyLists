@@ -406,7 +406,7 @@ export const booksList = sqliteTable("books_list", {
     userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => books.id),
     status: text().$type<Status>().notNull(),
-    redo: integer().default(0),
+    redo: integer().default(0).notNull(),
     actualPage: integer(),
     total: integer().default(0),
     comment: text(),

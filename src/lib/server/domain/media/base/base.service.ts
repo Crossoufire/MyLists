@@ -34,6 +34,10 @@ export abstract class BaseService<
         return coverFilenames.map(({ imageCover }) => imageCover.split("/").pop() as string);
     }
 
+    async getUserFavorites(userId: number, limit = 8) {
+        return this.repository.getUserFavorites(userId, limit);
+    }
+    
     async getNonListMediaIds() {
         return this.repository.getNonListMediaIds();
     }

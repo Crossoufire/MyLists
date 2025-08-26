@@ -123,7 +123,6 @@ export const UpdateType = {
     REDO: "redo",
     RATING: "rating",
     STATUS: "status",
-    REDO_TV: "redoTv",
     CHAPTER: "chapter",
     COMMENT: "comment",
     PLAYTIME: "playtime",

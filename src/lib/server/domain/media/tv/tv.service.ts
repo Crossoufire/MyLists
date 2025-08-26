@@ -95,10 +95,10 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
             return {
-                media: mediaWithDetails,
                 userMedia,
                 followsData,
                 similarMedia,
+                media: mediaWithDetails,
             };
         }
 
@@ -260,6 +260,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
     async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType) {
         const newState = { ...currentState, redo2: payload.redo };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
+
         const logPayload = {
             oldValue: currentState.redo2.reduce((a, b) => a + b, 0),
             newValue: payload.redo.reduce((a, b) => a + b, 0),
@@ -285,6 +286,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         if (payload.status === Status.COMPLETED) {
             const addedEpisodes = epsPerSeason.reduce((a, b) => a + b.episodes, 0);
             const oldTotal = currentState.redo2.reduce((a, b, i) => a + b * epsPerSeason[i].episodes, 0);
+
             newState.currentSeason = epsPerSeason.at(-1)!.season;
             newState.lastEpisodeWatched = epsPerSeason.at(-1)!.episodes;
             newState.total = addedEpisodes + oldTotal;
@@ -300,15 +302,47 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
     }
 
     async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType) {
-        const newState = {
-            ...currentState,
-            currentSeason: payload.currentSeason,
-            lastEpisodeWatched: payload.lastEpisodeWatched,
-        };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
-        const logPayload = {
-            oldValue: "",
-            newValue: "",
-        };
+        const epsPerSeasonList = epsPerSeason.map((eps) => eps.episodes);
+
+        if (payload.currentSeason) {
+            if (payload.currentSeason > epsPerSeason.length) {
+                throw new FormattedError("Invalid season number");
+            }
+
+            const newState = { ...currentState, currentSeason: payload.currentSeason };
+            const logPayload = {
+                oldValue: [currentState.currentSeason, currentState.lastEpisodeWatched],
+                newValue: [payload.currentSeason, 1],
+            }
+
+            const newWatched = epsPerSeasonList.slice(0, payload.currentSeason - 1).reduce((a, b) => a + b, 0) + 1;
+            const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasonList[i], 0);
+
+            newState.total = newTotal
+            newState.lastEpisodeWatched = 1;
+
+            return [newState, logPayload];
+        }
+
+        if (payload.lastEpisodeWatched) {
+            if (payload.lastEpisodeWatched > epsPerSeason[currentState.currentSeason - 1].episodes) {
+                throw new FormattedError("Invalid episode");
+            }
+
+            const newState = { ...currentState, lastEpisodeWatched: payload.lastEpisodeWatched };
+            const logPayload = {
+                oldValue: [currentState.currentSeason, currentState.lastEpisodeWatched],
+                newValue: [currentState.currentSeason, payload.lastEpisodeWatched],
+            }
+
+            const newWatched = epsPerSeasonList
+                .slice(0, currentState.currentSeason - 1)
+                .reduce((a, b) => a + b, 0) + payload.lastEpisodeWatched;
+
+            newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasonList[i], 0);
+
+            return [newState, logPayload];
+        }
     }
 }

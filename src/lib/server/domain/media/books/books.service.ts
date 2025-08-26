@@ -10,6 +10,7 @@ import {BooksRepository} from "@/lib/server/domain/media/books/books.repository"
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
 import {PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 
 
 export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository> {
@@ -81,7 +82,7 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
 
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
             if (userMedia) userMedia.pages = mediaWithDetails.pages;
-            
+
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
@@ -290,11 +291,15 @@ export class BooksService extends BaseService<BooksSchemaConfig, BooksRepository
         return [newState, logPayload];
     }
 
-    updatePageHandler(currentState: BooksList, payload: PagePayload, _media: Book) {
+    updatePageHandler(currentState: BooksList, payload: PagePayload, media: Book) {
+        if (payload.actualPage > media.pages) {
+            throw new FormattedError("Invalid page");
+        }
+
         const newState = { ...currentState, actualPage: payload.actualPage };
         const logPayload = { oldValue: currentState.actualPage, newValue: payload.actualPage };
 
-        // TODO: to complete
+        newState.total = payload.actualPage + (currentState.redo * media.pages);
 
         return [newState, logPayload];
     }

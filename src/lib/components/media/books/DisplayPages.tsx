@@ -4,7 +4,7 @@ import {Status} from "@/lib/server/utils/enums";
 
 interface DisplayPagesProps {
     status: Status;
-    total: number | null;
+    total?: number | null;
     currentPage: number | null;
 }
 
@@ -17,7 +17,7 @@ export const DisplayPages = ({ currentPage, total, status }: DisplayPagesProps) 
     return (
         <div className="flex gap-x-1 items-center">
             <Play size={16} className="mt-0.5"/>
-            {currentPage ? currentPage : "--"}/{total ? total : "?"}
+            {currentPage ? currentPage : "--"}{total ? "/" + total : ""}
         </div>
     );
 }
