@@ -34,6 +34,12 @@ export type PagePayload = {
 }
 
 
+export type ChapterPayload = {
+    currentChapter: number,
+    type: typeof UpdateType.CHAPTER,
+}
+
+
 export type RedoPayload = {
     redo: number,
     type: typeof UpdateType.REDO,
@@ -159,6 +165,7 @@ export type UserMediaWithLabels<TList> = TList & {
     labels: { name: string }[],
     ratingSystem: RatingSystemType,
     pages?: number;
+    chapters?: number | null;
     epsPerSeason?: { season: number, episodes: number }[];
 };
 
@@ -244,6 +251,12 @@ export type GamesAdvancedStats = AdvancedMediaStats & {
 
 export type BooksAdvancedStats = AdvancedMediaStats & {
     langsStats: TopMetricStats;
+    authorsStats: TopMetricStats;
+    publishersStats: TopMetricStats;
+}
+
+
+export type MangaAdvancedStats = AdvancedMediaStats & {
     authorsStats: TopMetricStats;
     publishersStats: TopMetricStats;
 }
@@ -472,6 +485,7 @@ export const updateUserMediaSchema = z.object({
         platform: z.enum(GamesPlatformsEnum).optional(),
         actualPage: z.number().int().min(0).optional(),
         currentSeason: z.number().int().min(1).optional(),
+        currentChapter: z.number().int().min(0).optional(),
         redo2: z.array(z.number().int().min(0)).optional(),
         rating: z.number().min(0).max(10).optional(),
         lastEpisodeWatched: z.number().int().min(0).optional(),

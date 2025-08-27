@@ -3,13 +3,16 @@ import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BooksService} from "@/lib/server/domain/media/books/books.service";
 import {GamesService} from "@/lib/server/domain/media/games/games.service";
+import {MangaService} from "@/lib/server/domain/media/manga/manga.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
+import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
+import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provider.service";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
@@ -19,7 +22,7 @@ export interface MediaRepositoryMap {
     [MediaType.MOVIES]: MoviesRepository;
     [MediaType.GAMES]: GamesRepository;
     [MediaType.BOOKS]: BooksRepository;
-    [MediaType.MANGA]: MoviesRepository;
+    [MediaType.MANGA]: MangaRepository;
 }
 
 
@@ -29,11 +32,11 @@ export interface MediaServiceMap {
     [MediaType.MOVIES]: MoviesService;
     [MediaType.GAMES]: GamesService;
     [MediaType.BOOKS]: BooksService;
-    [MediaType.MANGA]: MoviesService;
+    [MediaType.MANGA]: MangaService;
 }
 
 
-export type MediaService = TvService | MoviesService | GamesService | BooksService;
+export type MediaService = TvService | MoviesService | GamesService | BooksService | MangaService;
 
 
 export interface MediaProviderServiceMap {
@@ -42,7 +45,7 @@ export interface MediaProviderServiceMap {
     [MediaType.MOVIES]: MoviesProviderService;
     [MediaType.GAMES]: GamesProviderService;
     [MediaType.BOOKS]: BooksProviderService;
-    [MediaType.MANGA]: MoviesProviderService;
+    [MediaType.MANGA]: MangaProviderService;
 }
 
 

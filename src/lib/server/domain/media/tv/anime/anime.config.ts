@@ -1,9 +1,10 @@
 import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns, sql} from "drizzle-orm";
+import {asc, desc, getTableColumns, inArray} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
+import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export type AnimeSchemaConfig = TvSchemaConfig<
@@ -29,15 +30,6 @@ export const animeConfig: AnimeSchemaConfig = {
         baseSelection: {
             mediaName: schema.anime.name,
             imageCover: schema.anime.imageCover,
-            epsPerSeason: sql<{ season: number; episodes: number }[]>`(
-                SELECT 
-                    json_group_array(json_object(
-                        'season', ${schema.animeEpisodesPerSeason.season}, 
-                        'episodes', ${schema.animeEpisodesPerSeason.episodes}
-                    ))
-                FROM ${schema.animeEpisodesPerSeason} 
-                WHERE ${schema.animeEpisodesPerSeason.mediaId} = ${schema.anime.id}
-            )`.mapWith(JSON.parse),
             ...getTableColumns(schema.animeList),
         },
         filterDefinitions: {
@@ -53,6 +45,14 @@ export const animeConfig: AnimeSchemaConfig = {
                 entityTable: schema.animeNetwork,
                 filterColumn: schema.animeNetwork.name,
             }),
+            creators: {
+                isActive: (args: MediaListArgs) => !!args.creators,
+                getCondition: (args: MediaListArgs) => inArray(schema.anime.createdBy, args.creators!.filter((c) => c !== "All")),
+            },
+            langs: {
+                isActive: (args: MediaListArgs) => !!args.langs,
+                getCondition: (args: MediaListArgs) => inArray(schema.anime.originCountry, args.langs!.filter((l) => l !== "All")),
+            },
         },
         defaultStatus: Status.WATCHING,
         defaultSortName: "Title A-Z",

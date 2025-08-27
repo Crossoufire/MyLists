@@ -3,43 +3,43 @@ import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import type {DeltaStats} from "@/lib/server/types/stats.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
-import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
+import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
+import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
+import {ChapterPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
 
 
-export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository> {
-    readonly achievementHandlers: Record<BooksAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
+export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository> {
+    readonly achievementHandlers: Record<MangaAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
-    constructor(repository: BooksRepository) {
+    constructor(repository: MangaRepository) {
         super(repository);
 
         const { listTable } = this.repository.config;
 
         this.achievementHandlers = {
-            completed_books: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
-            rated_books: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
-            comment_books: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.comment)),
-            long_books: this.repository.getDurationAchievementCte.bind(this.repository),
-            short_books: this.repository.getDurationAchievementCte.bind(this.repository),
-            author_books: this.repository.getAuthorsAchievementCte.bind(this.repository),
-            lang_books: this.repository.getLanguageAchievementCte.bind(this.repository),
-            classic_books: this.repository.specificGenreAchievementCte.bind(this.repository),
-            young_adult_books: this.repository.specificGenreAchievementCte.bind(this.repository),
-            crime_books: this.repository.specificGenreAchievementCte.bind(this.repository),
-            fantasy_books: this.repository.specificGenreAchievementCte.bind(this.repository),
+            completed_manga: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
+            rated_manga: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
+            comment_manga: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.comment)),
+            author_manga: this.repository.getAuthorsAchievementCte.bind(this.repository),
+            publisher_manga: this.repository.getPublishersAchievementCte.bind(this.repository),
+            short_manga: this.repository.getDurationAchievementCte.bind(this.repository),
+            long_manga: this.repository.getDurationAchievementCte.bind(this.repository),
+            chapter_manga: this.repository.getChaptersAchievementsCte.bind(this.repository),
+            hentai_manga: this.repository.specificGenreAchievementCte.bind(this.repository),
+            shounen_manga: this.repository.specificGenreAchievementCte.bind(this.repository),
+            seinen_manga: this.repository.specificGenreAchievementCte.bind(this.repository),
         };
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.PAGE]: this.updatePageHandler,
             [UpdateType.REDO]: this.updateRedoHandler,
             [UpdateType.STATUS]: this.updateStatusHandler,
+            [UpdateType.CHAPTER]: this.updateChapterHandler,
         }
     }
 
@@ -49,9 +49,9 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         const { ratings, genresStats, totalLabels, releaseDates } = await super.calculateAdvancedMediaStats(userId);
 
         // Specific stats
-        const avgDuration = await this.repository.avgBooksDuration(userId);
-        const durationDistrib = await this.repository.booksDurationDistrib(userId);
-        const { publishersStats, authorsStats, langsStats } = await this.repository.specificTopMetrics(userId);
+        const avgDuration = await this.repository.avgMangaDuration(userId);
+        const durationDistrib = await this.repository.mangaDurationDistrib(userId);
+        const { publishersStats, authorsStats } = await this.repository.specificTopMetrics(userId);
 
         return {
             ratings,
@@ -62,7 +62,6 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             durationDistrib,
             publishersStats,
             authorsStats,
-            langsStats,
         };
     }
 
@@ -81,16 +80,16 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             if (!mediaWithDetails) throw notFound();
 
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            if (userMedia) userMedia.pages = mediaWithDetails.pages;
+            if (userMedia) userMedia.chapters = mediaWithDetails.chapters;
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
 
             return {
-                media: mediaWithDetails,
                 userMedia,
                 followsData,
                 similarMedia,
+                media: mediaWithDetails,
             };
         }
 
@@ -110,9 +109,6 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             }
         });
 
-        fields.genres = media.genres;
-        fields.allGenres = this.getAvailableGenres();
-
         return { fields };
     }
 
@@ -127,7 +123,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         }
 
         const editableFields = this.repository.config.editableFields;
-        const fieldsToUpdate = {} as Record<Partial<keyof Book>, any>;
+        const fieldsToUpdate = {} as Record<Partial<keyof Manga>, any>;
         fieldsToUpdate.apiId = media.apiId;
 
         if (mediaData?.imageCover) {
@@ -135,14 +131,14 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
                 defaultName: "default.jpg",
                 imageUrl: mediaData.imageCover,
                 resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/books-covers",
+                saveLocation: "public/static/covers/manga-covers",
             });
             fieldsToUpdate.imageCover = imageName;
             delete mediaData.imageCover;
         }
 
         for (const key in mediaData) {
-            if (Object.prototype.hasOwnProperty.call(mediaData, key) && editableFields.includes(key as keyof Book)) {
+            if (Object.prototype.hasOwnProperty.call(mediaData, key) && editableFields.includes(key as keyof Manga)) {
                 fieldsToUpdate[key as keyof typeof media] = mediaData[key as keyof typeof media];
             }
         }
@@ -150,11 +146,11 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         await this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData: genres });
     }
 
-    calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, _media: Book) {
+    calculateDeltaStats(oldState: UserMediaWithLabels<MangaList> | null, newState: MangaList | null, _media: Manga) {
         const delta: DeltaStats = {};
         const statusCounts: Partial<Record<Status, number>> = {};
 
-        // TODO: Check how to avoid magic number 1.7
+        // TODO: Check how to avoid magic number 7
 
         // Extract Old State Info
         const oldStatus = oldState?.status;
@@ -163,7 +159,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         const oldComment = oldState?.comment;
         const oldFavorite = oldState?.favorite ?? false;
         const oldTotalSpecificValue = oldState?.total ?? 0;
-        const oldTotalTimeSpent = oldTotalSpecificValue * 1.7;
+        const oldTotalTimeSpent = oldTotalSpecificValue * 7;
         const wasCompleted = oldStatus === Status.COMPLETED;
         const wasFavorited = wasCompleted && oldFavorite;
         const wasCommented = wasCompleted && !!oldComment;
@@ -180,7 +176,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
         const newTotalSpecificValue = newState?.total ?? 0;
-        const newTotalTimeSpent = newTotalSpecificValue * 1.7;
+        const newTotalTimeSpent = newTotalSpecificValue * 7;
 
         // --- Calculate Deltas ----------------------------------------------------------------
 
@@ -256,50 +252,45 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         return delta;
     }
 
-    getAvailableGenres() {
-        return [
-            "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
-            "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
-            "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
-            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"
-        ].map((name) => ({ name }));
-    }
+    updateRedoHandler(currentState: MangaList, payload: RedoPayload, media: Manga) {
+        if (!media.chapters) {
+            throw new FormattedError("Cannot redo a manga without chapters");
+        }
 
-    updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book) {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 
-        newState.total = media.pages + (payload.redo * media.pages);
+        newState.total = media.chapters + (payload.redo * media.chapters);
 
         return [newState, logPayload];
     }
 
-    updateStatusHandler(currentState: BooksList, payload: StatusPayload, media: Book) {
+    updateStatusHandler(currentState: MangaList, payload: StatusPayload, media: Manga) {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
         if (payload.status === Status.COMPLETED) {
-            newState.total = media.pages;
-            newState.actualPage = media.pages;
+            if (!media.chapters) {
+                throw new FormattedError("Cannot complete a manga without chapters");
+            }
+
+            newState.total = media.chapters;
+            newState.currentChapter = media.chapters;
         }
         else if (payload.status === Status.PLAN_TO_READ) {
             newState.redo = 0;
             newState.total = 0;
-            newState.actualPage = 0;
+            newState.currentChapter = 0;
         }
 
         return [newState, logPayload];
     }
 
-    updatePageHandler(currentState: BooksList, payload: PagePayload, media: Book) {
-        if (payload.actualPage > media.pages) {
-            throw new FormattedError("Invalid page");
-        }
+    updateChapterHandler(currentState: MangaList, payload: ChapterPayload, media: Manga) {
+        const newState = { ...currentState, currentChapter: payload.currentChapter };
+        const logPayload = { oldValue: currentState.currentChapter, newValue: payload.currentChapter };
 
-        const newState = { ...currentState, actualPage: payload.actualPage };
-        const logPayload = { oldValue: currentState.actualPage, newValue: payload.actualPage };
-
-        newState.total = payload.actualPage + (currentState.redo * media.pages);
+        newState.total = payload.currentChapter + (currentState.redo * (media.chapters ?? 0));
 
         return [newState, logPayload];
     }

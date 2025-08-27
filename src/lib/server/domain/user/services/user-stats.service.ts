@@ -138,15 +138,12 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements(userId);
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({ userId });
 
-        // TODO: Commented because it needs all media types to be registered
-        // const labelCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
-        //     const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        //     return mediaService.computeTotalMediaLabel(userId);
-        // });
-        // const labelCounts = await Promise.all(labelCountPromises);
-        // const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
-
-        const totalLabels = 4;
+        const labelCountPromises = userPreComputedStats.mediaTypes.map((mediaType) => {
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            return mediaService.computeTotalMediaLabel(userId);
+        });
+        const labelCounts = await Promise.all(labelCountPromises);
+        const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...userPreComputedStats,
@@ -177,15 +174,12 @@ export class UserStatsService {
         const platinumAchievements = await this.achievementsRepository.countPlatinumAchievements();
         const mediaUpdatesPerMonth = await this.userUpdatesRepository.mediaUpdatesStatsPerMonth({});
 
-        // TODO: Commented because it needs all media types to be registered
-        // const labelCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
-        //     const mediaService = this.mediaServiceRegistry.getService(mediaType);
-        //     return mediaService.computeTotalMediaLabel();
-        // });
-        // const labelCounts = await Promise.all(labelCountPromises);
-        // const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
-
-        const totalLabels = 4;
+        const labelCountPromises = platformPreComputedStats.mediaTypes.map((mediaType) => {
+            const mediaService = this.mediaServiceRegistry.getService(mediaType);
+            return mediaService.computeTotalMediaLabel();
+        });
+        const labelCounts = await Promise.all(labelCountPromises);
+        const totalLabels = labelCounts.reduce((sum, count) => sum + count, 0);
 
         return {
             ...platformPreComputedStats,

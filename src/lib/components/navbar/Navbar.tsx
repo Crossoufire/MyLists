@@ -2,6 +2,7 @@ import {SearchBar} from "./SearchBar";
 import {useAuth} from "@/lib/hooks/use-auth";
 import React, {useRef, useState} from "react";
 import authClient from "@/lib/utils/auth-client";
+import {RoleType} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {useQueryClient} from "@tanstack/react-query";
 import {useSheet} from "@/lib/contexts/sheet-context";
@@ -13,11 +14,10 @@ import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Notifications} from "@/lib/components/navbar/Notifications";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
-import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
-import {RoleType} from "@/lib/server/utils/enums";
 
 
 export const Navbar = () => {

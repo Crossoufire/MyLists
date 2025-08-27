@@ -5,12 +5,12 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
 import {Book, UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
-import {booksConfig, BooksSchemaConfig} from "@/lib/server/domain/media/books/books.config";
+import {booksConfig, MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, sql} from "drizzle-orm";
 
 
-export class BooksRepository extends BaseRepository<BooksSchemaConfig> {
-    config: BooksSchemaConfig;
+export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
+    config: MangaSchemaConfig;
 
     constructor() {
         super(booksConfig);

@@ -10,7 +10,7 @@ interface DisplayPagesProps {
 
 
 export const DisplayPages = ({ currentPage, total, status }: DisplayPagesProps) => {
-    if (status === Status.PLAN_TO_PLAY) {
+    if (status === Status.PLAN_TO_READ) {
         return null;
     }
 

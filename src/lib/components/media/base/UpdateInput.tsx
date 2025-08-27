@@ -7,15 +7,14 @@ import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user
 
 interface UpdateInputProps {
     total: number | null;
-    isEditable?: boolean;
-    inputClassName?: string;
     initValue: number | null;
-    containerClassName?: string;
+    payloadName: "actualPage" | "currentChapter";
     updateInput: ReturnType<typeof useUpdateUserMediaMutation>;
+    updateType: typeof UpdateType.PAGE | typeof UpdateType.CHAPTER;
 }
 
 
-export const UpdateInput = ({ total, inputClassName, containerClassName, initValue, updateInput, isEditable = true }: UpdateInputProps) => {
+export const UpdateInput = ({ total, initValue, updateInput, payloadName, updateType }: UpdateInputProps) => {
     const [currentValue, setCurrentValue] = useState<number>(initValue ?? 0);
 
     useEffect(() => {
@@ -28,22 +27,18 @@ export const UpdateInput = ({ total, inputClassName, containerClassName, initVal
         if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
             return setCurrentValue(initValue ?? 0);
         }
-        updateInput.mutate({ payload: { actualPage: currentValue, type: UpdateType.PAGE } });
+        updateInput.mutate({ payload: { [payloadName]: currentValue, type: updateType } });
     };
 
     return (
-        <div className={containerClassName}>
-            {isEditable ?
-                <Input
-                    value={currentValue}
-                    onBlur={handleOnBlur}
-                    disabled={updateInput.isPending}
-                    onChange={(ev) => setCurrentValue(parseInt(ev.target.value))}
-                    className={cn("text-base border-none bg-transparent cursor-pointer inline-block", inputClassName)}
-                />
-                :
-                <span>{initValue}</span>
-            }
+        <div className="w-[135px]">
+            <Input
+                value={currentValue}
+                onBlur={handleOnBlur}
+                disabled={updateInput.isPending}
+                onChange={(ev) => setCurrentValue(parseInt(ev.target.value))}
+                className={cn("w-[60px] text-base border-none bg-transparent cursor-pointer inline-block")}
+            />
             <span>{" "}/{" "}{total ?? "?"}</span>
         </div>
     );

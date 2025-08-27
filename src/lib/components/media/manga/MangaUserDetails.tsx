@@ -9,10 +9,10 @@ import {MediaType, Status, UpdateType} from "@/lib/server/utils/enums";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
-type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
+type MangaUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaUserDetails"]>[0];
 
 
-export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
+export const MangaUserDetails = ({ userMedia, mediaType, queryKey }: MangaUserDetailsProps<typeof MediaType.MANGA>) => {
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
 
     return (
@@ -25,12 +25,12 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDe
             {userMedia.status !== Status.PLAN_TO_READ &&
                 <>
                     <div className="flex justify-between items-center">
-                        <div>Pages</div>
+                        <div>Chapters</div>
                         <UpdateInput
-                            total={userMedia.pages!}
-                            payloadName={"actualPage"}
-                            updateType={UpdateType.PAGE}
-                            initValue={userMedia.actualPage}
+                            total={userMedia.chapters!}
+                            payloadName={"currentChapter"}
+                            updateType={UpdateType.CHAPTER}
+                            initValue={userMedia.currentChapter}
                             updateInput={updateUserMediaMutation}
                         />
                     </div>

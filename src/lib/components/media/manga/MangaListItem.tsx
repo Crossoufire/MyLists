@@ -6,10 +6,10 @@ import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {BaseMediaListItem} from "@/lib/components/media/base/BaseMediaListItem";
 
 
-type BookListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
+type MangaListItemProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaListCard"]>[0];
 
 
-export const BookListItem = (props: BookListItemProps<typeof MediaType.BOOKS>) => {
+export const MangaListItem = (props: MangaListItemProps<typeof MediaType.MANGA>) => {
     return (
         <BaseMediaListItem
             {...props}
@@ -20,9 +20,9 @@ export const BookListItem = (props: BookListItemProps<typeof MediaType.BOOKS>) =
             }
             mediaDetailsDisplay={
                 <DisplayPages
-                    total={props.userMedia.pages}
                     status={props.userMedia.status}
-                    currentPage={props.userMedia.actualPage}
+                    total={props.userMedia.chapters}
+                    currentPage={props.userMedia.currentChapter}
                 />
             }
         />

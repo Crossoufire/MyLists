@@ -345,16 +345,16 @@ export const mangaList = sqliteTable("manga_list", {
         mediaId: integer().notNull().references(() => manga.id),
         userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
         currentChapter: integer().notNull(),
-        total: integer(),
-        redo: integer().notNull().default(0),
+        total: integer().default(0).notNull(),
+        redo: integer().default(0).notNull(),
         status: text().$type<Status>().notNull(),
+        favorite: integer({ mode: "boolean" }).default(false).notNull(),
         rating: real(),
-        favorite: integer({ mode: "boolean" }),
         comment: text(),
     },
     (table) => [
-        index("ix_manga_list_user_id").on(table.userId),
         index("ix_manga_list_id").on(table.id),
+        index("ix_manga_list_user_id").on(table.userId),
     ]);
 
 export const mangaAuthors = sqliteTable("manga_authors", {

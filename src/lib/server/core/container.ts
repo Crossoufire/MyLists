@@ -5,12 +5,12 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {initializeCache} from "@/lib/server/core/cache-manager";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {GamesService} from "@/lib/server/domain/media/games/games.service";
-import {UserService} from "@/lib/server/domain/user/services/user.service";
-import {animeConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {IgdbClient} from "@/lib/server/api-providers/clients/igdb.client";
 import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
+import {GamesService} from "@/lib/server/domain/media/games/games.service";
+import {UserService} from "@/lib/server/domain/user/services/user.service";
+import {animeConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
@@ -39,6 +39,10 @@ import {BooksService} from "@/lib/server/domain/media/books/books.service";
 import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
 import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
 import {GBooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
+import {JikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
+import {MangaRepository} from "../domain/media/manga/manga.repository";
+import {MangaService} from "@/lib/server/domain/media/manga/manga.service";
+import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provider.service";
 
 
 interface AppContainer {
@@ -52,6 +56,7 @@ interface AppContainer {
     transformers: {
         igdb: IgdbTransformer;
         tmdb: TmdbTransformer;
+        jikan: JikanTransformer;
         gBook: GBooksTransformer;
     };
     repositories: {
@@ -102,6 +107,7 @@ async function initializeContainer(options: ContainerOptions = {}) {
     // Media Repositories
     const gamesRepository = new GamesRepository();
     const booksRepository = new BooksRepository();
+    const mangaRepository = new MangaRepository();
     const moviesRepository = new MoviesRepository();
     const animeRepository = new TvRepository(animeConfig);
     const seriesRepository = new TvRepository(seriesConfig);
@@ -110,6 +116,7 @@ async function initializeContainer(options: ContainerOptions = {}) {
     MediaRepositoryRegistry.registerRepository(MediaType.BOOKS, booksRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.SERIES, seriesRepository);
     MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
+    MediaRepositoryRegistry.registerRepository(MediaType.MANGA, mangaRepository);
 
     // User Services
     const userService = new UserService(userRepository);
@@ -117,12 +124,7 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const userUpdatesService = new UserUpdatesService(userUpdatesRepository);
     const achievementsService = new AchievementsService(achievementsRepository);
     const notificationsService = new NotificationsService(notificationsRepository);
-    const userStatsService = new UserStatsService(
-        userStatsRepository,
-        achievementsRepository,
-        userUpdatesRepository,
-        MediaServiceRegistry,
-    );
+    const userStatsService = new UserStatsService(userStatsRepository, achievementsRepository, userUpdatesRepository, MediaServiceRegistry);
 
     // Media Services
     const gamesService = new GamesService(gamesRepository);
@@ -130,11 +132,13 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const seriesService = new TvService(seriesRepository);
     const animeService = new TvService(animeRepository);
     const bookService = new BooksService(booksRepository);
+    const mangaService = new MangaService(mangaRepository);
     MediaServiceRegistry.registerService(MediaType.GAMES, gamesService);
     MediaServiceRegistry.registerService(MediaType.ANIME, animeService);
     MediaServiceRegistry.registerService(MediaType.SERIES, seriesService);
     MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
     MediaServiceRegistry.registerService(MediaType.BOOKS, bookService);
+    MediaServiceRegistry.registerService(MediaType.MANGA, mangaService);
 
     // Tasks Service
     const tasksLogger = options.tasksServiceLogger || pinoLogger;
@@ -153,6 +157,7 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const igdbTransformer = new IgdbTransformer();
     const tmdbTransformer = new TmdbTransformer();
     const gBookTransformer = new GBooksTransformer();
+    const jikanTransformer = new JikanTransformer();
 
     // API Clients
     const hltbClient = await HltbClient.create();
@@ -166,11 +171,13 @@ async function initializeContainer(options: ContainerOptions = {}) {
     const moviesProviderService = new MoviesProviderService(tmdbClient, tmdbTransformer, moviesRepository);
     const tvProviderService = new TvProviderService(tmdbClient, tmdbTransformer, seriesRepository, jikanClient);
     const booksProviderService = new BooksProviderService(gBookClient, gBookTransformer, booksRepository);
+    const mangaProviderService = new MangaProviderService(jikanClient, jikanTransformer, mangaRepository);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.ANIME, tvProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.SERIES, tvProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.BOOKS, booksProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.MANGA, mangaProviderService);
 
     return {
         cacheManager: cacheManager,
@@ -178,11 +185,13 @@ async function initializeContainer(options: ContainerOptions = {}) {
             igdb: igdbClient,
             tmdb: tmdbClient,
             gBook: gBookClient,
+            jikan: jikanClient,
         },
         transformers: {
             igdb: igdbTransformer,
             tmdb: tmdbTransformer,
             gBook: gBookTransformer,
+            jikan: jikanTransformer,
         },
         repositories: {
             user: userRepository,

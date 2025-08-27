@@ -371,6 +371,8 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             ...mediaList.filterDefinitions,
         };
 
+        console.log({ allFilters });
+
         // Main query builder
         let queryBuilder = getDbClient()
             .select({
@@ -856,7 +858,7 @@ type TListByType = {
     [MediaType.BOOKS]: typeof schema.booksList.$inferSelect & { pages: number };
     [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
     [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
-    [MediaType.MANGA]: typeof schema.mangaList.$inferSelect;
+    [MediaType.MANGA]: typeof schema.mangaList.$inferSelect & { chapters: number };
 };
 
 export type MediaListDataByType = {

@@ -12,7 +12,7 @@ export interface ProviderSearchResult {
     name: string
     image: string
     id: number | string
-    date: string | number | undefined
+    date: string | number | undefined | null
     itemType: MediaType | ApiProviderType
 }
 
@@ -107,6 +107,18 @@ interface JikanNamedObject {
 }
 
 
+interface jikanPagination {
+    current_page: number;
+    has_next_page: boolean;
+    last_visible_page: number;
+    items: {
+        count: number;
+        total: number;
+        per_page: number;
+    };
+}
+
+
 export interface JikanAnime {
     url: string;
     title: string;
@@ -147,17 +159,78 @@ export interface JikanAnime {
 
 
 export interface JikanAnimeSearchResponse {
-    pagination: {
-        current_page: number;
-        has_next_page: boolean;
-        last_visible_page: number;
-        items: {
-            count: number;
-            total: number;
-            per_page: number;
+    pagination: jikanPagination;
+    data: JikanAnime[];
+}
+
+
+export interface JikanDetails {
+    url: string;
+    type: string;
+    title: string;
+    mal_id: number;
+    status: string;
+    synopsis: string;
+    approved: boolean;
+    background: string;
+    rank: number | null;
+    publishing: boolean;
+    score: number | null;
+    scored: number | null;
+    members: number | null;
+    title_japanese: string;
+    volumes: number | null;
+    chapters: number | null;
+    favorites: number | null;
+    scored_by: number | null;
+    title_synonyms: string[];
+    popularity: number | null;
+    title_english: string | null;
+    titles: {
+        type: string,
+        title: string,
+    }[];
+    images: {
+        jpg: {
+            image_url: string;
+            small_image_url: string;
+            large_image_url: string;
+        };
+        webp: {
+            image_url: string;
+            small_image_url: string;
+            large_image_url: string;
         };
     };
-    data: JikanAnime[];
+    published: {
+        string: string;
+        to: string | null;
+        from: string | null;
+        prop: {
+            from: {
+                day: number | null,
+                month: number | null,
+                year: number | null,
+            };
+            to: {
+                day: number | null,
+                month: number | null,
+                year: number | null,
+            };
+        };
+    };
+    genres: JikanNamedObject[];
+    themes: JikanNamedObject[];
+    authors: JikanNamedObject[];
+    demographics: JikanNamedObject[];
+    serializations: JikanNamedObject[];
+    explicit_genres: JikanNamedObject[];
+}
+
+
+export interface JikanMangaSearchResponse {
+    pagination: jikanPagination;
+    data: JikanDetails[];
 }
 
 

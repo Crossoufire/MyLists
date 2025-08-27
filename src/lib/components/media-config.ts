@@ -9,21 +9,27 @@ import {TvUserDetails} from "@/lib/components/media/tv/TvUserDetails";
 import {BooksDetails} from "@/lib/components/media/books/BooksDetails";
 import {GamesDetails} from "@/lib/components/media/games/GamesDetails";
 import {GameListItem} from "@/lib/components/media/games/GameListItem";
+import {MangaDetails} from "@/lib/components/media/manga/MangaDetails";
 import {BookListItem} from "@/lib/components/media/books/BookListItem";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {MangaListItem} from "@/lib/components/media/manga/MangaListItem";
 import {MoviesDetails} from "@/lib/components/media/movies/MoviesDetails";
 import {MovieListItem} from "@/lib/components/media/movies/MovieListItem";
 import {GameFollowCard} from "@/lib/components/media/games/GameFollowCard";
 import {BookFollowCard} from "@/lib/components/media/books/BookFollowCard";
 import {ColumnConfigProps} from "@/lib/components/media/base/BaseListTable";
 import {getTvActiveFilters} from "@/lib/components/media/tv/TvActiveFilters";
+import {MangaFollowCard} from "@/lib/components/media/manga/MangaFollowCard";
 import {getGamesColumns} from "@/lib/components/media/games/GamesListColumns";
 import {getBooksColumns} from "@/lib/components/media/books/BooksListColumns";
+import {getMangaColumns} from "@/lib/components/media/manga/MangaListColumns";
 import {MovieFollowCard} from "@/lib/components/media/movies/MovieFollowCard";
 import {BooksUserDetails} from "@/lib/components/media/books/BookUserDetails";
+import {MangaUserDetails} from "@/lib/components/media/manga/MangaUserDetails";
 import {GamesUserDetails} from "@/lib/components/media/games/GamesUserDetails";
 import {getMoviesColumns} from "@/lib/components/media/movies/MoviesListColumns";
 import {MoviesUserDetails} from "@/lib/components/media/movies/MoviesUserDetails";
+import {getMangaActiveFilters} from "@/lib/components/media/manga/MangaActiveFilters";
 import {getBooksActiveFilters} from "@/lib/components/media/books/BooksActiveFilters";
 import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
@@ -102,15 +108,11 @@ export const mediaConfig: MediaConfiguration = {
         sheetFilters: getBooksActiveFilters,
     },
     [MediaType.MANGA]: {
-        //@ts-expect-error
-        mediaUserDetails: TvUserDetails,
-        mediaFollowCard: TvFollowCard,
-        //@ts-expect-error
-        mediaDetails: MoviesDetails,
-        //@ts-expect-error
-        mediaListCard: TvListItem,
-        //@ts-expect-error
-        mediaListColumns: getTvColumns,
-        sheetFilters: getTvActiveFilters,
+        mediaUserDetails: MangaUserDetails,
+        mediaFollowCard: MangaFollowCard,
+        mediaDetails: MangaDetails,
+        mediaListCard: MangaListItem,
+        mediaListColumns: getMangaColumns,
+        sheetFilters: getMangaActiveFilters,
     },
 };

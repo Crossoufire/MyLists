@@ -1,12 +1,13 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {asc, desc, getTableColumns, sql} from "drizzle-orm";
+import {MediaListArgs} from "@/lib/server/types/base.types";
+import {asc, desc, getTableColumns, like} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
 import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 
 
-export type BooksSchemaConfig = MediaSchemaConfig<
+export type MangaSchemaConfig = MediaSchemaConfig<
     typeof schema.books,
     typeof schema.booksList,
     typeof schema.booksGenre,
@@ -14,7 +15,7 @@ export type BooksSchemaConfig = MediaSchemaConfig<
 >;
 
 
-export const booksConfig: BooksSchemaConfig = {
+export const booksConfig: MangaSchemaConfig = {
     mediaTable: schema.books,
     listTable: schema.booksList,
     genreTable: schema.booksGenre,
@@ -23,13 +24,7 @@ export const booksConfig: BooksSchemaConfig = {
         baseSelection: {
             pages: schema.books.pages,
             mediaName: schema.books.name,
-            language: schema.books.language,
             imageCover: schema.books.imageCover,
-            authors: sql<{ name: string }[]>`(
-                SELECT json_group_array(json_object('name', ${schema.booksAuthors.name}))
-                FROM ${schema.booksAuthors} 
-                WHERE ${schema.booksAuthors.mediaId} = ${schema.books.id}
-            )`.mapWith(JSON.parse),
             ...getTableColumns(schema.booksList),
         },
         filterDefinitions: {
@@ -39,6 +34,10 @@ export const booksConfig: BooksSchemaConfig = {
                 entityTable: schema.booksAuthors,
                 filterColumn: schema.booksAuthors.name,
             }),
+            langs: {
+                isActive: (args: MediaListArgs) => !!args.langs,
+                getCondition: (args: MediaListArgs) => like(schema.books.language, `%${args.langs}%`),
+            },
         },
         defaultStatus: Status.READING,
         defaultSortName: "Title A-Z",

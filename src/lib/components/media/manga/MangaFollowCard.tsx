@@ -6,10 +6,10 @@ import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";
 
 
-type BookFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
+type MangaFollowCardProps<T extends MediaType> = Parameters<MediaConfiguration[T]["mediaFollowCard"]>[0];
 
 
-export const BookFollowCard = ({ followData, rating }: BookFollowCardProps<typeof MediaType.BOOKS>) => {
+export const MangaFollowCard = ({ followData, rating }: MangaFollowCardProps<typeof MediaType.MANGA>) => {
     return (
         <BaseMediaFollowCard
             rating={rating}
@@ -22,7 +22,7 @@ export const BookFollowCard = ({ followData, rating }: BookFollowCardProps<typeo
             mediaDetailsDisplay={
                 <DisplayPages
                     status={followData.userMedia.status}
-                    currentPage={followData.userMedia.actualPage}
+                    currentPage={followData.userMedia.currentChapter}
                 />
             }
         />

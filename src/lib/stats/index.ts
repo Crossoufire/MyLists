@@ -7,7 +7,7 @@ import {moviesData} from "@/lib/stats/movies";
 import {StatSection} from "@/lib/stats/types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {platformStatsOptions, userStatsOptions} from "@/lib/react-query/query-options/query-options";
-import {BooksAdvancedStats, GamesAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
+import {BooksAdvancedStats, GamesAdvancedStats, MangaAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
 
 
 export interface MediaSpecificStatsMap {
@@ -16,7 +16,7 @@ export interface MediaSpecificStatsMap {
     [MediaType.MOVIES]: MoviesAdvancedStats;
     [MediaType.GAMES]: GamesAdvancedStats;
     [MediaType.BOOKS]: BooksAdvancedStats;
-    [MediaType.MANGA]: TvAdvancedStats;
+    [MediaType.MANGA]: MangaAdvancedStats;
 }
 
 
@@ -52,7 +52,7 @@ export const dataToLoad = ({ apiData, forUser = false }: DataToLoadProps): StatS
         case MediaType.BOOKS:
             return booksData(apiData as any);
         case MediaType.MANGA:
-            return mangaData(apiData);
+            return mangaData(apiData as any);
         default:
             return [];
     }
