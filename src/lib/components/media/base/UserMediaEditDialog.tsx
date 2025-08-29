@@ -10,7 +10,7 @@ interface UserMediaEditDialogProps {
     mediaType: MediaType;
     userMedia: UserMediaItem;
     onOpenChange: (open: boolean) => void;
-    queryKey: ReturnType<typeof queryKeys.userListKey> | ReturnType<typeof queryKeys.detailsKey>;
+    queryKey: ReturnType<typeof queryKeys.userListKey>;
 }
 
 

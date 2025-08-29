@@ -10,14 +10,15 @@ import {useRefreshMediaMutation} from "@/lib/react-query/query-mutations/media.m
 
 interface RefreshAndEditMediaProps {
     mediaId: number;
+    external: boolean;
     mediaType: MediaType;
     apiId: number | string;
     lastUpdate: string | null;
 }
 
 
-export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: RefreshAndEditMediaProps) => {
-    const refreshMutation = useRefreshMediaMutation(mediaType, mediaId);
+export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastUpdate }: RefreshAndEditMediaProps) => {
+    const refreshMutation = useRefreshMediaMutation(mediaType, external ? apiId : mediaId);
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
 
     const handleRefresh = () => {
@@ -28,12 +29,12 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, lastUpdate }: R
     };
 
     return (
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-4 mt-2 opacity-80">
             <Tooltip text="Refresh metadata" subText={`Last refresh: ${lastRefresh}`} side="left">
                 <div role="button" onClick={handleRefresh}>
                     <RefreshCw
                         size={18}
-                        className={cn("", refreshMutation.isPending && "animate-spin opacity-30")}
+                        className={cn(refreshMutation.isPending && "animate-spin opacity-30")}
                     />
                 </div>
             </Tooltip>

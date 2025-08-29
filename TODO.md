@@ -2,14 +2,14 @@
 
 ## Fixes
 
+- FIX: problem with "default.jpg" should be an url not just a string to work properly
+
 ## TODO
 
 - TODO: check any errors and bugs etc...
-- TODO: better organization of the code in mediaDetails and listDetails so i don't need to pass pages, or chapters to userMedia
-  for that i would need a context or zustand maybe to pass the data better without infinite prop drilling or maybe do 2 different call one for the
-  details/list and one for the userMedia data. in details it can be called as parralele to avoid waterfall loading. For list it could be
-  done using intent on the hovering of the top right corner to get the data fast (still need to show most of them on the card tho so
-  I still need some zustand or something to show the appropriate value of page/chapters if I want to show 157/186 and not just 157)
+- TODO: check edition of media type (all of them) in media details
+- TODO: check list working correctly (all of them) like filters, status, and add from another list
+- TODO: change UI apparance (tw3 to tw4 ^^)
 
 ## External TODO
 

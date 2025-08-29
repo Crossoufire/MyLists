@@ -6,9 +6,8 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Achievement} from "@/lib/types/achievements.types";
-import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {MediaAndUserDetails, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {DeltaStats} from "@/lib/types/stats.types";
 
 
@@ -70,35 +69,6 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
             enginesStats,
             perspectivesStats,
         };
-    }
-
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
-        const media = external ?
-            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
-
-        let internalMediaId = media?.id;
-        if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) throw new Error("Failed to fetch media details");
-        }
-
-        if (internalMediaId) {
-            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw notFound();
-
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
-            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-            return {
-                media: mediaWithDetails,
-                userMedia,
-                followsData,
-                similarMedia,
-            } as MediaAndUserDetails<Game, GamesList>;
-        }
-
-        throw notFound();
     }
 
     async getMediaEditableFields(mediaId: number) {

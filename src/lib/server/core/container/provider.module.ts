@@ -43,4 +43,4 @@ export async function setupApiModule() {
 }
 
 
-export type ApiModule = Awaited<ReturnType<typeof setupApiModule>>;
+export type ProviderModule = Awaited<ReturnType<typeof setupApiModule>>;

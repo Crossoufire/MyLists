@@ -1,4 +1,5 @@
 import React from "react";
+import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaConfiguration} from "@/lib/components/media-config";
 import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
@@ -13,7 +14,23 @@ type MangaUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[
 
 
 export const MangaUserDetails = ({ userMedia, mediaType, queryKey }: MangaUserDetailsProps<typeof MediaType.MANGA>) => {
+    const queryClient = useQueryClient();
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
+    const mediaData = getMediaData();
+
+    function getMediaData() {
+        // Easiest way to get 'pages' from media but no type safety :/.
+        // 'Too complicated' to add type safety because media is a union type.
+
+        if (queryKey[0] === "details") {
+            const apiData: any = queryClient.getQueryData(queryKey);
+            return apiData.media;
+        }
+        else if (queryKey[0] === "userList") {
+            const apiData: any = queryClient.getQueryData(queryKey);
+            return apiData.results.items.find((media: any) => media.mediaId === userMedia.mediaId);
+        }
+    }
 
     return (
         <>
@@ -27,7 +44,7 @@ export const MangaUserDetails = ({ userMedia, mediaType, queryKey }: MangaUserDe
                     <div className="flex justify-between items-center">
                         <div>Chapters</div>
                         <UpdateInput
-                            total={userMedia.chapters!}
+                            total={mediaData.chapters}
                             payloadName={"currentChapter"}
                             updateType={UpdateType.CHAPTER}
                             initValue={userMedia.currentChapter}

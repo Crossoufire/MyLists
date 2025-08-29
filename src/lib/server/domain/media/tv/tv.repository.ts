@@ -351,8 +351,6 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .where(eq(mediaTable.apiId, mediaData.apiId))
             .returning({ id: mediaTable.id });
 
-        console.log({ mediaTable, mediaData });
-
         const mediaId = media.id;
 
         if (actorsData && actorsData.length > 0) {

@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {ApiModule} from "@/lib/server/core/container/api.module";
+import {ProviderModule} from "@/lib/server/core/container/provider.module";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {GamesService} from "@/lib/server/domain/media/games/games.service";
@@ -20,7 +20,7 @@ import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-pro
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry,} from "@/lib/server/domain/media/registries/registries";
 
 
-export function setupMediaModule(apiModule: ApiModule) {
+export function setupMediaModule(apiModule: ProviderModule) {
     const { clients, transformers } = apiModule;
 
     // Media Repositories

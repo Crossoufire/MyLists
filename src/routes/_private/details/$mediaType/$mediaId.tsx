@@ -46,16 +46,15 @@ function MediaDetailsPage() {
         addMediaToListMutation.mutate({ data: { mediaType, mediaId: apiData.media.id } });
     };
 
-    console.log({ image: apiData.media.imageCover });
-
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">
                 <div>
                     <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
                         <div>{apiData.media.name}</div>
-                        {currentUser?.role === RoleType.MANAGER &&
+                        {(currentUser?.role === RoleType.MANAGER) &&
                             <RefreshAndEditMedia
+                                external={external}
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
                                 apiId={apiData.media.apiId}

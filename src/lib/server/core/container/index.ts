@@ -5,15 +5,15 @@ import {initCacheManager} from "@/lib/server/core/cache-manager";
 import {setupMediaModule} from "@/lib/server/core/container/media.module";
 import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
-import {ApiModule, setupApiModule} from "@/lib/server/core/container/api.module";
+import {ProviderModule, setupApiModule} from "@/lib/server/core/container/provider.module";
 import {setupUserModule, UserModule} from "@/lib/server/core/container/user.module";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 interface AppContainer {
     cacheManager: Cache;
-    clients: ApiModule["clients"];
-    transformers: ApiModule["transformers"];
+    clients: ProviderModule["clients"];
+    transformers: ProviderModule["transformers"];
     repositories: UserModule["repositories"];
     services: UserModule["services"] & {
         tasks: TasksService;

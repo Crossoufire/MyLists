@@ -209,9 +209,9 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         return getDbClient()
             .select({
+                mediaCover: mediaTable.imageCover,
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
-                mediaCover: sql<string>`${mediaTable.imageCover}`,
             })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
@@ -864,11 +864,11 @@ export const createArrayFilterDef = ({ argName, entityTable, filterColumn, media
 
 
 type TListByType = {
+    [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
+    [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
     [MediaType.MOVIES]: typeof schema.moviesList.$inferSelect;
     [MediaType.GAMES]: typeof schema.gamesList.$inferSelect;
     [MediaType.BOOKS]: typeof schema.booksList.$inferSelect & { pages: number };
-    [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
-    [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
     [MediaType.MANGA]: typeof schema.mangaList.$inferSelect & { chapters: number };
 };
 

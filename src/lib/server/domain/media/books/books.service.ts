@@ -6,7 +6,6 @@ import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
-import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
 import {PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
@@ -64,37 +63,6 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             authorsStats,
             langsStats,
         };
-    }
-
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
-        const media = external ?
-            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
-
-        let internalMediaId = media?.id;
-        if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) throw new Error("Failed to fetch media details");
-        }
-
-        if (internalMediaId) {
-            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw notFound();
-
-            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            if (userMedia) userMedia.pages = mediaWithDetails.pages;
-
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
-            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-            return {
-                media: mediaWithDetails,
-                userMedia,
-                followsData,
-                similarMedia,
-            };
-        }
-
-        throw notFound();
     }
 
     async getMediaEditableFields(mediaId: number) {

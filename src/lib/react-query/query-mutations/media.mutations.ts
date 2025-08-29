@@ -4,13 +4,13 @@ import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postEditMediaDetails, refreshMediaDetails} from "@/lib/server/functions/media-details";
 
 
-export const useRefreshMediaMutation = (mediaType: MediaType, mediaId: number) => {
+export const useRefreshMediaMutation = (mediaType: MediaType, mediaOrApiId: number | string) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: refreshMediaDetails,
         onSuccess: async () => {
-            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId.toString()) });
+            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaOrApiId.toString()) });
         },
     });
 };

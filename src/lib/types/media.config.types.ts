@@ -58,6 +58,7 @@ type BaseSelection<TListTable, TMediaTable> = {
     [K in keyof TMediaTable]: SQLiteColumn | SQL
 } | {
     mediaName: SQLiteColumn | SQL,
+    epsPerSeason?: SQLiteColumn | SQL,
 }
 
 

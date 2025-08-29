@@ -1,7 +1,7 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
-import {asc, desc, getTableColumns} from "drizzle-orm";
+import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
@@ -29,6 +29,15 @@ export const seriesConfig: SeriesSchemaConfig = {
         baseSelection: {
             mediaName: schema.series.name,
             imageCover: schema.series.imageCover,
+            epsPerSeason: sql<{ season: number; episodes: number }[]>`(
+                SELECT 
+                    json_group_array(json_object(
+                        'season', ${schema.seriesEpisodesPerSeason.season}, 
+                        'episodes', ${schema.seriesEpisodesPerSeason.episodes}
+                    ))
+                FROM ${schema.seriesEpisodesPerSeason} 
+                WHERE ${schema.seriesEpisodesPerSeason.mediaId} = ${schema.series.id}
+            )`.mapWith(JSON.parse),
             ...getTableColumns(schema.seriesList),
         },
         filterDefinitions: {

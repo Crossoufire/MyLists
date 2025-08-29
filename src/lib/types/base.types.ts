@@ -94,9 +94,6 @@ export type TopMetricStats = {
 export type UserMediaWithLabels<TList> = TList & {
     labels: NameObj[],
     ratingSystem: RatingSystemType,
-    pages?: number;
-    chapters?: number | null;
-    epsPerSeason?: EpsPerSeasonType;
 };
 
 export type UserFollowsMediaData<TList> = {

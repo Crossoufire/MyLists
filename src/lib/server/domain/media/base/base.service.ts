@@ -5,7 +5,7 @@ import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {JobType, LabelAction, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
-import {Label, MediaAndUserDetails, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
+import {Label, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
 import {DeltaStats} from "@/lib/types/stats.types";
 
@@ -167,6 +167,34 @@ export abstract class BaseService<
         return delta;
     }
 
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
+        const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
+
+        let internalMediaId = media?.id;
+        if (external && !internalMediaId) {
+            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
+            if (!internalMediaId) throw new FormattedError("Failed to fetch media details");
+        }
+
+        if (internalMediaId) {
+            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
+            if (!mediaWithDetails) throw notFound();
+
+            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
+            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
+            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
+
+            return {
+                userMedia,
+                followsData,
+                similarMedia,
+                media: mediaWithDetails,
+            };
+        }
+
+        throw notFound();
+    }
+
     getAchievementCte(achievement: Achievement, userId?: number) {
         const handler = this.achievementHandlers[achievement.codeName as string];
         if (!handler) {
@@ -193,6 +221,4 @@ export abstract class BaseService<
     abstract updateMediaEditableFields(mediaId: number, payload: Record<string, any>): Promise<void>;
 
     abstract calculateDeltaStats(oldState: UserMediaWithLabels<any>, newState: any, media: any): DeltaStats;
-
-    abstract getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>): Promise<MediaAndUserDetails<any, any>>;
 }
