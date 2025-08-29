@@ -16,7 +16,7 @@ import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provid
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
 
 
-export interface MediaRepositoryMap {
+interface MediaRepositoryMap {
     [MediaType.SERIES]: TvRepository;
     [MediaType.ANIME]: TvRepository;
     [MediaType.MOVIES]: MoviesRepository;
@@ -26,7 +26,7 @@ export interface MediaRepositoryMap {
 }
 
 
-export interface MediaServiceMap {
+interface MediaServiceMap {
     [MediaType.SERIES]: TvService;
     [MediaType.ANIME]: TvService;
     [MediaType.MOVIES]: MoviesService;
@@ -36,10 +36,7 @@ export interface MediaServiceMap {
 }
 
 
-export type MediaService = TvService | MoviesService | GamesService | BooksService | MangaService;
-
-
-export interface MediaProviderServiceMap {
+interface MediaProviderServiceMap {
     [MediaType.SERIES]: TvProviderService;
     [MediaType.ANIME]: TvProviderService;
     [MediaType.MOVIES]: MoviesProviderService;

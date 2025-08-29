@@ -4,7 +4,8 @@ import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
-import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/server/types/base.types";
+
+import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })

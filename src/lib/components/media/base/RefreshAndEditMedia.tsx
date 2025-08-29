@@ -9,9 +9,9 @@ import {useRefreshMediaMutation} from "@/lib/react-query/query-mutations/media.m
 
 
 interface RefreshAndEditMediaProps {
-    apiId: number;
     mediaId: number;
     mediaType: MediaType;
+    apiId: number | string;
     lastUpdate: string | null;
 }
 

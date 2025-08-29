@@ -1,11 +1,5 @@
-import * as z from "zod/v4";
-import {Column, SQL} from "drizzle-orm";
+import * as z from "zod";
 import {taskNames} from "@/cli/commands";
-import {JobType as MqJobType} from "bullmq";
-import {DeltaStats} from "@/lib/server/types/stats.types";
-import {MediaTable} from "@/lib/server/types/media-lists.types";
-import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
-import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -13,7 +7,6 @@ import {
     JobType,
     LabelAction,
     MediaType,
-    NotificationType,
     PrivacyType,
     RatingSystemType,
     RoleType,
@@ -21,322 +14,6 @@ import {
     UpdateType
 } from "@/lib/server/utils/enums";
 
-
-export type StatusPayload = {
-    status: Status,
-    type: typeof UpdateType.STATUS,
-}
-
-
-export type PagePayload = {
-    actualPage: number,
-    type: typeof UpdateType.PAGE,
-}
-
-
-export type ChapterPayload = {
-    currentChapter: number,
-    type: typeof UpdateType.CHAPTER,
-}
-
-
-export type RedoPayload = {
-    redo: number,
-    type: typeof UpdateType.REDO,
-}
-
-
-export type RedoTvPayload = {
-    redo: number[],
-    type: typeof UpdateType.REDO,
-}
-
-
-export type EpsSeasonPayload = {
-    currentSeason?: number,
-    type: typeof UpdateType.TV,
-    lastEpisodeWatched?: number,
-}
-
-
-export type ComingNext = {
-    mediaId: number,
-    mediaName: string,
-    imageCover: string,
-    date: string | null,
-    seasonToAir?: number | null,
-    episodeToAir?: number | null,
-}
-
-
-export type UserMediaStats = {
-    userId: number;
-    timeSpent: number;
-    totalRedo: number;
-    totalEntries: number;
-    entriesRated: number;
-    totalSpecific: number;
-    averageRating: number;
-    sumEntriesRated: number;
-    entriesFavorites: number;
-    entriesCommented: number;
-    statusCounts: Record<string, number>;
-};
-
-
-export type UpComingMedia = {
-    userId: number;
-    status: Status;
-    mediaId: number;
-    mediaName: string;
-    imageCover: string;
-    date: string | null;
-    lastEpisode?: number | null;
-    seasonToAir?: number | null;
-    episodeToAir?: number | null;
-};
-
-
-export type UpdateMediaNotification = {
-    userId: number,
-    mediaId: number,
-    mediaType: MediaType,
-    payload: NotificationPayload,
-    notificationType: NotificationType,
-};
-
-
-export type NotificationPayload = {
-    name: string;
-    final?: boolean;
-    season?: number | null;
-    episode?: number | null;
-    releaseDate: string | null;
-};
-
-
-export type JobDetails = {
-    items: JobDetail[];
-    total: number;
-    pages: number;
-};
-
-
-export type JobDetail = {
-    mediaId: number,
-    mediaName: string,
-    imageCover: string,
-    inUserList: boolean,
-};
-
-
-export type AddedMediaDetails = {
-    genres: { id: number, name: string }[];
-    actors?: { id: number, name: string }[];
-    authors?: { id: number, name: string }[];
-    networks?: { id: number, name: string }[];
-    platforms?: { id: number, name: string }[];
-    epsPerSeason?: { season: number, episodes: number }[];
-    collection?: { mediaId: number, mediaName: string, mediaCover: string }[];
-    companies?: { id: number, name: string, developer: boolean, publisher: boolean }[];
-};
-
-
-export type CommonListFilters = {
-    genres: { name: string }[];
-    labels: { name: string }[];
-};
-
-
-export type ExpandedListFilters = CommonListFilters & {
-    langs?: { name: string }[];
-    platforms?: { name: GamesPlatformsEnum }[];
-};
-
-
-export type TopMetricStats = {
-    topValues: { name: string, value: number }[];
-    topRated: { name: string, value: number }[];
-    topFavorited: { name: string, value: number }[];
-};
-
-
-export type UserMediaWithLabels<TList> = TList & {
-    labels: { name: string }[],
-    ratingSystem: RatingSystemType,
-    pages?: number;
-    chapters?: number | null;
-    epsPerSeason?: { season: number, episodes: number }[];
-};
-
-
-export type UserFollowsMediaData<TList> = {
-    id: number;
-    name: string;
-    image: string;
-    userMedia: TList;
-    ratingSystem: RatingSystemType;
-}
-
-
-export type MediaListData<TList> = {
-    items: (TList & {
-        common: boolean;
-        mediaName: string;
-        imageCover: string;
-        ratingSystem: RatingSystemType;
-        labels: {
-            id: number,
-            name: string,
-        }[];
-    })[];
-    pagination: {
-        page: number;
-        perPage: number;
-        sorting: string;
-        totalPages: number;
-        totalItems: number;
-        availableSorting: string[];
-    };
-}
-
-
-export type ConfigTopMetric = {
-    limit?: number,
-    filters: SQL[],
-    minRatingCount?: number,
-    metricTable: SQLiteTable,
-    metricIdCol: SQLiteColumn,
-    mediaLinkCol: SQLiteColumn,
-    metricNameCol: SQLiteColumn,
-}
-
-
-export type AdvancedMediaStats = {
-    totalLabels: number,
-    avgDuration: number;
-    ratings: NameValuePair[],
-    genresStats: TopMetricStats,
-    releaseDates: NameValuePair[],
-    durationDistrib: NameValuePair[];
-}
-
-
-export type MoviesAdvancedStats = AdvancedMediaStats & {
-    langsStats: TopMetricStats;
-    actorsStats: TopMetricStats;
-    directorsStats: TopMetricStats;
-    totalBudget: number | undefined,
-    totalRevenue: number | null | undefined;
-}
-
-
-export type TvAdvancedStats = AdvancedMediaStats & {
-    actorsStats: TopMetricStats;
-    networksStats: TopMetricStats;
-    countriesStats: TopMetricStats;
-    totalSeasons: number | null | undefined;
-}
-
-
-export type GamesAdvancedStats = AdvancedMediaStats & {
-    enginesStats: TopMetricStats;
-    platformsStats: TopMetricStats;
-    developersStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-    perspectivesStats: TopMetricStats;
-    gameModes: { topValues: { name: string, value: number }[] };
-}
-
-
-export type BooksAdvancedStats = AdvancedMediaStats & {
-    langsStats: TopMetricStats;
-    authorsStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-}
-
-
-export type MangaAdvancedStats = AdvancedMediaStats & {
-    authorsStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-}
-
-
-export type SimpleMedia = {
-    mediaId: number,
-    mediaName: string,
-    mediaCover: string,
-}
-
-
-export type MediaAndUserDetails<TMedia, TList> = {
-    similarMedia: SimpleMedia[];
-    media: TMedia & AddedMediaDetails;
-    followsData: UserFollowsMediaData<TList>[];
-    userMedia: UserMediaWithLabels<TList> | null;
-}
-
-
-export type AddMediaToUserList<TMedia, TList> = {
-    newState: TList;
-    delta: DeltaStats;
-    media: TMedia;
-}
-
-
-export type LogPayloadDb = { old_value: any; new_value: any };
-export type LogPayload = { oldValue: any; newValue: any } | null;
-
-export type UpdatePayload = {
-    payload: {
-        type: UpdateType;
-        [key: string]: any;
-    }
-}
-
-
-export type UpdateUserMediaDetails<TMedia, TList> = {
-    media: TMedia;
-    newState: TList;
-    delta: DeltaStats;
-    logPayload: LogPayload;
-}
-
-
-export type UpdateHandlerFn<TState, TPayload, TMedia> = (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload];
-
-
-export type ListFilterDefinition = {
-    mediaTable: MediaTable;
-    entityTable: SQLiteTable & { mediaId: Column<any, any, any> };
-    filterColumn: SQLiteColumn;
-    argName: keyof MediaListArgs;
-}
-
-
-export type FilterDefinition = {
-    isActive: (args: MediaListArgs) => boolean;
-    getCondition: (args: MediaListArgs) => SQL | undefined;
-}
-
-export const mqJobTypes = [
-    "completed",
-    "waiting",
-    "active",
-    "delayed",
-    "failed",
-    "paused",
-    "repeat",
-    "wait"
-] as const satisfies readonly MqJobType[];
-
-export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
-
-export type StatsCTE = any;
-export type NameValuePair = { name: string | number, value: number };
-export type EpsPerSeasonType = { season: number, episodes: number }[];
-
-export type CurrentUser = Awaited<ReturnType<NonNullable<ReturnType<typeof authOptions>["queryFn"]>>> | undefined;
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
 export type HofSorting = z.infer<typeof hofSortingSchema>;
@@ -347,9 +24,8 @@ export type ListSettings = z.infer<typeof mediaListSettingsSchema>;
 export type AllUpdatesSearch = z.infer<typeof allUpdatesHistorySchema>;
 export type AdminUpdatePayload = z.infer<typeof adminUpdatePayloadSchema>;
 export type AchievementTier = z.infer<typeof tierAchievementSchema>;
+export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
 
-
-// --- ZOD Schema -----------------------------------------------------------------------------------------------
 
 export const hofSortingSchema = z.enum(["normalized", "profile", ...Object.values(MediaType)] as const).optional().catch("normalized");
 
@@ -422,7 +98,6 @@ export const mediaListArgsSchema = z.object({
     creators: z.array(z.string()).optional().catch(undefined),
     platforms: z.array(z.enum(GamesPlatformsEnum)).optional().catch(undefined),
 })
-
 export const mediaListSchema = z.object({
     mediaType: z.enum(MediaType),
     args: mediaListArgsSchema,
@@ -498,9 +173,6 @@ export const updateUserMediaSchema = z.object({
         message: "Exactly one field (besides type) must be provided in the payload."
     })
 });
-
-export type UpdateUserMedia = z.infer<typeof updateUserMediaSchema>;
-
 
 export const deleteUserUpdatesSchema = z.object({
     returnData: z.coerce.boolean().default(false),
@@ -601,7 +273,7 @@ export const postTriggerLongTasksSchema = z.object({
 });
 
 export const getAdminJobsSchema = z.object({
-    types: z.array(z.enum(mqJobTypes)),
+    types: z.array(z.enum(["wait", "active", "completed", "failed"])),
 })
 
 export const getAdminJobSchema = z.object({

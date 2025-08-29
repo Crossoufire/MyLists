@@ -1,24 +1,24 @@
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {connectRedis} from "@/lib/server/core/redis-client";
-import {createWorker, initializeQueue} from "@/lib/server/core/bullMQ-queue";
+import {createWorker, initializeQueue} from "@/lib/server/bullmq/index";
 
 
 async function startWorker() {
     pinoLogger.info("Starting worker process...");
 
     try {
-        // 1. Connect to Redis
+        // Connect to Redis
         const redisConnection = await connectRedis({ bypassEnv: true });
         if (!redisConnection) {
             throw new Error("Worker failed to connect to Redis.");
         }
         pinoLogger.info("Redis connection established for worker.");
 
-        // 2. Create the Worker and Initialize the Queue
+        // Create worker and init Queue
         const worker = createWorker(redisConnection);
         const mylistsLongTaskQueue = initializeQueue(redisConnection);
 
-        // 3. Setup graceful shutdown
+        // Setup graceful shutdown
         const shutdown = async () => {
             pinoLogger.info("Shutting down worker...");
             await worker.close();

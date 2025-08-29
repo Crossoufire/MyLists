@@ -1,7 +1,7 @@
 import {MessageCircle} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Badge} from "@/lib/components/ui/badge";
-import {FollowData} from "@/lib/components/types";
+import {FollowData} from "@/lib/types/query.options.types";
 import {Separator} from "@/lib/components/ui/separator";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {getStatusColor, getTextColor} from "@/lib/utils/functions";

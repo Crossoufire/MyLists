@@ -1,7 +1,7 @@
 import {getFeelingIcon} from "@/lib/utils/functions";
 import {RatingSystemType} from "@/lib/server/utils/enums";
-import {StatCardData, StatListData} from "@/lib/stats/types";
-import {NameValuePair, TopMetricStats} from "@/lib/server/types/base.types";
+import {StatCardData, StatListData} from "@/lib/types/stats.types";
+import {NameValuePair, TopMetricStats} from "@/lib/types/base.types";
 
 
 export const createStatCard = (title: string, value: any, subtitle: string, data?: NameValuePair[]): StatCardData => {

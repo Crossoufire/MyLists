@@ -7,13 +7,13 @@ import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {AchievementTier} from "@/lib/server/types/base.types";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {adminAchievementsOptions} from "@/lib/react-query/query-options/admin-options";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/react-query/query-mutations/admin.mutations";
+import {AchievementTier} from "@/lib/types/zod.schema.types";
 
 
 type Achievement = Awaited<ReturnType<NonNullable<ReturnType<typeof adminAchievementsOptions>["queryFn"]>>>[0];

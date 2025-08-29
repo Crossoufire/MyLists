@@ -1,9 +1,8 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {MediaListArgs} from "@/lib/server/types/base.types";
-import {asc, desc, getTableColumns, like} from "drizzle-orm";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 
 
@@ -28,16 +27,17 @@ export const booksConfig: MangaSchemaConfig = {
             ...getTableColumns(schema.booksList),
         },
         filterDefinitions: {
-            authors: createListFilterDef({
+            langs: createArrayFilterDef({
+                argName: "langs",
+                mediaTable: schema.books,
+                filterColumn: schema.books.language,
+            }),
+            authors: createArrayFilterDef({
                 argName: "authors",
                 mediaTable: schema.books,
                 entityTable: schema.booksAuthors,
                 filterColumn: schema.booksAuthors.name,
             }),
-            langs: {
-                isActive: (args: MediaListArgs) => !!args.langs,
-                getCondition: (args: MediaListArgs) => like(schema.books.language, `%${args.langs}%`),
-            },
         },
         defaultStatus: Status.READING,
         defaultSortName: "Title A-Z",

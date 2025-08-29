@@ -1,10 +1,9 @@
 import {JobType, Status} from "@/lib/server/utils/enums";
 import * as schema from "@/lib/server/database/schema";
-import {asc, desc, getTableColumns, inArray} from "drizzle-orm";
-import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {TvSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export type AnimeSchemaConfig = TvSchemaConfig<
@@ -33,26 +32,28 @@ export const animeConfig: AnimeSchemaConfig = {
             ...getTableColumns(schema.animeList),
         },
         filterDefinitions: {
-            actors: createListFilterDef({
+            actors: createArrayFilterDef({
                 argName: "actors",
                 mediaTable: schema.anime,
                 entityTable: schema.animeActors,
                 filterColumn: schema.animeActors.name,
             }),
-            networks: createListFilterDef({
+            networks: createArrayFilterDef({
                 argName: "networks",
                 mediaTable: schema.anime,
                 entityTable: schema.animeNetwork,
                 filterColumn: schema.animeNetwork.name,
             }),
-            creators: {
-                isActive: (args: MediaListArgs) => !!args.creators,
-                getCondition: (args: MediaListArgs) => inArray(schema.anime.createdBy, args.creators!.filter((c) => c !== "All")),
-            },
-            langs: {
-                isActive: (args: MediaListArgs) => !!args.langs,
-                getCondition: (args: MediaListArgs) => inArray(schema.anime.originCountry, args.langs!.filter((l) => l !== "All")),
-            },
+            creators: createArrayFilterDef({
+                argName: "creators",
+                mediaTable: schema.anime,
+                filterColumn: schema.anime.createdBy,
+            }),
+            langs: createArrayFilterDef({
+                argName: "langs",
+                mediaTable: schema.anime,
+                filterColumn: schema.anime.originCountry,
+            }),
         },
         defaultStatus: Status.WATCHING,
         defaultSortName: "Title A-Z",

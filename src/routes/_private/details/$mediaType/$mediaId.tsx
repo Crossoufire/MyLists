@@ -56,7 +56,6 @@ function MediaDetailsPage() {
                             <RefreshAndEditMedia
                                 mediaType={mediaType}
                                 mediaId={apiData.media.id}
-                                //@ts-expect-error
                                 apiId={apiData.media.apiId}
                                 lastUpdate={apiData.media.lastApiUpdate}
                             />

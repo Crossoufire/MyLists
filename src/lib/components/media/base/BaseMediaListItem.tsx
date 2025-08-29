@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Settings2} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
-import {UserMediaItem} from "@/lib/components/types";
+import {UserMediaItem} from "@/lib/types/query.options.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";

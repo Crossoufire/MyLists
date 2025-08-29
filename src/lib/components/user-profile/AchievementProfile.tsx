@@ -8,7 +8,7 @@ import {MutedText} from "@/lib/components/general/MutedText";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
-import {AchievementsType} from "@/lib/components/types";
+import {AchievementsType} from "@/lib/types/query.options.types";
 
 
 interface AchievementsProps {

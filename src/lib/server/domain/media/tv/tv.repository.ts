@@ -1,11 +1,11 @@
 import {Status} from "@/lib/server/utils/enums";
+import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/server/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
 import {TvType, UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
+import {AddedMediaDetails} from "@/lib/types/base.types";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, inArray, isNotNull, lte, max, ne, notInArray, sql} from "drizzle-orm";
 
 
@@ -155,7 +155,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
         const filters = [notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])]
 
-        const networkConfig: ConfigTopMetric = {
+        const networkConfig = {
             metricTable: networkTable,
             metricNameCol: networkTable.name,
             metricIdCol: networkTable.mediaId,
@@ -163,14 +163,14 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             minRatingCount: 3,
             filters,
         };
-        const countriesConfig: ConfigTopMetric = {
+        const countriesConfig = {
             metricTable: mediaTable,
             metricIdCol: mediaTable.id,
             mediaLinkCol: listTable.mediaId,
             metricNameCol: mediaTable.originCountry,
             filters,
         };
-        const actorsConfig: ConfigTopMetric = {
+        const actorsConfig = {
             metricTable: actorTable,
             metricNameCol: actorTable.name,
             metricIdCol: actorTable.mediaId,

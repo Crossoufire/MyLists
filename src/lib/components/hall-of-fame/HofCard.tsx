@@ -2,14 +2,14 @@ import {Trophy} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
+import {HofUserData} from "@/lib/types/query.options.types";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
-import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface HofCardProps {
-    userData: Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][0];
+    userData: HofUserData;
 }
 
 
@@ -47,7 +47,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                     </div>
                     <div className="col-span-5 -ml-8">
                         <div className="grid grid-cols-3 gap-2 text-center max-sm:hidden">
-                            {userData.settings.map((s: any) =>
+                            {userData.settings.map((s) =>
                                 <Link
                                     key={s.mediaType}
                                     disabled={!s.active}

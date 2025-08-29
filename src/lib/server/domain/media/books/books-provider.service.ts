@@ -1,4 +1,4 @@
-import {GBooksDetails} from "@/lib/server/types/provider.types";
+import {GBooksDetails} from "@/lib/types/provider.types";
 import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";

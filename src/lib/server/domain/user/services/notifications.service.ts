@@ -1,5 +1,5 @@
 import {MediaType, NotificationType} from "@/lib/server/utils/enums";
-import {UpComingMedia, UpdateMediaNotification} from "@/lib/server/types/base.types";
+import {UpComingMedia, UpdateMediaNotification} from "@/lib/types/base.types";
 import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
 
 
@@ -11,7 +11,7 @@ export class NotificationsService {
         for (const item of mediaArray) {
             const notification = await this.repository.searchNotification(item.userId, mediaType, item.mediaId);
 
-            let newNotification = {} as UpdateMediaNotification;
+            let newNotification: UpdateMediaNotification = {} as UpdateMediaNotification;
             if (mediaType === MediaType.SERIES || mediaType === MediaType.ANIME) {
                 if (
                     notification &&

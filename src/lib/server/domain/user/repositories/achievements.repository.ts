@@ -1,10 +1,12 @@
 import {db} from "@/lib/server/database/db";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {AchievementData} from "@/lib/server/types/achievements.types";
+import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
 import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
 import {and, asc, count, eq, getTableColumns, inArray, max, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
-import {AchievementTier} from "@/lib/server/types/base.types";
+
+import {AchievementTier} from "@/lib/types/zod.schema.types";
+import {StatsCTE} from "@/lib/types/base.types";
 
 
 export class AchievementsRepository {
@@ -19,7 +21,7 @@ export class AchievementsRepository {
         END`;
     }
 
-    static async seedAchievements(achievementsDefinition: readonly AchievementData[]) {
+    static async seedAchievements(achievementsDefinition: readonly AchievementSeedData[]) {
         await db.transaction(async (tx) => {
             for (const achievementData of achievementsDefinition) {
                 const existingAchievement = await tx
@@ -262,9 +264,7 @@ export class AchievementsRepository {
             .innerJoin(achievementTier, eq(achievement.id, achievementTier.achievementId))
             .orderBy(asc(achievement.id), tierOrder);
 
-        type GroupedAch = Omit<typeof flatResults[0], "tier"> & { tiers: typeof flatResults[0]["tier"][]; };
-
-        const groupedAchievements = flatResults.reduce<Record<number, GroupedAch>>((acc, row) => {
+        const groupedAchievements = flatResults.reduce<Record<number, Achievement>>((acc, row) => {
             const { tier, ...achievementData } = row;
             const achievementId = achievementData.id;
 
@@ -288,7 +288,7 @@ export class AchievementsRepository {
             .execute()
     }
 
-    static async updateAchievement(tier: AchievementTier, cte: any, completed: SQL, count: SQL, progress: SQL, completedAt: SQL) {
+    static async updateAchievement(tier: AchievementTier, cte: StatsCTE, completed: SQL, count: SQL, progress: SQL, completedAt: SQL) {
         await getDbClient()
             .update(userAchievement)
             .set({
@@ -305,7 +305,7 @@ export class AchievementsRepository {
             ));
     }
 
-    static async insertAchievement(tier: AchievementTier, cte: any, completed: SQL, count: SQL, progress: SQL) {
+    static async insertAchievement(tier: AchievementTier, cte: StatsCTE, completed: SQL, count: SQL, progress: SQL) {
         await getDbClient().run(sql`
             INSERT INTO ${userAchievement} (
                 tier_id, 

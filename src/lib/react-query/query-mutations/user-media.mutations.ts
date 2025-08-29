@@ -1,8 +1,8 @@
-import {UpdatePayload} from "@/lib/server/types/base.types";
+import {Label, UpdatePayload} from "@/lib/types/base.types";
 import {LabelAction, MediaType} from "@/lib/server/utils/enums";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {HistoryOptionsType, Label, MediaDetailsOptionsType, MediaListOptionsType, ProfileOptionsType, UserMedia} from "@/lib/components/types";
+import {HistoryOptionsType, MediaDetailsOptionsType, MediaListOptionsType, ProfileOptionsType, UserMedia} from "@/lib/types/query.options.types";
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 
 

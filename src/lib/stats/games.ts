@@ -1,4 +1,4 @@
-import type {StatSection} from "@/lib/stats/types";
+import type {StatSection} from "@/lib/types/stats.types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {SpecificMediaData} from "@/lib/stats/index";
 import {formatNumberWithKM} from "@/lib/utils/functions";

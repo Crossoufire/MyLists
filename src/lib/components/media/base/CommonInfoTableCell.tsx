@@ -1,7 +1,7 @@
 import React from "react";
 import {Heart} from "lucide-react";
 import {formatRating} from "@/lib/utils/functions";
-import {UserMediaItem} from "@/lib/components/types";
+import {UserMediaItem} from "@/lib/types/query.options.types";
 import {DisplayRating} from "@/lib/components/media/base/DisplayRating";
 import {DisplayComment} from "@/lib/components/media/base/DisplayComment";
 

@@ -7,7 +7,8 @@ import {FormattedError} from "@/lib/server/utils/error-classes";
 import {tryFormZodError} from "@/lib/server/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/server/types/base.types";
+
+import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })

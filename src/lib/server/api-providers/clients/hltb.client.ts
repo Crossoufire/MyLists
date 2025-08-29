@@ -4,6 +4,7 @@ import {closest} from "fastest-levenshtein";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
+import {HltbApiResponse, HltbGameEntry, SearchInfo} from "@/lib/types/provider.types";
 
 
 export class HltbClient extends BaseClient {
@@ -22,7 +23,7 @@ export class HltbClient extends BaseClient {
     }
 
     async search(gameName: string) {
-        const defaultEntry: GameEntry = {
+        const defaultEntry: HltbGameEntry = {
             name: gameName,
             mainStory: null,
             mainExtra: null,
@@ -57,7 +58,7 @@ export class HltbClient extends BaseClient {
                     mainStory: game.comp_main ? (game.comp_main / 3600).toFixed(2) : undefined,
                     mainExtra: game.comp_plus ? (game.comp_plus / 3600).toFixed(2) : undefined,
                     completionist: game.comp_100 ? (game.comp_100 / 3600).toFixed(2) : undefined,
-                } as GameEntry));
+                } as HltbGameEntry));
         }
         catch (err) {
             console.error("Error parsing game results:", err);
@@ -264,25 +265,3 @@ export class HltbClient extends BaseClient {
         return payload;
     }
 }
-
-
-type SearchInfo = {
-    apiKey: string | undefined;
-    searchUrl: string | undefined;
-}
-
-export type GameEntry = {
-    name: string;
-    mainStory: string | null;
-    mainExtra: string | null;
-    completionist: string | null;
-}
-
-type HltbApiResponse = {
-    data: {
-        game_name?: string;
-        comp_main?: number;
-        comp_plus?: number;
-        comp_100?: number;
-    }[];
-};

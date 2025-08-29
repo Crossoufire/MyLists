@@ -1,17 +1,17 @@
 import {useMemo} from "react";
 import {cn} from "@/lib/utils/helpers";
+import {AchCard} from "@/lib/types/query.options.types";
 import {Badge} from "@/lib/components/ui/badge";
 import {Award, CircleCheck} from "lucide-react";
 import {Progress} from "@/lib/components/ui/progress";
 import {capitalize, diffColors} from "@/lib/utils/functions";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {TiersDetails} from "@/lib/components/achievements/TierDetails";
-import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface AchievementCardProps {
-    achievement: Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["result"][0];
+    achievement: AchCard;
 }
 
 

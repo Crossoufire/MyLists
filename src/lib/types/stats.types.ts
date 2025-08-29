@@ -1,8 +1,9 @@
 import {JSX} from "react";
-import {NameValuePair} from "@/lib/server/types/base.types";
+import {Status} from "@/lib/server/utils/enums";
+import {NameValuePair} from "@/lib/types/base.types";
 
 
-export interface StatCardData {
+export type StatCardData = {
     title: string;
     subtitle: string;
     valuesList?: NameValuePair[];
@@ -10,13 +11,13 @@ export interface StatCardData {
 }
 
 
-export interface StatListData {
+export type StatListData = {
     title: string;
     data: NameValuePair[];
 }
 
 
-export interface StatSection {
+export type StatSection = {
     sidebarTitle: string;
     cards: {
         cardsPerRow: number;
@@ -34,3 +35,17 @@ export interface StatSection {
         status: string;
     }[];
 }
+
+
+export type DeltaStats = {
+    views?: number;
+    timeSpent?: number;
+    totalRedo?: number;
+    totalEntries?: number;
+    entriesRated?: number;
+    totalSpecific?: number;
+    sumEntriesRated?: number;
+    entriesCommented?: number;
+    entriesFavorites?: number;
+    statusCounts?: Partial<Record<Status, number>>;
+};

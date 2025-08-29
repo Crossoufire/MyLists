@@ -1,8 +1,9 @@
 import {JobType} from "@/lib/server/utils/enums";
-import {FilterConfig} from "@/lib/components/types";
+
+import {SheetFilterObject} from "@/lib/types/base.types";
 
 
-export const getGamesActiveFilters = (): FilterConfig[] => {
+export const getGamesActiveFilters = (): SheetFilterObject[] => {
     return [
         { key: "companies", title: "Companies", type: "search", job: JobType.CREATOR },
         {

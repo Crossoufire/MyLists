@@ -1,5 +1,5 @@
 import {ApiData} from "@/lib/stats/index";
-import {StatSection} from "@/lib/stats/types";
+import {StatSection} from "@/lib/types/stats.types";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG} from "@/lib/stats/constants";
 import {createRatingStatCard, createStatCard, createStatList} from "@/lib/stats/helpers";
 

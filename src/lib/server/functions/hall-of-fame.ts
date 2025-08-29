@@ -1,7 +1,7 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {searchTypeHoFSchema} from "@/lib/server/types/base.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
+import {searchTypeHoFSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getHallOfFame = createServerFn({ method: "GET" })

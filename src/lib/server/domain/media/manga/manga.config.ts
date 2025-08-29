@@ -1,10 +1,9 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {asc, desc, getTableColumns, like} from "drizzle-orm";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {mangaAchievements} from "@/lib/server/domain/media/manga/achievements.seed";
-import {MediaListArgs} from "@/lib/server/types/base.types";
 
 
 export type MangaSchemaConfig = MediaSchemaConfig<
@@ -28,16 +27,17 @@ export const mangaConfig: MangaSchemaConfig = {
             ...getTableColumns(schema.mangaList),
         },
         filterDefinitions: {
-            authors: createListFilterDef({
+            authors: createArrayFilterDef({
                 argName: "authors",
                 mediaTable: schema.manga,
                 entityTable: schema.mangaAuthors,
                 filterColumn: schema.mangaAuthors.name,
             }),
-            publishers: {
-                isActive: (args: MediaListArgs) => !!args.publishers,
-                getCondition: (args: MediaListArgs) => like(schema.manga.publishers, `%${args.publishers}%`),
-            },
+            publishers: createArrayFilterDef({
+                argName: "publishers",
+                mediaTable: schema.manga,
+                filterColumn: schema.manga.publishers,
+            }),
         },
         defaultStatus: Status.READING,
         defaultSortName: "Title A-Z",

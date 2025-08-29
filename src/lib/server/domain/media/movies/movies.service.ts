@@ -2,14 +2,14 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
-import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {

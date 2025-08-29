@@ -1,17 +1,16 @@
 import {Award} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
-import {MediaType} from "@/lib/server/utils/enums";
+import {AchSummary} from "@/lib/types/query.options.types";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {capitalize, diffColors} from "@/lib/utils/functions";
-import {achievementOptions} from "@/lib/react-query/query-options/query-options";
 
 
-interface SummaryProps {
-    summary: Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["summary"][MediaType];
+interface AchievementSummaryProps {
+    summary: AchSummary;
 }
 
 
-export const AchievementSummary = ({ summary }: SummaryProps) => {
+export const AchievementSummary = ({ summary }: AchievementSummaryProps) => {
     return (
         <div className="grid grid-cols-5 gap-6 w-[80%] mx-auto mb-6 max-lg:w-[95%] max-sm:grid-cols-3
         max-sm:w-full max-sm:gap-2 max-sm:mb-4">

@@ -1,7 +1,7 @@
+import {JobType as MqJobType} from "bullmq";
 import {taskDefinitions} from "@/cli/commands";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
-import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
@@ -16,7 +16,7 @@ import {
     postTriggerLongTasksSchema,
     searchTypeAdminSchema,
     searchTypeSchema
-} from "@/lib/server/types/base.types";
+} from "@/lib/types/zod.schema.types";
 
 
 const COOKIE_OPTIONS = {
@@ -135,7 +135,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
 
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
@@ -155,10 +155,10 @@ export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
 
         try {
-            const jobs = await mylistsLongTaskQueue.getJobs(types);
+            const jobs = await mylistsLongTaskQueue.getJobs(types satisfies MqJobType[]);
             return jobs.map((job) => ({
                 id: job.id,
                 name: job.name,
@@ -171,7 +171,10 @@ export const getAdminJobs = createServerFn({ method: "GET" })
                 processedOn: job.processedOn,
                 failedReason: job.failedReason,
                 attemptsMade: job.attemptsMade,
-                status: deriveMQJobStatus(job),
+                status: job.failedReason ? "failed"
+                    : job.finishedOn ? "completed"
+                        : job.processedOn ? "active"
+                            : job.timestamp ? "waiting" : "unknown"
             }));
         }
         catch (error) {
@@ -184,7 +187,7 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
 
         try {
             return mylistsLongTaskQueue.getJobLogs(jobId);

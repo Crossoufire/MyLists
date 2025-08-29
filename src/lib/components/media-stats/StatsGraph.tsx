@@ -1,6 +1,6 @@
 import {useSearch} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
-import {NameValuePair} from "@/lib/server/types/base.types";
+import {NameValuePair} from "@/lib/types/base.types";
 import {useRatingSystem} from "@/lib/contexts/rating-context";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {formatNumberWithKM, getFeelingList, getMediaColor} from "@/lib/utils/functions";

@@ -1,8 +1,8 @@
 import {Link} from "@tanstack/react-router";
+import {SimpleMedia} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {MutedText} from "@/lib/components/general/MutedText";
-import {SimpleMedia} from "@/lib/server/types/base.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 

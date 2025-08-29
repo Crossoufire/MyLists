@@ -3,7 +3,7 @@ import path from "path";
 import * as fs from "fs";
 import {fileURLToPath} from "url";
 import {MediaType} from "@/lib/server/utils/enums";
-import {taskDefinitions, TasksName} from "@/cli/commands";
+import {taskDefinitions} from "@/cli/commands";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
@@ -12,6 +12,7 @@ import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {TasksName} from "@/lib/types/base.types";
 
 
 type TaskHandler = () => Promise<void>;
@@ -191,7 +192,7 @@ export class TasksService {
         const mediaTypes = [MediaType.MOVIES];
         for (const mediaType of mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const mediaAchievements = allAchievements.filter(a => a.mediaType === mediaType);
+            const mediaAchievements = allAchievements.filter((all) => all.mediaType === mediaType);
             for (const achievement of mediaAchievements) {
                 await this.achievementsService.calculateAchievement(achievement, mediaService);
             }

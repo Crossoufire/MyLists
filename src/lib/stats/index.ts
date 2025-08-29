@@ -4,13 +4,17 @@ import {gamesData} from "@/lib/stats/games";
 import {mangaData} from "@/lib/stats/manga";
 import {globalData} from "@/lib/stats/global";
 import {moviesData} from "@/lib/stats/movies";
-import {StatSection} from "@/lib/stats/types";
+import {StatSection} from "@/lib/types/stats.types";
 import {MediaType} from "@/lib/server/utils/enums";
+import {TvAdvancedStats} from "@/lib/server/domain/media/tv/tv.types";
+import {BooksAdvancedStats} from "@/lib/server/domain/media/books/books.types";
+import {GamesAdvancedStats} from "@/lib/server/domain/media/games/games.types";
+import {MangaAdvancedStats} from "@/lib/server/domain/media/manga/manga.types";
+import {MoviesAdvancedStats} from "@/lib/server/domain/media/movies/movies.types";
 import {platformStatsOptions, userStatsOptions} from "@/lib/react-query/query-options/query-options";
-import {BooksAdvancedStats, GamesAdvancedStats, MangaAdvancedStats, MoviesAdvancedStats, TvAdvancedStats} from "@/lib/server/types/base.types";
 
 
-export interface MediaSpecificStatsMap {
+interface MediaSpecificStatsMap {
     [MediaType.SERIES]: TvAdvancedStats;
     [MediaType.ANIME]: TvAdvancedStats;
     [MediaType.MOVIES]: MoviesAdvancedStats;

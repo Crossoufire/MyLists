@@ -2,7 +2,7 @@ import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/server/types/provider.types";
+import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
 
 
 export class MoviesProviderService extends BaseTrendsProviderService<MoviesRepository> {

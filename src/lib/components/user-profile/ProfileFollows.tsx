@@ -6,7 +6,7 @@ import {BlockLink} from "@/lib/components/general/BlockLink";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
-import {UserFollowsType} from "@/lib/components/types";
+import {UserFollowsType} from "@/lib/types/query.options.types";
 
 
 interface ProfileFollowsProps {

@@ -6,7 +6,8 @@ import {notFound, redirect} from "@tanstack/react-router";
 import {getWebRequest} from "@tanstack/react-start/server";
 import {updateLastSeen} from "@/lib/server/utils/last-seen";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
-import {baseUsernameSchema} from "@/lib/server/types/base.types";
+
+import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 
 
 export const authorizationMiddleware = createMiddleware({ type: "function" })

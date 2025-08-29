@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {mediaConfig} from "@/lib/components/media-config";
-import {ExtractUserMediaByType} from "@/lib/components/types";
+import {ExtractUserMediaByType} from "@/lib/types/query.options.types";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 
 

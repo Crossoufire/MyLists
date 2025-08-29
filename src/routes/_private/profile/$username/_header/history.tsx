@@ -6,7 +6,6 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Payload} from "@/lib/components/general/Payload";
-import {SearchType} from "@/lib/server/types/base.types";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {createFileRoute, Link} from "@tanstack/react-router";
@@ -16,6 +15,7 @@ import {allUpdatesOptions, queryKeys} from "@/lib/react-query/query-options/quer
 import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {SearchType} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_private/profile/$username/_header/history")({

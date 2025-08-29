@@ -1,9 +1,8 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {MediaListArgs} from "@/lib/server/types/base.types";
-import {TvSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {asc, desc, getTableColumns, inArray} from "drizzle-orm";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {TvSchemaConfig} from "@/lib/types/media.config.types";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
 
 
@@ -33,26 +32,28 @@ export const seriesConfig: SeriesSchemaConfig = {
             ...getTableColumns(schema.seriesList),
         },
         filterDefinitions: {
-            actors: createListFilterDef({
+            actors: createArrayFilterDef({
                 argName: "actors",
                 mediaTable: schema.series,
                 entityTable: schema.seriesActors,
                 filterColumn: schema.seriesActors.name,
             }),
-            networks: createListFilterDef({
+            networks: createArrayFilterDef({
                 argName: "networks",
                 mediaTable: schema.series,
                 entityTable: schema.seriesNetwork,
                 filterColumn: schema.seriesNetwork.name,
             }),
-            creators: {
-                isActive: (args: MediaListArgs) => !!args.creators,
-                getCondition: (args: MediaListArgs) => inArray(schema.series.createdBy, args.creators!.filter((c) => c !== "All")),
-            },
-            langs: {
-                isActive: (args: MediaListArgs) => !!args.langs,
-                getCondition: (args: MediaListArgs) => inArray(schema.series.originCountry, args.langs!.filter((l) => l !== "All")),
-            },
+            creators: createArrayFilterDef({
+                argName: "creators",
+                mediaTable: schema.series,
+                filterColumn: schema.series.createdBy,
+            }),
+            langs: createArrayFilterDef({
+                argName: "langs",
+                mediaTable: schema.series,
+                filterColumn: schema.series.originCountry,
+            }),
         },
         defaultStatus: Status.WATCHING,
         defaultSortName: "Title A-Z",

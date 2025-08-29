@@ -3,7 +3,7 @@ import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
-import {MediaGlobalSummaryType, UserDataType} from "@/lib/components/types";
+import {MediaGlobalSummaryType, UserDataType} from "@/lib/types/query.options.types";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 

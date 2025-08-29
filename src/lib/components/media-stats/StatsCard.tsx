@@ -1,5 +1,5 @@
 import {List} from "lucide-react";
-import {StatCardData} from "@/lib/stats/types";
+import {StatCardData} from "@/lib/types/stats.types";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {StatsTable} from "@/lib/components/media-stats/StatsTable";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";

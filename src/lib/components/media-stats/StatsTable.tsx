@@ -1,4 +1,4 @@
-import {NameValuePair} from "@/lib/server/types/base.types";
+import {NameValuePair} from "@/lib/types/base.types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 
 

@@ -2,15 +2,15 @@ import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import type {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
-import {ChapterPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {ChapterPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository> {

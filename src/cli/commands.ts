@@ -2,10 +2,6 @@ import {Command} from "commander";
 import {registerTaskCommand} from "@/cli/register-helper";
 
 
-export type TasksName = TaskDefinition["name"];
-export type TaskDefinition = (typeof taskDefinitions)[number];
-
-
 export const taskDefinitions = [
     {
         name: "deleteNonActivatedUsers",

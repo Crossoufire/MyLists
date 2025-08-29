@@ -1,6 +1,6 @@
 import {queryOptions} from "@tanstack/react-query";
-import {SearchType, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, getAdminMediadleStats, getAdminOverview, getAdminTasks} from "@/lib/server/functions/admin";
+import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export const adminQueryKeys = {

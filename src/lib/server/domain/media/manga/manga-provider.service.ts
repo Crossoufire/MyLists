@@ -1,4 +1,4 @@
-import {JikanDetails} from "@/lib/server/types/provider.types";
+import {JikanDetails} from "@/lib/types/provider.types";
 import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";

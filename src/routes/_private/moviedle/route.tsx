@@ -18,9 +18,7 @@ import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-quer
 
 
 export const Route = createFileRoute("/_private/moviedle")({
-    loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(dailyMediadleOptions())
-    },
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(dailyMediadleOptions()),
     component: MediadlePage,
 });
 
@@ -68,7 +66,7 @@ function MediadlePage() {
                                 {mediadleData.nonPixelatedCover ?
                                     <Link
                                         to="/details/$mediaType/$mediaId"
-                                        params={{ mediaType: MediaType.MOVIES, mediaId: mediadleData.mediaId.toString() }}
+                                        params={{ mediaType: MediaType.MOVIES, mediaId: mediadleData.mediaId }}
                                         search={{ external: false }}
                                     >
                                         <img
@@ -97,9 +95,11 @@ function MediadlePage() {
                                         {mediadleData.succeeded ? "Congratulations!" : "Game Over :("}
                                     </h3>
                                     <p className="text-sm text-neutral-300">
-                                        {mediadleData.succeeded
-                                            ? `You got it in ${mediadleData.attempts} ${mediadleData.attempts === 1 ? "try" : "tries"}!`
-                                            : "Better luck tomorrow ;)!"}
+                                        {mediadleData.succeeded ?
+                                            `You got it in ${mediadleData.attempts} ${mediadleData.attempts === 1 ? "try" : "tries"}!`
+                                            :
+                                            "Better luck tomorrow ;)!"
+                                        }
                                     </p>
                                 </div>
                                 :
@@ -116,7 +116,7 @@ function MediadlePage() {
                                             {showSuggestions && data.length > 0 && (
                                                 <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg
                                                 max-h-[150px] overflow-y-auto">
-                                                    {data.map((suggestion, idx) => (
+                                                    {data.map((suggestion, idx) =>
                                                         <div
                                                             key={idx}
                                                             role="button"
@@ -125,7 +125,7 @@ function MediadlePage() {
                                                         >
                                                             {suggestion.name}
                                                         </div>
-                                                    ))}
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -138,9 +138,7 @@ function MediadlePage() {
                                             <span>Attempts</span>
                                             <span>{mediadleData.attempts}/{mediadleData.maxAttempts}</span>
                                         </div>
-                                        <Progress
-                                            value={(mediadleData.attempts / mediadleData.maxAttempts) * 100}
-                                        />
+                                        <Progress value={(mediadleData.attempts / mediadleData.maxAttempts) * 100}/>
                                     </div>
                                 </div>
                             }

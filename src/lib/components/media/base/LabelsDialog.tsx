@@ -1,5 +1,4 @@
 import {cn} from "@/lib/utils/helpers";
-import {Label} from "@/lib/components/types";
 import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/components/ui/badge";
 import {Input} from "@/lib/components/ui/input";
@@ -11,6 +10,7 @@ import {userMediaLabelsOptions} from "@/lib/react-query/query-options/query-opti
 import {useEditUserLabelMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/components/ui/credenza";
+import {Label} from "@/lib/types/base.types";
 
 
 type ToastType = { type: "error" | "success", message: string };

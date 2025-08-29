@@ -1,8 +1,8 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
 import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
-import {createListFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
 
 
@@ -26,13 +26,13 @@ export const gamesConfig: GamesSchemaConfig = {
             ...getTableColumns(schema.gamesList),
         },
         filterDefinitions: {
-            platforms: createListFilterDef({
+            platforms: createArrayFilterDef({
                 argName: "platforms",
                 mediaTable: schema.games,
-                entityTable: schema.gamesPlatforms,
-                filterColumn: schema.gamesPlatforms.name,
+                entityTable: schema.gamesList,
+                filterColumn: schema.gamesList.platform,
             }),
-            companies: createListFilterDef({
+            companies: createArrayFilterDef({
                 argName: "companies",
                 mediaTable: schema.games,
                 entityTable: schema.gamesCompanies,

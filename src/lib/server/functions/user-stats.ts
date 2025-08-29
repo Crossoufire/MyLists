@@ -2,8 +2,8 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {getUserStatsSchema} from "@/lib/server/types/base.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
+import {getUserStatsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserStats = createServerFn({ method: "GET" })

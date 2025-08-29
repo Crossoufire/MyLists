@@ -7,7 +7,6 @@ import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {Separator} from "@/lib/components/ui/separator";
 import {mediaConfig} from "@/lib/components/media-config";
-import {MediaListArgs} from "@/lib/server/types/base.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
@@ -18,6 +17,7 @@ import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} 
 import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
 import {statusUtils} from "@/lib/utils/functions";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 interface FiltersSideSheetProps {

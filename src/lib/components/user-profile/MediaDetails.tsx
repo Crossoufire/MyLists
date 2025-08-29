@@ -5,7 +5,7 @@ import {MediaStats} from "@/lib/components/user-profile/MediaStats";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 
-import {PerMediaSummaryType, UserDataType} from "@/lib/components/types";
+import {PerMediaSummaryType, UserDataType} from "@/lib/types/query.options.types";
 
 
 interface MediaDetailsProps {

@@ -1,9 +1,8 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {games} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {GameEntry} from "@/lib/server/api-providers/clients/hltb.client";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
-import {IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {HltbGameEntry, IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
 type Games = typeof games.$inferInsert;
@@ -80,7 +79,7 @@ export class IgdbTransformer {
         return { mediaData, companiesData, platformsData, genresData }
     }
 
-    addHLTBDataToMainDetails(hltbData: GameEntry, mediaData: Games) {
+    addHLTBDataToMainDetails(hltbData: HltbGameEntry, mediaData: Games) {
         mediaData.hltbMainTime = Number(hltbData.mainStory)
         mediaData.hltbMainAndExtraTime = Number(hltbData.mainExtra)
         mediaData.hltbTotalCompleteTime = Number(hltbData.completionist)

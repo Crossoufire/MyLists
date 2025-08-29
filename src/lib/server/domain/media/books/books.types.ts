@@ -1,11 +1,13 @@
-import {TopMetricStats} from "@/lib/server/types/base.types";
 import {books, booksList} from "@/lib/server/database/schema";
+import {AdvancedMediaStats, TopMetricStats} from "@/lib/types/base.types";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
 
 
 export type Book = typeof books.$inferSelect;
+
 export type BooksList = typeof booksList.$inferSelect;
 
+export type BooksAchCodeName = typeof booksAchievements[number]["codeName"];
 
 export type UpsertBooksWithDetails = {
     mediaData: typeof books.$inferInsert,
@@ -13,12 +15,14 @@ export type UpsertBooksWithDetails = {
     authorsData?: { name: string }[],
 };
 
-
 export type BooksTopMetricStats = {
     langsStats: TopMetricStats;
     authorsStats: TopMetricStats;
     publishersStats: TopMetricStats;
 };
 
-
-export type BooksAchCodeName = typeof booksAchievements[number]["codeName"];
+export type BooksAdvancedStats = AdvancedMediaStats & {
+    langsStats: TopMetricStats;
+    authorsStats: TopMetricStats;
+    publishersStats: TopMetricStats;
+}

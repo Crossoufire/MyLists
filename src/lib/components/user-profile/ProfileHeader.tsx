@@ -4,7 +4,7 @@ import {CalendarDays, Users} from "lucide-react";
 import {computeLevel, formatDateTime} from "@/lib/utils/functions";
 import {FollowButton} from "@/lib/components/user-profile/FollowButton";
 
-import {UserDataType} from "@/lib/components/types";
+import {UserDataType} from "@/lib/types/query.options.types";
 
 
 interface ProfileHeaderProps {

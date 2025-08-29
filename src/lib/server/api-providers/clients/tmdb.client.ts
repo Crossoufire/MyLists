@@ -10,7 +10,7 @@ import {
     TmdbTrendingMoviesResponse,
     TmdbTrendingTvResponse,
     TmdbTvDetails
-} from "@/lib/server/types/provider.types";
+} from "@/lib/types/provider.types";
 
 
 export class TmdbClient extends BaseClient {

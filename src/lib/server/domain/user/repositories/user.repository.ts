@@ -1,12 +1,12 @@
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
-import {ProviderSearchResult, ProviderSearchResults} from "@/lib/server/types/provider.types";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
 
 
-export type AdminUserStats = {
+type AdminUserStats = {
     now: string;
     threeMonthsAgo: string;
     currentMonthStart: string;

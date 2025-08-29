@@ -1,7 +1,7 @@
 import {Command} from "commander";
-import {TasksName} from "@/cli/commands";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
+import {TasksName} from "@/lib/types/base.types";
 
 
 interface RegisterTaskCommandParams {
@@ -36,7 +36,7 @@ export function registerTaskCommand({ program, taskName, description }: Register
             }
             else {
                 cliLogger.info(`Enqueueing ${taskName} task via CLI...`);
-                const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+                const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
 
                 try {
                     const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "cron/cli" });

@@ -3,8 +3,8 @@ import {Input} from "@/lib/components/ui/input";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
-import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {useSuspenseQuery} from "@tanstack/react-query";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {PrivacyType, RoleType} from "@/lib/server/utils/enums";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
@@ -12,7 +12,6 @@ import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {userAdminOptions} from "@/lib/react-query/query-options/admin-options";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX, X} from "lucide-react";
@@ -26,14 +25,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/lib/components/ui/dropdown-menu";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/users")({
     validateSearch: (search) => search as SearchTypeAdmin,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ context: { queryClient }, deps: { search } }) => {
-        return queryClient.ensureQueryData(userAdminOptions(search));
-    },
+    loader: async ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(userAdminOptions(search)),
     component: UserManagementPage,
 })
 

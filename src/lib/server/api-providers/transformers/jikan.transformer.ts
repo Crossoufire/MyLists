@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {manga} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
 type Manga = typeof manga.$inferInsert;

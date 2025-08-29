@@ -1,11 +1,12 @@
 import {statusUtils} from "@/lib/utils/functions";
-import {DeltaStats} from "@/lib/server/types/stats.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
+import {UserMediaStats} from "@/lib/types/base.types";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
+import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class UserStatsService {

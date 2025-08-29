@@ -1,7 +1,7 @@
 import {cn} from "@/lib/utils/helpers";
 import {MoveRight} from "lucide-react";
 import {zeroPad} from "@/lib/utils/functions";
-import {LogPayloadDb} from "@/lib/server/types/base.types";
+import {LogPayloadDb} from "@/lib/types/base.types";
 import {MediaType, UpdateType} from "@/lib/server/utils/enums";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 
@@ -13,7 +13,7 @@ interface PayloadProps {
 
 
 export const Payload = ({ update, className }: PayloadProps) => {
-    const FormattedPayload = getUpdatePayload(update.updateType);
+    const FormattedPayload = getUpdatePayload(update.updateType)!;
 
     return (
         <div className={cn("flex flex-row gap-2 items-center", className)}>
@@ -27,16 +27,15 @@ export const Payload = ({ update, className }: PayloadProps) => {
 
 
 const getUpdatePayload = (updateType: UpdateType) => {
-    const choosePayload = {
-        tv: TVPayload,
-        redo: RedoPayload,
-        page: PagePayload,
-        status: StatusPayload,
-        chapter: ChapterPayload,
-        playtime: PlaytimePayload,
+    const choosePayload: Partial<Record<UpdateType, React.FC<{ mediaType: MediaType; payload: LogPayloadDb }>>> = {
+        [UpdateType.TV]: TVPayload,
+        [UpdateType.REDO]: RedoPayload,
+        [UpdateType.PAGE]: PagePayload,
+        [UpdateType.STATUS]: StatusPayload,
+        [UpdateType.CHAPTER]: ChapterPayload,
+        [UpdateType.PLAYTIME]: PlaytimePayload,
     };
 
-    //@ts-expect-error
     return choosePayload[updateType];
 };
 

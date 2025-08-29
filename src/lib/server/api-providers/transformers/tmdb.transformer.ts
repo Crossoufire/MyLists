@@ -15,7 +15,7 @@ import {
     TmdbTvDetails,
     TmdbTvSearchResult,
     TrendsMedia
-} from "@/lib/server/types/provider.types";
+} from "@/lib/types/provider.types";
 
 
 type Options = {

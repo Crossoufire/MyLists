@@ -1,12 +1,12 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {ComingNext} from "@/lib/server/types/base.types";
+import {ComingNextItem} from "@/lib/types/query.options.types";
 import {formatDateTime, zeroPad} from "@/lib/utils/functions";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
 
 
 interface ComingNextMediaProps {
-    item: ComingNext;
     mediaType: MediaType;
+    item: ComingNextItem;
 }
 
 

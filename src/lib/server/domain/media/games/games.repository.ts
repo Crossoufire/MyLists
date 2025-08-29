@@ -1,8 +1,8 @@
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/base.types";
 import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {gamesConfig, GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {games, gamesCompanies, gamesGenre, gamesList, gamesPlatforms} from "@/lib/server/database/schema";
@@ -180,7 +180,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     async specificTopMetrics(userId?: number) {
-        const developersConfig: ConfigTopMetric = {
+        const developersConfig = {
             minRatingCount: 3,
             metricIdCol: games.id,
             metricTable: gamesCompanies,
@@ -189,25 +189,25 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.developer, true)],
         };
 
-        const publishersConfig: ConfigTopMetric = {
+        const publishersConfig = {
             ...developersConfig,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY), eq(gamesCompanies.publisher, true)],
         };
-        const platformsConfig: ConfigTopMetric = {
+        const platformsConfig = {
             metricTable: gamesList,
             metricNameCol: gamesList.platform,
             metricIdCol: games.id,
             mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
-        const enginesConfig: ConfigTopMetric = {
+        const enginesConfig = {
             metricTable: games,
             metricNameCol: games.gameEngine,
             metricIdCol: games.id,
             mediaLinkCol: gamesList.mediaId,
             filters: [ne(gamesList.status, Status.PLAN_TO_PLAY)],
         };
-        const perspectivesConfig: ConfigTopMetric = {
+        const perspectivesConfig = {
             metricTable: games,
             metricNameCol: games.playerPerspective,
             metricIdCol: games.id,

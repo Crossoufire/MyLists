@@ -1,22 +1,34 @@
-import {JobType, MediaType} from "@/lib/server/utils/enums";
-import {MediaListArgs} from "@/lib/server/types/base.types";
-import {historyOptions, listFiltersOptions, mediaDetailsOptions, mediaListOptions, profileOptions} from "@/lib/react-query/query-options/query-options";
+import {MediaType} from "@/lib/server/utils/enums";
+import {
+    achievementOptions,
+    authOptions,
+    hallOfFameOptions,
+    historyOptions,
+    listFiltersOptions,
+    mediaDetailsOptions,
+    mediaListOptions,
+    profileOptions,
+    trendsOptions,
+    upcomingOptions
+} from "@/lib/react-query/query-options/query-options";
 
 
-export type Prettify<T> = {
-    [K in keyof T]: T[K];
-} & {};
-
-
-// --- Inferred Options Types -------------------------------------
+// --- Inferred Query Options Types -----------------------------------------------------
+export type CurrentUser = Awaited<ReturnType<NonNullable<ReturnType<typeof authOptions>["queryFn"]>>> | undefined;
 export type HistoryOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof historyOptions>["queryFn"]>>>;
 export type ProfileOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>;
 export type MediaListOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;
 export type ListFiltersOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof listFiltersOptions>["queryFn"]>>>;
 export type MediaDetailsOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaDetailsOptions>["queryFn"]>>>;
+export type AchCard = Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["result"][0];
+export type AchSummary = Awaited<ReturnType<NonNullable<ReturnType<typeof achievementOptions>["queryFn"]>>>["summary"][MediaType];
+export type ComingNextItem = Awaited<ReturnType<NonNullable<ReturnType<typeof upcomingOptions>["queryFn"]>>>[0]["items"][0];
+export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][0];
+export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
+export type TrendItemType = Awaited<ReturnType<NonNullable<ReturnType<typeof trendsOptions>["queryFn"]>>>["seriesTrends"][0];
 
 
-// --- User Media Details Types -------------------------------------------------------------
+// --- User Media Details Types ----------------------------------------------------
 export type Media = NonNullable<MediaDetailsOptionsType["media"]>;
 export type UserMedia = NonNullable<MediaDetailsOptionsType["userMedia"]>;
 export type ExtractUserMediaByType<T extends MediaType> =
@@ -27,8 +39,9 @@ export type ExtractUserMediaByType<T extends MediaType> =
                     T extends typeof MediaType.MOVIES ? Exclude<UserMedia, { playtime: any } | { currentSeason: any } | { actualPage: any } | { currentChapter: any }> :
                         never;
 
-// --- Media Details Types ------------------------------------------------------------------
-export type MediaDetails = Prettify<MediaDetailsOptionsType["media"]>;
+
+// --- Media Details Types ---------------------------------------------------------
+export type MediaDetails = MediaDetailsOptionsType["media"];
 export type ExtractMediaDetailsByType<T extends MediaType> =
     T extends typeof MediaType.GAMES ? Extract<MediaDetails, { gameEngine: any }> :
         T extends (typeof MediaType.SERIES | typeof MediaType.ANIME) ? Extract<MediaDetails, { totalEpisodes: any }> :
@@ -38,7 +51,7 @@ export type ExtractMediaDetailsByType<T extends MediaType> =
                         never;
 
 
-// --- Follows List Types -------------------------------------------------------------------
+// --- Follows List Types -----------------------------------------------------------
 export type FollowData = MediaDetailsOptionsType["followsData"][0];
 export type FollowUserMedia = FollowData["userMedia"];
 export type ExtractFollowByType<T extends MediaType> = FollowData & { userMedia: ExtractFollowUserMediaByType<T> }
@@ -51,7 +64,7 @@ export type ExtractFollowUserMediaByType<T extends MediaType> =
                         never;
 
 
-// --- Media List Types ---------------------------------------------------------------------
+// --- Media List Types -------------------------------------------------------------
 export type ListUserData = MediaListOptionsType["userData"];
 export type UserMediaItem = MediaListOptionsType["results"]["items"][0];
 export type ListPagination = MediaListOptionsType["results"]["pagination"];
@@ -64,18 +77,7 @@ export type ExtractListByType<T extends MediaType> =
                         never;
 
 
-// --- Types for Filters Side Sheet ------------------------------------
-export type FilterConfig = {
-    job?: JobType;
-    title: string;
-    key: keyof MediaListArgs;
-    type: "checkbox" | "search";
-    renderLabel?: (name: string, mediaType: MediaType) => string;
-    getItems?: (data: ListFiltersOptionsType) => { name: string }[] | undefined;
-};
-
-
-// --- Types for ProfileOptions ------------------------------------
+// --- Types for ProfileOptions ------------------------------------------------------
 export type UserDataType = ProfileOptionsType["userData"];
 export type UserFollowsType = ProfileOptionsType["userFollows"];
 export type UserUpdateType = ProfileOptionsType["userUpdates"][0];
@@ -83,7 +85,3 @@ export type AchievementsType = ProfileOptionsType["achievements"];
 export type PerMediaSummaryType = ProfileOptionsType["perMediaSummary"];
 export type MediaGlobalSummaryType = ProfileOptionsType["mediaGlobalSummary"];
 export type UserSettingsType = ProfileOptionsType["userData"]["userMediaSettings"];
-
-
-// --- Labels Dialog Types ------------------------------------------------------------------
-export type Label = { oldName?: string, name: string };

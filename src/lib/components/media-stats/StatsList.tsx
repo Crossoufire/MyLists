@@ -1,4 +1,4 @@
-import {NameValuePair} from "@/lib/server/types/base.types";
+import {NameValuePair} from "@/lib/types/base.types";
 import {StatsGraph} from "@/lib/components/media-stats/StatsGraph";
 import {StatsTable} from "@/lib/components/media-stats/StatsTable";
 

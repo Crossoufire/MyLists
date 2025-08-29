@@ -6,7 +6,7 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {capitalize, computeLevel, getMediaColor, zeroPad} from "@/lib/utils/functions";
-import {UserSettingsType} from "@/lib/components/types";
+import {UserSettingsType} from "@/lib/types/query.options.types";
 
 
 interface MediaLevelsProps {

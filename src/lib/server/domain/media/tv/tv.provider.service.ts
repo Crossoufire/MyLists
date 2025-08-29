@@ -2,7 +2,7 @@ import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {UpsertTvWithDetails} from "@/lib/server/domain/media/tv/tv.types";
 import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
-import {TmdbTrendingTvResponse, TmdbTvDetails} from "@/lib/server/types/provider.types";
+import {TmdbTrendingTvResponse, TmdbTvDetails} from "@/lib/types/provider.types";
 import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 

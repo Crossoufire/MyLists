@@ -1,5 +1,5 @@
 import {cn} from "@/lib/utils/helpers";
-import {StatSection} from "@/lib/stats/types";
+import {StatSection} from "@/lib/types/stats.types";
 import {Status} from "@/lib/server/utils/enums";
 import {StatsList} from "@/lib/components/media-stats/StatsList";
 import {StatsCard} from "@/lib/components/media-stats/StatsCard";

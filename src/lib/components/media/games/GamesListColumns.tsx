@@ -1,6 +1,6 @@
 import {ColumnDef} from "@tanstack/react-table";
 import {MediaType} from "@/lib/server/utils/enums";
-import {ExtractListByType} from "@/lib/components/types";
+import {ExtractListByType} from "@/lib/types/query.options.types";
 import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
 import {ColumnConfigProps, getBaseColumns} from "@/lib/components/media/base/BaseListTable";
 import {CommonInfoTableCell} from "@/lib/components/media/base/CommonInfoTableCell";

@@ -1,9 +1,8 @@
 import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/server/utils/enums";
-import {MediaListArgs} from "@/lib/server/types/base.types";
-import {createListFilterDef} from "../base/base.repository";
-import {asc, desc, getTableColumns, like} from "drizzle-orm";
-import {MediaSchemaConfig} from "@/lib/server/types/media-lists.types";
+import {createArrayFilterDef} from "../base/base.repository";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 
 
@@ -27,20 +26,22 @@ export const moviesConfig: MovieSchemaConfig = {
             ...getTableColumns(schema.moviesList),
         },
         filterDefinitions: {
-            actors: createListFilterDef({
+            actors: createArrayFilterDef({
                 argName: "actors",
                 mediaTable: schema.movies,
                 entityTable: schema.moviesActors,
                 filterColumn: schema.moviesActors.name,
             }),
-            langs: {
-                isActive: (args: MediaListArgs) => !!args.langs,
-                getCondition: (args: MediaListArgs) => like(schema.movies.originalLanguage, `%${args.langs}%`),
-            },
-            directors: {
-                isActive: (args: MediaListArgs) => !!args.directors,
-                getCondition: (args: MediaListArgs) => like(schema.movies.directorName, `%${args.directors}%`),
-            },
+            langs: createArrayFilterDef({
+                argName: "langs",
+                mediaTable: schema.movies,
+                filterColumn: schema.movies.originalLanguage,
+            }),
+            directors: createArrayFilterDef({
+                argName: "directors",
+                mediaTable: schema.movies,
+                filterColumn: schema.movies.directorName,
+            }),
         },
         defaultStatus: Status.COMPLETED,
         defaultSortName: "Title A-Z",

@@ -1,15 +1,13 @@
 import pino from "pino";
 import Redis from "ioredis";
-import {TasksName} from "@/cli/commands";
 import {Job, Queue, Worker} from "bullmq";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
+import {TasksName} from "@/lib/types/base.types";
 
 
-export type TypedJob = Job<LongTaskJobData, any, TasksName>;
-type LongTaskJobData = {
-    triggeredBy: string;
-}
+type LongTaskJobData = { triggeredBy: string };
+type TypedJob = Job<LongTaskJobData, any, TasksName>;
 
 
 const QUEUE_NAME = "mylists-long-tasks";
@@ -17,7 +15,9 @@ export let mylistsLongTaskQueue: Queue<LongTaskJobData, any, TasksName>;
 
 
 export const initializeQueue = (connection: Redis) => {
-    if (mylistsLongTaskQueue) return mylistsLongTaskQueue;
+    if (mylistsLongTaskQueue) {
+        return mylistsLongTaskQueue;
+    }
 
     mylistsLongTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),

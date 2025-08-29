@@ -1,13 +1,13 @@
 import React from "react";
 import {Progress} from "@/lib/components/ui/progress";
 import {Card, CardContent} from "@/lib/components/ui/card";
+import {HofUserRank} from "@/lib/types/query.options.types";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {capitalize, getMediaColor} from "@/lib/utils/functions";
-import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface HofRankingProps {
-    userRanks: Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
+    userRanks: HofUserRank;
 }
 
 

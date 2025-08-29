@@ -1,5 +1,5 @@
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {GBooksDetails, IgdbGameDetails, JikanDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/server/types/provider.types";
+import {GBooksDetails, IgdbGameDetails, JikanDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/types/provider.types";
 
 
 export abstract class BaseProviderService<R extends BaseRepository<any>> {

@@ -3,7 +3,8 @@ import {getContainer} from "@/lib/server/core/container";
 import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {authMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
-import {editMediaDetailsSchema, jobDetailsSchema, mediaDetailsSchema, mediaDetailsToEditSchema, refreshMediaDetailsSchema} from "@/lib/server/types/base.types";
+
+import {editMediaDetailsSchema, jobDetailsSchema, mediaDetailsSchema, mediaDetailsToEditSchema, refreshMediaDetailsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getMediaDetails = createServerFn({ method: "GET" })

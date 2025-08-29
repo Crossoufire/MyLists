@@ -3,7 +3,8 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/server/types/base.types";
+
+import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getDailyMediadle = createServerFn({ method: "GET" })

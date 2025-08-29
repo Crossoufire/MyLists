@@ -1,8 +1,8 @@
 import {Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/base.types";
 import {manga, mangaAuthors, mangaGenre, mangaList} from "@/lib/server/database/schema";
 import {Manga, UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
 import {mangaConfig, MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
@@ -121,14 +121,14 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async specificTopMetrics(userId?: number) {
-        const publishersConfig: ConfigTopMetric = {
+        const publishersConfig = {
             metricTable: manga,
             metricNameCol: manga.publishers,
             metricIdCol: manga.id,
             mediaLinkCol: mangaList.mediaId,
             filters: [ne(mangaList.status, Status.PLAN_TO_READ)],
         };
-        const authorsConfig: ConfigTopMetric = {
+        const authorsConfig = {
             metricTable: mangaAuthors,
             metricNameCol: mangaAuthors.name,
             metricIdCol: mangaAuthors.mediaId,
@@ -153,12 +153,11 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async addMediaToUserList(userId: number, media: Manga, newStatus: Status) {
-        const newTotal = (newStatus === Status.COMPLETED) ? media.chapters : 0;
+        const newTotal = (newStatus === Status.COMPLETED) ? media.chapters! : 0;
 
         const [newMedia] = await getDbClient()
             .insert(mangaList)
             .values({
-                //@ts-expect-error
                 userId: userId,
                 total: newTotal,
                 status: newStatus,

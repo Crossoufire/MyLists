@@ -3,7 +3,7 @@ import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {UserMedia, UserMediaItem} from "@/lib/components/types";
+import {UserMedia, UserMediaItem} from "@/lib/types/query.options.types";
 import {LabelLists} from "@/lib/components/media/base/LabelLists";
 import {UpdateComment} from "@/lib/components/media/base/UpdateComment";
 import {HistoryDetails} from "@/lib/components/media/base/HistoryDetails";

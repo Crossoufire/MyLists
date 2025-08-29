@@ -1,9 +1,9 @@
 import {JobType} from "@/lib/server/utils/enums";
-import {FilterConfig} from "@/lib/components/types";
 import {getLangCountryName} from "@/lib/utils/functions";
+import {SheetFilterObject} from "@/lib/types/base.types";
 
 
-export const getTvActiveFilters = (): FilterConfig[] => {
+export const getTvActiveFilters = (): SheetFilterObject[] => {
     return [
         { key: "actors", title: "Actors", type: "search", job: JobType.ACTOR },
         { key: "creators", title: "Creators", type: "search", job: JobType.CREATOR },

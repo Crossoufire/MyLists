@@ -1,8 +1,8 @@
 import {Status} from "@/lib/server/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {AddedMediaDetails, ConfigTopMetric} from "@/lib/server/types/base.types";
+import {AddedMediaDetails} from "@/lib/types/base.types";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
 import {Book, UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {booksConfig, MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
@@ -102,21 +102,21 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     async specificTopMetrics(userId?: number) {
-        const langsConfig: ConfigTopMetric = {
+        const langsConfig = {
             metricTable: books,
             metricNameCol: books.language,
             metricIdCol: books.id,
             mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
-        const publishersConfig: ConfigTopMetric = {
+        const publishersConfig = {
             metricTable: books,
             metricNameCol: books.publishers,
             metricIdCol: books.id,
             mediaLinkCol: booksList.mediaId,
             filters: [ne(booksList.status, Status.PLAN_TO_READ)],
         };
-        const authorsConfig: ConfigTopMetric = {
+        const authorsConfig = {
             metricTable: booksAuthors,
             metricNameCol: booksAuthors.name,
             metricIdCol: booksAuthors.mediaId,

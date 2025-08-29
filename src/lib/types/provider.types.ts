@@ -66,7 +66,6 @@ export type IgdbMultiQueryResult<T> = {
     count?: number;
 };
 
-
 export type IgdbSearchResponse = [IgdbMultiQueryResult<{ count: number }>, IgdbMultiQueryResult<IgdbSearchResultItem>];
 
 
@@ -236,14 +235,6 @@ export interface JikanMangaSearchResponse {
 
 // --- TMDB Provider Types --------------------------------------------------------------
 
-export interface TmdbPaginatedResponse<T> {
-    page: number;
-    results: T[];
-    total_pages: number;
-    total_results: number;
-}
-
-
 interface TmdbBaseSearchResult {
     id: number;
     adult?: boolean;
@@ -255,6 +246,14 @@ interface TmdbBaseSearchResult {
     original_language: string;
     poster_path: string | null;
     backdrop_path: string | null;
+}
+
+
+export interface TmdbPaginatedResponse<T> {
+    page: number;
+    results: T[];
+    total_pages: number;
+    total_results: number;
 }
 
 
@@ -499,4 +498,28 @@ export interface GBooksMoreVolumeInfo extends Omit<GBooksSearchDetails["volumeIn
 
 export interface GBooksDetails extends Omit<GBooksSearchDetails, "volumeInfo"> {
     volumeInfo: GBooksMoreVolumeInfo;
+}
+
+
+// --- HLTB  Games Time Provider ------------------------------------------
+
+export type SearchInfo = {
+    apiKey: string | undefined;
+    searchUrl: string | undefined;
+}
+
+export type HltbApiResponse = {
+    data: {
+        game_name?: string;
+        comp_main?: number;
+        comp_plus?: number;
+        comp_100?: number;
+    }[];
+};
+
+export type HltbGameEntry = {
+    name: string;
+    mainStory: string | null;
+    mainExtra: string | null;
+    completionist: string | null;
 }

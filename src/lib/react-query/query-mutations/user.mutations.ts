@@ -1,6 +1,5 @@
 import {useAuth} from "@/lib/hooks/use-auth";
-import {ProfileOptionsType} from "@/lib/components/types";
-import {ListSettings} from "@/lib/server/types/base.types";
+import {ProfileOptionsType} from "@/lib/types/query.options.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
@@ -12,6 +11,7 @@ import {
     postPasswordSettings,
     postUpdateFeatureFlag
 } from "@/lib/server/functions/user-settings";
+import {ListSettings} from "@/lib/types/zod.schema.types";
 
 
 export const useFollowMutation = (username: string) => {

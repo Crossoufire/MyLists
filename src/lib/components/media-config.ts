@@ -33,7 +33,8 @@ import {getMangaActiveFilters} from "@/lib/components/media/manga/MangaActiveFil
 import {getBooksActiveFilters} from "@/lib/components/media/books/BooksActiveFilters";
 import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
-import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType, FilterConfig} from "@/lib/components/types";
+import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
+import {SheetFilterObject} from "@/lib/types/base.types";
 
 
 export type MediaConfiguration = {
@@ -61,7 +62,7 @@ export type MediaConfiguration = {
             queryKey: ReturnType<typeof queryKeys.userListKey>;
         }>;
         mediaListColumns: (props: ColumnConfigProps) => (ColumnDef<ExtractListByType<T>>)[];
-        sheetFilters: () => FilterConfig[];
+        sheetFilters: () => SheetFilterObject[];
     };
 };
 

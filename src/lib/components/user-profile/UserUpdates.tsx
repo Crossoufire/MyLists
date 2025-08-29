@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useCollapse} from "@/lib/hooks/use-collapse";
-import {UserUpdateType} from "@/lib/components/types";
+import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Link, useParams} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";

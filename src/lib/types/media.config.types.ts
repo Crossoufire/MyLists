@@ -1,19 +1,11 @@
 import {Column, SQL, Table} from "drizzle-orm";
-import {JobType, Status} from "@/lib/server/utils/enums";
 import {SQLiteColumn} from "drizzle-orm/sqlite-core";
-import {FilterDefinitions} from "@/lib/server/types/base.types";
-import {AchievementData} from "@/lib/server/types/achievements.types";
+import {JobType, Status} from "@/lib/server/utils/enums";
+import {FilterDefinitions} from "@/lib/types/base.types";
+import {AchievementSeedData} from "@/lib/types/achievements.types";
 
 
-export interface RelatedEntityConfig<TJoinTable extends Table, TEntityTable extends Table> {
-    entityTable: TEntityTable;
-    idColumnInMedia: TJoinTable[keyof TJoinTable];
-    filterColumnInEntity: TEntityTable[keyof TEntityTable];
-    mediaIdColumnInEntity: TEntityTable[keyof TEntityTable];
-}
-
-
-interface MediaTableColumns {
+type MediaTableColumns = {
     id: Column<any, any, any>;
     name: Column<any, any, any>;
     apiId: Column<any, any, any>;
@@ -24,7 +16,7 @@ interface MediaTableColumns {
 }
 
 
-interface ListTableColumns {
+type ListTableColumns = {
     id: Column<any, any, any>;
     userId: Column<any, any, any>;
     mediaId: Column<any, any, any>;
@@ -36,7 +28,7 @@ interface ListTableColumns {
 }
 
 
-interface LabelTableColumns {
+type LabelTableColumns = {
     id: Column<any, any, any>;
     userId: Column<any, any, any>;
     mediaId: Column<any, any, any>;
@@ -44,14 +36,14 @@ interface LabelTableColumns {
 }
 
 
-interface GenreTableColumns {
+type GenreTableColumns = {
     id: Column<any, any, any>;
     name: Column<any, any, any>;
     mediaId: Column<any, any, any>;
 }
 
 
-interface JobDefinition {
+type JobDefinition = {
     sourceTable: Table,
     nameColumn: Column<any, any, any>,
     mediaIdColumn: Column<any, any, any>,
@@ -60,22 +52,19 @@ interface JobDefinition {
 }
 
 
-export type ListTable = Table & ListTableColumns;
-export type MediaTable = Table & MediaTableColumns;
-export type LabelTable = Table & LabelTableColumns;
-export type GenreTable = Table & GenreTableColumns;
-export type TableWithMediaId = Table & { mediaId: Column<any, any, any>, name: Column<any, any, any> };
-
 type BaseSelection<TListTable, TMediaTable> = {
     [K in keyof TListTable]: SQLiteColumn | SQL
 } | {
     [K in keyof TMediaTable]: SQLiteColumn | SQL
 } | {
-    pages?: SQLiteColumn | SQL,
-    authors?: SQLiteColumn | SQL,
     mediaName: SQLiteColumn | SQL,
-    epsPerSeason?: SQLiteColumn | SQL,
 }
+
+
+export type ListTable = Table & ListTableColumns;
+export type MediaTable = Table & MediaTableColumns;
+export type LabelTable = Table & LabelTableColumns;
+export type GenreTable = Table & GenreTableColumns;
 
 
 export interface MediaSchemaConfig<
@@ -98,10 +87,10 @@ export interface MediaSchemaConfig<
     apiProvider: {
         maxGenres: number;
     }
+    achievements: readonly AchievementSeedData[];
     editableFields: Array<keyof TMediaTable["$inferSelect"]>;
     jobDefinitions: Partial<Record<JobType, JobDefinition>>;
-    tablesForDeletion: TableWithMediaId[];
-    achievements: readonly AchievementData[];
+    tablesForDeletion: (Table & { mediaId: Column<any, any, any>, name: Column<any, any, any> })[];
 }
 
 

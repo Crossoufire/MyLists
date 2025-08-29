@@ -1,13 +1,13 @@
-import {Label} from "@/lib/components/types";
 import {notFound} from "@tanstack/react-router";
-import {DeltaStats} from "@/lib/server/types/stats.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {JobType, LabelAction, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
-import {MediaAndUserDetails, MediaListArgs, SearchType, UpdateHandlerFn, UpdateUserMedia, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
+import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
+import {Label, MediaAndUserDetails, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
+import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
+import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export abstract class BaseService<
@@ -37,7 +37,7 @@ export abstract class BaseService<
     async getUserFavorites(userId: number, limit = 8) {
         return this.repository.getUserFavorites(userId, limit);
     }
-    
+
     async getNonListMediaIds() {
         return this.repository.getNonListMediaIds();
     }

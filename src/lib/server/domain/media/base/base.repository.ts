@@ -1,28 +1,26 @@
-import {Label} from "@/lib/components/types";
 import {notFound} from "@tanstack/react-router";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/server/types/achievements.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import * as schema from "@/lib/server/database/schema";
 import {followers, games, user} from "@/lib/server/database/schema";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
-import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/server/types/media-lists.types";
+import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
-    CommonListFilters,
-    ConfigTopMetric,
     ExpandedListFilters,
     FilterDefinition,
     FilterDefinitions,
+    Label,
     ListFilterDefinition,
-    MediaListArgs,
     MediaListData,
-    SimpleMedia,
+    TopMetricObject,
     UpComingMedia,
     UserFollowsMediaData,
     UserMediaStats,
     UserMediaWithLabels,
-} from "@/lib/server/types/base.types";
+} from "@/lib/types/base.types";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -38,17 +36,13 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         this.baseFilterDefs = this.baseListFiltersDefs();
     }
 
-    private baseListFiltersDefs = () => {
+    private baseListFiltersDefs = (): FilterDefinitions => {
         const { listTable, mediaTable, labelTable, genreTable } = this.config;
 
         return {
             search: {
                 isActive: (args: MediaListArgs) => !!args.search,
                 getCondition: (args: MediaListArgs) => like(mediaTable.name, `%${args.search}%`),
-            },
-            status: {
-                isActive: (args: MediaListArgs) => isValidFilter(args.status),
-                getCondition: (args: MediaListArgs) => inArray(listTable.status, args.status!),
             },
             favorite: {
                 isActive: (args: MediaListArgs) => args.favorite === true,
@@ -59,7 +53,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                 getCondition: (_args: MediaListArgs) => isNotNull(listTable.comment),
             },
             hideCommon: {
-                isActive: (args: MediaListArgs) => args.hideCommon === true && args.currentUserId && args.currentUserId !== args.userId,
+                isActive: (args: MediaListArgs) => args.hideCommon === true && !!args.currentUserId && args.currentUserId !== args.userId,
                 getCondition: (args: MediaListArgs) => {
                     const subQuery = getDbClient()
                         .select({ mediaId: listTable.mediaId })
@@ -68,19 +62,25 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                     return notInArray(listTable.mediaId, subQuery);
                 },
             },
-            labels: createListFilterDef({
+            status: createArrayFilterDef({
+                argName: "status",
+                mediaTable: mediaTable,
+                entityTable: listTable,
+                filterColumn: listTable.status,
+            }),
+            labels: createArrayFilterDef({
                 argName: "labels",
                 mediaTable: mediaTable,
                 entityTable: labelTable,
                 filterColumn: labelTable.name,
             }),
-            genres: createListFilterDef({
+            genres: createArrayFilterDef({
                 argName: "genres",
                 mediaTable: mediaTable,
                 entityTable: genreTable,
                 filterColumn: genreTable.name,
             }),
-        } as FilterDefinitions;
+        };
     }
 
     async getCoverFilenames() {
@@ -152,7 +152,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .execute();
     }
 
-    async findSimilarMedia(mediaId: number): Promise<SimpleMedia[]> {
+    async findSimilarMedia(mediaId: number) {
         const { mediaTable, genreTable } = this.config;
 
         const targetGenresSubQuery = getDbClient()
@@ -183,7 +183,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .orderBy(desc(similarSub.commonGenreCount));
     }
 
-    async getCommonListFilters(userId: number): Promise<CommonListFilters> {
+    async getCommonListFilters(userId: number) {
         const { genreTable, labelTable, listTable } = this.config;
 
         const genresPromise = getDbClient()
@@ -204,14 +204,14 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return { genres, labels };
     }
 
-    async getUserFavorites(userId: number, limit = 8): Promise<SimpleMedia[]> {
+    async getUserFavorites(userId: number, limit = 8) {
         const { listTable, mediaTable } = this.config;
 
         return getDbClient()
             .select({
                 mediaId: sql<number>`${mediaTable.id}`,
                 mediaName: sql<string>`${mediaTable.name}`,
-                mediaCover: mediaTable.imageCover,
+                mediaCover: sql<string>`${mediaTable.imageCover}`,
             })
             .from(listTable)
             .where(and(eq(listTable.userId, userId), eq(listTable.favorite, true)))
@@ -370,8 +370,6 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             ...this.baseFilterDefs,
             ...mediaList.filterDefinitions,
         };
-
-        console.log({ allFilters });
 
         // Main query builder
         let queryBuilder = getDbClient()
@@ -752,7 +750,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return this.computeTopMetricStats(metricStatsConfig, userId);
     }
 
-    async computeTopMetricStats(statsConfig: ConfigTopMetric, userId?: number) {
+    async computeTopMetricStats(statsConfig: TopMetricObject, userId?: number) {
         const { mediaTable, listTable } = this.config;
         const forUser = userId ? eq(listTable.userId, userId) : undefined;
         const { metricTable, metricIdCol, metricNameCol, mediaLinkCol, filters, limit = 10, minRatingCount = 5 } = statsConfig;
@@ -833,22 +831,35 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 }
 
 
-export const isValidFilter = <T>(value: T) => {
+const isValidFilter = <T>(value: T) => {
     return Array.isArray(value) && value.length > 0;
 }
 
 
-export const createListFilterDef = ({ argName, entityTable, filterColumn, mediaTable }: ListFilterDefinition) => {
+export const createArrayFilterDef = ({ argName, entityTable, filterColumn, mediaTable }: ListFilterDefinition): FilterDefinition => {
     return {
         isActive: (args: MediaListArgs) => isValidFilter(args[argName]),
         getCondition: (args: MediaListArgs) => {
+            const argValue = args[argName] as string[] | undefined;
+            if (!argValue) return undefined;
+
+            const filteredValues = argValue.filter((value: string) => value !== "All");
+            if (filteredValues.length === 0) return undefined;
+
+            // If no entityTable provided, filter directly on mediaTable
+            if (!entityTable) {
+                return inArray(filterColumn, filteredValues);
+            }
+
+            // Otherwise, use subquery for relational filtering
             const subQuery = getDbClient()
                 .select({ mediaId: entityTable.mediaId })
                 .from(entityTable)
-                .where(inArray(filterColumn, args[argName] as string[]));
+                .where(inArray(filterColumn, filteredValues));
+
             return inArray(mediaTable.id, subQuery);
         },
-    } as FilterDefinition;
+    };
 }
 
 

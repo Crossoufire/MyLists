@@ -2,7 +2,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {books} from "@/lib/server/database/schema";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {cleanHtmlText} from "@/lib/server/utils/clean-html-text";
-import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
 type Book = typeof books.$inferInsert;

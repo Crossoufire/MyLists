@@ -1,4 +1,4 @@
-import {EpsPerSeasonType} from "@/lib/server/types/base.types";
+import {EpsPerSeasonType} from "@/lib/types/base.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 
 

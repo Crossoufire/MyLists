@@ -1,7 +1,7 @@
 import {useAuth} from "@/lib/hooks/use-auth";
 import {statusUtils} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
-import {UserMediaItem} from "@/lib/components/types";
+import {UserMediaItem} from "@/lib/types/query.options.types";
 import {MediaListItem} from "@/lib/components/media/base/MediaListItem";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 

@@ -6,13 +6,13 @@ import {Switch} from "@/lib/components/ui/switch";
 import {useForm, useWatch} from "react-hook-form";
 import {CircleHelp, Download} from "lucide-react";
 import {Separator} from "@/lib/components/ui/separator";
-import {ListSettings} from "@/lib/server/types/base.types";
 import {capitalize, downloadFile, jsonToCsv} from "@/lib/utils/functions";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/server/utils/enums";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
 import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/lib/react-query/query-mutations/user.mutations";
+import {ListSettings} from "@/lib/types/zod.schema.types";
 
 
 const mediaTypeConfigs = [
@@ -58,7 +58,7 @@ export const MediaListForm = () => {
     const isGamesActive = useWatch({ control: form.control, name: MediaType.GAMES });
     const isBooksActive = useWatch({ control: form.control, name: MediaType.BOOKS });
     const isMangaActive = useWatch({ control: form.control, name: MediaType.MANGA });
-    
+
     const handleCheckedChange = (field: any, checked: boolean, apiProvider?: ApiProviderType) => {
         field.onChange(checked);
         if (!checked && apiProvider && form.getValues("searchSelector") === apiProvider) {

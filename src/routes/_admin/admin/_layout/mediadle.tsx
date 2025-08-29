@@ -5,7 +5,6 @@ import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {SearchType} from "@/lib/server/types/base.types";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
@@ -14,6 +13,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {adminMediadleOptions} from "@/lib/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
+import {SearchType} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/mediadle")({

@@ -1,7 +1,7 @@
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
-import {GBooksDetails, GBooksSearchResults, SearchData} from "@/lib/server/types/provider.types";
+import {GBooksDetails, GBooksSearchResults, SearchData} from "@/lib/types/provider.types";
 
 
 export class GBooksClient extends BaseClient {

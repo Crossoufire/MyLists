@@ -1,14 +1,12 @@
 import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
-import {DeltaStats} from "@/lib/server/types/stats.types";
+import {UserMediaStats} from "@/lib/types/base.types";
+import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 import {and, count, countDistinct, eq, gt, inArray, ne, SQL, sql, sum} from "drizzle-orm";
-import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
-
-
-export type SettingTable = typeof userMediaSettings.$inferSelect;
+import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class UserStatsRepository {

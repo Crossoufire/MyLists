@@ -12,9 +12,9 @@ import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {HofCard} from "@/lib/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
-import {HofSorting, SearchTypeHoF} from "@/lib/server/types/base.types";
 import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
+import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_private/hall-of-fame")({
@@ -31,7 +31,7 @@ const DEFAULT = { page: 1, search: "", sorting: "normalized" } satisfies SearchT
 function HallOfFamePage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
-    const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data!;
+    const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
 
@@ -73,7 +73,11 @@ function HallOfFamePage() {
                                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                                 />
                             </div>
-                            {search && <Button size="sm" onClick={resetSearch}>Cancel</Button>}
+                            {search &&
+                                <Button size="sm" onClick={resetSearch}>
+                                    Cancel
+                                </Button>
+                            }
                         </div>
                         <div>
                             <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
@@ -83,7 +87,7 @@ function HallOfFamePage() {
                                 <SelectContent>
                                     <SelectItem value="normalized">Normalized</SelectItem>
                                     <SelectItem value="profile">Profile</SelectItem>
-                                    {Object.values(MediaType).map(mt =>
+                                    {Object.values(MediaType).map((mt) =>
                                         <SelectItem key={mt} value={mt}>
                                             {capitalize(mt)}
                                         </SelectItem>
@@ -97,8 +101,8 @@ function HallOfFamePage() {
                         :
                         apiData.items.map((userData) =>
                             <HofCard
-                                userData={userData}
                                 key={userData.name}
+                                userData={userData}
                             />
                         )
                     }

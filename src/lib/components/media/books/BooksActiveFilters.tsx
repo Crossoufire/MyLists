@@ -1,9 +1,9 @@
 import {JobType} from "@/lib/server/utils/enums";
-import {FilterConfig} from "@/lib/components/types";
 import {getLangCountryName} from "@/lib/utils/functions";
+import {SheetFilterObject} from "@/lib/types/base.types";
 
 
-export const getBooksActiveFilters = (): FilterConfig[] => {
+export const getBooksActiveFilters = (): SheetFilterObject[] => {
     return [
         { key: "authors", title: "Authors", type: "search", job: JobType.CREATOR },
         {

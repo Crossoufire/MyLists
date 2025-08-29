@@ -2,7 +2,7 @@ import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {capitalize, computeLevel, statusUtils} from "@/lib/utils/functions";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
-import {ListPagination, ListUserData} from "@/lib/components/types";
+import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
 import {SearchComponent} from "@/lib/components/media/base/SearchComponent";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";

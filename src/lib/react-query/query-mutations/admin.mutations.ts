@@ -1,8 +1,8 @@
 import {toast} from "sonner";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {adminQueryKeys} from "@/lib/react-query/query-options/admin-options";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
 import {postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser, postTriggerLongTasks} from "@/lib/server/functions/admin";
+import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export const useAdminUpdateUserMutation = (filters: SearchTypeAdmin) => {

@@ -7,7 +7,8 @@ import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {LabelsDialog} from "@/lib/components/media/base/LabelsDialog";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {Label, MediaDetailsOptionsType, MediaListOptionsType} from "@/lib/components/types";
+import {MediaDetailsOptionsType, MediaListOptionsType} from "@/lib/types/query.options.types";
+import {Label} from "@/lib/types/base.types";
 
 
 interface LabelListsProps {

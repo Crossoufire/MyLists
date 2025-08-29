@@ -2,7 +2,7 @@ import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {UserDataType} from "@/lib/components/types";
+import {UserDataType} from "@/lib/types/query.options.types";
 
 
 export const ProfileMiscInfo = ({ userData }: { userData: UserDataType }) => {
