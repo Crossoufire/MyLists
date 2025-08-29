@@ -1,0 +1,70 @@
+import pino from "pino";
+import {Cache} from "cache-manager";
+import pinoLogger from "@/lib/server/core/pino-logger";
+import {initCacheManager} from "@/lib/server/core/cache-manager";
+import {setupMediaModule} from "@/lib/server/core/container/media.module";
+import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
+import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
+import {ApiModule, setupApiModule} from "@/lib/server/core/container/api.module";
+import {setupUserModule, UserModule} from "@/lib/server/core/container/user.module";
+import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+
+
+interface AppContainer {
+    cacheManager: Cache;
+    clients: ApiModule["clients"];
+    transformers: ApiModule["transformers"];
+    repositories: UserModule["repositories"];
+    services: UserModule["services"] & {
+        tasks: TasksService;
+    };
+    registries: {
+        mediaRepo: typeof MediaRepositoryRegistry;
+        mediaService: typeof MediaServiceRegistry;
+        mediaProviderService: typeof MediaProviderServiceRegistry;
+    };
+}
+
+
+type ContainerOptions = { tasksServiceLogger?: pino.Logger };
+
+
+let containerPromise: Promise<AppContainer> | null = null;
+
+
+async function initContainer(options: ContainerOptions = {}): Promise<AppContainer> {
+    const cacheManager = await initCacheManager();
+    const apiModule = await setupApiModule();
+    const mediaModule = setupMediaModule(apiModule);
+    const userModule = setupUserModule(mediaModule.mediaServiceRegistry);
+    const tasksService = setupTasksModule({
+        userModule,
+        logger: options.tasksServiceLogger || pinoLogger,
+        mediaServiceRegistry: mediaModule.mediaServiceRegistry,
+        mediaProviderServiceRegistry: mediaModule.mediaProviderServiceRegistry,
+    });
+
+    return {
+        cacheManager,
+        clients: apiModule.clients,
+        transformers: apiModule.transformers,
+        repositories: userModule.repositories,
+        services: {
+            ...userModule.services,
+            tasks: tasksService,
+        },
+        registries: {
+            mediaRepo: mediaModule.mediaRepoRegistry,
+            mediaService: mediaModule.mediaServiceRegistry,
+            mediaProviderService: mediaModule.mediaProviderServiceRegistry,
+        },
+    };
+}
+
+
+export function getContainer(options: ContainerOptions = {}) {
+    if (!containerPromise) {
+        containerPromise = initContainer(options).then((container) => container);
+    }
+    return containerPromise;
+}

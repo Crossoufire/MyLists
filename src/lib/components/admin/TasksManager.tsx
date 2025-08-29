@@ -1,19 +1,19 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {Badge} from "@/lib/components/ui/badge";
-import {Button} from "@/lib/components/ui/button";
 import {taskDefinitions} from "@/cli/commands";
+import {Badge} from "@/lib/components/ui/badge";
+import {TasksName} from "@/lib/types/base.types";
+import {Button} from "@/lib/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {CheckCircle, Clock, Eye, EyeOff, Loader2, Play, Terminal} from "lucide-react";
 import {useAdminTriggerTaskMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {adminJobCompletedOptions, adminJobLogsOptions, adminJobsOptions} from "@/lib/react-query/query-options/admin-options";
-import {TasksName} from "@/lib/types/base.types";
 
 
-type JobCompleted = Awaited<ReturnType<NonNullable<ReturnType<typeof adminJobCompletedOptions>["queryFn"]>>>[0];
+type AdminJobCompleted = Awaited<ReturnType<NonNullable<ReturnType<typeof adminJobCompletedOptions>["queryFn"]>>>[0];
 
 
 interface TasksManagerProps {
@@ -133,7 +133,7 @@ function CompletedJobs() {
 }
 
 
-function JobCard({ job }: { job: JobCompleted }) {
+function JobCard({ job }: { job: AdminJobCompleted }) {
     const [showLogs, setShowLogs] = useState(false);
     const { data: logsData, isLoading, error, isFetching } = useQuery(adminJobLogsOptions(job.id, showLogs && !!job.id));
 

@@ -344,9 +344,14 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
         const [media] = await tx
             .update(mediaTable)
-            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
+            .set({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
             .where(eq(mediaTable.apiId, mediaData.apiId))
             .returning({ id: mediaTable.id });
+
+        console.log({ mediaTable, mediaData });
 
         const mediaId = media.id;
 

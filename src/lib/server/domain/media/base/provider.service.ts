@@ -6,12 +6,6 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
     protected constructor(protected repository: R) {
     }
 
-    protected abstract _transformDetails(rawData: any): Promise<any>;
-
-    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails | GBooksDetails | JikanDetails>;
-
-    protected abstract _getMediaIdsForBulkRefresh(): Promise<(number | string)[]>;
-
     async bulkProcessAndRefreshMedia() {
         const mediaIds = await this._getMediaIdsForBulkRefresh();
         const promises = mediaIds.map(apiId => this.fetchAndRefreshMediaDetails(apiId, true));
@@ -43,16 +37,22 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
         const details = await this._transformDetails(rawData);
         return this._enhanceDetails(details, isBulk, rawData);
     }
+
+    protected abstract _transformDetails(rawData: any): Promise<any>;
+
+    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails | GBooksDetails | JikanDetails>;
+
+    protected abstract _getMediaIdsForBulkRefresh(): Promise<(number | string)[]>;
 }
 
 
 export abstract class BaseTrendsProviderService<R extends BaseRepository<any>> extends BaseProviderService<R> {
-    protected abstract _fetchRawTrends(): Promise<any>;
-
-    protected abstract _transformTrends(rawData: any): Promise<TrendsMedia[]>;
-
     async fetchAndFormatTrends() {
         const rawData = await this._fetchRawTrends();
         return this._transformTrends(rawData);
     }
+
+    protected abstract _fetchRawTrends(): Promise<any>;
+
+    protected abstract _transformTrends(rawData: any): Promise<TrendsMedia[]>;
 }

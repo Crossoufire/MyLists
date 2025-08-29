@@ -1,9 +1,9 @@
 import pino from "pino";
 import Redis from "ioredis";
 import {Job, Queue, Worker} from "bullmq";
+import {TasksName} from "@/lib/types/base.types";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
-import {TasksName} from "@/lib/types/base.types";
 
 
 type LongTaskJobData = { triggeredBy: string };

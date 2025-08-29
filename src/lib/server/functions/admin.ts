@@ -135,7 +135,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
@@ -155,7 +155,7 @@ export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 
         try {
             const jobs = await mylistsLongTaskQueue.getJobs(types satisfies MqJobType[]);
@@ -187,7 +187,7 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .validator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/bullmq");
+        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 
         try {
             return mylistsLongTaskQueue.getJobLogs(jobId);

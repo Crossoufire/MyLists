@@ -6,7 +6,7 @@ import {createCache} from "cache-manager";
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 
-export async function initializeCache() {
+export async function initCacheManager() {
     let cache;
     const nodeEnv = process.env.NODE_ENV;
 

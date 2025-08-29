@@ -1,19 +1,17 @@
 import {capitalize} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Overview} from "@/lib/components/admin/Overview";
 import {UserStats} from "@/lib/components/admin/UserStats";
 import {RecentUsers} from "@/lib/components/admin/RecentUsers";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-options";
+import {Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/dashboard")({
-    loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(adminOverviewOptions());
-    },
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminOverviewOptions()),
     component: DashboardPage,
 });
 
@@ -53,7 +51,14 @@ export default function DashboardPage() {
                         <CardDescription>Cumulative number of users per month</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                        <Overview data={apiData.cumulativeUsersPerMonth}/>
+                        <ResponsiveContainer width="100%" height={350}>
+                            <BarChart data={apiData.cumulativeUsersPerMonth}>
+                                <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false}/>
+                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`}/>
+                                <Tooltip/>
+                                <Bar dataKey="count" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary"/>
+                            </BarChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
                 <Card className="col-span-6">

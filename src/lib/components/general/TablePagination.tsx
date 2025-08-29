@@ -1,15 +1,16 @@
 import {cn} from "@/lib/utils/helpers";
+import {Table} from "@tanstack/react-table";
 import {Button} from "@/lib/components/ui/button";
 import {ArrowLeftToLine, ArrowRightToLine, ChevronLeft, ChevronRight} from "lucide-react";
 
 
-interface TablePaginationProps {
-    table: any;
+interface TablePaginationProps<TData> {
+    table: Table<TData>;
     withSelection?: boolean;
 }
 
 
-export function TablePagination({ table, withSelection = true }: TablePaginationProps) {
+export function TablePagination<TData>({ table, withSelection = true }: TablePaginationProps<TData>) {
     return (
         <div className={cn("flex items-center justify-between", !withSelection && "justify-end")}>
             {withSelection &&

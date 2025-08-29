@@ -1,8 +1,8 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {ApiProviderType} from "@/lib/server/utils/enums";
-import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
+import {authMiddleware} from "@/lib/server/middlewares/authentication";
 
 
 export const getSearchResults = createServerFn({ method: "GET" })

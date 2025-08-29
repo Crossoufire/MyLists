@@ -1,9 +1,15 @@
 import {Link} from "@tanstack/react-router";
 import {formatDateTime} from "@/lib/utils/functions";
+import {AdminUserOverview} from "@/lib/types/query.options.types";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 
 
-export function RecentUsers({ users }: { users: any[] }) {
+interface RecentUsersProps {
+    users: AdminUserOverview;
+}
+
+
+export function RecentUsers({ users }: RecentUsersProps) {
     return (
         <div className="space-y-8 overflow-y-auto max-h-90 pr-4">
             {users.map((user) =>
@@ -14,7 +20,11 @@ export function RecentUsers({ users }: { users: any[] }) {
                     </Avatar>
                     <div className="ml-4 space-y-1">
                         <p className="text-sm font-medium leading-none">
-                            <Link to={`/profile/$username`} params={{ username: user.name }} className="hover:underline hover:underline-offset-2">
+                            <Link
+                                to={`/profile/$username`}
+                                params={{ username: user.name }}
+                                className="hover:underline hover:underline-offset-2"
+                            >
                                 {user.name}
                             </Link>
                         </p>

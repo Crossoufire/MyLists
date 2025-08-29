@@ -1,4 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
+import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-options";
 import {
     achievementOptions,
     authOptions,
@@ -26,6 +27,7 @@ export type ComingNextItem = Awaited<ReturnType<NonNullable<ReturnType<typeof up
 export type HofUserData = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["items"][0];
 export type HofUserRank = Awaited<ReturnType<NonNullable<ReturnType<typeof hallOfFameOptions>["queryFn"]>>>["userRanks"];
 export type TrendItemType = Awaited<ReturnType<NonNullable<ReturnType<typeof trendsOptions>["queryFn"]>>>["seriesTrends"][0];
+export type AdminUserOverview = Awaited<ReturnType<NonNullable<ReturnType<typeof adminOverviewOptions>["queryFn"]>>>["recentUsers"];
 
 
 // --- User Media Details Types ----------------------------------------------------

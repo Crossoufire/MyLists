@@ -35,7 +35,6 @@ import { Route as PrivateDetailsMediaTypeMediaIdRouteImport } from './routes/_pr
 import { Route as AdminAdminLayoutUsersRouteImport } from './routes/_admin/admin/_layout/users'
 import { Route as AdminAdminLayoutTasksRouteImport } from './routes/_admin/admin/_layout/tasks'
 import { Route as AdminAdminLayoutMediadleRouteImport } from './routes/_admin/admin/_layout/mediadle'
-import { Route as AdminAdminLayoutFeaturesRouteImport } from './routes/_admin/admin/_layout/features'
 import { Route as AdminAdminLayoutDashboardRouteImport } from './routes/_admin/admin/_layout/dashboard'
 import { Route as AdminAdminLayoutAchievementsRouteImport } from './routes/_admin/admin/_layout/achievements'
 import { Route as PrivateListMediaTypeUsernameRouteRouteImport } from './routes/_private/list/$mediaType/$username.route'
@@ -178,12 +177,6 @@ const AdminAdminLayoutMediadleRoute =
     path: '/mediadle',
     getParentRoute: () => AdminAdminLayoutRoute,
   } as any)
-const AdminAdminLayoutFeaturesRoute =
-  AdminAdminLayoutFeaturesRouteImport.update({
-    id: '/features',
-    path: '/features',
-    getParentRoute: () => AdminAdminLayoutRoute,
-  } as any)
 const AdminAdminLayoutDashboardRoute =
   AdminAdminLayoutDashboardRouteImport.update({
     id: '/dashboard',
@@ -263,7 +256,6 @@ export interface FileRoutesByFullPath {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/admin/achievements': typeof AdminAdminLayoutAchievementsRoute
   '/admin/dashboard': typeof AdminAdminLayoutDashboardRoute
-  '/admin/features': typeof AdminAdminLayoutFeaturesRoute
   '/admin/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/admin/tasks': typeof AdminAdminLayoutTasksRoute
   '/admin/users': typeof AdminAdminLayoutUsersRoute
@@ -294,7 +286,6 @@ export interface FileRoutesByTo {
   '/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/admin/achievements': typeof AdminAdminLayoutAchievementsRoute
   '/admin/dashboard': typeof AdminAdminLayoutDashboardRoute
-  '/admin/features': typeof AdminAdminLayoutFeaturesRoute
   '/admin/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/admin/tasks': typeof AdminAdminLayoutTasksRoute
   '/admin/users': typeof AdminAdminLayoutUsersRoute
@@ -330,7 +321,6 @@ export interface FileRoutesById {
   '/_private/list/$mediaType/$username': typeof PrivateListMediaTypeUsernameRouteRoute
   '/_admin/admin/_layout/achievements': typeof AdminAdminLayoutAchievementsRoute
   '/_admin/admin/_layout/dashboard': typeof AdminAdminLayoutDashboardRoute
-  '/_admin/admin/_layout/features': typeof AdminAdminLayoutFeaturesRoute
   '/_admin/admin/_layout/mediadle': typeof AdminAdminLayoutMediadleRoute
   '/_admin/admin/_layout/tasks': typeof AdminAdminLayoutTasksRoute
   '/_admin/admin/_layout/users': typeof AdminAdminLayoutUsersRoute
@@ -365,7 +355,6 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/admin/achievements'
     | '/admin/dashboard'
-    | '/admin/features'
     | '/admin/mediadle'
     | '/admin/tasks'
     | '/admin/users'
@@ -396,7 +385,6 @@ export interface FileRouteTypes {
     | '/list/$mediaType/$username'
     | '/admin/achievements'
     | '/admin/dashboard'
-    | '/admin/features'
     | '/admin/mediadle'
     | '/admin/tasks'
     | '/admin/users'
@@ -431,7 +419,6 @@ export interface FileRouteTypes {
     | '/_private/list/$mediaType/$username'
     | '/_admin/admin/_layout/achievements'
     | '/_admin/admin/_layout/dashboard'
-    | '/_admin/admin/_layout/features'
     | '/_admin/admin/_layout/mediadle'
     | '/_admin/admin/_layout/tasks'
     | '/_admin/admin/_layout/users'
@@ -653,13 +640,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminLayoutMediadleRouteImport
       parentRoute: typeof AdminAdminLayoutRoute
     }
-    '/_admin/admin/_layout/features': {
-      id: '/_admin/admin/_layout/features'
-      path: '/features'
-      fullPath: '/admin/features'
-      preLoaderRoute: typeof AdminAdminLayoutFeaturesRouteImport
-      parentRoute: typeof AdminAdminLayoutRoute
-    }
     '/_admin/admin/_layout/dashboard': {
       id: '/_admin/admin/_layout/dashboard'
       path: '/dashboard'
@@ -740,7 +720,6 @@ declare module '@tanstack/react-start/server' {
 interface AdminAdminLayoutRouteChildren {
   AdminAdminLayoutAchievementsRoute: typeof AdminAdminLayoutAchievementsRoute
   AdminAdminLayoutDashboardRoute: typeof AdminAdminLayoutDashboardRoute
-  AdminAdminLayoutFeaturesRoute: typeof AdminAdminLayoutFeaturesRoute
   AdminAdminLayoutMediadleRoute: typeof AdminAdminLayoutMediadleRoute
   AdminAdminLayoutTasksRoute: typeof AdminAdminLayoutTasksRoute
   AdminAdminLayoutUsersRoute: typeof AdminAdminLayoutUsersRoute
@@ -749,7 +728,6 @@ interface AdminAdminLayoutRouteChildren {
 const AdminAdminLayoutRouteChildren: AdminAdminLayoutRouteChildren = {
   AdminAdminLayoutAchievementsRoute: AdminAdminLayoutAchievementsRoute,
   AdminAdminLayoutDashboardRoute: AdminAdminLayoutDashboardRoute,
-  AdminAdminLayoutFeaturesRoute: AdminAdminLayoutFeaturesRoute,
   AdminAdminLayoutMediadleRoute: AdminAdminLayoutMediadleRoute,
   AdminAdminLayoutTasksRoute: AdminAdminLayoutTasksRoute,
   AdminAdminLayoutUsersRoute: AdminAdminLayoutUsersRoute,

@@ -1,6 +1,6 @@
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {connectRedis} from "@/lib/server/core/redis-client";
-import {createWorker, initializeQueue} from "@/lib/server/bullmq/index";
+import {createWorker, initializeQueue} from "@/lib/server/core/bullmq/index";
 
 
 async function startWorker() {

@@ -1,9 +1,9 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {RatingSystemType} from "@/lib/server/utils/enums";
+import {platformStatsSchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";
-import {platformStatsSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getPlatformStats = createServerFn({ method: "GET" })

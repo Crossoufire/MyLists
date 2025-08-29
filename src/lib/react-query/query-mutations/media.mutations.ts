@@ -10,7 +10,7 @@ export const useRefreshMediaMutation = (mediaType: MediaType, mediaId: number) =
     return useMutation({
         mutationFn: refreshMediaDetails,
         onSuccess: async () => {
-            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId) });
+            return queryClient.invalidateQueries({ queryKey: queryKeys.detailsKey(mediaType, mediaId.toString()) });
         },
     });
 };

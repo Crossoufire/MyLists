@@ -7,9 +7,7 @@ import {adminTasksOptions} from "@/lib/react-query/query-options/admin-options";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/tasks")({
-    loader: async ({ context: { queryClient } }) => {
-        return queryClient.ensureQueryData(adminTasksOptions());
-    },
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminTasksOptions()),
     component: AdminTasksPage,
 })
 

@@ -4,6 +4,7 @@ import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
@@ -13,15 +14,12 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {adminMediadleOptions} from "@/lib/react-query/query-options/admin-options";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {SearchType} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/mediadle")({
     validateSearch: (search) => search as SearchType,
     loaderDeps: ({ search }) => ({ search }),
-    loader: async ({ context: { queryClient }, deps: { search } }) => {
-        return queryClient.ensureQueryData(adminMediadleOptions(search));
-    },
+    loader: async ({ context: { queryClient }, deps: { search } }) => queryClient.ensureQueryData(adminMediadleOptions(search)),
     component: AdminMediadlePage,
 })
 
