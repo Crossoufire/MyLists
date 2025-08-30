@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt";
+import {clientEnv} from "@/env/client";
+import {serverEnv} from "@/env/server";
 import {betterAuth} from "better-auth";
 import {db} from "@/lib/server/database/db";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
@@ -10,8 +12,8 @@ import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} fro
 
 export const auth = betterAuth({
     appName: "MyLists",
-    baseURL: process.env.VITE_BASE_URL,
-    secret: process.env.BETTER_AUTH_SECRET,
+    baseURL: clientEnv.VITE_BASE_URL,
+    secret: serverEnv.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
         provider: "sqlite",
     }),
@@ -97,12 +99,12 @@ export const auth = betterAuth({
     },
     socialProviders: {
         github: {
-            clientId: process.env.GITHUB_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+            clientId: serverEnv.GITHUB_CLIENT_ID,
+            clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
         },
         google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: serverEnv.GOOGLE_CLIENT_ID,
+            clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
         },
     },
     emailAndPassword: {

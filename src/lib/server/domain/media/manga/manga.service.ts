@@ -8,7 +8,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
-import {ChapterPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {ChapterPayload, LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {DeltaStats} from "@/lib/types/stats.types";
 
 
@@ -36,9 +36,9 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.REDO]: this.updateRedoHandler,
-            [UpdateType.STATUS]: this.updateStatusHandler,
-            [UpdateType.CHAPTER]: this.updateChapterHandler,
+            [UpdateType.REDO]: this.updateRedoHandler.bind(this),
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
+            [UpdateType.CHAPTER]: this.updateChapterHandler.bind(this),
         }
     }
 
@@ -220,7 +220,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
         return delta;
     }
 
-    updateRedoHandler(currentState: MangaList, payload: RedoPayload, media: Manga) {
+    updateRedoHandler(currentState: MangaList, payload: RedoPayload, media: Manga): [MangaList, LogPayload] {
         if (!media.chapters) {
             throw new FormattedError("Cannot redo a manga without chapters");
         }
@@ -233,7 +233,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
         return [newState, logPayload];
     }
 
-    updateStatusHandler(currentState: MangaList, payload: StatusPayload, media: Manga) {
+    updateStatusHandler(currentState: MangaList, payload: StatusPayload, media: Manga): [MangaList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
@@ -254,7 +254,7 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
         return [newState, logPayload];
     }
 
-    updateChapterHandler(currentState: MangaList, payload: ChapterPayload, media: Manga) {
+    updateChapterHandler(currentState: MangaList, payload: ChapterPayload, media: Manga): [MangaList, LogPayload] {
         const newState = { ...currentState, currentChapter: payload.currentChapter };
         const logPayload = { oldValue: currentState.currentChapter, newValue: payload.currentChapter };
 

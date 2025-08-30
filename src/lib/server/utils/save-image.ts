@@ -57,7 +57,7 @@ export const saveUploadedImage = async ({ file, saveLocation, resize }: SaveUplo
         const buffer = Buffer.from(arrayBuffer);
         return processAndSaveImage({ buffer, saveLocation, resize });
     }
-    catch (error) {
+    catch {
         throw new FormattedError("This image could not be processed");
     }
 };

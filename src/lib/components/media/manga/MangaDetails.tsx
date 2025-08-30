@@ -43,7 +43,7 @@ export const MangaDetails = ({ mediaType, mediaData }: MangaDetailsProps<typeof 
                         />
                         <GenericDetails
                             name="Completion"
-                            value={formatMinutes((mediaData.chapters ?? 0 * 7) ?? null)}
+                            value={formatMinutes(mediaData.chapters ? mediaData.chapters * 7 : null)}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

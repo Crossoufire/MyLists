@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 
 
 export const CountdownTimer = () => {
+    // eslint-disable-next-line @eslint-react/hooks-extra/prefer-use-state-lazy-initialization
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
     function calculateTimeLeft() {

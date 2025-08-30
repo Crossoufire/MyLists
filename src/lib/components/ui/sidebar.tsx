@@ -35,7 +35,7 @@ const SidebarContext = React.createContext<SidebarContextProps | null>(null)
 
 
 function useSidebar() {
-    const context = React.useContext(SidebarContext)
+    const context = React.use(SidebarContext)
     if (!context) {
         throw new Error("useSidebar must be used within a SidebarProvider.")
     }
@@ -44,12 +44,12 @@ function useSidebar() {
 
 
 function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: setOpenProp, className, style, children, ...props }: React.ComponentProps<"div"> & {
-    defaultOpen?: boolean
-    open?: boolean
-    onOpenChange?: (open: boolean) => void
+    open?: boolean;
+    defaultOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }) {
-    const isMobile = useIsMobile()
-    const [openMobile, setOpenMobile] = React.useState(false)
+    const isMobile = useIsMobile();
+    const [openMobile, setOpenMobile] = React.useState(false);
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -66,6 +66,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
             }
 
             // This sets the cookie to keep the sidebar state.
+            // eslint-disable-next-line react-compiler/react-compiler
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
         },
         [setOpenProp, open]
@@ -108,7 +109,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
     )
 
     return (
-        <SidebarContext.Provider value={contextValue}>
+        <SidebarContext value={contextValue}>
             <TooltipProvider delayDuration={0}>
                 <div
                     data-slot="sidebar-wrapper"
@@ -125,7 +126,7 @@ function SidebarProvider({ defaultOpen = true, open: openProp, onOpenChange: set
                     {children}
                 </div>
             </TooltipProvider>
-        </SidebarContext.Provider>
+        </SidebarContext>
     )
 }
 
@@ -253,6 +254,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
 
     return (
         <button
+            type="button"
             data-sidebar="rail"
             data-slot="sidebar-rail"
             aria-label="Toggle Sidebar"

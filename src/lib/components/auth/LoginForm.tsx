@@ -18,41 +18,55 @@ interface LoginFormProps {
 }
 
 
+type FormValues = {
+    email: string;
+    password: string;
+};
+
+
 export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
     const router = useRouter();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const form = useForm({
+    const form = useForm<FormValues>({
         shouldFocusError: false,
         defaultValues: {
-            username: "",
+            email: "",
             password: "",
         },
     });
 
-    const onSubmit = async (submitted: any) => {
-        const { data, error } = await authClient.signIn.email({
-            email: submitted.username,
-            password: submitted.password,
+    const onSubmit = async (submitted: FormValues) => {
+        await authClient.signIn.email({
             rememberMe: true,
-        });
-
-        if (error) {
-            if (error.status === 401) {
-                form.setError("root", { type: "value", message: error.message }, { shouldFocus: false });
-                return;
+            email: submitted.email,
+            password: submitted.password,
+        }, {
+            onError: (ctx) => {
+                if (ctx.error.status === 403) {
+                    form.setError("root", {
+                        type: "value",
+                        message: "Please validate your email. A validation link has been sent.",
+                    }, { shouldFocus: false });
+                }
+                else {
+                    form.setError("root", { type: "value", message: ctx.error.message });
+                }
+            },
+            onSuccess: async (data: any) => {
+                await queryClient.invalidateQueries({ queryKey: queryKeys.authKey() });
+                await router.invalidate();
+                await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
             }
-            toast.error("An unexpected error occurred. Please try again later.");
-            return;
-        }
-
-        await queryClient.invalidateQueries({ queryKey: queryKeys.authKey() });
-        await router.invalidate();
-        await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
+        });
     };
 
     const withProvider = async (provider: "google" | "github") => {
-        const { data, error } = await authClient.signIn.social({ provider })
+        await authClient.signIn.social({ provider }, {
+            onError: (ctx) => {
+                toast.error(ctx.error.message);
+            },
+        });
     };
 
     return (
@@ -68,15 +82,16 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                             <div className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="username"
+                                    name="email"
                                     rules={{ required: "This field is required" }}
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Username</FormLabel>
+                                            <FormLabel>Email</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
-                                                    placeholder="Username"
+                                                    type="email"
+                                                    placeholder="Email"
                                                 />
                                             </FormControl>
                                             <FormMessage/>
@@ -108,6 +123,11 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                                     }
                                 />
                             </div>
+                            {form.formState.errors.root &&
+                                <FormMessage className="text-center">
+                                    {form.formState.errors.root.message}
+                                </FormMessage>
+                            }
                             <Button>
                                 Login
                             </Button>

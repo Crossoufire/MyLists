@@ -7,7 +7,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
-import {PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {DeltaStats} from "@/lib/types/stats.types";
 
@@ -36,9 +36,9 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.PAGE]: this.updatePageHandler,
-            [UpdateType.REDO]: this.updateRedoHandler,
-            [UpdateType.STATUS]: this.updateStatusHandler,
+            [UpdateType.PAGE]: this.updatePageHandler.bind(this),
+            [UpdateType.REDO]: this.updateRedoHandler.bind(this),
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
         }
     }
 
@@ -233,7 +233,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         ].map((name) => ({ name }));
     }
 
-    updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book) {
+    updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book): [BooksList, LogPayload] {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 
@@ -242,7 +242,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         return [newState, logPayload];
     }
 
-    updateStatusHandler(currentState: BooksList, payload: StatusPayload, media: Book) {
+    updateStatusHandler(currentState: BooksList, payload: StatusPayload, media: Book): [BooksList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
@@ -259,7 +259,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         return [newState, logPayload];
     }
 
-    updatePageHandler(currentState: BooksList, payload: PagePayload, media: Book) {
+    updatePageHandler(currentState: BooksList, payload: PagePayload, media: Book): [BooksList, LogPayload] {
         if (payload.actualPage > media.pages) {
             throw new FormattedError("Invalid page");
         }

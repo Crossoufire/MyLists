@@ -14,11 +14,11 @@ interface StatsGraphProps {
 
 
 export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
-    if (!dataList) return null;
-
     const ratingSystem = useRatingSystem();
     const filters = useSearch({ strict: false });
-    let newDataList = (title === "Rating" && ratingSystem === RatingSystemType.FEELING) ? transformDataList(dataList) : dataList;
+
+    if (!dataList) return null;
+    const newDataList = (title === "Rating" && ratingSystem === RatingSystemType.FEELING) ? transformDataList(dataList) : dataList;
 
     function transformDataList(dataList: NameValuePair[]) {
         const validValues = [0, 2, 4, 6, 8, 10];

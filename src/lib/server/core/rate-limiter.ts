@@ -3,9 +3,7 @@ import {IRateLimiterOptions, RateLimiterMemory, RateLimiterRedis} from "rate-lim
 
 
 export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) => {
-    const nodeEnv = process.env.NODE_ENV;
-
-    if (nodeEnv === "production") {
+    if (process.env.NODE_ENV === "production") {
         try {
             const redisInstance = await connectRedis();
 

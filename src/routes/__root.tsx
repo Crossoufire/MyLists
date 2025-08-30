@@ -4,6 +4,7 @@ import {Toaster} from "sonner";
 import appCSS from "@/styles.css?url";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import {Footer} from "@/lib/components/general/Footer";
+import {useNProgress} from "@/lib/hooks/use-nprogress";
 import type {QueryClient} from "@tanstack/react-query";
 import {TanStackDevtools} from "@tanstack/react-devtools";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
@@ -40,6 +41,8 @@ function RootComponent() {
 
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
+    useNProgress();
+
     return (
         <html suppressHydrationWarning>
         <head>

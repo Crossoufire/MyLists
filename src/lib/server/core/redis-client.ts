@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import {Redis} from "ioredis";
+import {serverEnv} from "@/env/server";
 
 
 dotenv.config();
@@ -10,8 +11,6 @@ let connectionPromise: Promise<Redis> | null = null;
 
 
 export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}) => {
-    const nodeEnv = process.env.NODE_ENV;
-
     if (redisInstance?.status === "ready" || redisInstance?.status === "connecting") {
         return connectionPromise || Promise.resolve(redisInstance);
     }
@@ -19,11 +18,11 @@ export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}
         return connectionPromise || Promise.resolve(redisInstance);
     }
 
-    if (!bypassEnv && nodeEnv !== "production") {
+    if (!bypassEnv && process.env.NODE_ENV !== "production") {
         return Promise.resolve(null);
     }
 
-    const redisUrl = process.env.REDIS_URL;
+    const redisUrl = serverEnv.REDIS_URL;
     if (!redisUrl) {
         return Promise.reject(new Error("REDIS_URL environment variable not set."));
     }

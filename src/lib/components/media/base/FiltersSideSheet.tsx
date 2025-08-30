@@ -32,13 +32,15 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
-    let localFilters: Partial<MediaListArgs> = {};
+    const localFilters: Partial<MediaListArgs> = {};
     const allStatuses = statusUtils.byMediaType(mediaType);
     const activeFiltersConfig = mediaConfig[mediaType].sheetFilters();
 
     const handleRegisterChange = (filterType: keyof MediaListArgs, value: string[] | boolean) => {
+        const updatedFilters = { ...localFilters };
+
         if (Array.isArray(value)) {
-            const prev = localFilters[filterType] as string[] | undefined;
+            const prev = updatedFilters[filterType] as string[] | undefined;
             let newArr: string[];
             if (prev) {
                 newArr = [...prev];
@@ -55,15 +57,17 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                 newArr = value;
             }
             if (newArr.length === 0) {
-                delete localFilters[filterType];
+                delete updatedFilters[filterType];
             }
             else {
-                localFilters[filterType] = newArr as any;
+                updatedFilters[filterType] = newArr as any;
             }
         }
         else {
-            localFilters[filterType] = value as any;
+            updatedFilters[filterType] = value as any;
         }
+
+        Object.assign(localFilters, updatedFilters);
     };
 
     const handleOnSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
@@ -125,7 +129,7 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
                                     return (
                                         <React.Fragment key={filter.key}>
                                             <SearchFilter
-                                                job={filter?.job!}
+                                                job={filter.job!}
                                                 title={filter.title}
                                                 filterKey={filter.key}
                                                 dataList={(search as any)?.[filter.key] ?? []}

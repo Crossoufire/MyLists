@@ -2,6 +2,7 @@ import z from "zod/v4";
 import path from "path";
 import fs from "node:fs";
 import nodemailer from "nodemailer";
+import {serverEnv} from "@/env/server";
 import {Options} from "nodemailer/lib/mailer";
 
 
@@ -19,8 +20,8 @@ export const sendEmail = async (options: EmailOptions) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.MAIL_USERNAME,
-            pass: process.env.MAIL_PASSWORD,
+            user: serverEnv.ADMIN_MAIL_USERNAME,
+            pass: serverEnv.ADMIN_MAIL_PASSWORD,
         },
     });
 
@@ -35,7 +36,7 @@ export const sendEmail = async (options: EmailOptions) => {
         to: options.to,
         html: htmlContent,
         subject: options.subject,
-        from: process.env.MAIL_USERNAME,
+        from: serverEnv.ADMIN_MAIL_USERNAME,
     };
 
     await transporter.sendMail(mailOptions);
@@ -47,8 +48,8 @@ export const sendAdminErrorMail = async (error: Error | z.ZodError, message: str
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: process.env.MAIL_USERNAME,
-            pass: process.env.MAIL_PASSWORD,
+            user: serverEnv.ADMIN_MAIL_USERNAME,
+            pass: serverEnv.ADMIN_MAIL_PASSWORD,
         },
     });
 
@@ -61,8 +62,8 @@ export const sendAdminErrorMail = async (error: Error | z.ZodError, message: str
     }
 
     const mailOptions: Options = {
-        to: process.env.MAIL_USERNAME,
-        from: process.env.MAIL_USERNAME,
+        to: serverEnv.ADMIN_MAIL_USERNAME,
+        from: serverEnv.ADMIN_MAIL_USERNAME,
         subject: "MyLists - An Error Occurred",
         html: JSON.stringify(errorData, null, 4),
     };

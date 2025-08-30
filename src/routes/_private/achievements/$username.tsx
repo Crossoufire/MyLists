@@ -24,7 +24,7 @@ function AchievementPage() {
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
             <Tabs defaultValue="all">
                 <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
-                    {Object.entries(apiData.summary).map(([mt, _]) =>
+                    {Object.entries(apiData.summary).map(([mt]) =>
                         <TabsTrigger key={mt} value={mt} className="max-sm:px-2 px-4 flex items-center gap-2">
                             <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
                         </TabsTrigger>

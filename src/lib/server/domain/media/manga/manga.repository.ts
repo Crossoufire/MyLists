@@ -24,7 +24,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
         const isLong = achievement.codeName.includes("long");
         const condition = isLong ? gte(manga.chapters, value) : lte(manga.chapters, value);
 
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: mangaList.userId,
                 value: count(mangaList.mediaId).as("value"),
@@ -37,7 +37,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     getAuthorsAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: mangaList.userId,
                 count: count(mangaList.mediaId).as("count"),
@@ -57,7 +57,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     getPublishersAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: mangaList.userId,
                 count: count(mangaList.mediaId).as("count"),
@@ -77,7 +77,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     }
 
     getChaptersAchievementsCte(_achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: mangaList.userId,
                 value: sum(mangaList.total).as("value"),

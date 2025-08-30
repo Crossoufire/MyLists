@@ -1,7 +1,7 @@
-import {useMemo, useState} from "react";
 import {Input} from "@/lib/components/ui/input";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
+import {useCallback, useMemo, useState} from "react";
 import {formatDateTime} from "@/lib/utils/functions";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -64,10 +64,10 @@ function UserManagementPage() {
         await setFilters({ sorting: newSorting[0]?.id ?? "updatedAt", sortDesc: newSorting[0]?.desc ?? true, page: 1 });
     };
 
-    const updateUser = (userId: number | undefined, payload: AdminUpdatePayload) => {
+    const updateUser = useCallback((userId: number | undefined, payload: AdminUpdatePayload) => {
         if (payload.deleteUser && !window.confirm("Are you sure you want to delete this user?")) return;
         updateUserMutation.mutate({ data: { userId, payload } });
-    };
+    }, [updateUserMutation]);
 
     const usersColumns: ColumnDef<typeof apiData.items[0]>[] = useMemo(() => [
         {
@@ -276,7 +276,7 @@ function UserManagementPage() {
                 </DropdownMenu>
             ),
         }
-    ], []);
+    ], [updateUser]);
 
     const table = useReactTable({
         enableSorting: true,

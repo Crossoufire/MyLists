@@ -7,7 +7,7 @@ import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {Achievement} from "@/lib/types/achievements.types";
 import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {LogPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {DeltaStats} from "@/lib/types/stats.types";
 
 
@@ -37,7 +37,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.STATUS]: this.updateStatusHandler,
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
             [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
         }
     }
@@ -217,7 +217,7 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         return delta;
     }
 
-    updateStatusHandler(currentState: GamesList, payload: StatusPayload, _media: Game) {
+    updateStatusHandler(currentState: GamesList, payload: StatusPayload, _media: Game): [GamesList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 

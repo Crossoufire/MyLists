@@ -32,7 +32,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     // --- Achievements ----------------------------------------------------------
 
     getGameModeAchievementCte(achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: count(gamesList.id).as("value"),
@@ -48,7 +48,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getTimeSpentAchievementCte(_achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: sql`SUM(${gamesList.playtime}) / 60`.as("value"),
@@ -58,7 +58,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getPlatformAchievementCte(_achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: countDistinct(gamesList.platform).as("value"),
@@ -70,7 +70,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getSpecificPlatformAchievementCte(achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: count(gamesList.mediaId).as("value"),
@@ -88,7 +88,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         const value = parseInt(achievement.value!);
         const isLong = achievement.codeName.includes("long");
 
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: count(gamesList.mediaId).as("value"),
@@ -106,7 +106,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     getCompanyAchievementCte(achievement: Achievement, userId?: number) {
         const isDevCompany = achievement.value = "developer";
 
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: gamesList.userId,
                 count: count(gamesList.mediaId).as("count"),
@@ -129,7 +129,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getPerspectiveAchievementCte(achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: gamesList.userId,
                 value: count(gamesList.mediaId).as("value"),

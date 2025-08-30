@@ -104,6 +104,7 @@ export const SearchBar = () => {
                                 searchResults.data.map((item) =>
                                     <SearchComponent
                                         item={item}
+                                        key={item.id}
                                         resetSearch={resetSearch}
                                     />
                                 )}

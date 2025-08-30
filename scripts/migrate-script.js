@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {sql} from "drizzle-orm";
 import {drizzle} from "drizzle-orm/libsql";
 import {createClient} from "@libsql/client";

@@ -7,7 +7,7 @@ import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
-import {RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
+import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 import {DeltaStats} from "@/lib/types/stats.types";
 
 
@@ -36,8 +36,8 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.REDO]: this.updateRedoHandler,
-            [UpdateType.STATUS]: this.updateStatusHandler,
+            [UpdateType.REDO]: this.updateRedoHandler.bind(this),
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
         }
     }
 
@@ -219,7 +219,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return delta;
     }
 
-    updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie) {
+    updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie): [MoviesList, LogPayload] {
         const newState = { ...currentState, status: payload.status };
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
@@ -234,7 +234,7 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return [newState, logPayload];
     };
 
-    updateRedoHandler(currentState: MoviesList, payload: RedoPayload, _media: Movie) {
+    updateRedoHandler(currentState: MoviesList, payload: RedoPayload, _media: Movie): [MoviesList, LogPayload] {
         const newState = { ...currentState, redo: payload.redo };
         const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
 

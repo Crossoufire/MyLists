@@ -36,7 +36,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
     const { data: allLabels = [], error, isLoading } = useQuery(userMediaLabelsOptions(mediaType, isOpen));
 
     useEffect(() => {
-        error && showToast("An unexpected error occurred. Please try again later.", "error");
+        if (error) showToast("An unexpected error occurred. Please try again later.", "error");
     }, [error]);
 
     const showToast = (message: string, type: "error" | "success") => {

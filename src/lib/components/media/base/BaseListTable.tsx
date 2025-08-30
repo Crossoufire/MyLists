@@ -1,7 +1,7 @@
 import {ColumnDef} from "@tanstack/react-table";
 import {statusUtils} from "@/lib/utils/functions";
+import {MediaType} from "@/lib/server/utils/enums";
 import {CircleCheck, Settings2} from "lucide-react";
-import {MediaType, Status} from "@/lib/server/utils/enums";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {UserMediaItem} from "@/lib/types/query.options.types";
 import {QuickAddMedia} from "@/lib/components/media/base/QuickAddMedia";

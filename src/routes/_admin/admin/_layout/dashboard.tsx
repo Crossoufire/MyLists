@@ -35,8 +35,9 @@ export default function DashboardPage() {
                     value={apiData.activeUsers.count}
                     description={`+${apiData.activeUsers.growth.toFixed(1)}% from last month`}
                 />
-                {apiData.usersPerPrivacy.map((privacyValue: any) =>
+                {apiData.usersPerPrivacy.map((privacyValue, idx) =>
                     <UserStats
+                        key={idx}
                         icon="shield"
                         value={privacyValue.count}
                         title={capitalize(privacyValue.privacy) + " Users"}

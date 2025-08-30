@@ -1,5 +1,6 @@
 import {Keyv} from "keyv";
 import KeyvRedis from "@keyv/redis";
+import {serverEnv} from "@/env/server";
 import {createCache} from "cache-manager";
 
 
@@ -8,11 +9,10 @@ const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 export async function initCacheManager() {
     let cache;
-    const nodeEnv = process.env.NODE_ENV;
 
-    if (nodeEnv === "production") {
+    if (process.env.NODE_ENV === "production") {
         try {
-            const redisKeyvStore = new KeyvRedis(process.env.REDIS_URL);
+            const redisKeyvStore = new KeyvRedis(serverEnv.REDIS_URL);
             const keyvInstance = new Keyv({ store: redisKeyvStore });
             cache = createCache({ stores: [keyvInstance], ttl: DEFAULT_TTL_MS });
             console.log("Redis cache store initialized via cache-manager");

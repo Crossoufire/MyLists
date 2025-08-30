@@ -69,7 +69,7 @@ export class HltbClient extends BaseClient {
     private async _sendWebRequest(gameName: string) {
         const headers = this._getSearchRequestHeaders();
 
-        let searchInfo = await this._getSearchInfo(false);
+        const searchInfo = await this._getSearchInfo(false);
         if (!searchInfo?.apiKey) {
             console.warn("Could not extract API key");
             return null;
@@ -199,7 +199,7 @@ export class HltbClient extends BaseClient {
         matches = scriptContent.match(apiKeyPattern);
         if (matches) {
             let splitMatches = matches.join("").split(".concat");
-            splitMatches = splitMatches.slice(1).map((match) => match.replace(/["()\[\]']/g, ''));
+            splitMatches = splitMatches.slice(1).map((match) => match.replace(/["()[\]']/g, ''));
             return splitMatches.join("");
         }
 

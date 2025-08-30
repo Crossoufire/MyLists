@@ -54,7 +54,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         const isLong = achievement.codeName.includes("long");
         const condition = isLong ? gte(mediaTable.totalEpisodes, value) : lte(mediaTable.totalEpisodes, value);
 
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: listTable.userId,
                 value: count(listTable.mediaId).as("value"),
@@ -69,7 +69,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     getNetworkAchievementCte(_achievement: Achievement, userId?: number) {
         const { listTable, networkTable } = this.config;
 
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: listTable.userId,
                 value: countDistinct(networkTable.name).as("value"),
@@ -84,7 +84,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     getActorAchievementCte(_achievement: Achievement, userId?: number) {
         const { listTable, actorTable } = this.config;
 
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: listTable.userId,
                 count: count(listTable.mediaId).as("count"),

@@ -62,9 +62,7 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
                 <div className="flex justify-between mb-1.5">
                     <div>
                         <Link
-                            //@ts-ignore
                             to={`/list/$mediaType/$username`}
-                            //@ts-ignore
                             params={{ mediaType, username }}
                             className="hover:underline hover:underline-offset-2"
                         >

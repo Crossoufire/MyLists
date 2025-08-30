@@ -1,13 +1,13 @@
 import {notFound} from "@tanstack/react-router";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {JobType, LabelAction, Status, UpdateType} from "@/lib/server/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
-import {Label, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
-import {DeltaStats} from "@/lib/types/stats.types";
+import {Label, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";
+import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 
 
 export abstract class BaseService<
@@ -15,8 +15,8 @@ export abstract class BaseService<
     R extends BaseRepository<TConfig>
 > {
     protected repository: R;
-    protected updateHandlers: Partial<Record<UpdateType, (currentState: any, payload: any, media: any) => any>>;
     protected abstract readonly achievementHandlers: Record<any, (achievement: Achievement, userId?: number) => any>;
+    protected updateHandlers: Partial<Record<UpdateType, UpdateHandlerFn<TConfig["listTable"]["$inferSelect"], any, TConfig["mediaTable"]["$inferSelect"]>>>;
 
     protected constructor(repository: R) {
         this.repository = repository;
@@ -141,7 +141,7 @@ export abstract class BaseService<
 
         const updateHandler = this.updateHandlers[payload.type];
         if (!updateHandler) throw new Error(`No handler found for command type: ${payload.type}`);
-        const [completeNewData, logPayload] = updateHandler(oldState, payload, media);
+        const [completeNewData, logPayload] = await updateHandler(oldState, payload, media);
 
         const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeNewData);
         const delta = this.calculateDeltaStats(oldState, newState, media);

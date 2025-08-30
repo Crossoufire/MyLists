@@ -1,3 +1,4 @@
+import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
@@ -7,9 +8,9 @@ import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from
 
 export class IgdbClient extends BaseClient {
     private static readonly consumeKey = "igdb-API";
-    private readonly apiKey = process.env.IGDB_API_KEY!;
-    private readonly secretId = process.env.SECRET_IGDB!;
-    private readonly clientId = process.env.CLIENT_IGDB!;
+    private readonly apiKey = serverEnv.IGDB_API_KEY!;
+    private readonly clientId = serverEnv.IGDB_CLIENT_ID!;
+    private readonly secretId = serverEnv.IGDB_CLIENT_SECRET!;
     private readonly baseUrl = "https://api.igdb.com/v4/games";
     private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "igdbAPI" };

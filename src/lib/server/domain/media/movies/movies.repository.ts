@@ -54,7 +54,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         const isLong = achievement.codeName.includes("long");
         const condition = isLong ? gte(movies.duration, value) : lte(movies.duration, value);
 
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: moviesList.userId,
                 value: count(moviesList.mediaId).as("value"),
@@ -67,7 +67,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     getDirectorAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: moviesList.userId,
                 count: count(moviesList.mediaId).as("count"),
@@ -87,7 +87,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     getActorAchievementCte(_achievement: Achievement, userId?: number) {
-        let subQ = getDbClient()
+        const subQ = getDbClient()
             .select({
                 userId: moviesList.userId,
                 count: count(moviesList.mediaId).as("count"),
@@ -107,7 +107,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
     }
 
     getLanguageAchievementCte(_achievement: Achievement, userId?: number) {
-        let baseCTE = getDbClient()
+        const baseCTE = getDbClient()
             .select({
                 userId: moviesList.userId,
                 value: countDistinct(movies.originalLanguage).as("value"),

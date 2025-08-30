@@ -47,7 +47,7 @@ export class TmdbTransformer {
                 image: item.poster_path ? `${this.imageBaseUrl}${item.poster_path}` : "default.jpg",
             };
 
-            let details: {};
+            let details: object;
             if (item.media_type === "tv") details = this.processSearchTv(item);
             else details = this.processSearchMovie(item);
 

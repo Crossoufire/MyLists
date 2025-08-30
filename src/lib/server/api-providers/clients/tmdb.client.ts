@@ -1,3 +1,4 @@
+import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
 import {connectRedis} from "@/lib/server/core/redis-client";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
@@ -16,7 +17,7 @@ import {
 export class TmdbClient extends BaseClient {
     private static readonly consumeKey = "tmdb-API";
     private static readonly tvChangedIdsTtl = 60 * 5;
-    private readonly apiKey = process.env.THEMOVIEDB_API_KEY;
+    private readonly apiKey = serverEnv.THEMOVIEDB_API_KEY;
     private readonly baseUrl = "https://api.themoviedb.org/3";
     private static readonly tvChangedIdsCacheKey = "tmdb:tvChangedIds";
     private static readonly throttleOptions = { points: 30, duration: 1, keyPrefix: "tmdbAPI" };
@@ -72,6 +73,7 @@ export class TmdbClient extends BaseClient {
                 return JSON.parse(cached) as number[];
             }
             catch {
+                // Ignore error and continue to fetch data from API
             }
         }
 

@@ -29,6 +29,7 @@ export class BaseClient {
                     errorBody = text || response.statusText;
                 }
                 catch {
+                    // Intentionally left empty. Failed to read response body, so falling back to statusText.
                 }
 
                 if (response.status === 404) {

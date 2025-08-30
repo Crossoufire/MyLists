@@ -172,7 +172,8 @@ export type SheetFilterObject = {
     getItems?: (data: ListFiltersOptionsType) => { name: string }[] | undefined;
 };
 
-export type UpdateHandlerFn<TState, TPayload, TMedia> = (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload];
+export type UpdateHandlerFn<TState, TPayload, TMedia> =
+    (currentState: TState, payload: TPayload, media: TMedia) => [TState, LogPayload] | Promise<[TState, LogPayload]>;
 
 export type ListFilterDefinition = {
     mediaTable: MediaTable;
@@ -201,6 +202,8 @@ export type AdvancedMediaStats = {
     durationDistrib: NameValuePair[];
 }
 
+export type LogPayload = { oldValue: any; newValue: any } | null;
+
 export type TasksName = (typeof taskDefinitions)[number]["name"];
 
 export type StatsCTE = any;
@@ -208,8 +211,6 @@ export type StatsCTE = any;
 type NameObj = { name: string };
 
 type IdNamePair = { id: number, name: string };
-
-type LogPayload = { oldValue: any; newValue: any } | null;
 
 type NotificationPayload = {
     name: string;

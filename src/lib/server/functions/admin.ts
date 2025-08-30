@@ -1,3 +1,4 @@
+import {serverEnv} from "@/env/server";
 import {JobType as MqJobType} from "bullmq";
 import {taskDefinitions} from "@/cli/commands";
 import {redirect} from "@tanstack/react-router";
@@ -45,7 +46,7 @@ export const adminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
     .validator((data) => data as { password: string })
     .handler(async ({ data }) => {
-        if (data.password === process.env.ADMIN_PASSWORD as string) {
+        if (data.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
             setCookie(ADMIN_COOKIE_NAME, adminToken, COOKIE_OPTIONS);
             return { success: true };
@@ -145,7 +146,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
                 message: "Task enqueued.",
             };
         }
-        catch (error) {
+        catch {
             throw new FormattedError("Failed to enqueue task.");
         }
     });
@@ -177,7 +178,7 @@ export const getAdminJobs = createServerFn({ method: "GET" })
                             : job.timestamp ? "waiting" : "unknown"
             }));
         }
-        catch (error) {
+        catch {
             throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
         }
     });
@@ -192,7 +193,7 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
         try {
             return mylistsLongTaskQueue.getJobLogs(jobId);
         }
-        catch (error) {
+        catch {
             throw new FormattedError("Failed to fetch job logs.");
         }
     });

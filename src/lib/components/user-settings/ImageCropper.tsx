@@ -48,11 +48,16 @@ export const ImageCropper = ({ aspect, fileName, resultClassName = "", cropShape
 
         ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
 
-        return new Promise((resolve, reject) => {
+        return new Promise<Blob>((resolve, reject) => {
             canvas.toBlob((blob) => {
-                blob ? resolve(blob) : reject(new Error("Canvas is empty"))
+                if (blob) {
+                    resolve(blob);
+                }
+                else {
+                    reject(new Error("Canvas is empty"));
+                }
             }, "image/jpeg");
-        }) as Promise<Blob>;
+        });
     };
 
     const createImage = (url: string) => {

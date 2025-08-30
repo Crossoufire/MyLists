@@ -17,11 +17,11 @@ export function useMediaQuery(query: string, { defaultValue = false, initializeW
         return window.matchMedia(query).matches;
     }
 
-    function handleChange() {
-        setMatches(getMatches(query));
-    }
-
     useLayoutEffect(() => {
+        function handleChange() {
+            setMatches(getMatches(query));
+        }
+
         const matchMedia = window.matchMedia(query);
         handleChange();
         matchMedia.addEventListener("change", handleChange);

@@ -13,6 +13,7 @@ import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {serverEnv} from "@/env/server";
 
 
 type TaskHandler = () => Promise<void>;
@@ -269,7 +270,7 @@ export class TasksService {
         if (!accessToken) throw new Error("Failed to fetch new IGDB token.");
 
         await this._updateEnvFile("IGDB_API_KEY", "oui");
-        process.env.IGDB_API_KEY = accessToken;
+        serverEnv.IGDB_API_KEY = accessToken;
 
         this.logger.info("IGDB token updated successfully.");
         this.logger.info("Completed: UpdateIgdbToken execution.");

@@ -121,7 +121,7 @@ function AdminMediadlePage() {
                 </div>
             ),
         },
-    ], []);
+    ], [apiData]);
 
     const table = useReactTable({
         manualFiltering: true,

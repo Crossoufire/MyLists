@@ -6,11 +6,11 @@ import {HistoryOptionsType, MediaDetailsOptionsType, MediaListOptionsType, Profi
 import {postAddMediaToList, postDeleteUserUpdates, postEditUserLabel, postRemoveMediaFromList, postUpdateUserMedia} from "@/lib/server/functions/user-media";
 
 
-const deleteUpdatesKeys = [queryKeys.profileKey, queryKeys.allUpdatesKey, queryKeys.historyKey] as const;
-export type DeleteUpdatesKeys = ReturnType<(typeof deleteUpdatesKeys)[number]>;
+const _deleteUpdatesKeys = [queryKeys.profileKey, queryKeys.allUpdatesKey, queryKeys.historyKey] as const;
+export type DeleteUpdatesKeys = ReturnType<(typeof _deleteUpdatesKeys)[number]>;
 
-const detailsUserListKeys = [queryKeys.detailsKey, queryKeys.userListKey] as const
-export type DetailsUserListKeys = ReturnType<(typeof detailsUserListKeys)[number]>;
+const _detailsUserListKeys = [queryKeys.detailsKey, queryKeys.userListKey] as const
+export type DetailsUserListKeys = ReturnType<(typeof _detailsUserListKeys)[number]>;
 
 
 export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {

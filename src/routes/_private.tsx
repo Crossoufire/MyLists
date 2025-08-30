@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_private")({
         const routeType = ["/profile", "/stats", "/list", "/achievements"]
             .some((path) => location.pathname.startsWith(path)) ? "semi-private" : "full-private";
 
-        const currentUser: CurrentUser = queryClient.getQueryData(queryKeys.authKey());
+        const currentUser = queryClient.getQueryData<CurrentUser>(queryKeys.authKey());
 
         if (routeType === "full-private" && !currentUser) {
             throw redirect({ to: "/" });

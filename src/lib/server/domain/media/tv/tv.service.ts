@@ -1,16 +1,16 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
+import {Achievement} from "@/lib/types/achievements.types";
+import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
-import {Achievement} from "@/lib/types/achievements.types";
 import {TvAchCodeName, TvList, TvType} from "@/lib/server/domain/media/tv/tv.types";
 import {SeriesSchemaConfig} from "@/lib/server/domain/media/tv/series/series.config";
-import {EpsSeasonPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
-import {DeltaStats} from "@/lib/types/stats.types";
+import {EpsSeasonPayload, LogPayload, RedoTvPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 
 
 export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfig, TvRepository> {
@@ -43,9 +43,9 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
         this.updateHandlers = {
             ...this.updateHandlers,
-            [UpdateType.REDO]: this.updateRedoHandler,
-            [UpdateType.STATUS]: this.updateStatusHandler,
-            [UpdateType.TV]: this.updateEpsSeasonsHandler,
+            [UpdateType.REDO]: this.updateRedoHandler.bind(this),
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
+            [UpdateType.TV]: this.updateEpsSeasonsHandler.bind(this),
         }
     }
 
@@ -225,7 +225,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return delta;
     }
 
-    async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType) {
+    async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): Promise<[TvList, LogPayload]> {
         const newState = { ...currentState, redo2: payload.redo };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
 
@@ -241,7 +241,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return [newState, logPayload];
     }
 
-    async updateStatusHandler(currentState: TvList, payload: StatusPayload, media: TvType) {
+    async updateStatusHandler(currentState: TvList, payload: StatusPayload, media: TvType): Promise<[TvList, LogPayload]> {
         const newState = { ...currentState, status: payload.status };
         const specialStatuses: Status[] = [Status.RANDOM, Status.PLAN_TO_WATCH];
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
@@ -269,7 +269,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         return [newState, logPayload];
     }
 
-    async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType) {
+    async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType): Promise<[TvList, LogPayload]> {
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
         const epsPerSeasonList = epsPerSeason.map((eps) => eps.episodes);
 
@@ -290,7 +290,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             newState.total = newTotal
             newState.lastEpisodeWatched = 1;
 
-            return [newState, logPayload];
+            return [newState, logPayload] as [TvList, LogPayload];
         }
 
         if (payload.lastEpisodeWatched) {
@@ -310,7 +310,9 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
             newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasonList[i], 0);
 
-            return [newState, logPayload];
+            return [newState, logPayload] as [TvList, LogPayload];
         }
+
+        return [currentState, null];
     }
 }

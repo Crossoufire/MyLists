@@ -108,7 +108,7 @@ function AllUpdates() {
             header: "Date",
             cell: ({ row }) => formatDateTime(row.original.timestamp, { includeTime: true, useLocalTz: true }),
         },
-    ], []);
+    ], [isCurrent]);
 
     const table = useReactTable({
         manualFiltering: true,

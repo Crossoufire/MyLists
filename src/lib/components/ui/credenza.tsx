@@ -28,7 +28,7 @@ const CredenzaContext = React.createContext<{ isMobile: boolean }>({
 })
 
 const useCredenzaContext = () => {
-    const context = React.useContext(CredenzaContext)
+    const context = React.use(CredenzaContext)
     if (!context) throw new Error("Credenza components cannot be rendered outside the Credenza Context")
     return context
 }
@@ -38,11 +38,11 @@ const Credenza = ({ children, ...props }: RootCredenzaProps) => {
     const Credenza = isMobile ? Drawer : Dialog
 
     return (
-        <CredenzaContext.Provider value={{ isMobile }}>
+        <CredenzaContext value={{ isMobile }}>
             <Credenza {...props} {...(isMobile && { autoFocus: true })}>
                 {children}
             </Credenza>
-        </CredenzaContext.Provider>
+        </CredenzaContext>
     )
 }
 

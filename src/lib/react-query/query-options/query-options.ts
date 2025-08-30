@@ -22,7 +22,7 @@ export const queryKeys = {
     authKey: () => ["currentUser"] as const,
     allUpdatesKey: (username: string, filters: SearchType) => ["allUpdates", username, filters] as const,
     dailyMediadleKey: () => ["dailyMediadle"] as const,
-    detailsKey: (mediaType: MediaType, mediaId: string | number) => ["details", mediaType, mediaId] as const,
+    detailsKey: (mediaType: MediaType, mediaId: string | number, external: boolean) => ["details", mediaType, mediaId, external] as const,
     editDetailsKey: (mediaType: MediaType, mediaId: string | number) => ["editDetails", mediaType, mediaId] as const,
     filterSearchKey: (mediaType: MediaType, username: string, query: string, job: JobType) =>
         ["filterSearch", mediaType, username, query, job] as const,
@@ -70,7 +70,7 @@ export const navSearchOptions = (query: string, page: number, apiProvider: ApiPr
 
 
 export const mediaDetailsOptions = (mediaType: MediaType, mediaId: number | string, external: boolean) => queryOptions({
-    queryKey: queryKeys.detailsKey(mediaType, mediaId),
+    queryKey: queryKeys.detailsKey(mediaType, mediaId, external),
     queryFn: () => getMediaDetails({ data: { mediaType, mediaId, external } }),
     staleTime: 3 * 1000,
 });

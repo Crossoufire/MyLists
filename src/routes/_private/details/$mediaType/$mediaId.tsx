@@ -40,7 +40,7 @@ function MediaDetailsPage() {
     const { external } = Route.useSearch();
     const { mediaType, mediaId } = Route.useParams();
     const apiData = useSuspenseQuery(mediaDetailsOptions(mediaType, mediaId, external)).data;
-    const addMediaToListMutation = useAddMediaToListMutation(mediaType, queryKeys.detailsKey(mediaType, mediaId));
+    const addMediaToListMutation = useAddMediaToListMutation(mediaType, queryKeys.detailsKey(mediaType, mediaId, external));
 
     const handleAddMediaToUser = () => {
         addMediaToListMutation.mutate({ data: { mediaType, mediaId: apiData.media.id } });
@@ -76,7 +76,7 @@ function MediaDetailsPage() {
                                 <UserMediaDetails
                                     mediaType={mediaType}
                                     userMedia={apiData.userMedia}
-                                    queryKey={queryKeys.detailsKey(mediaType, mediaId)}
+                                    queryKey={queryKeys.detailsKey(mediaType, mediaId, external)}
                                 />
                                 :
                                 <div className="w-[300px]">

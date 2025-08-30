@@ -18,7 +18,7 @@ interface RefreshAndEditMediaProps {
 
 
 export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastUpdate }: RefreshAndEditMediaProps) => {
-    const refreshMutation = useRefreshMediaMutation(mediaType, external ? apiId : mediaId);
+    const refreshMutation = useRefreshMediaMutation(mediaType, external ? apiId : mediaId, external);
     const lastRefresh = lastUpdate ? formatDateTime(lastUpdate, { includeTime: true, useLocalTz: true }) : "Never";
 
     const handleRefresh = () => {

@@ -164,7 +164,7 @@ export class UserRepository {
             .from(user)
             .offset(offset)
             .limit(perPage)
-            //@ts-expect-error
+            //@ts-expect-error, we know sorting is in user table
             .orderBy(sortDesc ? desc(user[sorting]) : asc(user[sorting]))
             .where(like(user.name, `%${search}%`))
             .execute();

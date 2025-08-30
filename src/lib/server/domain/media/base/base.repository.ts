@@ -275,7 +275,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         return result;
     }
 
-    async updateUserMediaDetails(userId: number, mediaId: number, updateData: any): Promise<TConfig["listTable"]["$inferSelect"]> {
+    async updateUserMediaDetails(userId: number, mediaId: number, updateData: TConfig["listTable"]["$inferSelect"]): Promise<TConfig["listTable"]["$inferSelect"]> {
         const { listTable } = this.config;
 
         const [result] = await getDbClient()

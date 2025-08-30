@@ -27,17 +27,17 @@ const FormField = <
     TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
 >({ ...props }: ControllerProps<TFieldValues, TName>) => {
     return (
-        <FormFieldContext.Provider value={{ name: props.name }}>
+        <FormFieldContext value={{ name: props.name }}>
             <Controller {...props}/>
-        </FormFieldContext.Provider>
+        </FormFieldContext>
     )
 }
 
 
 const useFormField = () => {
     const { getFieldState } = useFormContext();
-    const itemContext = React.useContext(FormItemContext);
-    const fieldContext = React.useContext(FormFieldContext);
+    const itemContext = React.use(FormItemContext);
+    const fieldContext = React.use(FormFieldContext);
     const formState = useFormState({ name: fieldContext.name });
     const fieldState = getFieldState(fieldContext.name, formState);
 
@@ -65,13 +65,13 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
     const id = React.useId();
 
     return (
-        <FormItemContext.Provider value={{ id }}>
+        <FormItemContext value={{ id }}>
             <div
                 data-slot="form-item"
                 className={cn("grid gap-2", className)}
                 {...props}
             />
-        </FormItemContext.Provider>
+        </FormItemContext>
     )
 }
 

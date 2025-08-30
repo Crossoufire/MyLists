@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {ProviderModule} from "@/lib/server/core/container/provider.module";
 import {TvService} from "@/lib/server/domain/media/tv/tv.service";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
+import {ProviderModule} from "@/lib/server/core/container/provider.module";
 import {GamesService} from "@/lib/server/domain/media/games/games.service";
 import {BooksService} from "@/lib/server/domain/media/books/books.service";
 import {MangaService} from "@/lib/server/domain/media/manga/manga.service";
@@ -17,7 +17,7 @@ import {BooksProviderService} from "@/lib/server/domain/media/books/books-provid
 import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provider.service";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
 import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
-import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry,} from "@/lib/server/domain/media/registries/registries";
+import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 export function setupMediaModule(apiModule: ProviderModule) {
@@ -58,10 +58,10 @@ export function setupMediaModule(apiModule: ProviderModule) {
     const gamesProviderService = new GamesProviderService(clients.igdb, transformers.igdb, gamesRepository, clients.hltb);
     const booksProviderService = new BooksProviderService(clients.gBook, transformers.gBook, booksRepository);
     const mangaProviderService = new MangaProviderService(clients.jikan, transformers.jikan, mangaRepository);
+    MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
+    MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.BOOKS, booksProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.MANGA, mangaProviderService);
 
