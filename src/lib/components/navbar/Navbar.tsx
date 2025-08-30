@@ -42,18 +42,24 @@ export const Navbar = () => {
     if (!currentUser) {
         return (
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
-                <div className="md:max-w-screen-xl flex w-full justify-between items-center container mx-auto">
-                    <NavLink to="/" className="text-lg font-semibold">MyLists</NavLink>
+                <div className="max-sm:px-4 md:max-w-screen-xl flex w-full justify-between items-center container mx-auto">
+                    <NavLink to="/" className="text-xl font-bold">MyLists</NavLink>
                     <div className="space-x-3">
-                        <Button size="sm" onClick={() => setShowLogin(true)}>
+                        <Button variant="ghost" size="sm" onClick={() => setShowLogin(true)}>
                             Login
                         </Button>
-                        <Button size="sm" variant="secondary" onClick={() => setShowRegister(true)}>
+                        <Button size="sm" onClick={() => setShowRegister(true)}>
                             Register
                         </Button>
                     </div>
-                    <LoginForm open={showLogin} onOpenChange={setShowLogin}/>
-                    <RegisterForm open={showRegister} onOpenChange={setShowRegister}/>
+                    <LoginForm
+                        open={showLogin}
+                        onOpenChange={setShowLogin}
+                    />
+                    <RegisterForm
+                        open={showRegister}
+                        onOpenChange={setShowRegister}
+                    />
                 </div>
             </nav>
         );

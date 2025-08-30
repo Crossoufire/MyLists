@@ -1,6 +1,6 @@
 import React from "react";
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaConfiguration} from "@/lib/components/media-config";
+import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {DisplayPages} from "@/lib/components/media/base/DisplayPages";
 import {DisplayRedoValue} from "@/lib/components/media/base/DisplayRedoValue";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";

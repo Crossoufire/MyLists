@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaConfiguration} from "@/lib/components/media-config";
+import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {DisplayTvRedo} from "@/lib/components/media/tv/DisplayTvRedo";
 import {BaseMediaFollowCard} from "@/lib/components/media/base/BaseMediaFollowCard";
 import {DisplayEpsAndSeasons} from "@/lib/components/media/tv/DisplayEpsAndSeasons";

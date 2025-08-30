@@ -1,6 +1,6 @@
 import {formatRating} from "@/lib/utils/functions";
 import {ExtractListByType} from "@/lib/types/query.options.types";
-import {mediaConfig} from "@/lib/components/media-config";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 

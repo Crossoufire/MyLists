@@ -1,5 +1,5 @@
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaConfig} from "@/lib/components/media-config";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {ExtractMediaDetailsByType} from "@/lib/types/query.options.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
 

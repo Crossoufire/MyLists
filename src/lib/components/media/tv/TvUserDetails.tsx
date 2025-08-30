@@ -1,7 +1,7 @@
 import {useQueryClient} from "@tanstack/react-query";
 import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
-import {MediaConfiguration} from "@/lib/components/media-config";
+import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {UpdateTvRedo} from "@/lib/components/media/tv/UpdateTvRedo";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
 import {UpdateStatus} from "@/lib/components/media/base/UpdateStatus";

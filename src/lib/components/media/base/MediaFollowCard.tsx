@@ -1,6 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {formatRating} from "@/lib/utils/functions";
-import {mediaConfig} from "@/lib/components/media-config";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {ExtractFollowByType} from "@/lib/types/query.options.types";
 
 

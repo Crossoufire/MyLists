@@ -2,6 +2,7 @@
 
 ## Fixes
 
+- FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
 - FIX: problem with "default.jpg" should be an url not just a string to work properly
 - MEDIALIST MOVIES:
     - FIX: pagination pages in table mode does not work
@@ -13,6 +14,7 @@
 
 ## TODO
 
+- TODO: Implement forgot password
 - TODO: check edition of media type (all of them) in media details
 - TODO: check list working correctly (all of them) like filters, status, and add from another list
 - TODO: change UI apparance (tw3 to tw4 ^^)

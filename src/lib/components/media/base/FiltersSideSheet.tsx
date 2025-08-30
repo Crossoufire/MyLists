@@ -6,7 +6,7 @@ import {Button} from "@/lib/components/ui/button";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Checkbox} from "@/lib/components/ui/checkbox";
 import {Separator} from "@/lib/components/ui/separator";
-import {mediaConfig} from "@/lib/components/media-config";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";

@@ -1,6 +1,6 @@
 import React from "react";
 import {MediaType} from "@/lib/server/utils/enums";
-import {MediaConfiguration} from "@/lib/components/media-config";
+import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {DisplayPlaytime} from "@/lib/components/media/games/DisplayPlaytime";
 import {BaseMediaListItem} from "@/lib/components/media/base/BaseMediaListItem";
 

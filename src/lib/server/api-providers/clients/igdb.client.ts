@@ -8,9 +8,9 @@ import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from
 
 export class IgdbClient extends BaseClient {
     private static readonly consumeKey = "igdb-API";
-    private readonly apiKey = serverEnv.IGDB_API_KEY!;
-    private readonly clientId = serverEnv.IGDB_CLIENT_ID!;
-    private readonly secretId = serverEnv.IGDB_CLIENT_SECRET!;
+    private readonly apiKey = serverEnv.IGDB_API_KEY;
+    private readonly clientId = serverEnv.IGDB_CLIENT_ID;
+    private readonly secretId = serverEnv.IGDB_CLIENT_SECRET;
     private readonly baseUrl = "https://api.igdb.com/v4/games";
     private readonly searchUrl = "https://api.igdb.com/v4/multiquery";
     private static readonly throttleOptions = { points: 4, duration: 1, keyPrefix: "igdbAPI" };

@@ -56,8 +56,9 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
             onSuccess: async (data: any) => {
                 await queryClient.invalidateQueries({ queryKey: queryKeys.authKey() });
                 await router.invalidate();
+                onOpenChange(false);
                 await navigate({ to: "/profile/$username", params: { username: data.user.name }, replace: true });
-            }
+            },
         });
     };
 
@@ -128,18 +129,16 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
                                     {form.formState.errors.root.message}
                                 </FormMessage>
                             }
-                            <Button>
-                                Login
-                            </Button>
+                            <Button className="w-full">Login</Button>
                         </form>
                     </Form>
                     <Separator className="mt-3"/>
                     <div className="mt-3 flex-col space-y-2">
-                        <Button variant="secondary" onClick={() => withProvider("google")}>
-                            <FaGoogle size={20} className="mr-2"/> Connexion via Google
+                        <Button variant="secondary" className="w-full" onClick={() => withProvider("google")}>
+                            <FaGoogle className="size-4"/> Connexion via Google
                         </Button>
-                        <Button variant="secondary" onClick={() => withProvider("github")}>
-                            <FaGithub size={20} className="mr-2"/> Connexion via Github
+                        <Button variant="secondary" className="w-full" onClick={() => withProvider("github")}>
+                            <FaGithub className="size-4"/> Connexion via Github
                         </Button>
                     </div>
                 </div>

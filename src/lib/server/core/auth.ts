@@ -113,14 +113,14 @@ export const auth = betterAuth({
         minPasswordLength: 8,
         maxPasswordLength: 50,
         requireEmailVerification: true,
-        resetPasswordTokenExpiresIn: 1800,
+        resetPasswordTokenExpiresIn: 3600,
         sendResetPassword: async ({ user, url }) => {
             await sendEmail({
                 link: url,
                 to: user.email,
                 username: user.name,
                 template: "password_reset",
-                subject: "MyLists - Reset your password",
+                subject: "MyLists - Reset Your Password",
             });
         },
         password: {
@@ -134,16 +134,16 @@ export const auth = betterAuth({
         },
     },
     emailVerification: {
+        expiresIn: 3600,
         sendOnSignUp: true,
         sendOnSignIn: true,
-        autoSignInAfterVerification: false,
-        expiresIn: 3600,
+        autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
             await sendEmail({
-                link: url,
                 to: user.email,
                 username: user.name,
                 template: "register",
+                link: url + `/profile/${user.name}`,
                 subject: "MyLists - Verify your email address",
             });
         },

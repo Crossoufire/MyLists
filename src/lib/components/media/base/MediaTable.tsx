@@ -2,7 +2,7 @@ import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useSearch} from "@tanstack/react-router";
 import {MediaType} from "@/lib/server/utils/enums";
-import {mediaConfig} from "@/lib/components/media-config";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {TablePagination} from "@/lib/components/general/TablePagination";
