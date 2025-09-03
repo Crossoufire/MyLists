@@ -1,5 +1,9 @@
 # MyLists TODO and FIXES
 
+## KNOWN BUGS:
+
+- BUG: When using react compiler selected rows does not work (same for pages)
+
 ## Fixes
 
 - FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
@@ -15,9 +19,8 @@
 ## TODO
 
 - TODO: Implement forgot password
-- TODO: check edition of media type (all of them) in media details
-- TODO: check list working correctly (all of them) like filters, status, and add from another list
-- TODO: change UI apparance (tw3 to tw4 ^^)
+- TODO: Re-implement UI apparance (tw3 to tw4 ^^)
+- TODO: where possible use directly the queryOption instead of queryKeys in useMutations (better for inference)
 
 ## External TODO
 

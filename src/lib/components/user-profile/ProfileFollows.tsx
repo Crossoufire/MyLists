@@ -1,12 +1,10 @@
 import {Link} from "@tanstack/react-router";
 import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
-import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {MutedText} from "@/lib/components/general/MutedText";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-
 import {UserFollowsType} from "@/lib/types/query.options.types";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface ProfileFollowsProps {
@@ -22,22 +20,21 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="p-1 flex gap-2 items-center">
+                    <div className="flex gap-2">
                         {caret}
-                        <div role="button" onClick={toggleCollapse}>Follows</div>
-                    </div>
-                    <div>
-                        <Link to="/profile/$username/follows" params={{ username }}>
-                            <MutedText className="mt-1 text-sm hover:underline">All ({follows.total})</MutedText>
-                        </Link>
+                        <div role="button" onClick={toggleCollapse}>Following</div>
                     </div>
                 </CardTitle>
-                <Separator/>
+                <CardAction>
+                    <Link to="/profile/$username/follows" params={{ username }}>
+                        <MutedText className="text-sm hover:underline">All ({follows.total})</MutedText>
+                    </Link>
+                </CardAction>
             </CardHeader>
             <CardContent className={contentClasses}>
                 <div className="flex justify-start flex-wrap gap-4">
                     {follows.total === 0 ?
-                        <div className="text-muted-foreground italic">No follows to display yet</div>
+                        <MutedText>No follows to display yet</MutedText>
                         :
                         follows.follows.map(follow =>
                             <BlockLink
@@ -48,9 +45,9 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                             >
                                 <Tooltip text={follow.username}>
                                     <img
-                                        className="w-14 h-14 bg-neutral-500 rounded-full"
                                         src={follow.image!}
                                         alt={follow.username}
+                                        className="w-14 h-14 bg-neutral-500 rounded-full"
                                     />
                                 </Tooltip>
                             </BlockLink>,

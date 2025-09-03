@@ -1,25 +1,28 @@
 import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
-import {Separator} from "@/lib/components/ui/separator";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {UserDataType} from "@/lib/types/query.options.types";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
-export const ProfileMiscInfo = ({ userData }: { userData: UserDataType }) => {
+interface ProfileMiscInfoProps {
+    userData: UserDataType;
+}
+
+
+export const ProfileMiscInfo = ({ userData }: ProfileMiscInfoProps) => {
     const { caret, toggleCollapse, contentClasses } = useCollapse();
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="p-1 flex gap-2 items-center">
+                    <div className="flex gap-2">
                         {caret}
                         <div role="button" onClick={toggleCollapse}>
                             Information
                         </div>
                     </div>
                 </CardTitle>
-                <Separator/>
             </CardHeader>
             <CardContent className={contentClasses}>
                 <div className="w-[90%]">
@@ -28,11 +31,11 @@ export const ProfileMiscInfo = ({ userData }: { userData: UserDataType }) => {
                             <div>Profile views</div>
                             <div>{userData.profileViews}</div>
                         </div>
-                        {userData.userMediaSettings.filter(s => s.active).map(setting =>
+                        {userData.userMediaSettings.filter((s) => s.active).map((setting) =>
                             <div key={setting.mediaType} className="flex justify-between">
                                 <div>{`${capitalize(setting.mediaType)}List`} views</div>
                                 <div>{setting.views}</div>
-                            </div>,
+                            </div>
                         )}
                     </div>
                 </div>

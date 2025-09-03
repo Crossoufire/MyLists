@@ -18,8 +18,8 @@ function ProfileFollows() {
     const apiData = useSuspenseQuery(followsOptions(username)).data;
 
     return (
-        <PageTitle title="Follows">
-            <div className="flex justify-start flex-wrap gap-11">
+        <PageTitle title="Following">
+            <div className="flex justify-start flex-wrap gap-11 mt-3">
                 {apiData.follows.map((user) =>
                     <BlockLink
                         key={user.id}

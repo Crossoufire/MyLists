@@ -6,9 +6,8 @@ import {useCollapse} from "@/lib/hooks/use-collapse";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-
 import {AchievementsType} from "@/lib/types/query.options.types";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface AchievementsProps {
@@ -25,12 +24,11 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="py-1 flex gap-2 items-center">
+                    <div className="flex gap-2">
                         {caret}
                         <div role="button" onClick={toggleCollapse}>Achievements</div>
                     </div>
                 </CardTitle>
-                <Separator/>
             </CardHeader>
             <CardContent className={contentClasses}>
                 <AchievementSummary summary={summary}/>
@@ -41,10 +39,10 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
                         details.map((ach: any, idx: number) => <AchievementCard key={idx} achievement={ach}/>)
                     }
                 </div>
-                <Separator className="mt-3"/>
+                <Separator className="mt-3 mb-1.5"/>
                 <div className="flex items-center justify-end">
                     <Link to="/achievements/$username" params={{ username }} className="font-medium hover:underline">
-                        All Achievements<ArrowRight className="inline-block ml-2 w-4 h-4"/>
+                        All Achievements <ArrowRight className="inline-block ml-1 w-4 h-4"/>
                     </Link>
                 </div>
             </CardContent>

@@ -5,6 +5,7 @@ import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/general/Payload";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/general/BlockLink";
+import {MutedText} from "@/lib/components/general/MutedText";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
 
@@ -28,7 +29,8 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
     return (
         <>
             <div className={cn("grid grid-cols-[auto_1fr_auto] gap-x-3 py-1 pr-2 group relative",
-                (mediaIdBeingDeleted === update.id && isPending) && "opacity-20")}>
+                (mediaIdBeingDeleted === update.id && isPending) && "opacity-20")}
+            >
                 <MediaAndUserIcon
                     size={18}
                     type={update.mediaType}
@@ -48,7 +50,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         update={update}
                         className="text-neutral-300"
                     />
-                    <div className="text-sm text-muted-foreground">
+                    <MutedText className="text-sm" italic={false}>
                         {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}
                         {username &&
                             <> by{" "}
@@ -57,20 +59,21 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                                 </BlockLink>
                             </>
                         }
-                    </div>
+                    </MutedText>
                 </div>
                 {canDelete &&
                     <Button
                         variant="invisible"
                         disabled={isPending}
                         onClick={() => handleDeleteUpdate(update.id)}
-                        className="p-0 m-0 h-4 absolute top-2.5 right-0 opacity-0 hover:opacity-100 group-hover:opacity-30 transition-opacity"
+                        className="p-1 h-6 absolute top-0 right-0 bg-background/80 backdrop-blur-sm rounded
+                        transition-all duration-200 ease-out opacity-0 group-hover:opacity-100"
                     >
                         <Trash2 className="w-4 h-4"/>
                     </Button>
                 }
             </div>
-            <Separator className="my-1"/>
+            <Separator className="my-1 last:hidden"/>
         </>
     );
 }

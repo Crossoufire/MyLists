@@ -22,7 +22,7 @@ export class UserUpdatesService {
     constructor(private repository: typeof UserUpdatesRepository) {
     }
 
-    async getUserUpdates(userId: number, limit = 8) {
+    async getUserUpdates(userId: number, limit = 6) {
         return this.repository.getUserUpdates(userId, limit);
     }
 

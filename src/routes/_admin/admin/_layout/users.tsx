@@ -12,6 +12,7 @@ import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {TablePagination} from "@/lib/components/general/TablePagination";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 import {userAdminOptions} from "@/lib/react-query/query-options/admin-options";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX, X} from "lucide-react";
@@ -25,7 +26,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/lib/components/ui/dropdown-menu";
-import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_admin/admin/_layout/users")({
@@ -276,7 +276,7 @@ function UserManagementPage() {
                 </DropdownMenu>
             ),
         }
-    ], [updateUser]);
+    ], []);
 
     const table = useReactTable({
         enableSorting: true,
@@ -292,7 +292,7 @@ function UserManagementPage() {
         state: { pagination: paginationState, sorting: sortingState },
     });
 
-    useDebounceCallback<SearchTypeAdmin>(currentSearch, 300, setFilters, { ...filters, search: currentSearch, page: 1 });
+    useDebounceCallback(currentSearch, 300, () => setFilters({ ...filters, search: currentSearch, page: 1 }));
 
     return (
         <DashboardShell>
@@ -302,7 +302,6 @@ function UserManagementPage() {
                     <div className="relative w-full">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
                         <Input
-                            type="search"
                             value={currentSearch}
                             className="w-full pl-8"
                             placeholder="Search users..."
@@ -316,7 +315,6 @@ function UserManagementPage() {
                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             >
                                 <X className="h-4 w-4"/>
-                                <span className="sr-only">Clear search</span>
                             </Button>
                         }
                     </div>

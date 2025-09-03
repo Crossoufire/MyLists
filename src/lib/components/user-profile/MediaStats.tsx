@@ -4,10 +4,10 @@ import {Tooltip} from "@/lib/components/ui/tooltip";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {BlockLink} from "@/lib/components/general/BlockLink";
-import {profileOptions} from "@/lib/react-query/query-options/query-options";
+import {StatusBullet} from "@/lib/components/general/StatusBullet";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
-import {StatusBullet} from "@/lib/components/general/StatusBullet";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 
 
 interface MediaStatsProps {
@@ -21,8 +21,8 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
         <div>
             <div className="flex flex-wrap justify-between text-center font-medium max-sm:text-sm">
                 <MediaValues
-                    title="Time (d)"
-                    value={media.timeSpentDays}
+                    title="Time"
+                    value={media.timeSpentDays + " d"}
                 />
                 <SpecificMediaValues
                     value={media.totalSpecific}
@@ -56,7 +56,7 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
             <Separator className="mt-3 mb-1.5"/>
             <div className="flex items-center justify-end">
                 <Link to={`/stats/$username`} params={{ username: user.name }} className="text-base font-medium hover:underline">
-                    Advanced Stats<ArrowRight className="inline-block ml-2 w-4 h-4"/>
+                    Advanced Stats <ArrowRight className="inline-block ml-1 w-4 h-4"/>
                 </Link>
             </div>
         </div>
@@ -153,7 +153,7 @@ function MediaFavorites({ media, username }: { media: any, username: string }) {
                                     className="h-[78px] w-[52px] rounded-sm"
                                 />
                             </Tooltip>
-                        </BlockLink>,
+                        </BlockLink>
                     )}
                 </div>
             }

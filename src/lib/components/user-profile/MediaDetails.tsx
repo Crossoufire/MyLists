@@ -1,6 +1,5 @@
 import {capitalize} from "@/lib/utils/functions";
 import {useCollapse} from "@/lib/hooks/use-collapse";
-import {Separator} from "@/lib/components/ui/separator";
 import {MediaStats} from "@/lib/components/user-profile/MediaStats";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
@@ -21,14 +20,13 @@ export const MediaDetails = ({ mediaData, userData }: MediaDetailsProps) => {
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="p-1 flex gap-2 items-center">
+                    <div className="flex gap-2">
                         {caret}
                         <div role="button" onClick={toggleCollapse}>
                             Summary
                         </div>
                     </div>
                 </CardTitle>
-                <Separator/>
             </CardHeader>
             <CardContent className={contentClasses}>
                 <Tabs defaultValue="series">

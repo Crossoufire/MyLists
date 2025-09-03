@@ -1,5 +1,5 @@
-import {useState} from "react";
 import {Search} from "lucide-react";
+import {useState} from "react";
 import {Input} from "@/lib/components/ui/input";
 import {capitalize} from "@/lib/utils/functions";
 import {Button} from "@/lib/components/ui/button";
@@ -12,9 +12,9 @@ import {useDebounceCallback} from "@/lib/hooks/use-debounce";
 import {HofCard} from "@/lib/components/hall-of-fame/HofCard";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
+import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
-import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_private/hall-of-fame")({
@@ -32,7 +32,7 @@ function HallOfFamePage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
-    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
+    const [currentSearch, setcurrentSearch] = useState(filters?.search ?? "");
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
 
     const fetchData = async (params: SearchTypeHoF) => {
@@ -40,7 +40,7 @@ function HallOfFamePage() {
     };
 
     const resetSearch = async () => {
-        setCurrentSearch(DEFAULT.search);
+        setcurrentSearch(DEFAULT.search);
         await fetchData({ ...filters, search: DEFAULT.search });
     };
 
@@ -53,7 +53,7 @@ function HallOfFamePage() {
         await fetchData({ page: 1, sorting, search });
     };
 
-    useDebounceCallback<SearchTypeHoF>(currentSearch, 400, fetchData, { search: currentSearch, sorting, page: DEFAULT.page });
+    useDebounceCallback(currentSearch, 400, () => fetchData({ search: currentSearch, sorting, page: 1 }));
 
     return (
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
@@ -66,7 +66,7 @@ function HallOfFamePage() {
                                     value={currentSearch}
                                     placeholder="Search by name..."
                                     className="pl-10 rounded-md w-[180px]"
-                                    onChange={(ev) => setCurrentSearch(ev.target.value)}
+                                    onChange={(ev) => setcurrentSearch(ev.target.value)}
                                 />
                                 <Search
                                     size={18}

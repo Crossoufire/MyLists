@@ -134,7 +134,7 @@ function AdminMediadlePage() {
         onPaginationChange: onPaginationChange,
     });
 
-    useDebounceCallback<SearchType>(currentSearch, 300, setFilters, { ...filters, search: currentSearch, page: 1 });
+    useDebounceCallback(currentSearch, 300, () => setFilters({ ...filters, search: currentSearch, page: 1 }));
 
     return (
         <DashboardShell>

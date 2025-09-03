@@ -1,8 +1,8 @@
 import {useAuth} from "@/lib/hooks/use-auth";
-import {ProfileOptionsType} from "@/lib/types/query.options.types";
+import {ListSettings} from "@/lib/types/zod.schema.types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {postUpdateFollowStatus} from "@/lib/server/functions/user-profile";
+import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {
     getDownloadListAsCSV,
     postDeleteUserAccount,
@@ -11,7 +11,6 @@ import {
     postPasswordSettings,
     postUpdateFeatureFlag
 } from "@/lib/server/functions/user-settings";
-import {ListSettings} from "@/lib/types/zod.schema.types";
 
 
 export const useFollowMutation = (username: string) => {
@@ -20,7 +19,7 @@ export const useFollowMutation = (username: string) => {
     return useMutation({
         mutationFn: postUpdateFollowStatus,
         onSuccess: (_data, variables) => {
-            queryClient.setQueryData<ProfileOptionsType>(queryKeys.profileKey(username), (oldData) => {
+            queryClient.setQueryData(profileOptions(username).queryKey, (oldData) => {
                 if (!oldData) return;
 
                 return {

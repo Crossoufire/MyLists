@@ -1,13 +1,13 @@
 import {useState} from "react";
+import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useCollapse} from "@/lib/hooks/use-collapse";
-import {UserUpdateType} from "@/lib/types/query.options.types";
 import {Link, useParams} from "@tanstack/react-router";
-import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
+import {UserUpdateType} from "@/lib/types/query.options.types";
 import {UserUpdate} from "@/lib/components/general/UserUpdate";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
 
 
@@ -33,25 +33,24 @@ export const UserUpdates = ({ updates, followers = false }: UserUpdatesProps) =>
         <Card>
             <CardHeader>
                 <CardTitle>
-                    <div className="flex items-center justify-between">
-                        <div className="p-1 flex gap-2 items-center">
-                            {caret}
-                            <div role="button" onClick={toggleCollapse}>
-                                {followers ? "Follows Last Updates" : "Last Updates"}
-                            </div>
+                    <div className="flex gap-2">
+                        {caret}
+                        <div role="button" onClick={toggleCollapse}>
+                            {followers ? "Follows Last Updates" : "Last Updates"}
                         </div>
-                        {!followers &&
-                            <Link to="/profile/$username/history" params={{ username }}>
-                                <MutedText className="mt-1 text-sm hover:underline">All</MutedText>
-                            </Link>
-                        }
                     </div>
                 </CardTitle>
-                <Separator/>
+                {!followers &&
+                    <CardAction>
+                        <Link to="/profile/$username/history" params={{ username }}>
+                            <MutedText className="text-sm hover:underline">All</MutedText>
+                        </Link>
+                    </CardAction>
+                }
             </CardHeader>
-            <CardContent className={`pb-3 relative ${contentClasses}`}>
+            <CardContent className={cn("relative", contentClasses)}>
                 {updates.length === 0 ?
-                    <MutedText className="pb-3">No updates to display yet</MutedText>
+                    <MutedText>No updates to display yet</MutedText>
                     :
                     updates.map(update =>
                         <UserUpdate

@@ -72,8 +72,12 @@ const Tooltip = ({ children, text, subText, side, className, offset = 10, ...pro
                 <TooltipTrigger asChild>
                     {children}
                 </TooltipTrigger>
-                <TooltipContent sideOffset={offset} side={side} {...props} className={cn("text-sm " +
-                    "text-primary bg-primary-foreground", className)}>
+                <TooltipContent
+                    {...props}
+                    side={side}
+                    sideOffset={offset}
+                    className={cn("text-sm text-primary bg-primary-foreground", className)}
+                >
                     <TooltipArrow className="fill-primary-foreground"/>
                     <p>{text}</p>
                     <p>{subText}</p>

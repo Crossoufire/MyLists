@@ -1,6 +1,7 @@
-import {Mail} from "lucide-react";
+import {Coffee, Mail} from "lucide-react";
 import {mail} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
+import {Button} from "@/lib/components/ui/button";
 import {Separator} from "@/lib/components/ui/separator";
 
 
@@ -8,26 +9,32 @@ export const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full p-2 border-t border-t-neutral-700 bg-background mt-20">
-            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-screen-xl text-center md:text-left">
+        <footer className="w-full p-2 pb-3 border-t border-t-neutral-700 bg-background mt-20">
+            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-screen-xl text-center md:text-left mb-3">
                 <div className="md:col-span-6 flex flex-col gap-y-1">
                     <div className="text-xl flex gap-x-2 font-bold items-center justify-center md:justify-start">
-                        <img src="/favicon.ico" width={16} alt="favicon"/> MyLists.info
+                        <img
+                            width={16}
+                            alt="favicon"
+                            className="mt-1"
+                            src="/favicon.ico"
+                        />
+                        MyLists.info
                     </div>
                     <p className="md:w-[85%]">
                         Create your media lists, see how much time you spent, follow your friends and compare with them.
                         Add favorites, comments, re-watch and gain levels to get to the top of the Hall of Fame.
                     </p>
-                    <div className="flex gap-4 mt-2">
-                        <a href={`mailto:${mail}`}
-                           className="mt-2 flex gap-2 items-center font-bold justify-center md:justify-start">
-                            <Mail className="w-5 h-5"/> Contact us
+                    <div className="flex items-center gap-3 mt-1.5">
+                        <a href={`mailto:${mail}`}>
+                            <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                <Mail/> Contact us
+                            </Button>
                         </a>
                         <a href="https://www.buymeacoffee.com/crossoufire" rel="noreferrer" target="_blank">
-                            <img
-                                alt="Buy Me A Coffee"
-                                src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png"
-                            />
+                            <Button size="sm" className="flex items-center gap-2">
+                                <Coffee/> Buy Me A Coffee
+                            </Button>
                         </a>
                     </div>
 
@@ -54,8 +61,8 @@ export const Footer = () => {
                     </ul>
                 </div>
             </div>
-            <Separator className="mt-3"/>
-            <div className="text-center">© 2019-{currentYear} Copyright: MyLists.info</div>
+            <Separator className="my-2"/>
+            <div className="text-center">© 2019-{currentYear} - MyLists.info</div>
         </footer>
     );
 };
