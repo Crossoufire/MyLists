@@ -1,8 +1,8 @@
 import {Cell, Pie, PieChart} from "recharts";
-import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
 import {MediaGlobalSummaryType, UserDataType} from "@/lib/types/query.options.types";
 
 
@@ -83,11 +83,16 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                     <div className="col-span-12 sm:col-span-7 items-center text-center">
                         <div className="flex flex-col gap-6">
                             <div className="grid grid-cols-2 font-semibold">
-                                <Tooltip text={`${global.totalDays} days`}>
-                                    <div>
-                                        <div className="text-neutral-500 text-lg">Total Time</div>
-                                        <div>{global.totalHours} h</div>
-                                    </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <div className="text-neutral-500 text-lg">Total Time</div>
+                                            <div>{global.totalHours} h</div>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {global.totalDays} days
+                                    </TooltipContent>
                                 </Tooltip>
                                 <div>
                                     <div className="text-neutral-500 text-lg">Total Entries</div>
@@ -95,11 +100,16 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 font-semibold">
-                                <Tooltip text={`${global.totalRated}/${global.totalEntriesNoPlan}`}>
-                                    <div>
-                                        <div className="text-neutral-500 text-lg">% Rated</div>
-                                        <div>{global.percentRated.toFixed(1)} %</div>
-                                    </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div>
+                                            <div className="text-neutral-500 text-lg">% Rated</div>
+                                            <div>{global.percentRated.toFixed(1)} %</div>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {global.totalRated} / {global.totalEntriesNoPlan}
+                                    </TooltipContent>
                                 </Tooltip>
                                 <div>
                                     <div className="text-neutral-500 text-lg">Avg. Rating</div>

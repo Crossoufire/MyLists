@@ -1,12 +1,12 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {MediaCard} from "@/lib/components/media/base/MediaCard";
 import {MediaCornerCommon} from "@/lib/components/media/base/MediaCornerCommon";
 import {jobDetailsOptions} from "@/lib/react-query/query-options/query-options";
-import {SearchType} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_private/details/$mediaType/$job/$name")({

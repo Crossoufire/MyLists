@@ -1,4 +1,5 @@
 import {Link} from "@tanstack/react-router";
+import {Label} from "@/lib/types/base.types";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Badge} from "@/lib/components/ui/badge";
 import {MediaType} from "@/lib/server/utils/enums";
@@ -8,7 +9,6 @@ import {MutedText} from "@/lib/components/general/MutedText";
 import {LabelsDialog} from "@/lib/components/media/base/LabelsDialog";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {MediaDetailsOptionsType, MediaListOptionsType} from "@/lib/types/query.options.types";
-import {Label} from "@/lib/types/base.types";
 
 
 interface LabelListsProps {
@@ -31,14 +31,17 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
             })
         }
         else if (queryKey[0] === "userList") {
+            //@ts-expect-error - Complex because union type but all have labels
             queryClient.setQueryData<MediaListOptionsType>(queryKey, (oldData) => {
                 if (!oldData) return;
+
                 return {
                     ...oldData,
-                    mediaData: oldData.results.items.map((media: any) => (
-                        media.mediaId === mediaId ? { ...media, labels: newLabelsList } : media
-                    ))
-                }
+                    results: {
+                        ...oldData.results,
+                        items: oldData.results.items.map((m) => m.mediaId === mediaId ? { ...m, labels: newLabelsList } : m)
+                    },
+                };
             });
         }
     };
@@ -54,7 +57,7 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
                     updateUserMediaLabels={updateUserMediaLabels}
                 />
             </h4>
-            <Separator/>
+            <Separator className="mb-2"/>
             <div className="flex flex-wrap gap-2">
                 {mediaLabels.length === 0 ?
                     <MutedText className="text-sm">Not labels added yet</MutedText>
@@ -66,7 +69,7 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
                             params={{ mediaType, username: currentUser!.name }}
                             search={{ labels: [label.name] }}
                         >
-                            <Badge key={label.name}>
+                            <Badge variant="label" key={label.name}>
                                 <div className="flex justify-between gap-2">{label.name}</div>
                             </Badge>
                         </Link>

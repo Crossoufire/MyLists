@@ -50,12 +50,12 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         </head>
         <body>
 
-        <div id="root">
+        <div id="root" className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
             <Toaster/>
             <SheetProvider>
                 <Navbar/>
             </SheetProvider>
-            <main className="md:max-w-screen-xl container mx-auto">
+            <main className="md:max-w-screen-xl container mx-auto flex-1">
                 {children}
             </main>
             <Footer/>

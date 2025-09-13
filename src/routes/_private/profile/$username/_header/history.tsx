@@ -84,7 +84,7 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
         {
             accessorKey: "timestamp",
             header: "Date",
-            cell: ({ row }) => formatDateTime(row.original.timestamp, { includeTime: true, useLocalTz: true }),
+            cell: ({ row }) => formatDateTime(row.original.timestamp),
         },
     ]
 }

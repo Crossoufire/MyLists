@@ -1,9 +1,9 @@
 import {Link} from "@tanstack/react-router";
 import {SimpleMedia} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
-import {Tooltip} from "@/lib/components/ui/tooltip";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
 
 
 interface SimilarMediaProps {
@@ -23,18 +23,27 @@ export const SimilarMedia = ({ title, mediaType, similarMedia }: SimilarMediaPro
                         <MutedText>No similar media to display</MutedText>
                     </div>
                     :
-                    similarMedia.map(media =>
+                    similarMedia.map((media) =>
                         <div key={media.mediaId} className="col-span-3 md:col-span-2">
-                            <Link to="/details/$mediaType/$mediaId" params={{ mediaType, mediaId: media.mediaId }} search={{ external: false }}>
-                                <Tooltip text={media.mediaName}>
-                                    <img
-                                        alt={media.mediaName}
-                                        src={media.mediaCover}
-                                        className={"rounded-sm"}
-                                    />
-                                </Tooltip>
-                            </Link>
-                        </div>,
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        search={{ external: false }}
+                                        to="/details/$mediaType/$mediaId"
+                                        params={{ mediaType, mediaId: media.mediaId }}
+                                    >
+                                        <img
+                                            alt={media.mediaName}
+                                            src={media.mediaCover}
+                                            className="rounded-sm"
+                                        />
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {media.mediaName}
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
                     )}
             </div>
         </div>

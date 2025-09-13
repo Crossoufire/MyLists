@@ -3,7 +3,7 @@ import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {formatDateTime, formatMinutes, getLangCountryName, zeroPad} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 import {DisplayAllEpsPerSeason} from "@/lib/components/media/tv/DisplayAllEpsPerSeason";
 
@@ -13,7 +13,6 @@ type TvDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["med
 
 export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     const creators = mediaData.createdBy?.split(", ").map(c => ({ name: c })) || [];
-
     return (
         <div className="flex flex-col gap-7 max-sm:mt-5">
             <div className="bg-card rounded-md p-4">
@@ -36,9 +35,9 @@ export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaT
                             name="Airing dates"
                             value={
                                 <>
-                                    {formatDateTime(mediaData.releaseDate, { useLocalTz: true })}
+                                    {formatDateTime(mediaData.releaseDate, { noTime: true })}
                                     <br/>
-                                    {formatDateTime(mediaData.lastAirDate, { useLocalTz: true })}
+                                    {formatDateTime(mediaData.lastAirDate, { noTime: true })}
                                 </>
                             }
                         />
@@ -74,12 +73,17 @@ export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaT
                         />
                         <GenericDetails
                             name="Origin"
-                            value={mediaData.originCountry}
+                            value={getLangCountryName(mediaData.originCountry, "region")}
                         />
                         {mediaData.nextEpisodeToAir &&
                             <GenericDetails
                                 name="Next Airing"
-                                value={formatDateTime(mediaData.nextEpisodeToAir)}
+                                value={
+                                    <div>
+                                        <div>S{zeroPad(mediaData.seasonToAir)}.E{zeroPad(mediaData.episodeToAir)}</div>
+                                        <div>{formatDateTime(mediaData.nextEpisodeToAir, { noTime: true })}</div>
+                                    </div>
+                                }
                             />
                         }
                     </div>

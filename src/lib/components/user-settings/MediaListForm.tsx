@@ -101,12 +101,11 @@ export const MediaListForm = () => {
     return (
         <div className="space-y-6">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="w-[320px] max-sm:w-full space-y-8">
                     <div className="space-y-3">
-                        <h3 className="text-base font-medium">
+                        <div className="text-sm font-medium mb-2">
                             Activate List Types
-                        </h3>
-                        <Separator/>
+                        </div>
                         {mediaTypeConfigs.map((config) => (
                             <FormField
                                 key={config.name}
@@ -211,10 +210,9 @@ export const MediaListForm = () => {
                     </Button>
                 </form>
             </Form>
-            <Separator className="w-[400px] max-sm:w-full"/>
-            <div className="w-[400px] max-sm:w-full space-y-4 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
+            <Separator/>
+            <div className="w-[320px] max-sm:w-full space-y-4 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
                 <h3 className="text-base font-medium">Export Your List as CSV</h3>
-                <Separator/>
                 <div className="flex flex-wrap items-end gap-3">
                     <div className="flex-grow">
                         <Select onValueChange={(value) => setSelectedListForExport(value as MediaType)} value={selectedListForExport}>
@@ -235,8 +233,8 @@ export const MediaListForm = () => {
                         onClick={handleDownloadCSV}
                         disabled={!selectedListForExport || downloadListAsCSVMutation.isPending}
                     >
-                        <Download className="mr-2 h-4 w-4"/>
-                        {downloadListAsCSVMutation.isPending ? "Exporting..." : "Download CSV"}
+                        <Download className="size-4"/>
+                        {downloadListAsCSVMutation.isPending ? "Exporting..." : "Download"}
                     </Button>
                 </div>
                 {downloadListAsCSVMutation.isError && (

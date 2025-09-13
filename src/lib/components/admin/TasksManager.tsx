@@ -173,7 +173,7 @@ function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Queued</span>
                         </div>
                         <div className="text-zinc-200">
-                            {formatDateTime(job.timestamp, { includeTime: true })}
+                            {formatDateTime(job.timestamp)}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -182,7 +182,7 @@ function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Started</span>
                         </div>
                         <div className="text-zinc-200">
-                            {job.processedOn ? formatDateTime(job.processedOn, { includeTime: true }) : "--"}
+                            {formatDateTime(job.processedOn)}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -191,7 +191,7 @@ function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Finished</span>
                         </div>
                         <div className="text-zinc-200">
-                            {job.finishedOn ? formatDateTime(job.finishedOn, { includeTime: true }) : "--"}
+                            {formatDateTime(job.finishedOn)}
                         </div>
                     </div>
                 </div>
@@ -202,15 +202,13 @@ function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Logs</span>
                         </div>
                         <pre className="whitespace-pre-wrap break-words text-xs font-mono">
-                            {logsData && !isLoading && !error && (
+                            {(logsData && !isLoading && !error) &&
                                 <pre className="whitespace-pre-wrap break-words text-xs font-mono">
                                     {logsData.logs && logsData.logs.length > 0 ?
-                                        logsData.logs.join("\n")
-                                        :
-                                        "No logs available for this job."
+                                        logsData.logs.join("\n") : "No logs available for this job."
                                     }
                                 </pre>
-                            )}
+                            }
                         </pre>
                     </div>
                 }

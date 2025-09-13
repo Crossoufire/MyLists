@@ -1,13 +1,13 @@
 import {Trash2} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Button} from "@/lib/components/ui/button";
-import {formatDateTime} from "@/lib/utils/functions";
 import {Payload} from "@/lib/components/general/Payload";
 import {Separator} from "@/lib/components/ui/separator";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
+import {formatDateTime} from "@/lib/utils/functions";
 
 
 interface UserUpdateProps {
@@ -51,7 +51,7 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
                         className="text-neutral-300"
                     />
                     <MutedText className="text-sm" italic={false}>
-                        {formatDateTime(update.timestamp, { includeTime: true, useLocalTz: true })}
+                        {formatDateTime(update.timestamp)}
                         {username &&
                             <> by{" "}
                                 <BlockLink to="/profile/$username" params={{ username }} className="text-blue-500">

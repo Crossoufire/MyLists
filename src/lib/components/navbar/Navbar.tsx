@@ -43,7 +43,9 @@ export const Navbar = () => {
         return (
             <nav className="w-screen z-50 flex items-center fixed top-0 h-16 border-b border-b-neutral-700 bg-background">
                 <div className="max-sm:px-4 md:max-w-screen-xl flex w-full justify-between items-center container mx-auto">
-                    <NavLink to="/" className="text-xl font-bold">MyLists</NavLink>
+                    <NavLink to="/" className="text-xl font-bold">
+                        MyLists
+                    </NavLink>
                     <div className="space-x-3">
                         <Button variant="ghost" size="sm" onClick={() => setShowLogin(true)}>
                             Login
@@ -121,7 +123,7 @@ export const Navbar = () => {
                                                     src={currentUser.image!}
                                                     className="h-10 w-10 rounded-full"
                                                 />
-                                                <ChevronDown className="w-3 h-3 opacity-80"/>
+                                                <ChevronDown className="w-3 h-3 opacity-50"/>
                                             </Button>
                                             {currentUser.showUpdateModal &&
                                                 <div className="absolute right-5 top-0">
@@ -177,7 +179,7 @@ export const Navbar = () => {
                                             <li>
                                                 <NavigationMenuLink asChild>
                                                     <NavLink to="." onClick={logoutUser} className="block select-none
-                                                    space-y-1 rounded-md p-3 leading-none no-underline outline-none
+                                                    space-y-1 rounded-md p-3 leading-none no-underline outline-hidden
                                                     transition-colors hover:bg-accent hover:text-accent-foreground
                                                     focus:bg-accent focus:text-accent-foreground">
                                                         <div className="flex items-center gap-3">
@@ -204,9 +206,9 @@ export const Navbar = () => {
                                 <SheetTitle></SheetTitle>
                                 <SheetDescription></SheetDescription>
                             </SheetHeader>
-                            <NavigationMenu className="mt-3">
-                                <NavigationMenuList className="flex flex-col items-start gap-3">
-                                    <NavigationMenuItem className="mt-4">
+                            <NavigationMenu>
+                                <NavigationMenuList className="flex flex-col items-start gap-2">
+                                    <NavigationMenuItem>
                                         <SearchBar/>
                                     </NavigationMenuItem>
                                     <NavigationMenuItem>
@@ -245,26 +247,26 @@ export const Navbar = () => {
                                     <div className="-mt-3">
                                         <NavMediaItem
                                             text="Profile"
-                                            icon={<User className="h-4 w-4"/>}
+                                            icon={<User className="size-4"/>}
                                             to={`/profile/${currentUser.name}`}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/settings"
                                             text="Settings"
-                                            icon={<Settings className="h-4 w-4"/>}
+                                            icon={<Settings className="size-4"/>}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <NavMediaItem
                                             to="/features"
                                             text="Features"
-                                            icon={<Sparkles className="h-4 w-4"/>}
+                                            icon={<Sparkles className="size-4"/>}
                                             className="items-center font-semibold pb-2"
                                         />
                                         <li>
                                             <NavigationMenuLink asChild>
                                                 <NavLink to="." onClick={logoutUser} className="block select-none
-                                                space-y-1 rounded-md p-3 leading-none no-underline outline-none
+                                                space-y-1 rounded-md p-3 leading-none no-underline outline-hidden
                                                 transition-colors hover:bg-accent hover:text-accent-foreground
                                                 focus:bg-accent focus:text-accent-foreground">
                                                     <div className="grid grid-cols-3 font-semibold pb-2 items-center">

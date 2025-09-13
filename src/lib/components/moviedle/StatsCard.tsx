@@ -11,9 +11,9 @@ interface StatsCardProps {
 
 export const StatsCard = ({ icon: Icon, label, value, color }: StatsCardProps) => {
     return (
-        <div className="rounded-lg border bg-primary/10 p-3">
+        <div className="rounded-md border bg-black/60 p-3">
             <div className="flex items-center gap-2 mb-1">
-                <Icon className={cn("w-5 h-5", color)}/>
+                <Icon className={cn("size-5", color)}/>
                 <p className="font-medium">{label}</p>
             </div>
             <p className="text-2xl font-bold tracking-tight">{value}</p>

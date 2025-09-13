@@ -1,5 +1,4 @@
 import {useSearch} from "@tanstack/react-router";
-import {Separator} from "@/lib/components/ui/separator";
 import {NameValuePair} from "@/lib/types/base.types";
 import {useRatingSystem} from "@/lib/contexts/rating-context";
 import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
@@ -57,9 +56,11 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
     };
 
     return (
-        <div>
-            <div className="text-2xl font-bold">{title} Distribution <Separator/></div>
-            <div className="flex items-center justify-center h-[300px] max-sm:h-[200px]">
+        <div className="bg-card p-4 pl-0 rounded-md">
+            <div className="text-xl font-medium text-center">
+                {title} Distribution
+            </div>
+            <div className="flex items-center justify-center h-[300px] max-sm:h-[200px] mt-3">
                 <ResponsiveContainer>
                     <BarChart data={newDataList} margin={{ top: 8, right: 15, left: 0, bottom: 5 }}>
                         {title === "Rating" && ratingSystem === RatingSystemType.FEELING ?

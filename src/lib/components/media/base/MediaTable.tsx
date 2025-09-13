@@ -65,7 +65,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
 
     return (
         <>
-            <div className="rounded-md border p-3 pt-0">
+            <div className="rounded-md border p-3 pt-0 max-w-screen-lg mx-auto">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) =>
@@ -98,8 +98,9 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
                         }
                     </TableBody>
                 </Table>
+
             </div>
-            <div className="mt-3">
+            <div className="mt-3 max-w-screen-lg mx-auto">
                 <TablePagination
                     table={table}
                     withSelection={false}

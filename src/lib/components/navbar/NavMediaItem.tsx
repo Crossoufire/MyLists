@@ -36,7 +36,7 @@ export const NavMediaItem = ({ to, icon, text, className, popRef }: NavMediaItem
         <li>
             <NavigationMenuLink asChild onClick={handleClosePopover}>
                 <Link to={to} onClick={handleNewFeatures} className={cn("block select-none space-y-1 rounded-md p-3 " +
-                    "leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground " +
+                    "leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground " +
                     "focus:bg-accent focus:text-accent-foreground", className)}>
                     <div className="relative">
                         <div className="flex items-center gap-3">

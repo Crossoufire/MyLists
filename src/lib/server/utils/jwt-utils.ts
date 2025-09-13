@@ -5,7 +5,7 @@ import {serverEnv} from "@/env/server";
 export const createAdminToken = () => {
     return jwt.sign({
         role: "admin",
-        exp: Math.floor(Date.now() / 1000) + (1 * 60), // 1 minute
+        exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minute
     }, serverEnv.ADMIN_TOKEN_SECRET);
 };
 

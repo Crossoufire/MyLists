@@ -1,8 +1,9 @@
 import {notFound} from "@tanstack/react-router";
-import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/types/achievements.types";
 import * as schema from "@/lib/server/database/schema";
 import {followers, games, user} from "@/lib/server/database/schema";
+import {Achievement} from "@/lib/types/achievements.types";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
@@ -20,7 +21,6 @@ import {
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/types/base.types";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -65,7 +65,6 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             status: createArrayFilterDef({
                 argName: "status",
                 mediaTable: mediaTable,
-                entityTable: listTable,
                 filterColumn: listTable.status,
             }),
             labels: createArrayFilterDef({
@@ -399,12 +398,11 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .$dynamic();
 
         // Iterate through all filters
-        const conditions = [];
-        conditions.push(eq(listTable.userId, userId));
-        for (const key of Object.keys(allFilters)) {
-            const filterDef = allFilters[key as keyof MediaListArgs];
-            if (filterDef?.isActive(filterArgs)) {
-                const condition = filterDef.getCondition(filterArgs);
+        const conditions = [eq(listTable.userId, userId)];
+        for (const filterName of Object.keys(allFilters)) {
+            const currentFilter = allFilters[filterName as keyof MediaListArgs];
+            if (currentFilter?.isActive(filterArgs)) {
+                const condition = currentFilter.getCondition(filterArgs);
                 if (condition) {
                     conditions.push(condition);
                 }
@@ -840,22 +838,18 @@ export const createArrayFilterDef = ({ argName, entityTable, filterColumn, media
     return {
         isActive: (args: MediaListArgs) => isValidFilter(args[argName]),
         getCondition: (args: MediaListArgs) => {
-            const argValue = args[argName] as string[] | undefined;
-            if (!argValue) return undefined;
-
-            const filteredValues = argValue.filter((value: string) => value !== "All");
-            if (filteredValues.length === 0) return undefined;
+            const dataArray = args[argName] as string[];
 
             // If no entityTable provided, filter directly on mediaTable
             if (!entityTable) {
-                return inArray(filterColumn, filteredValues);
+                return inArray(filterColumn, dataArray);
             }
 
-            // Otherwise, use subquery for relational filtering
+            // Otherwise, subquery for relational filtering
             const subQuery = getDbClient()
                 .select({ mediaId: entityTable.mediaId })
                 .from(entityTable)
-                .where(inArray(filterColumn, filteredValues));
+                .where(inArray(filterColumn, dataArray));
 
             return inArray(mediaTable.id, subQuery);
         },

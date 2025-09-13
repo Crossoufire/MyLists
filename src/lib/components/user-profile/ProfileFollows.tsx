@@ -1,9 +1,9 @@
 import {Link} from "@tanstack/react-router";
-import {Tooltip} from "@/lib/components/ui/tooltip";
 import {useCollapse} from "@/lib/hooks/use-collapse";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {UserFollowsType} from "@/lib/types/query.options.types";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
 import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
@@ -36,21 +36,26 @@ export const ProfileFollows = ({ username, follows }: ProfileFollowsProps) => {
                     {follows.total === 0 ?
                         <MutedText>No follows to display yet</MutedText>
                         :
-                        follows.follows.map(follow =>
-                            <BlockLink
-                                key={follow.username}
-                                privacy={follow.privacy}
-                                to={"/profile/$username"}
-                                params={{ username: follow.username }}
-                            >
-                                <Tooltip text={follow.username}>
-                                    <img
-                                        src={follow.image!}
-                                        alt={follow.username}
-                                        className="w-14 h-14 bg-neutral-500 rounded-full"
-                                    />
-                                </Tooltip>
-                            </BlockLink>,
+                        follows.follows.map((follow) =>
+                            <Tooltip key={follow.id}>
+                                <TooltipTrigger asChild>
+                                    <BlockLink
+                                        key={follow.username}
+                                        privacy={follow.privacy}
+                                        to={"/profile/$username"}
+                                        params={{ username: follow.username }}
+                                    >
+                                        <img
+                                            src={follow.image!}
+                                            alt={follow.username}
+                                            className="w-14 h-14 bg-neutral-500 rounded-full"
+                                        />
+                                    </BlockLink>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {follow.username}
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                 </div>
             </CardContent>

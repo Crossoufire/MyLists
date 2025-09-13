@@ -6,8 +6,8 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {RatingProvider} from "@/lib/contexts/rating-context";
-import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
 import {Sidebar, SideBarItem} from "@/lib/components/general/Sidebar";
+import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
 import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
 
 
@@ -25,6 +25,7 @@ function StatsPage() {
     const filters = Route.useSearch();
     const { username } = Route.useParams();
     const apiData = useSuspenseQuery(userStatsOptions(username, filters)).data;
+
     const statsData = dataToLoad({ apiData, forUser: true });
     const [selectedData, setSelectedData] = useState(() => statsData[0]);
 

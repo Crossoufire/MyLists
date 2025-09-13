@@ -1,13 +1,13 @@
 import {ArrowRight} from "lucide-react";
 import {Link} from "@tanstack/react-router";
-import {Tooltip} from "@/lib/components/ui/tooltip";
 import {Separator} from "@/lib/components/ui/separator";
 import {MutedText} from "@/lib/components/general/MutedText";
 import {BlockLink} from "@/lib/components/general/BlockLink";
 import {StatusBullet} from "@/lib/components/general/StatusBullet";
 import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
-import {MediaType, RatingSystemType} from "@/lib/server/utils/enums";
+import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
 
 
 interface MediaStatsProps {
@@ -86,20 +86,28 @@ function SpecificMediaValues({ mediaType, value }: { mediaType: MediaType, value
 }
 
 
-function MediaStatuses({ media, username }: { media: any, username: string }) {
+function MediaStatuses({ media, username }: { media: MediaStatsProps["media"], username: string }) {
     return (
         <div>
             <div className="flex h-8 mb-2 mt-2 max-sm:h-6">
                 {media.noData ?
                     <span className="grow bg-black"/>
                     :
-                    media.statusList.map((st: any, idx: number) =>
-                        <Tooltip key={idx} text={st.status}>
-                            <span
-                                style={{ width: `${st.percent}%`, backgroundColor: getStatusColor(st.status) }}
-                                className={"grow"}
-                            />
-                        </Tooltip>,
+                    media.statusList.map((st, idx: number) =>
+                        <Tooltip key={idx}>
+                            <TooltipTrigger asChild>
+                                <span
+                                    className="grow"
+                                    style={{
+                                        width: `${st.percent}%`,
+                                        backgroundColor: getStatusColor(st.status as Status),
+                                    }}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {st.status}
+                            </TooltipContent>
+                        </Tooltip>
                     )
                 }
             </div>
@@ -123,14 +131,14 @@ function MediaStatuses({ media, username }: { media: any, username: string }) {
 }
 
 
-function MediaFavorites({ media, username }: { media: any, username: string }) {
+function MediaFavorites({ media, username }: { media: MediaStatsProps["media"], username: string }) {
     return (
         <div className="mt-4">
             <Link
-                to={"/list/$mediaType/$username"}
-                params={{ mediaType: media.mediaType, username }}
                 search={{ favorite: true }}
+                to="/list/$mediaType/$username"
                 className="text-lg font-medium hover:underline"
+                params={{ mediaType: media.mediaType, username }}
             >
                 Favorites ({media.EntriesFavorites})
             </Link>
@@ -138,22 +146,27 @@ function MediaFavorites({ media, username }: { media: any, username: string }) {
                 <MutedText>No favorites added yet</MutedText>
                 :
                 <div className="grid grid-cols-10 max-sm:grid-cols-5 gap-1">
-                    {media.favoritesList.map((m: any) =>
-                        <BlockLink
-                            key={m.mediaName}
-                            to="/details/$mediaType/$mediaId"
-                            className="col-span-1 md:col-span-1 mt-2"
-                            params={{ mediaType: media.mediaType, mediaId: m.mediaId }}
-                        >
-                            <Tooltip text={m.mediaName}>
-                                <img
-                                    alt={m.mediaName}
-                                    src={m.mediaCover}
-                                    id={`${media.mediaType}-${m.mediaId}`}
-                                    className="h-[78px] w-[52px] rounded-sm"
-                                />
-                            </Tooltip>
-                        </BlockLink>
+                    {media.favoritesList.map((m) =>
+                        <Tooltip key={m.mediaId}>
+                            <TooltipTrigger asChild>
+                                <BlockLink
+                                    key={m.mediaName}
+                                    to="/details/$mediaType/$mediaId"
+                                    className="col-span-1 md:col-span-1 mt-2"
+                                    params={{ mediaType: media.mediaType, mediaId: m.mediaId }}
+                                >
+                                    <img
+                                        alt={m.mediaName}
+                                        src={m.mediaCover}
+                                        id={`${media.mediaType}-${m.mediaId}`}
+                                        className="h-[78px] w-[52px] rounded-sm"
+                                    />
+                                </BlockLink>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {m.mediaName}
+                            </TooltipContent>
+                        </Tooltip>
                     )}
                 </div>
             }

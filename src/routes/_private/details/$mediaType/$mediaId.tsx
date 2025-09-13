@@ -62,7 +62,7 @@ function MediaDetailsPage() {
                             />
                         }
                     </h3>
-                    <Separator/>
+                    <Separator className="mt-0.5 mb-3"/>
                 </div>
                 <div className="grid grid-cols-12 gap-y-10">
                     <div className="col-span-12 md:col-span-5 lg:col-span-4">
@@ -79,11 +79,9 @@ function MediaDetailsPage() {
                                     queryKey={queryKeys.detailsKey(mediaType, mediaId, external)}
                                 />
                                 :
-                                <div className="w-[300px]">
-                                    <Button onClick={handleAddMediaToUser}>
-                                        Add to your list
-                                    </Button>
-                                </div>
+                                <Button className="w-[300px]" onClick={handleAddMediaToUser}>
+                                    Add to your list
+                                </Button>
                             }
                         </div>
                     </div>

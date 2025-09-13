@@ -52,7 +52,7 @@ const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
                     variant="outline"
                     className="flex h-7 pl-2 w-[130px] items-center justify-between
                     whitespace-nowrap rounded-md focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground
-                    focus:outline-none focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
+                    focus:outline-hidden focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
                     bg-transparent border-none font-normal pr-0 hover:bg-transparent"
                     aria-expanded={open}
                     disabled={isPending}

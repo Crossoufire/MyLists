@@ -1,4 +1,4 @@
-import {useRef} from "react";
+import React, {useRef} from "react";
 import {ChevronDown} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
@@ -26,8 +26,7 @@ export const NavMediaDrop = () => {
             <Popover>
                 <PopoverTrigger>
                     <div className="flex items-center gap-2 font-semibold px-1 max-sm:ml-2">
-                        MyLists
-                        <ChevronDown className="w-3 h-3 opacity-80"/>
+                        MyLists <ChevronDown className="w-3 h-3 opacity-50"/>
                     </div>
                 </PopoverTrigger>
                 <PopoverClose ref={popRef}/>

@@ -31,20 +31,20 @@ function TrendsPage() {
                 </TabsList>
                 <TabsContent value={MediaType.SERIES}>
                     <div className="grid grid-cols-12 gap-6">
-                        {apiData.seriesTrends.map((media) => (
+                        {apiData.seriesTrends.map((media) =>
                             <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
                                 <TrendItem item={media}/>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </TabsContent>
                 <TabsContent value={MediaType.MOVIES}>
                     <div className="grid grid-cols-12 gap-6">
-                        {apiData.moviesTrends.map((media) => (
+                        {apiData.moviesTrends.map((media) =>
                             <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
                                 <TrendItem item={media}/>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>

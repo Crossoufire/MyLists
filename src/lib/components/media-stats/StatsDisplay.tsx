@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils/helpers";
-import {StatSection} from "@/lib/types/stats.types";
 import {Status} from "@/lib/server/utils/enums";
+import {StatSection} from "@/lib/types/stats.types";
 import {StatsList} from "@/lib/components/media-stats/StatsList";
 import {StatsCard} from "@/lib/components/media-stats/StatsCard";
 import {StatusBullet} from "@/lib/components/general/StatusBullet";
@@ -47,7 +47,7 @@ export const StatsDisplay = ({ statsData }: { statsData: StatSection }) => {
                     <h2 className="text-xl font-bold mb-2 max-sm:mb-2">Statuses</h2>
                     <div className="flex flex-wrap gap-x-12 gap-y-6">
                         {statsData.statuses.map((item, idx) =>
-                            <div key={idx} className="flex flex-row items-center justify-start text-lg font-semibold">
+                            <div key={idx} className="flex flex-row items-center justify-start font-semibold">
                                 <StatusBullet
                                     status={item.status as Status}
                                     className={"w-[15px] h-[15px] mr-3"}

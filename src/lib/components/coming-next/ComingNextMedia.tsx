@@ -17,7 +17,7 @@ export const ComingNextMedia = ({ item, mediaType }: ComingNextMediaProps) => {
                 {(mediaType === MediaType.ANIME || mediaType === MediaType.SERIES) &&
                     <div>S{zeroPad(item.seasonToAir!)}&nbsp;-&nbsp;E{zeroPad(item.episodeToAir!)}</div>
                 }
-                <div>{formatDateTime(item.date)}</div>
+                <div>{formatDateTime(item.date, { noTime: true })}</div>
             </div>
         </MediaCard>
     );

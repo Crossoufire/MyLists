@@ -1,7 +1,7 @@
 import {Sparkles} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
-import {Card, CardContent} from "@/lib/components/ui/card";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 
@@ -111,32 +111,34 @@ const features = [
 
 function FeatureShowcase() {
     return (
-        <PageTitle title="Features" subtitle="Discover What's New and Improved">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <PageTitle title="Features" subtitle="Discover the features and what's new and Improved">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                 {features.map((feature, idx) =>
-                    <Card key={idx}>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold">{feature.name}</h2>
+                    <Card key={idx} className="hover:bg-neutral-800 transition-all duration-300">
+                        <CardHeader>
+                            <CardTitle>{feature.name}</CardTitle>
+                            <CardAction>
                                 {feature.isNew &&
                                     <Badge variant="secondary" className="bg-gradient-to-r from-blue-600 to-violet-600">
                                         <Sparkles className="w-3 h-3 mr-1"/> New
                                     </Badge>
                                 }
-                            </div>
-                            <p className="text-muted-foreground">
-                                {feature.description} &nbsp;
-                                {feature.popover &&
-                                    <Popover>
-                                        <PopoverTrigger>
-                                            <div className="hover:underline font-semibold text-cyan-600">More Info</div>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-72">
-                                            {feature.popover}
-                                        </PopoverContent>
-                                    </Popover>
-                                }
-                            </p>
+                            </CardAction>
+                        </CardHeader>
+                        <CardContent className="text-muted-foreground">
+                            {feature.description}{" "}
+                            {feature.popover &&
+                                <Popover>
+                                    <PopoverTrigger>
+                                        <div className="hover:underline font-semibold text-blue-500">
+                                            More Info
+                                        </div>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-72">
+                                        {feature.popover}
+                                    </PopoverContent>
+                                </Popover>
+                            }
                         </CardContent>
                     </Card>
                 )}

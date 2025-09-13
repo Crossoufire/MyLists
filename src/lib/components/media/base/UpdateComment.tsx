@@ -41,14 +41,14 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
                     </span>
                 </MutedText>
             </h4>
-            <Separator/>
+            <Separator className="mb-1"/>
             {isEditing ?
                 <>
                     <Textarea
                         value={comment ?? ""}
-                        className={"w-full h-20"}
+                        className="w-full h-20"
                         disabled={updateComment.isPending}
-                        placeholder={"Enter your comment..."}
+                        placeholder="Enter your comment..."
                         onChange={(ev) => setComment(ev.target.value)}
                     />
                     <div className="flex justify-end gap-2 mt-2">

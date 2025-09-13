@@ -38,10 +38,10 @@ export const Notifications = ({ isMobile }: { isMobile?: boolean }) => {
         <Popover modal={isMobile} open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <div className="flex items-center">
-                    <Button variant="ghost" size="sm" className="mr-3 px-1.5" onClick={handleOnClickOpen}>
-                        <Bell className={cn("w-5 h-5 mr-0.5", isMobile && "w-4 h-4 ml-2")}/>
-                        {isMobile && <div className="text-base ml-2 mr-3">Notifications</div>}
-                        <Badge className={cn(notifCount > 0 && "bg-destructive")}>
+                    <Button variant="ghost" size="sm" onClick={handleOnClickOpen}>
+                        <Bell className={cn("size-5", isMobile && "size-4 text-muted-foreground ml-1")}/>
+                        {isMobile && <div className="text-base ml-2 mr-1">Notifications</div>}
+                        <Badge variant="notification" className={cn(notifCount > 0 && "bg-destructive")}>
                             {notifCount}
                         </Badge>
                     </Button>
@@ -82,14 +82,14 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
 
     return (
         <Link to={to} onClick={handlePopoverClose}>
-            <div className="py-2.5 px-3.5 hover:bg-neutral-600/20">
+            <div className="py-2.5 px-2.5 hover:bg-neutral-600/20">
                 <div className="flex items-center gap-2">
                     {data.mediaType ?
-                        <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-3">
+                        <div className="grid grid-cols-[0fr_1fr_0fr] items-center gap-2">
                             <MediaAndUserIcon type={data.mediaType} size={16}/>
                             <div className="truncate">{data.payload?.name}</div>
-                            {((data.mediaType === "anime" || data.mediaType === "series") && data.payload?.finale) &&
-                                <Badge>Finale</Badge>
+                            {((data.mediaType === MediaType.ANIME || data.mediaType === MediaType.SERIES) && data.payload?.finale) &&
+                                <Badge variant="passive">Finale</Badge>
                             }
                         </div>
                         :
@@ -100,7 +100,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                     }
                 </div>
                 {data.mediaType &&
-                    <div className="flex items-center gap-2 text-neutral-500">
+                    <div className="flex items-center gap-2 text-neutral-400">
                         {data.payload?.new ?
                             <div className="line-clamp-1">{data.payload.message}</div>
                             :
@@ -113,7 +113,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                                     }
                                 </div>
                                 <div><MoveRight size={17}/></div>
-                                <div>{formatDateTime(data.payload?.release_date)}</div>
+                                <div>{formatDateTime(data.payload?.release_date, { noTime: true })}</div>
                             </>
                         }
                     </div>

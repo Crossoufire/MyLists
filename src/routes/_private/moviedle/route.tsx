@@ -4,7 +4,6 @@ import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Progress} from "@/lib/components/ui/progress";
-import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {StatsCard} from "@/lib/components/moviedle/StatsCard";
@@ -52,7 +51,7 @@ function MediadlePage() {
 
     return (
         <PageTitle title="Daily Movie Challenge" subtitle="Play the daily movie game to check your skills!">
-            <div className="grid gap-6 md:grid-cols-2 mt-5">
+            <div className="grid gap-6 md:grid-cols-2 mt-3">
                 <Card>
                     <CardHeader className="space-y-4 py-4">
                         <div className="flex items-center justify-center gap-2">
@@ -114,8 +113,8 @@ function MediadlePage() {
                                                 placeholder={"Guess the movie title..."}
                                             />
                                             {showSuggestions && data.length > 0 && (
-                                                <div className="absolute z-10 w-full bg-gray-800 mt-1 rounded-md shadow-lg
-                                                max-h-[150px] overflow-y-auto">
+                                                <div className="absolute z-10 w-full bg-gray-800 rounded-lg mb-1 shadow-lg
+                                                max-h-[150px] overflow-y-auto bottom-full">
                                                     {data.map((suggestion, idx) =>
                                                         <div
                                                             key={idx}
@@ -148,10 +147,9 @@ function MediadlePage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Your Stats</CardTitle>
-                        <Separator/>
                     </CardHeader>
-                    <CardContent className="space-y-8">
-                        <div className="grid gap-4 max-sm:grid-cols-2 grid-cols-3 mt-2">
+                    <CardContent className="space-y-6">
+                        <div className="grid gap-2 max-sm:grid-cols-2 grid-cols-3 mt-2">
                             <StatsCard
                                 icon={Sigma}
                                 label="Total Played"

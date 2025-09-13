@@ -36,7 +36,7 @@ export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof 
                         />
                         <GenericDetails
                             name="Release date"
-                            value={formatDateTime(mediaData.releaseDate)}
+                            value={formatDateTime(mediaData.releaseDate, { noTime: true })}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

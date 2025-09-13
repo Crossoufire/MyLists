@@ -166,7 +166,7 @@ export class TmdbTransformer {
             moviesTrends.push(mediaData);
         }
 
-        return moviesTrends
+        return moviesTrends.slice(0, 15);
     }
 
     async transformTvTrends(rawData: TmdbTrendingTvResponse) {
@@ -192,7 +192,7 @@ export class TmdbTransformer {
             tvTrends.push(mediaData);
         }
 
-        return tvTrends
+        return tvTrends.slice(0, 15);
     }
 
     addAnimeSpecificGenres(jikanData: JikanAnimeSearchResponse, genresData: { name: string }[] | null | undefined) {

@@ -1,13 +1,13 @@
 import {useMemo} from "react";
 import {cn} from "@/lib/utils/helpers";
-import {AchCard} from "@/lib/types/query.options.types";
 import {Badge} from "@/lib/components/ui/badge";
 import {Award, CircleCheck} from "lucide-react";
 import {Progress} from "@/lib/components/ui/progress";
+import {AchCard} from "@/lib/types/query.options.types";
 import {capitalize, diffColors} from "@/lib/utils/functions";
 import {AchievementDifficulty} from "@/lib/server/utils/enums";
 import {TiersDetails} from "@/lib/components/achievements/TierDetails";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 interface AchievementCardProps {
@@ -41,24 +41,21 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
     const progressValue = tierForProgressDisplay?.progress ?? 0;
 
     return (
-        <Card className={cn("relative px-2 py-1 border-l-8", borderColorClass)}>
+        <Card className={cn("px-2 border-0 border-l-8", borderColorClass)}>
             <CardHeader>
-                <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                        <Award className={cn("w-6 h-6", iconColorClass)}/>
-                        {name}
-                    </CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                    <Award className={cn("w-6 h-6", iconColorClass)}/> {name}
+                </CardTitle>
+                <CardAction>
                     <Badge variant="secondary">{capitalize(mediaType)}</Badge>
-                </div>
-                {description && (
-                    <CardDescription className="line-clamp-2" title={description}>
-                        {description}
-                    </CardDescription>
-                )}
+                </CardAction>
             </CardHeader>
-            <CardContent className="mt-1 space-y-4">
-                {!fullyCompleted && tierForProgressDisplay && (
-                    <div className="mt-2">
+            <CardContent className="space-y-4">
+                <CardDescription className="line-clamp-2" title={description ?? ""}>
+                    {description}
+                </CardDescription>
+                {(!fullyCompleted && tierForProgressDisplay) &&
+                    <>
                         <div className="flex justify-between items-center mb-2">
                             <span className="font-medium">
                                 Next tier - {capitalize(nextTierDifficulty)}
@@ -67,16 +64,20 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
                                 {currentCount}/{criteriaCount}
                             </p>
                         </div>
-                        <Progress className="w-full" value={progressValue}/>
+                        <Progress
+                            className="w-full"
+                            value={progressValue}
+                        />
+                    </>
+                }
+                {fullyCompleted &&
+                    <div className="flex items-center justify-center font-semibold gap-2 h-11">
+                        <CircleCheck className="size-5 text-green-500"/> Achievement Completed!
                     </div>
-                )}
-                {fullyCompleted && (
-                    <div className="flex items-center justify-center gap-2 h-12">
-                        <CircleCheck className="w-5 h-5 text-green-500"/>
-                        <span className="font-semibold">Achievement Completed!</span>
-                    </div>
-                )}
-                <TiersDetails achievement={achievement}/>
+                }
+                <TiersDetails
+                    achievement={achievement}
+                />
             </CardContent>
         </Card>
     );

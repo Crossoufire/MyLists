@@ -96,7 +96,7 @@ export abstract class BaseService<
 
     async getMediaJobDetails(userId: number, job: JobType, name: string, search: SearchType) {
         const page = search.page ?? 1;
-        const perPage = search.perPage ?? 25;
+        const perPage = search.perPage ?? 24;
         const offset = (page - 1) * perPage;
 
         return this.repository.getMediaJobDetails(userId, job, name, offset, perPage);

@@ -3,7 +3,7 @@ import {JobType, MediaType} from "@/lib/server/utils/enums";
 import {Synopsis} from "@/lib/components/media/base/Synopsis";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {MapDetails} from "@/lib/components/media/base/MapDetails";
-import {formatDateTime, formatMinutes} from "@/lib/utils/functions";
+import {formatDateTime, formatMinutes, getLangCountryName} from "@/lib/utils/functions";
 import {GenericDetails} from "@/lib/components/media/base/GenericDetails";
 
 
@@ -30,7 +30,7 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps<typeo
                     />
                     <GenericDetails
                         name="Release date"
-                        value={formatDateTime(mediaData.releaseDate)}
+                        value={formatDateTime(mediaData.releaseDate, { noTime: true })}
                     />
                 </div>
                 <div className="flex flex-col gap-y-4">
@@ -63,8 +63,8 @@ export const MoviesDetails = ({ mediaType, mediaData }: MoviesDetailsProps<typeo
                 </div>
                 <div className="flex flex-col gap-y-4">
                     <GenericDetails
-                        name="Origin"
-                        value={mediaData?.originalLanguage?.toUpperCase()}
+                        name="VO"
+                        value={getLangCountryName(mediaData?.originalLanguage, "language")}
                     />
                     <MapDetails
                         name="Genres"

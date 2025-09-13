@@ -23,7 +23,7 @@ function AchievementPage() {
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
             <Tabs defaultValue="all">
-                <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
+                <TabsList className="my-3 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {Object.entries(apiData.summary).map(([mt]) =>
                         <TabsTrigger key={mt} value={mt} className="max-sm:px-2 px-4 flex items-center gap-2">
                             <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
@@ -31,7 +31,7 @@ function AchievementPage() {
                     )}
                 </TabsList>
                 {Object.entries(apiData.summary).map(([mt, summary]) =>
-                    <TabsContent key={mt} value={mt}>
+                    <TabsContent key={mt} value={mt} className="space-y-5">
                         <AchievementSummary summary={summary}/>
                         <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-6">
                             {apiData.result.filter((r) => mt === "all" || mt === r.mediaType).map((achievement) =>

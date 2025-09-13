@@ -13,7 +13,14 @@ export const pixelateImage = async (url: string, level: number) => {
     const scaleFactors: Record<number, number> = { 5: 6, 4: 7, 3: 8, 2: 10, 1: 12 };
     const factor = scaleFactors[level];
 
-    const inputBuffer = await fs.readFile(absPath);
+    let inputBuffer;
+    try {
+        inputBuffer = await fs.readFile(absPath);
+    }
+    catch {
+        return "";
+    }
+ 
     const meta = await sharp(inputBuffer).metadata();
     const w = meta.width!;
     const h = meta.height!;

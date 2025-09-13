@@ -5,6 +5,7 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {Header} from "@/lib/components/media/base/Header";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Pagination} from "@/lib/components/general/Pagination";
 import {MediaGrid} from "@/lib/components/media/base/MediaGrid";
@@ -12,7 +13,6 @@ import {MediaTable} from "@/lib/components/media/base/MediaTable";
 import {AppliedFilters} from "@/lib/components/media/base/AppliedFilters";
 import {FiltersSideSheet} from "@/lib/components/media/base/FiltersSideSheet";
 import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 export const Route = createFileRoute("/_private/list/$mediaType/$username")({

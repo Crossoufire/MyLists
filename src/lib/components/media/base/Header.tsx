@@ -1,13 +1,14 @@
 import {Status} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
-import {capitalize, computeLevel, statusUtils} from "@/lib/utils/functions";
 import {Link, useParams, useSearch} from "@tanstack/react-router";
-import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
+import {capitalize, computeLevel, statusUtils} from "@/lib/utils/functions";
 import {SearchComponent} from "@/lib/components/media/base/SearchComponent";
+import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
 import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/lib/components/ui/dropdown-menu";
+import React from "react";
 
 
 interface HeaderProps {
@@ -25,6 +26,7 @@ interface HeaderProps {
 export const Header = (props: HeaderProps) => {
     const { isGrid, userData, pagination, onGridClick, onFilterClick, onStatusChange, onSortChange, onSearchEnter } = props;
     const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
+
     const allStatuses = statusUtils.byMediaType(mediaType);
     const userLevel = computeLevel(userData?.userMediaSettings.find(s => s.mediaType === mediaType)?.timeSpent ?? 0);
 
@@ -33,9 +35,9 @@ export const Header = (props: HeaderProps) => {
             <h3 className="flex items-center text-3xl font-medium truncate max-sm:text-xl">
                 <MediaLevelCircle
                     mediaType={mediaType}
-                    containerClassName={"pt-1"}
+                    containerClassName="pt-1"
                     intLevel={Math.floor(userLevel)}
-                    className={"text-2xl max-sm:text-xl"}
+                    className="text-2xl max-sm:text-xl"
                 />
                 &nbsp;- {`${username} ${capitalize(mediaType)} Collection`}
             </h3>
@@ -47,8 +49,8 @@ export const Header = (props: HeaderProps) => {
                     allStatuses={allStatuses}
                     onStatusChange={onStatusChange}
                 />
-                <Button onClick={onFilterClick}>
-                    <Filter className="w-4 h-4"/> Filters
+                <Button variant="outline" onClick={onFilterClick}>
+                    <Filter className="size-4"/> Filters
                 </Button>
                 <SortComponent
                     applySorting={onSortChange}
@@ -56,8 +58,8 @@ export const Header = (props: HeaderProps) => {
                     allSorting={pagination.availableSorting}
                 />
                 <div className="flex items-center gap-3">
-                    <Button onClick={onGridClick}>
-                        {isGrid ? <List className="w-4 h-4"/> : <Grid2X2 className="w-4 h-4"/>}
+                    <Button variant="outline" onClick={onGridClick}>
+                        {isGrid ? <List className="size-4"/> : <Grid2X2 className="size-4"/>}
                     </Button>
                 </div>
                 <DotsOthers/>
@@ -83,8 +85,8 @@ const StatusComponent = ({ allStatuses, onStatusChange }: StatusComponentProps) 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button>
-                    <List className="w-4 h-4"/> Status
+                <Button variant="outline">
+                    <List className="size-4"/> Status
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -119,8 +121,8 @@ const SortComponent = ({ sorting, allSorting, applySorting }: SortComponentProps
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button>
-                    <ArrowUpDown className="w-4 h-4"/> Sort
+                <Button variant="outline">
+                    <ArrowUpDown className="size-4"/> Sort
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -143,26 +145,26 @@ const DotsOthers = () => {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button className="px-2">
-                    <EllipsisVertical className="w-4 h-4"/>
+                <Button variant="outline" className="px-2">
+                    <EllipsisVertical className="size-4"/>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-46 py-1 px-1 text-sm">
-                <Button asChild>
-                    <Link to="/profile/$username" params={{ username }}>
-                        <User className="mr-2 w-4 h-4"/> User's profile
-                    </Link>
-                </Button>
-                <Button asChild>
-                    <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
-                        <ChartLine className="mr-2 w-4 h-4"/> Collection Stats
-                    </Link>
-                </Button>
-                <Button asChild>
-                    <Link to="/achievements/$username" params={{ username }}>
-                        <Award className="mr-2 w-4 h-4"/> Achievements
-                    </Link>
-                </Button>
+            <PopoverContent align="end" className="w-42 p-2">
+                <Link to="/profile/$username" params={{ username }}>
+                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                        <User className="size-4 text-muted-foreground"/> User's Profile
+                    </Button>
+                </Link>
+                <Link to="/stats/$username" params={{ username }} search={{ mediaType }}>
+                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                        <ChartLine className="size-4 text-muted-foreground"/> Collection Stats
+                    </Button>
+                </Link>
+                <Link to="/achievements/$username" params={{ username }}>
+                    <Button variant="ghost" className="w-full inline-flex items-center justify-start">
+                        <Award className="size-4 text-muted-foreground"/> Achievements
+                    </Button>
+                </Link>
             </PopoverContent>
         </Popover>
     );

@@ -3,24 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* --- MAIN AND ROOT ---------------------------------------------------------------------- */
+/* --- BODY ------------------------------------------------------------------------------- */
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Arial", "Oxygen", "Ubuntu",
     "Helvetica", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh - 64px);
-    margin-top: 64px;
-}
-
-main {
-    flex: 1;
 }
 
 /* --- SCROLLBAR -------------------------------------------------------------------------- */

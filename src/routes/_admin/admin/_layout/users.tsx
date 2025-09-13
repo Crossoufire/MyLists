@@ -115,7 +115,7 @@ function UserManagementPage() {
                 )
             },
             cell: ({ row: { original } }) => {
-                return formatDateTime(original.createdAt);
+                return formatDateTime(original.createdAt, { noTime: true });
             }
         },
         {
@@ -128,7 +128,7 @@ function UserManagementPage() {
                 )
             },
             cell: ({ row: { original } }) => {
-                return formatDateTime(original.updatedAt, { includeTime: true });
+                return formatDateTime(original.updatedAt);
             },
         },
         {

@@ -80,7 +80,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                     />
                 </TabsContent>
             </Tabs>
-            <Button variant="destructive" onClick={handleRemoveMediaFromList}>
+            <Button variant="destructive" className="w-full" onClick={handleRemoveMediaFromList}>
                 Remove from your list
             </Button>
         </div>

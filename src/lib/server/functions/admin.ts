@@ -49,10 +49,14 @@ export const adminAuth = createServerFn({ method: "GET" })
         if (data.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
             setCookie(ADMIN_COOKIE_NAME, adminToken, COOKIE_OPTIONS);
+
             return { success: true };
         }
 
-        return { success: false, message: "Incorrect Password" };
+        return {
+            success: false,
+            message: "Incorrect Password",
+        };
     });
 
 

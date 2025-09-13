@@ -79,7 +79,7 @@ function AdminMediadlePage() {
             accessorKey: "updatedAt",
             header: "Last Seen",
             cell: ({ row: { original } }) => {
-                return formatDateTime(original.updatedAt, { includeTime: true });
+                return formatDateTime(original.updatedAt);
             },
         },
         {

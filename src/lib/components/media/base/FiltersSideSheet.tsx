@@ -3,21 +3,20 @@ import {useQuery} from "@tanstack/react-query";
 import {Input} from "@/lib/components/ui/input";
 import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
+import {statusUtils} from "@/lib/utils/functions";
 import {useDebounce} from "@/lib/hooks/use-debounce";
 import {Checkbox} from "@/lib/components/ui/checkbox";
-import {Separator} from "@/lib/components/ui/separator";
-import {mediaConfig} from "@/lib/components/media/media-config";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/components/general/MutedText";
+import {mediaConfig} from "@/lib/components/media/media-config";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
-import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, MoveRight, Search, X} from "lucide-react";
+import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, Search, X} from "lucide-react";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
-import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
-import {statusUtils} from "@/lib/utils/functions";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
+import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
 
 
 interface FiltersSideSheetProps {
@@ -78,116 +77,110 @@ export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersS
 
     return (
         <Sheet defaultOpen={true} onOpenChange={onClose}>
-            <SheetContent className="max-sm:w-full overflow-y-auto" side="right">
+            <SheetContent className="max-sm:w-full" side="right">
                 <SheetHeader>
-                    <SheetTitle className="-mb-2">Additional Filters</SheetTitle>
-                    <SheetDescription className="flex items-center gap-1">
+                    <SheetTitle>Additional Filters</SheetTitle>
+                    <SheetDescription className="flex items-center gap-2">
                         How filters works <FilterInfoPopover/>
                     </SheetDescription>
                 </SheetHeader>
-                <Separator/>
-                <form onSubmit={handleOnSubmit}>
-                    {isPending ?
-                        <div className="flex items-center justify-center h-[70vh]">
-                            <LoaderCircle className="size-10 animate-spin"/>
-                        </div>
-                        :
-                        <div>
-                            <CheckboxGroup
-                                title="Status"
-                                items={allStatuses.map(s => ({ name: s }))}
-                                onChange={(status) => handleRegisterChange("status", [status])}
-                                defaultChecked={(status) => search?.status?.includes(status as Status) ?? false}
-                            />
-                            <Separator/>
-                            <CheckboxGroup
-                                title="Genres"
-                                items={listFilters?.genres ?? []}
-                                onChange={(genre) => handleRegisterChange("genres", [genre])}
-                                defaultChecked={(genre) => search.genres?.includes(genre) ?? false}
-                            />
-                            <Separator/>
-
-                            {activeFiltersConfig.map((filter) => {
-                                if (filter.type === "checkbox" && filter.getItems) {
-                                    const items = filter.getItems(listFilters || {} as any);
-                                    if (!items || items.length === 0) return null;
-                                    return (
-                                        <React.Fragment key={filter.key}>
-                                            <CheckboxGroup
-                                                items={items}
-                                                title={filter.title}
-                                                onChange={(val) => handleRegisterChange(filter.key, [val])}
-                                                defaultChecked={(val) => (search as any)?.[filter.key]?.includes(val) ?? false}
-                                                renderLabel={(name) => filter.renderLabel ? filter.renderLabel(name, mediaType) : name}
-                                            />
-                                            <Separator/>
-                                        </React.Fragment>
-                                    );
-                                }
-                                if (filter.type === "search") {
-                                    return (
-                                        <React.Fragment key={filter.key}>
-                                            <SearchFilter
-                                                job={filter.job!}
-                                                title={filter.title}
-                                                filterKey={filter.key}
-                                                dataList={(search as any)?.[filter.key] ?? []}
-                                                registerChange={(key, val) => handleRegisterChange(key, val)}
-                                            />
-                                            <Separator/>
-                                        </React.Fragment>
-                                    );
-                                }
-                                return null;
-                            })}
-
-                            <Separator/>
-                            <div className="space-y-2">
-                                <h3 className="font-medium">Miscellaneous</h3>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="favoriteCheck"
-                                            defaultChecked={search.favorite}
-                                            onCheckedChange={() => handleRegisterChange("favorite", !search.favorite)}
-                                        />
-                                        <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="commentCheck"
-                                            defaultChecked={search.comment}
-                                            onCheckedChange={() => handleRegisterChange("comment", !search.comment)}
-                                        />
-                                        <label htmlFor="commentCheck" className="text-sm cursor-pointer">Comments</label>
-                                    </div>
-                                    {!isCurrent &&
+                <div className="flex-1 overflow-y-auto">
+                    <form id="filters-form" onSubmit={handleOnSubmit}>
+                        {isPending ?
+                            <div className="flex items-center justify-center h-[70vh]">
+                                <LoaderCircle className="size-10 animate-spin"/>
+                            </div>
+                            :
+                            <div className="pl-4 space-y-6">
+                                <CheckboxGroup
+                                    title="Status"
+                                    items={allStatuses.map(s => ({ name: s }))}
+                                    onChange={(status) => handleRegisterChange("status", [status])}
+                                    defaultChecked={(status) => search?.status?.includes(status as Status) ?? false}
+                                />
+                                <CheckboxGroup
+                                    title="Genres"
+                                    items={listFilters?.genres ?? []}
+                                    onChange={(genre) => handleRegisterChange("genres", [genre])}
+                                    defaultChecked={(genre) => search.genres?.includes(genre) ?? false}
+                                />
+                                {activeFiltersConfig.map((filter) => {
+                                    if (filter.type === "checkbox" && filter.getItems) {
+                                        const items = filter.getItems(listFilters || {} as any);
+                                        if (!items || items.length === 0) return null;
+                                        return (
+                                            <React.Fragment key={filter.key}>
+                                                <CheckboxGroup
+                                                    items={items}
+                                                    title={filter.title}
+                                                    onChange={(val) => handleRegisterChange(filter.key, [val])}
+                                                    defaultChecked={(val) => (search as any)?.[filter.key]?.includes(val) ?? false}
+                                                    renderLabel={(name) => filter.renderLabel ? filter.renderLabel(name, mediaType) : name}
+                                                />
+                                            </React.Fragment>
+                                        );
+                                    }
+                                    if (filter.type === "search") {
+                                        return (
+                                            <div key={filter.key} className="mb-4">
+                                                <SearchFilter
+                                                    job={filter.job!}
+                                                    title={filter.title}
+                                                    filterKey={filter.key}
+                                                    dataList={(search as any)?.[filter.key] ?? []}
+                                                    registerChange={(key, val) => handleRegisterChange(key, val)}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                                <div className="space-y-2">
+                                    <h3 className="font-medium">Miscellaneous</h3>
+                                    <div className="grid grid-cols-2 gap-2">
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
-                                                id="commonCheck"
-                                                defaultChecked={search?.hideCommon ?? false}
-                                                onCheckedChange={() => handleRegisterChange("hideCommon", search?.hideCommon ?? false)}
+                                                id="favoriteCheck"
+                                                defaultChecked={search.favorite}
+                                                onCheckedChange={() => handleRegisterChange("favorite", !search.favorite)}
                                             />
-                                            <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
+                                            <label htmlFor="favoriteCheck" className="text-sm cursor-pointer">Favorites</label>
                                         </div>
-                                    }
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="commentCheck"
+                                                defaultChecked={search.comment}
+                                                onCheckedChange={() => handleRegisterChange("comment", !search.comment)}
+                                            />
+                                            <label htmlFor="commentCheck" className="text-sm cursor-pointer">Comments</label>
+                                        </div>
+                                        {!isCurrent &&
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="commonCheck"
+                                                    defaultChecked={search?.hideCommon ?? false}
+                                                    onCheckedChange={() => handleRegisterChange("hideCommon", search?.hideCommon ?? false)}
+                                                />
+                                                <label htmlFor="commonCheck" className="text-sm cursor-pointer">Hide Common</label>
+                                            </div>
+                                        }
+                                    </div>
                                 </div>
+                                <CheckboxGroup
+                                    title="Labels"
+                                    items={listFilters?.labels ?? []}
+                                    defaultChecked={(label) => search.labels?.includes(label) ?? false}
+                                    onChange={(label) => handleRegisterChange("labels", [label])}
+                                />
                             </div>
-                            <Separator/>
-                            <CheckboxGroup
-                                title="Labels"
-                                items={listFilters?.labels ?? []}
-                                onChange={(label) => handleRegisterChange("labels", [label])}
-                                defaultChecked={(label) => search.labels?.includes(label) ?? false}
-                            />
-                            <Separator/>
-                            <Button type="submit" className="w-full">
-                                Apply Filters
-                            </Button>
-                        </div>
-                    }
-                </form>
+                        }
+                    </form>
+                </div>
+                <SheetFooter>
+                    <Button type="submit" form="filters-form" className="w-full">
+                        Apply Filters
+                    </Button>
+                </SheetFooter>
             </SheetContent>
         </Sheet>
     );
@@ -237,11 +230,11 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
                 }
             </div>
             {items.length > initVisibleItems &&
-                <Button variant="ghost" size="sm" onClick={toggleShowAll} className="w-full mt-2">
+                <Button variant="outline" size="xs" onClick={toggleShowAll} className="mt-1">
                     {showAll ?
-                        <>Show Less <ChevronUp className="size-5"/></>
+                        <>Less <ChevronUp className="size-3.5"/></>
                         :
-                        <>Show More <ChevronDown className="size-5"/></>
+                        <>More <ChevronDown className="size-3.5"/></>
                     }
                 </Button>
             }
@@ -255,23 +248,30 @@ const FilterInfoPopover = () => (
         <PopoverTrigger>
             <CircleHelp className="w-4 h-4"/>
         </PopoverTrigger>
-        <PopoverContent className="w-full space-y-2" align="start">
-            <div className="-mt-2 font-medium underline underline-offset-2">
-                Examples
-            </div>
-            <div>
-                Drama + Crime
-                <br/>
-                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
-                <br/>
-                (Drama <b>OR</b> Crime)
-            </div>
-            <div>
-                Drama + Crime + France
-                <br/>
-                <MoveRight className="w-4 h-4 inline-block"/>&nbsp;
-                <br/>
-                (Drama <b>OR</b> Crime) <b>AND</b> France
+        <PopoverContent className="w-80 p-4" align="end">
+            <div className="space-y-3">
+                <div className="space-y-3 text-sm">
+                    <div className="flex gap-3">
+                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 flex-shrink-0"></div>
+                        <div>
+                            <span className="font-medium text-cyan-500">
+                                Same category filters:{" "}
+                            </span>
+                            Results include media matching <i>any</i> selected filter.
+                            <div>(Filter A <strong>OR</strong> Filter B)</div>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <div className="size-2 rounded-full bg-gray-400 mt-1.5 flex-shrink-0"></div>
+                        <div>
+                            <span className="font-medium text-amber-500">
+                                Different category filters:{" "}
+                            </span>
+                            Results include media matching <i>all</i> selected filters.
+                            <div>(Filter A <strong>AND</strong> Filter B)</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </PopoverContent>
     </Popover>
@@ -331,7 +331,7 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
                         value={search}
                         className={"w-[280px] pl-8"}
                         onChange={handleInputChange}
-                        placeholder={`Search ${job} in this collection`}
+                        placeholder={`Search ${title.toLowerCase()} here...`}
                     />
                 </div>
                 {isOpen && (debouncedSearch.length >= 2 || isLoading) &&

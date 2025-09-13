@@ -1,5 +1,5 @@
 import {Link} from "@tanstack/react-router";
-import {formatDateTime} from "@/lib/utils/functions";
+import {formatRelativeTime} from "@/lib/utils/functions";
 import {AdminUserOverview} from "@/lib/types/query.options.types";
 import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
 
@@ -32,7 +32,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
                     </div>
                     <div className="ml-auto text-sm">
                         <div className="flex items-center gap-2">
-                            <span>{formatDateTime(user.updatedAt, { includeTime: true })}</span>
+                            <span>{formatRelativeTime(user.updatedAt)}</span>
                         </div>
                     </div>
                 </div>

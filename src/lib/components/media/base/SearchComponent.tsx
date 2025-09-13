@@ -20,10 +20,10 @@ export const SearchComponent = ({ onSearchEnter }: SearchComponentProps) => {
 
     return (
         <div className="relative flex items-center">
-            <Search className="absolute h-4 w-4 left-3"/>
+            <Search className="absolute size-4 left-3 text-muted-foreground"/>
             <Input
                 value={search}
-                className="pl-9"
+                className="pl-9 w-56"
                 onKeyUp={handleOnKeyUp}
                 placeholder="Search Name"
                 onChange={(ev) => setSearch(ev.target.value)}

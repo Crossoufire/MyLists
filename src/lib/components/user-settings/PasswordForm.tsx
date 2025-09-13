@@ -49,7 +49,7 @@ export const PasswordForm = () => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-[400px] max-sm:w-full">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-[320px] max-sm:w-full">
                 <div className="space-y-5">
                     <FormField
                         control={form.control}

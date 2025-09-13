@@ -23,7 +23,7 @@ export const BooksDetails = ({ mediaType, mediaData }: BooksDetailsProps<typeof 
                         />
                         <GenericDetails
                             name="Release date"
-                            value={formatDateTime(mediaData.releaseDate, { onlyYear: true, useLocalTz: true })}
+                            value={formatDateTime(mediaData.releaseDate, { onlyYear: true })}
                         />
                     </div>
                     <div className="flex flex-col gap-y-4">

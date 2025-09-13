@@ -1,4 +1,5 @@
 import {cn} from "@/lib/utils/helpers";
+import {Label} from "@/lib/types/base.types";
 import {useQuery} from "@tanstack/react-query";
 import {Badge} from "@/lib/components/ui/badge";
 import {Input} from "@/lib/components/ui/input";
@@ -8,9 +9,8 @@ import {MutedText} from "@/lib/components/general/MutedText";
 import {LabelAction, MediaType} from "@/lib/server/utils/enums";
 import {userMediaLabelsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditUserLabelMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {CircleCheck, CirclePlus, LoaderCircle, Pen, Trash2, TriangleAlert, X} from "lucide-react";
+import {CircleCheck, CirclePlus, LoaderCircle, Pen, Plus, Trash2, TriangleAlert, X} from "lucide-react";
 import {Credenza, CredenzaContent, CredenzaDescription, CredenzaHeader, CredenzaTitle, CredenzaTrigger} from "@/lib/components/ui/credenza";
-import {Label} from "@/lib/types/base.types";
 
 
 type ToastType = { type: "error" | "success", message: string };
@@ -125,7 +125,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
             <CredenzaTrigger onClick={() => setIsOpen(true)}>
                 <MutedText className="text-sm mt-1">Manage</MutedText>
             </CredenzaTrigger>
-            <CredenzaContent>
+            <CredenzaContent className="w-[450px] max-sm:w-full max-sm:p-4">
                 <CredenzaHeader>
                     <CredenzaTitle>Manage Labels</CredenzaTitle>
                     <CredenzaDescription>Here you can manage your labels.</CredenzaDescription>
@@ -153,7 +153,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                             }}
                         />
                         <Button size="sm" onClick={() => createNewLabel(inputAddNewLabel)} disabled={editUserLabelMutation.isPending}>
-                            <CirclePlus className="mr-2 h-4 w-4"/> Create
+                            <Plus className="size-4"/> Create
                         </Button>
                     </div>
                     <div className="space-y-2">
@@ -163,7 +163,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                                 <MutedText className="text-sm">No labels added yet</MutedText>
                                 :
                                 mediaLabels.map((label) =>
-                                    <Badge key={label.name}>
+                                    <Badge key={label.name} variant="label">
                                         {label.name}
                                         <div role="button" className="ml-2 hover:opacity-60" onClick={() => removeFromMedia(label)}>
                                             <X className="h-4 w-4"/>
@@ -174,10 +174,10 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <h4 className="font-medium">All Labels</h4>
+                        <h4 className="font-medium">Available Labels</h4>
                         <ul className="max-h-[200px] overflow-y-auto">
                             {isLoading ?
-                                <LoaderCircle className="h-6 w-6 animate-spin"/>
+                                <LoaderCircle className="size-6 animate-spin"/>
                                 :
                                 allLabels.length === 0 ?
                                     <MutedText className="text-sm">No labels created yet</MutedText>
@@ -199,7 +199,9 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                                                     }}
                                                 />
                                                 :
-                                                <span>{label.name}</span>
+                                                <Badge variant={!mediaLabels.map(l => l.name).includes(label.name) ? "labelToAdd" : "label"}>
+                                                    {label.name}
+                                                </Badge>
                                             }
                                             <div>
                                                 {!mediaLabels.map(l => l.name).includes(label.name) &&

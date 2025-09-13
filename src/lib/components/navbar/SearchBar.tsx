@@ -55,12 +55,12 @@ export const SearchBar = () => {
                 <Input
                     value={search}
                     onChange={handleInputChange}
-                    className={"w-[310px] pl-8 pr-[110px]"}
-                    placeholder={"Search for media/users..."}
+                    className="w-[310px] pl-8 pr-[110px]"
+                    placeholder="Search for media/users..."
                 />
                 <div className="absolute right-0 top-1/2 -translate-y-1/2">
                     <Select value={selectDrop} onValueChange={handleValueChange}>
-                        <SelectTrigger className="w-[100px]">
+                        <SelectTrigger className="w-[100px] border-hidden">
                             <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>
@@ -176,7 +176,7 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
                         <div className="font-semibold mb-2 line-clamp-2">{item.name}</div>
                         <div className="text-neutral-300">{capitalize(item.itemType)}</div>
                         <div className="text-muted-foreground text-sm">
-                            {formatDateTime(item.date, { useLocalTz: true })}
+                            {formatDateTime(item.date, { noTime: true })}
                         </div>
                     </div>
                 </div>

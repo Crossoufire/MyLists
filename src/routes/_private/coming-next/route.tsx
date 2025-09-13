@@ -23,7 +23,7 @@ function ComingNextPage() {
 
     return (
         <PageTitle title="Coming Next" subtitle="Discover your upcoming media. Explore your planned watchlist/playlist">
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-2">
+            <Tabs value={selectedTab} onValueChange={handleTabChange}>
                 <TabsList className="my-4 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
                     {apiData.map((next) =>
                         <TabsTrigger key={next.mediaType} value={next.mediaType} className="max-sm:px-2 px-4 flex items-center gap-2">

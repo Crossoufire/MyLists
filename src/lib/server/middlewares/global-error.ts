@@ -1,4 +1,5 @@
-import z from "zod/v4";
+import z from "zod";
+import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
 import {sendAdminErrorMail} from "@/lib/server/utils/mail-sender";
 import {FormattedError, FormZodError} from "@/lib/server/utils/error-classes";
@@ -26,11 +27,18 @@ function createCleanError(originalError: Error, message?: string): Error {
 export const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
     try {
         const results = await next();
+        if ("error" in results && isRedirect(results.error)) {
+            throw results.error;
+        }
         return results;
     }
     catch (err: any) {
+        console.log({ err: { ...err } });
         if (process.env.NODE_ENV !== "production") {
             console.error("Error:", err);
+        }
+        if ("options" in err && isRedirect(err)) {
+            throw err;
         }
         if (err instanceof FormattedError) {
             if (err?.sendMail && process.env.NODE_ENV === "production") {

@@ -71,14 +71,14 @@ function MediaEditPage() {
         });
     };
 
-    const renderField = (form: any, fieldEntry: [string, any]) => {
+    const renderField = (myForm: any, fieldEntry: [string, any]) => {
         const [key, _] = fieldEntry;
 
         return (
             <FormField
                 key={key}
                 name={key}
-                control={form.control}
+                control={myForm.control}
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>{capitalize(key.replaceAll("_", " "))}</FormLabel>
@@ -154,7 +154,9 @@ function MediaEditPage() {
                                 />
                             }
                         </div>
-                        <div className="space-y-4">{parts[2].map(arr => renderField(form, arr))}</div>
+                        <div className="space-y-4">
+                            {parts[2].map(arr => renderField(form, arr))}
+                        </div>
                     </div>
                     <div className="flex justify-end">
                         <Button className="mt-5" disabled={editMediaMutation.isPending}>

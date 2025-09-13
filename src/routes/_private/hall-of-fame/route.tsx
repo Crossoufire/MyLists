@@ -1,8 +1,7 @@
-import {Search} from "lucide-react";
+import {Search, X} from "lucide-react";
 import {useState} from "react";
 import {Input} from "@/lib/components/ui/input";
 import {capitalize} from "@/lib/utils/functions";
-import {Button} from "@/lib/components/ui/button";
 import {MediaType} from "@/lib/server/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
@@ -59,25 +58,25 @@ function HallOfFamePage() {
         <PageTitle title="Hall of Fame" subtitle="Showcase of all the active profiles ranked">
             <div className="grid grid-cols-12 mx-auto w-[1000px] gap-x-10 max-sm:w-full max-sm:grid-cols-1">
                 <div className="col-span-7 max-sm:col-span-1 w-full max-sm:mt-4 max-sm:order-2">
-                    <div className="flex items-center justify-between mt-5 mb-3">
+                    <div className="flex items-center justify-between mt-3 mb-3">
                         <div className="flex items-center justify-start gap-3">
                             <div className="relative">
                                 <Input
                                     value={currentSearch}
                                     placeholder="Search by name..."
-                                    className="pl-10 rounded-md w-[180px]"
+                                    className="pl-10 rounded-md w-[220px]"
                                     onChange={(ev) => setcurrentSearch(ev.target.value)}
                                 />
                                 <Search
                                     size={18}
                                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                                 />
+                                {search &&
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                                        <X role="button" className="size-4" onClick={resetSearch}/>
+                                    </div>
+                                }
                             </div>
-                            {search &&
-                                <Button size="sm" onClick={resetSearch}>
-                                    Cancel
-                                </Button>
-                            }
                         </div>
                         <div>
                             <Select value={sorting} onValueChange={onSortChanged} disabled={apiData.items.length === 0}>
@@ -112,7 +111,7 @@ function HallOfFamePage() {
                         onChangePage={onPageChange}
                     />
                 </div>
-                <div className="col-span-5 max-sm:col-span-1 mt-[28px] max-sm:mt-4 max-sm:order-1">
+                <div className="col-span-5 max-sm:col-span-1 mt-[21px] max-sm:mt-4 max-sm:order-1">
                     <HofRanking
                         userRanks={apiData.userRanks}
                     />

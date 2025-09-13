@@ -1,9 +1,9 @@
 import {X} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
-import {capitalize} from "@/lib/utils/functions";
+import {capitalize, getLangCountryName} from "@/lib/utils/functions";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {useParams, useSearch} from "@tanstack/react-router";
 import {MutedText} from "@/lib/components/general/MutedText";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 interface AppliedFiltersProps {
@@ -42,26 +42,22 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
 
     return (
         <div className="flex flex-wrap items-center gap-2 mb-8">
-            <MutedText className="not-italic">
+            <MutedText italic={false}>
                 {totalItems} {capitalize(mediaType)}
             </MutedText>
             {Object.keys(localFilters).length > 0 &&
-                <MutedText className="not-italic mr-2">|</MutedText>
+                <div className="text-muted-foreground ml-2 mr-2">|</div>
             }
             <>
                 {Object.entries(localFilters).map(([key, value]) =>
                     Array.isArray(value) ?
-                        value.map(val =>
-                            <Badge key={`${key}-${val}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
-                                {val}
-                                <div
-                                    role="button"
-                                    className="hover:opacity-80 -mr-1"
-                                    onClick={() => removeFilter(key as keyof MediaListArgs, val)}
-                                >
+                        value.map((item) =>
+                            <Badge key={`${key}-${item}`} className="h-8 px-4 text-sm gap-2" variant="secondary">
+                                {key === "langs" ? getLangCountryName(item, "language") : item}
+                                <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key as keyof MediaListArgs, item)}>
                                     <X className="w-4 h-4"/>
                                 </div>
-                            </Badge>,
+                            </Badge>
                         )
                         :
                         <Badge key={key} className="h-8 px-4 text-sm gap-2" variant="secondary">
@@ -70,18 +66,14 @@ export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersPro
                                     (key === "comment" && value === true) ? `Commented` :
                                         value as string
                             }
-                            <div
-                                role="button"
-                                className="hover:opacity-80 -mr-1"
-                                onClick={() => removeFilter(key as keyof MediaListArgs, value)}
-                            >
+                            <div role="button" className="hover:opacity-80 -mr-1" onClick={() => removeFilter(key as keyof MediaListArgs, value)}>
                                 <X className="w-4 h-4"/>
                             </div>
-                        </Badge>,
+                        </Badge>
                 )}
                 {Object.keys(localFilters).length > 0 &&
                     <div role="button" className="ml-2" onClick={() => removeAllFilters()}>
-                        <MutedText className="not-italic">Clear All</MutedText>
+                        <MutedText italic={false}>Clear All</MutedText>
                     </div>
                 }
             </>

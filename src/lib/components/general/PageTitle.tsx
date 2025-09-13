@@ -20,8 +20,10 @@ export const PageTitle = ({ children, title, subtitle, onlyHelmet = false }: Pag
                 :
                 <div className="mt-8 mb-5 flex flex-col mx-auto">
                     <div className="text-2xl font-medium">{title}</div>
-                    <MutedText className="text-muted-foreground not-italic">{subtitle}</MutedText>
-                    <Separator/>
+                    <MutedText className="text-muted-foreground" italic={false}>
+                        {subtitle}
+                    </MutedText>
+                    <Separator className="mt-0.5 mb-3"/>
                     {children}
                 </div>
             }

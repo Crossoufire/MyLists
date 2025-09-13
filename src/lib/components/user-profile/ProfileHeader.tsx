@@ -50,7 +50,7 @@ export const ProfileHeader = ({ user, followStatus, followId }: ProfileHeaderPro
                             <div className="text-gray-300 text-sm font-medium space-y-1 max-sm:min-w-[220px]">
                                 <div className="flex items-center">
                                     <CalendarDays className="w-4 h-4 mr-2"/>
-                                    <div>Joined: {formatDateTime(user.createdAt)}</div>
+                                    <div>Joined: {formatDateTime(user.createdAt, { noTime: true })}</div>
                                 </div>
                                 <div className="flex items-center">
                                     <Users className="w-4 h-4 mr-2"/>

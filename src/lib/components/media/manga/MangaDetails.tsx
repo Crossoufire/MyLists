@@ -25,9 +25,9 @@ export const MangaDetails = ({ mediaType, mediaData }: MangaDetailsProps<typeof 
                             name="Airing dates"
                             value={
                                 <>
-                                    {formatDateTime(mediaData.releaseDate, { useLocalTz: true })}
+                                    {formatDateTime(mediaData.releaseDate, { noTime: true })}
                                     <br/>
-                                    {formatDateTime(mediaData.endDate, { useLocalTz: true })}
+                                    {formatDateTime(mediaData.endDate, { noTime: true })}
                                 </>
                             }
                         />
