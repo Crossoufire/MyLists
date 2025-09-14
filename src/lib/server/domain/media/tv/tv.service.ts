@@ -1,4 +1,4 @@
-import {eq, isNotNull} from "drizzle-orm";
+import {eq, getTableName, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
@@ -100,11 +100,10 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
 
         if (payload?.imageCover) {
+            const tableName = getTableName(this.repository.config.mediaTable);
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/movies-covers",
+                dirSaveName: (tableName === "series") ? "series-covers" : "anime-covers",
             });
             fields.imageCover = imageName;
             delete payload.imageCover;

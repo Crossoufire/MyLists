@@ -97,10 +97,8 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/movies-covers",
+                dirSaveName: "movies-covers",
             });
             fields.imageCover = imageName;
             delete payload.imageCover;

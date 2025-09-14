@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {books} from "@/lib/server/database/schema";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {cleanHtmlText} from "@/lib/server/utils/clean-html-text";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
@@ -19,7 +20,7 @@ export class GBooksTransformer {
                 itemType: MediaType.BOOKS,
                 name: item.volumeInfo.title,
                 date: item.volumeInfo.publishedDate,
-                image: item.volumeInfo?.imageLinks?.thumbnail ?? "default.jpg",
+                image: item.volumeInfo?.imageLinks?.thumbnail ?? getImageUrl("books-covers"),
             };
         });
 
@@ -36,11 +37,9 @@ export class GBooksTransformer {
             synopsis: cleanHtmlText(rawData.volumeInfo.description),
             releaseDate: rawData.volumeInfo.publishedDate ? new Date(rawData.volumeInfo.publishedDate).toISOString() : null,
             imageCover: await saveImageFromUrl({
-                defaultName: "default.jpg",
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/books-covers",
+                dirSaveName: "books-covers",
                 imageUrl: rawData.volumeInfo.imageLinks?.extraLarge ??
-                    rawData.volumeInfo.imageLinks?.large ?? rawData.volumeInfo.imageLinks?.medium ?? "default.jpg",
+                    rawData.volumeInfo.imageLinks?.large ?? rawData.volumeInfo.imageLinks?.medium,
             }),
         }
 

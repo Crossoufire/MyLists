@@ -97,10 +97,8 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/games-covers",
+                dirSaveName: "games-covers",
             });
             if (editableFields.includes("imageCover" as FieldsType)) {
                 fields.imageCover = imageName;

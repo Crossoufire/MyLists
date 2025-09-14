@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {manga} from "@/lib/server/database/schema";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {JikanDetails, JikanMangaSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
@@ -18,7 +19,7 @@ export class JikanTransformer {
                 date: item.published.from,
                 itemType: MediaType.MANGA,
                 name: item.title_english ?? item.title,
-                image: item.images.jpg.image_url ?? "default.jpg",
+                image: item.images.jpg.image_url ?? getImageUrl("manga-covers"),
             };
         });
 
@@ -42,10 +43,8 @@ export class JikanTransformer {
             name: rawData.title_english ?? rawData.title,
             publishers: rawData.serializations?.[0]?.name ?? null,
             imageCover: await saveImageFromUrl({
-                defaultName: "default.jpg",
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/manga-covers",
-                imageUrl: rawData.images.jpg.large_image_url ?? "default.jpg",
+                dirSaveName: "manga-covers",
+                imageUrl: rawData.images.jpg.large_image_url,
             }),
         }
 

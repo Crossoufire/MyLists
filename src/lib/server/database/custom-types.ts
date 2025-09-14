@@ -1,4 +1,6 @@
+import {CoverType} from "@/lib/types/base.types";
 import {customType} from "drizzle-orm/sqlite-core";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 
 
 export const customJson = <TData>(name: string) =>
@@ -15,7 +17,7 @@ export const customJson = <TData>(name: string) =>
     })(name);
 
 
-export const imageUrl = (name: string, basePath: string) =>
+export const imageUrl = (name: string, coverType: CoverType) =>
     customType<{ data: string; driverData: string }>({
         dataType() {
             return "text";
@@ -24,6 +26,6 @@ export const imageUrl = (name: string, basePath: string) =>
             return value;
         },
         fromDriver(value: string) {
-            return `${basePath}/${value}`;
+            return getImageUrl(coverType, value);
         },
     })(name);

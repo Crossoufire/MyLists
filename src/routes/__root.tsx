@@ -1,7 +1,7 @@
 /// <reference types="vite/client"/>
 import React from "react";
-import {Toaster} from "sonner";
 import appCSS from "@/styles.css?url";
+import {Toaster} from "@/lib/components/ui/sonner";
 import {Navbar} from "@/lib/components/navbar/Navbar";
 import {Footer} from "@/lib/components/general/Footer";
 import {useNProgress} from "@/lib/hooks/use-nprogress";

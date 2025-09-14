@@ -1,11 +1,15 @@
 import {Column, SQL} from "drizzle-orm";
 import {taskDefinitions} from "@/cli/commands";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaTable} from "@/lib/types/media.config.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
 import {ListFiltersOptionsType} from "@/lib/types/query.options.types";
 import {GamesPlatformsEnum, JobType, MediaType, NotificationType, RatingSystemType, Status, UpdateType} from "@/lib/server/utils/enums";
-import {DeltaStats} from "@/lib/types/stats.types";
+
+
+export type CoverType = "series-covers" | "anime-covers" | "movies-covers" | "games-covers" | "books-covers" | "manga-covers" |
+    "profile-covers" | "profile-back-covers";
 
 
 export type StatusPayload = {

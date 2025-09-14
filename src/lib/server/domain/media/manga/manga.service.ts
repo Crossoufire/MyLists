@@ -96,10 +96,8 @@ export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository
 
         if (mediaData?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: mediaData.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/manga-covers",
+                dirSaveName: "manga-covers",
             });
             fieldsToUpdate.imageCover = imageName;
             delete mediaData.imageCover;

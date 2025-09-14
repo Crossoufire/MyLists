@@ -7,6 +7,10 @@ export const serverEnv = createEnv({
         // Database
         DATABASE_URL: z.url().default("file:./instance/site.db"),
 
+        // Image/Cover Managements
+        UPLOADS_DIR_NAME: z.string().default("static"),
+        BASE_UPLOADS_LOCATION: z.string().default("./public/static/"),
+        
         // Admin Secrets
         ADMIN_PASSWORD: z.string().min(8),
         ADMIN_TOKEN_SECRET: z.string().min(20),

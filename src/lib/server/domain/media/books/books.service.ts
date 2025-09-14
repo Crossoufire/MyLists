@@ -100,10 +100,8 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
 
         if (mediaData?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: mediaData.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/books-covers",
+                dirSaveName: "books-covers",
             });
             fieldsToUpdate.imageCover = imageName;
             delete mediaData.imageCover;

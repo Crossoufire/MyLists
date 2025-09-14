@@ -1,5 +1,6 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {games} from "@/lib/server/database/schema";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
 import {HltbGameEntry, IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
@@ -22,7 +23,7 @@ export class IgdbTransformer {
                 name: item?.name,
                 itemType: MediaType.GAMES,
                 date: item?.first_release_date,
-                image: item?.cover?.image_id ? `${this.imageBaseUrl}${item?.cover?.image_id}.jpg` : "default.jpg",
+                image: item?.cover?.image_id ? `${this.imageBaseUrl}${item?.cover?.image_id}.jpg` : getImageUrl("games-covers"),
             };
         });
 
@@ -45,9 +46,7 @@ export class IgdbTransformer {
             hltbMainAndExtraTime: null,
             hltbTotalCompleteTime: null,
             imageCover: await saveImageFromUrl({
-                defaultName: "default.jpg",
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/games-covers",
+                dirSaveName: "games-covers",
                 imageUrl: `${this.imageBaseUrl}${rawData?.cover?.image_id}.jpg`,
             }),
         }

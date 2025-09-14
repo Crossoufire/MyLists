@@ -1,4 +1,5 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {LoaderCircle} from "lucide-react";
 import {Input} from "@/lib/components/ui/input";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_public/forgot-password")({
 
 function ForgotPasswordPage() {
     const navigate = useNavigate();
+    const [emailSent, setEmailSent] = useState(false);
     const form = useForm<{ email: string }>({
         defaultValues: {
             email: "",
@@ -31,9 +33,12 @@ function ForgotPasswordPage() {
                 toast.error(ctx.error.message);
             },
             onSuccess: async () => {
-                toast.success("An email was send to reset your password.");
-                await navigate({ to: "/" });
-            }
+                setEmailSent(true);
+                toast.success(`You will be redirected in 5 seconds to the main page.`, { duration: 5 * 1000 });
+                setTimeout(async () => {
+                    await navigate({ to: "/", replace: true });
+                }, 5 * 1000);
+            },
         });
     };
 
@@ -61,6 +66,11 @@ function ForgotPasswordPage() {
                                 </FormItem>
                             }
                         />
+                        {emailSent &&
+                            <p className="text-sm text-center font-medium text-green-600">
+                                An email has been sent to reset your password. Please check your inbox.
+                            </p>
+                        }
                         <Button type="submit" disabled={form.formState.isSubmitting}>
                             {form.formState.isSubmitting && <LoaderCircle className="size-4 animate-spin"/>} Submit
                         </Button>

@@ -1,5 +1,7 @@
+import {CoverType} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {isLatin1} from "@/lib/server/utils/check-latin";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {
@@ -19,8 +21,8 @@ import {
 
 
 type Options = {
+    dirSaveName: CoverType;
     defaultDuration: number;
-    imageSaveLocation: string;
 }
 
 
@@ -37,14 +39,11 @@ export class TmdbTransformer {
         const results = searchData?.rawData?.results ?? [];
         const hasNextPage = searchData?.rawData?.total_pages > searchData.page;
 
-        const filteredResults = results.filter((item) =>
-            item.media_type !== "person" && (item.media_type === "tv" || item.media_type === "movie")
-        );
-
-        const transformedResults = filteredResults.map((item) => {
+        const fResults = results.filter((i) => i.media_type !== "person" && (i.media_type === "tv" || i.media_type === "movie"));
+        const transformedResults = fResults.map((item) => {
             const baseInfo = {
                 id: item.id,
-                image: item.poster_path ? `${this.imageBaseUrl}${item.poster_path}` : "default.jpg",
+                image: item.poster_path ? `${this.imageBaseUrl}${item.poster_path}` : getImageUrl("movies-covers"),
             };
 
             let details: object;
@@ -122,9 +121,7 @@ export class TmdbTransformer {
             directorName: rawData?.credits?.crew?.find((crew) => crew.job === "Director")?.name,
             compositorName: rawData?.credits?.crew?.find((crew) => crew.job === "Original Music Composer")?.name,
             imageCover: await saveImageFromUrl({
-                defaultName: "default.jpg",
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/movies-covers",
+                dirSaveName: "movies-covers",
                 imageUrl: `${this.imageBaseUrl}${rawData?.poster_path}`,
             }),
         }
@@ -138,14 +135,14 @@ export class TmdbTransformer {
     async transformAnimeDetailsResults(rawData: TmdbTvDetails) {
         return this._transformTvDetailsResults(rawData, {
             defaultDuration: this.animeDefaultDuration,
-            imageSaveLocation: "public/static/covers/anime-covers",
+            dirSaveName: "anime-covers",
         });
     }
 
     async transformSeriesDetailsResults(rawData: TmdbTvDetails) {
         return this._transformTvDetailsResults(rawData, {
             defaultDuration: this.seriesDefaultDuration,
-            imageSaveLocation: "public/static/covers/series-covers",
+            dirSaveName: "series-covers",
         });
     }
 
@@ -160,7 +157,7 @@ export class TmdbTransformer {
                 displayName: result?.title,
                 mediaType: MediaType.MOVIES,
                 releaseDate: result?.release_date,
-                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : "default.jpg",
+                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : getImageUrl("movies-covers"),
             }
 
             moviesTrends.push(mediaData);
@@ -180,7 +177,7 @@ export class TmdbTransformer {
                 overview: result?.overview,
                 mediaType: MediaType.SERIES,
                 releaseDate: result?.first_air_date,
-                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : "default.jpg",
+                posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : getImageUrl("series-covers"),
             }
 
             const isJap = result?.origin_country.find((c: string) => c.toLowerCase() === "jp" || c.toLowerCase() === "ja") ?? false;
@@ -207,7 +204,7 @@ export class TmdbTransformer {
     }
 
     private async _transformTvDetailsResults(rawData: TmdbTvDetails, options: Options) {
-        const { defaultDuration, imageSaveLocation } = options;
+        const { defaultDuration, dirSaveName } = options;
 
         const mediaData = {
             apiId: rawData.id,
@@ -230,9 +227,7 @@ export class TmdbTransformer {
             lastAirDate: rawData?.last_air_date ? new Date(rawData.last_air_date).toISOString() : null,
             releaseDate: rawData?.first_air_date ? new Date(rawData.first_air_date).toISOString() : null,
             imageCover: await saveImageFromUrl({
-                defaultName: "default.jpg",
-                saveLocation: imageSaveLocation,
-                resize: { width: 300, height: 450 },
+                dirSaveName: dirSaveName,
                 imageUrl: `${this.imageBaseUrl}${rawData?.poster_path}`,
             }),
         };

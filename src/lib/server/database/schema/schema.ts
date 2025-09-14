@@ -5,14 +5,6 @@ import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
 import {AchievementDifficulty, GamesPlatformsEnum, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
 
 
-const BASE_SERIES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/series-covers`;
-const BASE_ANIME_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/anime-covers`;
-const BASE_MOVIES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/movies-covers`;
-const BASE_GAMES_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/games-covers`;
-const BASE_BOOKS_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/books-covers`;
-const BASE_MANGA_COVERS_PATH = `${process.env.VITE_BASE_URL}/static/covers/manga-covers`;
-
-
 export const followers = sqliteTable("followers", {
     followerId: integer().references(() => user.id, { onDelete: "cascade" }),
     followedId: integer().references(() => user.id, { onDelete: "cascade" }),
@@ -95,7 +87,7 @@ export const books = sqliteTable("books", {
     language: text(),
     publishers: text(),
     synopsis: text(),
-    imageCover: imageUrl("image_cover", BASE_BOOKS_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "books-covers").notNull(),
     apiId: text().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     lastApiUpdate: text(),
@@ -194,7 +186,7 @@ export const series = sqliteTable("series", {
     voteCount: real(),
     synopsis: text(),
     popularity: real(),
-    imageCover: imageUrl("image_cover", BASE_SERIES_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "series-covers").notNull(),
     apiId: integer().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     episodeToAir: integer(),
@@ -226,7 +218,7 @@ export const anime = sqliteTable("anime", {
     voteCount: real(),
     synopsis: text(),
     popularity: real(),
-    imageCover: imageUrl("image_cover", BASE_ANIME_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "anime-covers").notNull(),
     apiId: integer().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     seasonToAir: integer(),
@@ -244,7 +236,7 @@ export const animeNetwork = sqliteTable("anime_network", {
 export const games = sqliteTable("games", {
     id: integer().primaryKey().notNull(),
     name: text().notNull(),
-    imageCover: imageUrl("image_cover", BASE_GAMES_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "games-covers").notNull(),
     gameEngine: text(),
     gameModes: text(),
     playerPerspective: text(),
@@ -334,7 +326,7 @@ export const manga = sqliteTable("manga", {
     name: text().notNull(),
     synopsis: text(),
     releaseDate: text(),
-    imageCover: imageUrl("image_cover", BASE_MANGA_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "manga-covers").notNull(),
     apiId: integer().notNull(),
     lockStatus: integer({ mode: "boolean" }),
     lastApiUpdate: text(),
@@ -482,7 +474,7 @@ export const movies = sqliteTable("movies", {
     budget: real(),
     revenue: real(),
     tagline: text(),
-    imageCover: imageUrl("image_cover", BASE_MOVIES_COVERS_PATH).notNull(),
+    imageCover: imageUrl("image_cover", "movies-covers").notNull(),
     apiId: integer().notNull(),
     collectionId: integer(),
     directorName: text(),

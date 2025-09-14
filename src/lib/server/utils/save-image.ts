@@ -2,7 +2,9 @@ import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
 import {promises as fsPromises} from "node:fs";
+import {CoverType} from "@/lib/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
+import {serverEnv} from "@/env/server";
 
 
 interface ResizeOptions {
@@ -13,29 +15,33 @@ interface ResizeOptions {
 
 interface ProcessAndSaveImageOptions {
     buffer: Buffer;
-    saveLocation: string;
+    dirSaveName: CoverType;
     resize?: ResizeOptions;
 }
 
 
 interface SaveImageFromUrlOptions {
-    imageUrl: string;
-    defaultName: string;
-    saveLocation: string;
+    defaultName?: string;
+    dirSaveName: CoverType;
     resize?: ResizeOptions;
+    imageUrl: string | undefined;
 }
 
 
 interface SaveUploadedImageOptions {
     file: File;
-    saveLocation: string;
     resize?: ResizeOptions;
+    dirSaveName: Extract<CoverType, "profile-covers" | "profile-back-covers">;
 }
 
 
-export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, resize }: SaveImageFromUrlOptions) => {
+export const saveImageFromUrl = async ({ imageUrl, dirSaveName, resize, defaultName = "default.jpg" }: SaveImageFromUrlOptions) => {
+    if (!resize) {
+        resize = { width: 300, height: 450 };
+    }
+
     try {
-        const response = await fetch(imageUrl);
+        const response = await fetch(imageUrl!);
         if (!response.ok) {
             return defaultName;
         }
@@ -43,7 +49,7 @@ export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, re
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        return processAndSaveImage({ buffer, saveLocation, resize });
+        return processAndSaveImage({ buffer, dirSaveName, resize });
     }
     catch {
         return defaultName;
@@ -51,11 +57,10 @@ export const saveImageFromUrl = async ({ imageUrl, saveLocation, defaultName, re
 };
 
 
-export const saveUploadedImage = async ({ file, saveLocation, resize }: SaveUploadedImageOptions) => {
+export const saveUploadedImage = async ({ file, dirSaveName, resize }: SaveUploadedImageOptions) => {
     try {
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        return processAndSaveImage({ buffer, saveLocation, resize });
+        const buffer = Buffer.from(await file.arrayBuffer());
+        return processAndSaveImage({ buffer, dirSaveName, resize });
     }
     catch {
         throw new FormattedError("This image could not be processed");
@@ -63,9 +68,11 @@ export const saveUploadedImage = async ({ file, saveLocation, resize }: SaveUplo
 };
 
 
-const processAndSaveImage = async ({ buffer, saveLocation, resize }: ProcessAndSaveImageOptions) => {
-    const randomHex = crypto.randomBytes(8).toString("hex");
+const processAndSaveImage = async ({ buffer, dirSaveName, resize }: ProcessAndSaveImageOptions) => {
+    const randomHex = crypto.randomBytes(16).toString("hex");
     const fileName = `${randomHex}.jpg`;
+
+    const saveLocation = serverEnv.BASE_UPLOADS_LOCATION + dirSaveName;
 
     await fsPromises.mkdir(saveLocation, { recursive: true });
     const filePath = path.join(saveLocation, fileName);
@@ -75,7 +82,9 @@ const processAndSaveImage = async ({ buffer, saveLocation, resize }: ProcessAndS
         sharpInstance.resize(resize.width, resize.height);
     }
 
-    await sharpInstance.jpeg({ quality: 90 }).toFile(filePath);
+    await sharpInstance
+        .jpeg({ quality: 90 })
+        .toFile(filePath);
 
     return fileName;
 };

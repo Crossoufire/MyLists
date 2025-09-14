@@ -29,7 +29,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
         if (data.profileImage) {
             const profileImageName = await saveUploadedImage({
                 file: data.profileImage,
-                saveLocation: "./public/static/profile-covers",
+                dirSaveName: "profile-covers",
                 resize: { width: 300, height: 300 },
             });
             updatesToApply.image = profileImageName;
@@ -38,7 +38,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
         if (data.backgroundImage) {
             const backgroundImageName = await saveUploadedImage({
                 file: data.backgroundImage,
-                saveLocation: "./public/static/back-covers",
+                dirSaveName: "profile-back-covers",
                 resize: { width: 1304, height: 288 },
             });
             updatesToApply.backgroundImage = backgroundImageName;
