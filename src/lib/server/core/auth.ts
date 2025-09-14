@@ -119,7 +119,7 @@ export const auth = betterAuth({
                 link: url,
                 to: user.email,
                 username: user.name,
-                template: "password_reset",
+                template: "resetPassword",
                 subject: "MyLists - Reset Your Password",
             });
         },

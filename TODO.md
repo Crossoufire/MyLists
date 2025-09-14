@@ -2,17 +2,18 @@
 
 ## KNOWN BUGS:
 
-- KNOWN_BUG: When using react compiler selected rows does not work (same for pages)
+- KNOWN_BUG: When using react compiler selected rows does not work (same for pages, tanstack-table)
 
 ## Fixes
 
-- FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
 - FIX: problem with "default.jpg" should be an url not just a string to work properly
+- FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
 
 ## TODO
 
 - TODO: Implement forgot password
-- TODO: Finish UI apparance for media details
+- TODO: Check all UI problems in phone and ipad device size
+- TODO: Finish desktop UI apparence for media details and tab component
 - TODO: Where possible directly use `queryOptions` instead of queryKeys in `useMutation` (better for inference)
 
 ## External TODO

@@ -19,6 +19,7 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as UniversalPrivacyPolicyRouteImport } from './routes/_universal/privacy-policy'
 import { Route as UniversalFeaturesRouteImport } from './routes/_universal/features'
 import { Route as UniversalAboutRouteImport } from './routes/_universal/about'
+import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-password'
 import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PrivateTrendsRouteRouteImport } from './routes/_private/trends/route'
 import { Route as PrivateSettingsRouteRouteImport } from './routes/_private/settings/route'
@@ -88,6 +89,11 @@ const UniversalAboutRoute = UniversalAboutRouteImport.update({
   id: '/_universal/about',
   path: '/about',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PublicResetPasswordRoute = PublicResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => PublicRoute,
 } as any)
 const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
   id: '/forgot-password',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof PrivateSettingsRouteRoute
   '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
+  '/reset-password': typeof PublicResetPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/settings': typeof PrivateSettingsRouteRoute
   '/trends': typeof PrivateTrendsRouteRoute
   '/forgot-password': typeof PublicForgotPasswordRoute
+  '/reset-password': typeof PublicResetPasswordRoute
   '/about': typeof UniversalAboutRoute
   '/features': typeof UniversalFeaturesRoute
   '/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/_private/settings': typeof PrivateSettingsRouteRoute
   '/_private/trends': typeof PrivateTrendsRouteRoute
   '/_public/forgot-password': typeof PublicForgotPasswordRoute
+  '/_public/reset-password': typeof PublicResetPasswordRoute
   '/_universal/about': typeof UniversalAboutRoute
   '/_universal/features': typeof UniversalFeaturesRoute
   '/_universal/privacy-policy': typeof UniversalPrivacyPolicyRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/trends'
     | '/forgot-password'
+    | '/reset-password'
     | '/about'
     | '/features'
     | '/privacy-policy'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/trends'
     | '/forgot-password'
+    | '/reset-password'
     | '/about'
     | '/features'
     | '/privacy-policy'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/_private/settings'
     | '/_private/trends'
     | '/_public/forgot-password'
+    | '/_public/reset-password'
     | '/_universal/about'
     | '/_universal/features'
     | '/_universal/privacy-policy'
@@ -520,6 +532,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/about'
       preLoaderRoute: typeof UniversalAboutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_public/reset-password': {
+      id: '/_public/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof PublicResetPasswordRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/_public/forgot-password': {
       id: '/_public/forgot-password'
@@ -838,11 +857,13 @@ const PrivateRouteWithChildren =
 
 interface PublicRouteChildren {
   PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
+  PublicResetPasswordRoute: typeof PublicResetPasswordRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicForgotPasswordRoute: PublicForgotPasswordRoute,
+  PublicResetPasswordRoute: PublicResetPasswordRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 

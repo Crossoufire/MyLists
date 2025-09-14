@@ -1,9 +1,9 @@
-import z from "zod/v4";
-import path from "path";
-import fs from "node:fs";
+import z from "zod";
 import nodemailer from "nodemailer";
 import {serverEnv} from "@/env/server";
 import {Options} from "nodemailer/lib/mailer";
+import {render} from "@react-email/components";
+import {ErrorEmail, PasswordResetEmail, RegisterEmail} from "@/lib/components/emails";
 
 
 interface EmailOptions {
@@ -11,11 +11,10 @@ interface EmailOptions {
     link: string;
     subject: string;
     username: string;
-    template: "password_reset" | "register";
+    template: "resetPassword" | "register";
 }
 
 
-// Password Reset and Verification Email
 export const sendEmail = async (options: EmailOptions) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -25,12 +24,13 @@ export const sendEmail = async (options: EmailOptions) => {
         },
     });
 
-    const templatePath = path.join(process.cwd(), "public", "templates", `${options.template}.html`);
-
-    let htmlContent = fs.readFileSync(templatePath, "utf-8");
-
-    htmlContent = htmlContent.replace(/\{\{\s*link\s*}}/g, options.link);
-    htmlContent = htmlContent.replace(/\{\{\s*username\s*}}/g, options.username);
+    let htmlContent: string;
+    if (options.template === "register") {
+        htmlContent = await render(RegisterEmail({ username: options.username, link: options.link }));
+    }
+    else {
+        htmlContent = await render(PasswordResetEmail({ username: options.username, link: options.link }));
+    }
 
     const mailOptions: Options = {
         to: options.to,
@@ -43,7 +43,6 @@ export const sendEmail = async (options: EmailOptions) => {
 }
 
 
-// Error email to Admin
 export const sendAdminErrorMail = async (error: Error | z.ZodError, message: string) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -61,11 +60,13 @@ export const sendAdminErrorMail = async (error: Error | z.ZodError, message: str
         timestamp: new Date().toISOString(),
     }
 
+    const htmlContent = await render(ErrorEmail({ ctx: errorData }));
+
     const mailOptions: Options = {
+        html: htmlContent,
         to: serverEnv.ADMIN_MAIL_USERNAME,
         from: serverEnv.ADMIN_MAIL_USERNAME,
         subject: "MyLists - An Error Occurred",
-        html: JSON.stringify(errorData, null, 4),
     };
 
     await transporter.sendMail(mailOptions);
