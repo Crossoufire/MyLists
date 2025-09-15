@@ -1,6 +1,5 @@
 import React from "react";
 import {useQueryClient} from "@tanstack/react-query";
-import {Separator} from "@/lib/components/ui/separator";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
 import {UpdateInput} from "@/lib/components/media/base/UpdateInput";
@@ -51,7 +50,6 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDe
                             updateInput={updateUserMediaMutation}
                         />
                     </div>
-                    <Separator/>
                     <div className="flex justify-between items-center">
                         <div>Rating</div>
                         <UpdateRating

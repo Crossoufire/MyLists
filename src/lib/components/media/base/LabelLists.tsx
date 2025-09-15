@@ -57,10 +57,10 @@ export const LabelLists = ({ queryKey, mediaType, mediaId, mediaLabels }: LabelL
                     updateUserMediaLabels={updateUserMediaLabels}
                 />
             </h4>
-            <Separator className="mb-2"/>
+            <Separator className="mb-1"/>
             <div className="flex flex-wrap gap-2">
                 {mediaLabels.length === 0 ?
-                    <MutedText className="text-sm">Not labels added yet</MutedText>
+                    <MutedText className="text-sm">No labels added yet</MutedText>
                     :
                     mediaLabels.map((label) =>
                         <Link

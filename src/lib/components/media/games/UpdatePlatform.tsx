@@ -49,16 +49,13 @@ const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
             <PopoverTrigger asChild>
                 <Button
                     role="combobox"
-                    variant="outline"
-                    className="flex h-7 pl-2 w-[130px] items-center justify-between
-                    whitespace-nowrap rounded-md focus-visible:ring-0 ring-offset-background placeholder:text-muted-foreground
-                    focus:outline-hidden focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1
-                    bg-transparent border-none font-normal pr-0 hover:bg-transparent"
+                    variant="ghost"
                     aria-expanded={open}
                     disabled={isPending}
+                    className="w-[130px] justify-between has-[>svg]:px-0 font-normal hover:bg-transparent"
                 >
                     {displayedLabel}
-                    <ChevronDown className="h-3 w-3 opacity-80"/>
+                    <ChevronDown className="size-4 opacity-30"/>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[160px] p-0">
@@ -70,7 +67,7 @@ const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
                             {allPlatforms.map(pt =>
                                 <CommandItem key={pt.value} value={pt.value} onSelect={() => onSelect(pt.value)}>
                                     {pt.label}
-                                    <Check className={cn("ml-auto h-4 w-4", resetValue === pt.value ? "opacity-100" : "opacity-0")}/>
+                                    <Check className={cn("ml-auto size-4", resetValue === pt.value ? "opacity-100" : "opacity-0")}/>
                                 </CommandItem>
                             )}
                         </CommandGroup>

@@ -6,7 +6,7 @@ import {createFileRoute} from "@tanstack/react-router";
 import {Separator} from "@/lib/components/ui/separator";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {MediaType, RoleType} from "@/lib/server/utils/enums";
-import AvatarCircles from "@/lib/components/ui/avatar-circles";
+import {AvatarCircles} from "@/lib/components/ui/avatar-circles";
 import {SimilarMedia} from "@/lib/components/media/base/SimilarMedia";
 import {MediaFollowCard} from "@/lib/components/media/base/MediaFollowCard";
 import {UserMediaDetails} from "@/lib/components/media/base/UserMediaDetails";
@@ -87,9 +87,9 @@ function MediaDetailsPage() {
                     </div>
                     <div className="col-span-12 md:col-span-7 lg:col-span-8">
                         <Tabs defaultValue="mediaDetails">
-                            <TabsList className="grid grid-cols-2">
-                                <TabsTrigger value="mediaDetails">Media Details</TabsTrigger>
-                                <TabsTrigger value="follows" disabled={apiData.followsData.length === 0}>
+                            <TabsList className="w-full">
+                                <TabsTrigger value="mediaDetails" className="text-base">Media Details</TabsTrigger>
+                                <TabsTrigger value="follows" className="text-base" disabled={apiData.followsData.length === 0}>
                                     <span>Your Follows &nbsp;</span>
                                     <span className="sm:hidden">
                                         ({apiData.followsData.length})
@@ -112,7 +112,7 @@ function MediaDetailsPage() {
                                 {apiData.media?.collection && apiData.media.collection.length !== 0 &&
                                     <SimilarMedia
                                         mediaType={mediaType}
-                                        title={"In The Same Collection"}
+                                        title="In The Same Collection"
                                         similarMedia={apiData.media.collection}
                                     />
                                 }

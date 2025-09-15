@@ -33,7 +33,7 @@ export const UpdateComment = ({ content, updateComment }: CommentaryProps) => {
 
     return (
         <>
-            <h4 className="text-lg flex justify-between items-center mt-5 font-semibold">
+            <h4 className="text-lg flex justify-between items-center mt-4 font-semibold">
                 Comment
                 <MutedText className="text-sm mt-1">
                     <span role="button" onClick={handleEditToggle}>

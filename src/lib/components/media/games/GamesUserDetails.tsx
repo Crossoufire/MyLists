@@ -1,5 +1,4 @@
 import React from "react";
-import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {UpdateRating} from "@/lib/components/media/base/UpdateRating";
@@ -28,7 +27,6 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }: GamesUserDe
             />
             {userMedia.status !== Status.PLAN_TO_PLAY &&
                 <>
-                    <Separator/>
                     <UpdatePlaytime
                         playtime={userMedia.playtime ?? 0}
                         updatePlaytime={updateUserMediaMutation}

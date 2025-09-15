@@ -1,4 +1,3 @@
-import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {UpdateRedo} from "@/lib/components/media/base/UpdateRedo";
@@ -22,7 +21,6 @@ export const MoviesUserDetails = ({ userMedia, mediaType, queryKey }: MoviesUser
             />
             {userMedia.status !== Status.PLAN_TO_WATCH &&
                 <>
-                    <Separator/>
                     <div className="flex justify-between items-center">
                         <div>Rating</div>
                         <UpdateRating

@@ -1,4 +1,3 @@
-import {cn} from "@/lib/utils/helpers";
 import {Input} from "@/lib/components/ui/input";
 import React, {useEffect, useState} from "react";
 import {UpdateType} from "@/lib/server/utils/enums";
@@ -21,23 +20,25 @@ export const UpdateInput = ({ total, initValue, updateInput, payloadName, update
         setCurrentValue(initValue ?? 0);
     }, [initValue]);
 
-    const handleOnBlur = (ev: any) => {
+    const handleOnBlur = (ev: React.FocusEvent<HTMLInputElement>) => {
         ev.preventDefault();
         if (currentValue === initValue) return;
+
         if (total !== undefined && total !== null && (currentValue > total || currentValue < 0)) {
             return setCurrentValue(initValue ?? 0);
         }
+
         updateInput.mutate({ payload: { [payloadName]: currentValue, type: updateType } });
     };
 
     return (
-        <div className="w-[135px]">
+        <div className="w-[135px] text-sm">
             <Input
                 value={currentValue}
                 onBlur={handleOnBlur}
                 disabled={updateInput.isPending}
                 onChange={(ev) => setCurrentValue(parseInt(ev.target.value))}
-                className={cn("w-[60px] text-base border-none bg-transparent cursor-pointer inline-block")}
+                className="w-[50px] px-1 text-base border-none bg-transparent cursor-pointer inline-block"
             />
             <span>{" "}/{" "}{total ?? "?"}</span>
         </div>

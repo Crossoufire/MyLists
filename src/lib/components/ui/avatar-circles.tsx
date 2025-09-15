@@ -7,7 +7,7 @@ interface AvatarCirclesProps {
 }
 
 
-const AvatarCircles = ({ className, avatarUrls }: AvatarCirclesProps) => {
+export const AvatarCircles = ({ className, avatarUrls }: AvatarCirclesProps) => {
     const showPeople = Math.min(avatarUrls.length, 4);
     const rest = avatarUrls.length - showPeople;
 
@@ -18,17 +18,15 @@ const AvatarCircles = ({ className, avatarUrls }: AvatarCirclesProps) => {
                     key={idx}
                     src={avatarUrl}
                     alt={"Avatar " + (idx + 1)}
-                    className="h-6 w-6 rounded-full border-2 border-neutral-900"
+                    className="size-5 rounded-full border-1 border-black bg-background"
                 />
             )}
             {rest > 0 &&
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border-2 text-center text-xs font-medium
-                border-neutral-900 bg-neutral-300 text-black">
+                <span className="flex size-5 items-center justify-center rounded-full border-1 text-center text-xs font-medium
+                border-black bg-neutral-300 text-black">
                     +{rest}
                 </span>
             }
         </div>
     );
 };
-
-export default AvatarCircles;

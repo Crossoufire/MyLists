@@ -6,12 +6,15 @@
 
 ## Fixes
 
+- FIX: Error updating redo tv
+- FIX: Error updating platform in games details
+- FIX: when adding book to list rating is feeling, on reload becomes score (should be always score for my account)
 - FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
 
 ## TODO
 
 - TODO: Check all UI problems in phone and ipad device size
-- TODO: Finish desktop UI apparence for media details and tab component
+- TODO: Tests everything and all CLI tasks :(
 - TODO: Where possible directly use `queryOptions` instead of queryKeys in `useMutation` (better for inference)
 
 ## External TODO

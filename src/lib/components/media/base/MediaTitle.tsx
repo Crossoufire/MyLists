@@ -9,11 +9,11 @@ interface MediaTitleProps {
 }
 
 
-export const MediaTitle = ({ children, className, ...props }: MediaTitleProps) => {
+export const MediaTitle = ({ children, className }: MediaTitleProps) => {
     return (
-        <>
-            <h4 className={cn("text-xl font-semibold", className)}>{children}</h4>
-            <Separator {...props}/>
-        </>
+        <h4 className={cn("text-xl font-semibold mb-2", className)}>
+            {children}
+            <Separator className="mt-0.5"/>
+        </h4>
     );
 };

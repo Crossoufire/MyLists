@@ -40,7 +40,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
     return (
         <div className="space-y-2 w-[300px]">
             <Tabs defaultValue="yourInfo">
-                <TabsList className="w-full items-center justify-between pr-3">
+                <TabsList className="w-full items-center justify-between pr-2">
                     <div>
                         <TabsTrigger value="yourInfo">
                             Your Info
@@ -73,7 +73,7 @@ export const UserMediaDetails = ({ userMedia, mediaType, queryKey }: UserMediaDe
                         />
                     </div>
                 </TabsContent>
-                <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-5 pt-3">
+                <TabsContent value="history" className="bg-card rounded-md overflow-y-auto max-h-[353px] p-3 px-5">
                     <HistoryDetails
                         history={history ?? []}
                         queryKey={queryKeys.historyKey(mediaType, userMedia.mediaId)}

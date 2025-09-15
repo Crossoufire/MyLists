@@ -60,7 +60,7 @@ const MediaLevelBar = ({ mediaType, username, level }: MediaLevelBarProps) => {
                 intLevel={intLevel}
                 mediaType={mediaType}
             />
-            <div className="w-[81%]">
+            <div className="w-[81%] max-sm:w-[86%]">
                 <div className="flex justify-between mb-1.5">
                     <Link
                         to={`/list/$mediaType/$username`}

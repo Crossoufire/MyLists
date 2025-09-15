@@ -21,7 +21,7 @@ interface BaseMediaFollowCardrops {
 export const BaseMediaFollowCard = ({ followData, rating, redoDisplay, mediaDetailsDisplay }: BaseMediaFollowCardrops) => {
     return (
         <Card className="h-full">
-            <CardContent className="p-4">
+            <CardContent className="px-3">
                 <div className="grid grid-cols-12 gap-2">
                     <div className="col-span-3">
                         <Link to="/profile/$username" params={{ username: followData.name }}>

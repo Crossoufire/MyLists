@@ -1,5 +1,4 @@
 import {useQueryClient} from "@tanstack/react-query";
-import {Separator} from "@/lib/components/ui/separator";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaConfiguration} from "@/lib/components/media/media-config";
 import {UpdateTvRedo} from "@/lib/components/media/tv/UpdateTvRedo";
@@ -45,9 +44,6 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
                     onUpdateMutation={updateUserMediaMutation}
                     currentEpisode={userMedia.lastEpisodeWatched}
                 />
-            }
-            {userMedia.status !== Status.PLAN_TO_WATCH &&
-                <Separator/>
             }
             {userMedia.status !== Status.PLAN_TO_WATCH &&
                 <div className="flex justify-between items-center">

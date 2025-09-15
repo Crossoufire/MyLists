@@ -42,35 +42,35 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
     return (
         <>
             <div className="w-[130px] text-start flex items-center justify-between">
-                <div className="ml-1.5 text-sm">{totalRedo} Seas.</div>
+                <div className="text-sm">{totalRedo} Seasons</div>
                 <Pencil
                     role="button"
-                    className={"w-4 h-4 text-gray-400"}
+                    className="size-4 text-gray-400"
                     onClick={() => onOpenChange(true)}
                 />
             </div>
             <Credenza open={open} onOpenChange={onOpenChange}>
-                <CredenzaContent>
+                <CredenzaContent className="w-[400px] max-sm:w-full">
                     <CredenzaHeader>
                         <CredenzaTitle>Re-watched Seasons Manager</CredenzaTitle>
                         <CredenzaDescription>Manage your re-watched seasons</CredenzaDescription>
                     </CredenzaHeader>
-                    <div className="mt-2 ">
+                    <div className="mt-2">
                         <div className="flex justify-between items-center p-2 px-3">
                             <span className="font-semibold">All Seasons</span>
                             <div className="flex items-center">
                                 <Button variant="ghost" size="icon" onClick={() => updateAllSeasons(-1)} className="mr-2">
-                                    <MinusCircle className="h-5 w-5"/>
+                                    <MinusCircle className="size-5"/>
                                 </Button>
                                 <Button variant="ghost" size="icon" onClick={() => updateAllSeasons(1)}>
-                                    <PlusCircle className="h-5 w-5"/>
+                                    <PlusCircle className="size-5"/>
                                 </Button>
                             </div>
                         </div>
-                        <Separator className="mt-1 mb-5"/>
-                        <div className="overflow-y-auto max-h-[350px]">
+                        <Separator className="mb-3"/>
+                        <div className="overflow-y-auto max-h-[290px]">
                             {draftRedo.map((season, idx) => (
-                                <div key={idx} className="flex justify-between items-center p-2 px-3">
+                                <div key={idx} className="flex justify-between items-center px-3">
                                     <div className="flex items-center gap-6">
                                         <div className="font-semibold">
                                             Season {idx + 1}:
@@ -79,17 +79,17 @@ export const UpdateTvRedo = ({ onUpdateMutation, redoValues }: UpdateTvRedoProps
                                     </div>
                                     <div className="flex items-center">
                                         <Button variant="ghost" size="icon" onClick={() => updateSeason(idx, -1)} className="mr-2">
-                                            <MinusCircle className="h-5 w-5"/>
+                                            <MinusCircle className="size-5"/>
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={() => updateSeason(idx, 1)}>
-                                            <PlusCircle className="h-5 w-5"/>
+                                            <PlusCircle className="size-5"/>
                                         </Button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <CredenzaFooter className="mt-5">
+                    <CredenzaFooter>
                         <Button type="submit" className="w-full" onClick={onUpdateRedoValues} disabled={onUpdateMutation.isPending}>
                             Update
                         </Button>

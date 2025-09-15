@@ -7,6 +7,7 @@ import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/databa
 import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, or, sql} from "drizzle-orm";
+import {getImageUrl} from "@/lib/server/utils/image-url";
 
 
 export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
@@ -267,11 +268,16 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         if (!details) return;
 
+        const collection = details.collection.map((item: { mediaId: number, mediaName: string, mediaCover: string }) => ({
+            ...item,
+            mediaCover: getImageUrl("movies-covers", item.mediaCover),
+        }));
+
         const result: Movie & AddedMediaDetails = {
             ...details,
             actors: details.actors || [],
             genres: details.genres || [],
-            collection: details.collection || [],
+            collection: collection || [],
         };
 
         return result;

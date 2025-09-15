@@ -20,7 +20,7 @@ export const UpdateRedo = ({ name, redo, updateRedo }: RedoDropProps) => {
         <div className="flex justify-between items-center">
             <div>{name}</div>
             <Select value={redo?.toString()} onValueChange={handleRedoChange} disabled={updateRedo?.isPending}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent>

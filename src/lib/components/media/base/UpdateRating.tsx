@@ -23,7 +23,7 @@ export const UpdateRating = ({ rating, ratingSystem, onUpdateMutation }: RatingC
     return (
         <div className="flex justify-between items-center">
             <Select value={ratingValue?.toString() ?? "--"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px] overflow-y-auto">
