@@ -10,6 +10,7 @@
 - FIX: Admin Mediadle, seach does not work
 - FIX: sidebar not working/showing on mobile
 - FIX: Error updating platform in games details
+- FIX: Bad formatting tv notification (see Gen V)
 - FIX: Edit media is a fucking mess, lots of weird stuff
 - FIX: Style issue in add from other list buttons in dropdown
 - FIX: Admin Users and Mediadle table not responsive in mobile

@@ -41,7 +41,7 @@ export const saveImageFromUrl = async ({ imageUrl, dirSaveName, resize, defaultN
     }
 
     try {
-        const response = await fetch(imageUrl!);
+        const response = await fetch(imageUrl!, { signal: AbortSignal.timeout(3000) });
         if (!response.ok) {
             return defaultName;
         }
@@ -72,7 +72,10 @@ const processAndSaveImage = async ({ buffer, dirSaveName, resize }: ProcessAndSa
     const randomHex = crypto.randomBytes(16).toString("hex");
     const fileName = `${randomHex}.jpg`;
 
-    const saveLocation = serverEnv.BASE_UPLOADS_LOCATION + dirSaveName;
+    const base = serverEnv.BASE_UPLOADS_LOCATION;
+    const saveLocation = path.isAbsolute(base)
+        ? path.join(base, dirSaveName)
+        : path.join(process.cwd(), base, dirSaveName);
 
     await fsPromises.mkdir(saveLocation, { recursive: true });
     const filePath = path.join(saveLocation, fileName);
