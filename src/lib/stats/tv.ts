@@ -18,7 +18,7 @@ export const tvData = (data: TvStats): StatSection[] => {
             cards: {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
-                    createStatCard("Total Entries", data.totalEntries, `Toto: ${data.totalRedo} Seasons Re-watched`),
+                    createStatCard("Total Entries", data.totalEntries, `Total: ${data.totalRedo} Seasons Re-watched`),
                     createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Watched ${data.timeSpentDays} Days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
                     createStatCard("Avg. Duration", sp.avgDuration, "Duration In Hours"),

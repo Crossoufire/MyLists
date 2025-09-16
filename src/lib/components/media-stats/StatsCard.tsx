@@ -37,7 +37,7 @@ export const StatsCard = ({ card }: { card: StatCardData }) => {
                 }
                 <CardDescription>{card.subtitle}</CardDescription>
             </CardHeader>
-            <CardContent className="grid items-center grid-cols-1">
+            <CardContent className="grid items-center grid-cols-1 h-full">
                 <div className="text-3xl font-bold max-sm:text-xl" title={card.value?.toString() ?? ""}>
                     {card.value}
                 </div>

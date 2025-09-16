@@ -11,7 +11,7 @@ type MangaDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["
 
 export const MangaDetails = ({ mediaType, mediaData }: MangaDetailsProps<typeof MediaType.MANGA>) => {
     return (
-        <div className="flex flex-col gap-7 max-sm:mt-5">
+        <>
             <div className="bg-card rounded-md p-4">
                 <div className="grid lg:grid-flow-col lg:auto-cols-fr grid-cols-2">
                     <div className="flex flex-col gap-y-4">
@@ -73,6 +73,6 @@ export const MangaDetails = ({ mediaType, mediaData }: MangaDetailsProps<typeof 
             <Synopsis
                 synopsis={mediaData.synopsis}
             />
-        </div>
+        </>
     );
 }

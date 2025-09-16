@@ -17,7 +17,7 @@ export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof 
     const publishers = mediaData.companies ? mediaData.companies.filter(c => c.publisher) : [];
 
     return (
-        <div className="flex flex-col gap-7 max-sm:mt-5">
+        <>
             <div className="bg-card rounded-md p-4">
                 <div className="grid lg:grid-flow-col lg:auto-cols-fr grid-cols-2">
                     <div className="flex flex-col gap-y-4">
@@ -90,6 +90,6 @@ export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof 
             <Synopsis
                 synopsis={mediaData.synopsis}
             />
-        </div>
+        </>
     );
 };

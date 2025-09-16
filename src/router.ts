@@ -2,6 +2,7 @@ import "./global-middleware";
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {NotFound} from "@/lib/components/general/NotFound";
+import {DefaultLoader} from "@/lib/components/general/DefaultLoader";
 import {createRouter as createTanStackRouter} from "@tanstack/react-router";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
 import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
@@ -48,6 +49,9 @@ export function createRouter() {
         defaultPreloadStaleTime: 0,
         defaultErrorComponent: ErrorCatchBoundary,
         defaultNotFoundComponent: NotFound,
+        defaultPendingComponent: DefaultLoader,
+        defaultPendingMs: 500,
+        defaultPendingMinMs: 500,
         scrollRestoration: true,
         defaultStructuralSharing: true,
         defaultSsr: true,

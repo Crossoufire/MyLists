@@ -1,5 +1,5 @@
-import {Coffee, Mail} from "lucide-react";
 import {mail} from "@/lib/utils/helpers";
+import {Coffee, Mail} from "lucide-react";
 import {Link} from "@tanstack/react-router";
 import {Button} from "@/lib/components/ui/button";
 import {Separator} from "@/lib/components/ui/separator";
@@ -9,23 +9,18 @@ export const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full p-2 pb-3 border-t border-t-neutral-700 bg-background mt-20">
-            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-screen-xl text-center md:text-left mb-3">
+        <footer className="w-full p-3 pb-3 border-t border-t-neutral-700 bg-background mt-16">
+            <div className="grid md:grid-cols-12 mx-auto gap-4 md:max-w-screen-xl text-center md:text-left mb-4">
                 <div className="md:col-span-6 flex flex-col gap-y-1">
                     <div className="text-xl flex gap-x-2 font-bold items-center justify-center md:justify-start">
-                        <img
-                            width={16}
-                            alt="favicon"
-                            className="mt-1"
-                            src="/favicon.ico"
-                        />
+                        <img width={16} alt="favicon" className="mt-0.5" src="/favicon.ico"/>
                         MyLists.info
                     </div>
                     <p className="md:w-[85%]">
                         Create your media lists, see how much time you spent, follow your friends and compare with them.
                         Add favorites, comments, re-watch and gain levels to get to the top of the Hall of Fame.
                     </p>
-                    <div className="flex items-center gap-3 mt-1.5">
+                    <div className="flex items-center gap-3 mt-1.5 max-sm:justify-center">
                         <a href={`mailto:${mail}`}>
                             <Button variant="outline" size="sm" className="flex items-center gap-2">
                                 <Mail/> Contact us
@@ -61,7 +56,7 @@ export const Footer = () => {
                     </ul>
                 </div>
             </div>
-            <Separator className="my-2"/>
+            <Separator className="my-3"/>
             <div className="text-center">© 2019-{currentYear} - MyLists.info</div>
         </footer>
     );

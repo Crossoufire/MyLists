@@ -64,8 +64,8 @@ function HallOfFamePage() {
                                 <Input
                                     value={currentSearch}
                                     placeholder="Search by name..."
-                                    className="pl-10 rounded-md w-[220px]"
                                     onChange={(ev) => setcurrentSearch(ev.target.value)}
+                                    className="pl-10 rounded-md w-[220px] max-sm:text-sm"
                                 />
                                 <Search
                                     size={18}

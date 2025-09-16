@@ -60,7 +60,7 @@ function GlobalStatsPage() {
 
     return (
         <PageTitle title="Platform Statistics" subtitle="The statistics from all the users using MyLists.info">
-            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] gap-8 mt-4">
+            <div className="grid md:grid-cols-[180px_1fr] lg:grid-cols-[190px_1fr] sm:gap-8 mt-4">
                 <Sidebar
                     items={sidebarItems}
                     selectedItem={selectedData}

@@ -25,7 +25,7 @@ export const NavMediaDrop = () => {
         <>
             <Popover>
                 <PopoverTrigger>
-                    <div className="flex items-center gap-2 font-semibold px-1 max-sm:ml-2">
+                    <div className="flex items-center gap-2 font-semibold px-2 max-sm:ml-3">
                         MyLists <ChevronDown className="w-3 h-3 opacity-50"/>
                     </div>
                 </PopoverTrigger>

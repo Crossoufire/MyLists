@@ -1,11 +1,13 @@
+import {useState} from "react";
 import {Trophy} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
-import {HofUserData} from "@/lib/types/query.options.types";
 import {Card, CardContent} from "@/lib/components/ui/card";
+import {HofUserData} from "@/lib/types/query.options.types";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
+import {useIsMobile} from "@/lib/hooks/use-mobile";
 
 
 interface HofCardProps {
@@ -14,10 +16,22 @@ interface HofCardProps {
 
 
 export const HofCard = ({ userData }: HofCardProps) => {
+    const isMobile = useIsMobile();
     const { currentUser } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleMobileToggle = () => {
+        if (isMobile) {
+            setIsOpen((prev) => !prev);
+        }
+    };
 
     return (
-        <Card key={userData.name} className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-teal-950")}>
+        <Card
+            key={userData.name}
+            onClick={handleMobileToggle}
+            className={cn("p-2 py-0 mb-3 bg-card", currentUser?.id === userData.id && "bg-teal-950")}
+        >
             <CardContent className="p-0">
                 <div className="grid grid-cols-12 py-4">
                     <div className="col-span-1 max-sm:col-span-2">
@@ -45,22 +59,25 @@ export const HofCard = ({ userData }: HofCardProps) => {
                             </div>
                         </div>
                     </div>
-                    <div className="col-span-5 -ml-8">
-                        <div className="grid grid-cols-3 gap-2 text-center max-sm:hidden">
-                            {userData.settings.map((s) =>
+                    <div className="col-span-5 sm:-ml-10 max-sm:col-span-12 max-sm:mt-2">
+                        <div className={cn("grid grid-cols-3 gap-2 text-center transition-all duration-300", {
+                            "max-sm:max-h-0 max-sm:overflow-hidden max-sm:opacity-0": !isOpen,
+                            "max-sm:max-h-40 max-sm:opacity-100": isOpen,
+                        })}>
+                            {userData.settings.map((setting) =>
                                 <Link
-                                    key={s.mediaType}
-                                    disabled={!s.active}
+                                    key={setting.mediaType}
+                                    disabled={!setting.active}
                                     to="/list/$mediaType/$username"
-                                    params={{ mediaType: s.mediaType, username: userData.name }}
+                                    params={{ mediaType: setting.mediaType, username: userData.name }}
                                 >
                                     <MediaLevelCircle
-                                        isActive={s.active}
-                                        mediaType={s.mediaType}
-                                        intLevel={Math.floor(computeLevel(s.timeSpent))}
+                                        isActive={setting.active}
+                                        mediaType={setting.mediaType}
+                                        intLevel={Math.floor(computeLevel(setting.timeSpent))}
                                     />
                                     <div className="text-xs font-semibold text-gray-400">
-                                        {capitalize(s.mediaType)}
+                                        {capitalize(setting.mediaType)}
                                     </div>
                                 </Link>
                             )}

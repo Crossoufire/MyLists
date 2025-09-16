@@ -2,14 +2,14 @@ import {useMemo, useState} from "react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {useSearch} from "@tanstack/react-router";
 import {MediaType} from "@/lib/server/utils/enums";
+import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {mediaConfig} from "@/lib/components/media/media-config";
-import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {TablePagination} from "@/lib/components/general/TablePagination";
+import {ListPagination, UserMediaItem} from "@/lib/types/query.options.types";
 import {UserMediaEditDialog} from "@/lib/components/media/base/UserMediaEditDialog";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
 import {flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
-import {MediaListArgs} from "@/lib/types/zod.schema.types";
 
 
 interface MediaTableProps {

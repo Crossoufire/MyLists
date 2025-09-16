@@ -39,7 +39,7 @@ export const NavMediaItem = ({ to, icon, text, className, popRef }: NavMediaItem
                     "leading-none no-underline outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground " +
                     "focus:bg-accent focus:text-accent-foreground", className)}>
                     <div className="relative">
-                        <div className="flex items-center gap-3">
+                        <div className="flex gap-3">
                             <div>{icon}</div>
                             <div>{text}</div>
                         </div>

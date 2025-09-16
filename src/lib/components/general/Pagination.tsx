@@ -11,7 +11,7 @@ interface PaginationProps {
 }
 
 
-export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 8 }: PaginationProps) => {
+export const Pagination = ({ currentPage, totalPages, onChangePage, showNav = true, maxVisible = 6 }: PaginationProps) => {
     if (totalPages <= 1) {
         return null;
     }

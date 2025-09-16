@@ -55,7 +55,7 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
             <SheetProvider>
                 <Navbar/>
             </SheetProvider>
-            <main className="md:max-w-screen-xl container mx-auto flex-1">
+            <main className="flex-1 w-[100%] max-w-[1320px] px-2 mx-auto">
                 {children}
             </main>
             <Footer/>

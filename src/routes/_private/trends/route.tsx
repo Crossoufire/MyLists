@@ -30,7 +30,7 @@ function TrendsPage() {
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value={MediaType.SERIES}>
-                    <div className="grid grid-cols-12 gap-6">
+                    <div className="grid grid-cols-12 gap-6 max-sm:gap-3">
                         {apiData.seriesTrends.map((media) =>
                             <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
                                 <TrendItem item={media}/>
@@ -39,7 +39,7 @@ function TrendsPage() {
                     </div>
                 </TabsContent>
                 <TabsContent value={MediaType.MOVIES}>
-                    <div className="grid grid-cols-12 gap-6">
+                    <div className="grid grid-cols-12 gap-6 max-sm:gap-3">
                         {apiData.moviesTrends.map((media) =>
                             <div key={media.apiId} className="col-span-12 md:col-span-6 lg:col-span-4">
                                 <TrendItem item={media}/>

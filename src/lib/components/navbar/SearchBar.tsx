@@ -55,12 +55,12 @@ export const SearchBar = () => {
                 <Input
                     value={search}
                     onChange={handleInputChange}
-                    className="w-[310px] pl-8 pr-[110px]"
                     placeholder="Search for media/users..."
+                    className="w-[310px] pl-8 pr-[110px] max-sm:text-sm"
                 />
                 <div className="absolute right-0 top-1/2 -translate-y-1/2">
                     <Select value={selectDrop} onValueChange={handleValueChange}>
-                        <SelectTrigger className="w-[100px] border-hidden">
+                        <SelectTrigger className="w-[95px] border-hidden">
                             <SelectValue/>
                         </SelectTrigger>
                         <SelectContent>

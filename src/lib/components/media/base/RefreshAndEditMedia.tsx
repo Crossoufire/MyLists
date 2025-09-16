@@ -30,8 +30,11 @@ export const RefreshAndEditMedia = ({ mediaType, mediaId, apiId, external, lastU
     return (
         <div className="flex items-center gap-3 mt-2 opacity-80">
             <Tooltip>
-                <TooltipTrigger onClick={handleRefresh}>
-                    <RefreshCw className={cn("size-4", refreshMutation.isPending && "animate-spin opacity-30")}/>
+                <TooltipTrigger asChild>
+                    <RefreshCw
+                        onClick={handleRefresh}
+                        className={cn("size-4 cursor-pointer", refreshMutation.isPending && "animate-spin opacity-30")}
+                    />
                 </TooltipTrigger>
                 <TooltipContent side="left">
                     <div>Refresh Metadata</div>

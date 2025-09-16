@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_private/achievements/$username")({
     component: AchievementPage,
 });
 
+// max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1
+// max-sm:px-2 px-4 flex items-center gap-2
 
 function AchievementPage() {
     const { username } = Route.useParams();
@@ -23,10 +25,12 @@ function AchievementPage() {
     return (
         <PageTitle title={`${username} Achievements`} subtitle="View all the achievements the user gained.">
             <Tabs defaultValue="all">
-                <TabsList className="my-3 max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1">
+                <TabsList className="my-3 max-sm:flex max-sm:flex-wrap max-sm:h-auto">
                     {Object.entries(apiData.summary).map(([mt]) =>
-                        <TabsTrigger key={mt} value={mt} className="max-sm:px-2 px-4 flex items-center gap-2">
-                            <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
+                        <TabsTrigger key={mt} value={mt}>
+                            <div className="flex items-center gap-2">
+                                <MediaAndUserIcon type={mt as MediaType}/> {capitalize(mt)}
+                            </div>
                         </TabsTrigger>
                     )}
                 </TabsList>

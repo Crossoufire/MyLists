@@ -49,7 +49,7 @@ function MediaDetailsPage() {
     return (
         <PageTitle title={apiData.media.name} onlyHelmet>
             <div className="max-w-[1000px] mx-auto">
-                <div>
+                <section>
                     <h3 className="flex justify-between items-center mt-8 text-2xl font-semibold">
                         <div>{apiData.media.name}</div>
                         {(currentUser?.role === RoleType.MANAGER) &&
@@ -63,10 +63,10 @@ function MediaDetailsPage() {
                         }
                     </h3>
                     <Separator className="mt-0.5 mb-3"/>
-                </div>
+                </section>
                 <div className="grid grid-cols-12 gap-y-10">
                     <div className="col-span-12 md:col-span-5 lg:col-span-4">
-                        <div className="flex flex-col items-center sm:items-start gap-4">
+                        <div className="flex flex-col items-center gap-4 sm:items-start">
                             <img
                                 alt="media-cover"
                                 src={apiData.media.imageCover}
@@ -91,9 +91,7 @@ function MediaDetailsPage() {
                                 <TabsTrigger value="mediaDetails" className="text-base">Media Details</TabsTrigger>
                                 <TabsTrigger value="follows" className="text-base" disabled={apiData.followsData.length === 0}>
                                     <span>Your Follows &nbsp;</span>
-                                    <span className="sm:hidden">
-                                        ({apiData.followsData.length})
-                                    </span>
+                                    <span className="sm:hidden -ml-2">({apiData.followsData.length})</span>
                                     <AvatarCircles
                                         avatarUrls={apiData.followsData.map((follow) => follow.image)}
                                     />

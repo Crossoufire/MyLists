@@ -1,4 +1,5 @@
-import {useState} from "react";
+import React, {useState} from "react";
+import {Search, X} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
@@ -141,21 +142,30 @@ function AllUpdates() {
 
     return (
         <PageTitle title="History" subtitle="History of all media updates">
-            <div className="w-[900px] mx-auto mt-6">
+            <div className="w-full max-w-screen-lg mx-auto mt-4">
                 <div className="flex justify-between items-center pb-3">
                     <div className="flex items-center gap-2">
-                        <Input
-                            className="w-56"
-                            value={currentSearch}
-                            placeholder="Search by name..."
-                            disabled={deleteUpdateMutation.isPending}
-                            onChange={(ev) => setCurrentSearch(ev.target.value)}
-                        />
-                        {search &&
-                            <Button variant="outline" size="sm" onClick={resetSearch} disabled={deleteUpdateMutation.isPending}>
-                                Cancel
-                            </Button>
-                        }
+                        <div className="relative">
+                            <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
+                            <Input
+                                value={currentSearch}
+                                className="pl-8 w-56 text-sm"
+                                placeholder="Search by name..."
+                                disabled={deleteUpdateMutation.isPending}
+                                onChange={(ev) => setCurrentSearch(ev.target.value)}
+                            />
+                            {search &&
+                                <Button
+                                    size="xs"
+                                    variant="ghost"
+                                    onClick={resetSearch}
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground"
+                                    disabled={deleteUpdateMutation.isPending}
+                                >
+                                    <X/>
+                                </Button>
+                            }
+                        </div>
                     </div>
                     {(isCurrent && Object.keys(rowSelected).length !== 0) &&
                         <Button disabled={Object.keys(rowSelected).length === 0 || deleteUpdateMutation.isPending} onClick={deleteSelectedRows}>
@@ -163,7 +173,7 @@ function AllUpdates() {
                         </Button>
                     }
                 </div>
-                <div className="rounded-md border">
+                <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map(headerGroup =>

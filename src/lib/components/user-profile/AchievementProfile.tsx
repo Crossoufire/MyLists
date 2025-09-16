@@ -32,7 +32,7 @@ export const AchievementsDisplay = ({ username, achievements }: AchievementsProp
             </CardHeader>
             <CardContent className={contentClasses}>
                 <AchievementSummary summary={summary}/>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4 max-sm:gap-2">
                     {details.length === 0 ?
                         <MutedText className="col-span-3">No achievements gained yet</MutedText>
                         :

@@ -37,7 +37,7 @@ export const Sidebar = <T extends { sidebarTitle: string }>({ items, selectedIte
         <nav className="flex flex-wrap text-muted-foreground justify-center md:flex-col md:gap-3 md:justify-start">
             {items.map((item, idx) => {
                 if (item === "separator") {
-                    return <Separator key={`sep-${idx}`}/>;
+                    return <Separator key={`sep-${idx}`} className="my-3"/>;
                 }
 
                 if (item.is === "tab") {

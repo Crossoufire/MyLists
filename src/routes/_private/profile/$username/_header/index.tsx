@@ -20,7 +20,7 @@ function ProfileMain() {
     const apiData = useSuspenseQuery(profileOptions(username)).data;
 
     return (
-        <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4 max-sm:mx-2">
+        <div className="grid grid-cols-12 mt-4 mb-5 gap-x-4">
             <div className="col-span-12 md:col-span-4 lg:col-span-3">
                 <MediaLevels
                     username={username}

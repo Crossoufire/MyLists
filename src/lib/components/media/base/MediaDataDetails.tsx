@@ -1,7 +1,7 @@
 import {MediaType} from "@/lib/server/utils/enums";
 import {mediaConfig} from "@/lib/components/media/media-config";
-import {ExtractMediaDetailsByType} from "@/lib/types/query.options.types";
 import {MediaTitle} from "@/lib/components/media/base/MediaTitle";
+import {ExtractMediaDetailsByType} from "@/lib/types/query.options.types";
 
 
 interface MediaDataDetailsProps<T extends MediaType> {
@@ -16,10 +16,12 @@ export const MediaDataDetails = <T extends MediaType>({ mediaType, mediaData }: 
     return (
         <>
             <MediaTitle className="mt-4">Details</MediaTitle>
-            <MediaDetails
-                mediaType={mediaType}
-                mediaData={mediaData}
-            />
+            <div className="flex flex-col gap-7 max-sm:mt-3">
+                <MediaDetails
+                    mediaType={mediaType}
+                    mediaData={mediaData}
+                />
+            </div>
         </>
     );
 };

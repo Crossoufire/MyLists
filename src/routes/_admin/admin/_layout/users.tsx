@@ -297,24 +297,24 @@ function UserManagementPage() {
     return (
         <DashboardShell>
             <DashboardHeader heading="User Management" description="View and manage all users on your platform."/>
-            <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex w-full max-w-sm items-center space-x-2">
-                    <div className="relative w-full">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
                         <Input
                             value={currentSearch}
-                            className="w-full pl-8"
+                            className="w-[250px] pl-8"
                             placeholder="Search users..."
                             onChange={(ev) => setCurrentSearch(ev.target.value)}
                         />
                         {currentSearch &&
                             <Button
-                                size="sm"
+                                size="xs"
                                 variant="ghost"
                                 onClick={resetFilters}
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-2"
                             >
-                                <X className="h-4 w-4"/>
+                                <X className="size-4"/>
                             </Button>
                         }
                     </div>
@@ -323,7 +323,7 @@ function UserManagementPage() {
                     <CheckCircle className="size-4"/> Activate Features Flag
                 </Button>
             </div>
-            <div className="rounded-md border">
+            <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (

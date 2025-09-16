@@ -8,6 +8,7 @@ import {getFeelingIcon, getStatusColor} from "@/lib/utils/functions";
 import {MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
 import {profileOptions} from "@/lib/react-query/query-options/query-options";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
+import {useIsMobile} from "@/lib/hooks/use-mobile";
 
 
 interface MediaStatsProps {
@@ -132,13 +133,16 @@ function MediaStatuses({ media, username }: { media: MediaStatsProps["media"], u
 
 
 function MediaFavorites({ media, username }: { media: MediaStatsProps["media"], username: string }) {
+    const isMobile = useIsMobile();
+    const maxFavorites = isMobile ? 5 : 10;
+
     return (
         <div className="mt-4">
             <Link
                 search={{ favorite: true }}
                 to="/list/$mediaType/$username"
-                className="text-lg font-medium hover:underline"
                 params={{ mediaType: media.mediaType, username }}
+                className="text-lg font-medium hover:underline max-sm:text-base"
             >
                 Favorites ({media.EntriesFavorites})
             </Link>
@@ -146,7 +150,7 @@ function MediaFavorites({ media, username }: { media: MediaStatsProps["media"], 
                 <MutedText>No favorites added yet</MutedText>
                 :
                 <div className="grid grid-cols-10 max-sm:grid-cols-5 gap-1">
-                    {media.favoritesList.map((m) =>
+                    {media.favoritesList.slice(0, maxFavorites).map((m) =>
                         <Tooltip key={m.mediaId}>
                             <TooltipTrigger asChild>
                                 <BlockLink

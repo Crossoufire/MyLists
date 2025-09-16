@@ -6,7 +6,6 @@ import {RoleType} from "@/lib/server/utils/enums";
 import {Button} from "@/lib/components/ui/button";
 import {useQueryClient} from "@tanstack/react-query";
 import {useSheet} from "@/lib/contexts/sheet-context";
-import {Separator} from "@/lib/components/ui/separator";
 import {LoginForm} from "@/lib/components/auth/LoginForm";
 import {RegisterForm} from "@/lib/components/auth/RegisterForm";
 import {NavMediaDrop} from "@/lib/components/navbar/NavMediaDrop";
@@ -16,8 +15,9 @@ import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
-import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
+import {cn} from "@/lib/utils/helpers";
 
 
 export const Navbar = () => {
@@ -102,11 +102,58 @@ export const Navbar = () => {
                         </NavigationMenuList>
                     </NavigationMenu>
                 </div>
-                <div className="hidden lg:block">
+                <div className="lg:hidden mr-auto ml-2">
+                    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                        <SheetTrigger className="flex items-center">
+                            <Menu className="size-7"/>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-fit block">
+                            <SheetHeader>
+                                <SheetTitle>Navigation</SheetTitle>
+                            </SheetHeader>
+                            <NavigationMenu>
+                                <NavigationMenuList className="flex flex-col items-start pt-4">
+                                    <NavigationMenuItem>
+                                        <SearchBar/>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem className="mt-2">
+                                        <NavMediaDrop/>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/hall-of-fame" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            HoF
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/platform-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Stats
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Trends
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Moviedle
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                    <NavigationMenuItem>
+                                        <NavLink to="/coming-next" className={navStyle()} onClick={() => setSheetOpen(false)}>
+                                            Coming Next
+                                        </NavLink>
+                                    </NavigationMenuItem>
+                                </NavigationMenuList>
+                            </NavigationMenu>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+                <div className="lg:block">
                     <NavigationMenu>
                         <NavigationMenuList>
                             <NavigationMenuItem>
-                                <NavLink to="/coming-next" className={navStyle()}>
+                                <NavLink to="/coming-next" className={cn(navStyle(), "max-sm:hidden")}>
                                     Coming Next
                                 </NavLink>
                             </NavigationMenuItem>
@@ -123,7 +170,7 @@ export const Navbar = () => {
                                                     src={currentUser.image!}
                                                     className="h-10 w-10 rounded-full"
                                                 />
-                                                <ChevronDown className="w-3 h-3 opacity-50"/>
+                                                <ChevronDown className="size-4 opacity-50"/>
                                             </Button>
                                             {currentUser.showUpdateModal &&
                                                 <div className="absolute right-5 top-0">
@@ -195,92 +242,6 @@ export const Navbar = () => {
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenu>
-                </div>
-                <div className="lg:hidden ml-auto mr-2">
-                    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                        <SheetTrigger className="flex items-center">
-                            <Menu size={28}/>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="max-sm:w-full">
-                            <SheetHeader>
-                                <SheetTitle></SheetTitle>
-                                <SheetDescription></SheetDescription>
-                            </SheetHeader>
-                            <NavigationMenu>
-                                <NavigationMenuList className="flex flex-col items-start gap-2">
-                                    <NavigationMenuItem>
-                                        <SearchBar/>
-                                    </NavigationMenuItem>
-                                    <NavigationMenuItem>
-                                        <NavMediaDrop/>
-                                    </NavigationMenuItem>
-                                    <Separator/>
-                                    <NavigationMenuItem>
-                                        <NavLink to="/hall-of-fame" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            HoF
-                                        </NavLink>
-                                    </NavigationMenuItem>
-                                    <NavigationMenuItem>
-                                        <NavLink to="/platform-stats" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Stats
-                                        </NavLink>
-                                    </NavigationMenuItem>
-                                    <NavigationMenuItem>
-                                        <NavLink to="/trends" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Trends
-                                        </NavLink>
-                                    </NavigationMenuItem>
-                                    <NavigationMenuItem>
-                                        <NavLink to="/moviedle" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Moviedle
-                                        </NavLink>
-                                    </NavigationMenuItem>
-                                    <NavigationMenuItem>
-                                        <NavLink to="/coming-next" className={navStyle()} onClick={() => setSheetOpen(false)}>
-                                            Coming Next
-                                        </NavLink>
-                                    </NavigationMenuItem>
-                                    <Separator/>
-                                    <NavigationMenuItem>
-                                        <Notifications isMobile/>
-                                    </NavigationMenuItem>
-                                    <div className="-mt-3">
-                                        <NavMediaItem
-                                            text="Profile"
-                                            icon={<User className="size-4"/>}
-                                            to={`/profile/${currentUser.name}`}
-                                            className="items-center font-semibold pb-2"
-                                        />
-                                        <NavMediaItem
-                                            to="/settings"
-                                            text="Settings"
-                                            icon={<Settings className="size-4"/>}
-                                            className="items-center font-semibold pb-2"
-                                        />
-                                        <NavMediaItem
-                                            to="/features"
-                                            text="Features"
-                                            icon={<Sparkles className="size-4"/>}
-                                            className="items-center font-semibold pb-2"
-                                        />
-                                        <li>
-                                            <NavigationMenuLink asChild>
-                                                <NavLink to="." onClick={logoutUser} className="block select-none
-                                                space-y-1 rounded-md p-3 leading-none no-underline outline-hidden
-                                                transition-colors hover:bg-accent hover:text-accent-foreground
-                                                focus:bg-accent focus:text-accent-foreground">
-                                                    <div className="grid grid-cols-3 font-semibold pb-2 items-center">
-                                                        <div><LogOut className="w-4 h-4"/></div>
-                                                        <div className="col-span-2">Logout</div>
-                                                    </div>
-                                                </NavLink>
-                                            </NavigationMenuLink>
-                                        </li>
-                                    </div>
-                                </NavigationMenuList>
-                            </NavigationMenu>
-                        </SheetContent>
-                    </Sheet>
                 </div>
             </div>
         </nav>

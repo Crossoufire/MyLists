@@ -13,8 +13,9 @@ type TvDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["med
 
 export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaType.SERIES | typeof MediaType.ANIME>) => {
     const creators = mediaData.createdBy?.split(", ").map(c => ({ name: c })) || [];
+
     return (
-        <div className="flex flex-col gap-7 max-sm:mt-5">
+        <>
             <div className="bg-card rounded-md p-4">
                 <div className="grid lg:grid-flow-col lg:auto-cols-fr grid-cols-2">
                     <div className="flex flex-col gap-y-4">
@@ -107,6 +108,6 @@ export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaT
             <DisplayAllEpsPerSeason
                 epsPerSeason={mediaData.epsPerSeason ?? []}
             />
-        </div>
+        </>
     );
 };
