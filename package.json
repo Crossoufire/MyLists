@@ -14,8 +14,8 @@
         "build": "vite build",
         "ui": "npx shadcn@latest",
         "dev": "vite dev --port 3000",
-        "cli": "npx tsx src/cli/index.ts",
-        "server": "node .output/server/index.mjs",
+        "start": "node .output/server/index.mjs",
+        "cli": "npx tsx -r dotenv/config src/cli/index.ts",
         "email": "email dev -d ./src/lib/components/emails",
         "auth:generate": "npx @better-auth/cli@latest generate --y --output src/lib/server/database/schema/auth.schema.ts"
     },

@@ -17,9 +17,9 @@ export function registerTaskCommand({ program, taskName, description }: Register
         .description(description)
         .option("-d, --direct", "Directly execute the task without using the queue")
         .action(async (options) => {
-            const container = await getContainer();
             const directExecution: boolean = options.direct;
             const cliLogger = pinoLogger.child({ command: taskName });
+            const container = await getContainer({ tasksServiceLogger: pinoLogger });
 
             if (directExecution) {
                 cliLogger.info(`Running ${taskName} task directly via CLI...`);

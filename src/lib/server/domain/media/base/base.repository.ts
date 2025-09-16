@@ -1,6 +1,6 @@
 import {notFound} from "@tanstack/react-router";
 import * as schema from "@/lib/server/database/schema";
-import {followers, games, user} from "@/lib/server/database/schema";
+import {followers, user} from "@/lib/server/database/schema";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
@@ -474,7 +474,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
                 notInArray(listTable.status, [Status.DROPPED]),
                 userId ? eq(listTable.userId, userId) : undefined,
                 gte(mediaTable.releaseDate, sql`datetime('now')`),
-                maxAWeek ? lte(games.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
+                maxAWeek ? lte(mediaTable.releaseDate, sql`datetime('now', '+7 days')`) : undefined,
             ))
             .orderBy(asc(mediaTable.releaseDate))
             .execute();

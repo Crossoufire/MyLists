@@ -8,7 +8,7 @@ const program = new Command();
 
 const description = `
 CLI commands for MyLists.
-To execute a command: 
+To execute a command:
 'npm run cli -- <command> -- <option> -- <option> ...'
 `;
 

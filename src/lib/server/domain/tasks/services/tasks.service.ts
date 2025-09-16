@@ -1,12 +1,11 @@
 import pino from "pino";
 import path from "path";
 import * as fs from "fs";
-import {fileURLToPath} from "url";
+import {serverEnv} from "@/env/server";
 import {taskDefinitions} from "@/cli/commands";
 import {TasksName} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
@@ -20,6 +19,7 @@ type TaskHandler = () => Promise<void>;
 
 export class TasksService {
     private logger: pino.Logger;
+    private mediaTypes: MediaType[];
     private taskHandlers: Map<TasksName, TaskHandler>;
 
     constructor(
@@ -32,8 +32,9 @@ export class TasksService {
         private notificationsService: NotificationsService,
         private userStatsService: UserStatsService,
     ) {
-        this.logger = logger.child({ service: "TasksService" });
+        this.mediaTypes = Object.values(MediaType);
         this.taskHandlers = new Map<TasksName, TaskHandler>();
+        this.logger = logger.child({ service: "TasksService" });
 
         for (const taskDef of taskDefinitions) {
             const handler = this[taskDef.handlerMethod as keyof this] as TaskHandler;
@@ -70,16 +71,10 @@ export class TasksService {
     protected async runBulkMediaRefresh() {
         this.logger.info("Starting: Bulk Media Refresh execution.");
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        for (const mediaType of this.mediaTypes) {
             this.logger.info({ mediaType }, `Refreshing media for ${mediaType}...`);
 
             const mediaProviderService = this.mediaProviderRegistry.getService(mediaType);
-            if (!isRefreshable(mediaProviderService)) {
-                this.logger.warn({ mediaType }, `Refresh method not available for ${mediaType}. Skipping.`);
-                continue;
-            }
-
             const results = await mediaProviderService.bulkProcessAndRefreshMedia();
             results.forEach((result) => {
                 if (result.status === "rejected") {
@@ -108,12 +103,13 @@ export class TasksService {
     protected async runRemoveUnusedMediaCovers() {
         this.logger.info("Starting: RemoveUnusedMediaCovers execution.");
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        const baseUploadsLocation = serverEnv.BASE_UPLOADS_LOCATION;
+        for (const mediaType of this.mediaTypes) {
             this.logger.info(`Starting cleanup for '${mediaType}' covers...`);
 
-            const projectRoot = await findProjectRoot();
-            const coversDirectoryPath = path.join(projectRoot, "public", "static", "covers", `${mediaType}-covers`);
+            const coversDirectoryPath = path.isAbsolute(baseUploadsLocation) ?
+                path.join(baseUploadsLocation, `${mediaType}-covers`) :
+                path.join(process.cwd(), baseUploadsLocation, `${mediaType}-covers`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const dbCoverFilenames = await mediaService.getCoverFilenames();
@@ -122,10 +118,10 @@ export class TasksService {
             const filesOnDisk = await fs.promises.readdir(coversDirectoryPath);
             this.logger.info(`Found ${filesOnDisk.length} files in directory:`);
 
-            const coversToDelete = filesOnDisk.filter((filename) => !dbCoverSet.has(filename));
+            const coversToDelete = filesOnDisk.filter((filename) => !dbCoverSet.has(filename) && filename !== "default.jpg");
             if (coversToDelete.length === 0) {
                 this.logger.info(`No old '${mediaType}' covers to remove.`);
-                return;
+                continue;
             }
 
             let failedCount = 0;
@@ -170,8 +166,7 @@ export class TasksService {
     protected async runSeedAchievements() {
         this.logger.info("Starting seeding achievements...");
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        for (const mediaType of this.mediaTypes) {
             this.logger.info(`Seeding ${mediaType} achievements...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
@@ -189,8 +184,7 @@ export class TasksService {
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        for (const mediaType of this.mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
             const mediaAchievements = allAchievements.filter((all) => all.mediaType === mediaType);
             for (const achievement of mediaAchievements) {
@@ -204,8 +198,7 @@ export class TasksService {
     protected async runRemoveNonListMedia() {
         this.logger.info(`Removing non-list media...`);
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        for (const mediaType of this.mediaTypes) {
             this.logger.info(`Removing ${mediaType} non-list media...`);
 
             await withTransaction(async (_tx) => {
@@ -247,8 +240,7 @@ export class TasksService {
     protected async runComputeAllUsersStats() {
         this.logger.info("Starting: ComputeAllUsersStats execution.");
 
-        const mediaTypes = [MediaType.MOVIES];
-        for (const mediaType of mediaTypes) {
+        for (const mediaType of this.mediaTypes) {
             this.logger.info(`Computing ${mediaType} stats for all users...`);
 
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
@@ -321,29 +313,5 @@ export class TasksService {
         }
 
         await fs.promises.writeFile(envPath, lines.join("\n"));
-    }
-}
-
-
-const isRefreshable = (service: BaseProviderService<any>) => {
-    return service && typeof service.bulkProcessAndRefreshMedia === "function";
-}
-
-
-const findProjectRoot = async (markerFilename: string = "package.json") => {
-    let currentDir = path.dirname(fileURLToPath(import.meta.url));
-    while (true) {
-        const markerPath = path.join(currentDir, markerFilename);
-        try {
-            await fs.promises.access(markerPath);
-            return currentDir;
-        }
-        catch {
-            const parentDir = path.dirname(currentDir);
-            if (parentDir === currentDir) {
-                throw new Error(`Could not find project root containing "${markerFilename}".`);
-            }
-            currentDir = parentDir;
-        }
     }
 }
