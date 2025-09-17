@@ -11,6 +11,33 @@ import {GamesPlatformsEnum, JobType, MediaType, NotificationType, RatingSystemTy
 export type CoverType = "series-covers" | "anime-covers" | "movies-covers" | "games-covers" | "books-covers" | "manga-covers" |
     "profile-covers" | "profile-back-covers";
 
+export type UpdatePayload = {
+    payload: {
+        type: UpdateType;
+    } & (CommentPayload | PlatformPayload | RatingPayload | FavoritePayload |
+        PlaytimePayload | StatusPayload | PagePayload | ChapterPayload | RedoPayload |
+        RedoTvPayload | EpsSeasonPayload);
+}
+
+export type CommentPayload = {
+    comment: string | null | undefined,
+}
+
+export type PlatformPayload = {
+    platform: GamesPlatformsEnum,
+}
+
+export type RatingPayload = {
+    rating: number | null,
+}
+
+export type FavoritePayload = {
+    favorite: boolean,
+}
+
+export type PlaytimePayload = {
+    playtime: number,
+}
 
 export type StatusPayload = {
     status: Status,
@@ -29,7 +56,7 @@ export type RedoPayload = {
 }
 
 export type RedoTvPayload = {
-    redo: number[],
+    redo2: number[],
 }
 
 export type EpsSeasonPayload = {
@@ -157,13 +184,6 @@ export type TopMetricObject = {
 }
 
 export type LogPayloadDb = { old_value: any; new_value: any };
-
-export type UpdatePayload = {
-    payload: {
-        type: UpdateType;
-        [key: string]: any;
-    }
-}
 
 export type Label = { oldName?: string, name: string };
 

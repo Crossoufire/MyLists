@@ -6,7 +6,6 @@
 
 ## Fixes
 
-- FIX: Error updating redo tv
 - FIX: Admin Mediadle, seach does not work
 - FIX: sidebar not working/showing on mobile
 - FIX: Error updating platform in games details

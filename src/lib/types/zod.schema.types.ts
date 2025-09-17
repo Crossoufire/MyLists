@@ -162,8 +162,8 @@ export const updateUserMediaSchema = z.object({
         currentSeason: z.number().int().min(1).optional(),
         currentChapter: z.number().int().min(0).optional(),
         redo2: z.array(z.number().int().min(0)).optional(),
-        rating: z.number().min(0).max(10).optional(),
         lastEpisodeWatched: z.number().int().min(0).optional(),
+        rating: z.number().min(0).max(10).optional().nullable(),
     }).refine((data) => {
         const definedFields = Object.entries(data)
             .filter(([key, value]) => key !== "type" && value !== undefined)

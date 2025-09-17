@@ -225,12 +225,12 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
     }
 
     async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): Promise<[TvList, LogPayload]> {
-        const newState = { ...currentState, redo2: payload.redo };
+        const newState = { ...currentState, redo2: payload.redo2 };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
 
         const logPayload = {
             oldValue: currentState.redo2.reduce((a, b) => a + b, 0),
-            newValue: payload.redo.reduce((a, b) => a + b, 0),
+            newValue: payload.redo2.reduce((a, b) => a + b, 0),
         };
 
         const redoDiff: number[] = newState.redo2.map((val: number, idx: number) => val - currentState.redo2[idx]);
