@@ -29,7 +29,7 @@ export class NotificationsService {
                     notificationType: NotificationType.TV,
                     payload: {
                         name: item.mediaName,
-                        releaseDate: item.date,
+                        release_date: item.date,
                         season: item.seasonToAir,
                         episode: item.episodeToAir,
                         final: (item.lastEpisode === item.episodeToAir && item.episodeToAir !== 1),
@@ -48,7 +48,7 @@ export class NotificationsService {
                     notificationType: NotificationType.MEDIA,
                     payload: {
                         name: item.mediaName,
-                        releaseDate: item.date,
+                        release_date: item.date,
                     },
                 };
 

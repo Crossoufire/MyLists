@@ -39,7 +39,8 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
             ...this.updateHandlers,
             [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
             [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
-        }
+            [UpdateType.PLATFORM]: this.createSimpleUpdateHandler("platform"),
+        };
     }
 
     async calculateAdvancedMediaStats(userId?: number) {

@@ -4,7 +4,7 @@ import {Badge} from "@/lib/components/ui/badge";
 import {Button} from "@/lib/components/ui/button";
 import {useRef, useState} from "react";
 import {MediaType} from "@/lib/server/utils/enums";
-import {formatDateTime} from "@/lib/utils/functions";
+import {formatDateTime, zeroPad} from "@/lib/utils/functions";
 import {useSheet} from "@/lib/contexts/sheet-context";
 import {Separator} from "@/lib/components/ui/separator";
 import {Bell, LoaderCircle, MoveRight} from "lucide-react";
@@ -107,7 +107,7 @@ const NotificationItem = ({ data, handlePopoverClose }: NotificationItemProps) =
                             <>
                                 <div>
                                     {(data.mediaType === MediaType.ANIME || data.mediaType === MediaType.SERIES) ?
-                                        <div>{`S${data.payload?.season}.E${data.payload?.episode}`}</div>
+                                        <div>S{zeroPad(data.payload?.season)}.E{zeroPad(data.payload?.episode)}</div>
                                         :
                                         <div>Release</div>
                                     }

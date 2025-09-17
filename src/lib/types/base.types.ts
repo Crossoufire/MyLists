@@ -241,5 +241,5 @@ type NotificationPayload = {
     final?: boolean;
     season?: number | null;
     episode?: number | null;
-    releaseDate: string | null;
+    release_date: string | null;
 };
