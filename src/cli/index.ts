@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import {Command} from "commander";
-import {registerAllCommands} from "@/cli/commands";
+import {registerTaskCommand} from "@/cli/register";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 
 
 const program = new Command();
@@ -19,9 +20,7 @@ program
     .version("1.0.0");
 
 
-registerAllCommands(program);
-
-
+taskDefinitions.forEach((task) => registerTaskCommand(program, task.name, task.description));
 program.parse(process.argv);
 
 

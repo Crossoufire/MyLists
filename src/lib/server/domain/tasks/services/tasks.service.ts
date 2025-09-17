@@ -2,7 +2,6 @@ import pino from "pino";
 import path from "path";
 import * as fs from "fs";
 import {serverEnv} from "@/env/server";
-import {taskDefinitions} from "@/cli/commands";
 import {TasksName} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
@@ -20,7 +19,7 @@ type TaskHandler = () => Promise<void>;
 export class TasksService {
     private logger: pino.Logger;
     private mediaTypes: MediaType[];
-    private taskHandlers: Map<TasksName, TaskHandler>;
+    private readonly taskHandlers: Record<TasksName, TaskHandler>;
 
     constructor(
         logger: pino.Logger,
@@ -33,13 +32,23 @@ export class TasksService {
         private userStatsService: UserStatsService,
     ) {
         this.mediaTypes = Object.values(MediaType);
-        this.taskHandlers = new Map<TasksName, TaskHandler>();
         this.logger = logger.child({ service: "TasksService" });
 
-        for (const taskDef of taskDefinitions) {
-            const handler = this[taskDef.handlerMethod as keyof this] as TaskHandler;
-            this.taskHandlers.set(taskDef.name, handler.bind(this));
-        }
+        this.taskHandlers = {
+            deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
+            vacuumDB: this.runVacuumDB.bind(this),
+            analyzeDB: this.runAnalyzeDB.bind(this),
+            lockOldMovies: this.runLockOldMovies.bind(this),
+            bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),
+            seedAchievements: this.runSeedAchievements.bind(this),
+            removeNonListMedia: this.runRemoveNonListMedia.bind(this),
+            removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
+            addMediaNotifications: this.runAddMediaNotifications.bind(this),
+            computeAllUsersStats: this.runComputeAllUsersStats.bind(this),
+            calculateAchievements: this.runCalculateAchievements.bind(this),
+            updateIgdbToken: this.runUpdateIgdbToken.bind(this),
+            maintenanceTasks: this.runMaintenanceTasks.bind(this),
+        };
     }
 
     async runTask(taskName: TasksName) {
@@ -48,7 +57,7 @@ export class TasksService {
 
         const startTime = Date.now();
 
-        const taskHandler = this.taskHandlers.get(taskName);
+        const taskHandler = this.taskHandlers[taskName];
         if (!taskHandler) {
             taskLogger.error(`Unknown task name: ${taskName}`);
             throw new Error(`Unknown task name: ${taskName}`);

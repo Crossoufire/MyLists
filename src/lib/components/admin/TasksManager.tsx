@@ -1,11 +1,11 @@
 import {toast} from "sonner";
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {taskDefinitions} from "@/cli/commands";
 import {Badge} from "@/lib/components/ui/badge";
 import {TasksName} from "@/lib/types/base.types";
 import {Button} from "@/lib/components/ui/button";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
 import {CheckCircle, Clock, Eye, EyeOff, Loader2, Play, Terminal} from "lucide-react";
 import {useAdminTriggerTaskMutation} from "@/lib/react-query/query-mutations/admin.mutations";

@@ -1,6 +1,5 @@
 import {serverEnv} from "@/env/server";
 import {JobType as MqJobType} from "bullmq";
-import {taskDefinitions} from "@/cli/commands";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
@@ -18,6 +17,7 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 
 
 const COOKIE_OPTIONS = {
@@ -131,9 +131,7 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 export const getAdminTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .handler(async () => {
-        return taskDefinitions;
-    });
+    .handler(async () => taskDefinitions);
 
 
 export const postTriggerLongTasks = createServerFn({ method: "POST" })

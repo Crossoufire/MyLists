@@ -4,14 +4,7 @@ import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
 
 
-interface RegisterTaskCommandParams {
-    program: Command;
-    taskName: TasksName;
-    description: string;
-}
-
-
-export function registerTaskCommand({ program, taskName, description }: RegisterTaskCommandParams) {
+export const registerTaskCommand = (program: Command, taskName: TasksName, description: string) => {
     program
         .command(taskName)
         .description(description)
@@ -27,7 +20,6 @@ export function registerTaskCommand({ program, taskName, description }: Register
                     const taskService = container.services.tasks;
                     await taskService.runTask(taskName);
                     cliLogger.info(`Task ${taskName} completed directly via CLI.`);
-                    process.exit(0);
                 }
                 catch (error) {
                     cliLogger.fatal({ err: error }, `Fatal error during direct ${taskName} execution in CLI`);
@@ -41,14 +33,14 @@ export function registerTaskCommand({ program, taskName, description }: Register
                 try {
                     const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "cron/cli" });
                     cliLogger.info({ jobId: job.id }, `Task ${taskName} enqueued successfully via CLI.`);
-                    await mylistsLongTaskQueue.close();
-                    process.exit(0);
                 }
                 catch (error) {
                     cliLogger.fatal({ err: error }, `Fatal error during ${taskName} enqueue in CLI`);
-                    await mylistsLongTaskQueue.close();
                     process.exit(1);
+                }
+                finally {
+                    await mylistsLongTaskQueue.close();
                 }
             }
         });
-}
+};
