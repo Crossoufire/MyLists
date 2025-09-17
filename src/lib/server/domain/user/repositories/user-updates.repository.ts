@@ -99,7 +99,7 @@ export class UserUpdatesRepository {
 
         return {
             updatesDistribution: monthlyCounts,
-            avgUpdates: monthlyCounts.length > 0 ? (totalUpdates / monthlyCounts.length).toFixed(1) : "--",
+            avgUpdates: monthlyCounts.length > 0 ? (totalUpdates / monthlyCounts.length).toFixed(1) : "-",
             totalUpdates,
         };
     }

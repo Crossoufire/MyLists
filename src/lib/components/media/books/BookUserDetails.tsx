@@ -15,6 +15,7 @@ type BooksUserDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[
 export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDetailsProps<typeof MediaType.BOOKS>) => {
     const queryClient = useQueryClient();
     const updateUserMediaMutation = useUpdateUserMediaMutation(mediaType, userMedia.mediaId, queryKey);
+
     const mediaData = getMediaData();
 
     function getMediaData() {
@@ -54,7 +55,6 @@ export const BooksUserDetails = ({ userMedia, mediaType, queryKey }: BooksUserDe
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
-                            ratingSystem={userMedia.ratingSystem}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>

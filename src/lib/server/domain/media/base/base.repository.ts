@@ -806,10 +806,12 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         const [topValues, topRated, topFavorited] = await Promise.all([topValuesQuery, topRatedQuery, topFavoritedQuery]);
 
+        const defaultEntry = [{ name: "-", value: 0 }];
+
         return {
-            topValues: topValues.map((row) => ({ name: row.name, value: row.value || 0 })),
-            topRated: topRated.map((row) => ({ name: row.name, value: Math.round((Number(row.value) || 0) * 100) / 100 })),
-            topFavorited: topFavorited.map((row) => ({ name: row.name, value: row.value || 0 })),
+            topValues: topValues.length ? topValues.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
+            topRated: topRated.length ? topRated.map(row => ({ name: row.name, value: (Number(row.value) || 0).toFixed(1) })) : defaultEntry,
+            topFavorited: topFavorited.length ? topFavorited.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
         };
     }
 

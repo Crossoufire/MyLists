@@ -42,14 +42,14 @@ export const useDeleteUpdatesMutation = (queryKey: DeleteUpdatesKeys) => {
 };
 
 
-export const useAddMediaToListMutation = (mediaType: MediaType, queryKey: DetailsUserListKeys) => {
+export const useAddMediaToListMutation = (queryKey: DetailsUserListKeys) => {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: postAddMediaToList,
         meta: {
-            successMessage: `${mediaType} added to your list`,
-            errorMessage: `Failed to add this ${mediaType} to your list`,
+            successMessage: "Media added to your list",
+            errorMessage: "Failed to add this media to your list",
         },
         onSuccess: (data, variables) => {
             if (queryKey[0] === "details") {

@@ -3,11 +3,11 @@ import {Trophy} from "lucide-react";
 import {cn} from "@/lib/utils/helpers";
 import {Link} from "@tanstack/react-router";
 import {useAuth} from "@/lib/hooks/use-auth";
+import {useIsMobile} from "@/lib/hooks/use-mobile";
 import {Card, CardContent} from "@/lib/components/ui/card";
 import {HofUserData} from "@/lib/types/query.options.types";
 import {capitalize, computeLevel} from "@/lib/utils/functions";
 import {MediaLevelCircle} from "@/lib/components/general/MediaLevelCircle";
-import {useIsMobile} from "@/lib/hooks/use-mobile";
 
 
 interface HofCardProps {
@@ -47,7 +47,7 @@ export const HofCard = ({ userData }: HofCardProps) => {
                                 className="rounded-full h-[75px] w-[75px] border-2 border-amber-600 bg-neutral-500"
                             />
                             <div className="space-y-2">
-                                <h3 className="text-xl font-medium">
+                                <h3 className="text-lg font-medium sm:truncate sm:w-[150px]">
                                     <Link to="/profile/$username" params={{ username: userData.name }} className="hover:underline hover:underline-offset-2">
                                         {userData.name}
                                     </Link>

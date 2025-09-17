@@ -43,7 +43,7 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
                 />
                 <MediaValues
                     title="Rated"
-                    value={`${media.avgRated?.toFixed(2)}/${media.totalNoPlan}`}
+                    value={`${media.entriesRated}/${media.totalNoPlan}`}
                 />
             </div>
             <MediaStatuses

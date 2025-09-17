@@ -54,9 +54,10 @@ export class JikanTransformer {
             .map((author) => {
                 const [last, first] = author.name?.split(",", 2) ?? [""];
                 return first ? `${first.trim()} ${last.trim()}` : last;
-            });
+            })
+            .map((name) => ({ name }));
         ;
 
         return { mediaData, authorsData, genresData }
-    }
+    };
 }

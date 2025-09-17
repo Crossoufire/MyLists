@@ -36,7 +36,7 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                 <div className="absolute right-2 top-2 z-10">
                     {isCurrent &&
                         <div role="button" onClick={() => setDialogOpen(true)}>
-                            <Settings2 className="h-4 w-4 opacity-70"/>
+                            <Settings2 className="size-4 opacity-70"/>
                         </div>
                     }
                     {!isCurrent && !userMedia.common && isConnected &&

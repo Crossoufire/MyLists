@@ -16,8 +16,10 @@ export const createStatCard = (title: string, value: any, subtitle: string, data
 
 export const createRatingStatCard = (ratingSystem: RatingSystemType, avgRating: number, totalRated: number): StatCardData => {
     const displayValue = (ratingSystem === RatingSystemType.SCORE) ?
-        avgRating.toFixed(2) : getFeelingIcon(avgRating, { size: 25, className: "mt-1.5" });
-
+        totalRated === 0 ? "-" : `${avgRating ? avgRating.toFixed(2) : "--"}`
+        :
+        getFeelingIcon(avgRating, { size: 25, className: "mt-1.5" })
+        
     return {
         title: "Avg. Rating",
         value: displayValue || "-",

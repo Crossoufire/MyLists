@@ -35,7 +35,6 @@ export const GamesUserDetails = ({ userMedia, mediaType, queryKey }: GamesUserDe
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
-                            ratingSystem={userMedia.ratingSystem}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>

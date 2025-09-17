@@ -1,5 +1,6 @@
 import {Cell, Pie, PieChart} from "recharts";
 import {useCollapse} from "@/lib/hooks/use-collapse";
+import {RatingSystemType} from "@/lib/server/utils/enums";
 import {getFeelingIcon, getMediaColor} from "@/lib/utils/functions";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/lib/components/ui/tooltip";
@@ -114,10 +115,10 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                 <div>
                                     <div className="text-neutral-500 text-lg">Avg. Rating</div>
                                     <div className="flex items-center justify-center">
-                                        {userData.ratingSystem === "score" ?
-                                            `${global.avgRated.toFixed(2)}/10`
+                                        {userData.ratingSystem === RatingSystemType.SCORE ?
+                                            global.totalRated === 0 ? "--" : `${global.avgRated ? global.avgRated : "--"}`
                                             :
-                                            getFeelingIcon(global.avgRated, { size: 18, className: "mt-1" })
+                                            getFeelingIcon(global.avgRated, { size: 16, className: "mt-1" })
                                         }
                                     </div>
                                 </div>

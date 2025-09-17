@@ -1,3 +1,4 @@
+import {useAuth} from "@/lib/hooks/use-auth";
 import {RatingSystemType, UpdateType} from "@/lib/server/utils/enums";
 import {getFeelingIcon, getFeelingList, getScoreList} from "@/lib/utils/functions";
 import {useUpdateUserMediaMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
@@ -6,14 +7,14 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/l
 
 interface RatingComponentProps {
     rating: number | null;
-    ratingSystem: RatingSystemType;
     onUpdateMutation: ReturnType<typeof useUpdateUserMediaMutation>;
 }
 
 
-export const UpdateRating = ({ rating, ratingSystem, onUpdateMutation }: RatingComponentProps) => {
-    const ratingList = (ratingSystem === RatingSystemType.SCORE) ? getScoreList() : getFeelingList({ size: 16 });
-    const ratingValue = (ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { valueOnly: true });
+export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps) => {
+    const { currentUser } = useAuth();
+    const ratingList = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? getScoreList() : getFeelingList({ size: 16 });
+    const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { valueOnly: true });
 
     const handleSelectChange = (value: string) => {
         const valueToSend = value === "--" ? null : parseFloat(value);

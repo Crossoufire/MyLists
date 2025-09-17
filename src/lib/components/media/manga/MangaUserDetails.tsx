@@ -54,13 +54,12 @@ export const MangaUserDetails = ({ userMedia, mediaType, queryKey }: MangaUserDe
                         <div>Rating</div>
                         <UpdateRating
                             rating={userMedia.rating}
-                            ratingSystem={userMedia.ratingSystem}
                             onUpdateMutation={updateUserMediaMutation}
                         />
                     </div>
                 </>
             }
-            {userMedia.status !== Status.PLAN_TO_READ &&
+            {(userMedia.status !== Status.PLAN_TO_READ && mediaData.chapters) &&
                 <UpdateRedo
                     name={"Re-read"}
                     redo={userMedia.redo}

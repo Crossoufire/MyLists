@@ -13,8 +13,8 @@ import {mediaConfig} from "@/lib/components/media/media-config";
 import {useOnClickOutside} from "@/lib/hooks/use-clicked-outside";
 import {GamesPlatformsEnum, JobType, Status} from "@/lib/server/utils/enums";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {ChevronDown, ChevronUp, CircleHelp, LoaderCircle, Search, X} from "lucide-react";
+import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/components/ui/command";
 import {filterSearchOptions, listFiltersOptions} from "@/lib/react-query/query-options/query-options";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/lib/components/ui/sheet";
 

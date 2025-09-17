@@ -4,6 +4,7 @@ import {MediaType, Status} from "@/lib/server/utils/enums";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {MutedText} from "../../general/MutedText";
 
 
 interface QuickAddMediaProps {
@@ -15,7 +16,7 @@ interface QuickAddMediaProps {
 
 
 export const QuickAddMedia = ({ mediaType, mediaId, allStatuses, queryKey }: QuickAddMediaProps) => {
-    const addToListMutation = useAddMediaToListMutation(mediaType, queryKey);
+    const addToListMutation = useAddMediaToListMutation(queryKey);
 
     const addMediaToUser = (status: Status) => {
         addToListMutation.mutate({ data: { mediaType, status, mediaId } });
@@ -24,12 +25,12 @@ export const QuickAddMedia = ({ mediaType, mediaId, allStatuses, queryKey }: Qui
     return (
         <Popover>
             <PopoverTrigger>
-                <CirclePlus className="w-4 h-4 opacity-70"/>
+                <CirclePlus className="size-4 opacity-70 mb-0.5"/>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-40 py-1 px-1 text-sm">
-                <div className="text-sm not-italic text-center mb-2 text-muted-foreground">Add to your list</div>
+                <MutedText className="text-center mb-1" italic={false}>Add to your list</MutedText>
                 {allStatuses.map((status) =>
-                    <Button key={status} onClick={() => addMediaToUser(status)}>
+                    <Button key={status} variant="ghost" size="sm" className="w-full justify-start" onClick={() => addMediaToUser(status)}>
                         {status}
                     </Button>
                 )}

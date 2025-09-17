@@ -241,8 +241,8 @@ export class UserStatsService {
 
         // The divisor for averages changes based on context
         const avgDivisor = userId ? distinctMediaTypes : totalUsers;
-        const avgComments = avgDivisor === 0 ? 0 : (totalComments / avgDivisor).toFixed(2);
-        const avgFavorites = avgDivisor === 0 ? 0 : (totalFavorites / avgDivisor).toFixed(2);
+        const avgComments = avgDivisor === 0 ? "-" : (totalComments / avgDivisor).toFixed(2);
+        const avgFavorites = avgDivisor === 0 ? "-" : (totalFavorites / avgDivisor).toFixed(2);
 
         return {
             avgRated,

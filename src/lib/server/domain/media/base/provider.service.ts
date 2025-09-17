@@ -38,7 +38,7 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
         return this._enhanceDetails(details, isBulk, rawData);
     }
 
-    protected abstract _transformDetails(rawData: any): Promise<any>;
+    protected abstract _transformDetails(rawData: GBooksDetails | IgdbGameDetails | JikanDetails | TmdbMovieDetails | TmdbTvDetails): Promise<any>;
 
     protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails | GBooksDetails | JikanDetails>;
 

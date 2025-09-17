@@ -50,7 +50,6 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
                     <div>Rating</div>
                     <UpdateRating
                         rating={userMedia.rating}
-                        ratingSystem={userMedia.ratingSystem}
                         onUpdateMutation={updateUserMediaMutation}
                     />
                 </div>

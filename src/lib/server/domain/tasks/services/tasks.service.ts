@@ -35,8 +35,8 @@ export class TasksService {
         this.logger = logger.child({ service: "TasksService" });
 
         this.taskHandlers = {
-            vacuumDB: this.runVacuumDB.bind(this),
-            analyzeDB: this.runAnalyzeDB.bind(this),
+            vacuumDb: this.runVacuumDB.bind(this),
+            analyzeDb: this.runAnalyzeDB.bind(this),
             lockOldMovies: this.runLockOldMovies.bind(this),
             updateIgdbToken: this.runUpdateIgdbToken.bind(this),
             bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),

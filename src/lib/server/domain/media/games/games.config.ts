@@ -29,7 +29,6 @@ export const gamesConfig: GamesSchemaConfig = {
             platforms: createArrayFilterDef({
                 argName: "platforms",
                 mediaTable: schema.games,
-                entityTable: schema.gamesList,
                 filterColumn: schema.gamesList.platform,
             }),
             companies: createArrayFilterDef({
