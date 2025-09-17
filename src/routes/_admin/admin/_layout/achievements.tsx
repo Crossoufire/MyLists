@@ -7,13 +7,13 @@ import {Button} from "@/lib/components/ui/button";
 import {Textarea} from "@/lib/components/ui/textarea";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
+import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {DashboardShell} from "@/lib/components/admin/DashboardShell";
 import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
 import {adminAchievementsOptions} from "@/lib/react-query/query-options/admin-options";
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
 import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/react-query/query-mutations/admin.mutations";
-import {AchievementTier} from "@/lib/types/zod.schema.types";
 
 
 type Achievement = Awaited<ReturnType<NonNullable<ReturnType<typeof adminAchievementsOptions>["queryFn"]>>>[0];
@@ -107,22 +107,22 @@ function AchievementPage() {
 
     return (
         <DashboardShell>
-            <DashboardHeader heading="Achievements" description="Manage achievement definitions and tiers."/>
+            <DashboardHeader
+                heading="Achievements Manager"
+                description="Manage the achievement definitions and associated tiers."
+            />
             <div className="grid gap-6">
-                <h2 className="text-2xl font-bold">Achievement Management</h2>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {apiData.map((achievement) =>
                         <Card key={achievement.id}>
                             <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle>{achievement.name}</CardTitle>
-                                    </div>
+                                <CardTitle>{achievement.name}</CardTitle>
+                                <CardAction>
                                     <Badge variant="outline">
                                         {capitalize(achievement.mediaType)}
                                     </Badge>
-                                </div>
-                                <CardDescription className="h-8">
+                                </CardAction>
+                                <CardDescription className="text-sm">
                                     {achievement.description}
                                 </CardDescription>
                             </CardHeader>

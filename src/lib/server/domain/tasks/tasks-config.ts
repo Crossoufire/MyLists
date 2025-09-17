@@ -1,7 +1,7 @@
 export const taskDefinitions = [
     { name: "deleteNonActivatedUsers", description: "Delete non-activated users older than a week" },
-    { name: "vacuumDB", description: "Vacuum the database" },
-    { name: "analyzeDB", description: "Analyze the database" },
+    { name: "vacuumDb", description: "Vacuum the database" },
+    { name: "analyzeDb", description: "Analyze the database" },
     { name: "lockOldMovies", description: "Lock old movies from the database" },
     { name: "bulkMediaRefresh", description: "Bulk refresh media data from APIs provider" },
     { name: "seedAchievements", description: "Apply seed achievements to the database" },

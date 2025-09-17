@@ -1,7 +1,6 @@
-import {Search, X} from "lucide-react";
+import {Search} from "lucide-react";
 import {useMemo, useState} from "react";
 import {Input} from "@/lib/components/ui/input";
-import {Button} from "@/lib/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
@@ -24,25 +23,33 @@ export const Route = createFileRoute("/_admin/admin/_layout/mediadle")({
 })
 
 
+const DEFAULT = { search: "", page: 1 } satisfies SearchType;
+
+
 function AdminMediadlePage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
+    const { search = DEFAULT.search } = filters;
     const apiData = useSuspenseQuery(adminMediadleOptions(filters)).data;
     const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
-    const setFilters = async (filtersData: SearchType) => {
-        await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
+    const fetchData = async (filtersData: SearchType) => {
+        await navigate({ search: filtersData, resetScroll: false });
     };
 
-    const resetFilters = async () => {
-        await navigate({ search: {} });
-        setCurrentSearch("");
-    };
+    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = ev.target.value;
+        setCurrentSearch(value);
+        if (value === "") {
+            await fetchData({});
+            setCurrentSearch(DEFAULT.search);
+        }
+    }
 
-    const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {
+    const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
-        setFilters({ page: newPagination.pageIndex + 1 });
+        await fetchData({ search: search, page: newPagination.pageIndex + 1 });
     };
 
     const mediadleColumns = useMemo((): ColumnDef<typeof apiData.items[0]>[] => [
@@ -121,7 +128,7 @@ function AdminMediadlePage() {
                 </div>
             ),
         },
-    ], [apiData]);
+    ], []);
 
     const table = useReactTable({
         manualFiltering: true,
@@ -130,37 +137,28 @@ function AdminMediadlePage() {
         data: apiData?.items ?? [],
         rowCount: apiData?.total ?? 0,
         getCoreRowModel: getCoreRowModel(),
-        state: { pagination: paginationState },
         onPaginationChange: onPaginationChange,
+        state: { pagination: paginationState },
     });
 
-    useDebounceCallback(currentSearch, 300, () => setFilters({ ...filters, search: currentSearch, page: 1 }));
+    useDebounceCallback(currentSearch, 300, () => fetchData({ search: currentSearch, page: 1 }));
 
     return (
         <DashboardShell>
-            <DashboardHeader heading="Mediadle Stats" description="View all users moviedle stats."/>
-            <div className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex w-full max-w-sm items-center space-x-2">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"/>
-                        <Input
-                            type="search"
-                            value={currentSearch}
-                            className="w-[250px] pl-8"
-                            placeholder="Search users..."
-                            onChange={(ev) => setCurrentSearch(ev.target.value)}
-                        />
-                        {currentSearch &&
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={resetFilters}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-2"
-                            >
-                                <X className="size-4"/>
-                            </Button>
-                        }
-                    </div>
+            <DashboardHeader
+                heading="Mediadle Stats"
+                description="View all users moviedle stats."
+            />
+            <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
+                    <Input
+                        type="search"
+                        value={currentSearch}
+                        className="pl-8 w-64"
+                        onChange={onSearchChange}
+                        placeholder="Search by name..."
+                    />
                 </div>
             </div>
             <div className="rounded-md border p-3 pt-0 overflow-x-auto">
@@ -178,10 +176,10 @@ function AdminMediadlePage() {
                     </TableHeader>
                     <TableBody>
                         {table.getRowModel().rows?.length ?
-                            table.getRowModel().rows.map(row => {
+                            table.getRowModel().rows.map((row) => {
                                 return (
                                     <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                        {row.getVisibleCells().map(cell =>
+                                        {row.getVisibleCells().map((cell) =>
                                             <TableCell key={cell.id}>
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
@@ -206,5 +204,5 @@ function AdminMediadlePage() {
                 />
             </div>
         </DashboardShell>
-    )
+    );
 }

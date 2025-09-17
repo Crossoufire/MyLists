@@ -1,5 +1,5 @@
-import {Search, X} from "lucide-react";
 import {useState} from "react";
+import {Search} from "lucide-react";
 import {Input} from "@/lib/components/ui/input";
 import {capitalize} from "@/lib/utils/functions";
 import {MediaType} from "@/lib/server/utils/enums";
@@ -31,17 +31,21 @@ function HallOfFamePage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const apiData = useSuspenseQuery(hallOfFameOptions(filters)).data;
-    const [currentSearch, setcurrentSearch] = useState(filters?.search ?? "");
+    const [currentSearch, setCurrentSearch] = useState(filters?.search ?? "");
     const { page = DEFAULT.page, sorting = DEFAULT.sorting, search = DEFAULT.search } = filters;
 
     const fetchData = async (params: SearchTypeHoF) => {
         await navigate({ search: params });
     };
 
-    const resetSearch = async () => {
-        setcurrentSearch(DEFAULT.search);
-        await fetchData({ ...filters, search: DEFAULT.search });
-    };
+    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = ev.target.value;
+        setCurrentSearch(value);
+        if (value === "") {
+            setCurrentSearch(DEFAULT.search);
+            await fetchData({ ...filters, search: DEFAULT.search });
+        }
+    }
 
     const onPageChange = async (page: number) => {
         await fetchData({ page, sorting, search });
@@ -62,20 +66,16 @@ function HallOfFamePage() {
                         <div className="flex items-center justify-start gap-3">
                             <div className="relative">
                                 <Input
+                                    type="search"
                                     value={currentSearch}
+                                    onChange={onSearchChange}
                                     placeholder="Search by name..."
-                                    onChange={(ev) => setcurrentSearch(ev.target.value)}
                                     className="pl-10 rounded-md w-[220px] max-sm:text-sm"
                                 />
                                 <Search
                                     size={18}
                                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                                 />
-                                {search &&
-                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                                        <X role="button" className="size-4" onClick={resetSearch}/>
-                                    </div>
-                                }
                             </div>
                         </div>
                         <div>

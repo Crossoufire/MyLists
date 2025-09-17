@@ -35,19 +35,19 @@ export class TasksService {
         this.logger = logger.child({ service: "TasksService" });
 
         this.taskHandlers = {
-            deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
             vacuumDB: this.runVacuumDB.bind(this),
             analyzeDB: this.runAnalyzeDB.bind(this),
             lockOldMovies: this.runLockOldMovies.bind(this),
+            updateIgdbToken: this.runUpdateIgdbToken.bind(this),
             bulkMediaRefresh: this.runBulkMediaRefresh.bind(this),
             seedAchievements: this.runSeedAchievements.bind(this),
+            maintenanceTasks: this.runMaintenanceTasks.bind(this),
             removeNonListMedia: this.runRemoveNonListMedia.bind(this),
-            removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
-            addMediaNotifications: this.runAddMediaNotifications.bind(this),
             computeAllUsersStats: this.runComputeAllUsersStats.bind(this),
             calculateAchievements: this.runCalculateAchievements.bind(this),
-            updateIgdbToken: this.runUpdateIgdbToken.bind(this),
-            maintenanceTasks: this.runMaintenanceTasks.bind(this),
+            addMediaNotifications: this.runAddMediaNotifications.bind(this),
+            removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
+            deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
         };
     }
 

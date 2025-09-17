@@ -34,6 +34,11 @@ export function TasksManager({ tasksList }: TasksManagerProps) {
         })
     };
 
+    const formatCamelCase = (str: string) => {
+        const withSpaces = str.replace(/([A-Z])/g, " $1");
+        return withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1).trim();
+    };
+
     return (
         <Tabs defaultValue="tasks" className="w-full">
             <TabsList>
@@ -51,7 +56,7 @@ export function TasksManager({ tasksList }: TasksManagerProps) {
                         return (
                             <Card key={task.name}>
                                 <CardHeader>
-                                    <CardTitle>{task.name}</CardTitle>
+                                    <CardTitle>{formatCamelCase(task.name)}</CardTitle>
                                     <CardDescription>{task.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent>

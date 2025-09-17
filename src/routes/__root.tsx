@@ -11,13 +11,11 @@ import {SheetProvider} from "@/lib/contexts/sheet-context";
 import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
-import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
+import {createRootRouteWithContext, HeadContent, Outlet, Scripts, useLocation} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    beforeLoad: async ({ context: { queryClient } }) => {
-        return queryClient.fetchQuery(authOptions());
-    },
+    beforeLoad: async ({ context: { queryClient } }) => queryClient.fetchQuery(authOptions()),
     head: () => ({
         meta: [
             { charSet: "utf-8" },
@@ -42,6 +40,8 @@ function RootComponent() {
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
     useNProgress();
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith("/admin");
 
     return (
         <html suppressHydrationWarning>
@@ -50,15 +50,12 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         </head>
         <body>
 
-        <div id="root" className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
-            <Toaster/>
-            <SheetProvider>
-                <Navbar/>
-            </SheetProvider>
-            <main className="flex-1 w-[100%] max-w-[1320px] px-2 mx-auto">
-                {children}
-            </main>
-            <Footer/>
+        <div id="root">
+            {isAdminRoute ?
+                <AdminLayout>{children}</AdminLayout>
+                :
+                <MainLayout>{children}</MainLayout>
+            }
 
             {import.meta.env.DEV &&
                 <TanStackDevtools
@@ -83,5 +80,31 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         <Scripts/>
         </body>
         </html>
+    );
+}
+
+
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
+    return (
+        <div className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
+            <Toaster/>
+            <SheetProvider>
+                <Navbar/>
+            </SheetProvider>
+            <main className="flex-1 w-[100%] max-w-[1320px] px-2 mx-auto">
+                {children}
+            </main>
+            <Footer/>
+        </div>
+    );
+}
+
+
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+    return (
+        <>
+            <Toaster/>
+            {children}
+        </>
     );
 }

@@ -2,12 +2,10 @@
 
 ## KNOWN BUGS:
 
-- KNOWN_BUG: When using react compiler selected rows does not work (same for pages, tanstack-table)
+- KNOWN_BUG: When using react compiler selected rows and pages does not work (tanstack-table)
 
 ## Fixes
 
-- FIX: Admin Mediadle, seach does not work
-- FIX: sidebar not working/showing on mobile
 - FIX: Error updating platform in games details
 - FIX: Bad formatting tv notification (see Gen V)
 - FIX: Edit media is a fucking mess, lots of weird stuff

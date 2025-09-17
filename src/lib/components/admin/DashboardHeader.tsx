@@ -3,19 +3,19 @@ import type React from "react";
 
 interface DashboardHeaderProps {
     heading: string;
-    description?: string;
-    children?: React.ReactNode;
+    description: string;
 }
 
 
-export function DashboardHeader({ heading, description, children }: DashboardHeaderProps) {
+export function DashboardHeader({ heading, description }: DashboardHeaderProps) {
     return (
-        <div className="flex items-center justify-between px-2">
-            <div className="grid gap-1">
-                <h1 className="font-heading text-3xl md:text-4xl">{heading}</h1>
-                {description && <p className="text-lg text-muted-foreground">{description}</p>}
-            </div>
-            {children}
+        <div className="mb-8">
+            <h2 className="font-heading text-2xl md:text-4xl">
+                {heading}
+            </h2>
+            <p className="text-lg text-muted-foreground mt-1">
+                {description}
+            </p>
         </div>
-    )
+    );
 }

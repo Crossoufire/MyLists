@@ -11,7 +11,7 @@ interface RecentUsersProps {
 
 export function RecentUsers({ users }: RecentUsersProps) {
     return (
-        <div className="space-y-8 overflow-y-auto max-h-90 pr-4">
+        <div className="space-y-5 overflow-y-auto max-h-86 pr-4">
             {users.map((user) =>
                 <div key={user.id} className="flex items-center">
                     <Avatar className="h-9 w-9">

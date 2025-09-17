@@ -15,7 +15,7 @@ import {userAdminOptions} from "@/lib/react-query/query-options/admin-options";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {useAdminUpdateUserMutation} from "@/lib/react-query/query-mutations/admin.mutations";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
-import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX, X} from "lucide-react";
+import {CheckCircle, ChevronsUpDown, MoreHorizontal, Search, Trash2, UserCheck, UserX} from "lucide-react";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, SortingState, useReactTable} from "@tanstack/react-table";
 import {
     DropdownMenu,
@@ -49,10 +49,14 @@ function UserManagementPage() {
         await navigate({ search: (prev) => ({ ...prev, ...filtersData }), replace: true });
     };
 
-    const resetFilters = async () => {
-        await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
-        setCurrentSearch("");
-    };
+    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = ev.target.value;
+        setCurrentSearch(value);
+        if (value === "") {
+            await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
+            setCurrentSearch("");
+        }
+    }
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
@@ -296,28 +300,20 @@ function UserManagementPage() {
 
     return (
         <DashboardShell>
-            <DashboardHeader heading="User Management" description="View and manage all users on your platform."/>
-            <div className="flex flex-col pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex w-full max-w-sm items-center space-x-2">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
-                        <Input
-                            value={currentSearch}
-                            className="w-[250px] pl-8"
-                            placeholder="Search users..."
-                            onChange={(ev) => setCurrentSearch(ev.target.value)}
-                        />
-                        {currentSearch &&
-                            <Button
-                                size="xs"
-                                variant="ghost"
-                                onClick={resetFilters}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-2"
-                            >
-                                <X className="size-4"/>
-                            </Button>
-                        }
-                    </div>
+            <DashboardHeader
+                heading="User Management"
+                description="View and manage all users on your platform."
+            />
+            <div className="flex items-center justify-between mb-3 max-sm:flex-col max-sm:items-start max-sm:justify-center max-sm:gap-2">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground"/>
+                    <Input
+                        type="search"
+                        value={currentSearch}
+                        onChange={onSearchChange}
+                        className="w-[250px] pl-8"
+                        placeholder="Search users..."
+                    />
                 </div>
                 <Button variant="outline" onClick={() => updateUser(undefined, { showUpdateModal: true })}>
                     <CheckCircle className="size-4"/> Activate Features Flag

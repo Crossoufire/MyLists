@@ -37,6 +37,14 @@ export class MediadleRepository {
             .offset(offset)
             .execute();
 
+        console.dir({
+            data: {
+                items: results,
+                pages: Math.ceil((totalStats ?? 0) / perPage),
+                total: totalStats,
+            }
+        }, { depth: null });
+
         return {
             items: results,
             pages: Math.ceil((totalStats ?? 0) / perPage),

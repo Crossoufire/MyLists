@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Search, X} from "lucide-react";
+import {Search} from "lucide-react";
 import {useAuth} from "@/lib/hooks/use-auth";
 import {Input} from "@/lib/components/ui/input";
 import {Button} from "@/lib/components/ui/button";
@@ -110,10 +110,14 @@ function AllUpdates() {
         await navigate({ search: filtersData, resetScroll: false });
     };
 
-    const resetSearch = async () => {
-        setCurrentSearch(DEFAULT.search);
-        await fetchData({});
-    };
+    const onSearchChange = async (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const value = ev.target.value;
+        setCurrentSearch(value);
+        if (value === "") {
+            await fetchData({});
+            setCurrentSearch(DEFAULT.search);
+        }
+    }
 
     const onPaginationChange: OnChangeFn<PaginationState> = async (updaterOrValue) => {
         const newPagination = typeof updaterOrValue === "function" ? updaterOrValue(paginationState) : updaterOrValue;
@@ -148,23 +152,13 @@ function AllUpdates() {
                         <div className="relative">
                             <Search size={15} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"/>
                             <Input
+                                type="search"
                                 value={currentSearch}
+                                onChange={onSearchChange}
                                 className="pl-8 w-56 text-sm"
                                 placeholder="Search by name..."
                                 disabled={deleteUpdateMutation.isPending}
-                                onChange={(ev) => setCurrentSearch(ev.target.value)}
                             />
-                            {search &&
-                                <Button
-                                    size="xs"
-                                    variant="ghost"
-                                    onClick={resetSearch}
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground"
-                                    disabled={deleteUpdateMutation.isPending}
-                                >
-                                    <X/>
-                                </Button>
-                            }
                         </div>
                     </div>
                     {(isCurrent && Object.keys(rowSelected).length !== 0) &&
@@ -176,9 +170,9 @@ function AllUpdates() {
                 <div className="rounded-md border p-3 pt-0 overflow-x-auto">
                     <Table>
                         <TableHeader>
-                            {table.getHeaderGroups().map(headerGroup =>
+                            {table.getHeaderGroups().map((headerGroup) =>
                                 <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map(header =>
+                                    {headerGroup.headers.map((header) =>
                                         <TableHead key={header.id}>
                                             {!header.isPlaceholder && flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
@@ -188,14 +182,14 @@ function AllUpdates() {
                         </TableHeader>
                         <TableBody>
                             {table.getRowModel().rows?.length ?
-                                table.getRowModel().rows.map(row => {
+                                table.getRowModel().rows.map((row) => {
                                     return (
                                         <TableRow
                                             key={row.id}
                                             data-state={row.getIsSelected() && "selected"}
                                             className={(deleteUpdateMutation.isPending && row.getIsSelected()) ? "opacity-50" : ""}
                                         >
-                                            {row.getVisibleCells().map(cell =>
+                                            {row.getVisibleCells().map((cell) =>
                                                 <TableCell key={cell.id}>
                                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                                 </TableCell>
