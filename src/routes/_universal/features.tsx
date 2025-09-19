@@ -1,9 +1,10 @@
 import {Sparkles} from "lucide-react";
 import {Badge} from "@/lib/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {ApiProviderType} from "@/lib/server/utils/enums";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
 
 
 export const Route = createFileRoute("/_universal/features")({
@@ -12,6 +13,43 @@ export const Route = createFileRoute("/_universal/features")({
 
 
 const features = [
+    {
+        name: "Search MyLists using !bangs",
+        description: "You can now search MyLists Media and Users using your custom bangs.",
+        isNew: true,
+        popover: <div>
+            <div className="font-medium">How to search</div>
+            <div className="italic text-green-500">
+                https://mylists.info/search?q=
+                <span className="text-orange-400">term</span>
+                &apiProvider=<span className="text-orange-400">provider</span>
+            </div>
+
+            <div className="font-medium mt-3">Available Providers</div>
+            <div>
+                <div>- <span className="text-blue-400">{ApiProviderType.TMDB}</span> for Series, Anime, Movies.</div>
+                <div>- <span className="text-blue-400">{ApiProviderType.IGDB}</span> for Games.</div>
+                <div>- <span className="text-blue-400">{ApiProviderType.BOOKS}</span> for Books.</div>
+                <div>- <span className="text-blue-400">{ApiProviderType.MANGA}</span> for Manga.</div>
+                <div>- <span className="text-blue-400">{ApiProviderType.USERS}</span> for Users.</div>
+            </div>
+
+            <div className="font-medium mt-3">Examples</div>
+            <div>
+                <div className="italic text-green-500">
+                    https://mylists.info/search?q=
+                    <span className="text-orange-400">interstellar</span>
+                    &apiProvider=<span className="text-orange-400">{ApiProviderType.TMDB}</span>
+                </div>
+                <div className="my-3"></div>
+                <div className="italic text-green-500">
+                    https://mylists.info/search?q=
+                    <span className="text-orange-400">halo</span>
+                    &apiProvider=<span className="text-orange-400">{ApiProviderType.IGDB}</span>
+                </div>
+            </div>
+        </div>
+    },
     {
         name: "New Re-watch System TV!",
         description: "You can now add re-watch information per season, instead of per Series/Anime.",
@@ -134,7 +172,7 @@ function FeatureShowcase() {
                                             More Info
                                         </div>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-72">
+                                    <PopoverContent className="w-86" align="start">
                                         {feature.popover}
                                     </PopoverContent>
                                 </Popover>

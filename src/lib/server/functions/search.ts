@@ -20,6 +20,10 @@ export const getSearchResults = createServerFn({ method: "GET" })
         const gBookTransformer = container.transformers.gBook;
         const jikanTransformer = container.transformers.jikan;
 
+        if (query === "") {
+            return { hasNextPage: false, data: [] };
+        }
+
         if (apiProvider === ApiProviderType.USERS) {
             return userService.searchUsers(query, page);
         }
@@ -38,8 +42,7 @@ export const getSearchResults = createServerFn({ method: "GET" })
             const rawResults = await gBookClient.search(query, page);
             return gBookTransformer.transformSearchResults(rawResults);
         }
-
-        if (apiProvider === ApiProviderType.MANGA) {
+        else {
             const rawResults = await jikanClient.search(query, page);
             return jikanTransformer.transformSearchResults(rawResults);
         }

@@ -10,18 +10,20 @@
 
 ## TODO
 
-- TODO: Tests when db empty
 - TODO: Add authors in edit books
-- TODO: Tests everything and all CLI tasks :(
-- TODO: Add a search page for !bangs in browser search
 - TODO: Add an LLM to add genres to books, like every weeks
+- TODO: Tests when db empty
+- TODO: See how to deal better with dotenv in prod etc...
+- TODO: See how CLI works after `npm run build`
+- TODO: Tests everything and all CLI tasks :(
 
 ## TODO AFTER PROD
 
 - TODO: Redo the Follows/Followers page in profile (very ugly in mobile and not great in desktop)
-- TODO: Where possible directly use `queryOptions` instead of queryKeys in `useMutation` (better for inference)
+- TODO: Where possible directly use `queryOptions` instead of `queryKeys` in `useMutation` (better for inference)
 
 ## External TODO
 
-- TODO: Create `cron` file for maintenance/scheduled tasks
+- TODO: create an `ecosystem.config.mjs` file for `pm2`
+- TODO: Create `cron.sh` file for maintenance/scheduled tasks
 - TODO: Add rate limiter in `nginx` for prod (for spam protection)

@@ -126,9 +126,9 @@ export const platformStatsSchema = z.object({
 });
 
 export const navbarSearchSchema = z.object({
-    query: z.string(),
-    apiProvider: z.enum(ApiProviderType),
-    page: z.coerce.number().int().positive(),
+    query: z.string().catch(""),
+    page: z.coerce.number().int().positive().catch(1),
+    apiProvider: z.enum(ApiProviderType).catch(ApiProviderType.TMDB),
 });
 
 export const labelSchema = z.object({
