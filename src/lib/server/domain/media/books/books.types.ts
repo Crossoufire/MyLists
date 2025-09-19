@@ -15,12 +15,6 @@ export type UpsertBooksWithDetails = {
     authorsData?: { name: string }[],
 };
 
-export type BooksTopMetricStats = {
-    langsStats: TopMetricStats;
-    authorsStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-};
-
 export type BooksAdvancedStats = AdvancedMediaStats & {
     langsStats: TopMetricStats;
     authorsStats: TopMetricStats;

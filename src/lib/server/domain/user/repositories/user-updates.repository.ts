@@ -98,9 +98,9 @@ export class UserUpdatesRepository {
         const totalUpdates = monthlyCounts.reduce((a, c) => a + c.value, 0);
 
         return {
-            updatesDistribution: monthlyCounts,
-            avgUpdates: monthlyCounts.length > 0 ? (totalUpdates / monthlyCounts.length).toFixed(1) : "-",
             totalUpdates,
+            updatesDistribution: monthlyCounts,
+            avgUpdates: monthlyCounts.length ? (totalUpdates / monthlyCounts.length) : null,
         };
     }
 

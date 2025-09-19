@@ -67,9 +67,9 @@ const getHistoryColumns = (isCurrent: boolean): ColumnDef<any>[] => {
                     <div className="flex items-center gap-4">
                         <MediaAndUserIcon type={original.mediaType} size={16}/>
                         <Link
+                            search={{ external: false }}
                             to="/details/$mediaType/$mediaId"
                             params={{ mediaType: original.mediaType, mediaId: original.mediaId }}
-                            search={{ external: false }}
                         >
                             {original.mediaName}
                         </Link>

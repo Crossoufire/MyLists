@@ -74,7 +74,7 @@ export const StatsGraph = ({ title, dataList }: StatsGraphProps) => {
                             {newDataList.map((entry, idx) =>
                                 <Cell
                                     key={idx}
-                                    fill={getMediaColor(filters.mediaType ?? entry.name.toString() as MediaType)}
+                                    fill={getMediaColor(filters.mediaType ?? entry?.name.toString() as MediaType)}
                                 />
                             )}
                             <LabelList
@@ -112,7 +112,7 @@ const CustomXAxisTick = (props: any) => {
     const getFeelingComponent = (value: number) => {
         const feelings = getFeelingList({ size: 18 });
         const feeling = feelings.find((item) => item.value === value);
-        return feeling ? feeling.component : "--";
+        return feeling ? feeling.component : "-";
     };
 
     return (

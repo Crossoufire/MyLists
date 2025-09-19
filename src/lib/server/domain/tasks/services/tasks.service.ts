@@ -192,13 +192,13 @@ export class TasksService {
         this.logger.info("Starting calculating all achievements...");
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
-
         for (const mediaType of this.mediaTypes) {
             const mediaService = this.mediaServiceRegistry.getService(mediaType);
-            const mediaAchievements = allAchievements.filter((all) => all.mediaType === mediaType);
+            const mediaAchievements = allAchievements.filter((achievement) => achievement.mediaType === mediaType);
             for (const achievement of mediaAchievements) {
                 await this.achievementsService.calculateAchievement(achievement, mediaService);
             }
+            this.logger.info(`Calculating ${mediaType} achievements completed.`);
         }
 
         this.logger.info("Completed: CalculateAchievements execution.");

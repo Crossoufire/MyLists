@@ -35,7 +35,7 @@ export const UpdatePlatform = ({ platform, updatePlatform }: UpdatePlatformProps
 const PlatformComboBox = ({ resetValue = "", callback, isPending }: any) => {
     const [open, setOpen] = useState(false);
     const allPlatforms = Object.values(GamesPlatformsEnum).map(p => ({ value: p, label: p }));
-    const displayedLabel = allPlatforms.find((pt) => pt.value === resetValue)?.label || "--";
+    const displayedLabel = allPlatforms.find((pt) => pt.value === resetValue)?.label || "-";
 
     const onSelect = (currentValue: GamesPlatformsEnum) => {
         setOpen(false);

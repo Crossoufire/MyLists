@@ -7,7 +7,11 @@ import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.tran
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class TvProviderService extends BaseTrendsProviderService<TvRepository> {
+export class TvProviderService extends BaseTrendsProviderService<
+    TvRepository,
+    TmdbTvDetails,
+    UpsertTvWithDetails
+> {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,

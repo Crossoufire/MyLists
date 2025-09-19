@@ -11,7 +11,9 @@ type TvStats = SpecificMediaData<typeof MediaType.SERIES | typeof MediaType.ANIM
 
 export const tvData = (data: TvStats): StatSection[] => {
     const sp = data.specificMediaStats;
-
+    const topLang = sp.countriesStats.topValues[0];
+    const avgDurationHours = sp.avgDuration && (sp.avgDuration / 60).toFixed(2);
+    
     return [
         {
             sidebarTitle: "Main Statistics",
@@ -19,11 +21,11 @@ export const tvData = (data: TvStats): StatSection[] => {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
                     createStatCard("Total Entries", data.totalEntries, `Total: ${data.totalRedo} Seasons Re-watched`),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Watched ${data.timeSpentDays} Days`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Watched ${data.timeSpentDays.toFixed(0)} Days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Duration", sp.avgDuration, "Duration In Hours"),
-                    createStatCard("Avg. Updates / Month", data.avgUpdates, `Total: ${data.totalUpdates} Updates`),
-                    createStatCard("Top Country", sp.countriesStats?.topValues?.[0]?.name, `Total: ${sp.countriesStats?.topValues?.[0]?.value} Media`),
+                    createStatCard("Avg. Duration", avgDurationHours, "Duration In Hours"),
+                    createStatCard("Avg. Updates / Month", data.avgUpdates?.toFixed(2), `Total: ${data.totalUpdates} Updates`),
+                    createStatCard("Top Country", topLang.name, `Total: ${topLang.value} Media`),
                     createStatCard("Total Episodes", data.totalSpecific, "Cumulated Episodes"),
                     createStatCard("Total Favorites", data.totalFavorites, "The Best Ones"),
                     createStatCard("Total Labels", sp.totalLabels, "Order Maniac"),

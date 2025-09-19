@@ -22,10 +22,10 @@ export const gamesData = (data: GamesStats): StatSection[] => {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
                     createStatCard("Total Entries", data.totalEntries, "--> G@m3rz!? <--"),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Played ${data.timeSpentDays} Days`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Played ${data.timeSpentDays.toFixed(0)} Days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Playtime", sp.avgDuration, "Playtime In Hours"),
-                    createStatCard("Avg. Updates / Month", data.avgUpdates, `Total: ${data.totalUpdates} Updates`),
+                    createStatCard("Avg. Playtime", sp.avgDuration?.toFixed(2), "Playtime In Hours"),
+                    createStatCard("Avg. Updates / Month", data.avgUpdates?.toFixed(2), `Total: ${data.totalUpdates} Updates`),
                     createStatCard("Top Engine", topEngine.name, `With ${topEngine.value} games`, sp.enginesStats.topValues),
                     createStatCard("Top Perspective", topPerspective.name, `With ${topPerspective.value} Games`, sp.perspectivesStats.topValues),
                     createStatCard("Top Mode", topMode.name, `With ${topMode.value} Games`, sp.gameModes.topValues),

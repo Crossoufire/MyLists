@@ -9,11 +9,11 @@ export interface ProviderSearchResults {
 
 
 export interface ProviderSearchResult {
-    name: string
-    image: string
-    id: number | string
-    date: string | number | undefined | null
-    itemType: MediaType | ApiProviderType
+    name: string;
+    image: string;
+    id: number | string;
+    itemType: MediaType | ApiProviderType;
+    date: string | number | undefined | null;
 }
 
 

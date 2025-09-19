@@ -17,19 +17,19 @@ export const UpdateRating = ({ rating, onUpdateMutation }: RatingComponentProps)
     const ratingValue = (currentUser?.ratingSystem === RatingSystemType.SCORE) ? rating : getFeelingIcon(rating, { valueOnly: true });
 
     const handleSelectChange = (value: string) => {
-        const valueToSend = value === "--" ? null : parseFloat(value);
+        const valueToSend = value === "-" ? null : parseFloat(value);
         onUpdateMutation.mutate({ payload: { rating: valueToSend, type: UpdateType.RATING } });
     };
 
     return (
         <div className="flex justify-between items-center">
-            <Select value={ratingValue?.toString() ?? "--"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending}>
+            <Select value={ratingValue?.toString() ?? "-"} onValueChange={handleSelectChange} disabled={onUpdateMutation?.isPending}>
                 <SelectTrigger className="w-[130px] border-hidden px-0" size="sm">
                     <SelectValue/>
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px] overflow-y-auto">
                     {ratingList.map((rating) =>
-                        <SelectItem key={rating.value} value={rating.value?.toString() ?? "--"}>
+                        <SelectItem key={rating.value} value={rating.value?.toString() ?? "-"}>
                             {rating.component}
                         </SelectItem>
                     )}

@@ -9,20 +9,18 @@ export const createStatCard = (title: string, value: any, subtitle: string, data
         title: title,
         valuesList: data,
         subtitle: subtitle,
-        value: value || "-",
+        value: value ?? "-",
     };
 };
 
 
-export const createRatingStatCard = (ratingSystem: RatingSystemType, avgRating: number, totalRated: number): StatCardData => {
-    const displayValue = (ratingSystem === RatingSystemType.SCORE) ?
-        totalRated === 0 ? "-" : `${avgRating ? avgRating.toFixed(2) : "--"}`
-        :
-        getFeelingIcon(avgRating, { size: 25, className: "mt-1.5" })
-        
+export const createRatingStatCard = (ratingSystem: RatingSystemType, avgRating: number | null, totalRated: number): StatCardData => {
+    const displayValue = (ratingSystem === RatingSystemType.FEELING) ?
+        getFeelingIcon(avgRating, { size: 25, className: "mt-1.5" }) : avgRating?.toFixed(2);
+
     return {
         title: "Avg. Rating",
-        value: displayValue || "-",
+        value: displayValue ?? "-",
         subtitle: `Total: ${totalRated} Media Rated`,
     };
 };
@@ -34,10 +32,10 @@ export const createStatList = (title: string, data: NameValuePair[]): StatListDa
 
 
 export const getCardsData = (data: TopMetricStats, suffix = "Watched"): StatCardData[] => {
-    const topRated = data.topRated[0] || { value: "-", name: "-" };
-    const topValue = data.topValues[0] || { value: "-", name: "-" };
-    const topFavorited = data.topFavorited[0] || { value: "-", name: "-" };
-
+    const topRated = data.topRated[0];
+    const topValue = data.topValues[0];
+    const topFavorited = data.topFavorited[0];
+    
     return [
         {
             value: topValue.name,

@@ -1,4 +1,5 @@
 import {SearchBar} from "./SearchBar";
+import {cn} from "@/lib/utils/helpers";
 import {useAuth} from "@/lib/hooks/use-auth";
 import React, {useRef, useState} from "react";
 import authClient from "@/lib/utils/auth-client";
@@ -14,10 +15,9 @@ import {Notifications} from "@/lib/components/navbar/Notifications";
 import {queryKeys} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
+import {ChartLine, ChevronDown, LogOut, Medal, Menu, Settings, ShieldCheck, Sparkles, User} from "lucide-react";
 import {NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navStyle} from "@/lib/components/ui/navigation-menu";
-import {cn} from "@/lib/utils/helpers";
 
 
 export const Navbar = () => {

@@ -24,8 +24,8 @@ export const StatsTable = ({ title, dataList }: StatsTableProps) => {
                 {dataList.map((item, idx) => (
                     <TableRow key={idx} className="text-base">
                         <TableCell>{idx + 1}</TableCell>
-                        <TableCell>{item.name}</TableCell>
-                        <TableCell>{item.value}</TableCell>
+                        <TableCell>{item?.name}</TableCell>
+                        <TableCell>{item?.value}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

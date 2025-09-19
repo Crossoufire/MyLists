@@ -134,7 +134,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH), isNotNull(movies.duration)))
             .get();
 
-        return avgDuration?.average ? avgDuration.average.toFixed(2) : 0;
+        return avgDuration?.average ?? null;
     }
 
     async movieDurationDistrib(userId?: number) {
@@ -165,7 +165,7 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
             .where(and(forUser, ne(moviesList.status, Status.PLAN_TO_WATCH)))
             .get();
 
-        return { totalBudget: data?.totalBudget, totalRevenue: data?.totalRevenue };
+        return { totalBudget: data?.totalBudget ?? 0, totalRevenue: data?.totalRevenue ?? 0 };
     }
 
     async specificTopMetrics(userId?: number) {

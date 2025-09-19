@@ -1,8 +1,12 @@
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {GBooksDetails, IgdbGameDetails, JikanDetails, TmdbMovieDetails, TmdbTvDetails, TrendsMedia} from "@/lib/types/provider.types";
+import {TrendsMedia} from "@/lib/types/provider.types";
 
 
-export abstract class BaseProviderService<R extends BaseRepository<any>> {
+export abstract class BaseProviderService<
+    R extends BaseRepository<any>,
+    TRawDetails,
+    TTransformedDetails,
+> {
     protected constructor(protected repository: R) {
     }
 
@@ -28,7 +32,7 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
         }
     }
 
-    protected async _enhanceDetails(details: any, _isBulk: boolean, _rawData: any) {
+    protected async _enhanceDetails(details: TTransformedDetails, _isBulk: boolean, _rawData: TRawDetails) {
         return details;
     }
 
@@ -38,15 +42,19 @@ export abstract class BaseProviderService<R extends BaseRepository<any>> {
         return this._enhanceDetails(details, isBulk, rawData);
     }
 
-    protected abstract _transformDetails(rawData: GBooksDetails | IgdbGameDetails | JikanDetails | TmdbMovieDetails | TmdbTvDetails): Promise<any>;
+    protected abstract _transformDetails(rawData: TRawDetails): Promise<TTransformedDetails>;
 
-    protected abstract _fetchRawDetails(apiId: number | string): Promise<IgdbGameDetails | TmdbMovieDetails | TmdbTvDetails | GBooksDetails | JikanDetails>;
+    protected abstract _fetchRawDetails(apiId: number | string): Promise<TRawDetails>;
 
     protected abstract _getMediaIdsForBulkRefresh(): Promise<(number | string)[]>;
 }
 
 
-export abstract class BaseTrendsProviderService<R extends BaseRepository<any>> extends BaseProviderService<R> {
+export abstract class BaseTrendsProviderService<
+    R extends BaseRepository<any>,
+    TRawDetails,
+    TTransformedDetails,
+> extends BaseProviderService<R, TRawDetails, TTransformedDetails> {
     async fetchAndFormatTrends() {
         const rawData = await this._fetchRawTrends();
         return this._transformTrends(rawData);

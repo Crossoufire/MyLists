@@ -662,7 +662,7 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
     applyWhereConditionsAndGrouping(cte: any, baseConditions: SQL[], userId?: number) {
         const { listTable } = this.config;
-        const conditions = userId ? [...baseConditions] : [...baseConditions, eq(listTable.userId, userId)];
+        const conditions = userId ? [...baseConditions, eq(listTable.userId, userId)] : [...baseConditions];
 
         return cte.where(and(...conditions))
             .groupBy(listTable.userId)
@@ -805,12 +805,11 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
             .limit(limit);
 
         const [topValues, topRated, topFavorited] = await Promise.all([topValuesQuery, topRatedQuery, topFavoritedQuery]);
-
-        const defaultEntry = [{ name: "-", value: 0 }];
+        const defaultEntry = [{ name: "-", value: "-" }];
 
         return {
             topValues: topValues.length ? topValues.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
-            topRated: topRated.length ? topRated.map(row => ({ name: row.name, value: (Number(row.value) || 0).toFixed(1) })) : defaultEntry,
+            topRated: topRated.length ? topRated.map(row => ({ name: row.name, value: Number(row.value).toFixed(2) || "-" })) : defaultEntry,
             topFavorited: topFavorited.length ? topFavorited.map(row => ({ name: row.name, value: row.value || 0 })) : defaultEntry,
         };
     }

@@ -167,7 +167,7 @@ export abstract class BaseService<
         return delta;
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any>) {
+    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: BaseProviderService<any, any, any>) {
         const media = external ? await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
 
         let internalMediaId = media?.id;
@@ -196,7 +196,7 @@ export abstract class BaseService<
     }
 
     getAchievementCte(achievement: Achievement, userId?: number) {
-        const handler = this.achievementHandlers[achievement.codeName as string];
+        const handler = this.achievementHandlers[achievement.codeName];
         if (!handler) {
             throw new Error(`Invalid Achievement codeName: ${achievement.codeName}`);
         }

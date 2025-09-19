@@ -9,6 +9,6 @@ export const GenericDetails = ({ name, value }: GenericDetailsProps) => (
         <div className="font-semibold text-neutral-500">
             {name}
         </div>
-        <div>{value ? value : "--"}</div>
+        <div>{value ? value : "-"}</div>
     </div>
 );

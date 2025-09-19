@@ -52,9 +52,7 @@ export const MapDetails = ({ name, dataList, mediaType, job, asJoin }: MapDetail
             <div className="font-semibold text-neutral-500">
                 {name}
             </div>
-            {shouldShowDashes ?
-                "--" : validItems.map((item, idx) => canRenderLinks ? renderLink(item, idx) : renderValue(item, idx))
-            }
+            {shouldShowDashes ? "-" : validItems.map((item, idx) => canRenderLinks ? renderLink(item, idx) : renderValue(item, idx))}
         </div>
     );
 };

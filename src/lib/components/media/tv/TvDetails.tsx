@@ -23,7 +23,7 @@ export const TvDetails = ({ mediaType, mediaData }: TvDetailsProps<typeof MediaT
                             <div className="font-semibold text-neutral-500">TMDB Rating</div>
                             <div className="flex items-center gap-1">
                                 <Star className="w-4 h-4 text-amber-500"/>
-                                {mediaData.voteAverage ? mediaData.voteAverage.toFixed(1) : "--"} ({mediaData.voteCount})
+                                {mediaData.voteAverage ? mediaData.voteAverage.toFixed(1) : "-"} ({mediaData.voteCount})
                             </div>
                         </div>
                         <MapDetails

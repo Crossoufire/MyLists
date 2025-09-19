@@ -93,27 +93,25 @@ export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        type FieldsType = typeof editableFields[number];
-        const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
+        const fields = {} as Record<Partial<keyof Game>, any>;
+        fields.apiId = media.apiId;
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
                 imageUrl: payload.imageCover,
                 dirSaveName: "games-covers",
             });
-            if (editableFields.includes("imageCover" as FieldsType)) {
-                fields.imageCover = imageName;
-            }
+            fields.imageCover = imageName;
             delete payload.imageCover;
         }
 
         for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as FieldsType)) {
-                fields[key as FieldsType] = payload[key];
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Game)) {
+                fields[key as keyof typeof media] = payload[key as keyof typeof media];
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields as any });
+        await this.repository.updateMediaWithDetails({ mediaData: fields });
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {

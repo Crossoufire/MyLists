@@ -66,7 +66,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
     }
 
     async getMediaEditableFields(mediaId: number) {
-        const media = await this.repository.findAllAssociatedDetails(mediaId);
+        const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
@@ -78,9 +78,6 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             }
         });
 
-        fields.genres = media.genres;
-        fields.allGenres = this.getAvailableGenres();
-
         return { fields };
     }
 
@@ -88,32 +85,26 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
-        const { genres, ...mediaData } = payload;
-
-        if (genres && !Array.isArray(genres)) {
-            throw new Error("Genres must be an array");
-        }
-
         const editableFields = this.repository.config.editableFields;
-        const fieldsToUpdate = {} as Record<Partial<keyof Book>, any>;
-        fieldsToUpdate.apiId = media.apiId;
+        const fields = {} as Record<Partial<keyof Book>, any>;
+        fields.apiId = media.apiId;
 
-        if (mediaData?.imageCover) {
+        if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
-                imageUrl: mediaData.imageCover,
+                imageUrl: payload.imageCover,
                 dirSaveName: "books-covers",
             });
-            fieldsToUpdate.imageCover = imageName;
-            delete mediaData.imageCover;
+            fields.imageCover = imageName;
+            delete payload.imageCover;
         }
 
-        for (const key in mediaData) {
-            if (Object.prototype.hasOwnProperty.call(mediaData, key) && editableFields.includes(key as keyof Book)) {
-                fieldsToUpdate[key as keyof typeof media] = mediaData[key as keyof typeof media];
+        for (const key in payload) {
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Book)) {
+                fields[key as keyof typeof media] = payload[key as keyof typeof media];
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fieldsToUpdate, genresData: genres });
+        await this.repository.updateMediaWithDetails({ mediaData: fields });
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, _media: Book) {

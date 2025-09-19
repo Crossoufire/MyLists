@@ -115,7 +115,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .where(and(forUser, ne(listTable.status, Status.PLAN_TO_WATCH)))
             .get();
 
-        return totalSeasons?.totalSeasons;
+        return totalSeasons?.totalSeasons ?? 0;
     }
 
     async avgTvDuration(userId?: number) {
@@ -131,7 +131,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .where(and(forUser, notInArray(listTable.status, [Status.RANDOM, Status.PLAN_TO_WATCH])))
             .get();
 
-        return avgDuration?.average ? (avgDuration.average / 60).toFixed(2) : 0;
+        return avgDuration?.average ?? null;
     }
 
     async tvDurationDistrib(userId?: number) {

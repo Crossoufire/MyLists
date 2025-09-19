@@ -1,11 +1,16 @@
 import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
+import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
 import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
 
 
-export class MoviesProviderService extends BaseTrendsProviderService<MoviesRepository> {
+export class MoviesProviderService extends BaseTrendsProviderService<
+    MoviesRepository,
+    TmdbMovieDetails,
+    UpsertMovieWithDetails
+> {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,

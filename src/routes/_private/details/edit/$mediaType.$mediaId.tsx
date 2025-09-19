@@ -8,7 +8,6 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {PageTitle} from "@/lib/components/general/PageTitle";
 import {capitalize, sliceIntoParts} from "@/lib/utils/functions";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
-import {EditGenresSelector} from "@/lib/components/media/books/EditGenresSelector";
 import {editMediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
 import {useEditMediaMutation} from "@/lib/react-query/query-mutations/media.mutations";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
@@ -40,23 +39,30 @@ function MediaEditPage() {
         defaultValues: {
             imageCover: undefined,
             name: apiData.fields?.name,
-            genres: apiData.fields?.genres,
+            pages: apiData.fields?.pages,
             budget: apiData.fields?.budget,
-            authors: apiData.fields?.authors,
             revenue: apiData.fields?.revenue,
             tagline: apiData.fields?.tagline,
             synopsis: apiData.fields?.synopsis,
             duration: apiData.fields?.duration,
             homepage: apiData.fields?.homepage,
+            chapters: apiData.fields?.chapters,
+            language: apiData.fields?.language,
             createdBy: apiData.fields?.createdBy,
-            allGenres: apiData.fields?.allGenres,
+            gameModes: apiData.fields?.gameModes,
+            publishers: apiData.fields?.publishers,
             lockStatus: apiData.fields?.lockStatus,
+            gameEngine: apiData.fields?.gameEngine,
             releaseDate: apiData.fields?.releaseDate,
             lastAirDate: apiData.fields?.lastAirDate,
+            hltbMainTime: apiData.fields?.hltbMainTime,
             originalName: apiData.fields?.originalName,
             directorName: apiData.fields?.directorName,
             originCountry: apiData.fields?.originCountry,
             originalLanguage: apiData.fields?.originalLanguage,
+            playerPerspective: apiData.fields?.playerPerspective,
+            hltbMainAndExtraTime: apiData.fields?.hltbMainAndExtraTime,
+            hltbTotalCompleteTime: apiData.fields?.hltbTotalCompleteTime,
         }
     });
     const parts = sliceIntoParts(Object.entries(apiData.fields), 3);
@@ -115,44 +121,10 @@ function MediaEditPage() {
                                     </FormItem>
                                 )}
                             />
-                            {apiData?.fields?.authors &&
-                                <FormField
-                                    name="authors"
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Authors</FormLabel>
-                                            <FormControl>
-                                                <Input {...field}/>
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                            }
                             {parts[0].map(array => renderField(form, array))}
                         </div>
                         <div className="space-y-4">
                             {parts[1].map(array => renderField(form, array))}
-                            {apiData?.fields?.genres &&
-                                <FormField
-                                    name="genres"
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Genres (Select up to 5)</FormLabel>
-                                            <FormControl>
-                                                <EditGenresSelector
-                                                    selectedGenres={field.value}
-                                                    setSelectedGenres={field.onChange}
-                                                    genresList={apiData?.fields.allGenres}
-                                                />
-                                            </FormControl>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                            }
                         </div>
                         <div className="space-y-4">
                             {parts[2].map(arr => renderField(form, arr))}

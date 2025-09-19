@@ -88,11 +88,11 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                     <TooltipTrigger asChild>
                                         <div>
                                             <div className="text-neutral-500 text-lg">Total Time</div>
-                                            <div>{global.totalHours} h</div>
+                                            <div>{global.totalHours.toFixed(0)} h</div>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        {global.totalDays} days
+                                        {global.totalDays.toFixed(0)} days
                                     </TooltipContent>
                                 </Tooltip>
                                 <div>
@@ -105,7 +105,7 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                     <TooltipTrigger asChild>
                                         <div>
                                             <div className="text-neutral-500 text-lg">% Rated</div>
-                                            <div>{global.percentRated.toFixed(1)} %</div>
+                                            <div>{global.percentRated?.toFixed(1) ?? "-"} %</div>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -116,7 +116,7 @@ export const GlobalStats = ({ userData, global }: GlobalStatsProps) => {
                                     <div className="text-neutral-500 text-lg">Avg. Rating</div>
                                     <div className="flex items-center justify-center">
                                         {userData.ratingSystem === RatingSystemType.SCORE ?
-                                            global.totalRated === 0 ? "--" : `${global.avgRated ? global.avgRated : "--"}`
+                                            global.avgRated?.toFixed(2) ?? "-"
                                             :
                                             getFeelingIcon(global.avgRated, { size: 16, className: "mt-1" })
                                         }

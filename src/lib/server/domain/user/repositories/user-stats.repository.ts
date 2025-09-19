@@ -1,12 +1,12 @@
 import {db} from "@/lib/server/database/db";
 import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/server/utils/enums";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
 import {and, count, countDistinct, eq, gt, inArray, ne, SQL, sql, sum} from "drizzle-orm";
-import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class UserStatsRepository {
@@ -280,7 +280,9 @@ export class UserStatsRepository {
 
     static async getAggregatedMediaStats({ userId, mediaType }: { userId?: number, mediaType: MediaType }) {
         const conditions = [eq(userMediaSettings.mediaType, mediaType)];
-        if (userId) conditions.push(eq(userMediaSettings.userId, userId));
+        if (userId) {
+            conditions.push(eq(userMediaSettings.userId, userId));
+        }
 
         const stats = await db
             .select({
@@ -296,7 +298,9 @@ export class UserStatsRepository {
             .from(userMediaSettings)
             .where(and(...conditions))
             .get();
-        if (!stats) throw new Error("No stats found");
+        if (!stats) {
+            throw new Error("No stats found");
+        }
 
         const statusCountsResult = await db
             .select({ statusCounts: userMediaSettings.statusCounts })
@@ -311,19 +315,17 @@ export class UserStatsRepository {
         }, {});
         const statusesCounts = Object.entries(totalStatusCounts).map(([status, count]) => ({ status, count }));
 
-        const avgRated = (!stats.totalRated || stats.totalRated === 0) ? 0 : stats.sumOfAllRatings / stats.totalRated;
-
         return {
-            avgRated,
             statusesCounts,
             totalRedo: stats.totalRedo ?? 0,
             totalRated: stats.totalRated ?? 0,
             totalEntries: stats.totalEntries ?? 0,
             totalComments: stats.totalComments ?? 0,
             totalSpecific: stats.totalSpecific ?? 0,
-            totalFavorites: stats.totalFavorites ?? 0,
             timeSpentHours: stats.timeSpentHours ?? 0,
-            timeSpentDays: Math.round((stats.timeSpentHours ?? 0) / 24),
+            totalFavorites: stats.totalFavorites ?? 0,
+            timeSpentDays: (stats.timeSpentHours ?? 0) / 24,
+            avgRated: (!stats.totalRated || stats.totalRated === 0) ? null : (stats.sumOfAllRatings / stats.totalRated),
         };
     }
 

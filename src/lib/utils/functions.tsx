@@ -43,12 +43,12 @@ export const formatRating = (system: RatingSystemType, rating: number | null, re
         return rating === null ? null : rating.toFixed(1);
     }
 
-    return (rating === null) ? "--" : rating.toFixed(1);
+    return (rating === null) ? "-" : rating.toFixed(1);
 }
 
 
 export const getFeelingIcon = (value: number | null, { className, size, valueOnly }: FeelIconProps = {}) => {
-    if (!value || value < 0 || value > 10) return "--";
+    if (!value || value < 0 || value > 10) return "-";
 
     const feelValues = getFeelingList({ className, size });
 
@@ -72,7 +72,7 @@ export const getFeelingIcon = (value: number | null, { className, size, valueOnl
 
 export const getFeelingList = ({ className, size = 20 }: FeelListProps) => {
     return [
-        { value: null, component: "--" },
+        { value: null, component: "-" },
         { value: 0, component: <FaPoop className={className} color="saddlebrown" size={size}/> },
         { value: 2, component: <FaAngry className={className} color="indianred" size={size}/> },
         { value: 4, component: <FaFrown className={className} color="#d0a141" size={size}/> },
@@ -91,7 +91,7 @@ export const getScoreList = () => {
     const scores = Array.from({ length: (MAX_SCORE - MIN_SCORE) / STEP + 1 }, (_, i) => MIN_SCORE + i * STEP);
 
     return [
-        { value: null, component: "--" },
+        { value: null, component: "-" },
         ...scores.map(value => ({ value, component: value === MAX_SCORE ? value : value.toFixed(1) }))
     ];
 };
@@ -225,13 +225,13 @@ export const globalStatsTimeFormat = (minutes: number) => {
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
     if (minutes === null || minutes === undefined) {
-        return "--";
+        return "-";
     }
 
     const minutesAsNumber = Number(minutes);
 
     if (isNaN(minutesAsNumber) || minutesAsNumber <= 0) {
-        return "--";
+        return "-";
     }
 
     const hours = Math.floor(minutesAsNumber / 60);
@@ -292,7 +292,7 @@ export const sliceIntoParts = (array: [string, any][], slices: number) => {
 
 
 export const getLangCountryName = (name: string | undefined | null, type: LangType) => {
-    if (!name) return "--";
+    if (!name) return "-";
 
     const languageNames = new Intl.DisplayNames(["en"], { type });
     if (name === "cn") return "Chinese";
@@ -315,14 +315,16 @@ export const capitalize = (str: string | undefined | null) => {
 };
 
 
-export const formatNumberWithKM = (value: number) => {
+export const formatNumberWithKM = (value: number | null) => {
+    if (!value) return "-";
+
     if (value >= 1_000_000) {
         return (value / 1_000_000).toFixed(2) + "M";
     }
     else if (value >= 1_000) {
         return (value / 1_000).toFixed(2) + "k";
     }
-    return value.toFixed(0).toString();
+    return value.toFixed(0);
 };
 
 
@@ -365,7 +367,7 @@ export const formatRelativeTime = (dateString: string | null | undefined) => {
 
 
 export const formatDateTime = (dateInput: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
-    if (!dateInput) return "--";
+    if (!dateInput) return "-";
 
     let date: Date;
     if (typeof dateInput === "number") {
@@ -380,7 +382,7 @@ export const formatDateTime = (dateInput: string | number | null | undefined, op
         }
     }
 
-    if (isNaN(date.getTime())) return "--";
+    if (isNaN(date.getTime())) return "-";
 
     const formatOptions: Intl.DateTimeFormatOptions = {
         hour12: false,

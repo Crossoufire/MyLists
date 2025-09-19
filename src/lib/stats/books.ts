@@ -1,6 +1,6 @@
+import {MediaType} from "@/lib/server/utils/enums";
 import {SpecificMediaData} from "@/lib/stats/index";
 import type {StatSection} from "@/lib/types/stats.types";
-import {MediaType} from "@/lib/server/utils/enums";
 import {formatNumberWithKM, formatNumberWithSpaces} from "@/lib/utils/functions";
 import {MAIN_CARDS_CONFIG, MAIN_GRAPHS_CONFIG, SIDE_CARD_CONFIG, SIDE_LISTS_CONFIG} from "@/lib/stats/constants";
 import {createRatingStatCard, createStatCard, createStatList, getCardsData, getListsData} from "@/lib/stats/helpers";
@@ -20,10 +20,10 @@ export const booksData = (data: BooksStats): StatSection[] => {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
                     createStatCard("Total Entries", data.totalEntries, `With ${data.totalRedo} Re-read`),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Read ${data.timeSpentDays} days`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Read ${data.timeSpentDays.toFixed(0)} days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Pages", sp.avgDuration, "Big books or small books?"),
-                    createStatCard("Avg. Updates / Month", data.avgUpdates, `With ${data.totalUpdates} updates`),
+                    createStatCard("Avg. Pages", sp.avgDuration?.toFixed(2), "Big books or small books?"),
+                    createStatCard("Avg. Updates / Month", data.avgUpdates?.toFixed(2), `With ${data.totalUpdates} updates`),
                     createStatCard("Top Language", topLang.name, `With ${topLang.value} media`, sp.langsStats.topValues),
                     createStatCard("Total Pages", formatNumberWithSpaces(data.totalSpecific), "Cumulated pages"),
                     createStatCard("Total Favorites", data.totalFavorites, "The best ones"),

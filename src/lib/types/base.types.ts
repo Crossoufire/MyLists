@@ -117,8 +117,8 @@ export type ExpandedListFilters = {
 };
 
 export type TopMetricStats = {
-    topValues: NameValuePair[];
     topRated: NameValuePair[];
+    topValues: NameValuePair[];
     topFavorited: NameValuePair[];
 };
 
@@ -213,14 +213,14 @@ export type FilterDefinition = {
 
 export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefinition>>;
 
-export type NameValuePair = { name: string | number, value: number };
+export type NameValuePair = { name: string | number, value: number | string };
 
 export type EpsPerSeasonType = { season: number, episodes: number }[];
 
 export type AdvancedMediaStats = {
     totalLabels: number,
-    avgDuration: number;
     ratings: NameValuePair[],
+    avgDuration: number | null;
     genresStats: TopMetricStats,
     releaseDates: NameValuePair[],
     durationDistrib: NameValuePair[];

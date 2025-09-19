@@ -100,7 +100,7 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             .where(and(forUser, ne(mangaList.status, Status.PLAN_TO_READ), isNotNull(manga.chapters)))
             .get();
 
-        return avgDuration?.average ? avgDuration.average.toFixed(2) : 0;
+        return avgDuration?.average ?? null;
     }
 
     async mangaDurationDistrib(userId?: number) {

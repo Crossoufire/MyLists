@@ -7,7 +7,11 @@ import {BaseProviderService} from "@/lib/server/domain/media/base/provider.servi
 import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 
 
-export class GamesProviderService extends BaseProviderService<GamesRepository> {
+export class GamesProviderService extends BaseProviderService<
+    GamesRepository,
+    IgdbGameDetails,
+    UpsertGameWithDetails
+> {
     constructor(
         private client: IgdbClient,
         private transformer: IgdbTransformer,

@@ -1,5 +1,6 @@
 import React from "react";
 import {ColumnDef} from "@tanstack/react-table";
+import {SheetFilterObject} from "@/lib/types/base.types";
 import {MediaType, Status} from "@/lib/server/utils/enums";
 import {TvDetails} from "@/lib/components/media/tv/TvDetails";
 import {TvListItem} from "@/lib/components/media/tv/TvListItem";
@@ -34,7 +35,6 @@ import {getBooksActiveFilters} from "@/lib/components/media/books/BooksActiveFil
 import {getGamesActiveFilters} from "@/lib/components/media/games/GamesActiveFilters";
 import {getMoviesActiveFilters} from "@/lib/components/media/movies/MoviesActiveFilters";
 import {ExtractFollowByType, ExtractListByType, ExtractMediaDetailsByType, ExtractUserMediaByType} from "@/lib/types/query.options.types";
-import {SheetFilterObject} from "@/lib/types/base.types";
 
 
 export type MediaConfiguration = {

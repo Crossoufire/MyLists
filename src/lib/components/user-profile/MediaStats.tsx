@@ -23,7 +23,7 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
             <div className="flex flex-wrap justify-between text-center font-medium max-sm:text-sm">
                 <MediaValues
                     title="Time"
-                    value={media.timeSpentDays + " d"}
+                    value={media.timeSpentDays.toFixed(1) + " d"}
                 />
                 <SpecificMediaValues
                     value={media.totalSpecific}
@@ -36,7 +36,7 @@ export const MediaStats = ({ media, user }: MediaStatsProps) => {
                 <MediaValues
                     title="Avg. Rating"
                     value={user.ratingSystem === RatingSystemType.SCORE ?
-                        media.entriesRated === 0 ? "--" : `${media.avgRated ? media.avgRated.toFixed(2) : "--"}`
+                        media.avgRated?.toFixed(2) ?? "-"
                         :
                         getFeelingIcon(media.avgRated, { size: 16, className: "mt-1" })
                     }

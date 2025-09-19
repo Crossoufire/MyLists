@@ -6,20 +6,20 @@
 
 ## Fixes
 
-- FIX: Edit media is a fucking mess, lots of weird stuff
 - FIX: changing name when using oAuth ONLY does not change directly, need to logout and login again
 
 ## TODO
 
 - TODO: Tests when db empty
+- TODO: Add authors in edit books
 - TODO: Tests everything and all CLI tasks :(
-- TODO: Improve Typing of provider.service (using generics, passing rawDetails and transformedDetails etc...)
+- TODO: Add a search page for !bangs in browser search
+- TODO: Add an LLM to add genres to books, like every weeks
 
 ## TODO AFTER PROD
 
 - TODO: Redo the Follows/Followers page in profile (very ugly in mobile and not great in desktop)
 - TODO: Where possible directly use `queryOptions` instead of queryKeys in `useMutation` (better for inference)
-- TODO: Need a pass on formatting `langs` and numbers. `toFixed()` everywhere with `--` or `-` for profile stats and advanced stats
 
 ## External TODO
 

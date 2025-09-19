@@ -9,14 +9,6 @@ export type GamesList = typeof gamesList.$inferSelect;
 
 export type GamesAchCodeName = typeof gamesAchievements[number]["codeName"];
 
-export type GamesTopMetricStats = {
-    enginesStats: TopMetricStats;
-    platformsStats: TopMetricStats;
-    developersStats: TopMetricStats;
-    publishersStats: TopMetricStats;
-    perspectivesStats: TopMetricStats;
-};
-
 export type UpsertGameWithDetails = {
     mediaData: typeof games.$inferInsert,
     genresData?: { name: string }[],

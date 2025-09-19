@@ -25,7 +25,7 @@ export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof 
                             <div className="font-semibold text-neutral-500">IGDB Rating</div>
                             <div className="flex items-center gap-1">
                                 <Star className="w-4 h-4 text-amber-500"/>
-                                {mediaData.voteAverage ? (mediaData.voteAverage / 10).toFixed(1) : "--"} ({mediaData.voteCount})
+                                {mediaData.voteAverage ? (mediaData.voteAverage / 10).toFixed(1) : "-"} ({mediaData.voteCount})
                             </div>
                         </div>
                         <MapDetails

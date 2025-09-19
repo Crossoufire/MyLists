@@ -19,10 +19,10 @@ export const mangaData = (data: MangaStats): StatSection[] => {
                 ...MAIN_CARDS_CONFIG,
                 cardStatsList: [
                     createStatCard("Total Entries", data.totalEntries, `With ${data.totalRedo} Re-read`),
-                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Read ${data.timeSpentDays} days`),
+                    createStatCard("Time Spent (h)", formatNumberWithKM(data.timeSpentHours), `Read ${data.timeSpentDays.toFixed(0)} days`),
                     createRatingStatCard(data.ratingSystem, data.avgRated, data.totalRated),
-                    createStatCard("Avg. Chapters", sp.avgDuration, "Big manga or small manga?"),
-                    createStatCard("Avg. Updates / Month", data.avgUpdates, `With ${data.totalUpdates} updates`),
+                    createStatCard("Avg. Chapters", sp.avgDuration?.toFixed(2), "Big manga or small manga?"),
+                    createStatCard("Avg. Updates / Month", data.avgUpdates?.toFixed(2), `With ${data.totalUpdates} updates`),
                     createStatCard("Total Chapters", formatNumberWithSpaces(data.totalSpecific), "Cumulated pages"),
                     createStatCard("Total Favorites", data.totalFavorites, "The best ones"),
                     createStatCard("Total Labels", sp.totalLabels, "Order maniac"),

@@ -1,12 +1,12 @@
 import {statusUtils} from "@/lib/utils/functions";
-import {MediaType, Status} from "@/lib/server/utils/enums";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
+import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
+import {MediaType, Status} from "@/lib/server/utils/enums";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
-import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class UserStatsService {
@@ -24,6 +24,10 @@ export class UserStatsService {
 
     async updateUserPreComputedStatsWithDelta(mediaType: MediaType, userId: number, delta: DeltaStats) {
         await this.repository.updateUserPreComputedStatsWithDelta(userId, mediaType, delta);
+    }
+
+    async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
+        await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
     }
 
     async userHallofFameData(userId: number, filters: SearchTypeHoF) {
@@ -80,10 +84,6 @@ export class UserStatsService {
         return { items, page, pages, total, userRanks }
     }
 
-    async updateAllUsersPreComputedStats(mediaType: MediaType, userStats: UserMediaStats[]) {
-        await this.repository.updateAllUsersPreComputedStats(mediaType, userStats);
-    }
-
     // --- User Profile Summary Stats --------------------------------------------
 
     async userPreComputedStatsSummary(userId: number) {
@@ -116,14 +116,14 @@ export class UserStatsService {
                 mediaType: setting.mediaType,
                 favoritesList: favoritesMedia,
                 avgRated: setting.averageRating,
+                timeSpent: setting.timeSpent / 60,
                 noData: setting.totalEntries === 0,
                 totalEntries: setting.totalEntries,
                 entriesRated: setting.entriesRated,
                 totalSpecific: setting.totalSpecific,
+                timeSpentDays: setting.timeSpent / 1440,
                 EntriesFavorites: setting.entriesFavorites,
-                timeSpent: Math.floor(setting.timeSpent / 60),
-                percentRated: setting.entriesRated / totalNoPlan,
-                timeSpentDays: Math.floor(setting.timeSpent / 1440),
+                percentRated: (setting.entriesRated === 0) ? null : (setting.entriesRated / totalNoPlan) * 100,
             };
 
             data.push(summary);
@@ -236,13 +236,13 @@ export class UserStatsService {
             return sum + settingSum;
         }, 0);
 
-        const avgRated = totalRated === 0 ? 0 : sumOfAllRatings / totalRated;
-        const percentRated = totalEntriesNoPlan === 0 ? 0 : (totalRated / totalEntriesNoPlan) * 100;
+        const avgRated = (totalRated === 0) ? null : (sumOfAllRatings / totalRated);
+        const percentRated = (totalEntriesNoPlan === 0) ? null : (totalRated / totalEntriesNoPlan) * 100;
 
         // The divisor for averages changes based on context
         const avgDivisor = userId ? distinctMediaTypes : totalUsers;
-        const avgComments = avgDivisor === 0 ? "-" : (totalComments / avgDivisor).toFixed(2);
-        const avgFavorites = avgDivisor === 0 ? "-" : (totalFavorites / avgDivisor).toFixed(2);
+        const avgComments = (avgDivisor === 0) ? null : (totalComments / avgDivisor);
+        const avgFavorites = (avgDivisor === 0) ? null : (totalFavorites / avgDivisor);
 
         return {
             avgRated,
@@ -256,8 +256,8 @@ export class UserStatsService {
             totalFavorites,
             totalEntriesNoPlan,
             mediaTimeDistribution,
-            totalHours: Math.floor(totalHours),
-            totalDays: Math.round(totalHours / 24),
+            totalHours: totalHours,
+            totalDays: totalHours / 24,
             mediaTypes: mediaTimeDistribution.map((d) => d.name),
             ...(userId ? {} : { totalUsers }),
         };

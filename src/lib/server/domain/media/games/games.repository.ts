@@ -157,7 +157,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(gamesList.playtime)))
             .get();
 
-        return avgDuration?.average ? avgDuration.average.toFixed(2) : 0;
+        return avgDuration?.average ?? null;
     }
 
     async gamePlaytimeDistrib(userId?: number) {
@@ -240,11 +240,9 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         for (const mode of gameModes) {
             modeCounts[mode] = (modeCounts[mode] || 0) + 1;
         }
+        const topValuesResult = Object.entries(modeCounts).map(([name, value]) => ({ name, value: Number(value) || 0 }));
 
-        const topValuesResult = Object.entries(modeCounts)
-            .map(([name, value]) => ({ name, value: Number(value) || 0 }));
-
-        return { topValues: topValuesResult };
+        return { topValues: topValuesResult || { name: "-", value: 0 } };
     }
 
     // --- Implemented Methods ----------------------------------------------

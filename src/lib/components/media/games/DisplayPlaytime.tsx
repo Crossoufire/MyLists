@@ -16,7 +16,7 @@ export const DisplayPlaytime = ({ playtime, status }: DisplayPlaytimeProps) => {
     return (
         <div className="flex gap-x-1 items-center">
             <Play size={16} className="mt-0.5"/>
-            {playtime ? playtime / 60 : "--"} h
+            {playtime ? playtime / 60 : "-"} h
         </div>
     );
 };

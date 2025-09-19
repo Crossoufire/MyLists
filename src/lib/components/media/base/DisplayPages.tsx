@@ -17,7 +17,7 @@ export const DisplayPages = ({ currentPage, total, status }: DisplayPagesProps) 
     return (
         <div className="flex gap-x-1 items-center">
             <Play size={16} className="mt-0.5"/>
-            {currentPage ? currentPage : "--"}{total ? "/" + total : ""}
+            {currentPage ? currentPage : "-"}{total ? "/" + total : ""}
         </div>
     );
 }
