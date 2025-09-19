@@ -156,9 +156,9 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
             return { to: "/profile/$username", params: { username: item.name } };
         }
         return {
+            search: { external: true },
             to: "/details/$mediaType/$mediaId",
             params: { mediaType: item.itemType as MediaType, mediaId: item.id },
-            search: { external: true },
         };
     }
 

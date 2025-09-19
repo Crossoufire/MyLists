@@ -50,7 +50,7 @@ export function createRouter() {
         defaultErrorComponent: ErrorCatchBoundary,
         defaultNotFoundComponent: NotFound,
         defaultPendingComponent: DefaultLoader,
-        defaultPendingMs: 500,
+        defaultPendingMs: 1000,
         defaultPendingMinMs: 500,
         scrollRestoration: true,
         defaultStructuralSharing: true,

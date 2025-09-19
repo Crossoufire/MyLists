@@ -2,23 +2,22 @@ import {queryOptions} from "@tanstack/react-query";
 import {getCurrentUser} from "@/lib/server/functions/auth";
 import {getTrendsMedia} from "@/lib/server/functions/trends";
 import {getUserStats} from "@/lib/server/functions/user-stats";
-import {getGlobalSearch, getSearchResults} from "@/lib/server/functions/search";
+import {getSearchResults} from "@/lib/server/functions/search";
 import {getHallOfFame} from "@/lib/server/functions/hall-of-fame";
 import {getComingNextMedia} from "@/lib/server/functions/coming-next";
 import {getPlatformStats} from "@/lib/server/functions/platform-stats";
 import {ApiProviderType, JobType, MediaType} from "@/lib/server/utils/enums";
 import {getUserAchievements} from "@/lib/server/functions/user-achievements";
+import {MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDailyMediadle, getMediadleSuggestions} from "@/lib/server/functions/moviedle";
 import {getUserMediaHistory, getUserMediaLabels} from "@/lib/server/functions/user-media";
 import {getNotifications, getNotificationsCount} from "@/lib/server/functions/notifications";
-import {GlobalSearchType, MediaListArgs, SearchType, SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getJobDetails, getMediaDetails, getMediaDetailsToEdit} from "@/lib/server/functions/media-details";
 import {getAllUpdatesHistory, getUserProfile, getUsersFollowers, getUsersFollows} from "@/lib/server/functions/user-profile";
 import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFunction} from "@/lib/server/functions/media-lists";
 
 
 export const queryKeys = {
-    globalSearchKey: (search: GlobalSearchType) => ["globalSearch", search] as const,
     achievementPageKey: (username: string) => ["achievementPage", username] as const,
     authKey: () => ["currentUser"] as const,
     allUpdatesKey: (username: string, filters: SearchType) => ["allUpdates", username, filters] as const,
@@ -119,12 +118,6 @@ export const allUpdatesOptions = (username: string, filters: SearchType) => quer
 export const hallOfFameOptions = (search: SearchTypeHoF) => queryOptions({
     queryKey: queryKeys.hofKey(search),
     queryFn: () => getHallOfFame({ data: search }),
-});
-
-
-export const globalSearchOptions = (search: GlobalSearchType) => queryOptions({
-    queryKey: queryKeys.globalSearchKey(search),
-    queryFn: () => getGlobalSearch({ data: search }),
 });
 
 

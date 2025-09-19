@@ -53,8 +53,8 @@ function UserManagementPage() {
         const value = ev.target.value;
         setCurrentSearch(value);
         if (value === "") {
-            await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
             setCurrentSearch("");
+            await navigate({ search: { sorting: filters?.sorting, sortDesc: filters?.sortDesc } });
         }
     }
 

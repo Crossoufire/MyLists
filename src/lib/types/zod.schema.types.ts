@@ -1,4 +1,5 @@
 import * as z from "zod";
+import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
 import {
     AchievementDifficulty,
     ApiProviderType,
@@ -12,7 +13,6 @@ import {
     Status,
     UpdateType
 } from "@/lib/server/utils/enums";
-import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;
