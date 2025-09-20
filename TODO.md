@@ -10,8 +10,6 @@
 
 ## TODO
 
-- TODO: Add authors in edit books
-- TODO: Add an LLM to add genres to books, like every weeks
 - TODO: Tests when db empty
 - TODO: See how to deal better with dotenv in prod etc...
 - TODO: See how CLI works after `npm run build`

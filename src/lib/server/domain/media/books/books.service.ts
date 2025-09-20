@@ -66,7 +66,7 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
     }
 
     async getMediaEditableFields(mediaId: number) {
-        const media = await this.repository.findById(mediaId);
+        const media = await this.repository.findAllAssociatedDetails(mediaId);
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
@@ -77,6 +77,10 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
                 fields[field] = media[field as keyof typeof media];
             }
         });
+
+        if (media.authors) {
+            fields.authors = media.authors.map((a) => a.name).join(",");
+        }
 
         return { fields };
     }
@@ -98,13 +102,19 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
             delete payload.imageCover;
         }
 
+        let authorsData: { name: string }[] = [];
+        if (payload?.authors) {
+            authorsData = payload.authors.split(",").map((a: string) => ({ name: a.trim() }));
+            delete payload.authors;
+        }
+
         for (const key in payload) {
             if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Book)) {
                 fields[key as keyof typeof media] = payload[key as keyof typeof media];
             }
         }
 
-        await this.repository.updateMediaWithDetails({ mediaData: fields });
+        await this.repository.updateMediaWithDetails({ mediaData: fields, authorsData });
     }
 
     async batchBooksWithoutGenres(batchSize = 20) {

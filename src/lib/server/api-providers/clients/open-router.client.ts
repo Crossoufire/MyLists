@@ -1,9 +1,9 @@
 import z from "zod";
 import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
+import {OpenRouterResponse} from "@/lib/types/provider.types";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
-import {OpenRouterResponse} from "@/lib/types/provider.types";
 
 
 export class OpenRouterClient extends BaseClient {

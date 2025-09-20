@@ -43,6 +43,7 @@ function MediaEditPage() {
             budget: apiData.fields?.budget,
             revenue: apiData.fields?.revenue,
             tagline: apiData.fields?.tagline,
+            authors: apiData.fields?.authors,
             synopsis: apiData.fields?.synopsis,
             duration: apiData.fields?.duration,
             homepage: apiData.fields?.homepage,
