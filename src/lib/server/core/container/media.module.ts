@@ -56,7 +56,7 @@ export function setupMediaModule(apiModule: ProviderModule) {
     const animeProviderService = new TvProviderService(clients.tmdb, transformers.tmdb, animeRepository, clients.jikan);
     const moviesProviderService = new MoviesProviderService(clients.tmdb, transformers.tmdb, moviesRepository);
     const gamesProviderService = new GamesProviderService(clients.igdb, transformers.igdb, gamesRepository, clients.hltb);
-    const booksProviderService = new BooksProviderService(clients.gBook, transformers.gBook, booksRepository);
+    const booksProviderService = new BooksProviderService(clients.gBook, clients.openRouter, transformers.gBook, booksRepository);
     const mangaProviderService = new MangaProviderService(clients.jikan, transformers.jikan, mangaRepository);
     MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
     MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);

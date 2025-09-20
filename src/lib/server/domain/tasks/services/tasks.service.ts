@@ -4,6 +4,7 @@ import * as fs from "fs";
 import {serverEnv} from "@/env/server";
 import {TasksName} from "@/lib/types/base.types";
 import {MediaType} from "@/lib/server/utils/enums";
+import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
@@ -48,6 +49,7 @@ export class TasksService {
             addMediaNotifications: this.runAddMediaNotifications.bind(this),
             removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
             deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
+            addGenresToBooksUsingLLM: this.runAddGenresToBooksUsingLLM.bind(this),
         };
     }
 
@@ -299,6 +301,45 @@ export class TasksService {
         await this.runAnalyzeDB();
 
         this.logger.info("Completed: MaintenanceTasks execution.");
+    }
+
+    protected async runAddGenresToBooksUsingLLM() {
+        this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
+
+        const booksService = this.mediaServiceRegistry.getService(MediaType.BOOKS);
+        const booksProvider = this.mediaProviderRegistry.getService(MediaType.BOOKS);
+
+        const booksGenres = booksService.getAvailableGenres().map((g) => g.name);
+        const batchedBooks = await booksService.batchBooksWithoutGenres();
+        this.logger.info(`${batchedBooks.length} batches of books to treat.`);
+
+        const mainPrompt = `
+            Add genres to the following books. 
+            For each book, choose the top genres for this book (MAX 4) from this list: ${booksGenres.join(", ")}.
+        `;
+
+        for (const booksBatch of batchedBooks.slice(0, 1)) {
+            const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
+
+            try {
+                const data = await booksProvider.llmResponse(promptToSend, llmResponseSchema);
+                const result = llmResponseSchema.parse(JSON.parse(data.choices[0].message.content ?? ""));
+
+                for (const item of result) {
+                    const validGenres = item.genres.filter((g) => booksGenres.includes(g)).slice(0, 4);
+                    if (!item.bookApiId || validGenres.length === 0) {
+                        this.logger.warn(`Skipping invalid/empty-bookApiId/genres: ${JSON.stringify(item)}`);
+                        continue;
+                    }
+
+                    await booksService.addGenresToBook(item.bookApiId, validGenres);
+                    this.logger.info(`Genres to Book apiID: ${item.bookApiId} added: ${validGenres.join(", ")}`);
+                }
+            }
+            catch (err: any) {
+                this.logger.error("Error while applying genres", err);
+            }
+        }
     }
 
     private async _updateEnvFile(key: string, value: string) {

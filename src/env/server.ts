@@ -10,7 +10,7 @@ export const serverEnv = createEnv({
         // Image/Cover Managements
         UPLOADS_DIR_NAME: z.string().default("static"),
         BASE_UPLOADS_LOCATION: z.string().default("./public/static/"),
-        
+
         // Admin Secrets
         ADMIN_PASSWORD: z.string().min(8),
         ADMIN_TOKEN_SECRET: z.string().min(20),
@@ -38,6 +38,10 @@ export const serverEnv = createEnv({
         IGDB_API_KEY: z.string(),
         IGDB_CLIENT_ID: z.string(),
         IGDB_CLIENT_SECRET: z.string(),
+
+        // OPEN ROUTER
+        OPEN_ROUTER_API_KEY: z.string(),
+        OPEN_ROUTER_MODEL_ID: z.string(),
     },
     runtimeEnv: process.env,
 });

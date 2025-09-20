@@ -49,13 +49,13 @@ export class BaseClient {
             await this.limiter.consume(this.consumeKey);
             return await fetchOperation();
         }
-        catch (rejRes) {
-            if (rejRes instanceof Error) {
-                console.error(`Rate limiter encountered an unexpected error for key "${this.consumeKey}":`, rejRes);
-                throw rejRes;
+        catch (err) {
+            if (err instanceof Error) {
+                console.error(`Rate limiter encountered an unexpected error for key "${this.consumeKey}":`, err);
+                throw err;
             }
             else {
-                const typedRejRes = rejRes as RateLimiterRes;
+                const typedRejRes = err as RateLimiterRes;
                 console.warn(
                     `Rate limit exceeded for key "${this.consumeKey}". 
                     Request blocked. Available in ${typedRejRes.msBeforeNext} ms.`

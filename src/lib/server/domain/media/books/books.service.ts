@@ -1,15 +1,15 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
+import {Achievement} from "@/lib/types/achievements.types";
 import {Status, UpdateType} from "@/lib/server/utils/enums";
 import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {Achievement} from "@/lib/types/achievements.types";
+import {FormattedError} from "@/lib/server/utils/error-classes";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {Book, BooksAchCodeName, BooksList} from "@/lib/server/domain/media/books/books.types";
 import {LogPayload, PagePayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository> {
@@ -105,6 +105,43 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
+    }
+
+    async batchBooksWithoutGenres(batchSize = 20) {
+        const booksWithoutGenres = await this.repository.getBooksWithoutGenres();
+
+        const booksPrompts: string[] = [];
+        for (const book of booksWithoutGenres) {
+            booksPrompts.push(`
+                bookApiId: ${book.apiId}
+                title: ${book.title}
+                authors: ${book.authors}
+                description: ${book.synopsis}
+            `);
+        }
+
+        const batches = [];
+        for (let i = 0; i < booksPrompts.length; i += batchSize) {
+            batches.push(booksPrompts.slice(i, i + batchSize));
+        }
+
+        return batches;
+    }
+
+    async addGenresToBook(bookApiId: string, booksGenres: string[]) {
+        const mediaData = { apiId: bookApiId };
+        const genresData = booksGenres.map((g) => ({ name: g }));
+        // @ts-expect-error - mediaData does not contains pages, covers, etc... not a problem
+        await this.repository.updateMediaWithDetails({ mediaData, genresData });
+    }
+
+    getAvailableGenres() {
+        return [
+            "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
+            "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
+            "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
+            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"
+        ].map((name) => ({ name }));
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, _media: Book) {
@@ -211,15 +248,6 @@ export class BooksService extends BaseService<MangaSchemaConfig, BooksRepository
         }
 
         return delta;
-    }
-
-    getAvailableGenres() {
-        return [
-            "Action & Adventure", "Biography", "Chick lit", "Children", "Classic", "Crime", "Drama",
-            "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
-            "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
-            "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"
-        ].map((name) => ({ name }));
     }
 
     updateRedoHandler(currentState: BooksList, payload: RedoPayload, media: Book): [BooksList, LogPayload] {

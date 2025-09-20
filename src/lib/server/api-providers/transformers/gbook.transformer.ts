@@ -45,6 +45,6 @@ export class GBooksTransformer {
 
         const authorsData = rawData?.volumeInfo.authors.map((name) => ({ name }));
 
-        return { mediaData, authorsData, genresData: [] };
+        return { mediaData, authorsData };
     }
 }

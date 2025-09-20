@@ -7,6 +7,7 @@ export const taskDefinitions = [
     { name: "calculateAchievements", description: "Compute all users Achievements" },
     { name: "addMediaNotifications", description: "Add media notifications to users" },
     { name: "maintenanceTasks", description: "Run all maintenance tasks in sequence" },
+    { name: "addGenresToBooksUsingLLM", description: "Like the name of this task say" },
     { name: "seedAchievements", description: "Apply seed achievements to the database" },
     { name: "removeNonListMedia", description: "Remove non-list media from the database" },
     { name: "bulkMediaRefresh", description: "- Bulk refresh media data from APIs provider" },

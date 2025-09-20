@@ -523,3 +523,32 @@ export type HltbGameEntry = {
     mainExtra: string | null;
     completionist: string | null;
 }
+
+
+// --- Open Router Response Type ------------------------------------------
+
+export type OpenRouterResponse = {
+    id: string;
+    model: string;
+    created: number;
+    system_fingerprint?: string;
+    object: "chat.completion" | "chat.completion.chunk";
+    usage?: {
+        total_tokens: number;
+        prompt_tokens: number;
+        completion_tokens: number;
+    };
+    choices: {
+        finish_reason: string | null;
+        native_finish_reason: string | null;
+        message: {
+            role: string;
+            content: string | null;
+        };
+        error?: {
+            code: number;
+            message: string;
+            metadata?: Record<string, unknown>;
+        };
+    }[];
+};

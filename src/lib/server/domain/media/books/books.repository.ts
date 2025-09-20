@@ -1,12 +1,12 @@
 import {Status} from "@/lib/server/utils/enums";
-import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/types/achievements.types";
-import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails} from "@/lib/types/base.types";
+import {Achievement} from "@/lib/types/achievements.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {books, booksAuthors, booksGenre, booksList} from "@/lib/server/database/schema";
 import {Book, UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {booksConfig, MangaSchemaConfig} from "@/lib/server/domain/media/books/books.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, isNull, lte, max, ne, sql} from "drizzle-orm";
 
 
 export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
@@ -15,6 +15,21 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
     constructor() {
         super(booksConfig);
         this.config = booksConfig;
+    }
+
+    async getBooksWithoutGenres() {
+        return getDbClient()
+            .select({
+                title: books.name,
+                apiId: books.apiId,
+                synopsis: books.synopsis,
+                authors: sql<string>`group_concat(${booksAuthors.name}, ', ')`,
+            })
+            .from(books)
+            .leftJoin(booksAuthors, eq(booksAuthors.mediaId, books.id))
+            .leftJoin(booksGenre, eq(booksGenre.mediaId, books.id))
+            .where(isNull(booksGenre.mediaId))
+            .groupBy(books.id);
     }
 
     // --- Achievements ----------------------------------------------------------
@@ -182,7 +197,7 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         return result;
     }
 
-    async storeMediaWithDetails({ mediaData, authorsData, genresData }: UpsertBooksWithDetails) {
+    async storeMediaWithDetails({ mediaData, authorsData }: UpsertBooksWithDetails) {
         const tx = getDbClient();
 
         const [media] = await tx
@@ -197,11 +212,6 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
         if (authorsData && authorsData.length > 0) {
             const authorsToAdd = authorsData.map((a) => ({ mediaId, ...a }));
             await tx.insert(booksAuthors).values(authorsToAdd)
-        }
-
-        if (genresData && genresData.length > 0) {
-            const genresToAdd = genresData.map((g) => ({ mediaId, ...g }));
-            await tx.insert(booksGenre).values(genresToAdd)
         }
 
         return mediaId;

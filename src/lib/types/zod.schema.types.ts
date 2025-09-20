@@ -279,3 +279,8 @@ export const getAdminJobsSchema = z.object({
 export const getAdminJobSchema = z.object({
     jobId: z.coerce.string(),
 })
+
+export const llmResponseSchema = z.array(z.object({
+    bookApiId: z.string(),
+    genres: z.array(z.string()),
+}));
