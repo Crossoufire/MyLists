@@ -1,5 +1,5 @@
 {
-    "name": "tanstarter",
+    "name": "mylists",
     "private": true,
     "type": "module",
     "browserslist": [
@@ -14,7 +14,6 @@
         "build": "vite build",
         "ui": "npx shadcn@latest",
         "dev": "vite dev --port 3000",
-        "start": "node .output/server/index.mjs",
         "cli": "npx tsx -r dotenv/config src/cli/index.ts",
         "email": "email dev -d ./src/lib/components/emails",
         "auth:generate": "npx @better-auth/cli@latest generate --y --output src/lib/server/database/schema/auth.schema.ts"
@@ -59,7 +58,6 @@
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "commander": "^14.0.0",
-        "dotenv": "^17.2.1",
         "drizzle-orm": "^0.44.5",
         "embla-carousel-react": "^8.6.0",
         "fastest-levenshtein": "^1.0.16",

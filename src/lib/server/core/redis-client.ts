@@ -1,9 +1,5 @@
-import dotenv from "dotenv";
 import {Redis} from "ioredis";
 import {serverEnv} from "@/env/server";
-
-
-dotenv.config();
 
 
 let redisInstance: Redis | null = null;

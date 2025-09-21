@@ -5,6 +5,7 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {createAdminToken, verifyAdminToken} from "@/lib/server/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
@@ -17,14 +18,13 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
-import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
-    maxAge: 1 * 60 * 1000, // 1 minute
+    maxAge: 5 * 60 * 1000, // 5 minutes
     path: "/"
 };
 
