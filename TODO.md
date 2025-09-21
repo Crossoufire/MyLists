@@ -10,9 +10,9 @@
 
 ## TODO
 
-- TODO: Tests when db empty
 - TODO: See how to deal better with dotenv in prod etc...
 - TODO: See how CLI works after `npm run build`
+- TODO: Tests when db empty
 - TODO: Tests everything and all CLI tasks :(
 
 ## TODO AFTER PROD

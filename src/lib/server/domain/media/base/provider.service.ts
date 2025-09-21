@@ -1,5 +1,5 @@
-import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {TrendsMedia} from "@/lib/types/provider.types";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 
 
 export abstract class BaseProviderService<
@@ -10,10 +10,18 @@ export abstract class BaseProviderService<
     protected constructor(protected repository: R) {
     }
 
-    async bulkProcessAndRefreshMedia() {
+    async* bulkProcessAndRefreshMedia() {
         const mediaIds = await this._getMediaIdsForBulkRefresh();
-        const promises = mediaIds.map(apiId => this.fetchAndRefreshMediaDetails(apiId, true));
-        return Promise.allSettled(promises);
+
+        for (const apiId of mediaIds) {
+            try {
+                await this.fetchAndRefreshMediaDetails(apiId, true);
+                yield { apiId, state: "fulfilled", reason: undefined };
+            }
+            catch (reason) {
+                yield { apiId, state: "rejected", reason: reason as Error };
+            }
+        }
     }
 
     async fetchAndStoreMediaDetails(apiId: number | string, isBulk: boolean = false) {
@@ -24,11 +32,12 @@ export abstract class BaseProviderService<
     async fetchAndRefreshMediaDetails(apiId: number | string, isBulk: boolean = false) {
         try {
             const details = await this._fetchAndTransformDetails(apiId, isBulk);
-            return this.repository.updateMediaWithDetails(details);
+            await this.repository.updateMediaWithDetails(details);
         }
-        catch (error: any) {
-            error.message = `Error refreshing media with apiId ${apiId}: ${error.message}`;
-            throw error;
+        catch (err: any) {
+            err.apiId = apiId;
+            err.message = `Error refreshing media with apiId ${apiId}: ${err.message}`;
+            throw err;
         }
     }
 

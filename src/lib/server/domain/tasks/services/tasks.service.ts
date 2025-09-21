@@ -80,23 +80,28 @@ export class TasksService {
     }
 
     protected async runBulkMediaRefresh() {
-        this.logger.info("Starting: Bulk Media Refresh execution.");
+        this.logger.info("Starting: bulkMediaRefresh execution.");
 
         for (const mediaType of this.mediaTypes) {
             this.logger.info({ mediaType }, `Refreshing media for ${mediaType}...`);
 
             const mediaProviderService = this.mediaProviderRegistry.getService(mediaType);
-            const results = await mediaProviderService.bulkProcessAndRefreshMedia();
-            results.forEach((result) => {
-                if (result.status === "rejected") {
-                    this.logger.error({ err: result.reason.message }, `Error refreshing ${mediaType}`);
+            for await (const result of mediaProviderService.bulkProcessAndRefreshMedia()) {
+                if (result.state === "fulfilled") {
+                    this.logger.info(`Refreshed ${mediaType} with apiId: ${result.apiId}`);
                 }
-            });
+                else {
+                    this.logger.error(
+                        { err: result.reason?.message ?? result.reason, apiId: result.apiId },
+                        `Error refreshing ${mediaType} with apiId: ${result.apiId}`
+                    );
+                }
+            }
 
             this.logger.info({ mediaType }, `Refreshing ${mediaType} completed.`);
         }
 
-        this.logger.info("Completed: Bulk Media Refresh execution.");
+        this.logger.info("Completed: bulkMediaRefresh execution.");
     }
 
     protected async runVacuumDB() {
