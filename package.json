@@ -11,11 +11,14 @@
     ],
     "scripts": {
         "dk": "drizzle-kit",
-        "build": "vite build",
         "ui": "npx shadcn@latest",
+        "build:server": "vite build",
         "dev": "vite dev --port 3000",
         "cli": "npx tsx -r dotenv/config src/cli/index.ts",
         "email": "email dev -d ./src/lib/components/emails",
+        "build:cli": "vite build --config vite.cli.config.ts",
+        "build:worker": "vite build --config vite.worker.config.ts",
+        "build": "npm run build:server && npm run build:worker && npm run build:cli",
         "auth:generate": "npx @better-auth/cli@latest generate --y --output src/lib/server/database/schema/auth.schema.ts"
     },
     "dependencies": {

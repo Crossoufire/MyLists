@@ -10,7 +10,6 @@
 
 ## TODO
 
-- TODO: See how CLI works after `npm run build`
 - TODO: Tests when db empty
 - TODO: Tests everything and all CLI tasks :(
 
