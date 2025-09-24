@@ -3,19 +3,18 @@ import React from "react";
 import appCSS from "@/styles.css?url";
 import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
+import {TanStackDevtools} from "@tanstack/react-devtools";
 import {Navbar} from "@/lib/client/components/navbar/Navbar";
 import {useNProgress} from "@/lib/client/hooks/use-nprogress";
 import {Footer} from "@/lib/client/components/general/Footer";
-import {TanStackDevtools} from "@tanstack/react-devtools";
 import {SheetProvider} from "@/lib/client/contexts/sheet-context";
 import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
-import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
+import {authOptions} from "@/lib/client/react-query/query-options/query-options";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    ssr: false,
     beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
     head: () => ({
         meta: [
@@ -33,6 +32,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     }),
     component: RootComponent,
     shellComponent: RootComponent,
+    ssr: false,
 });
 
 
