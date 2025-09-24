@@ -1,13 +1,13 @@
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
-import {AchievementCard} from "@/lib/components/achievements/AchievementCard";
-import {achievementOptions} from "@/lib/react-query/query-options/query-options";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {AchievementSummary} from "@/lib/components/achievements/AchievementSummary";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {AchievementCard} from "@/lib/client/components/achievements/AchievementCard";
+import {achievementOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
+import {AchievementSummary} from "@/lib/client/components/achievements/AchievementSummary";
 
 
 export const Route = createFileRoute("/_main/_private/achievements/$username")({

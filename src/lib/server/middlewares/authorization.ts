@@ -1,11 +1,11 @@
 import {auth} from "@/lib/server/core/auth";
-import {PrivacyType} from "@/lib/server/utils/enums";
+import {PrivacyType} from "@/lib/utils/enums";
 import {createMiddleware} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
 import {getContainer} from "@/lib/server/core/container";
 import {notFound, redirect} from "@tanstack/react-router";
-import {updateLastSeen} from "@/lib/server/utils/last-seen";
-import {tryNotFound} from "@/lib/server/utils/try-not-found";
+import {updateLastSeen} from "@/lib/utils/last-seen";
+import {tryNotFound} from "@/lib/utils/try-not-found";
 import {baseUsernameSchema} from "@/lib/types/zod.schema.types";
 
 

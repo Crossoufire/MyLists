@@ -1,9 +1,9 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {TasksManager} from "@/lib/components/admin/TasksManager";
-import {DashboardShell} from "@/lib/components/admin/DashboardShell";
-import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
-import {adminTasksOptions} from "@/lib/react-query/query-options/admin-options";
+import {TasksManager} from "@/lib/client/components/admin/TasksManager";
+import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
+import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
+import {adminTasksOptions} from "@/lib/client/react-query/query-options/admin-options";
 
 
 export const Route = createFileRoute("/_admin/admin/tasks")({

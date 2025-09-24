@@ -1,4 +1,4 @@
-import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
+import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 
 
 export interface ProviderSearchResults {

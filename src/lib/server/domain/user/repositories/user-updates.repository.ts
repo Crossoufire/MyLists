@@ -1,5 +1,5 @@
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
+import {MediaType, PrivacyType} from "@/lib/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";

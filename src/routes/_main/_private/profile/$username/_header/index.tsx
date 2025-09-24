@@ -1,13 +1,13 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {MediaLevels} from "@/lib/components/user-profile/MediaLevels";
-import {UserUpdates} from "@/lib/components/user-profile/UserUpdates";
-import {GlobalStats} from "@/lib/components/user-profile/GlobalStats";
-import {MediaDetails} from "@/lib/components/user-profile/MediaDetails";
-import {ProfileFollows} from "@/lib/components/user-profile/ProfileFollows";
-import {profileOptions} from "@/lib/react-query/query-options/query-options";
-import {ProfileMiscInfo} from "@/lib/components/user-profile/ProfileMiscInfo";
-import {AchievementsDisplay} from "@/lib/components/user-profile/AchievementProfile";
+import {MediaLevels} from "@/lib/client/components/user-profile/MediaLevels";
+import {UserUpdates} from "@/lib/client/components/user-profile/UserUpdates";
+import {GlobalStats} from "@/lib/client/components/user-profile/GlobalStats";
+import {MediaDetails} from "@/lib/client/components/user-profile/MediaDetails";
+import {ProfileFollows} from "@/lib/client/components/user-profile/ProfileFollows";
+import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
+import {ProfileMiscInfo} from "@/lib/client/components/user-profile/ProfileMiscInfo";
+import {AchievementsDisplay} from "@/lib/client/components/user-profile/AchievementProfile";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/")({

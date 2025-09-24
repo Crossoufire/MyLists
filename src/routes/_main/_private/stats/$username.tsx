@@ -1,14 +1,14 @@
-import {dataToLoad} from "@/lib/stats";
+import {dataToLoad} from "@/lib/client/media-stats";
 import {useEffect, useState} from "react";
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {RatingProvider} from "@/lib/contexts/rating-context";
-import {Sidebar, SideBarItem} from "@/lib/components/general/Sidebar";
-import {StatsDisplay} from "@/lib/components/media-stats/StatsDisplay";
-import {userStatsOptions} from "@/lib/react-query/query-options/query-options";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {RatingProvider} from "@/lib/client/contexts/rating-context";
+import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
+import {StatsDisplay} from "@/lib/client/components/media-stats/StatsDisplay";
+import {userStatsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/stats/$username")({

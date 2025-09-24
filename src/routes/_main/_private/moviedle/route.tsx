@@ -1,19 +1,19 @@
 import React, {useState} from "react";
-import {Input} from "@/lib/components/ui/input";
-import {Button} from "@/lib/components/ui/button";
-import {MediaType} from "@/lib/server/utils/enums";
-import {useDebounce} from "@/lib/hooks/use-debounce";
-import {Progress} from "@/lib/components/ui/progress";
-import {PageTitle} from "@/lib/components/general/PageTitle";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
+import {MediaType} from "@/lib/utils/enums";
+import {useDebounce} from "@/lib/client/hooks/use-debounce";
+import {Progress} from "@/lib/client/components/ui/progress";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {StatsCard} from "@/lib/components/moviedle/StatsCard";
+import {StatsCard} from "@/lib/client/components/moviedle/StatsCard";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
-import {AttemptsGraph} from "@/lib/components/moviedle/AttemptsGraph";
-import {CountdownTimer} from "@/lib/components/moviedle/CountdownTimer";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {useMoviedleGuessMutation} from "@/lib/react-query/query-mutations/mediadle.mutations";
+import {AttemptsGraph} from "@/lib/client/components/moviedle/AttemptsGraph";
+import {CountdownTimer} from "@/lib/client/components/moviedle/CountdownTimer";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {useMoviedleGuessMutation} from "@/lib/client/react-query/query-mutations/mediadle.mutations";
 import {Award, Crown, Flame, PartyPopper, Sigma, Target, ThumbsDown, Trophy} from "lucide-react";
-import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/react-query/query-options/query-options";
+import {dailyMediadleOptions, mediadleSuggestionsOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/moviedle")({

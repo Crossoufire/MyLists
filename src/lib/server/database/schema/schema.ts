@@ -2,7 +2,7 @@ import {sql} from "drizzle-orm";
 import {user} from "./auth.schema";
 import {customJson, imageUrl} from "@/lib/server/database/custom-types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core"
-import {AchievementDifficulty, GamesPlatformsEnum, MediaType, NotificationType, Status, UpdateType} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, GamesPlatformsEnum, MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
 
 
 export const followers = sqliteTable("followers", {

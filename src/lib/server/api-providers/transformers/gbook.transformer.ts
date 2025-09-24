@@ -1,8 +1,8 @@
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {books} from "@/lib/server/database/schema";
-import {getImageUrl} from "@/lib/server/utils/image-url";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {cleanHtmlText} from "@/lib/server/utils/clean-html-text";
+import {getImageUrl} from "@/lib/utils/image-url";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {cleanHtmlText} from "@/lib/utils/clean-html-text";
 import {GBooksDetails, GBooksSearchResults, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 
 

@@ -1,6 +1,6 @@
 import {imageUrl} from "@/lib/server/database/custom-types";
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
+import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
 export const user = sqliteTable("user", {

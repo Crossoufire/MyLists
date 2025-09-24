@@ -1,5 +1,5 @@
 import * as schema from "@/lib/server/database/schema";
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/utils/enums";
 import {createArrayFilterDef} from "../base/base.repository";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";

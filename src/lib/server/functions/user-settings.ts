@@ -1,10 +1,10 @@
 import {auth} from "@/lib/server/core/auth";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {saveUploadedImage} from "@/lib/server/utils/save-image";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {tryFormZodError} from "@/lib/server/utils/try-not-found";
+import {saveUploadedImage} from "@/lib/utils/save-image";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";

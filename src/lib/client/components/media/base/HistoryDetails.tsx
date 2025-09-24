@@ -1,0 +1,41 @@
+import {useState} from "react";
+import {HistoryOptionsType} from "@/lib/types/query.options.types";
+import {MutedText} from "@/lib/client/components/general/MutedText";
+import {UserUpdate} from "@/lib/client/components/general/UserUpdate";
+import {queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {useDeleteUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+
+
+interface HistoryDetailsProps {
+    history: HistoryOptionsType;
+    queryKey: ReturnType<typeof queryKeys.historyKey>;
+}
+
+
+export const HistoryDetails = ({ queryKey, history }: HistoryDetailsProps) => {
+    const deleteHistoryMutation = useDeleteUpdatesMutation(queryKey);
+    const [mediaIdBeingDeleted, setMediaIdBeingDeleted] = useState<number>();
+
+    const handleDelete = (updateId: number) => {
+        setMediaIdBeingDeleted(updateId);
+        deleteHistoryMutation.mutate({ data: { updateIds: [updateId] } });
+    };
+
+    return (
+        <>
+            {history.length === 0 ?
+                <MutedText>No history to display</MutedText>
+                :
+                history.map(update =>
+                    <UserUpdate
+                        key={update.id}
+                        update={update}
+                        canDelete={true}
+                        onDelete={handleDelete}
+                        mediaIdBeingDeleted={mediaIdBeingDeleted}
+                        isPending={deleteHistoryMutation.isPending}
+                    />
+                )}
+        </>
+    );
+};

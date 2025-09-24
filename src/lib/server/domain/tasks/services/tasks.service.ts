@@ -3,7 +3,7 @@ import path from "path";
 import * as fs from "fs";
 import {serverEnv} from "@/env/server";
 import {TasksName} from "@/lib/types/base.types";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";

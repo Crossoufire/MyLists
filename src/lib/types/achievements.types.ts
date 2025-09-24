@@ -1,5 +1,5 @@
 import {AchievementTier} from "@/lib/types/zod.schema.types";
-import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 
 
 export type Achievement = {

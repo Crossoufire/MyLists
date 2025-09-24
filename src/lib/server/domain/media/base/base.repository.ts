@@ -4,7 +4,7 @@ import {followers, user} from "@/lib/server/database/schema";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {JobType, LabelAction, MediaType, Status} from "@/lib/server/utils/enums";
+import {JobType, LabelAction, MediaType, Status} from "@/lib/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
 import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {

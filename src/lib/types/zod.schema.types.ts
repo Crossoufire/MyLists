@@ -12,7 +12,7 @@ import {
     RoleType,
     Status,
     UpdateType
-} from "@/lib/server/utils/enums";
+} from "@/lib/utils/enums";
 
 
 export type SearchType = z.infer<typeof searchTypeSchema>;

@@ -1,5 +1,5 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-options";
+import {MediaType} from "@/lib/utils/enums";
+import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin-options";
 import {
     achievementOptions,
     hallOfFameOptions,
@@ -10,7 +10,7 @@ import {
     profileOptions,
     trendsOptions,
     upcomingOptions
-} from "@/lib/react-query/query-options/query-options";
+} from "@/lib/client/react-query/query-options/query-options";
 
 
 // --- Inferred Query Options Types -----------------------------------------------------

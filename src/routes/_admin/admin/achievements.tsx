@@ -1,19 +1,19 @@
 import {useEffect, useState} from "react";
-import {Badge} from "@/lib/components/ui/badge";
-import {Input} from "@/lib/components/ui/input";
-import {Label} from "@/lib/components/ui/label";
+import {Badge} from "@/lib/client/components/ui/badge";
+import {Input} from "@/lib/client/components/ui/input";
+import {Label} from "@/lib/client/components/ui/label";
 import {capitalize} from "@/lib/utils/functions";
-import {Button} from "@/lib/components/ui/button";
-import {Textarea} from "@/lib/components/ui/textarea";
+import {Button} from "@/lib/client/components/ui/button";
+import {Textarea} from "@/lib/client/components/ui/textarea";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
-import {DashboardShell} from "@/lib/components/admin/DashboardShell";
-import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
-import {adminAchievementsOptions} from "@/lib/react-query/query-options/admin-options";
-import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/components/ui/dialog";
-import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/react-query/query-mutations/admin.mutations";
+import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
+import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
+import {adminAchievementsOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
+import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/lib/client/components/ui/dialog";
+import {useAdminUpdateAchievementMutation, useAdminUpdateTiersMutation} from "@/lib/client/react-query/query-mutations/admin.mutations";
 
 
 type Achievement = Awaited<ReturnType<NonNullable<ReturnType<typeof adminAchievementsOptions>["queryFn"]>>>[0];

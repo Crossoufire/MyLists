@@ -1,18 +1,18 @@
 import {useState} from "react";
-import {useAuth} from "@/lib/hooks/use-auth";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {Header} from "@/lib/components/media/base/Header";
+import {Header} from "@/lib/client/components/media/base/Header";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {Pagination} from "@/lib/components/general/Pagination";
-import {MediaGrid} from "@/lib/components/media/base/MediaGrid";
-import {MediaTable} from "@/lib/components/media/base/MediaTable";
-import {AppliedFilters} from "@/lib/components/media/base/AppliedFilters";
-import {FiltersSideSheet} from "@/lib/components/media/base/FiltersSideSheet";
-import {mediaListOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {Pagination} from "@/lib/client/components/general/Pagination";
+import {MediaGrid} from "@/lib/client/components/media/base/MediaGrid";
+import {MediaTable} from "@/lib/client/components/media/base/MediaTable";
+import {AppliedFilters} from "@/lib/client/components/media/base/AppliedFilters";
+import {FiltersSideSheet} from "@/lib/client/components/media/base/FiltersSideSheet";
+import {mediaListOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/list/$mediaType/$username")({

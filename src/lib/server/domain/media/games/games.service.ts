@@ -1,7 +1,7 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import {Status, UpdateType} from "@/lib/server/utils/enums";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {Status, UpdateType} from "@/lib/utils/enums";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";

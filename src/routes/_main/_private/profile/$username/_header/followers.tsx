@@ -1,8 +1,8 @@
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {BlockLink} from "@/lib/components/general/BlockLink";
-import {followersOptions} from "@/lib/react-query/query-options/query-options";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {BlockLink} from "@/lib/client/components/general/BlockLink";
+import {followersOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header/followers")({

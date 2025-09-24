@@ -1,16 +1,16 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
-import {Input} from "@/lib/components/ui/input";
-import {Button} from "@/lib/components/ui/button";
-import {MediaType} from "@/lib/server/utils/enums";
-import {Textarea} from "@/lib/components/ui/textarea";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
+import {MediaType} from "@/lib/utils/enums";
+import {Textarea} from "@/lib/client/components/ui/textarea";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {capitalize, sliceIntoParts} from "@/lib/utils/functions";
 import {createFileRoute, useRouter} from "@tanstack/react-router";
-import {editMediaDetailsOptions} from "@/lib/react-query/query-options/query-options";
-import {useEditMediaMutation} from "@/lib/react-query/query-mutations/media.mutations";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
+import {editMediaDetailsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {useEditMediaMutation} from "@/lib/client/react-query/query-mutations/media.mutations";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 
 
 export const Route = createFileRoute("/_main/_private/details/edit/$mediaType/$mediaId")({

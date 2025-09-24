@@ -1,21 +1,21 @@
 import React, {useState} from "react";
 import {Search} from "lucide-react";
-import {useAuth} from "@/lib/hooks/use-auth";
-import {Input} from "@/lib/components/ui/input";
-import {Button} from "@/lib/components/ui/button";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
 import {formatDateTime} from "@/lib/utils/functions";
-import {Checkbox} from "@/lib/components/ui/checkbox";
+import {Checkbox} from "@/lib/client/components/ui/checkbox";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
-import {Payload} from "@/lib/components/general/Payload";
-import {PageTitle} from "@/lib/components/general/PageTitle";
+import {Payload} from "@/lib/client/components/general/Payload";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {TablePagination} from "@/lib/components/general/TablePagination";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
-import {allUpdatesOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
-import {useDeleteUpdatesMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {TablePagination} from "@/lib/client/components/general/TablePagination";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {allUpdatesOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {useDeleteUpdatesMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
 

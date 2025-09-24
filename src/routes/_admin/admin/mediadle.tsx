@@ -1,17 +1,17 @@
 import {Search} from "lucide-react";
 import {useMemo, useState} from "react";
-import {Input} from "@/lib/components/ui/input";
+import {Input} from "@/lib/client/components/ui/input";
 import {formatDateTime} from "@/lib/utils/functions";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {SearchType} from "@/lib/types/zod.schema.types";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {DashboardShell} from "@/lib/components/admin/DashboardShell";
-import {DashboardHeader} from "@/lib/components/admin/DashboardHeader";
-import {TablePagination} from "@/lib/components/general/TablePagination";
-import {Avatar, AvatarFallback, AvatarImage} from "@/lib/components/ui/avatar";
-import {adminMediadleOptions} from "@/lib/react-query/query-options/admin-options";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/components/ui/table";
+import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {DashboardShell} from "@/lib/client/components/admin/DashboardShell";
+import {DashboardHeader} from "@/lib/client/components/admin/DashboardHeader";
+import {TablePagination} from "@/lib/client/components/general/TablePagination";
+import {Avatar, AvatarFallback, AvatarImage} from "@/lib/client/components/ui/avatar";
+import {adminMediadleOptions} from "@/lib/client/react-query/query-options/admin-options";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/lib/client/components/ui/table";
 import {ColumnDef, flexRender, getCoreRowModel, OnChangeFn, PaginationState, useReactTable} from "@tanstack/react-table";
 
 

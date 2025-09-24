@@ -1,5 +1,5 @@
 import {JSX} from "react";
-import {Status} from "@/lib/server/utils/enums";
+import {Status} from "@/lib/utils/enums";
 import {NameValuePair} from "@/lib/types/base.types";
 
 

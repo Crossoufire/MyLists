@@ -1,11 +1,11 @@
 import {useForm} from "react-hook-form";
-import {Input} from "@/lib/components/ui/input";
-import {Button} from "@/lib/components/ui/button";
+import {Input} from "@/lib/client/components/ui/input";
+import {Button} from "@/lib/client/components/ui/button";
 import {useMutation} from "@tanstack/react-query";
 import {adminAuth, checkAdminAuth} from "@/lib/server/functions/admin";
 import {createFileRoute, redirect, useNavigate} from "@tanstack/react-router";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 export const Route = createFileRoute("/_admin/admin/")({

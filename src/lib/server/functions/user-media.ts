@@ -1,4 +1,4 @@
-import {UpdateType} from "@/lib/server/utils/enums";
+import {UpdateType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";

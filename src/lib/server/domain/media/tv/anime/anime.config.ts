@@ -1,4 +1,4 @@
-import {JobType, Status} from "@/lib/server/utils/enums";
+import {JobType, Status} from "@/lib/utils/enums";
 import * as schema from "@/lib/server/database/schema";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";

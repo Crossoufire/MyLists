@@ -1,5 +1,5 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {MediaType} from "@/lib/utils/enums";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 

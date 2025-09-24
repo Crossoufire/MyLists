@@ -1,7 +1,7 @@
 import {db} from "@/lib/server/database/db";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement, AchievementSeedData} from "@/lib/types/achievements.types";
-import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {and, asc, count, eq, getTableColumns, inArray, max, SQL, sql} from "drizzle-orm";
 import {achievement, achievementTier, userAchievement} from "@/lib/server/database/schema";
 

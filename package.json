@@ -15,7 +15,7 @@
         "build:server": "vite build",
         "dev": "vite dev --port 3000",
         "cli": "npx tsx -r dotenv/config src/cli/index.ts",
-        "email": "email dev -d ./src/lib/components/emails",
+        "email": "email dev -d src/lib/client/components/emails",
         "build:cli": "vite build --config vite.cli.config.ts",
         "build:worker": "vite build --config vite.worker.config.ts",
         "build": "npm run build:server && npm run build:worker && npm run build:cli",

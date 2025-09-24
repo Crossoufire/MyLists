@@ -1,8 +1,8 @@
 import z from "zod";
 import {isRedirect} from "@tanstack/react-router";
 import {createMiddleware} from "@tanstack/react-start";
-import {sendAdminErrorMail} from "@/lib/server/utils/mail-sender";
-import {FormattedError, FormZodError} from "@/lib/server/utils/error-classes";
+import {sendAdminErrorMail} from "@/lib/utils/mail-sender";
+import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 
 
 function createCleanError(originalError: Error, message?: string): Error {

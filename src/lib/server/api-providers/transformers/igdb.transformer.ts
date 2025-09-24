@@ -1,7 +1,7 @@
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {games} from "@/lib/server/database/schema";
-import {getImageUrl} from "@/lib/server/utils/image-url";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
+import {getImageUrl} from "@/lib/utils/image-url";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
 import {gamesConfig} from "@/lib/server/domain/media/games/games.config";
 import {HltbGameEntry, IgdbGameDetails, IgdbSearchResponse, ProviderSearchResult, ProviderSearchResults, SearchData} from "@/lib/types/provider.types";
 

@@ -1,6 +1,6 @@
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {Achievement} from "@/lib/types/achievements.types";
-import {GamesPlatformsEnum, Status} from "@/lib/server/utils/enums";
+import {GamesPlatformsEnum, Status} from "@/lib/utils/enums";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails} from "@/lib/types/base.types";
 import {Game, UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";

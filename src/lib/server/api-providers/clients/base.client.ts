@@ -1,5 +1,5 @@
 import {notFound} from "@tanstack/react-router";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {RateLimiterAbstract, RateLimiterRes} from "rate-limiter-flexible";
 
 

@@ -1,10 +1,10 @@
 import {Sparkles} from "lucide-react";
-import {Badge} from "@/lib/components/ui/badge";
+import {Badge} from "@/lib/client/components/ui/badge";
 import {createFileRoute} from "@tanstack/react-router";
-import {ApiProviderType} from "@/lib/server/utils/enums";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
-import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {ApiProviderType} from "@/lib/utils/enums";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
+import {Card, CardAction, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 export const Route = createFileRoute("/_main/_universal/features")({

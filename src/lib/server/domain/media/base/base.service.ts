@@ -1,9 +1,9 @@
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {Achievement} from "@/lib/types/achievements.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
-import {JobType, LabelAction, Status, UpdateType} from "@/lib/server/utils/enums";
+import {JobType, LabelAction, Status, UpdateType} from "@/lib/utils/enums";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 import {MediaListArgs, SearchType, UpdateUserMedia} from "@/lib/types/zod.schema.types";
 import {Label, UpdateHandlerFn, UpdateUserMediaDetails, UserMediaWithLabels} from "@/lib/types/base.types";

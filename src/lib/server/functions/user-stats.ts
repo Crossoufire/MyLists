@@ -1,7 +1,7 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {tryNotFound} from "@/lib/server/utils/try-not-found";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {tryNotFound} from "@/lib/utils/try-not-found";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {getUserStatsSchema} from "@/lib/types/zod.schema.types";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 

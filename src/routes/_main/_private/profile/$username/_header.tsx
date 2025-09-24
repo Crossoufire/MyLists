@@ -1,8 +1,8 @@
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, Outlet} from "@tanstack/react-router";
-import {ProfileHeader} from "@/lib/components/user-profile/ProfileHeader";
-import {profileOptions} from "@/lib/react-query/query-options/query-options";
+import {ProfileHeader} from "@/lib/client/components/user-profile/ProfileHeader";
+import {profileOptions} from "@/lib/client/react-query/query-options/query-options";
 
 
 export const Route = createFileRoute("/_main/_private/profile/$username/_header")({

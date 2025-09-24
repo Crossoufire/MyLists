@@ -1,6 +1,6 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {ApiProviderType} from "@/lib/server/utils/enums";
+import {ApiProviderType} from "@/lib/utils/enums";
 import {navbarSearchSchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 

@@ -1,4 +1,4 @@
-import {Status} from "@/lib/server/utils/enums";
+import {Status} from "@/lib/utils/enums";
 import {AddedMediaDetails} from "@/lib/types/base.types";
 import {Achievement} from "@/lib/types/achievements.types";
 import {getDbClient} from "@/lib/server/database/async-storage";

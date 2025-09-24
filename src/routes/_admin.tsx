@@ -1,9 +1,9 @@
 import React from "react";
-import {RoleType} from "@/lib/server/utils/enums";
-import {AdminSidebar} from "@/lib/components/admin/AdminSidebar";
+import {RoleType} from "@/lib/utils/enums";
+import {AdminSidebar} from "@/lib/client/components/admin/AdminSidebar";
 import {createFileRoute, notFound, Outlet} from "@tanstack/react-router";
-import {authOptions} from "@/lib/react-query/query-options/query-options";
-import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/lib/components/ui/sidebar";
+import {authOptions} from "@/lib/client/react-query/query-options/query-options";
+import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/lib/client/components/ui/sidebar";
 
 
 export const Route = createFileRoute("/_admin")({

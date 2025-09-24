@@ -1,20 +1,20 @@
-import {useAuth} from "@/lib/hooks/use-auth";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
-import {Button} from "@/lib/components/ui/button";
+import {Button} from "@/lib/client/components/ui/button";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {Separator} from "@/lib/components/ui/separator";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {MediaType, RoleType} from "@/lib/server/utils/enums";
-import {AvatarCircles} from "@/lib/components/ui/avatar-circles";
-import {SimilarMedia} from "@/lib/components/media/base/SimilarMedia";
-import {MediaFollowCard} from "@/lib/components/media/base/MediaFollowCard";
-import {UserMediaDetails} from "@/lib/components/media/base/UserMediaDetails";
-import {MediaDataDetails} from "@/lib/components/media/base/MediaDataDetails";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
-import {RefreshAndEditMedia} from "@/lib/components/media/base/RefreshAndEditMedia";
-import {mediaDetailsOptions, queryKeys} from "@/lib/react-query/query-options/query-options";
-import {useAddMediaToListMutation} from "@/lib/react-query/query-mutations/user-media.mutations";
+import {Separator} from "@/lib/client/components/ui/separator";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {MediaType, RoleType} from "@/lib/utils/enums";
+import {AvatarCircles} from "@/lib/client/components/ui/avatar-circles";
+import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
+import {MediaFollowCard} from "@/lib/client/components/media/base/MediaFollowCard";
+import {UserMediaDetails} from "@/lib/client/components/media/base/UserMediaDetails";
+import {MediaDataDetails} from "@/lib/client/components/media/base/MediaDataDetails";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
+import {RefreshAndEditMedia} from "@/lib/client/components/media/base/RefreshAndEditMedia";
+import {mediaDetailsOptions, queryKeys} from "@/lib/client/react-query/query-options/query-options";
+import {useAddMediaToListMutation} from "@/lib/client/react-query/query-mutations/user-media.mutations";
 
 
 export const Route = createFileRoute("/_main/_private/details/$mediaType/$mediaId")({

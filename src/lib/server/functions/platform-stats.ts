@@ -1,6 +1,6 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {RatingSystemType} from "@/lib/server/utils/enums";
+import {RatingSystemType} from "@/lib/utils/enums";
 import {platformStatsSchema} from "@/lib/types/zod.schema.types";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {platformStatsCacheMiddleware} from "@/lib/server/middlewares/caching";

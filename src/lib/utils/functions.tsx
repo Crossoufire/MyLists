@@ -1,5 +1,5 @@
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
-import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------

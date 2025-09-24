@@ -1,12 +1,12 @@
 import {toast} from "sonner";
 import {useForm} from "react-hook-form";
 import {LoaderCircle} from "lucide-react";
-import {Input} from "@/lib/components/ui/input";
+import {Input} from "@/lib/client/components/ui/input";
 import authClient from "@/lib/utils/auth-client";
-import {Button} from "@/lib/components/ui/button";
-import {PageTitle} from "@/lib/components/general/PageTitle";
+import {Button} from "@/lib/client/components/ui/button";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 
 
 export const Route = createFileRoute("/_main/_public/reset-password")({

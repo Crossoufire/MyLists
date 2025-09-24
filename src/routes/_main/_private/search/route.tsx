@@ -1,16 +1,16 @@
 import React, {useState} from "react";
-import {useAuth} from "@/lib/hooks/use-auth";
-import {Card} from "@/lib/components/ui/card";
-import {Input} from "@/lib/components/ui/input";
-import {Badge} from "@/lib/components/ui/badge";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {Card} from "@/lib/client/components/ui/card";
+import {Input} from "@/lib/client/components/ui/input";
+import {Badge} from "@/lib/client/components/ui/badge";
 import {formatDateTime} from "@/lib/utils/functions";
 import {createFileRoute, Link} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {ApiProviderType, MediaType} from "@/lib/server/utils/enums";
-import {navSearchOptions} from "@/lib/react-query/query-options/query-options";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {ApiProviderType, MediaType} from "@/lib/utils/enums";
+import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, Search, User} from "lucide-react";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
 type GlobalSearch = { query?: string, apiProvider?: ApiProviderType };

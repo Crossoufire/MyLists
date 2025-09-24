@@ -1,10 +1,10 @@
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {createRouter} from "@tanstack/react-router";
-import {NotFound} from "@/lib/components/general/NotFound";
-import {DefaultLoader} from "@/lib/components/general/DefaultLoader";
+import {NotFound} from "@/lib/client/components/general/NotFound";
+import {DefaultLoader} from "@/lib/client/components/general/DefaultLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
-import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
+import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
 import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
 
 

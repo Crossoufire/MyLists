@@ -1,14 +1,14 @@
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
-import {useHashTab} from "@/lib/hooks/use-hash-tab";
+import {MediaType} from "@/lib/utils/enums";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {MutedText} from "@/lib/components/general/MutedText";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {ComingNextMedia} from "@/lib/components/coming-next/ComingNextMedia";
-import {MediaAndUserIcon} from "@/lib/components/media/base/MediaAndUserIcon";
-import {upcomingOptions} from "@/lib/react-query/query-options/query-options";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
+import {MutedText} from "@/lib/client/components/general/MutedText";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {ComingNextMedia} from "@/lib/client/components/coming-next/ComingNextMedia";
+import {MediaAndUserIcon} from "@/lib/client/components/media/base/MediaAndUserIcon";
+import {upcomingOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 
 
 export const Route = createFileRoute("/_main/_private/coming-next")({

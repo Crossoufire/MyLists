@@ -1,6 +1,6 @@
 import {CoverType} from "@/lib/types/base.types";
 import {customType} from "drizzle-orm/sqlite-core";
-import {getImageUrl} from "@/lib/server/utils/image-url";
+import {getImageUrl} from "@/lib/utils/image-url";
 
 
 export const customJson = <TData>(name: string) =>

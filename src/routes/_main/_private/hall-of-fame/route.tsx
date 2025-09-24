@@ -1,19 +1,19 @@
 import {useState} from "react";
 import {Search} from "lucide-react";
-import {Input} from "@/lib/components/ui/input";
+import {Input} from "@/lib/client/components/ui/input";
 import {capitalize} from "@/lib/utils/functions";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {createFileRoute} from "@tanstack/react-router";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {MutedText} from "@/lib/components/general/MutedText";
-import {useDebounceCallback} from "@/lib/hooks/use-debounce";
-import {HofCard} from "@/lib/components/hall-of-fame/HofCard";
-import {Pagination} from "@/lib/components/general/Pagination";
-import {HofRanking} from "@/lib/components/hall-of-fame/HofRanking";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {MutedText} from "@/lib/client/components/general/MutedText";
+import {useDebounceCallback} from "@/lib/client/hooks/use-debounce";
+import {HofCard} from "@/lib/client/components/hall-of-fame/HofCard";
+import {Pagination} from "@/lib/client/components/general/Pagination";
+import {HofRanking} from "@/lib/client/components/hall-of-fame/HofRanking";
 import {HofSorting, SearchTypeHoF} from "@/lib/types/zod.schema.types";
-import {hallOfFameOptions} from "@/lib/react-query/query-options/query-options";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/components/ui/select";
+import {hallOfFameOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
 export const Route = createFileRoute("/_main/_private/hall-of-fame")({

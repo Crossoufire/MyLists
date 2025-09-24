@@ -1,8 +1,8 @@
 import {CoverType} from "@/lib/types/base.types";
-import {MediaType} from "@/lib/server/utils/enums";
-import {isLatin1} from "@/lib/server/utils/check-latin";
-import {getImageUrl} from "@/lib/server/utils/image-url";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
+import {MediaType} from "@/lib/utils/enums";
+import {isLatin1} from "@/lib/utils/check-latin";
+import {getImageUrl} from "@/lib/utils/image-url";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
 import {moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
 import {
     JikanAnimeSearchResponse,

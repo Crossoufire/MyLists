@@ -1,7 +1,7 @@
-import {Button} from "@/lib/components/ui/button";
+import {Button} from "@/lib/client/components/ui/button";
 import {createFileRoute, Link} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {Card, CardContent, CardHeader, CardTitle} from "@/lib/components/ui/card";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 import {ArrowRight, Bug, Clock, Code, Heart, Monitor, Play, Shield, Sparkles, Users,} from "lucide-react";
 
 

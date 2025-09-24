@@ -1,11 +1,11 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {useHashTab} from "@/lib/hooks/use-hash-tab";
+import {MediaType} from "@/lib/utils/enums";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
-import {TrendItem} from "@/lib/components/trends/TrendItem";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {trendsOptions} from "@/lib/react-query/query-options/query-options";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/components/ui/tabs";
+import {TrendItem} from "@/lib/client/components/trends/TrendItem";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {trendsOptions} from "@/lib/client/react-query/query-options/query-options";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/lib/client/components/ui/tabs";
 
 
 export const Route = createFileRoute("/_main/_private/trends")({

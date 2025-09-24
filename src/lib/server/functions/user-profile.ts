@@ -1,8 +1,8 @@
 import {notFound} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {NotificationType} from "@/lib/server/utils/enums";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {NotificationType} from "@/lib/utils/enums";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/types/zod.schema.types";

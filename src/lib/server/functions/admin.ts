@@ -3,10 +3,10 @@ import {JobType as MqJobType} from "bullmq";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {getCookie, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
-import {createAdminToken, verifyAdminToken} from "@/lib/server/utils/jwt-utils";
+import {createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
     adminUpdateAchievementSchema,

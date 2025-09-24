@@ -2,7 +2,7 @@ import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
 import {AchievementTier} from "@/lib/types/zod.schema.types";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
 import {Achievement, AchievementSeedData, UserAchievementDetails} from "@/lib/types/achievements.types";
 

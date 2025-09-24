@@ -1,11 +1,11 @@
-import {useHashTab} from "@/lib/hooks/use-hash-tab";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {createFileRoute} from "@tanstack/react-router";
-import {PageTitle} from "@/lib/components/general/PageTitle";
-import {DangerForm} from "@/lib/components/user-settings/DangerForm";
-import {Sidebar, SideBarItem} from "@/lib/components/general/Sidebar";
-import {GeneralForm} from "@/lib/components/user-settings/GeneralForm";
-import {PasswordForm} from "@/lib/components/user-settings/PasswordForm";
-import {MediaListForm} from "@/lib/components/user-settings/MediaListForm";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
+import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
+import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
+import {PasswordForm} from "@/lib/client/components/user-settings/PasswordForm";
+import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
 
 
 export const Route = createFileRoute("/_main/_private/settings")({
