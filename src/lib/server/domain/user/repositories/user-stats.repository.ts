@@ -124,7 +124,7 @@ export class UserStatsRepository {
             .from(user)
             .innerJoin(umsAlias, eq(user.id, umsAlias.userId))
             .leftJoin(maxTimePerMedia, eq(umsAlias.mediaType, maxTimePerMedia.mediaType))
-            .where(and(ne(user.name, "DemoProfile"), gt(user.updatedAt, sql`datetime('now', '-1 months')`)))
+            .where(ne(user.name, "DemoProfile"))
             .groupBy(user.id, user.name, user.image)
             .as("base_sub");
 

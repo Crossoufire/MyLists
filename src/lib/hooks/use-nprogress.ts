@@ -10,16 +10,16 @@ export const useNProgress = () => {
     const router = useRouter();
 
     useEffect(() => {
-        const handleStart = () => {
-            NProgress.start()
-        };
+        const handleStart = ({ pathChanged }: { pathChanged: boolean }) => {
+            if (pathChanged) NProgress.start();
+        }
 
         const handleComplete = () => {
-            NProgress.done()
+            NProgress.done();
         };
 
         const handleError = () => {
-            NProgress.done()
+            NProgress.done();
         };
 
         const unsubscribeError = router.subscribe("onResolved", handleError);
@@ -30,6 +30,9 @@ export const useNProgress = () => {
             unsubscribeStart();
             unsubscribeComplete();
             unsubscribeError();
+            NProgress.done();
         }
     }, [router]);
+
+    return null;
 };

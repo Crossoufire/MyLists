@@ -25,7 +25,7 @@ interface HeaderProps {
 
 export const Header = (props: HeaderProps) => {
     const { isGrid, userData, pagination, onGridClick, onFilterClick, onStatusChange, onSortChange, onSearchEnter } = props;
-    const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
+    const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
 
     const allStatuses = statusUtils.byMediaType(mediaType);
     const userLevel = computeLevel(userData?.userMediaSettings.find(s => s.mediaType === mediaType)?.timeSpent ?? 0);
@@ -76,7 +76,7 @@ interface StatusComponentProps {
 
 
 const StatusComponent = ({ allStatuses, onStatusChange }: StatusComponentProps) => {
-    const search = useSearch({ from: "/_private/list/$mediaType/$username" });
+    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
 
     const handleStatusChange = (status: Status) => {
         onStatusChange({ status: [...(search.status || []), status] });
@@ -140,7 +140,7 @@ const SortComponent = ({ sorting, allSorting, applySorting }: SortComponentProps
 
 
 const DotsOthers = () => {
-    const { mediaType, username } = useParams({ from: "/_private/list/$mediaType/$username" });
+    const { mediaType, username } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
 
     return (
         <Popover>

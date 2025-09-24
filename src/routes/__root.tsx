@@ -1,20 +1,21 @@
 /// <reference types="vite/client"/>
 import React from "react";
 import appCSS from "@/styles.css?url";
+import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/components/ui/sonner";
 import {Navbar} from "@/lib/components/navbar/Navbar";
-import {Footer} from "@/lib/components/general/Footer";
 import {useNProgress} from "@/lib/hooks/use-nprogress";
-import type {QueryClient} from "@tanstack/react-query";
+import {Footer} from "@/lib/components/general/Footer";
 import {TanStackDevtools} from "@tanstack/react-devtools";
 import {SheetProvider} from "@/lib/contexts/sheet-context";
 import {ReactQueryDevtoolsPanel} from "@tanstack/react-query-devtools";
 import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {TanStackRouterDevtoolsPanel} from "@tanstack/react-router-devtools";
-import {createRootRouteWithContext, HeadContent, Outlet, Scripts, useLocation} from "@tanstack/react-router";
+import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+    ssr: false,
     beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
     head: () => ({
         meta: [
@@ -36,18 +37,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 
 function RootComponent() {
-    return (
-        <RootDocument>
-            <Outlet/>
-        </RootDocument>
-    );
-}
-
-
-function RootDocument({ children }: { readonly children: React.ReactNode }) {
     useNProgress();
-    const location = useLocation();
-    const isAdminRoute = location.pathname.startsWith("/admin");
 
     return (
         <html lang="en" suppressHydrationWarning>
@@ -57,11 +47,14 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         <body>
 
         <div id="root">
-            {isAdminRoute ?
-                <AdminLayout>{children}</AdminLayout>
-                :
-                <MainLayout>{children}</MainLayout>
-            }
+            <div className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
+                <Toaster/>
+                <SheetProvider>
+                    <Navbar/>
+                </SheetProvider>
+                <Outlet/>
+                <Footer/>
+            </div>
 
             {import.meta.env.DEV &&
                 <TanStackDevtools
@@ -86,31 +79,5 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
         <Scripts/>
         </body>
         </html>
-    );
-}
-
-
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <div className="flex flex-col min-h-[calc(100vh_-_64px)] mt-[64px]">
-            <Toaster/>
-            <SheetProvider>
-                <Navbar/>
-            </SheetProvider>
-            <main className="flex-1 w-[100%] max-w-[1320px] px-2 mx-auto">
-                {children}
-            </main>
-            <Footer/>
-        </div>
-    );
-}
-
-
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <>
-            <Toaster/>
-            {children}
-        </>
     );
 }

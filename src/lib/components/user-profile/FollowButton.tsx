@@ -12,7 +12,7 @@ interface FollowButtonProps {
 
 
 export const FollowButton = ({ followStatus, followId }: FollowButtonProps) => {
-    const { username } = useParams({ from: "/_private/profile/$username" });
+    const { username } = useParams({ from: "/_main/_private/profile/$username" });
     const updateFollowMutation = useFollowMutation(username);
 
     const handleFollow = () => {

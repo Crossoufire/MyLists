@@ -4,14 +4,14 @@ import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
 export const adminQueryKeys = {
-    adminAchievementsKey: () => ["adminAchievements"] as const,
-    adminMediadleKey: (search: SearchType) => ["adminMediadle", search] as const,
-    adminOverviewKey: () => ["adminOverview"] as const,
-    adminTasksKey: () => ["adminTasks"] as const,
-    adminUsersKeys: (search: SearchTypeAdmin) => ["adminUpdateUsers", search] as const,
-    adminJobsKey: () => ["adminJobs"] as const,
-    adminJobLogsKey: (jobId: string | null | undefined) => ["adminJobs", jobId, "Logs"] as const,
-    adminJobCompletedKey: () => ["adminJobs", "Completed"] as const,
+    adminAchievementsKey: () => ["admin", "achievements"] as const,
+    adminMediadleKey: (search: SearchType) => ["admin", "mediadle", search] as const,
+    adminOverviewKey: () => ["admin", "overview"] as const,
+    adminTasksKey: () => ["admin", "tasks"] as const,
+    adminUsersKeys: (search: SearchTypeAdmin) => ["admin", "updateUsers", search] as const,
+    adminJobsKey: () => ["admin", "jobs"] as const,
+    adminJobLogsKey: (jobId: string | null | undefined) => ["admin", "jobs", jobId, "Logs"] as const,
+    adminJobCompletedKey: () => ["admin", "jobs", "Completed"] as const,
 };
 
 

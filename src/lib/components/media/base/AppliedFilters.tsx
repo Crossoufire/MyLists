@@ -13,8 +13,8 @@ interface AppliedFiltersProps {
 
 
 export const AppliedFilters = ({ totalItems, onFilterRemove }: AppliedFiltersProps) => {
-    const search = useSearch({ from: "/_private/list/$mediaType/$username" });
-    const { mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
+    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
+    const { mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
 
     const localFilters = { ...search };
     delete localFilters.page;

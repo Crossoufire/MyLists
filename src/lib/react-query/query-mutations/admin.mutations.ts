@@ -52,8 +52,8 @@ export const useAdminTriggerTaskMutation = () => {
         mutationFn: postTriggerLongTasks,
         onError: (error) => toast.error(error.message),
         onSuccess: () => {
-            // Invalidate `adminJobsKey`, `adminJobLogsKey` queries (contain `adminJobs` in key definition)
-            return queryClient.invalidateQueries({ queryKey: ["adminJobs"] });
+            // Invalidate `adminJobsKey`, `adminJobLogsKey`, `adminJobCompletedKey` (contain ["admin", "Jobs"] in key definition)
+            return queryClient.invalidateQueries({ queryKey: ["admin", "jobs"] });
         },
     });
 };

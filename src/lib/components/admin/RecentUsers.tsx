@@ -20,11 +20,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
                     </Avatar>
                     <div className="ml-4 space-y-1">
                         <p className="text-sm font-medium leading-none">
-                            <Link
-                                to={`/profile/$username`}
-                                params={{ username: user.name }}
-                                className="hover:underline hover:underline-offset-2"
-                            >
+                            <Link to="/profile/$username" params={{ username: user.name }} className="hover:underline hover:underline-offset-2">
                                 {user.name}
                             </Link>
                         </p>

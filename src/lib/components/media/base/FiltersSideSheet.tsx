@@ -27,8 +27,8 @@ interface FiltersSideSheetProps {
 
 
 export const FiltersSideSheet = ({ isCurrent, onClose, onFilterApply }: FiltersSideSheetProps) => {
-    const search = useSearch({ from: "/_private/list/$mediaType/$username" });
-    const { username, mediaType } = useParams({ from: "/_private/list/$mediaType/$username" });
+    const search = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
+    const { username, mediaType } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: listFilters, isPending } = useQuery(listFiltersOptions(mediaType, username));
 
     const localFilters: Partial<MediaListArgs> = {};
@@ -294,7 +294,7 @@ const SearchFilter = ({ filterKey, job, title, dataList, registerChange }: Searc
     const debouncedSearch = useDebounce(search, 300);
     const [selectedData, setSelectedData] = useState(dataList ?? []);
 
-    const { mediaType, username } = useParams({ from: "/_private/list/$mediaType/$username" });
+    const { mediaType, username } = useParams({ from: "/_main/_private/list/$mediaType/$username" });
     const { data: filterResults, isLoading, error } = useQuery(filterSearchOptions(mediaType, username, debouncedSearch, job));
 
     const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {

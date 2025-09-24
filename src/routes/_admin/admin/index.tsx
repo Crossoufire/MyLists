@@ -9,10 +9,12 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 
 
 export const Route = createFileRoute("/_admin/admin/")({
-    beforeLoad: async () => {
-        const canDoAdminStuff = await checkAdminAuth();
-        if (canDoAdminStuff) {
+    beforeLoad: async ({ context: { queryClient } }) => {
+        if (await checkAdminAuth()) {
             throw redirect({ to: "/admin/dashboard" });
+        }
+        else {
+            queryClient.removeQueries({ queryKey: ["admin"], exact: false });
         }
     },
     component: AdminStepUpPage,

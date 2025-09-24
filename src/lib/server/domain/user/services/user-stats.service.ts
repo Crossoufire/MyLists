@@ -48,6 +48,9 @@ export class UserStatsService {
             let percent: number | null = null;
             const rankKey = `${mediaType}Rank` as keyof typeof currentUserRankData;
 
+            console.log({ currentUserRankData });
+            console.log({ percent, rankKey });
+
             const rank = (currentUserRankData[rankKey] as unknown as number) ?? null;
             const mtCount = mediaTypeCountMap.get(mediaType) ?? 0;
             const active = currentUserActiveSettings.has(mediaType);

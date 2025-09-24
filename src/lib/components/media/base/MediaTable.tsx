@@ -29,7 +29,7 @@ export const MediaTable = ({ isCurrent, mediaType, results, queryKey, onChangePa
     const isConnected = !!currentUser;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
-    const filters = useSearch({ from: "/_private/list/$mediaType/$username" });
+    const filters = useSearch({ from: "/_main/_private/list/$mediaType/$username" });
     const paginationState = { pageIndex: filters?.page ? (filters.page - 1) : 0, pageSize: 25 };
 
     const onPaginationChange: OnChangeFn<PaginationState> = (updaterOrValue) => {

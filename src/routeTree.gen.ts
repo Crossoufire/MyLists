@@ -11,347 +11,344 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { Route as rootRouteImport } from "./routes/__root";
-import { Route as PublicRouteImport } from "./routes/_public";
-import { Route as PrivateRouteImport } from "./routes/_private";
+import { Route as MainRouteImport } from "./routes/_main";
 import { Route as AdminRouteImport } from "./routes/_admin";
-import { Route as PublicIndexRouteImport } from "./routes/_public/index";
-import { Route as UniversalPrivacyPolicyRouteImport } from "./routes/_universal/privacy-policy";
-import { Route as UniversalFeaturesRouteImport } from "./routes/_universal/features";
-import { Route as UniversalAboutRouteImport } from "./routes/_universal/about";
-import { Route as PublicResetPasswordRouteImport } from "./routes/_public/reset-password";
-import { Route as PublicForgotPasswordRouteImport } from "./routes/_public/forgot-password";
-import { Route as PrivateTrendsRouteRouteImport } from "./routes/_private/trends/route";
-import { Route as PrivateSettingsRouteRouteImport } from "./routes/_private/settings/route";
-import { Route as PrivateSearchRouteRouteImport } from "./routes/_private/search/route";
-import { Route as PrivatePlatformStatsRouteRouteImport } from "./routes/_private/platform-stats/route";
-import { Route as PrivateMoviedleRouteRouteImport } from "./routes/_private/moviedle/route";
-import { Route as PrivateHallOfFameRouteRouteImport } from "./routes/_private/hall-of-fame/route";
-import { Route as PrivateComingNextRouteRouteImport } from "./routes/_private/coming-next/route";
+import { Route as MainPublicRouteImport } from "./routes/_main/_public";
+import { Route as MainPrivateRouteImport } from "./routes/_main/_private";
+import { Route as MainPublicIndexRouteImport } from "./routes/_main/_public/index";
 import { Route as AdminAdminIndexRouteImport } from "./routes/_admin/admin/index";
 import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
-import { Route as PrivateStatsUsernameRouteImport } from "./routes/_private/stats/$username";
-import { Route as PrivateAchievementsUsernameRouteImport } from "./routes/_private/achievements/$username";
-import { Route as AdminAdminLayoutRouteImport } from "./routes/_admin/admin/_layout";
-import { Route as PrivateProfileUsernameHeaderRouteImport } from "./routes/_private/profile/$username/_header";
-import { Route as PrivateDetailsMediaTypeMediaIdRouteImport } from "./routes/_private/details/$mediaType/$mediaId";
-import { Route as AdminAdminLayoutUsersRouteImport } from "./routes/_admin/admin/_layout/users";
-import { Route as AdminAdminLayoutTasksRouteImport } from "./routes/_admin/admin/_layout/tasks";
-import { Route as AdminAdminLayoutMediadleRouteImport } from "./routes/_admin/admin/_layout/mediadle";
-import { Route as AdminAdminLayoutDashboardRouteImport } from "./routes/_admin/admin/_layout/dashboard";
-import { Route as AdminAdminLayoutAchievementsRouteImport } from "./routes/_admin/admin/_layout/achievements";
-import { Route as PrivateListMediaTypeUsernameRouteRouteImport } from "./routes/_private/list/$mediaType/$username.route";
-import { Route as PrivateProfileUsernameHeaderIndexRouteImport } from "./routes/_private/profile/$username/_header/index";
-import { Route as PrivateProfileUsernameHeaderHistoryRouteImport } from "./routes/_private/profile/$username/_header/history";
-import { Route as PrivateProfileUsernameHeaderFollowsRouteImport } from "./routes/_private/profile/$username/_header/follows";
-import { Route as PrivateProfileUsernameHeaderFollowersRouteImport } from "./routes/_private/profile/$username/_header/followers";
-import { Route as PrivateDetailsEditMediaTypeMediaIdRouteImport } from "./routes/_private/details/edit/$mediaType.$mediaId";
-import { Route as PrivateDetailsMediaTypeJobNameRouteImport } from "./routes/_private/details/$mediaType/$job.$name";
+import { Route as MainUniversalPrivacyPolicyRouteImport } from "./routes/_main/_universal/privacy-policy";
+import { Route as MainUniversalFeaturesRouteImport } from "./routes/_main/_universal/features";
+import { Route as MainUniversalAboutRouteImport } from "./routes/_main/_universal/about";
+import { Route as MainPublicResetPasswordRouteImport } from "./routes/_main/_public/reset-password";
+import { Route as MainPublicForgotPasswordRouteImport } from "./routes/_main/_public/forgot-password";
+import { Route as AdminAdminUsersRouteImport } from "./routes/_admin/admin/users";
+import { Route as AdminAdminTasksRouteImport } from "./routes/_admin/admin/tasks";
+import { Route as AdminAdminMediadleRouteImport } from "./routes/_admin/admin/mediadle";
+import { Route as AdminAdminDashboardRouteImport } from "./routes/_admin/admin/dashboard";
+import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
+import { Route as MainPrivateTrendsRouteRouteImport } from "./routes/_main/_private/trends/route";
+import { Route as MainPrivateSettingsRouteRouteImport } from "./routes/_main/_private/settings/route";
+import { Route as MainPrivateSearchRouteRouteImport } from "./routes/_main/_private/search/route";
+import { Route as MainPrivatePlatformStatsRouteRouteImport } from "./routes/_main/_private/platform-stats/route";
+import { Route as MainPrivateMoviedleRouteRouteImport } from "./routes/_main/_private/moviedle/route";
+import { Route as MainPrivateHallOfFameRouteRouteImport } from "./routes/_main/_private/hall-of-fame/route";
+import { Route as MainPrivateComingNextRouteRouteImport } from "./routes/_main/_private/coming-next/route";
+import { Route as MainPrivateStatsUsernameRouteImport } from "./routes/_main/_private/stats/$username";
+import { Route as MainPrivateAchievementsUsernameRouteImport } from "./routes/_main/_private/achievements/$username";
+import { Route as MainPrivateProfileUsernameHeaderRouteImport } from "./routes/_main/_private/profile/$username/_header";
+import { Route as MainPrivateDetailsMediaTypeMediaIdRouteImport } from "./routes/_main/_private/details/$mediaType/$mediaId";
+import { Route as MainPrivateListMediaTypeUsernameRouteRouteImport } from "./routes/_main/_private/list/$mediaType/$username.route";
+import { Route as MainPrivateProfileUsernameHeaderIndexRouteImport } from "./routes/_main/_private/profile/$username/_header/index";
+import { Route as MainPrivateProfileUsernameHeaderHistoryRouteImport } from "./routes/_main/_private/profile/$username/_header/history";
+import { Route as MainPrivateProfileUsernameHeaderFollowsRouteImport } from "./routes/_main/_private/profile/$username/_header/follows";
+import { Route as MainPrivateProfileUsernameHeaderFollowersRouteImport } from "./routes/_main/_private/profile/$username/_header/followers";
+import { Route as MainPrivateDetailsEditMediaTypeMediaIdRouteImport } from "./routes/_main/_private/details/edit/$mediaType.$mediaId";
+import { Route as MainPrivateDetailsMediaTypeJobNameRouteImport } from "./routes/_main/_private/details/$mediaType/$job.$name";
 
-const AdminAdminRouteImport = createFileRoute("/_admin/admin")();
-const PrivateProfileUsernameRouteImport = createFileRoute(
-  "/_private/profile/$username",
+const MainPrivateProfileUsernameRouteImport = createFileRoute(
+  "/_main/_private/profile/$username",
 )();
 
-const PublicRoute = PublicRouteImport.update({
-  id: "/_public",
-  getParentRoute: () => rootRouteImport,
-} as any);
-const PrivateRoute = PrivateRouteImport.update({
-  id: "/_private",
+const MainRoute = MainRouteImport.update({
+  id: "/_main",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AdminRoute = AdminRouteImport.update({
   id: "/_admin",
   getParentRoute: () => rootRouteImport,
 } as any);
-const AdminAdminRoute = AdminAdminRouteImport.update({
-  id: "/admin",
-  path: "/admin",
-  getParentRoute: () => AdminRoute,
+const MainPublicRoute = MainPublicRouteImport.update({
+  id: "/_public",
+  getParentRoute: () => MainRoute,
 } as any);
-const PublicIndexRoute = PublicIndexRouteImport.update({
+const MainPrivateRoute = MainPrivateRouteImport.update({
+  id: "/_private",
+  getParentRoute: () => MainRoute,
+} as any);
+const MainPublicIndexRoute = MainPublicIndexRouteImport.update({
   id: "/",
   path: "/",
-  getParentRoute: () => PublicRoute,
-} as any);
-const UniversalPrivacyPolicyRoute = UniversalPrivacyPolicyRouteImport.update({
-  id: "/_universal/privacy-policy",
-  path: "/privacy-policy",
-  getParentRoute: () => rootRouteImport,
-} as any);
-const UniversalFeaturesRoute = UniversalFeaturesRouteImport.update({
-  id: "/_universal/features",
-  path: "/features",
-  getParentRoute: () => rootRouteImport,
-} as any);
-const UniversalAboutRoute = UniversalAboutRouteImport.update({
-  id: "/_universal/about",
-  path: "/about",
-  getParentRoute: () => rootRouteImport,
-} as any);
-const PublicResetPasswordRoute = PublicResetPasswordRouteImport.update({
-  id: "/reset-password",
-  path: "/reset-password",
-  getParentRoute: () => PublicRoute,
-} as any);
-const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
-  id: "/forgot-password",
-  path: "/forgot-password",
-  getParentRoute: () => PublicRoute,
-} as any);
-const PrivateTrendsRouteRoute = PrivateTrendsRouteRouteImport.update({
-  id: "/trends",
-  path: "/trends",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivateSettingsRouteRoute = PrivateSettingsRouteRouteImport.update({
-  id: "/settings",
-  path: "/settings",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivateSearchRouteRoute = PrivateSearchRouteRouteImport.update({
-  id: "/search",
-  path: "/search",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivatePlatformStatsRouteRoute =
-  PrivatePlatformStatsRouteRouteImport.update({
-    id: "/platform-stats",
-    path: "/platform-stats",
-    getParentRoute: () => PrivateRoute,
-  } as any);
-const PrivateMoviedleRouteRoute = PrivateMoviedleRouteRouteImport.update({
-  id: "/moviedle",
-  path: "/moviedle",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivateHallOfFameRouteRoute = PrivateHallOfFameRouteRouteImport.update({
-  id: "/hall-of-fame",
-  path: "/hall-of-fame",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivateComingNextRouteRoute = PrivateComingNextRouteRouteImport.update({
-  id: "/coming-next",
-  path: "/coming-next",
-  getParentRoute: () => PrivateRoute,
-} as any);
-const PrivateProfileUsernameRoute = PrivateProfileUsernameRouteImport.update({
-  id: "/profile/$username",
-  path: "/profile/$username",
-  getParentRoute: () => PrivateRoute,
+  getParentRoute: () => MainPublicRoute,
 } as any);
 const AdminAdminIndexRoute = AdminAdminIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => AdminAdminRoute,
+  id: "/admin/",
+  path: "/admin/",
+  getParentRoute: () => AdminRoute,
 } as any);
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: "/api/auth/$",
   path: "/api/auth/$",
   getParentRoute: () => rootRouteImport,
 } as any);
-const PrivateStatsUsernameRoute = PrivateStatsUsernameRouteImport.update({
-  id: "/stats/$username",
-  path: "/stats/$username",
-  getParentRoute: () => PrivateRoute,
+const MainUniversalPrivacyPolicyRoute =
+  MainUniversalPrivacyPolicyRouteImport.update({
+    id: "/_universal/privacy-policy",
+    path: "/privacy-policy",
+    getParentRoute: () => MainRoute,
+  } as any);
+const MainUniversalFeaturesRoute = MainUniversalFeaturesRouteImport.update({
+  id: "/_universal/features",
+  path: "/features",
+  getParentRoute: () => MainRoute,
 } as any);
-const PrivateAchievementsUsernameRoute =
-  PrivateAchievementsUsernameRouteImport.update({
+const MainUniversalAboutRoute = MainUniversalAboutRouteImport.update({
+  id: "/_universal/about",
+  path: "/about",
+  getParentRoute: () => MainRoute,
+} as any);
+const MainPublicResetPasswordRoute = MainPublicResetPasswordRouteImport.update({
+  id: "/reset-password",
+  path: "/reset-password",
+  getParentRoute: () => MainPublicRoute,
+} as any);
+const MainPublicForgotPasswordRoute =
+  MainPublicForgotPasswordRouteImport.update({
+    id: "/forgot-password",
+    path: "/forgot-password",
+    getParentRoute: () => MainPublicRoute,
+  } as any);
+const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
+  id: "/admin/users",
+  path: "/admin/users",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminTasksRoute = AdminAdminTasksRouteImport.update({
+  id: "/admin/tasks",
+  path: "/admin/tasks",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminMediadleRoute = AdminAdminMediadleRouteImport.update({
+  id: "/admin/mediadle",
+  path: "/admin/mediadle",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
+  id: "/admin/dashboard",
+  path: "/admin/dashboard",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminAchievementsRoute = AdminAdminAchievementsRouteImport.update({
+  id: "/admin/achievements",
+  path: "/admin/achievements",
+  getParentRoute: () => AdminRoute,
+} as any);
+const MainPrivateTrendsRouteRoute = MainPrivateTrendsRouteRouteImport.update({
+  id: "/trends",
+  path: "/trends",
+  getParentRoute: () => MainPrivateRoute,
+} as any);
+const MainPrivateSettingsRouteRoute =
+  MainPrivateSettingsRouteRouteImport.update({
+    id: "/settings",
+    path: "/settings",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateSearchRouteRoute = MainPrivateSearchRouteRouteImport.update({
+  id: "/search",
+  path: "/search",
+  getParentRoute: () => MainPrivateRoute,
+} as any);
+const MainPrivatePlatformStatsRouteRoute =
+  MainPrivatePlatformStatsRouteRouteImport.update({
+    id: "/platform-stats",
+    path: "/platform-stats",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateMoviedleRouteRoute =
+  MainPrivateMoviedleRouteRouteImport.update({
+    id: "/moviedle",
+    path: "/moviedle",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateHallOfFameRouteRoute =
+  MainPrivateHallOfFameRouteRouteImport.update({
+    id: "/hall-of-fame",
+    path: "/hall-of-fame",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateComingNextRouteRoute =
+  MainPrivateComingNextRouteRouteImport.update({
+    id: "/coming-next",
+    path: "/coming-next",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateProfileUsernameRoute =
+  MainPrivateProfileUsernameRouteImport.update({
+    id: "/profile/$username",
+    path: "/profile/$username",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateStatsUsernameRoute =
+  MainPrivateStatsUsernameRouteImport.update({
+    id: "/stats/$username",
+    path: "/stats/$username",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateAchievementsUsernameRoute =
+  MainPrivateAchievementsUsernameRouteImport.update({
     id: "/achievements/$username",
     path: "/achievements/$username",
-    getParentRoute: () => PrivateRoute,
+    getParentRoute: () => MainPrivateRoute,
   } as any);
-const AdminAdminLayoutRoute = AdminAdminLayoutRouteImport.update({
-  id: "/_layout",
-  getParentRoute: () => AdminAdminRoute,
-} as any);
-const PrivateProfileUsernameHeaderRoute =
-  PrivateProfileUsernameHeaderRouteImport.update({
+const MainPrivateProfileUsernameHeaderRoute =
+  MainPrivateProfileUsernameHeaderRouteImport.update({
     id: "/_header",
-    getParentRoute: () => PrivateProfileUsernameRoute,
+    getParentRoute: () => MainPrivateProfileUsernameRoute,
   } as any);
-const PrivateDetailsMediaTypeMediaIdRoute =
-  PrivateDetailsMediaTypeMediaIdRouteImport.update({
+const MainPrivateDetailsMediaTypeMediaIdRoute =
+  MainPrivateDetailsMediaTypeMediaIdRouteImport.update({
     id: "/details/$mediaType/$mediaId",
     path: "/details/$mediaType/$mediaId",
-    getParentRoute: () => PrivateRoute,
+    getParentRoute: () => MainPrivateRoute,
   } as any);
-const AdminAdminLayoutUsersRoute = AdminAdminLayoutUsersRouteImport.update({
-  id: "/users",
-  path: "/users",
-  getParentRoute: () => AdminAdminLayoutRoute,
-} as any);
-const AdminAdminLayoutTasksRoute = AdminAdminLayoutTasksRouteImport.update({
-  id: "/tasks",
-  path: "/tasks",
-  getParentRoute: () => AdminAdminLayoutRoute,
-} as any);
-const AdminAdminLayoutMediadleRoute =
-  AdminAdminLayoutMediadleRouteImport.update({
-    id: "/mediadle",
-    path: "/mediadle",
-    getParentRoute: () => AdminAdminLayoutRoute,
-  } as any);
-const AdminAdminLayoutDashboardRoute =
-  AdminAdminLayoutDashboardRouteImport.update({
-    id: "/dashboard",
-    path: "/dashboard",
-    getParentRoute: () => AdminAdminLayoutRoute,
-  } as any);
-const AdminAdminLayoutAchievementsRoute =
-  AdminAdminLayoutAchievementsRouteImport.update({
-    id: "/achievements",
-    path: "/achievements",
-    getParentRoute: () => AdminAdminLayoutRoute,
-  } as any);
-const PrivateListMediaTypeUsernameRouteRoute =
-  PrivateListMediaTypeUsernameRouteRouteImport.update({
+const MainPrivateListMediaTypeUsernameRouteRoute =
+  MainPrivateListMediaTypeUsernameRouteRouteImport.update({
     id: "/list/$mediaType/$username",
     path: "/list/$mediaType/$username",
-    getParentRoute: () => PrivateRoute,
+    getParentRoute: () => MainPrivateRoute,
   } as any);
-const PrivateProfileUsernameHeaderIndexRoute =
-  PrivateProfileUsernameHeaderIndexRouteImport.update({
+const MainPrivateProfileUsernameHeaderIndexRoute =
+  MainPrivateProfileUsernameHeaderIndexRouteImport.update({
     id: "/",
     path: "/",
-    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+    getParentRoute: () => MainPrivateProfileUsernameHeaderRoute,
   } as any);
-const PrivateProfileUsernameHeaderHistoryRoute =
-  PrivateProfileUsernameHeaderHistoryRouteImport.update({
+const MainPrivateProfileUsernameHeaderHistoryRoute =
+  MainPrivateProfileUsernameHeaderHistoryRouteImport.update({
     id: "/history",
     path: "/history",
-    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+    getParentRoute: () => MainPrivateProfileUsernameHeaderRoute,
   } as any);
-const PrivateProfileUsernameHeaderFollowsRoute =
-  PrivateProfileUsernameHeaderFollowsRouteImport.update({
+const MainPrivateProfileUsernameHeaderFollowsRoute =
+  MainPrivateProfileUsernameHeaderFollowsRouteImport.update({
     id: "/follows",
     path: "/follows",
-    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+    getParentRoute: () => MainPrivateProfileUsernameHeaderRoute,
   } as any);
-const PrivateProfileUsernameHeaderFollowersRoute =
-  PrivateProfileUsernameHeaderFollowersRouteImport.update({
+const MainPrivateProfileUsernameHeaderFollowersRoute =
+  MainPrivateProfileUsernameHeaderFollowersRouteImport.update({
     id: "/followers",
     path: "/followers",
-    getParentRoute: () => PrivateProfileUsernameHeaderRoute,
+    getParentRoute: () => MainPrivateProfileUsernameHeaderRoute,
   } as any);
-const PrivateDetailsEditMediaTypeMediaIdRoute =
-  PrivateDetailsEditMediaTypeMediaIdRouteImport.update({
+const MainPrivateDetailsEditMediaTypeMediaIdRoute =
+  MainPrivateDetailsEditMediaTypeMediaIdRouteImport.update({
     id: "/details/edit/$mediaType/$mediaId",
     path: "/details/edit/$mediaType/$mediaId",
-    getParentRoute: () => PrivateRoute,
+    getParentRoute: () => MainPrivateRoute,
   } as any);
-const PrivateDetailsMediaTypeJobNameRoute =
-  PrivateDetailsMediaTypeJobNameRouteImport.update({
+const MainPrivateDetailsMediaTypeJobNameRoute =
+  MainPrivateDetailsMediaTypeJobNameRouteImport.update({
     id: "/details/$mediaType/$job/$name",
     path: "/details/$mediaType/$job/$name",
-    getParentRoute: () => PrivateRoute,
+    getParentRoute: () => MainPrivateRoute,
   } as any);
 
 export interface FileRoutesByFullPath {
-  "/coming-next": typeof PrivateComingNextRouteRoute;
-  "/hall-of-fame": typeof PrivateHallOfFameRouteRoute;
-  "/moviedle": typeof PrivateMoviedleRouteRoute;
-  "/platform-stats": typeof PrivatePlatformStatsRouteRoute;
-  "/search": typeof PrivateSearchRouteRoute;
-  "/settings": typeof PrivateSettingsRouteRoute;
-  "/trends": typeof PrivateTrendsRouteRoute;
-  "/forgot-password": typeof PublicForgotPasswordRoute;
-  "/reset-password": typeof PublicResetPasswordRoute;
-  "/about": typeof UniversalAboutRoute;
-  "/features": typeof UniversalFeaturesRoute;
-  "/privacy-policy": typeof UniversalPrivacyPolicyRoute;
-  "/": typeof PublicIndexRoute;
-  "/admin": typeof AdminAdminLayoutRouteWithChildren;
-  "/achievements/$username": typeof PrivateAchievementsUsernameRoute;
-  "/stats/$username": typeof PrivateStatsUsernameRoute;
+  "/coming-next": typeof MainPrivateComingNextRouteRoute;
+  "/hall-of-fame": typeof MainPrivateHallOfFameRouteRoute;
+  "/moviedle": typeof MainPrivateMoviedleRouteRoute;
+  "/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
+  "/search": typeof MainPrivateSearchRouteRoute;
+  "/settings": typeof MainPrivateSettingsRouteRoute;
+  "/trends": typeof MainPrivateTrendsRouteRoute;
+  "/admin/achievements": typeof AdminAdminAchievementsRoute;
+  "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/mediadle": typeof AdminAdminMediadleRoute;
+  "/admin/tasks": typeof AdminAdminTasksRoute;
+  "/admin/users": typeof AdminAdminUsersRoute;
+  "/forgot-password": typeof MainPublicForgotPasswordRoute;
+  "/reset-password": typeof MainPublicResetPasswordRoute;
+  "/about": typeof MainUniversalAboutRoute;
+  "/features": typeof MainUniversalFeaturesRoute;
+  "/privacy-policy": typeof MainUniversalPrivacyPolicyRoute;
   "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/admin/": typeof AdminAdminIndexRoute;
-  "/list/$mediaType/$username": typeof PrivateListMediaTypeUsernameRouteRoute;
-  "/admin/achievements": typeof AdminAdminLayoutAchievementsRoute;
-  "/admin/dashboard": typeof AdminAdminLayoutDashboardRoute;
-  "/admin/mediadle": typeof AdminAdminLayoutMediadleRoute;
-  "/admin/tasks": typeof AdminAdminLayoutTasksRoute;
-  "/admin/users": typeof AdminAdminLayoutUsersRoute;
-  "/details/$mediaType/$mediaId": typeof PrivateDetailsMediaTypeMediaIdRoute;
-  "/profile/$username": typeof PrivateProfileUsernameHeaderRouteWithChildren;
-  "/details/$mediaType/$job/$name": typeof PrivateDetailsMediaTypeJobNameRoute;
-  "/details/edit/$mediaType/$mediaId": typeof PrivateDetailsEditMediaTypeMediaIdRoute;
-  "/profile/$username/followers": typeof PrivateProfileUsernameHeaderFollowersRoute;
-  "/profile/$username/follows": typeof PrivateProfileUsernameHeaderFollowsRoute;
-  "/profile/$username/history": typeof PrivateProfileUsernameHeaderHistoryRoute;
-  "/profile/$username/": typeof PrivateProfileUsernameHeaderIndexRoute;
+  "/admin": typeof AdminAdminIndexRoute;
+  "/": typeof MainPublicIndexRoute;
+  "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
+  "/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
+  "/profile/$username": typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
+  "/details/$mediaType/$job/$name": typeof MainPrivateDetailsMediaTypeJobNameRoute;
+  "/details/edit/$mediaType/$mediaId": typeof MainPrivateDetailsEditMediaTypeMediaIdRoute;
+  "/profile/$username/followers": typeof MainPrivateProfileUsernameHeaderFollowersRoute;
+  "/profile/$username/follows": typeof MainPrivateProfileUsernameHeaderFollowsRoute;
+  "/profile/$username/history": typeof MainPrivateProfileUsernameHeaderHistoryRoute;
+  "/profile/$username/": typeof MainPrivateProfileUsernameHeaderIndexRoute;
 }
 export interface FileRoutesByTo {
-  "/coming-next": typeof PrivateComingNextRouteRoute;
-  "/hall-of-fame": typeof PrivateHallOfFameRouteRoute;
-  "/moviedle": typeof PrivateMoviedleRouteRoute;
-  "/platform-stats": typeof PrivatePlatformStatsRouteRoute;
-  "/search": typeof PrivateSearchRouteRoute;
-  "/settings": typeof PrivateSettingsRouteRoute;
-  "/trends": typeof PrivateTrendsRouteRoute;
-  "/forgot-password": typeof PublicForgotPasswordRoute;
-  "/reset-password": typeof PublicResetPasswordRoute;
-  "/about": typeof UniversalAboutRoute;
-  "/features": typeof UniversalFeaturesRoute;
-  "/privacy-policy": typeof UniversalPrivacyPolicyRoute;
-  "/": typeof PublicIndexRoute;
-  "/admin": typeof AdminAdminIndexRoute;
-  "/achievements/$username": typeof PrivateAchievementsUsernameRoute;
-  "/stats/$username": typeof PrivateStatsUsernameRoute;
+  "/coming-next": typeof MainPrivateComingNextRouteRoute;
+  "/hall-of-fame": typeof MainPrivateHallOfFameRouteRoute;
+  "/moviedle": typeof MainPrivateMoviedleRouteRoute;
+  "/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
+  "/search": typeof MainPrivateSearchRouteRoute;
+  "/settings": typeof MainPrivateSettingsRouteRoute;
+  "/trends": typeof MainPrivateTrendsRouteRoute;
+  "/admin/achievements": typeof AdminAdminAchievementsRoute;
+  "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/mediadle": typeof AdminAdminMediadleRoute;
+  "/admin/tasks": typeof AdminAdminTasksRoute;
+  "/admin/users": typeof AdminAdminUsersRoute;
+  "/forgot-password": typeof MainPublicForgotPasswordRoute;
+  "/reset-password": typeof MainPublicResetPasswordRoute;
+  "/about": typeof MainUniversalAboutRoute;
+  "/features": typeof MainUniversalFeaturesRoute;
+  "/privacy-policy": typeof MainUniversalPrivacyPolicyRoute;
   "/api/auth/$": typeof ApiAuthSplatRoute;
-  "/list/$mediaType/$username": typeof PrivateListMediaTypeUsernameRouteRoute;
-  "/admin/achievements": typeof AdminAdminLayoutAchievementsRoute;
-  "/admin/dashboard": typeof AdminAdminLayoutDashboardRoute;
-  "/admin/mediadle": typeof AdminAdminLayoutMediadleRoute;
-  "/admin/tasks": typeof AdminAdminLayoutTasksRoute;
-  "/admin/users": typeof AdminAdminLayoutUsersRoute;
-  "/details/$mediaType/$mediaId": typeof PrivateDetailsMediaTypeMediaIdRoute;
-  "/profile/$username": typeof PrivateProfileUsernameHeaderIndexRoute;
-  "/details/$mediaType/$job/$name": typeof PrivateDetailsMediaTypeJobNameRoute;
-  "/details/edit/$mediaType/$mediaId": typeof PrivateDetailsEditMediaTypeMediaIdRoute;
-  "/profile/$username/followers": typeof PrivateProfileUsernameHeaderFollowersRoute;
-  "/profile/$username/follows": typeof PrivateProfileUsernameHeaderFollowsRoute;
-  "/profile/$username/history": typeof PrivateProfileUsernameHeaderHistoryRoute;
+  "/admin": typeof AdminAdminIndexRoute;
+  "/": typeof MainPublicIndexRoute;
+  "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
+  "/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
+  "/profile/$username": typeof MainPrivateProfileUsernameHeaderIndexRoute;
+  "/details/$mediaType/$job/$name": typeof MainPrivateDetailsMediaTypeJobNameRoute;
+  "/details/edit/$mediaType/$mediaId": typeof MainPrivateDetailsEditMediaTypeMediaIdRoute;
+  "/profile/$username/followers": typeof MainPrivateProfileUsernameHeaderFollowersRoute;
+  "/profile/$username/follows": typeof MainPrivateProfileUsernameHeaderFollowsRoute;
+  "/profile/$username/history": typeof MainPrivateProfileUsernameHeaderHistoryRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/_admin": typeof AdminRouteWithChildren;
-  "/_private": typeof PrivateRouteWithChildren;
-  "/_public": typeof PublicRouteWithChildren;
-  "/_private/coming-next": typeof PrivateComingNextRouteRoute;
-  "/_private/hall-of-fame": typeof PrivateHallOfFameRouteRoute;
-  "/_private/moviedle": typeof PrivateMoviedleRouteRoute;
-  "/_private/platform-stats": typeof PrivatePlatformStatsRouteRoute;
-  "/_private/search": typeof PrivateSearchRouteRoute;
-  "/_private/settings": typeof PrivateSettingsRouteRoute;
-  "/_private/trends": typeof PrivateTrendsRouteRoute;
-  "/_public/forgot-password": typeof PublicForgotPasswordRoute;
-  "/_public/reset-password": typeof PublicResetPasswordRoute;
-  "/_universal/about": typeof UniversalAboutRoute;
-  "/_universal/features": typeof UniversalFeaturesRoute;
-  "/_universal/privacy-policy": typeof UniversalPrivacyPolicyRoute;
-  "/_public/": typeof PublicIndexRoute;
-  "/_admin/admin": typeof AdminAdminRouteWithChildren;
-  "/_admin/admin/_layout": typeof AdminAdminLayoutRouteWithChildren;
-  "/_private/achievements/$username": typeof PrivateAchievementsUsernameRoute;
-  "/_private/stats/$username": typeof PrivateStatsUsernameRoute;
+  "/_main": typeof MainRouteWithChildren;
+  "/_main/_private": typeof MainPrivateRouteWithChildren;
+  "/_main/_public": typeof MainPublicRouteWithChildren;
+  "/_main/_private/coming-next": typeof MainPrivateComingNextRouteRoute;
+  "/_main/_private/hall-of-fame": typeof MainPrivateHallOfFameRouteRoute;
+  "/_main/_private/moviedle": typeof MainPrivateMoviedleRouteRoute;
+  "/_main/_private/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
+  "/_main/_private/search": typeof MainPrivateSearchRouteRoute;
+  "/_main/_private/settings": typeof MainPrivateSettingsRouteRoute;
+  "/_main/_private/trends": typeof MainPrivateTrendsRouteRoute;
+  "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
+  "/_admin/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/_admin/admin/mediadle": typeof AdminAdminMediadleRoute;
+  "/_admin/admin/tasks": typeof AdminAdminTasksRoute;
+  "/_admin/admin/users": typeof AdminAdminUsersRoute;
+  "/_main/_public/forgot-password": typeof MainPublicForgotPasswordRoute;
+  "/_main/_public/reset-password": typeof MainPublicResetPasswordRoute;
+  "/_main/_universal/about": typeof MainUniversalAboutRoute;
+  "/_main/_universal/features": typeof MainUniversalFeaturesRoute;
+  "/_main/_universal/privacy-policy": typeof MainUniversalPrivacyPolicyRoute;
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/_admin/admin/": typeof AdminAdminIndexRoute;
-  "/_private/list/$mediaType/$username": typeof PrivateListMediaTypeUsernameRouteRoute;
-  "/_admin/admin/_layout/achievements": typeof AdminAdminLayoutAchievementsRoute;
-  "/_admin/admin/_layout/dashboard": typeof AdminAdminLayoutDashboardRoute;
-  "/_admin/admin/_layout/mediadle": typeof AdminAdminLayoutMediadleRoute;
-  "/_admin/admin/_layout/tasks": typeof AdminAdminLayoutTasksRoute;
-  "/_admin/admin/_layout/users": typeof AdminAdminLayoutUsersRoute;
-  "/_private/details/$mediaType/$mediaId": typeof PrivateDetailsMediaTypeMediaIdRoute;
-  "/_private/profile/$username": typeof PrivateProfileUsernameRouteWithChildren;
-  "/_private/profile/$username/_header": typeof PrivateProfileUsernameHeaderRouteWithChildren;
-  "/_private/details/$mediaType/$job/$name": typeof PrivateDetailsMediaTypeJobNameRoute;
-  "/_private/details/edit/$mediaType/$mediaId": typeof PrivateDetailsEditMediaTypeMediaIdRoute;
-  "/_private/profile/$username/_header/followers": typeof PrivateProfileUsernameHeaderFollowersRoute;
-  "/_private/profile/$username/_header/follows": typeof PrivateProfileUsernameHeaderFollowsRoute;
-  "/_private/profile/$username/_header/history": typeof PrivateProfileUsernameHeaderHistoryRoute;
-  "/_private/profile/$username/_header/": typeof PrivateProfileUsernameHeaderIndexRoute;
+  "/_main/_public/": typeof MainPublicIndexRoute;
+  "/_main/_private/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
+  "/_main/_private/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/_main/_private/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  "/_main/_private/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
+  "/_main/_private/profile/$username": typeof MainPrivateProfileUsernameRouteWithChildren;
+  "/_main/_private/profile/$username/_header": typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
+  "/_main/_private/details/$mediaType/$job/$name": typeof MainPrivateDetailsMediaTypeJobNameRoute;
+  "/_main/_private/details/edit/$mediaType/$mediaId": typeof MainPrivateDetailsEditMediaTypeMediaIdRoute;
+  "/_main/_private/profile/$username/_header/followers": typeof MainPrivateProfileUsernameHeaderFollowersRoute;
+  "/_main/_private/profile/$username/_header/follows": typeof MainPrivateProfileUsernameHeaderFollowsRoute;
+  "/_main/_private/profile/$username/_header/history": typeof MainPrivateProfileUsernameHeaderHistoryRoute;
+  "/_main/_private/profile/$username/_header/": typeof MainPrivateProfileUsernameHeaderIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -363,23 +360,22 @@ export interface FileRouteTypes {
     | "/search"
     | "/settings"
     | "/trends"
-    | "/forgot-password"
-    | "/reset-password"
-    | "/about"
-    | "/features"
-    | "/privacy-policy"
-    | "/"
-    | "/admin"
-    | "/achievements/$username"
-    | "/stats/$username"
-    | "/api/auth/$"
-    | "/admin/"
-    | "/list/$mediaType/$username"
     | "/admin/achievements"
     | "/admin/dashboard"
     | "/admin/mediadle"
     | "/admin/tasks"
     | "/admin/users"
+    | "/forgot-password"
+    | "/reset-password"
+    | "/about"
+    | "/features"
+    | "/privacy-policy"
+    | "/api/auth/$"
+    | "/admin"
+    | "/"
+    | "/achievements/$username"
+    | "/stats/$username"
+    | "/list/$mediaType/$username"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
     | "/details/$mediaType/$job/$name"
@@ -397,22 +393,22 @@ export interface FileRouteTypes {
     | "/search"
     | "/settings"
     | "/trends"
-    | "/forgot-password"
-    | "/reset-password"
-    | "/about"
-    | "/features"
-    | "/privacy-policy"
-    | "/"
-    | "/admin"
-    | "/achievements/$username"
-    | "/stats/$username"
-    | "/api/auth/$"
-    | "/list/$mediaType/$username"
     | "/admin/achievements"
     | "/admin/dashboard"
     | "/admin/mediadle"
     | "/admin/tasks"
     | "/admin/users"
+    | "/forgot-password"
+    | "/reset-password"
+    | "/about"
+    | "/features"
+    | "/privacy-policy"
+    | "/api/auth/$"
+    | "/admin"
+    | "/"
+    | "/achievements/$username"
+    | "/stats/$username"
+    | "/list/$mediaType/$username"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
     | "/details/$mediaType/$job/$name"
@@ -423,68 +419,56 @@ export interface FileRouteTypes {
   id:
     | "__root__"
     | "/_admin"
-    | "/_private"
-    | "/_public"
-    | "/_private/coming-next"
-    | "/_private/hall-of-fame"
-    | "/_private/moviedle"
-    | "/_private/platform-stats"
-    | "/_private/search"
-    | "/_private/settings"
-    | "/_private/trends"
-    | "/_public/forgot-password"
-    | "/_public/reset-password"
-    | "/_universal/about"
-    | "/_universal/features"
-    | "/_universal/privacy-policy"
-    | "/_public/"
-    | "/_admin/admin"
-    | "/_admin/admin/_layout"
-    | "/_private/achievements/$username"
-    | "/_private/stats/$username"
+    | "/_main"
+    | "/_main/_private"
+    | "/_main/_public"
+    | "/_main/_private/coming-next"
+    | "/_main/_private/hall-of-fame"
+    | "/_main/_private/moviedle"
+    | "/_main/_private/platform-stats"
+    | "/_main/_private/search"
+    | "/_main/_private/settings"
+    | "/_main/_private/trends"
+    | "/_admin/admin/achievements"
+    | "/_admin/admin/dashboard"
+    | "/_admin/admin/mediadle"
+    | "/_admin/admin/tasks"
+    | "/_admin/admin/users"
+    | "/_main/_public/forgot-password"
+    | "/_main/_public/reset-password"
+    | "/_main/_universal/about"
+    | "/_main/_universal/features"
+    | "/_main/_universal/privacy-policy"
     | "/api/auth/$"
     | "/_admin/admin/"
-    | "/_private/list/$mediaType/$username"
-    | "/_admin/admin/_layout/achievements"
-    | "/_admin/admin/_layout/dashboard"
-    | "/_admin/admin/_layout/mediadle"
-    | "/_admin/admin/_layout/tasks"
-    | "/_admin/admin/_layout/users"
-    | "/_private/details/$mediaType/$mediaId"
-    | "/_private/profile/$username"
-    | "/_private/profile/$username/_header"
-    | "/_private/details/$mediaType/$job/$name"
-    | "/_private/details/edit/$mediaType/$mediaId"
-    | "/_private/profile/$username/_header/followers"
-    | "/_private/profile/$username/_header/follows"
-    | "/_private/profile/$username/_header/history"
-    | "/_private/profile/$username/_header/";
+    | "/_main/_public/"
+    | "/_main/_private/achievements/$username"
+    | "/_main/_private/stats/$username"
+    | "/_main/_private/list/$mediaType/$username"
+    | "/_main/_private/details/$mediaType/$mediaId"
+    | "/_main/_private/profile/$username"
+    | "/_main/_private/profile/$username/_header"
+    | "/_main/_private/details/$mediaType/$job/$name"
+    | "/_main/_private/details/edit/$mediaType/$mediaId"
+    | "/_main/_private/profile/$username/_header/followers"
+    | "/_main/_private/profile/$username/_header/follows"
+    | "/_main/_private/profile/$username/_header/history"
+    | "/_main/_private/profile/$username/_header/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren;
-  PrivateRoute: typeof PrivateRouteWithChildren;
-  PublicRoute: typeof PublicRouteWithChildren;
-  UniversalAboutRoute: typeof UniversalAboutRoute;
-  UniversalFeaturesRoute: typeof UniversalFeaturesRoute;
-  UniversalPrivacyPolicyRoute: typeof UniversalPrivacyPolicyRoute;
+  MainRoute: typeof MainRouteWithChildren;
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/_public": {
-      id: "/_public";
+    "/_main": {
+      id: "/_main";
       path: "";
       fullPath: "";
-      preLoaderRoute: typeof PublicRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_private": {
-      id: "/_private";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof PrivateRouteImport;
+      preLoaderRoute: typeof MainRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/_admin": {
@@ -494,117 +478,33 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/_admin/admin": {
-      id: "/_admin/admin";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminAdminRouteImport;
-      parentRoute: typeof AdminRoute;
+    "/_main/_public": {
+      id: "/_main/_public";
+      path: "";
+      fullPath: "";
+      preLoaderRoute: typeof MainPublicRouteImport;
+      parentRoute: typeof MainRoute;
     };
-    "/_public/": {
-      id: "/_public/";
+    "/_main/_private": {
+      id: "/_main/_private";
+      path: "";
+      fullPath: "";
+      preLoaderRoute: typeof MainPrivateRouteImport;
+      parentRoute: typeof MainRoute;
+    };
+    "/_main/_public/": {
+      id: "/_main/_public/";
       path: "/";
       fullPath: "/";
-      preLoaderRoute: typeof PublicIndexRouteImport;
-      parentRoute: typeof PublicRoute;
-    };
-    "/_universal/privacy-policy": {
-      id: "/_universal/privacy-policy";
-      path: "/privacy-policy";
-      fullPath: "/privacy-policy";
-      preLoaderRoute: typeof UniversalPrivacyPolicyRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_universal/features": {
-      id: "/_universal/features";
-      path: "/features";
-      fullPath: "/features";
-      preLoaderRoute: typeof UniversalFeaturesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_universal/about": {
-      id: "/_universal/about";
-      path: "/about";
-      fullPath: "/about";
-      preLoaderRoute: typeof UniversalAboutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/_public/reset-password": {
-      id: "/_public/reset-password";
-      path: "/reset-password";
-      fullPath: "/reset-password";
-      preLoaderRoute: typeof PublicResetPasswordRouteImport;
-      parentRoute: typeof PublicRoute;
-    };
-    "/_public/forgot-password": {
-      id: "/_public/forgot-password";
-      path: "/forgot-password";
-      fullPath: "/forgot-password";
-      preLoaderRoute: typeof PublicForgotPasswordRouteImport;
-      parentRoute: typeof PublicRoute;
-    };
-    "/_private/trends": {
-      id: "/_private/trends";
-      path: "/trends";
-      fullPath: "/trends";
-      preLoaderRoute: typeof PrivateTrendsRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/settings": {
-      id: "/_private/settings";
-      path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof PrivateSettingsRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/search": {
-      id: "/_private/search";
-      path: "/search";
-      fullPath: "/search";
-      preLoaderRoute: typeof PrivateSearchRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/platform-stats": {
-      id: "/_private/platform-stats";
-      path: "/platform-stats";
-      fullPath: "/platform-stats";
-      preLoaderRoute: typeof PrivatePlatformStatsRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/moviedle": {
-      id: "/_private/moviedle";
-      path: "/moviedle";
-      fullPath: "/moviedle";
-      preLoaderRoute: typeof PrivateMoviedleRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/hall-of-fame": {
-      id: "/_private/hall-of-fame";
-      path: "/hall-of-fame";
-      fullPath: "/hall-of-fame";
-      preLoaderRoute: typeof PrivateHallOfFameRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/coming-next": {
-      id: "/_private/coming-next";
-      path: "/coming-next";
-      fullPath: "/coming-next";
-      preLoaderRoute: typeof PrivateComingNextRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
-    };
-    "/_private/profile/$username": {
-      id: "/_private/profile/$username";
-      path: "/profile/$username";
-      fullPath: "/profile/$username";
-      preLoaderRoute: typeof PrivateProfileUsernameRouteImport;
-      parentRoute: typeof PrivateRoute;
+      preLoaderRoute: typeof MainPublicIndexRouteImport;
+      parentRoute: typeof MainPublicRoute;
     };
     "/_admin/admin/": {
       id: "/_admin/admin/";
-      path: "/";
-      fullPath: "/admin/";
+      path: "/admin";
+      fullPath: "/admin";
       preLoaderRoute: typeof AdminAdminIndexRouteImport;
-      parentRoute: typeof AdminAdminRoute;
+      parentRoute: typeof AdminRoute;
     };
     "/api/auth/$": {
       id: "/api/auth/$";
@@ -613,271 +513,350 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof ApiAuthSplatRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/_private/stats/$username": {
-      id: "/_private/stats/$username";
-      path: "/stats/$username";
-      fullPath: "/stats/$username";
-      preLoaderRoute: typeof PrivateStatsUsernameRouteImport;
-      parentRoute: typeof PrivateRoute;
+    "/_main/_universal/privacy-policy": {
+      id: "/_main/_universal/privacy-policy";
+      path: "/privacy-policy";
+      fullPath: "/privacy-policy";
+      preLoaderRoute: typeof MainUniversalPrivacyPolicyRouteImport;
+      parentRoute: typeof MainRoute;
     };
-    "/_private/achievements/$username": {
-      id: "/_private/achievements/$username";
-      path: "/achievements/$username";
-      fullPath: "/achievements/$username";
-      preLoaderRoute: typeof PrivateAchievementsUsernameRouteImport;
-      parentRoute: typeof PrivateRoute;
+    "/_main/_universal/features": {
+      id: "/_main/_universal/features";
+      path: "/features";
+      fullPath: "/features";
+      preLoaderRoute: typeof MainUniversalFeaturesRouteImport;
+      parentRoute: typeof MainRoute;
     };
-    "/_admin/admin/_layout": {
-      id: "/_admin/admin/_layout";
-      path: "/admin";
-      fullPath: "/admin";
-      preLoaderRoute: typeof AdminAdminLayoutRouteImport;
-      parentRoute: typeof AdminAdminRoute;
+    "/_main/_universal/about": {
+      id: "/_main/_universal/about";
+      path: "/about";
+      fullPath: "/about";
+      preLoaderRoute: typeof MainUniversalAboutRouteImport;
+      parentRoute: typeof MainRoute;
     };
-    "/_private/profile/$username/_header": {
-      id: "/_private/profile/$username/_header";
+    "/_main/_public/reset-password": {
+      id: "/_main/_public/reset-password";
+      path: "/reset-password";
+      fullPath: "/reset-password";
+      preLoaderRoute: typeof MainPublicResetPasswordRouteImport;
+      parentRoute: typeof MainPublicRoute;
+    };
+    "/_main/_public/forgot-password": {
+      id: "/_main/_public/forgot-password";
+      path: "/forgot-password";
+      fullPath: "/forgot-password";
+      preLoaderRoute: typeof MainPublicForgotPasswordRouteImport;
+      parentRoute: typeof MainPublicRoute;
+    };
+    "/_admin/admin/users": {
+      id: "/_admin/admin/users";
+      path: "/admin/users";
+      fullPath: "/admin/users";
+      preLoaderRoute: typeof AdminAdminUsersRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/tasks": {
+      id: "/_admin/admin/tasks";
+      path: "/admin/tasks";
+      fullPath: "/admin/tasks";
+      preLoaderRoute: typeof AdminAdminTasksRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/mediadle": {
+      id: "/_admin/admin/mediadle";
+      path: "/admin/mediadle";
+      fullPath: "/admin/mediadle";
+      preLoaderRoute: typeof AdminAdminMediadleRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/dashboard": {
+      id: "/_admin/admin/dashboard";
+      path: "/admin/dashboard";
+      fullPath: "/admin/dashboard";
+      preLoaderRoute: typeof AdminAdminDashboardRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/achievements": {
+      id: "/_admin/admin/achievements";
+      path: "/admin/achievements";
+      fullPath: "/admin/achievements";
+      preLoaderRoute: typeof AdminAdminAchievementsRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_main/_private/trends": {
+      id: "/_main/_private/trends";
+      path: "/trends";
+      fullPath: "/trends";
+      preLoaderRoute: typeof MainPrivateTrendsRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/settings": {
+      id: "/_main/_private/settings";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof MainPrivateSettingsRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/search": {
+      id: "/_main/_private/search";
+      path: "/search";
+      fullPath: "/search";
+      preLoaderRoute: typeof MainPrivateSearchRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/platform-stats": {
+      id: "/_main/_private/platform-stats";
+      path: "/platform-stats";
+      fullPath: "/platform-stats";
+      preLoaderRoute: typeof MainPrivatePlatformStatsRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/moviedle": {
+      id: "/_main/_private/moviedle";
+      path: "/moviedle";
+      fullPath: "/moviedle";
+      preLoaderRoute: typeof MainPrivateMoviedleRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/hall-of-fame": {
+      id: "/_main/_private/hall-of-fame";
+      path: "/hall-of-fame";
+      fullPath: "/hall-of-fame";
+      preLoaderRoute: typeof MainPrivateHallOfFameRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/coming-next": {
+      id: "/_main/_private/coming-next";
+      path: "/coming-next";
+      fullPath: "/coming-next";
+      preLoaderRoute: typeof MainPrivateComingNextRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/profile/$username": {
+      id: "/_main/_private/profile/$username";
       path: "/profile/$username";
       fullPath: "/profile/$username";
-      preLoaderRoute: typeof PrivateProfileUsernameHeaderRouteImport;
-      parentRoute: typeof PrivateProfileUsernameRoute;
+      preLoaderRoute: typeof MainPrivateProfileUsernameRouteImport;
+      parentRoute: typeof MainPrivateRoute;
     };
-    "/_private/details/$mediaType/$mediaId": {
-      id: "/_private/details/$mediaType/$mediaId";
+    "/_main/_private/stats/$username": {
+      id: "/_main/_private/stats/$username";
+      path: "/stats/$username";
+      fullPath: "/stats/$username";
+      preLoaderRoute: typeof MainPrivateStatsUsernameRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/achievements/$username": {
+      id: "/_main/_private/achievements/$username";
+      path: "/achievements/$username";
+      fullPath: "/achievements/$username";
+      preLoaderRoute: typeof MainPrivateAchievementsUsernameRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/profile/$username/_header": {
+      id: "/_main/_private/profile/$username/_header";
+      path: "/profile/$username";
+      fullPath: "/profile/$username";
+      preLoaderRoute: typeof MainPrivateProfileUsernameHeaderRouteImport;
+      parentRoute: typeof MainPrivateProfileUsernameRoute;
+    };
+    "/_main/_private/details/$mediaType/$mediaId": {
+      id: "/_main/_private/details/$mediaType/$mediaId";
       path: "/details/$mediaType/$mediaId";
       fullPath: "/details/$mediaType/$mediaId";
-      preLoaderRoute: typeof PrivateDetailsMediaTypeMediaIdRouteImport;
-      parentRoute: typeof PrivateRoute;
+      preLoaderRoute: typeof MainPrivateDetailsMediaTypeMediaIdRouteImport;
+      parentRoute: typeof MainPrivateRoute;
     };
-    "/_admin/admin/_layout/users": {
-      id: "/_admin/admin/_layout/users";
-      path: "/users";
-      fullPath: "/admin/users";
-      preLoaderRoute: typeof AdminAdminLayoutUsersRouteImport;
-      parentRoute: typeof AdminAdminLayoutRoute;
-    };
-    "/_admin/admin/_layout/tasks": {
-      id: "/_admin/admin/_layout/tasks";
-      path: "/tasks";
-      fullPath: "/admin/tasks";
-      preLoaderRoute: typeof AdminAdminLayoutTasksRouteImport;
-      parentRoute: typeof AdminAdminLayoutRoute;
-    };
-    "/_admin/admin/_layout/mediadle": {
-      id: "/_admin/admin/_layout/mediadle";
-      path: "/mediadle";
-      fullPath: "/admin/mediadle";
-      preLoaderRoute: typeof AdminAdminLayoutMediadleRouteImport;
-      parentRoute: typeof AdminAdminLayoutRoute;
-    };
-    "/_admin/admin/_layout/dashboard": {
-      id: "/_admin/admin/_layout/dashboard";
-      path: "/dashboard";
-      fullPath: "/admin/dashboard";
-      preLoaderRoute: typeof AdminAdminLayoutDashboardRouteImport;
-      parentRoute: typeof AdminAdminLayoutRoute;
-    };
-    "/_admin/admin/_layout/achievements": {
-      id: "/_admin/admin/_layout/achievements";
-      path: "/achievements";
-      fullPath: "/admin/achievements";
-      preLoaderRoute: typeof AdminAdminLayoutAchievementsRouteImport;
-      parentRoute: typeof AdminAdminLayoutRoute;
-    };
-    "/_private/list/$mediaType/$username": {
-      id: "/_private/list/$mediaType/$username";
+    "/_main/_private/list/$mediaType/$username": {
+      id: "/_main/_private/list/$mediaType/$username";
       path: "/list/$mediaType/$username";
       fullPath: "/list/$mediaType/$username";
-      preLoaderRoute: typeof PrivateListMediaTypeUsernameRouteRouteImport;
-      parentRoute: typeof PrivateRoute;
+      preLoaderRoute: typeof MainPrivateListMediaTypeUsernameRouteRouteImport;
+      parentRoute: typeof MainPrivateRoute;
     };
-    "/_private/profile/$username/_header/": {
-      id: "/_private/profile/$username/_header/";
+    "/_main/_private/profile/$username/_header/": {
+      id: "/_main/_private/profile/$username/_header/";
       path: "/";
       fullPath: "/profile/$username/";
-      preLoaderRoute: typeof PrivateProfileUsernameHeaderIndexRouteImport;
-      parentRoute: typeof PrivateProfileUsernameHeaderRoute;
+      preLoaderRoute: typeof MainPrivateProfileUsernameHeaderIndexRouteImport;
+      parentRoute: typeof MainPrivateProfileUsernameHeaderRoute;
     };
-    "/_private/profile/$username/_header/history": {
-      id: "/_private/profile/$username/_header/history";
+    "/_main/_private/profile/$username/_header/history": {
+      id: "/_main/_private/profile/$username/_header/history";
       path: "/history";
       fullPath: "/profile/$username/history";
-      preLoaderRoute: typeof PrivateProfileUsernameHeaderHistoryRouteImport;
-      parentRoute: typeof PrivateProfileUsernameHeaderRoute;
+      preLoaderRoute: typeof MainPrivateProfileUsernameHeaderHistoryRouteImport;
+      parentRoute: typeof MainPrivateProfileUsernameHeaderRoute;
     };
-    "/_private/profile/$username/_header/follows": {
-      id: "/_private/profile/$username/_header/follows";
+    "/_main/_private/profile/$username/_header/follows": {
+      id: "/_main/_private/profile/$username/_header/follows";
       path: "/follows";
       fullPath: "/profile/$username/follows";
-      preLoaderRoute: typeof PrivateProfileUsernameHeaderFollowsRouteImport;
-      parentRoute: typeof PrivateProfileUsernameHeaderRoute;
+      preLoaderRoute: typeof MainPrivateProfileUsernameHeaderFollowsRouteImport;
+      parentRoute: typeof MainPrivateProfileUsernameHeaderRoute;
     };
-    "/_private/profile/$username/_header/followers": {
-      id: "/_private/profile/$username/_header/followers";
+    "/_main/_private/profile/$username/_header/followers": {
+      id: "/_main/_private/profile/$username/_header/followers";
       path: "/followers";
       fullPath: "/profile/$username/followers";
-      preLoaderRoute: typeof PrivateProfileUsernameHeaderFollowersRouteImport;
-      parentRoute: typeof PrivateProfileUsernameHeaderRoute;
+      preLoaderRoute: typeof MainPrivateProfileUsernameHeaderFollowersRouteImport;
+      parentRoute: typeof MainPrivateProfileUsernameHeaderRoute;
     };
-    "/_private/details/edit/$mediaType/$mediaId": {
-      id: "/_private/details/edit/$mediaType/$mediaId";
+    "/_main/_private/details/edit/$mediaType/$mediaId": {
+      id: "/_main/_private/details/edit/$mediaType/$mediaId";
       path: "/details/edit/$mediaType/$mediaId";
       fullPath: "/details/edit/$mediaType/$mediaId";
-      preLoaderRoute: typeof PrivateDetailsEditMediaTypeMediaIdRouteImport;
-      parentRoute: typeof PrivateRoute;
+      preLoaderRoute: typeof MainPrivateDetailsEditMediaTypeMediaIdRouteImport;
+      parentRoute: typeof MainPrivateRoute;
     };
-    "/_private/details/$mediaType/$job/$name": {
-      id: "/_private/details/$mediaType/$job/$name";
+    "/_main/_private/details/$mediaType/$job/$name": {
+      id: "/_main/_private/details/$mediaType/$job/$name";
       path: "/details/$mediaType/$job/$name";
       fullPath: "/details/$mediaType/$job/$name";
-      preLoaderRoute: typeof PrivateDetailsMediaTypeJobNameRouteImport;
-      parentRoute: typeof PrivateRoute;
+      preLoaderRoute: typeof MainPrivateDetailsMediaTypeJobNameRouteImport;
+      parentRoute: typeof MainPrivateRoute;
     };
   }
 }
 
-interface AdminAdminLayoutRouteChildren {
-  AdminAdminLayoutAchievementsRoute: typeof AdminAdminLayoutAchievementsRoute;
-  AdminAdminLayoutDashboardRoute: typeof AdminAdminLayoutDashboardRoute;
-  AdminAdminLayoutMediadleRoute: typeof AdminAdminLayoutMediadleRoute;
-  AdminAdminLayoutTasksRoute: typeof AdminAdminLayoutTasksRoute;
-  AdminAdminLayoutUsersRoute: typeof AdminAdminLayoutUsersRoute;
-}
-
-const AdminAdminLayoutRouteChildren: AdminAdminLayoutRouteChildren = {
-  AdminAdminLayoutAchievementsRoute: AdminAdminLayoutAchievementsRoute,
-  AdminAdminLayoutDashboardRoute: AdminAdminLayoutDashboardRoute,
-  AdminAdminLayoutMediadleRoute: AdminAdminLayoutMediadleRoute,
-  AdminAdminLayoutTasksRoute: AdminAdminLayoutTasksRoute,
-  AdminAdminLayoutUsersRoute: AdminAdminLayoutUsersRoute,
-};
-
-const AdminAdminLayoutRouteWithChildren =
-  AdminAdminLayoutRoute._addFileChildren(AdminAdminLayoutRouteChildren);
-
-interface AdminAdminRouteChildren {
-  AdminAdminLayoutRoute: typeof AdminAdminLayoutRouteWithChildren;
+interface AdminRouteChildren {
+  AdminAdminAchievementsRoute: typeof AdminAdminAchievementsRoute;
+  AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute;
+  AdminAdminMediadleRoute: typeof AdminAdminMediadleRoute;
+  AdminAdminTasksRoute: typeof AdminAdminTasksRoute;
+  AdminAdminUsersRoute: typeof AdminAdminUsersRoute;
   AdminAdminIndexRoute: typeof AdminAdminIndexRoute;
 }
 
-const AdminAdminRouteChildren: AdminAdminRouteChildren = {
-  AdminAdminLayoutRoute: AdminAdminLayoutRouteWithChildren,
-  AdminAdminIndexRoute: AdminAdminIndexRoute,
-};
-
-const AdminAdminRouteWithChildren = AdminAdminRoute._addFileChildren(
-  AdminAdminRouteChildren,
-);
-
-interface AdminRouteChildren {
-  AdminAdminRoute: typeof AdminAdminRouteWithChildren;
-}
-
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminAdminRoute: AdminAdminRouteWithChildren,
+  AdminAdminAchievementsRoute: AdminAdminAchievementsRoute,
+  AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminMediadleRoute: AdminAdminMediadleRoute,
+  AdminAdminTasksRoute: AdminAdminTasksRoute,
+  AdminAdminUsersRoute: AdminAdminUsersRoute,
+  AdminAdminIndexRoute: AdminAdminIndexRoute,
 };
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren);
 
-interface PrivateProfileUsernameHeaderRouteChildren {
-  PrivateProfileUsernameHeaderFollowersRoute: typeof PrivateProfileUsernameHeaderFollowersRoute;
-  PrivateProfileUsernameHeaderFollowsRoute: typeof PrivateProfileUsernameHeaderFollowsRoute;
-  PrivateProfileUsernameHeaderHistoryRoute: typeof PrivateProfileUsernameHeaderHistoryRoute;
-  PrivateProfileUsernameHeaderIndexRoute: typeof PrivateProfileUsernameHeaderIndexRoute;
+interface MainPrivateProfileUsernameHeaderRouteChildren {
+  MainPrivateProfileUsernameHeaderFollowersRoute: typeof MainPrivateProfileUsernameHeaderFollowersRoute;
+  MainPrivateProfileUsernameHeaderFollowsRoute: typeof MainPrivateProfileUsernameHeaderFollowsRoute;
+  MainPrivateProfileUsernameHeaderHistoryRoute: typeof MainPrivateProfileUsernameHeaderHistoryRoute;
+  MainPrivateProfileUsernameHeaderIndexRoute: typeof MainPrivateProfileUsernameHeaderIndexRoute;
 }
 
-const PrivateProfileUsernameHeaderRouteChildren: PrivateProfileUsernameHeaderRouteChildren =
+const MainPrivateProfileUsernameHeaderRouteChildren: MainPrivateProfileUsernameHeaderRouteChildren =
   {
-    PrivateProfileUsernameHeaderFollowersRoute:
-      PrivateProfileUsernameHeaderFollowersRoute,
-    PrivateProfileUsernameHeaderFollowsRoute:
-      PrivateProfileUsernameHeaderFollowsRoute,
-    PrivateProfileUsernameHeaderHistoryRoute:
-      PrivateProfileUsernameHeaderHistoryRoute,
-    PrivateProfileUsernameHeaderIndexRoute:
-      PrivateProfileUsernameHeaderIndexRoute,
+    MainPrivateProfileUsernameHeaderFollowersRoute:
+      MainPrivateProfileUsernameHeaderFollowersRoute,
+    MainPrivateProfileUsernameHeaderFollowsRoute:
+      MainPrivateProfileUsernameHeaderFollowsRoute,
+    MainPrivateProfileUsernameHeaderHistoryRoute:
+      MainPrivateProfileUsernameHeaderHistoryRoute,
+    MainPrivateProfileUsernameHeaderIndexRoute:
+      MainPrivateProfileUsernameHeaderIndexRoute,
   };
 
-const PrivateProfileUsernameHeaderRouteWithChildren =
-  PrivateProfileUsernameHeaderRoute._addFileChildren(
-    PrivateProfileUsernameHeaderRouteChildren,
+const MainPrivateProfileUsernameHeaderRouteWithChildren =
+  MainPrivateProfileUsernameHeaderRoute._addFileChildren(
+    MainPrivateProfileUsernameHeaderRouteChildren,
   );
 
-interface PrivateProfileUsernameRouteChildren {
-  PrivateProfileUsernameHeaderRoute: typeof PrivateProfileUsernameHeaderRouteWithChildren;
+interface MainPrivateProfileUsernameRouteChildren {
+  MainPrivateProfileUsernameHeaderRoute: typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
 }
 
-const PrivateProfileUsernameRouteChildren: PrivateProfileUsernameRouteChildren =
+const MainPrivateProfileUsernameRouteChildren: MainPrivateProfileUsernameRouteChildren =
   {
-    PrivateProfileUsernameHeaderRoute:
-      PrivateProfileUsernameHeaderRouteWithChildren,
+    MainPrivateProfileUsernameHeaderRoute:
+      MainPrivateProfileUsernameHeaderRouteWithChildren,
   };
 
-const PrivateProfileUsernameRouteWithChildren =
-  PrivateProfileUsernameRoute._addFileChildren(
-    PrivateProfileUsernameRouteChildren,
+const MainPrivateProfileUsernameRouteWithChildren =
+  MainPrivateProfileUsernameRoute._addFileChildren(
+    MainPrivateProfileUsernameRouteChildren,
   );
 
-interface PrivateRouteChildren {
-  PrivateComingNextRouteRoute: typeof PrivateComingNextRouteRoute;
-  PrivateHallOfFameRouteRoute: typeof PrivateHallOfFameRouteRoute;
-  PrivateMoviedleRouteRoute: typeof PrivateMoviedleRouteRoute;
-  PrivatePlatformStatsRouteRoute: typeof PrivatePlatformStatsRouteRoute;
-  PrivateSearchRouteRoute: typeof PrivateSearchRouteRoute;
-  PrivateSettingsRouteRoute: typeof PrivateSettingsRouteRoute;
-  PrivateTrendsRouteRoute: typeof PrivateTrendsRouteRoute;
-  PrivateAchievementsUsernameRoute: typeof PrivateAchievementsUsernameRoute;
-  PrivateStatsUsernameRoute: typeof PrivateStatsUsernameRoute;
-  PrivateListMediaTypeUsernameRouteRoute: typeof PrivateListMediaTypeUsernameRouteRoute;
-  PrivateDetailsMediaTypeMediaIdRoute: typeof PrivateDetailsMediaTypeMediaIdRoute;
-  PrivateProfileUsernameRoute: typeof PrivateProfileUsernameRouteWithChildren;
-  PrivateDetailsMediaTypeJobNameRoute: typeof PrivateDetailsMediaTypeJobNameRoute;
-  PrivateDetailsEditMediaTypeMediaIdRoute: typeof PrivateDetailsEditMediaTypeMediaIdRoute;
+interface MainPrivateRouteChildren {
+  MainPrivateComingNextRouteRoute: typeof MainPrivateComingNextRouteRoute;
+  MainPrivateHallOfFameRouteRoute: typeof MainPrivateHallOfFameRouteRoute;
+  MainPrivateMoviedleRouteRoute: typeof MainPrivateMoviedleRouteRoute;
+  MainPrivatePlatformStatsRouteRoute: typeof MainPrivatePlatformStatsRouteRoute;
+  MainPrivateSearchRouteRoute: typeof MainPrivateSearchRouteRoute;
+  MainPrivateSettingsRouteRoute: typeof MainPrivateSettingsRouteRoute;
+  MainPrivateTrendsRouteRoute: typeof MainPrivateTrendsRouteRoute;
+  MainPrivateAchievementsUsernameRoute: typeof MainPrivateAchievementsUsernameRoute;
+  MainPrivateStatsUsernameRoute: typeof MainPrivateStatsUsernameRoute;
+  MainPrivateListMediaTypeUsernameRouteRoute: typeof MainPrivateListMediaTypeUsernameRouteRoute;
+  MainPrivateDetailsMediaTypeMediaIdRoute: typeof MainPrivateDetailsMediaTypeMediaIdRoute;
+  MainPrivateProfileUsernameRoute: typeof MainPrivateProfileUsernameRouteWithChildren;
+  MainPrivateDetailsMediaTypeJobNameRoute: typeof MainPrivateDetailsMediaTypeJobNameRoute;
+  MainPrivateDetailsEditMediaTypeMediaIdRoute: typeof MainPrivateDetailsEditMediaTypeMediaIdRoute;
 }
 
-const PrivateRouteChildren: PrivateRouteChildren = {
-  PrivateComingNextRouteRoute: PrivateComingNextRouteRoute,
-  PrivateHallOfFameRouteRoute: PrivateHallOfFameRouteRoute,
-  PrivateMoviedleRouteRoute: PrivateMoviedleRouteRoute,
-  PrivatePlatformStatsRouteRoute: PrivatePlatformStatsRouteRoute,
-  PrivateSearchRouteRoute: PrivateSearchRouteRoute,
-  PrivateSettingsRouteRoute: PrivateSettingsRouteRoute,
-  PrivateTrendsRouteRoute: PrivateTrendsRouteRoute,
-  PrivateAchievementsUsernameRoute: PrivateAchievementsUsernameRoute,
-  PrivateStatsUsernameRoute: PrivateStatsUsernameRoute,
-  PrivateListMediaTypeUsernameRouteRoute:
-    PrivateListMediaTypeUsernameRouteRoute,
-  PrivateDetailsMediaTypeMediaIdRoute: PrivateDetailsMediaTypeMediaIdRoute,
-  PrivateProfileUsernameRoute: PrivateProfileUsernameRouteWithChildren,
-  PrivateDetailsMediaTypeJobNameRoute: PrivateDetailsMediaTypeJobNameRoute,
-  PrivateDetailsEditMediaTypeMediaIdRoute:
-    PrivateDetailsEditMediaTypeMediaIdRoute,
+const MainPrivateRouteChildren: MainPrivateRouteChildren = {
+  MainPrivateComingNextRouteRoute: MainPrivateComingNextRouteRoute,
+  MainPrivateHallOfFameRouteRoute: MainPrivateHallOfFameRouteRoute,
+  MainPrivateMoviedleRouteRoute: MainPrivateMoviedleRouteRoute,
+  MainPrivatePlatformStatsRouteRoute: MainPrivatePlatformStatsRouteRoute,
+  MainPrivateSearchRouteRoute: MainPrivateSearchRouteRoute,
+  MainPrivateSettingsRouteRoute: MainPrivateSettingsRouteRoute,
+  MainPrivateTrendsRouteRoute: MainPrivateTrendsRouteRoute,
+  MainPrivateAchievementsUsernameRoute: MainPrivateAchievementsUsernameRoute,
+  MainPrivateStatsUsernameRoute: MainPrivateStatsUsernameRoute,
+  MainPrivateListMediaTypeUsernameRouteRoute:
+    MainPrivateListMediaTypeUsernameRouteRoute,
+  MainPrivateDetailsMediaTypeMediaIdRoute:
+    MainPrivateDetailsMediaTypeMediaIdRoute,
+  MainPrivateProfileUsernameRoute: MainPrivateProfileUsernameRouteWithChildren,
+  MainPrivateDetailsMediaTypeJobNameRoute:
+    MainPrivateDetailsMediaTypeJobNameRoute,
+  MainPrivateDetailsEditMediaTypeMediaIdRoute:
+    MainPrivateDetailsEditMediaTypeMediaIdRoute,
 };
 
-const PrivateRouteWithChildren =
-  PrivateRoute._addFileChildren(PrivateRouteChildren);
+const MainPrivateRouteWithChildren = MainPrivateRoute._addFileChildren(
+  MainPrivateRouteChildren,
+);
 
-interface PublicRouteChildren {
-  PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute;
-  PublicResetPasswordRoute: typeof PublicResetPasswordRoute;
-  PublicIndexRoute: typeof PublicIndexRoute;
+interface MainPublicRouteChildren {
+  MainPublicForgotPasswordRoute: typeof MainPublicForgotPasswordRoute;
+  MainPublicResetPasswordRoute: typeof MainPublicResetPasswordRoute;
+  MainPublicIndexRoute: typeof MainPublicIndexRoute;
 }
 
-const PublicRouteChildren: PublicRouteChildren = {
-  PublicForgotPasswordRoute: PublicForgotPasswordRoute,
-  PublicResetPasswordRoute: PublicResetPasswordRoute,
-  PublicIndexRoute: PublicIndexRoute,
+const MainPublicRouteChildren: MainPublicRouteChildren = {
+  MainPublicForgotPasswordRoute: MainPublicForgotPasswordRoute,
+  MainPublicResetPasswordRoute: MainPublicResetPasswordRoute,
+  MainPublicIndexRoute: MainPublicIndexRoute,
 };
 
-const PublicRouteWithChildren =
-  PublicRoute._addFileChildren(PublicRouteChildren);
+const MainPublicRouteWithChildren = MainPublicRoute._addFileChildren(
+  MainPublicRouteChildren,
+);
+
+interface MainRouteChildren {
+  MainPrivateRoute: typeof MainPrivateRouteWithChildren;
+  MainPublicRoute: typeof MainPublicRouteWithChildren;
+  MainUniversalAboutRoute: typeof MainUniversalAboutRoute;
+  MainUniversalFeaturesRoute: typeof MainUniversalFeaturesRoute;
+  MainUniversalPrivacyPolicyRoute: typeof MainUniversalPrivacyPolicyRoute;
+}
+
+const MainRouteChildren: MainRouteChildren = {
+  MainPrivateRoute: MainPrivateRouteWithChildren,
+  MainPublicRoute: MainPublicRouteWithChildren,
+  MainUniversalAboutRoute: MainUniversalAboutRoute,
+  MainUniversalFeaturesRoute: MainUniversalFeaturesRoute,
+  MainUniversalPrivacyPolicyRoute: MainUniversalPrivacyPolicyRoute,
+};
+
+const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
-  PrivateRoute: PrivateRouteWithChildren,
-  PublicRoute: PublicRouteWithChildren,
-  UniversalAboutRoute: UniversalAboutRoute,
-  UniversalFeaturesRoute: UniversalFeaturesRoute,
-  UniversalPrivacyPolicyRoute: UniversalPrivacyPolicyRoute,
+  MainRoute: MainRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 };
 export const routeTree = rootRouteImport
