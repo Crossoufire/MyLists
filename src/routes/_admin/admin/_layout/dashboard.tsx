@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_admin/admin/_layout/dashboard")({
 });
 
 
-export default function DashboardPage() {
+function DashboardPage() {
     const apiData = useSuspenseQuery(adminOverviewOptions()).data;
 
     return (

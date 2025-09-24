@@ -205,7 +205,7 @@ export const Navbar = () => {
                                             />
                                             {currentUser.role === RoleType.MANAGER &&
                                                 <NavMediaItem
-                                                    to="/admin/dashboard"
+                                                    to="/admin"
                                                     popRef={popRef}
                                                     text="Admin Panel"
                                                     icon={<ShieldCheck className="w-4 h-4"/>}

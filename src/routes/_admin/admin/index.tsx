@@ -35,9 +35,9 @@ function AdminStepUpPage() {
 
     const onSubmit = async (data: AdminAuthForm) => {
         adminAuthMutation.mutate({ data: { password: data.password } }, {
-            onSuccess: (response) => {
+            onSuccess: async (response) => {
                 if (response?.success) {
-                    navigate({ to: "/admin/dashboard" });
+                    await navigate({ to: "/admin/dashboard" });
                 }
                 else if (response?.message) {
                     form.setError("password", { message: response.message });

@@ -10,7 +10,6 @@
 
 ## TODO
 
-- TODO: check tanstarter for Start RC update :)
 - TODO: better files managements, clear separation between client and server
 - TODO: redistribute the utils between client-utils and server-utils (server-utils only for server-side and client-utils for both,
   meaning if a function is agnostic to the client or server, it should be in client-utils, or may be not... need to think about it)
