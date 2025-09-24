@@ -66,8 +66,8 @@ export class TmdbClient extends BaseClient {
     }
 
     async getTvChangedIds() {
-        const redis = await connectRedis();
-        const cached = await redis?.get(TmdbClient.tvChangedIdsCacheKey);
+        const redisConnection = await connectRedis();
+        const cached = await redisConnection?.get(TmdbClient.tvChangedIdsCacheKey);
         if (cached) {
             try {
                 return JSON.parse(cached) as number[];
@@ -102,7 +102,7 @@ export class TmdbClient extends BaseClient {
         }
 
         // Try save data to cache
-        await redis?.set(
+        await redisConnection?.set(
             TmdbClient.tvChangedIdsCacheKey,
             JSON.stringify(changedApiIds),
             "EX",

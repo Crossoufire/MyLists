@@ -20,12 +20,32 @@ import {
 } from "@/lib/types/zod.schema.types";
 
 
-const COOKIE_OPTIONS = {
+const ADMIN_COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     maxAge: 5 * 60 * 1000, // 5 minutes
     path: "/"
+};
+
+
+const getQueue = async () => {
+    if (process.env.NODE_ENV !== "production") {
+        return null;
+    }
+
+    const { connectRedis } = await import("@/lib/server/core/redis-client");
+    const { mylistsLongTaskQueue, initializeQueue } = await import("@/lib/server/core/bullmq");
+
+    if (mylistsLongTaskQueue) {
+        return mylistsLongTaskQueue;
+    }
+
+    const redisConnection = await connectRedis();
+    if (!redisConnection) {
+        throw new FormattedError("Could not connect to Redis for queue operations.");
+    }
+    return initializeQueue(redisConnection);
 };
 
 
@@ -48,7 +68,7 @@ export const adminAuth = createServerFn({ method: "GET" })
     .handler(async ({ data }) => {
         if (data.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
-            setCookie(ADMIN_COOKIE_NAME, adminToken, COOKIE_OPTIONS);
+            setCookie(ADMIN_COOKIE_NAME, adminToken, ADMIN_COOKIE_OPTIONS);
 
             return { success: true };
         }
@@ -63,7 +83,7 @@ export const adminAuth = createServerFn({ method: "GET" })
 export const adminLogout = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware])
     .handler(async () => {
-        setCookie(ADMIN_COOKIE_NAME, "", { ...COOKIE_OPTIONS, maxAge: 0 });
+        setCookie(ADMIN_COOKIE_NAME, "", { ...ADMIN_COOKIE_OPTIONS, maxAge: 0 });
         throw redirect({ to: "/" });
     });
 
@@ -138,7 +158,15 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
+        const mylistsLongTaskQueue = await getQueue();
+
+        if (!mylistsLongTaskQueue) {
+            return {
+                success: true,
+                jobId: "dev-mode-job",
+                message: "Tasks are disabled in development mode.",
+            };
+        }
 
         try {
             const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
@@ -158,7 +186,11 @@ export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
+        const mylistsLongTaskQueue = await getQueue();
+
+        if (!mylistsLongTaskQueue) {
+            return [];
+        }
 
         try {
             const jobs = await mylistsLongTaskQueue.getJobs(types satisfies MqJobType[]);
@@ -190,7 +222,11 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
+        const mylistsLongTaskQueue = await getQueue();
+
+        if (!mylistsLongTaskQueue) {
+            return { count: 1, logs: ["Job logging is disabled in development mode."] };
+        }
 
         try {
             return mylistsLongTaskQueue.getJobLogs(jobId);

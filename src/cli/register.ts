@@ -2,6 +2,8 @@ import {Command} from "commander";
 import {TasksName} from "@/lib/types/base.types";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
+import {initializeQueue} from "@/lib/server/core/bullmq";
+import {connectRedis} from "@/lib/server/core/redis-client";
 
 
 export const registerTaskCommand = (program: Command, taskName: TasksName, description: string) => {
@@ -28,7 +30,14 @@ export const registerTaskCommand = (program: Command, taskName: TasksName, descr
             }
             else {
                 cliLogger.info(`Enqueueing ${taskName} task via CLI...`);
-                const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
+
+                const redisConnection = await connectRedis();
+                if (!redisConnection) {
+                    cliLogger.fatal("Failed to connect to Redis from CLI.");
+                    process.exit(1);
+                }
+
+                const mylistsLongTaskQueue = initializeQueue(redisConnection);
 
                 try {
                     const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "cron/cli" });
@@ -40,6 +49,7 @@ export const registerTaskCommand = (program: Command, taskName: TasksName, descr
                 }
                 finally {
                     await mylistsLongTaskQueue.close();
+                    await redisConnection.quit();
                 }
             }
         });

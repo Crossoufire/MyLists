@@ -23,7 +23,7 @@ interface TasksManagerProps {
 
 export function TasksManager({ tasksList }: TasksManagerProps) {
     const taskTriggerMutation = useAdminTriggerTaskMutation();
-    const { data: currentJobs = [], isLoading, error } = useQuery(adminJobsOptions({ pollingRateSec: 10 }))
+    const { data: currentJobs = [], isLoading, error } = useQuery(adminJobsOptions());
 
     const activeTaskNames = new Set(currentJobs.map((job) => job.name));
 

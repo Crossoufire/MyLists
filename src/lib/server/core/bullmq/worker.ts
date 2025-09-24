@@ -8,7 +8,7 @@ async function startWorker() {
 
     try {
         // Connect to Redis
-        const redisConnection = await connectRedis({ bypassEnv: true });
+        const redisConnection = await connectRedis();
         if (!redisConnection) {
             throw new Error("Worker failed to connect to Redis.");
         }
