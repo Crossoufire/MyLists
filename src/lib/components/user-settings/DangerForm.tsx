@@ -3,7 +3,7 @@ import authClient from "@/lib/utils/auth-client";
 import {Button} from "@/lib/components/ui/button";
 import {useQueryClient} from "@tanstack/react-query";
 import {useNavigate, useRouter} from "@tanstack/react-router";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {useDeleteAccountMutation} from "@/lib/react-query/query-mutations/user.mutations";
 
 
@@ -25,7 +25,7 @@ export const DangerForm = () => {
             onSuccess: async () => {
                 await authClient.signOut();
                 await router.invalidate();
-                queryClient.setQueryData(queryKeys.authKey(), null);
+                queryClient.setQueryData(authOptions.queryKey, null);
                 await navigate({ to: "/", replace: true });
                 queryClient.removeQueries();
                 toast.success("Your account has been deleted successfully");

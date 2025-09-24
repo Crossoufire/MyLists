@@ -4,14 +4,14 @@ import {RoleType} from "@/lib/server/utils/enums";
 import {createMiddleware} from "@tanstack/react-start";
 import {updateLastSeen} from "@/lib/server/utils/last-seen";
 import {verifyAdminToken} from "@/lib/server/utils/jwt-utils";
-import {getCookie, getWebRequest} from "@tanstack/react-start/server";
+import {getCookie, getRequest} from "@tanstack/react-start/server";
 
 
 export const ADMIN_COOKIE_NAME = "myListsAdminToken";
 
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getWebRequest();
+    const { headers } = getRequest();
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session) {
@@ -32,7 +32,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(asyn
 
 
 export const managerAuthMiddleware = createMiddleware({ type: "function" }).server(async ({ next }) => {
-    const { headers } = getWebRequest();
+    const { headers } = getRequest();
     const session = await auth.api.getSession({ headers, query: { disableCookieCache: true } });
 
     if (!session || !session.user || session.user.role !== RoleType.MANAGER) {

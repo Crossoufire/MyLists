@@ -1,14 +1,14 @@
 import {eq} from "drizzle-orm";
 import {auth} from "@/lib/server/core/auth";
 import {createServerFn} from "@tanstack/react-start";
-import {getWebRequest} from "@tanstack/react-start/server";
+import {getRequest} from "@tanstack/react-start/server";
 import {userMediaSettings} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
 
 
 export const getCurrentUser = createServerFn({ method: "GET" }).handler(async () => {
-    const { headers } = getWebRequest();
+    const { headers } = getRequest();
     const session = await auth.api.getSession({ headers });
 
     if (!session?.user) {

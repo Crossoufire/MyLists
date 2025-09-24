@@ -12,7 +12,7 @@ import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema,
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => {
+    .inputValidator(data => {
         if (!(data instanceof FormData)) throw new Error("Expected FormData");
         return tryFormZodError(() => generalSettingsSchema.parse(Object.fromEntries(data.entries())));
     })
@@ -50,7 +50,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
@@ -75,7 +75,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(data => tryFormZodError(() => downloadListAsCsvSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(() => downloadListAsCsvSchema.parse(data)))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -85,7 +85,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(data => tryFormZodError(() => passwordSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(() => passwordSettingsSchema.parse(data)))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id.toString());

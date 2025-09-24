@@ -44,7 +44,7 @@ export const checkAdminAuth = createServerFn({ method: "GET" })
 
 export const adminAuth = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware])
-    .validator((data) => data as { password: string })
+    .inputValidator((data) => data as { password: string })
     .handler(async ({ data }) => {
         if (data.password === serverEnv.ADMIN_PASSWORD) {
             const adminToken = createAdminToken();
@@ -78,7 +78,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(searchTypeAdminSchema)
+    .inputValidator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminPaginatedUsers(data);
@@ -95,7 +95,7 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(searchTypeSchema)
+    .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
         return mediadleService.getAdminAllUsersStats(data);
@@ -104,7 +104,7 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(postAdminUpdateUserSchema)
+    .inputValidator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.adminUpdateUser(userId, payload);
@@ -113,7 +113,7 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(adminUpdateAchievementSchema)
+    .inputValidator(adminUpdateAchievementSchema)
     .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.adminUpdateAchievement(achievementId, name, description);
@@ -122,7 +122,7 @@ export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(postAdminUpdateTiersSchema)
+    .inputValidator(postAdminUpdateTiersSchema)
     .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.adminUpdateTiers(tiers);
@@ -136,7 +136,7 @@ export const getAdminTasks = createServerFn({ method: "GET" })
 
 export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(postTriggerLongTasksSchema)
+    .inputValidator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 
@@ -156,7 +156,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
 
 export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(getAdminJobsSchema)
+    .inputValidator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 
@@ -188,7 +188,7 @@ export const getAdminJobs = createServerFn({ method: "GET" })
 
 export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .validator(getAdminJobSchema)
+    .inputValidator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
         const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullmq");
 

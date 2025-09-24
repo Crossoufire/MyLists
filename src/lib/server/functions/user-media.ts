@@ -8,7 +8,7 @@ import {addMediaToListSchema, deleteUserUpdatesSchema, editUserLabelSchema, medi
 
 export const getUserMediaHistory = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(mediaActionSchema)
+    .inputValidator(mediaActionSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.getUserMediaHistory(currentUser.id, mediaType, mediaId);
@@ -17,7 +17,7 @@ export const getUserMediaHistory = createServerFn({ method: "GET" })
 
 export const postAddMediaToList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(addMediaToListSchema)
+    .inputValidator(addMediaToListSchema)
     .handler(async ({ data: { mediaType, mediaId, status }, context: { currentUser } }) => {
         const container = await getContainer();
 
@@ -42,7 +42,7 @@ export const postAddMediaToList = createServerFn({ method: "POST" })
 
 export const postUpdateUserMedia = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(updateUserMediaSchema)
+    .inputValidator(updateUserMediaSchema)
     .handler(async ({ data, context: { currentUser } }) => {
         const { mediaType, mediaId, payload } = data;
 
@@ -70,7 +70,7 @@ export const postUpdateUserMedia = createServerFn({ method: "POST" })
 
 export const postRemoveMediaFromList = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(mediaActionSchema)
+    .inputValidator(mediaActionSchema)
     .handler(async ({ data: { mediaType, mediaId }, context: { currentUser } }) => {
         const container = await getContainer();
         const notifService = container.services.notifications;
@@ -87,7 +87,7 @@ export const postRemoveMediaFromList = createServerFn({ method: "POST" })
 
 export const postDeleteUserUpdates = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(deleteUserUpdatesSchema)
+    .inputValidator(deleteUserUpdatesSchema)
     .handler(async ({ data: { updateIds, returnData }, context: { currentUser } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.deleteUserUpdates(currentUser.id, updateIds, returnData);
@@ -96,7 +96,7 @@ export const postDeleteUserUpdates = createServerFn({ method: "POST" })
 
 export const getUserMediaLabels = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(userMediaLabelsSchema)
+    .inputValidator(userMediaLabelsSchema)
     .handler(async ({ data: { mediaType }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -106,7 +106,7 @@ export const getUserMediaLabels = createServerFn({ method: "GET" })
 
 export const postEditUserLabel = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(editUserLabelSchema)
+    .inputValidator(editUserLabelSchema)
     .handler(async ({ data: { mediaType, mediaId, label, action }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);

@@ -2,7 +2,6 @@ import {MediaType} from "@/lib/server/utils/enums";
 import {adminOverviewOptions} from "@/lib/react-query/query-options/admin-options";
 import {
     achievementOptions,
-    authOptions,
     hallOfFameOptions,
     historyOptions,
     listFiltersOptions,
@@ -15,7 +14,6 @@ import {
 
 
 // --- Inferred Query Options Types -----------------------------------------------------
-export type CurrentUser = Awaited<ReturnType<NonNullable<ReturnType<typeof authOptions>["queryFn"]>>> | undefined;
 export type HistoryOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof historyOptions>["queryFn"]>>>;
 export type ProfileOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof profileOptions>["queryFn"]>>>;
 export type MediaListOptionsType = Awaited<ReturnType<NonNullable<ReturnType<typeof mediaListOptions>["queryFn"]>>>;

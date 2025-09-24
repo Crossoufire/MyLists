@@ -4,16 +4,20 @@ import {serverEnv} from "@/env/server";
 import {betterAuth} from "better-auth";
 import {db} from "@/lib/server/database/db";
 import {sendEmail} from "@/lib/server/utils/mail-sender";
+import {createServerOnlyFn} from "@tanstack/react-start";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {userMediaSettings} from "@/lib/server/database/schema";
 import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
 
 
-export const auth = betterAuth({
+const getAuthConfig = createServerOnlyFn(() => betterAuth({
     appName: "MyLists",
     baseURL: clientEnv.VITE_BASE_URL,
     secret: serverEnv.BETTER_AUTH_SECRET,
+    telemetry: {
+        enabled: false,
+    },
     database: drizzleAdapter(db, {
         provider: "sqlite",
     }),
@@ -157,4 +161,7 @@ export const auth = betterAuth({
     plugins: [
         reactStartCookies(),
     ]
-});
+}));
+
+
+export const auth = getAuthConfig();

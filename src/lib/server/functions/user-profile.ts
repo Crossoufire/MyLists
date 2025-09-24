@@ -48,7 +48,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
 
 export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(updateFollowStatusSchema)
+    .inputValidator(updateFollowStatusSchema)
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -90,7 +90,7 @@ export const getUsersFollows = createServerFn({ method: "GET" })
 
 export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(allUpdatesHistorySchema)
+    .inputValidator(allUpdatesHistorySchema)
     .handler(async ({ data, context: { user } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.getUserUpdatesPaginated(user.id, data);

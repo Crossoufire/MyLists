@@ -3,7 +3,6 @@ import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-
 import {addMediadleGuessSchema, mediadleSuggestionsSchema} from "@/lib/types/zod.schema.types";
 
 
@@ -19,7 +18,7 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
 
 export const getMediadleSuggestions = createServerFn({ method: "GET" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(mediadleSuggestionsSchema)
+    .inputValidator(mediadleSuggestionsSchema)
     .handler(async ({ data: { query } }) => {
         if (query.length < 2) return [];
 
@@ -31,7 +30,7 @@ export const getMediadleSuggestions = createServerFn({ method: "GET" })
 
 export const postAddMediadleGuess = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(addMediadleGuessSchema)
+    .inputValidator(addMediadleGuessSchema)
     .handler(async ({ data: { guess }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediadleService = container.services.mediadle;

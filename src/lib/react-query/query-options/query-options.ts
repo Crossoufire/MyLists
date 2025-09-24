@@ -19,7 +19,6 @@ import {getMediaListFilters, getMediaListSearchFilters, getMediaListServerFuncti
 
 export const queryKeys = {
     achievementPageKey: (username: string) => ["achievementPage", username] as const,
-    authKey: () => ["currentUser"] as const,
     allUpdatesKey: (username: string, filters: SearchType) => ["allUpdates", username, filters] as const,
     dailyMediadleKey: () => ["dailyMediadle"] as const,
     detailsKey: (mediaType: MediaType, mediaId: string | number, external: boolean) => ["details", mediaType, mediaId, external] as const,
@@ -48,8 +47,8 @@ export const queryKeys = {
 };
 
 
-export const authOptions = () => queryOptions({
-    queryKey: queryKeys.authKey(),
+export const authOptions = queryOptions({
+    queryKey: ["currentUser"],
     queryFn: () => getCurrentUser(),
     staleTime: 10 * 60 * 1000,
 });

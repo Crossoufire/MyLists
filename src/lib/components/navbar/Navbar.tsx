@@ -12,7 +12,7 @@ import {RegisterForm} from "@/lib/components/auth/RegisterForm";
 import {NavMediaDrop} from "@/lib/components/navbar/NavMediaDrop";
 import {NavMediaItem} from "@/lib/components/navbar/NavMediaItem";
 import {Notifications} from "@/lib/components/navbar/Notifications";
-import {queryKeys} from "@/lib/react-query/query-options/query-options";
+import {authOptions} from "@/lib/react-query/query-options/query-options";
 import {Link as NavLink, useNavigate, useRouter} from "@tanstack/react-router";
 import {Popover, PopoverClose, PopoverContent, PopoverTrigger} from "@/lib/components/ui/popover";
 import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/lib/components/ui/sheet";
@@ -33,7 +33,7 @@ export const Navbar = () => {
     const logoutUser = async () => {
         await authClient.signOut();
         await router.invalidate();
-        queryClient.setQueryData(queryKeys.authKey(), null);
+        queryClient.setQueryData(authOptions.queryKey, null);
         await navigate({ to: "/", replace: true });
         queryClient.removeQueries();
     };

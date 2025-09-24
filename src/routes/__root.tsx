@@ -15,12 +15,18 @@ import {createRootRouteWithContext, HeadContent, Outlet, Scripts, useLocation} f
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    beforeLoad: async ({ context: { queryClient } }) => queryClient.fetchQuery(authOptions()),
+    beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
     head: () => ({
         meta: [
             { charSet: "utf-8" },
             { name: "viewport", content: "width=device-width, initial-scale=1" },
             { title: "MyLists" },
+            {
+                name: "description",
+                content: "MyLists is your go-to platform for organizing your favorite series, anime, movies, games, and books. " +
+                    "With a clean and user-friendly interface, it regroups the functionalities of multiple sites into one. " +
+                    "MyLists integrates features such as total viewing time, comments, favorites, and more."
+            },
         ],
         links: [{ rel: "stylesheet", href: appCSS }],
     }),
@@ -44,7 +50,7 @@ function RootDocument({ children }: { readonly children: React.ReactNode }) {
     const isAdminRoute = location.pathname.startsWith("/admin");
 
     return (
-        <html suppressHydrationWarning>
+        <html lang="en" suppressHydrationWarning>
         <head>
             <HeadContent/>
         </head>

@@ -1,10 +1,10 @@
 import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
+import {serverEnv} from "@/env/server";
 import {promises as fsPromises} from "node:fs";
 import {CoverType} from "@/lib/types/base.types";
 import {FormattedError} from "@/lib/server/utils/error-classes";
-import {serverEnv} from "@/env/server";
 
 
 interface ResizeOptions {

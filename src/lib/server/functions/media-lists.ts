@@ -4,13 +4,12 @@ import {tryNotFound} from "@/lib/server/utils/try-not-found";
 import {FormattedError} from "@/lib/server/utils/error-classes";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
 import {MediaListDataByType} from "@/lib/server/domain/media/base/base.repository";
-
 import {mediaListFiltersSchema, mediaListSchema, mediaListSearchFiltersSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getMediaListServerFunction = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => tryNotFound(() => mediaListSchema.parse(data)))
+    .inputValidator((data) => tryNotFound(() => mediaListSchema.parse(data)))
     .handler(async ({ data, context: { currentUser, user } }) => {
         const { mediaType, args } = data;
         const container = await getContainer();
@@ -35,7 +34,7 @@ export const getMediaListServerFunction = createServerFn({ method: "GET" })
 
 export const getMediaListFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => mediaListFiltersSchema.parse(data))
+    .inputValidator((data) => mediaListFiltersSchema.parse(data))
     .handler(async ({ data: { mediaType }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
@@ -45,7 +44,7 @@ export const getMediaListFilters = createServerFn({ method: "GET" })
 
 export const getMediaListSearchFilters = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => mediaListSearchFiltersSchema.parse(data))
+    .inputValidator((data) => mediaListSearchFiltersSchema.parse(data))
     .handler(async ({ data: { mediaType, query, job }, context: { user } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(mediaType);
