@@ -1,5 +1,5 @@
-import {ResolvedConfig} from "vite";
 import {join, resolve} from "node:path";
+import {PluginOption, ResolvedConfig} from "vite";
 import {existsSync, writeFileSync} from "node:fs";
 
 
@@ -79,6 +79,8 @@ export default function honoServerPlugin(userOptions: Partial<HonoServerPluginOp
     };
 
     return {
+        apply: "build",
+        enforce: "post",
         name: "vite-plugin-hono-server",
         configResolved(resolvedConfig: ResolvedConfig) {
             config = resolvedConfig;
@@ -108,5 +110,5 @@ export default function honoServerPlugin(userOptions: Partial<HonoServerPluginOp
                 console.error("[vite-plugin-hono-server] Failed to generate server script:", err);
             }
         },
-    };
+    } satisfies PluginOption;
 }
