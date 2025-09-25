@@ -2,6 +2,7 @@
 
 ## KNOWN BUGS:
 
+- KNOWN_BUG: `dotenv.config()` in `vite.config.ts` not be necessary (auto-load `.env` normally)
 - KNOWN_BUG: When using `react-compiler` with `tanstack-table` selected rows and pages does not work.
 - KNOWN_BUG: `redirect` does not work with function middlewares, need global middleware to manually re-throw error.
 

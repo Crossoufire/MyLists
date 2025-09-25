@@ -9,7 +9,7 @@ export default defineConfig({
     build: {
         target: "esnext",
         copyPublicDir: false,
-        outDir: ".output/worker",
+        outDir: "dist/worker",
         ssr: "src/lib/server/core/bullmq/worker.ts",
     },
 })

@@ -11,7 +11,7 @@ export default defineConfig({
         target: "esnext",
         emptyOutDir: true,
         copyPublicDir: false,
-        outDir: ".output/cli",
+        outDir: "dist/cli",
         ssr: "src/cli/index.ts",
     },
 })
