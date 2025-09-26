@@ -3,7 +3,7 @@ import {MediaTitle} from "@/lib/client/components/media/base/MediaTitle";
 
 
 interface DisplayAllEpsPerSeasonProps {
-    epsPerSeason: EpsPerSeasonType;
+    epsPerSeason: EpsPerSeasonType[];
 }
 
 

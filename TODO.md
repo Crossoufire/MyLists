@@ -14,5 +14,6 @@
 
 ## TODO AFTER PROD
 
-- TODO: Redo the Follows/Followers page in profile (very ugly in mobile and not great in desktop)
+- TODO: Redo the Follows/Followers page in `profile` (very ugly in mobile and not great in desktop)
 - TODO: Where possible directly use `queryOptions` instead of `queryKeys` in `useMutation` (better inference)
+- TODO: `ProviderService` should use `BaseService` instead of `BaseRepository` directly (`updateMediaWithDetails` business logic for TV in Service)

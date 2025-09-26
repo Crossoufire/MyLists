@@ -8,7 +8,7 @@ import {tanstackStart} from "@tanstack/react-start/plugin/vite";
 import honoServerPlugin from "./vite-plugins/hono-server-plugin";
 
 
-// TODO: To be removed, bug since RC, .env should be automatically loaded
+// TODO: To be removed, bug since RC, .env should be automatically loaded in dev
 config();
 
 

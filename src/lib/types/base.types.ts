@@ -104,7 +104,7 @@ export type AddedMediaDetails = {
     authors?: IdNamePair[];
     networks?: IdNamePair[];
     platforms?: IdNamePair[];
-    epsPerSeason?: EpsPerSeasonType;
+    epsPerSeason?: EpsPerSeasonType[];
     collection?: { mediaId: number, mediaName: string, mediaCover: string }[];
     companies?: { id: number, name: string, developer: boolean, publisher: boolean }[];
 };
@@ -215,7 +215,7 @@ export type FilterDefinitions = Partial<Record<keyof MediaListArgs, FilterDefini
 
 export type NameValuePair = { name: string | number, value: number | string };
 
-export type EpsPerSeasonType = { season: number, episodes: number }[];
+export type EpsPerSeasonType = { season: number, episodes: number };
 
 export type AdvancedMediaStats = {
     totalLabels: number,

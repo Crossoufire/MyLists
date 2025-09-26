@@ -232,8 +232,7 @@ export class TmdbTransformer {
             }),
         };
 
-        const seasonsData = rawData?.seasons
-            ?.filter((season) => season.season_number && season.season_number > 0)
+        const seasonsData = rawData?.seasons?.filter((season) => season.season_number && season.season_number > 0)
             .map((season) => ({
                 season: season.season_number,
                 episodes: season.episode_count,

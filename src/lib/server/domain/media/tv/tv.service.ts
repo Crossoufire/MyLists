@@ -1,10 +1,10 @@
-import {eq, getTableName, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
 import {DeltaStats} from "@/lib/types/stats.types";
-import {Achievement} from "@/lib/types/achievements.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {eq, getTableName, isNotNull} from "drizzle-orm";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {Achievement} from "@/lib/types/achievements.types";
 import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
 import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AnimeSchemaConfig} from "@/lib/server/domain/media/tv/anime/anime.config";
@@ -225,15 +225,21 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
     }
 
     async updateRedoHandler(currentState: TvList, payload: RedoTvPayload, media: TvType): Promise<[TvList, LogPayload]> {
-        const newState = { ...currentState, redo2: payload.redo2 };
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
+
+        // Safety check - Should not happen
+        if (currentState.redo2?.length !== epsPerSeason.length || payload.redo2?.length !== epsPerSeason.length) {
+            throw new FormattedError("Sorry, an error occurred. This will be fixed shortly.", true);
+        }
+
+        const newState = { ...currentState, redo2: payload.redo2 };
 
         const logPayload = {
             oldValue: currentState.redo2.reduce((a, b) => a + b, 0),
             newValue: payload.redo2.reduce((a, b) => a + b, 0),
         };
 
-        const redoDiff: number[] = newState.redo2.map((val: number, idx: number) => val - currentState.redo2[idx]);
+        const redoDiff = newState.redo2.map((val, i) => val - currentState.redo2[i]);
         const valuesToApply = redoDiff.reduce((sum, diff, i) => sum + diff * epsPerSeason[i].episodes, 0);
         newState.total = (currentState?.total ?? 0) + (valuesToApply ?? 0);
 
@@ -251,12 +257,12 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         }
 
         if (payload.status === Status.COMPLETED) {
-            const addedEpisodes = epsPerSeason.reduce((a, b) => a + b.episodes, 0);
-            const oldTotal = currentState.redo2.reduce((a, b, i) => a + b * epsPerSeason[i].episodes, 0);
-
+            const sumEpisodesTv = epsPerSeason.reduce((a, b) => a + b.episodes, 0);
+            const sumOldRedoEps = currentState.redo2.reduce((a, b, i) => a + b * epsPerSeason[i].episodes, 0);
+            
+            newState.total = sumEpisodesTv + sumOldRedoEps;
             newState.currentSeason = epsPerSeason.at(-1)!.season;
             newState.lastEpisodeWatched = epsPerSeason.at(-1)!.episodes;
-            newState.total = addedEpisodes + oldTotal;
         }
         else if (specialStatuses.includes(payload.status)) {
             newState.total = 0;
@@ -270,7 +276,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
     async updateEpsSeasonsHandler(currentState: TvList, payload: EpsSeasonPayload, media: TvType): Promise<[TvList, LogPayload]> {
         const epsPerSeason = await this.repository.getMediaEpsPerSeason(media.id);
-        const epsPerSeasonList = epsPerSeason.map((eps) => eps.episodes);
+        const epsPerSeasList = epsPerSeason.map((eps) => eps.episodes);
 
         if (payload.currentSeason) {
             if (payload.currentSeason > epsPerSeason.length) {
@@ -283,8 +289,8 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
                 newValue: [payload.currentSeason, 1],
             }
 
-            const newWatched = epsPerSeasonList.slice(0, payload.currentSeason - 1).reduce((a, b) => a + b, 0) + 1;
-            const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasonList[i], 0);
+            const newWatched = epsPerSeasList.slice(0, payload.currentSeason - 1).reduce((a, b) => a + b, 0) + 1;
+            const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
 
             newState.total = newTotal
             newState.lastEpisodeWatched = 1;
@@ -303,11 +309,11 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
                 newValue: [currentState.currentSeason, payload.lastEpisodeWatched],
             }
 
-            const newWatched = epsPerSeasonList
+            const newWatched = epsPerSeasList
                 .slice(0, currentState.currentSeason - 1)
                 .reduce((a, b) => a + b, 0) + payload.lastEpisodeWatched;
 
-            newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasonList[i], 0);
+            newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
 
             return [newState, logPayload] as [TvList, LogPayload];
         }
