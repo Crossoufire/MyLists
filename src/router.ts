@@ -4,8 +4,8 @@ import {createRouter} from "@tanstack/react-router";
 import {NotFound} from "@/lib/client/components/general/NotFound";
 import {DefaultLoader} from "@/lib/client/components/general/DefaultLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
-import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
 import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
+import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
 
 
 export function getRouter() {
