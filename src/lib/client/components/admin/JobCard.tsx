@@ -135,6 +135,7 @@ interface ParsedLog {
     msg: string;
     raw: string;
     level: number;
+    durationMs?: number,
     time: number | null;
     data: Record<string, any> | null;
 }
@@ -143,7 +144,7 @@ interface ParsedLog {
 function LogViewer({ logsData }: { logsData: string[] }) {
     const [expandedLogs, setExpandedLogs] = useState(() => new Set<number>());
 
-    const parseLogLine = (logLine: string) => {
+    const parseLogLine = (logLine: string): ParsedLog => {
         try {
             const parsed = JSON.parse(logLine);
             return {
@@ -152,6 +153,7 @@ function LogViewer({ logsData }: { logsData: string[] }) {
                 time: parsed.time,
                 level: parsed.level,
                 data: { ...parsed },
+                durationMs: parsed.durationMs,
             };
         }
         catch {
@@ -167,13 +169,13 @@ function LogViewer({ logsData }: { logsData: string[] }) {
 
     const getLevelInfo = (level: number) => {
         if (level >= 50) {
-            return { label: "ERROR", color: "text-red-400", bg: "bg-red-950", icon: XCircle };
+            return { label: "ERROR", color: "text-red-400", icon: XCircle };
         }
         else if (level >= 40) {
-            return { label: "WARN", color: "text-yellow-400", bg: "bg-yellow-950", icon: AlertCircle };
+            return { label: "WARN", color: "text-yellow-400", icon: AlertCircle };
         }
         else {
-            return { label: "INFO", color: "text-blue-400", bg: "bg-blue-950", icon: Info };
+            return { label: "INFO", color: "text-blue-400", icon: Info };
         }
     };
 
@@ -202,12 +204,12 @@ function LogViewer({ logsData }: { logsData: string[] }) {
     };
 
     const hasAdditionalData = (log: ParsedLog) => {
-        if (!log.data) return false;
+        if (!log.data || log.level < 40) return false;
 
         const keys = Object.keys(log.data);
         const standardKeys = ["level", "time", "msg", "pid", "hostname"];
 
-        return keys.some(key => !standardKeys.includes(key));
+        return keys.some((key) => !standardKeys.includes(key));
     };
 
     return (
@@ -222,7 +224,7 @@ function LogViewer({ logsData }: { logsData: string[] }) {
                 return (
                     <div
                         key={idx}
-                        className={`border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900 transition-colors ${levelInfo.bg} bg-opacity-5`}
+                        className="border-b border-zinc-800 last:border-b-0 hover:bg-zinc-900 transition-colors bg-opacity-5"
                     >
                         <div className="px-3 py-2 flex items-start gap-2">
                             <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${levelInfo.color}`}/>
@@ -230,9 +232,13 @@ function LogViewer({ logsData }: { logsData: string[] }) {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-start gap-2">
                                     {showExpandButton &&
-                                        <Button onClick={() => toggleExpanded(idx)} className="text-zinc-500 hover:text-zinc-300 mt-0.5">
-                                            {isExpanded ? <ChevronDown className="w-3 h-3"/> : <ChevronRight className="w-3 h-3"/>}
-                                        </Button>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleExpanded(idx)}
+                                            className="text-zinc-500 hover:text-zinc-300 mt-0.5"
+                                        >
+                                            {isExpanded ? <ChevronDown className="size-3"/> : <ChevronRight className="size-3"/>}
+                                        </button>
                                     }
 
                                     <div className="flex-1">
@@ -245,12 +251,17 @@ function LogViewer({ logsData }: { logsData: string[] }) {
                                                     {formatTime(log.time)}
                                                 </span>
                                             }
+                                            {log.durationMs &&
+                                                <span className="text-xs text-zinc-500 font-mono">
+                                                    [{log.durationMs} ms]
+                                                </span>
+                                            }
                                             <span className="text-sm text-zinc-200 break-words">
                                                 {log.msg}
                                             </span>
                                         </div>
 
-                                        {isExpanded && log.data &&
+                                        {isExpanded && log.data && log.level >= 30 &&
                                             <div className="mt-2 p-2 bg-zinc-900 rounded text-xs font-mono overflow-auto">
                                                 <pre className="text-zinc-300 whitespace-pre-wrap break-words">
                                                     {JSON.stringify(

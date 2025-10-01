@@ -67,8 +67,6 @@ export class TasksService {
 
         try {
             await taskHandler();
-            const duration = Date.now() - startTime;
-            taskLogger.info({ durationMs: duration }, "Task completed");
         }
         catch (err: any) {
             taskLogger.error({ err }, "Task execution failed");
@@ -132,7 +130,7 @@ export class TasksService {
             const dbCoverSet = new Set(dbCoverFilenames);
 
             const filesOnDisk = await fs.promises.readdir(coversDirectoryPath);
-            this.logger.info(`Found ${filesOnDisk.length} files in directory:`);
+            this.logger.info(`Found ${filesOnDisk.length} files in directory`);
 
             const coversToDelete = filesOnDisk.filter((filename) => !dbCoverSet.has(filename) && filename !== "default.jpg");
             if (coversToDelete.length === 0) {
