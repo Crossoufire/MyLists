@@ -225,7 +225,7 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
         const mylistsLongTaskQueue = await getQueue();
 
         if (!mylistsLongTaskQueue) {
-            return { count: 1, logs: ["Job logging is disabled in development mode."] };
+            return { count: 1, logs: ["Job logging is disabled in dev mode."] };
         }
 
         try {
