@@ -1,16 +1,17 @@
-import {useAuth} from "@/lib/client/hooks/use-auth";
+import {cn} from "@/lib/utils/helpers";
 import {useQuery} from "@tanstack/react-query";
+import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
+import React, {useEffect, useRef, useState} from "react";
 import {Button} from "@/lib/client/components/ui/button";
 import {useDebounce} from "@/lib/client/hooks/use-debounce";
+import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {useSheet} from "@/lib/client/contexts/sheet-context";
-import {Link, LinkProps} from "@tanstack/react-router";
 import {Separator} from "@/lib/client/components/ui/separator";
-import React, {useEffect, useRef, useState} from "react";
 import {capitalize, formatDateTime} from "@/lib/utils/functions";
 import {useOnClickOutside} from "@/lib/client/hooks/use-clicked-outside";
-import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {ChevronLeft, ChevronRight, LoaderCircle, Search} from "lucide-react";
+import {Link, LinkProps, useRouter, useRouterState} from "@tanstack/react-router";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
 import {Command, CommandEmpty, CommandItem, CommandList} from "@/lib/client/components/ui/command";
 import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
@@ -86,28 +87,23 @@ export const SearchBar = () => {
                     <Command>
                         <CommandList className="max-h-[350px] overflow-y-auto">
                             {isLoading &&
-                                <div className="flex items-center justify-center p-4">
-                                    <LoaderCircle className="h-6 w-6 animate-spin"/>
+                                <div className="flex items-center justify-center p-3.5">
+                                    <LoaderCircle className="size-6 animate-spin"/>
                                 </div>
                             }
-                            {error ?
-                                (error as any)?.status === 429 ?
-                                    <CommandEmpty>Too many requests. Please wait and try again.</CommandEmpty>
-                                    :
-                                    <CommandEmpty>An error occurred. Please try again.</CommandEmpty>
-                                : null
+                            {error &&
+                                <CommandEmpty className="px-3">{error.message}</CommandEmpty>
                             }
                             {searchResults && searchResults.data.length === 0 &&
                                 <CommandEmpty>No results found.</CommandEmpty>
                             }
-                            {searchResults && searchResults.data.length > 0 &&
-                                searchResults.data.map((item) =>
-                                    <SearchComponent
-                                        item={item}
-                                        key={item.id}
-                                        resetSearch={resetSearch}
-                                    />
-                                )}
+                            {searchResults && searchResults.data.length > 0 && searchResults.data.map((item) =>
+                                <SearchComponent
+                                    item={item}
+                                    key={item.id}
+                                    resetSearch={resetSearch}
+                                />
+                            )}
                         </CommandList>
                         <div className="flex justify-end gap-2 items-center p-4">
                             <Button
@@ -142,13 +138,24 @@ interface SearchComponentProps {
 
 
 const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
+    const router = useRouter();
     const { setSheetOpen } = useSheet();
     const destination = createDestParams();
     const imageHeight = (item.itemType === ApiProviderType.USERS) ? 64 : 96;
+    const routerStatus = useRouterState({ select: (state) => state.status });
+    const [clickedApiId, setClickedApiId] = useState<number | string | null>(null);
+
+    const isLoading = routerStatus === "pending";
+    const isLoadingItem = isLoading && (clickedApiId === item.id);
 
     const handleLinkClick = () => {
-        resetSearch();
-        setSheetOpen(false);
+        if (isLoading) return;
+
+        setClickedApiId(item.id);
+        router.subscribe("onResolved", () => {
+            resetSearch();
+            setSheetOpen(false);
+        });
     };
 
     function createDestParams(): LinkProps {
@@ -163,16 +170,23 @@ const SearchComponent = ({ item, resetSearch }: SearchComponentProps) => {
     }
 
     return (
-        <Link {...destination} onClick={handleLinkClick}>
-            <CommandItem key={item.id} className="cursor-pointer py-2">
+        <Link {...destination} onClick={handleLinkClick} disabled={isLoading}>
+            <CommandItem key={item.id} className={cn("cursor-pointer py-2", isLoadingItem && "cursor-auto")}>
                 <div className="flex gap-4 items-center">
-                    <img
-                        alt={item.name}
-                        src={item.image}
-                        height={imageHeight}
-                        className={"w-16 rounded-sm"}
-                    />
-                    <div>
+                    <div className="relative">
+                        <img
+                            alt={item.name}
+                            src={item.image}
+                            height={imageHeight}
+                            className={cn("w-16 rounded-sm transition-opacity duration-200", isLoadingItem && "opacity-40")}
+                        />
+                        {isLoadingItem &&
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <LoaderCircle className="size-8 animate-spin text-white"/>
+                            </div>
+                        }
+                    </div>
+                    <div className={cn("transition-opacity duration-200", isLoadingItem && "opacity-40")}>
                         <div className="font-semibold mb-2 line-clamp-2">{item.name}</div>
                         <div className="text-neutral-300">{capitalize(item.itemType)}</div>
                         <div className="text-muted-foreground text-sm">

@@ -1,4 +1,4 @@
-import z from "zod/v4";
+import z from "zod";
 
 
 export class FormattedError extends Error {
@@ -6,8 +6,8 @@ export class FormattedError extends Error {
 
     constructor(message: string, sendMail?: boolean) {
         super(message);
-        this.name = "FormattedError";
         this.sendMail = sendMail;
+        this.name = "FormattedError";
 
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, FormattedError);

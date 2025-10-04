@@ -1,28 +1,26 @@
 import React, {useState} from "react";
+import {useQuery} from "@tanstack/react-query";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Card} from "@/lib/client/components/ui/card";
+import {formatDateTime} from "@/lib/utils/functions";
 import {Input} from "@/lib/client/components/ui/input";
 import {Badge} from "@/lib/client/components/ui/badge";
-import {formatDateTime} from "@/lib/utils/functions";
-import {createFileRoute, Link} from "@tanstack/react-router";
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {ApiProviderType, MediaType} from "@/lib/utils/enums";
+import {createFileRoute, Link} from "@tanstack/react-router";
+import {PageTitle} from "@/lib/client/components/general/PageTitle";
 import {navSearchOptions} from "@/lib/client/react-query/query-options/query-options";
-import {BookImage, Cat, Gamepad2, Library, Monitor, Popcorn, Search, User} from "lucide-react";
+import {BookImage, Cat, Gamepad2, Library, LoaderCircle, Monitor, Popcorn, Search, User, X} from "lucide-react";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 
 
-type GlobalSearch = { query?: string, apiProvider?: ApiProviderType };
+type GlobalSearch = {
+    query?: string,
+    apiProvider?: ApiProviderType,
+};
 
 
 export const Route = createFileRoute("/_main/_private/search")({
     validateSearch: (search) => search as GlobalSearch,
-    loaderDeps: ({ search }) => ({ search }),
-    loader: ({ context: { queryClient }, deps: { search } }) => {
-        const { query = DEFAULT.query, apiProvider = DEFAULT.apiProvider } = search;
-        return queryClient.ensureQueryData(navSearchOptions(query, 1, apiProvider));
-    },
     component: SearchPage,
 });
 
@@ -35,10 +33,9 @@ function SearchPage() {
     const filters = Route.useSearch();
     const navigate = Route.useNavigate();
     const { query = DEFAULT.query, apiProvider = DEFAULT.apiProvider } = filters;
-
     const [selectDrop, setSelectDrop] = useState(apiProvider);
     const [currentSearch, setCurrentSearch] = useState(query);
-    const apiData = useSuspenseQuery(navSearchOptions(query, 1, apiProvider)).data;
+    const { data: apiData, isLoading, error } = useQuery(navSearchOptions(query, 1, apiProvider));
 
     const fetchData = async (params: GlobalSearch) => {
         await navigate({ search: params });
@@ -93,7 +90,13 @@ function SearchPage() {
                 </Select>
             </div>
 
-            {apiData.data.length > 0 &&
+            {isLoading &&
+                <div className="flex items-center justify-center p-3.5">
+                    <LoaderCircle className="size-8 animate-spin"/>
+                </div>
+            }
+
+            {apiData && apiData.data.length > 0 &&
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-2xl font-semibold text-foreground">
@@ -139,17 +142,17 @@ function SearchPage() {
                 </div>
             }
 
-            {(apiData.data.length === 0 && query) &&
+            {apiData && apiData.data.length === 0 &&
                 <div className="text-center py-12">
                     <div className="text-muted-foreground">
-                        <Search className="size-10 mx-auto mb-4 opacity-70"/>
+                        <Search className="size-10 mx-auto opacity-70"/>
                         <p className="text-lg font-medium">No results found</p>
                         <p>Try adjusting your search query or selecting a different provider</p>
                     </div>
                 </div>
             }
 
-            {(apiData.data.length === 0 && !query) &&
+            {!query && !apiData &&
                 <div className="text-center py-10">
                     <div className="text-muted-foreground mb-8">
                         <div className="flex justify-center gap-4 mb-6">
@@ -162,7 +165,17 @@ function SearchPage() {
                             <User className="size-8 opacity-70"/>
                         </div>
                         <p className="text-xl font-medium">Ready to search</p>
-                        <p>Enter your search query to get started</p>
+                        <p>Enter your query to get started!</p>
+                    </div>
+                </div>
+            }
+
+            {error &&
+                <div className="text-center py-12">
+                    <div className="text-muted-foreground">
+                        <X className="size-10 mx-auto opacity-70"/>
+                        <p className="text-lg font-medium">An Error Occurred</p>
+                        <p>{error.message}</p>
                     </div>
                 </div>
             }

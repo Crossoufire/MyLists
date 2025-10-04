@@ -1,11 +1,11 @@
-import {useAuth} from "@/lib/client/hooks/use-auth";
 import {capitalize} from "@/lib/utils/functions";
-import {Button} from "@/lib/client/components/ui/button";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {MediaType, RoleType} from "@/lib/utils/enums";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {createFileRoute} from "@tanstack/react-router";
+import {Button} from "@/lib/client/components/ui/button";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
-import {MediaType, RoleType} from "@/lib/utils/enums";
 import {AvatarCircles} from "@/lib/client/components/ui/avatar-circles";
 import {SimilarMedia} from "@/lib/client/components/media/base/SimilarMedia";
 import {MediaFollowCard} from "@/lib/client/components/media/base/MediaFollowCard";
@@ -70,7 +70,7 @@ function MediaDetailsPage() {
                             <img
                                 alt="media-cover"
                                 src={apiData.media.imageCover}
-                                className={"w-[300px] h-[450px] rounded-md"}
+                                className="w-[300px] h-[450px] rounded-md"
                             />
                             {apiData.userMedia ?
                                 <UserMediaDetails

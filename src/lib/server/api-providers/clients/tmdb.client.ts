@@ -31,7 +31,7 @@ export class TmdbClient extends BaseClient {
         return new TmdbClient(tmdbLimiter, TmdbClient.consumeKey);
     }
 
-    async search(query: string, page: number = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
+    async search(query: string, page = 1): Promise<SearchData<TmdbMultiSearchResponse>> {
         const url = `${this.baseUrl}/search/multi?api_key=${this.apiKey}&query=${query}&page=${page}`;
         const response = await this.call(url);
         return {

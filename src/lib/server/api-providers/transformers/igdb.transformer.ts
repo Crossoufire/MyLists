@@ -41,7 +41,7 @@ export class IgdbTransformer {
             gameEngine: rawData?.game_engines?.[0]?.name,
             playerPerspective: rawData?.player_perspectives?.[0]?.name,
             gameModes: rawData?.game_modes?.map((mode: any) => mode?.name).join(","),
-            releaseDate: rawData?.first_release_date ? new Date(rawData?.first_release_date * 1000).toISOString() : null,
+            releaseDate: rawData.first_release_date ? new Date(rawData.first_release_date * 1000).toISOString() : null,
             hltbMainTime: null,
             hltbMainAndExtraTime: null,
             hltbTotalCompleteTime: null,
@@ -75,14 +75,19 @@ export class IgdbTransformer {
             }));
         const platformsData = rawData?.platforms?.map((platform) => ({ name: platform.name }));
 
-        return { mediaData, companiesData, platformsData, genresData }
+        return { mediaData, companiesData, platformsData, genresData };
     }
 
     addHLTBDataToMainDetails(hltbData: HltbGameEntry, mediaData: Games) {
-        mediaData.hltbMainTime = Number(hltbData.mainStory)
-        mediaData.hltbMainAndExtraTime = Number(hltbData.mainExtra)
-        mediaData.hltbTotalCompleteTime = Number(hltbData.completionist)
+        const mainTime = Number(hltbData.mainStory);
+        mediaData.hltbMainTime = isNaN(mainTime) ? null : mainTime;
 
-        return mediaData
+        const mainExtraTime = Number(hltbData.mainExtra);
+        mediaData.hltbMainAndExtraTime = isNaN(mainExtraTime) ? null : mainExtraTime;
+
+        const completionistTime = Number(hltbData.completionist);
+        mediaData.hltbTotalCompleteTime = isNaN(completionistTime) ? null : completionistTime;
+
+        return mediaData;
     }
 }

@@ -12,8 +12,8 @@ export interface ProviderSearchResult {
     name: string;
     image: string;
     id: number | string;
-    itemType: MediaType | ApiProviderType;
     date: string | number | undefined | null;
+    itemType: MediaType | typeof ApiProviderType.USERS;
 }
 
 
@@ -295,10 +295,10 @@ export interface TmdbMovieDetails {
     popularity: number;
     vote_average: number;
     genres: IdNamePair[];
-    release_date: string;
     original_title: string;
     original_language: string;
     poster_path: string | null;
+    release_date: string | null;
     backdrop_path: string | null;
     belongs_to_collection: {
         id: number,

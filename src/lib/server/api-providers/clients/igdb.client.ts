@@ -1,6 +1,6 @@
 import {serverEnv} from "@/env/server";
+import {notFound} from "@tanstack/react-router";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {FormattedError} from "@/lib/utils/error-classes";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 import {IgdbGameDetails, IgdbSearchResponse, IgdbTokenResponse, SearchData} from "@/lib/types/provider.types";
@@ -68,7 +68,7 @@ export class IgdbClient extends BaseClient {
 
         const rawData = await response.json() as IgdbGameDetails[];
         if (rawData.length === 0) {
-            throw new FormattedError("Games not found");
+            throw notFound();
         }
 
         return rawData[0];

@@ -117,8 +117,8 @@ export class TmdbTransformer {
             originalLanguage: rawData?.original_language,
             collectionId: rawData?.belongs_to_collection?.id,
             duration: rawData?.runtime ?? this.moviesDefaultDuration,
-            releaseDate: new Date(rawData?.release_date).toISOString(),
             directorName: rawData?.credits?.crew?.find((crew) => crew.job === "Director")?.name,
+            releaseDate: rawData.release_date ? new Date(rawData.release_date).toISOString() : null,
             compositorName: rawData?.credits?.crew?.find((crew) => crew.job === "Original Music Composer")?.name,
             imageCover: await saveImageFromUrl({
                 dirSaveName: "movies-covers",

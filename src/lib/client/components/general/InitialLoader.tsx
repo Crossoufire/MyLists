@@ -1,9 +1,9 @@
 import {LoaderCircle} from "lucide-react";
 
 
-export const DefaultLoader = () => {
+export const InitialLoader = () => {
     return (
-        <div className="flex items-center justify-center min-h-[calc(100vh_-_400px)]">
+        <div className="flex items-center justify-center min-h-[calc(100vh_-_360px)]">
             <LoaderCircle className="size-12 animate-spin"/>
         </div>
     );

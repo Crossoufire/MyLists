@@ -5,15 +5,6 @@ import {sendAdminErrorMail} from "@/lib/utils/mail-sender";
 import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 
 
-function createCleanError(originalError: Error, message?: string): Error {
-    const cleanError = new Error(message ? message : originalError.message);
-    cleanError.name = originalError.name;
-    delete cleanError.stack;
-
-    return cleanError;
-}
-
-
 /**
  * Error Types and Logic
  * redirect: thrown in code but returned and handled frontend side by tanstack router.
@@ -33,9 +24,8 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
         return results;
     }
     catch (err: any) {
-        console.log({ err: { ...err } });
         if (process.env.NODE_ENV !== "production") {
-            console.error("Error:", err);
+            console.error("Error:", { err });
         }
         if ("options" in err && isRedirect(err)) {
             throw err;
@@ -44,7 +34,7 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
             if (err?.sendMail && process.env.NODE_ENV === "production") {
                 await sendAdminErrorMail(err, "A Specific Formatted Error occurred");
             }
-            throw createCleanError(err);
+            throw err;
         }
         else if (err instanceof FormZodError) {
             throw err;
@@ -53,13 +43,13 @@ export const errorMiddleware = createMiddleware({ type: "function" }).server(asy
             if (process.env.NODE_ENV === "production") {
                 await sendAdminErrorMail(err, "A Validation error occurred");
             }
-            throw createCleanError(err, "A Validation error occurred. Please try again later.");
+            throw new Error("A Validation error occurred. Please try again later.");
         }
         else {
             if (process.env.NODE_ENV === "production") {
                 await sendAdminErrorMail(err, "An unexpected error occurred");
             }
-            throw createCleanError(err, "An Unexpected error occurred. Please try again later.");
+            throw new Error("An Unexpected error occurred. Please try again later.");
         }
     }
 });

@@ -1,6 +1,6 @@
 /// <reference types="vite/client"/>
-import React from "react";
 import appCSS from "@/styles.css?url";
+import React from "react";
 import {QueryClient} from "@tanstack/react-query";
 import {Toaster} from "@/lib/client/components/ui/sonner";
 import {TanStackDevtools} from "@tanstack/react-devtools";
@@ -15,7 +15,8 @@ import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstac
 
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-    beforeLoad: async ({ context: { queryClient } }) => queryClient.prefetchQuery(authOptions),
+    ssr: false,
+    beforeLoad: ({ context: { queryClient } }) => queryClient.fetchQuery(authOptions),
     head: () => ({
         meta: [
             { charSet: "utf-8" },
@@ -32,7 +33,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     }),
     component: RootComponent,
     shellComponent: RootComponent,
-    ssr: false,
 });
 
 
@@ -81,3 +81,4 @@ function RootComponent() {
         </html>
     );
 }
+

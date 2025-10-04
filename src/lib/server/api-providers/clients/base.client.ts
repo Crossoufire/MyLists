@@ -14,58 +14,57 @@ export class BaseClient {
     }
 
     async call(url: string, method: "post" | "get" = "get", options: RequestInit = {}) {
-        const fetchOperation = async () => {
-            const fetchOptions: RequestInit = {
+        try {
+            await this.limiter.consume(this.consumeKey);
+
+            const response = await fetch(url, {
                 method: method.toUpperCase(),
+                signal: AbortSignal.timeout(8_000),
                 ...options,
-            };
-
-            const response = await fetch(url, fetchOptions);
+            });
+            
             if (!response.ok) {
-                let errorBody = response.statusText;
-
-                try {
-                    const text = await response.text();
-                    errorBody = text || response.statusText;
-                }
-                catch {
-                    // Intentionally left empty. Failed to read response body, so falling back to statusText.
-                }
-
-                if (response.status === 404) {
-                    throw notFound();
-                }
-
-                const error = new Error(`API Error: ${response.status} ${errorBody}`);
-                (error as any).status = response.status;
-
-                throw error;
+                this._handleErrorResponse(response);
             }
 
             return response;
-        };
-
-        try {
-            await this.limiter.consume(this.consumeKey);
-            return await fetchOperation();
         }
         catch (err) {
-            if (err instanceof Error) {
-                console.error(`Rate limiter encountered an unexpected error for key "${this.consumeKey}":`, err);
+            if (err && typeof err === "object" && "msBeforeNext" in err) {
+                const typedRejRes = err as RateLimiterRes;
+                const waitTimeSec = Math.ceil(typedRejRes.msBeforeNext / 1000);
+                throw new FormattedError(`Too many requests. Please wait ${waitTimeSec}s and try again.`);
+            }
+            if (err instanceof DOMException && err.name === "TimeoutError") {
+                throw new FormattedError("Request timed out. API probably down. Please try again later.");
+            }
+            if (err instanceof FormattedError) {
                 throw err;
             }
-            else {
-                const typedRejRes = err as RateLimiterRes;
-                console.warn(
-                    `Rate limit exceeded for key "${this.consumeKey}". 
-                    Request blocked. Available in ${typedRejRes.msBeforeNext} ms.`
-                );
-                const error = new FormattedError("Rate limit exceeded. Please try again later.");
-                (error as any).status = 429;
-                (error as any).isRateLimitError = true;
-                (error as any).msBeforeNext = typedRejRes.msBeforeNext;
 
-                throw error;
+            throw err;
+        }
+    }
+
+    private _handleErrorResponse(response: Response) {
+        switch (response.status) {
+            case 404:
+                throw notFound();
+            case 429: {
+                // API-level rate limiting (bad rate limit on my part)
+                const retryAfter = response.headers.get("Retry-After");
+                const waitMessage = retryAfter ? `Please wait ${retryAfter}s and try again.` : "Please try again later.";
+                throw new FormattedError(`Too many requests. ${waitMessage}`);
+            }
+            case 410:
+                throw new FormattedError("This media is no longer available on the API.");
+            case 500:
+            case 502:
+            case 503:
+            case 504:
+                throw new FormattedError("This API is currently down. Please try again later.");
+            default: {
+                throw new Error(`Unexpected error: ${response.status}`);
             }
         }
     }

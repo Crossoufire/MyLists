@@ -2,10 +2,10 @@ import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
 import {createRouter} from "@tanstack/react-router";
 import {NotFound} from "@/lib/client/components/general/NotFound";
-import {DefaultLoader} from "@/lib/client/components/general/DefaultLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
 import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
 import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
+import {InitialLoader} from "@/lib/client/components/general/InitialLoader";
 
 
 export function getRouter() {
@@ -48,11 +48,12 @@ export function getRouter() {
         defaultPreloadStaleTime: 0,
         defaultErrorComponent: ErrorCatchBoundary,
         defaultNotFoundComponent: NotFound,
-        defaultPendingComponent: DefaultLoader,
+        defaultPendingComponent: InitialLoader,
         defaultPendingMs: 1000,
         defaultPendingMinMs: 500,
         scrollRestoration: true,
         defaultStructuralSharing: true,
+        notFoundMode: "root",
     });
 
     setupRouterSsrQueryIntegration({
@@ -63,4 +64,18 @@ export function getRouter() {
     });
 
     return router;
+}
+
+
+declare module "@tanstack/react-query" {
+    interface Register {
+        queryMeta: {
+            errorMessage?: string,
+            displayErrorMsg?: boolean,
+        },
+        mutationMeta: {
+            errorMessage?: string,
+            successMessage?: string,
+        }
+    }
 }

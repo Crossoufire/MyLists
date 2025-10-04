@@ -173,12 +173,13 @@ export abstract class BaseService<
         let internalMediaId = media?.id;
         if (external && !internalMediaId) {
             internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) throw new FormattedError("Failed to fetch media details");
         }
 
         if (internalMediaId) {
             const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw notFound();
+            if (!mediaWithDetails) {
+                throw notFound();
+            }
 
             const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
             const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);

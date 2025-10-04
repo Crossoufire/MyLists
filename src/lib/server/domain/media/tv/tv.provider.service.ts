@@ -32,9 +32,7 @@ export class TvProviderService extends BaseTrendsProviderService<
     }
 
     protected async _getMediaIdsForBulkRefresh() {
-        return this.client.getTvChangedIds().then(changedApiIds =>
-            this.repository.getMediaIdsToBeRefreshed(changedApiIds)
-        );
+        return this.client.getTvChangedIds().then((apiIds) => this.repository.getMediaIdsToBeRefreshed(apiIds));
     }
 
     protected _fetchRawTrends() {
