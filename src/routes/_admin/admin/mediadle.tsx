@@ -100,7 +100,7 @@ function AdminMediadlePage() {
         },
         {
             accessorKey: "streak",
-            header: "Steak",
+            header: "Streak",
             cell: ({ row: { original } }) => (
                 <div className="text-center">{original.streak}</div>
             ),

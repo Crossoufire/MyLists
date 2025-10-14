@@ -1,6 +1,3 @@
--- =========================
--- user table
--- =========================
 UPDATE user SET role = 'manager' WHERE role = 'MANAGER';
 UPDATE user SET role = 'user' WHERE role = 'USER';
 UPDATE user SET privacy = 'public' WHERE privacy = 'PUBLIC';
@@ -14,9 +11,6 @@ UPDATE user SET search_selector = 'users' WHERE search_selector = 'USERS';
 UPDATE user SET rating_system = 'score' WHERE rating_system = 'SCORE';
 UPDATE user SET rating_system = 'feeling' WHERE rating_system = 'FEELING';
 
--- =========================
--- user_media_update table
--- =========================
 UPDATE user_media_update SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE user_media_update SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE user_media_update SET media_type = 'movies' WHERE media_type = 'MOVIES';
@@ -31,9 +25,6 @@ UPDATE user_media_update SET update_type = 'redoTv' WHERE update_type = 'REDOTV'
 UPDATE user_media_update SET update_type = 'chapter' WHERE update_type = 'CHAPTER';
 UPDATE user_media_update SET update_type = 'playtime' WHERE update_type = 'PLAYTIME';
 
--- =========================
--- notifications table
--- =========================
 UPDATE notifications SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE notifications SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE notifications SET media_type = 'movies' WHERE media_type = 'MOVIES';
@@ -44,17 +35,11 @@ UPDATE notifications SET notification_type = 'tv' WHERE notification_type = 'TV'
 UPDATE notifications SET notification_type = 'media' WHERE notification_type = 'MEDIA';
 UPDATE notifications SET notification_type = 'follow' WHERE notification_type = 'FOLLOW';
 
--- =========================
--- achievement_tier table
--- =========================
 UPDATE achievement_tier SET difficulty = 'bronze' WHERE difficulty = 'BRONZE';
 UPDATE achievement_tier SET difficulty = 'silver' WHERE difficulty = 'SILVER';
 UPDATE achievement_tier SET difficulty = 'gold' WHERE difficulty = 'GOLD';
 UPDATE achievement_tier SET difficulty = 'platinum' WHERE difficulty = 'PLATINUM';
 
--- =========================
--- achievement table
--- =========================
 UPDATE achievement SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE achievement SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE achievement SET media_type = 'movies' WHERE media_type = 'MOVIES';
@@ -62,9 +47,6 @@ UPDATE achievement SET media_type = 'games' WHERE media_type = 'GAMES';
 UPDATE achievement SET media_type = 'books' WHERE media_type = 'BOOKS';
 UPDATE achievement SET media_type = 'manga' WHERE media_type = 'MANGA';
 
--- =========================
--- daily_mediadle table
--- =========================
 UPDATE daily_mediadle SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE daily_mediadle SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE daily_mediadle SET media_type = 'movies' WHERE media_type = 'MOVIES';
@@ -72,9 +54,6 @@ UPDATE daily_mediadle SET media_type = 'games' WHERE media_type = 'GAMES';
 UPDATE daily_mediadle SET media_type = 'books' WHERE media_type = 'BOOKS';
 UPDATE daily_mediadle SET media_type = 'manga' WHERE media_type = 'MANGA';
 
--- =========================
--- mediadle_stats table
--- =========================
 UPDATE mediadle_stats SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE mediadle_stats SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE mediadle_stats SET media_type = 'movies' WHERE media_type = 'MOVIES';
@@ -82,9 +61,6 @@ UPDATE mediadle_stats SET media_type = 'games' WHERE media_type = 'GAMES';
 UPDATE mediadle_stats SET media_type = 'books' WHERE media_type = 'BOOKS';
 UPDATE mediadle_stats SET media_type = 'manga' WHERE media_type = 'MANGA';
 
--- =========================
--- manga_list table
--- =========================
 UPDATE manga_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE manga_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE manga_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -98,9 +74,6 @@ UPDATE manga_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE manga_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE manga_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- =========================
--- movies_list table
--- =========================
 UPDATE movies_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE movies_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE movies_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -114,9 +87,6 @@ UPDATE movies_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE movies_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE movies_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- =========================
--- games_list table
--- =========================
 UPDATE games_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE games_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE games_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -130,7 +100,6 @@ UPDATE games_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE games_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE games_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- platform column
 UPDATE games_list SET platform = 'PC' WHERE platform = 'PC';
 UPDATE games_list SET platform = 'Android' WHERE platform = 'ANDROID';
 UPDATE games_list SET platform = 'Iphone' WHERE platform = 'IPHONE';
@@ -163,9 +132,6 @@ UPDATE games_list SET platform = 'Old Sega' WHERE platform = 'OLD_SEGA_CONSOLE';
 UPDATE games_list SET platform = 'Old Atari' WHERE platform = 'OLD_ATARI_CONSOLE';
 UPDATE games_list SET platform = 'Other' WHERE platform = 'OTHER';
 
--- =========================
--- books_list table
--- =========================
 UPDATE books_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE books_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE books_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -179,9 +145,6 @@ UPDATE books_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE books_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE books_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- =========================
--- anime_list table
--- =========================
 UPDATE anime_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE anime_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE anime_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -195,9 +158,6 @@ UPDATE anime_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE anime_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE anime_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- =========================
--- series_list table
--- =========================
 UPDATE series_list SET status = 'Reading' WHERE status = 'READING';
 UPDATE series_list SET status = 'Playing' WHERE status = 'PLAYING';
 UPDATE series_list SET status = 'Watching' WHERE status = 'WATCHING';
@@ -211,9 +171,6 @@ UPDATE series_list SET status = 'Plan to Watch' WHERE status = 'PLAN_TO_WATCH';
 UPDATE series_list SET status = 'Plan to Play' WHERE status = 'PLAN_TO_PLAY';
 UPDATE series_list SET status = 'Plan to Read' WHERE status = 'PLAN_TO_READ';
 
--- =========================
--- user_media_settings table
--- =========================
 UPDATE user_media_settings SET media_type = 'series' WHERE media_type = 'SERIES';
 UPDATE user_media_settings SET media_type = 'anime' WHERE media_type = 'ANIME';
 UPDATE user_media_settings SET media_type = 'movies' WHERE media_type = 'MOVIES';

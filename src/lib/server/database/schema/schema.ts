@@ -332,6 +332,7 @@ export const manga = sqliteTable("manga", {
     lastApiUpdate: text(),
 });
 
+
 export const mangaList = sqliteTable("manga_list", {
         id: integer().primaryKey().notNull(),
         mediaId: integer().notNull().references(() => manga.id),
@@ -340,7 +341,7 @@ export const mangaList = sqliteTable("manga_list", {
         total: integer().default(0).notNull(),
         redo: integer().default(0).notNull(),
         status: text().$type<Status>().notNull(),
-        favorite: integer({ mode: "boolean" }).default(false).notNull(),
+        favorite: integer({ mode: "boolean" }),
         rating: real(),
         comment: text(),
     },
