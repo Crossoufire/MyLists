@@ -19,14 +19,13 @@ interface MediaCardProps {
 
 export const MediaCard = ({ children, item, mediaType, isPending = false }: MediaCardProps) => {
     return (
-        <Card className="rounded-lg py-0 border-none">
+        <Card className="rounded-lg py-0 border-none" style={{ viewTransitionName: `media-cover-${item.mediaId}` }}>
             <div className="relative aspect-[2/3] h-full rounded-lg border border-black">
                 <BlockLink to="/details/$mediaType/$mediaId" params={{ mediaType, mediaId: item.mediaId }}>
                     <img
                         alt={item.mediaName}
                         src={item.imageCover}
-                        className={"object-cover w-full h-full rounded-lg"}
-                        style={{ viewTransitionName: `media-cover-${item.mediaId}` }}
+                        className="object-cover w-full h-full rounded-lg"
                     />
                 </BlockLink>
                 {isPending &&

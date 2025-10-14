@@ -28,8 +28,11 @@ export function UserUpdate({ update, username, onDelete, canDelete, isPending, m
 
     return (
         <>
-            <div className={cn("grid grid-cols-[auto_1fr_auto] gap-x-3 py-1 pr-2 group relative",
-                (mediaIdBeingDeleted === update.id && isPending) && "opacity-20")}
+            <div
+                className={cn(
+                    "grid grid-cols-[auto_1fr_auto] gap-x-3 py-1 pr-2 group relative",
+                    (mediaIdBeingDeleted === update.id && isPending) && "opacity-20"
+                )}
             >
                 <MediaAndUserIcon
                     size={18}

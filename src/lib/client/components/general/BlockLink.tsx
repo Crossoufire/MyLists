@@ -9,6 +9,7 @@ interface BlockLinkProps extends LinkProps {
     className?: string;
     children: ReactNode;
     privacy?: PrivacyType;
+    style?: React.CSSProperties;
 }
 
 
