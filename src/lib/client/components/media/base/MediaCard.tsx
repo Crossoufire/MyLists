@@ -1,7 +1,7 @@
 import React from "react";
 import {LoaderCircle} from "lucide-react";
-import {Card} from "@/lib/client/components/ui/card";
 import {MediaType} from "@/lib/utils/enums";
+import {Card} from "@/lib/client/components/ui/card";
 import {BlockLink} from "@/lib/client/components/general/BlockLink";
 
 
@@ -26,6 +26,7 @@ export const MediaCard = ({ children, item, mediaType, isPending = false }: Medi
                         alt={item.mediaName}
                         src={item.imageCover}
                         className={"object-cover w-full h-full rounded-lg"}
+                        style={{ viewTransitionName: `media-cover-${item.mediaId}` }}
                     />
                 </BlockLink>
                 {isPending &&

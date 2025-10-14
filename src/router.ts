@@ -54,6 +54,7 @@ export function getRouter() {
         scrollRestoration: true,
         defaultStructuralSharing: true,
         notFoundMode: "root",
+        defaultViewTransition: true,
     });
 
     setupRouterSsrQueryIntegration({

@@ -71,6 +71,7 @@ function MediaDetailsPage() {
                                 alt="media-cover"
                                 src={apiData.media.imageCover}
                                 className="w-[300px] h-[450px] rounded-md"
+                                style={{ viewTransitionName: `media-cover-${apiData.media.id}` }}
                             />
                             {apiData.userMedia ?
                                 <UserMediaDetails

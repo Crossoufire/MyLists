@@ -13,14 +13,14 @@ export function tryNotFound<T>(callback: () => T): T {
 }
 
 
-export function tryFormZodError<T>(callback: () => T): T {
+export function tryFormZodError<T>(schema: z.ZodSchema<T>, data: unknown): T {
     try {
-        return callback();
+        return schema.parse(data);
     }
-    catch (error: any) {
-        if (error instanceof z.ZodError) {
-            throw new FormZodError(error, "Please fix the form errors");
+    catch (err: unknown) {
+        if (err instanceof z.ZodError) {
+            throw new FormZodError(err);
         }
-        throw error;
+        throw err;
     }
 }

@@ -1,11 +1,12 @@
 import {toast} from "sonner";
+import {useState} from "react";
 import {CircleHelp} from "lucide-react";
 import {useForm} from "react-hook-form";
-import {useState} from "react";
+import {PrivacyType} from "@/lib/utils/enums";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
-import {PrivacyType} from "@/lib/utils/enums";
+import {FormattedError, FormZodError} from "@/lib/utils/error-classes";
 import {ImageCropper} from "@/lib/client/components/user-settings/ImageCropper";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {useGeneralSettingsMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
@@ -42,17 +43,17 @@ export const GeneralForm = () => {
         });
 
         generalSettingsMutation.mutate({ data: formData }, {
-            onError: (error: any) => {
-                if (error?.name === "FormZodError" && error?.issues && Array.isArray(error?.issues)) {
-                    error?.issues.forEach((issue: any) => {
+            onError: (err: any) => {
+                if (err instanceof FormZodError && err?.issues && Array.isArray(err?.issues)) {
+                    err?.issues.forEach((issue: any) => {
                         form.setError(issue.path[0], { type: "server", message: issue.message });
                     });
                 }
-                else if (error?.name === "FormattedError") {
-                    form.setError("username", { type: "server", message: error.message });
+                else if (err instanceof FormattedError) {
+                    form.setError("username", { type: "server", message: err.message });
                 }
                 else {
-                    const message = error?.message || "An unexpected error occurred.";
+                    const message = err?.message || "An unexpected error occurred.";
                     form.setError("root", { type: "server", message: message });
                 }
             },
@@ -76,7 +77,7 @@ export const GeneralForm = () => {
                         rules={{
                             required: { value: true, message: "Username is required." },
                             minLength: { value: 3, message: "Username too short (3 min)." },
-                            // maxLength: { value: 15, message: "Username too long (15 max)." },
+                            maxLength: { value: 15, message: "Username too long (15 max)." },
                         }}
                         render={({ field }) => (
                             <FormItem>
@@ -156,11 +157,11 @@ export const GeneralForm = () => {
                         )}
                     />
                 </div>
-                {form.formState.errors.root && (
+                {form.formState.errors.root &&
                     <p className="mt-2 text-sm font-medium text-destructive">
                         {form.formState.errors.root.message}
                     </p>
-                )}
+                }
                 <Button type="submit" className="mt-5" disabled={!form.formState.isDirty || generalSettingsMutation.isPending}>
                     Update
                 </Button>

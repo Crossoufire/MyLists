@@ -1,9 +1,10 @@
 import {auth} from "@/lib/server/core/auth";
-import {MediaType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
+import {MediaType} from "@/lib/utils/enums";
 import {getContainer} from "@/lib/server/core/container";
 import {saveUploadedImage} from "@/lib/utils/save-image";
 import {FormattedError} from "@/lib/utils/error-classes";
+import {user} from "@/lib/server/database/schema/index";
 import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
@@ -12,17 +13,16 @@ import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema,
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator(data => {
-        if (!(data instanceof FormData)) throw new Error("Expected FormData");
-        return tryFormZodError(() => generalSettingsSchema.parse(Object.fromEntries(data.entries())));
+    .inputValidator((data) => {
+        if (!(data instanceof FormData)) throw new Error();
+        return tryFormZodError(generalSettingsSchema, Object.fromEntries(data.entries()));
     })
     .handler(async ({ data, context: { currentUser } }) => {
-        const userService = await getContainer().then(c => c.services.user);
-        const updatesToApply: Record<string, string> = { privacy: data.privacy };
+        const userService = await getContainer().then((c) => c.services.user);
+        const updatesToApply: Partial<typeof user.$inferInsert> = { privacy: data.privacy };
 
         if (data.username !== currentUser.name.trim()) {
-            const isUsernameTaken = await userService.findUserByName(data.username);
-            if (isUsernameTaken) throw new FormattedError("Username invalid. Please select another one.");
+            await userService.findUserByName(data.username);
             updatesToApply.name = data.username;
         }
 
@@ -50,16 +50,16 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .inputValidator((data) => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(mediaListSettingsSchema, data))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
         const toUpdateInUserStats: Partial<Record<MediaType, boolean>> = {
             anime: data.anime,
-            manga: data.manga,
             games: data.games,
             books: data.books,
+            manga: data.manga,
         }
 
         const toUpdateInUser = {
@@ -75,7 +75,7 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator((data) => tryFormZodError(() => downloadListAsCsvSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(downloadListAsCsvSchema, data))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -85,7 +85,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator((data) => tryFormZodError(() => passwordSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(passwordSettingsSchema, data))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id.toString());

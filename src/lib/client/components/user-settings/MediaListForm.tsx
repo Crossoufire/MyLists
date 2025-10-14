@@ -1,18 +1,18 @@
 import {toast} from "sonner";
 import {useState} from "react";
-import {useAuth} from "@/lib/client/hooks/use-auth";
-import {Button} from "@/lib/client/components/ui/button";
-import {Switch} from "@/lib/client/components/ui/switch";
 import {useForm, useWatch} from "react-hook-form";
 import {CircleHelp, Download} from "lucide-react";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {Switch} from "@/lib/client/components/ui/switch";
+import {Button} from "@/lib/client/components/ui/button";
+import {ListSettings} from "@/lib/types/zod.schema.types";
 import {Separator} from "@/lib/client/components/ui/separator";
 import {capitalize, downloadFile, jsonToCsv} from "@/lib/utils/functions";
-import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {ApiProviderType, MediaType, RatingSystemType} from "@/lib/utils/enums";
+import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/lib/client/components/ui/form";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/lib/client/components/ui/select";
 import {useDownloadListAsCSVMutation, useListSettingsMutation} from "@/lib/client/react-query/query-mutations/user.mutations";
-import {ListSettings} from "@/lib/types/zod.schema.types";
 
 
 const mediaTypeConfigs = [
@@ -189,15 +189,15 @@ export const MediaListForm = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>List View Mode</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value ? "grid" : "table"}>
+                                    <Select onValueChange={(v) => field.onChange(v === "grid")} value={field.value ? "grid" : "table"}>
                                         <FormControl>
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Select a view mode"/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value={"grid"}>Grid</SelectItem>
-                                            <SelectItem value={"table"}>Table</SelectItem>
+                                            <SelectItem value="grid">Grid</SelectItem>
+                                            <SelectItem value="table">Table</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>
@@ -205,7 +205,7 @@ export const MediaListForm = () => {
                             )}
                         />
                     </div>
-                    <Button type="submit" disabled={listSettingsMutation.isPending}>
+                    <Button type="submit" disabled={!form.formState.isDirty || listSettingsMutation.isPending}>
                         {listSettingsMutation.isPending ? "Updating..." : "Update Settings"}
                     </Button>
                 </form>

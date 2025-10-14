@@ -1,4 +1,5 @@
 import z from "zod";
+import {createSerializationAdapter} from "@tanstack/react-router";
 
 
 export class FormattedError extends Error {
@@ -12,8 +13,16 @@ export class FormattedError extends Error {
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, FormattedError);
         }
-    }
-}
+    };
+};
+
+
+export const formattedErrorAdapter = createSerializationAdapter({
+    key: "formatted-error",
+    test: (v) => v instanceof FormattedError,
+    toSerializable: ({ message }) => ({ message }),
+    fromSerializable: ({ message }) => new FormattedError(message),
+});
 
 
 export class FormZodError extends Error {
@@ -23,5 +32,13 @@ export class FormZodError extends Error {
         super(message || "Form validation failed");
         this.name = "FormZodError";
         this.issues = zodError.issues;
-    }
-}
+    };
+};
+
+
+export const formZodErrorAdapter = createSerializationAdapter({
+    key: "form-zod-error",
+    test: (v) => v instanceof FormZodError,
+    toSerializable: ({ message, issues }) => ({ message, issues }),
+    fromSerializable: ({ message, issues }) => new FormZodError({ issues } as z.ZodError, message),
+});

@@ -138,11 +138,11 @@ export class UserRepository {
             .get();
     }
 
-    static async updateUserSettings(userId: number, payload: Record<string, any>) {
+    static async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
         await getDbClient()
             .update(user)
             .set(payload)
-            .where(eq(user.id, userId))
+            .where(eq(user.id, userId));
     }
 
     static async getAdminPaginatedUsers(data: SearchTypeAdmin) {

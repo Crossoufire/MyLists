@@ -1,7 +1,8 @@
 import {MediaType} from "@/lib/utils/enums";
+import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 
 
 export class UserService {
@@ -38,7 +39,7 @@ export class UserService {
         return this.userRepository.deleteUserAccount(userId);
     }
 
-    async updateUserSettings(userId: number, payload: Record<string, any>) {
+    async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
         await this.userRepository.updateUserSettings(userId, payload);
     }
 
@@ -93,7 +94,10 @@ export class UserService {
     }
 
     async findUserByName(name: string) {
-        return this.userRepository.findUserByName(name);
+        const isUsernameTaken = await this.userRepository.findUserByName(name);
+        if (isUsernameTaken) {
+            throw new FormattedError("Invalid username. Please select another one.");
+        }
     }
 
     async updateFeatureFlag(userId: number) {
