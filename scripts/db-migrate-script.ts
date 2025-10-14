@@ -1,9 +1,8 @@
-/* eslint-disable */
 import {sql} from "drizzle-orm";
 import {drizzle} from "drizzle-orm/libsql";
 import {createClient} from "@libsql/client";
-import * as schema from "../src/lib/server/database/schema";
-import {account, user} from "../src/lib/server/database/schema";
+import * as schema from "@/lib/server/database/schema";
+import {account, user} from "@/lib/server/database/schema";
 
 
 async function migrateUsers() {
@@ -13,7 +12,7 @@ async function migrateUsers() {
     console.log("Starting user migration...");
 
     try {
-        const oldUsers = await db.all(sql`SELECT * FROM user_12345`);
+        const oldUsers: Record<string, any>[] = await db.all(sql`SELECT * FROM user_12345`);
         console.log(`Found ${oldUsers.length} users to migrate`);
 
         for (const oldUser of oldUsers) {
@@ -62,9 +61,9 @@ async function migrateUsers() {
 
         console.log("Migration completed successfully!");
     }
-    catch (error) {
-        console.error("Migration failed:", error);
-        throw error;
+    catch (err) {
+        console.error("Migration failed:", err);
+        throw err;
     }
 }
 

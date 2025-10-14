@@ -7,7 +7,7 @@
 
 ## TODO/FIXES
 
-- TODO: changing name does not change directly, need to logout and login again
+- TODO: createdAt and updatedAt in user table are int and not string (change in migrate script, profile, admin etc... for new users)
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...
 - TODO: Tests when db empty
 - TODO: Tests everything and all CLI tasks :(

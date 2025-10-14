@@ -9,6 +9,7 @@ import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {userMediaSettings} from "@/lib/server/database/schema";
 import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
+import {getDbClient} from "@/lib/server/database/async-storage";
 
 
 const getAuthConfig = createServerOnlyFn(() => betterAuth({
@@ -27,13 +28,16 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 after: async (user, _context) => {
                     const mediaTypes = Object.values(MediaType);
 
-                    const userMediaSettingsData = mediaTypes.map(mediaType => ({
-                        mediaType,
-                        userId: parseInt(user.id, 10),
-                        active: (mediaType === MediaType.MOVIES || mediaType === MediaType.SERIES),
+                    const userMediaSettingsData = mediaTypes.map((mt) => ({
+                        mediaType: mt,
+                        userId: Number(user.id),
+                        active: (mt === MediaType.MOVIES || mt === MediaType.SERIES),
                     }));
 
-                    await db.insert(userMediaSettings).values(userMediaSettingsData).onConflictDoNothing();
+                    await getDbClient()
+                        .insert(userMediaSettings)
+                        .values(userMediaSettingsData)
+                        .onConflictDoNothing();
                 },
             }
         },
@@ -128,13 +132,8 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
             });
         },
         password: {
-            hash: async (password: string) => {
-                return bcrypt.hash(password, 12);
-            },
-            verify: async ({ hash, password }) => {
-                const stringifyHash = Buffer.from(hash);
-                return bcrypt.compare(password, stringifyHash.toString());
-            },
+            hash: async (password: string) => bcrypt.hash(password, 12),
+            verify: async ({ hash, password }) => bcrypt.compare(password, Buffer.from(hash).toString()),
         },
     },
     emailVerification: {
@@ -147,7 +146,7 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
                 to: user.email,
                 username: user.name,
                 template: "register",
-                link: url + `/profile/${user.name}`,
+                link: url + `profile/${user.name}`,
                 subject: "MyLists - Verify your email address",
             });
         },
