@@ -329,7 +329,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
 
         const [media] = await tx
             .update(games)
-            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
+            .set({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
             .where(eq(games.apiId, mediaData.apiId))
             .returning({ id: games.id })
 

@@ -1,33 +1,33 @@
 import z from "zod";
 import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {OpenRouterResponse} from "@/lib/types/provider.types";
+import {LLMResponse} from "@/lib/types/provider.types";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 
 
-export class OpenRouterClient extends BaseClient {
-    private static readonly consumeKey = "open-router-API";
-    private readonly baseUrl = "https://openrouter.ai/api/v1";
-    private static readonly throttleOptions = { points: 20, duration: 1, keyPrefix: "openRouterAPI" };
+export class LlmClient extends BaseClient {
+    private readonly baseUrl = serverEnv.LLM_BASE_URL;
+    private static readonly consumeKey = "llm-API";
+    private static readonly throttleOptions = { points: 20, duration: 1, keyPrefix: "llmAPI" };
 
     constructor(limiter: RateLimiterAbstract, consumeKey: string) {
         super(limiter, consumeKey);
     }
 
     public static async create() {
-        const openRouterLimiter = await createRateLimiter(OpenRouterClient.throttleOptions);
-        return new OpenRouterClient(openRouterLimiter, OpenRouterClient.consumeKey);
+        const llmLimiter = await createRateLimiter(LlmClient.throttleOptions);
+        return new LlmClient(llmLimiter, LlmClient.consumeKey);
     }
 
-    async llmBookGenresCall(content: string, schema: z.Schema): Promise<OpenRouterResponse> {
+    async llmBookGenresCall(content: string, schema: z.Schema): Promise<LLMResponse> {
         const response = await this.call(`${this.baseUrl}/chat/completions`, "post", {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${serverEnv.OPEN_ROUTER_API_KEY}`,
+                "Authorization": `Bearer ${serverEnv.LLM_API_KEY}`,
             },
             body: JSON.stringify({
-                model: serverEnv.OPEN_ROUTER_MODEL_ID,
+                model: serverEnv.LLM_MODEL_ID,
                 messages: [{ role: "user", content: content }],
                 response_format: {
                     type: "json_schema",

@@ -313,7 +313,10 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
 
         const [media] = await tx
             .update(movies)
-            .set({ ...mediaData, lastApiUpdate: sql`datetime('now')` })
+            .set({
+                ...mediaData,
+                lastApiUpdate: sql`datetime('now')`,
+            })
             .where(eq(movies.apiId, mediaData.apiId))
             .returning({ id: movies.id });
 

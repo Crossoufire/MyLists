@@ -3,7 +3,7 @@ import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
 import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
 import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
-import {OpenRouterClient} from "@/lib/server/api-providers/clients/open-router.client";
+import {LlmClient} from "@/lib/server/api-providers/clients/llm.client";
 import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {JikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
@@ -18,13 +18,13 @@ export async function setupApiModule() {
     const jikanTransformer = new JikanTransformer();
 
     // API Clients (Initialized concurrently with Promise.all)
-    const [hltbClient, igdbClient, tmdbClient, jikanClient, gBookClient, openRouterClient] = await Promise.all([
+    const [hltbClient, igdbClient, tmdbClient, jikanClient, gBookClient, llmClient] = await Promise.all([
         HltbClient.create(),
         IgdbClient.create(),
         TmdbClient.create(),
         JikanClient.create(),
         GBooksClient.create(),
-        OpenRouterClient.create(),
+        LlmClient.create(),
     ]);
 
     return {
@@ -34,7 +34,7 @@ export async function setupApiModule() {
             jikan: jikanClient,
             gBook: gBookClient,
             hltb: hltbClient,
-            openRouter: openRouterClient,
+            llmClient: llmClient,
         },
         transformers: {
             igdb: igdbTransformer,

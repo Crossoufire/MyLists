@@ -39,9 +39,10 @@ export const serverEnv = createEnv({
         IGDB_CLIENT_ID: z.string(),
         IGDB_CLIENT_SECRET: z.string(),
 
-        // OPEN ROUTER
-        OPEN_ROUTER_API_KEY: z.string(),
-        OPEN_ROUTER_MODEL_ID: z.string(),
+        // LLM ROUTER
+        LLM_API_KEY: z.string(),
+        LLM_MODEL_ID: z.string(),
+        LLM_BASE_URL: z.string(),
     },
     runtimeEnv: process.env,
 });

@@ -525,9 +525,9 @@ export type HltbGameEntry = {
 }
 
 
-// --- Open Router Response Type ------------------------------------------
+// --- LLM Response Type (Open Router) ----------------------------------
 
-export type OpenRouterResponse = {
+export type LLMResponse = {
     id: string;
     model: string;
     created: number;

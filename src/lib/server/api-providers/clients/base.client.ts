@@ -19,10 +19,10 @@ export class BaseClient {
 
             const response = await fetch(url, {
                 method: method.toUpperCase(),
-                signal: AbortSignal.timeout(8_000),
+                signal: AbortSignal.timeout(60_000),
                 ...options,
             });
-            
+
             if (!response.ok) {
                 this._handleErrorResponse(response);
             }

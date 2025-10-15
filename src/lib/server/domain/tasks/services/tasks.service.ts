@@ -308,18 +308,20 @@ export class TasksService {
 
     protected async runAddGenresToBooksUsingLLM() {
         this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
+        this.logger.info(`Using: ${serverEnv.LLM_MODEL_ID}, from: ${serverEnv.LLM_BASE_URL}`);
 
         const booksService = this.mediaServiceRegistry.getService(MediaType.BOOKS);
         const booksProvider = this.mediaProviderRegistry.getService(MediaType.BOOKS);
 
         const booksGenres = booksService.getAvailableGenres().map((g) => g.name);
-        const batchedBooks = await booksService.batchBooksWithoutGenres();
+        const batchedBooks = await booksService.batchBooksWithoutGenres(5);
         this.logger.info(`${batchedBooks.length} batches of books to treat.`);
 
         const mainPrompt = `
-            Add genres to the following books. 
-            For each book, choose the top genres for this book (MAX 4) from this list: ${booksGenres.join(", ")}.
-        `;
+Add genres to the following books. 
+For each book, choose the top genres for this book (MAX 4) from this list: 
+${booksGenres.join(", ")}.
+`;
 
         for (const booksBatch of batchedBooks.slice(0, 1)) {
             const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
@@ -340,7 +342,7 @@ export class TasksService {
                 }
             }
             catch (err: any) {
-                this.logger.error("Error while applying genres", err);
+                this.logger.error({ err }, "Error while applying genres");
             }
         }
     }

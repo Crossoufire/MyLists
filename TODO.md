@@ -7,7 +7,8 @@
 
 ## TODO/FIXES
 
-- TODO: createdAt and updatedAt in user table are int and not string (change in migrate script, profile, admin etc... for new users)
+- TODO: Add a added date in each user's media list, as well as lastModified date
+- TODO: Add a added date for media when first added to the database (then for each update use the lastApiUpdate)
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...
 - TODO: Tests when db empty
 - TODO: Tests everything and all CLI tasks :(
