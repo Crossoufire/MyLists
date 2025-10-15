@@ -1,5 +1,5 @@
-import {imageUrl} from "@/lib/server/database/custom-types";
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {dateAsString, imageUrl} from "@/lib/server/database/custom-types";
 import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
@@ -7,8 +7,8 @@ export const user = sqliteTable("user", {
     id: integer("id").$type<number>().primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
-    createdAt: text("created_at").notNull(),
-    updatedAt: text("updated_at").notNull(),
+    createdAt: dateAsString("created_at").notNull(),
+    updatedAt: dateAsString("updated_at").notNull(),
     lastNotifReadTime: text("last_notif_read_time"),
     profileViews: integer("profile_views").default(0).notNull(),
     role: text("role").$type<RoleType>().default(RoleType.USER).notNull(),
