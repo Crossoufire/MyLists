@@ -1,23 +1,17 @@
-import {Activity, type LucideIcon, Shield, UserPlus, Users} from "lucide-react";
+import {type LucideIcon} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
 interface UserStatsProps {
     title: string;
+    icon: LucideIcon;
     description: string;
     value: string | number;
-    icon: "users" | "activity" | "userPlus" | "shield";
 }
 
 
 export function UserStats({ title, value, description, icon }: UserStatsProps) {
-    const icons: Record<string, LucideIcon> = {
-        users: Users,
-        shield: Shield,
-        activity: Activity,
-        userPlus: UserPlus,
-    }
-    const Icon = icons[icon]
+    const Icon = icon;
 
     return (
         <Card>

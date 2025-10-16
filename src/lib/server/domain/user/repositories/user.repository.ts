@@ -1,6 +1,6 @@
+import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
-import {ApiProviderType, MediaType} from "@/lib/utils/enums";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
@@ -25,81 +25,66 @@ export class UserRepository {
         return result.length;
     }
 
-    static async getAdminUserStatistics(dates: AdminUserStats) {
-        const { now, currentMonthStart, previousMonthStart, twoMonthsAgoStart, threeMonthsAgo } = dates;
+    static async getAdminUserStats() {
+        const now = new Date();
+        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
-        const result = await getDbClient()
+        const res = await getDbClient()
             .select({
                 totalUsers: count(),
-                totalUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END)`,
-                totalUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
-                activeUsers: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} THEN 1 ELSE 0 END)`,
-                activeUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
-                activeUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END)`,
-                newUsersThisMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${currentMonthStart} AND ${user.createdAt} < ${now} THEN 1 ELSE 0 END)`,
+                usersSeenThisMonth: sql<number>`SUM(CASE WHEN ${user.updatedAt} > ${currentMonthStart} THEN 1 ELSE 0 END)`,
+                newUsersThisMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${currentMonthStart} THEN 1 ELSE 0 END)`,
                 newUsersPreviousMonth: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${previousMonthStart} AND ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END)`,
-                newUsersTwoMonthsAgo: sql<number>`SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)`,
-                totalUsersGrowth: sql<number>`CASE 
-                    WHEN SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END) = 0 THEN 0 
-                    ELSE ((SUM(CASE WHEN ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END) - 
-                           SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)) * 100.0 / 
-                           SUM(CASE WHEN ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END))
-                    END`,
-                activeUsersGrowth: sql<number>`CASE 
-                    WHEN SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END) = 0 THEN 0 
-                    ELSE ((SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${previousMonthStart} THEN 1 ELSE 0 END) - 
-                           SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END)) * 100.0 / 
-                           SUM(CASE WHEN ${user.updatedAt} > ${threeMonthsAgo} AND ${user.updatedAt} < ${twoMonthsAgoStart} THEN 1 ELSE 0 END))
-                    END`,
-                newUsersGrowth: sql<number>`CASE 
-                    WHEN SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END) = 0 THEN 0 
-                    ELSE ((SUM(CASE WHEN ${user.createdAt} >= ${previousMonthStart} AND ${user.createdAt} < ${currentMonthStart} THEN 1 ELSE 0 END) - 
-                           SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END)) * 100.0 / 
-                           SUM(CASE WHEN ${user.createdAt} >= ${twoMonthsAgoStart} AND ${user.createdAt} < ${previousMonthStart} THEN 1 ELSE 0 END))
-                    END`
             })
             .from(user)
             .get();
 
         return {
-            totalUsers: {
-                count: result?.totalUsers || 0,
-                growth: result?.totalUsersGrowth || 0,
-            },
-            activeUsers: {
-                count: result?.activeUsers || 0,
-                growth: result?.activeUsersGrowth || 0,
-            },
+            totalUsers: { count: res?.totalUsers || 0 },
+            usersSeenThisMonth: { count: res?.usersSeenThisMonth || 0 },
             newUsers: {
-                count: result?.newUsersThisMonth || 0,
-                growth: result?.newUsersGrowth || 0,
-            }
+                count: res?.newUsersThisMonth || 0,
+                comparedToLastMonth: (res?.newUsersThisMonth || 0) - (res?.newUsersPreviousMonth || 0),
+            },
         };
     }
 
-    static async getAdminCumulativeUsersPerMonth(months: number) {
-        const now = new Date();
-        const monthsData = [];
+    static async getAdminCumulativeUsersPerMonth(months?: number) {
+        const results = await getDbClient()
+            .run(sql`
+                WITH monthly_buckets AS (
+                    SELECT 
+                        strftime('%Y-%m', created_at) as month,
+                        strftime('%Y-%m-01', created_at) as month_start
+                    FROM user
+                    WHERE created_at <= date('now')
+                ), 
+                monthly_agg AS (
+                    SELECT 
+                        month,
+                        month_start,
+                        COUNT(*) as monthly_count,
+                        SUM(COUNT(*)) OVER (ORDER BY month_start ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cum_count
+                    FROM monthly_buckets
+                    GROUP BY month, month_start
+                )
+                SELECT
+                    month,
+                    cum_count
+                FROM (
+                    SELECT *
+                    FROM monthly_agg
+                    ORDER BY month_start DESC
+                    LIMIT ${months ?? 9999999}
+                ) AS recent_months
+                ORDER BY month_start ASC
+            `);
 
-        for (let i = 0; i < months; i++) {
-            const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).toISOString();
-            const monthName = monthDate.toLocaleString('default', { month: 'long' });
-            monthsData.push({ monthEnd, monthName });
-        }
-
-        const users = await getDbClient()
-            .select({ createdAt: user.createdAt })
-            .from(user)
-            .execute();
-
-        const results = [];
-        for (const monthData of monthsData) {
-            const count = users.filter(u => new Date(u.createdAt) <= new Date(monthData.monthEnd)).length;
-            results.unshift({ month: monthData.monthName, count });
-        }
-
-        return results;
+        return results.rows.map((row) => ({
+            count: row.cum_count,
+            month: new Date(row.month as string).toLocaleString("en-US", { month: "short", year: "numeric" }),
+        }));
     }
 
     static async getAdminRecentUsers(limit: number) {

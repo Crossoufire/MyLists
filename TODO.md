@@ -7,6 +7,7 @@
 
 ## TODO/FIXES
 
+- TODO: Add lastSeen to user schema instead of using updatedAt (handled by better-auth)
 - TODO: Add a added date in each user's media list, as well as lastModified date
 - TODO: Add a added date for media when first added to the database (then for each update use the lastApiUpdate)
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...

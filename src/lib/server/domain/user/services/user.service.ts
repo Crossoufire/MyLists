@@ -44,31 +44,16 @@ export class UserService {
     }
 
     async getAdminOverview() {
-        const now = new Date();
-        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-        const twoMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString();
-        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString();
-
-        const recentUsers = await this.userRepository.getAdminRecentUsers(10);
+        const userStats = await this.userRepository.getAdminUserStats();
+        const recentUsers = await this.userRepository.getAdminRecentUsers(20);
         const usersPerPrivacy = await this.userRepository.getAdminUsersPerPrivacyValue();
-        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth(12);
-
-        const userStats = await this.userRepository.getAdminUserStatistics({
-            now: now.toISOString(),
-            currentMonthStart,
-            previousMonthStart,
-            twoMonthsAgoStart,
-            threeMonthsAgo,
-        });
+        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth();
 
         return {
-            totalUsers: userStats.totalUsers,
-            activeUsers: userStats.activeUsers,
-            newUsers: userStats.newUsers,
-            cumulativeUsersPerMonth,
+            ...userStats,
             recentUsers,
             usersPerPrivacy,
+            cumulativeUsersPerMonth,
         };
     }
 
