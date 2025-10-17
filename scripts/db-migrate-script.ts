@@ -2,15 +2,13 @@ import path, {join} from "path";
 import {sql} from "drizzle-orm";
 import {execSync} from "child_process";
 import {drizzle} from "drizzle-orm/libsql";
-import {createClient} from "@libsql/client";
-import * as schema from "@/lib/server/database/schema";
+import {db} from "@/lib/server/database/db";
 import {account, user} from "@/lib/server/database/schema";
+import {backPopulateMediaListTimestamps} from "./back-populate";
 import {existsSync, readdirSync, readFileSync, rmSync, writeFileSync} from "fs";
 
 
-// Config
 const PROJECT_ROOT = process.cwd();
-const DB_PATH = "file:./instance/site.db";
 const DRIZZLE_FOLDER = path.join(PROJECT_ROOT, "drizzle");
 const CONFIG_PATH = path.join(PROJECT_ROOT, "drizzle.config.ts");
 const ENUM_UPDATES_FILE = path.join(PROJECT_ROOT, "scripts", "change-enums.sql");
@@ -183,9 +181,6 @@ const migrateUsers = async (db: ReturnType<typeof drizzle>) => {
 const runAutomatedMigration = async () => {
     console.log("Starting automated DB migration...");
 
-    const client = createClient({ url: DB_PATH });
-    const db = drizzle(client, { schema });
-
     try {
         // Add new cols to all media types (multi-statement)
         await execRawSQL(db, [
@@ -288,14 +283,14 @@ const runAutomatedMigration = async () => {
         const sqlStatements = splitSqlStatements(sqlFileContent);
         await execRawSQL(db, sqlStatements, "Update enums: ");
 
-        console.log("Migration complete! Verify in SQLite Browser.");
+        console.log("Migration complete!.");
+
+        console.log("Running `back-populate.ts` script...");
+        backPopulateMediaListTimestamps();
     }
     catch (err) {
         console.error("Migration failed:", err);
         process.exit(1);
-    }
-    finally {
-        client.close();
     }
 };
 
