@@ -284,7 +284,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
 
         const [result] = await getDbClient()
             .update(listTable)
-            .set(updateData)
+            .set({
+                ...updateData,
+                lastUpdated: sql`datetime('now')`,
+            })
             .where(and(eq(listTable.userId, userId), eq(listTable.mediaId, mediaId)))
             .returning();
 
