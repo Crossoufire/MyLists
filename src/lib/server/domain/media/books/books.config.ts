@@ -3,7 +3,7 @@ import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
-import {books, booksAuthors, booksGenre, booksLabels, booksList} from "@/lib/server/database/schema/books.schema";
+import {books, booksAuthors, booksGenre, booksLabels, booksList} from "@/lib/server/database/schema/media/books.schema";
 
 
 export type MangaSchemaConfig = MediaSchemaConfig<

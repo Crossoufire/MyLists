@@ -3,7 +3,7 @@ import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
-import {series, seriesActors, seriesEpisodesPerSeason, seriesGenre, seriesLabels, seriesList, seriesNetwork} from "@/lib/server/database/schema/series.schema";
+import {series, seriesActors, seriesEpisodesPerSeason, seriesGenre, seriesLabels, seriesList, seriesNetwork} from "@/lib/server/database/schema/media/series.schema";
 
 
 export type SeriesSchemaConfig = TvSchemaConfig<

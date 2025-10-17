@@ -1,16 +1,14 @@
 import {sql} from "drizzle-orm";
-import {Status} from "@/lib/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
 import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
-import {customJson, imageUrl} from "@/lib/server/database/custom-types";
+import {customJson} from "@/lib/server/database/custom-types";
 import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {communGenericCols, communMediaCols, communMediaEpsCols, communMediaLabelsCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const series = sqliteTable("series", {
-    id: integer().primaryKey().notNull(),
-    name: text().notNull(),
     originalName: text(),
-    releaseDate: text(),
     lastAirDate: text(),
     homepage: text(),
     createdBy: text(),
@@ -21,68 +19,47 @@ export const series = sqliteTable("series", {
     prodStatus: text(),
     voteAverage: real(),
     voteCount: real(),
-    synopsis: text(),
     popularity: real(),
-    imageCover: imageUrl("image_cover", "series-covers").notNull(),
     apiId: integer().notNull(),
-    lockStatus: integer({ mode: "boolean" }),
     episodeToAir: integer(),
     seasonToAir: integer(),
     nextEpisodeToAir: text(),
-    lastApiUpdate: text(),
+    ...communMediaCols(MediaType.SERIES),
 });
 
 
 export const seriesList = sqliteTable("series_list", {
-    id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer().notNull().references(() => series.id),
     currentSeason: integer().notNull(),
     currentEpisode: integer().notNull(),
-    status: text().$type<Status>().notNull(),
-    favorite: integer({ mode: "boolean" }),
     redo: integer().default(0).notNull(),
-    comment: text(),
-    total: integer().default(0).notNull(),
-    rating: real(),
+    total: integer("total").default(0).notNull(),
     redo2: customJson<number[]>("redo2").default(sql`'[]'`).notNull(),
+    ...communMediaListCols(series.id),
 });
 
 
 export const seriesGenre = sqliteTable("series_genre", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => series.id),
-    name: text().notNull(),
+    ...communGenericCols(series.id),
 });
 
 
 export const seriesActors = sqliteTable("series_actors", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => series.id),
-    name: text().notNull(),
-});
-
-
-export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => series.id),
-    season: integer().notNull(),
-    episodes: integer().notNull(),
+    ...communGenericCols(series.id),
 });
 
 
 export const seriesNetwork = sqliteTable("series_network", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => series.id),
-    name: text().notNull(),
+    ...communGenericCols(series.id),
+});
+
+
+export const seriesEpisodesPerSeason = sqliteTable("series_episodes_per_season", {
+    ...communMediaEpsCols(series.id),
 });
 
 
 export const seriesLabels = sqliteTable("series_labels", {
-    id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer().notNull().references(() => series.id),
-    name: text().notNull(),
+    ...communMediaLabelsCols(series.id),
 });
 
 

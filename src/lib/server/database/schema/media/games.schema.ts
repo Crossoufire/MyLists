@@ -1,72 +1,51 @@
-import {imageUrl} from "@/lib/server/database/custom-types";
-import {GamesPlatformsEnum, Status} from "@/lib/utils/enums";
-import {user} from "@/lib/server/database/schema/auth.schema";
-import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {relations} from "drizzle-orm/relations";
+import {user} from "@/lib/server/database/schema/auth.schema";
+import {GamesPlatformsEnum, MediaType} from "@/lib/utils/enums";
+import {integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
+import {communGenericCols, communMediaCols, communMediaLabelsCols, communMediaListCols} from "@/lib/server/database/schema/media/_helper";
 
 
 export const games = sqliteTable("games", {
-    id: integer().primaryKey().notNull(),
-    name: text().notNull(),
-    imageCover: imageUrl("image_cover", "games-covers").notNull(),
     gameEngine: text(),
     gameModes: text(),
     playerPerspective: text(),
     voteAverage: real(),
     voteCount: real(),
-    releaseDate: text(),
-    synopsis: text(),
     igdbUrl: text(),
     hltbMainTime: real(),
     hltbMainAndExtraTime: real(),
     hltbTotalCompleteTime: real(),
     apiId: integer().notNull(),
-    lockStatus: integer({ mode: "boolean" }),
-    lastApiUpdate: text(),
+    ...communMediaCols(MediaType.GAMES),
 });
 
 
 export const gamesList = sqliteTable("games_list", {
-    id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer().notNull().references(() => games.id),
-    status: text().$type<Status>().notNull(),
     playtime: integer().default(0),
-    favorite: integer({ mode: "boolean" }),
-    comment: text(),
     platform: text().$type<GamesPlatformsEnum>(),
-    rating: real(),
+    ...communMediaListCols(games.id),
 });
 
 
 export const gamesGenre = sqliteTable("games_genre", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => games.id),
-    name: text().notNull(),
+    ...communGenericCols(games.id),
 });
 
 
 export const gamesPlatforms = sqliteTable("games_platforms", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => games.id),
-    name: text().notNull(),
+    ...communGenericCols(games.id),
 });
 
 
 export const gamesCompanies = sqliteTable("games_companies", {
-    id: integer().primaryKey().notNull(),
-    mediaId: integer().notNull().references(() => games.id),
-    name: text().notNull(),
+    ...communGenericCols(games.id),
     publisher: integer({ mode: "boolean" }),
     developer: integer({ mode: "boolean" }),
 });
 
 
 export const gamesLabels = sqliteTable("games_labels", {
-    id: integer().primaryKey().notNull(),
-    userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
-    mediaId: integer().notNull().references(() => games.id),
-    name: text().notNull(),
+    ...communMediaLabelsCols(games.id),
 });
 
 

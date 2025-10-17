@@ -3,7 +3,7 @@ import {asc, desc, getTableColumns} from "drizzle-orm";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {animeAchievements} from "@/lib/server/domain/media/tv/anime/achievements.seed";
-import {anime, animeActors, animeEpisodesPerSeason, animeGenre, animeLabels, animeList, animeNetwork} from "@/lib/server/database/schema/anime.schema";
+import {anime, animeActors, animeEpisodesPerSeason, animeGenre, animeLabels, animeList, animeNetwork} from "@/lib/server/database/schema/media/anime.schema";
 
 
 export type AnimeSchemaConfig = TvSchemaConfig<

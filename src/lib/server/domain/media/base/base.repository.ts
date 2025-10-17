@@ -20,12 +20,12 @@ import {
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/types/base.types";
-import {seriesList} from "@/lib/server/database/schema/series.schema";
-import {moviesList} from "@/lib/server/database/schema/movies.schema";
-import {animeList} from "@/lib/server/database/schema/anime.schema";
-import {gamesList} from "@/lib/server/database/schema/games.schema";
-import {booksList} from "@/lib/server/database/schema/books.schema";
-import {mangaList} from "@/lib/server/database/schema/manga.schema";
+import {seriesList} from "@/lib/server/database/schema/media/series.schema";
+import {moviesList} from "@/lib/server/database/schema/media/movies.schema";
+import {animeList} from "@/lib/server/database/schema/media/anime.schema";
+import {gamesList} from "@/lib/server/database/schema/media/games.schema";
+import {booksList} from "@/lib/server/database/schema/media/books.schema";
+import {mangaList} from "@/lib/server/database/schema/media/manga.schema";
 
 
 const DEFAULT_PER_PAGE = 25;

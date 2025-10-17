@@ -3,14 +3,14 @@ import {relations} from "drizzle-orm/relations";
 import {user} from "@/lib/server/database/schema/auth.schema";
 import {customJson} from "@/lib/server/database/custom-types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {animeLabels, animeList} from "@/lib/server/database/schema/anime.schema";
-import {gamesLabels, gamesList} from "@/lib/server/database/schema/games.schema";
-import {booksLabels, booksList} from "@/lib/server/database/schema/books.schema";
-import {mangaLabels, mangaList} from "@/lib/server/database/schema/manga.schema";
+import {animeLabels, animeList} from "@/lib/server/database/schema/media/anime.schema";
+import {gamesLabels, gamesList} from "@/lib/server/database/schema/media/games.schema";
+import {booksLabels, booksList} from "@/lib/server/database/schema/media/books.schema";
+import {mangaLabels, mangaList} from "@/lib/server/database/schema/media/manga.schema";
 import {userAchievement} from "@/lib/server/database/schema/achievements.schema";
 import {MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
-import {seriesLabels, seriesList} from "@/lib/server/database/schema/series.schema";
-import {moviesLabels, moviesList} from "@/lib/server/database/schema/movies.schema";
+import {seriesLabels, seriesList} from "@/lib/server/database/schema/media/series.schema";
+import {moviesLabels, moviesList} from "@/lib/server/database/schema/media/movies.schema";
 import {mediadleStats, userMediadleProgress} from "@/lib/server/database/schema/mediadle.schema";
 
 

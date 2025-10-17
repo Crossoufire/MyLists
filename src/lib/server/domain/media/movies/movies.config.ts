@@ -3,7 +3,7 @@ import {createArrayFilterDef} from "../base/base.repository";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema/movies.schema";
+import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema/media/movies.schema";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<
