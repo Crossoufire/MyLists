@@ -364,7 +364,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         }
 
         if (seasonsData && seasonsData.length > 0) {
-            await this.updateUsersWithMedia(mediaId, seasonsData);
+            await this._updateUsersWithMedia(mediaId, seasonsData);
 
             await getDbClient().delete(epsPerSeasonTable).where(eq(epsPerSeasonTable.mediaId, mediaId));
             const epsPerSeasonToAdd = seasonsData.map((data) => ({ mediaId, ...data }));
@@ -395,17 +395,19 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
 
     // --- Logic When Updating Seasons data -----------------------------------
 
-    async updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
+    private async _updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
         const { listTable } = this.config;
         const oldSeasonsData = await this.getMediaEpsPerSeason(mediaId);
 
         // If nothing changed, do nothing
-        if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData)) return;
+        if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData)) {
+            return;
+        }
 
         const newEpsList = seasonsData.map((s) => s.episodes);
 
         // Fetch all users with media in list
-        const usersWithMediaInTheirList = await this.getAllUsersWithMediaInTheirList(mediaId);
+        const usersWithMediaInTheirList = await this._getAllUsersWithMediaInTheirList(mediaId);
 
         // Process in batches to avoid overwhelming db
         const batches = [];
@@ -421,7 +423,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                     .slice(0, userMedia.currentSeason - 1)
                     .reduce((a, b) => a + b.episodes, 0) + userMedia.currentEpisode;
 
-                const newPosition = this.reorderSeasEps(totEpsWatched, newEpsList)!;
+                const newPosition = this._reorderSeasEps(totEpsWatched, newEpsList)!;
 
                 const newSeasonsSize = seasonsData.length;
                 const oldSeasonsSize = oldSeasonsData.length;
@@ -455,7 +457,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
         }
     }
 
-    async getAllUsersWithMediaInTheirList(mediaId: number) {
+    private async _getAllUsersWithMediaInTheirList(mediaId: number) {
         const { listTable } = this.config;
 
         return getDbClient()
@@ -465,7 +467,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             .execute()
     }
 
-    reorderSeasEps(totEpsWatched: number, epsList: number[]) {
+    private _reorderSeasEps(totEpsWatched: number, epsList: number[]) {
         const totalEps = epsList.reduce((a, b) => a + b, 0);
 
         if (totEpsWatched > totalEps) {
