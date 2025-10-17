@@ -1,60 +1,60 @@
-import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/utils/enums";
 import {createArrayFilterDef} from "../base/base.repository";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
+import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema/movies.schema";
 
 
 export type MovieSchemaConfig = MediaSchemaConfig<
-    typeof schema.movies,
-    typeof schema.moviesList,
-    typeof schema.moviesGenre,
-    typeof schema.moviesLabels
+    typeof movies,
+    typeof moviesList,
+    typeof moviesGenre,
+    typeof moviesLabels
 >;
 
 
 export const moviesConfig: MovieSchemaConfig = {
-    mediaTable: schema.movies,
-    listTable: schema.moviesList,
-    genreTable: schema.moviesGenre,
-    labelTable: schema.moviesLabels,
+    mediaTable: movies,
+    listTable: moviesList,
+    genreTable: moviesGenre,
+    labelTable: moviesLabels,
     mediaList: {
         baseSelection: {
-            mediaName: schema.movies.name,
-            imageCover: schema.movies.imageCover,
-            ...getTableColumns(schema.moviesList),
+            mediaName: movies.name,
+            imageCover: movies.imageCover,
+            ...getTableColumns(moviesList),
         },
         filterDefinitions: {
             actors: createArrayFilterDef({
                 argName: "actors",
-                mediaTable: schema.movies,
-                entityTable: schema.moviesActors,
-                filterColumn: schema.moviesActors.name,
+                mediaTable: movies,
+                entityTable: moviesActors,
+                filterColumn: moviesActors.name,
             }),
             langs: createArrayFilterDef({
                 argName: "langs",
-                mediaTable: schema.movies,
-                filterColumn: schema.movies.originalLanguage,
+                mediaTable: movies,
+                filterColumn: movies.originalLanguage,
             }),
             directors: createArrayFilterDef({
                 argName: "directors",
-                mediaTable: schema.movies,
-                filterColumn: schema.movies.directorName,
+                mediaTable: movies,
+                filterColumn: movies.directorName,
             }),
         },
         defaultStatus: Status.COMPLETED,
         defaultSortName: "Title A-Z",
         availableSorts: {
-            "Title A-Z": asc(schema.movies.name),
-            "Title Z-A": desc(schema.movies.name),
-            "Rating +": [desc(schema.moviesList.rating), asc(schema.movies.name)],
-            "Rating -": [asc(schema.moviesList.rating), asc(schema.movies.name)],
-            "TMDB Rating +": [desc(schema.movies.voteAverage), asc(schema.movies.name)],
-            "TMDB Rating -": [asc(schema.movies.voteAverage), asc(schema.movies.name)],
-            "Release Date +": [desc(schema.movies.releaseDate), asc(schema.movies.name)],
-            "Release Date -": [asc(schema.movies.releaseDate), asc(schema.movies.name)],
-            "Re-Watched": [desc(schema.moviesList.redo), asc(schema.movies.name)],
+            "Title A-Z": asc(movies.name),
+            "Title Z-A": desc(movies.name),
+            "Rating +": [desc(moviesList.rating), asc(movies.name)],
+            "Rating -": [asc(moviesList.rating), asc(movies.name)],
+            "TMDB Rating +": [desc(movies.voteAverage), asc(movies.name)],
+            "TMDB Rating -": [asc(movies.voteAverage), asc(movies.name)],
+            "Release Date +": [desc(movies.releaseDate), asc(movies.name)],
+            "Release Date -": [asc(movies.releaseDate), asc(movies.name)],
+            "Re-Watched": [desc(moviesList.redo), asc(movies.name)],
         },
     },
     apiProvider: {
@@ -66,21 +66,21 @@ export const moviesConfig: MovieSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.ACTOR]: {
-            sourceTable: schema.moviesActors,
-            nameColumn: schema.moviesActors.name,
-            mediaIdColumn: schema.moviesActors.mediaId,
+            sourceTable: moviesActors,
+            nameColumn: moviesActors.name,
+            mediaIdColumn: moviesActors.mediaId,
         },
         [JobType.CREATOR]: {
-            sourceTable: schema.movies,
-            mediaIdColumn: schema.movies.id,
-            nameColumn: schema.movies.directorName,
+            sourceTable: movies,
+            mediaIdColumn: movies.id,
+            nameColumn: movies.directorName,
         },
         [JobType.COMPOSITOR]: {
-            sourceTable: schema.movies,
-            mediaIdColumn: schema.movies.id,
-            nameColumn: schema.movies.compositorName,
+            sourceTable: movies,
+            mediaIdColumn: movies.id,
+            nameColumn: movies.compositorName,
         },
     },
-    tablesForDeletion: [schema.moviesActors, schema.moviesGenre, schema.moviesLabels],
+    tablesForDeletion: [moviesActors, moviesGenre, moviesLabels],
     achievements: moviesAchievements,
 };

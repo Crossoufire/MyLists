@@ -1,56 +1,56 @@
-import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/utils/enums";
 import {and, asc, desc, eq, getTableColumns, like} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
+import {games, gamesCompanies, gamesGenre, gamesLabels, gamesList, gamesPlatforms} from "@/lib/server/database/schema/games.schema";
 
 
 export type GamesSchemaConfig = MediaSchemaConfig<
-    typeof schema.games,
-    typeof schema.gamesList,
-    typeof schema.gamesGenre,
-    typeof schema.gamesLabels
+    typeof games,
+    typeof gamesList,
+    typeof gamesGenre,
+    typeof gamesLabels
 >;
 
 
 export const gamesConfig: GamesSchemaConfig = {
-    mediaTable: schema.games,
-    listTable: schema.gamesList,
-    genreTable: schema.gamesGenre,
-    labelTable: schema.gamesLabels,
+    mediaTable: games,
+    listTable: gamesList,
+    genreTable: gamesGenre,
+    labelTable: gamesLabels,
     mediaList: {
         baseSelection: {
-            mediaName: schema.games.name,
-            imageCover: schema.games.imageCover,
-            ...getTableColumns(schema.gamesList),
+            mediaName: games.name,
+            imageCover: games.imageCover,
+            ...getTableColumns(gamesList),
         },
         filterDefinitions: {
             platforms: createArrayFilterDef({
                 argName: "platforms",
-                mediaTable: schema.games,
-                filterColumn: schema.gamesList.platform,
+                mediaTable: games,
+                filterColumn: gamesList.platform,
             }),
             companies: createArrayFilterDef({
                 argName: "companies",
-                mediaTable: schema.games,
-                entityTable: schema.gamesCompanies,
-                filterColumn: schema.gamesCompanies.name,
+                mediaTable: games,
+                entityTable: gamesCompanies,
+                filterColumn: gamesCompanies.name,
             }),
         },
         defaultStatus: Status.PLAYING,
         defaultSortName: "Playtime +",
         availableSorts: {
-            "Title A-Z": asc(schema.games.name),
-            "Title Z-A": desc(schema.games.name),
-            "Release Date +": [desc(schema.games.releaseDate), asc(schema.games.name)],
-            "Release Date -": [asc(schema.games.releaseDate), asc(schema.games.name)],
-            "IGDB Rating +": [desc(schema.games.voteAverage), asc(schema.games.name)],
-            "IGDB Rating -": [asc(schema.games.voteAverage), asc(schema.games.name)],
-            "Rating +": [desc(schema.gamesList.rating), asc(schema.games.name)],
-            "Rating -": [asc(schema.gamesList.rating), asc(schema.games.name)],
-            "Playtime +": [desc(schema.gamesList.playtime), asc(schema.games.name)],
-            "Playtime -": [asc(schema.gamesList.playtime), asc(schema.games.name)],
+            "Title A-Z": asc(games.name),
+            "Title Z-A": desc(games.name),
+            "Release Date +": [desc(games.releaseDate), asc(games.name)],
+            "Release Date -": [asc(games.releaseDate), asc(games.name)],
+            "IGDB Rating +": [desc(games.voteAverage), asc(games.name)],
+            "IGDB Rating -": [asc(games.voteAverage), asc(games.name)],
+            "Rating +": [desc(gamesList.rating), asc(games.name)],
+            "Rating -": [asc(gamesList.rating), asc(games.name)],
+            "Playtime +": [desc(gamesList.playtime), asc(games.name)],
+            "Playtime -": [asc(gamesList.playtime), asc(games.name)],
         },
     },
     apiProvider: {
@@ -62,12 +62,12 @@ export const gamesConfig: GamesSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.CREATOR]: {
-            sourceTable: schema.gamesCompanies,
-            nameColumn: schema.gamesCompanies.name,
-            mediaIdColumn: schema.gamesCompanies.mediaId,
-            getFilter: (name) => and(like(schema.gamesCompanies.name, `%${name}%`), eq(schema.gamesCompanies.developer, true))
+            sourceTable: gamesCompanies,
+            nameColumn: gamesCompanies.name,
+            mediaIdColumn: gamesCompanies.mediaId,
+            getFilter: (name) => and(like(gamesCompanies.name, `%${name}%`), eq(gamesCompanies.developer, true))
         }
     },
-    tablesForDeletion: [schema.gamesCompanies, schema.gamesPlatforms, schema.gamesGenre, schema.gamesLabels],
+    tablesForDeletion: [gamesCompanies, gamesPlatforms, gamesGenre, gamesLabels],
     achievements: gamesAchievements,
 };

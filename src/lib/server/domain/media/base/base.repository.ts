@@ -1,5 +1,4 @@
 import {notFound} from "@tanstack/react-router";
-import * as schema from "@/lib/server/database/schema";
 import {followers, user} from "@/lib/server/database/schema";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
@@ -21,6 +20,12 @@ import {
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/types/base.types";
+import {seriesList} from "@/lib/server/database/schema/series.schema";
+import {moviesList} from "@/lib/server/database/schema/movies.schema";
+import {animeList} from "@/lib/server/database/schema/anime.schema";
+import {gamesList} from "@/lib/server/database/schema/games.schema";
+import {booksList} from "@/lib/server/database/schema/books.schema";
+import {mangaList} from "@/lib/server/database/schema/manga.schema";
 
 
 const DEFAULT_PER_PAGE = 25;
@@ -859,12 +864,12 @@ export const createArrayFilterDef = ({ argName, entityTable, filterColumn, media
 
 
 type TListByType = {
-    [MediaType.SERIES]: typeof schema.seriesList.$inferSelect;
-    [MediaType.ANIME]: typeof schema.animeList.$inferSelect;
-    [MediaType.MOVIES]: typeof schema.moviesList.$inferSelect;
-    [MediaType.GAMES]: typeof schema.gamesList.$inferSelect;
-    [MediaType.BOOKS]: typeof schema.booksList.$inferSelect & { pages: number };
-    [MediaType.MANGA]: typeof schema.mangaList.$inferSelect & { chapters: number };
+    [MediaType.SERIES]: typeof seriesList.$inferSelect;
+    [MediaType.ANIME]: typeof animeList.$inferSelect;
+    [MediaType.MOVIES]: typeof moviesList.$inferSelect;
+    [MediaType.GAMES]: typeof gamesList.$inferSelect;
+    [MediaType.BOOKS]: typeof booksList.$inferSelect & { pages: number };
+    [MediaType.MANGA]: typeof mangaList.$inferSelect & { chapters: number };
 };
 
 export type MediaListDataByType = {

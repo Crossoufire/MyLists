@@ -1,81 +1,81 @@
-import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/utils/enums";
 import {TvSchemaConfig} from "@/lib/types/media.config.types";
 import {asc, desc, getTableColumns, sql} from "drizzle-orm";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {seriesAchievements} from "@/lib/server/domain/media/tv/series/achievements.seed";
+import {series, seriesActors, seriesEpisodesPerSeason, seriesGenre, seriesLabels, seriesList, seriesNetwork} from "@/lib/server/database/schema/series.schema";
 
 
 export type SeriesSchemaConfig = TvSchemaConfig<
-    typeof schema.series,
-    typeof schema.seriesList,
-    typeof schema.seriesGenre,
-    typeof schema.seriesLabels,
-    typeof schema.seriesActors,
-    typeof schema.seriesNetwork,
-    typeof schema.seriesEpisodesPerSeason
+    typeof series,
+    typeof seriesList,
+    typeof seriesGenre,
+    typeof seriesLabels,
+    typeof seriesActors,
+    typeof seriesNetwork,
+    typeof seriesEpisodesPerSeason
 >;
 
 
 export const seriesConfig: SeriesSchemaConfig = {
-    mediaTable: schema.series,
-    listTable: schema.seriesList,
-    genreTable: schema.seriesGenre,
-    labelTable: schema.seriesLabels,
-    actorTable: schema.seriesActors,
-    networkTable: schema.seriesNetwork,
-    epsPerSeasonTable: schema.seriesEpisodesPerSeason,
+    mediaTable: series,
+    listTable: seriesList,
+    genreTable: seriesGenre,
+    labelTable: seriesLabels,
+    actorTable: seriesActors,
+    networkTable: seriesNetwork,
+    epsPerSeasonTable: seriesEpisodesPerSeason,
     mediaList: {
         baseSelection: {
-            mediaName: schema.series.name,
-            imageCover: schema.series.imageCover,
+            mediaName: series.name,
+            imageCover: series.imageCover,
             epsPerSeason: sql<{ season: number; episodes: number }[]>`(
                 SELECT 
                     json_group_array(json_object(
-                        'season', ${schema.seriesEpisodesPerSeason.season}, 
-                        'episodes', ${schema.seriesEpisodesPerSeason.episodes}
+                        'season', ${seriesEpisodesPerSeason.season}, 
+                        'episodes', ${seriesEpisodesPerSeason.episodes}
                     ))
-                FROM ${schema.seriesEpisodesPerSeason} 
-                WHERE ${schema.seriesEpisodesPerSeason.mediaId} = ${schema.series.id}
+                FROM ${seriesEpisodesPerSeason} 
+                WHERE ${seriesEpisodesPerSeason.mediaId} = ${series.id}
             )`.mapWith(JSON.parse),
-            ...getTableColumns(schema.seriesList),
+            ...getTableColumns(seriesList),
         },
         filterDefinitions: {
             actors: createArrayFilterDef({
                 argName: "actors",
-                mediaTable: schema.series,
-                entityTable: schema.seriesActors,
-                filterColumn: schema.seriesActors.name,
+                mediaTable: series,
+                entityTable: seriesActors,
+                filterColumn: seriesActors.name,
             }),
             networks: createArrayFilterDef({
                 argName: "networks",
-                mediaTable: schema.series,
-                entityTable: schema.seriesNetwork,
-                filterColumn: schema.seriesNetwork.name,
+                mediaTable: series,
+                entityTable: seriesNetwork,
+                filterColumn: seriesNetwork.name,
             }),
             creators: createArrayFilterDef({
                 argName: "creators",
-                mediaTable: schema.series,
-                filterColumn: schema.series.createdBy,
+                mediaTable: series,
+                filterColumn: series.createdBy,
             }),
             langs: createArrayFilterDef({
                 argName: "langs",
-                mediaTable: schema.series,
-                filterColumn: schema.series.originCountry,
+                mediaTable: series,
+                filterColumn: series.originCountry,
             }),
         },
         defaultStatus: Status.WATCHING,
         defaultSortName: "Title A-Z",
         availableSorts: {
-            "Title A-Z": asc(schema.series.name),
-            "Title Z-A": desc(schema.series.name),
-            "Release Date +": [desc(schema.series.releaseDate), asc(schema.series.name)],
-            "Release Date -": [asc(schema.series.releaseDate), asc(schema.series.name)],
-            "TMDB Rating +": [desc(schema.series.voteAverage), asc(schema.series.name)],
-            "TMDB Rating -": [asc(schema.series.voteAverage), asc(schema.series.name)],
-            "Rating +": [desc(schema.seriesList.rating), asc(schema.series.name)],
-            "Rating -": [asc(schema.seriesList.rating), asc(schema.series.name)],
-            "Re-watched": [desc(schema.seriesList.redo), asc(schema.series.name)],
+            "Title A-Z": asc(series.name),
+            "Title Z-A": desc(series.name),
+            "Release Date +": [desc(series.releaseDate), asc(series.name)],
+            "Release Date -": [asc(series.releaseDate), asc(series.name)],
+            "TMDB Rating +": [desc(series.voteAverage), asc(series.name)],
+            "TMDB Rating -": [asc(series.voteAverage), asc(series.name)],
+            "Rating +": [desc(seriesList.rating), asc(series.name)],
+            "Rating -": [asc(seriesList.rating), asc(series.name)],
+            "Re-watched": [desc(seriesList.redo), asc(series.name)],
         },
     },
     apiProvider: {
@@ -87,14 +87,14 @@ export const seriesConfig: SeriesSchemaConfig = {
     ],
     jobDefinitions: {
         [JobType.ACTOR]: {
-            sourceTable: schema.seriesActors,
-            nameColumn: schema.seriesActors.name,
-            mediaIdColumn: schema.seriesActors.mediaId,
+            sourceTable: seriesActors,
+            nameColumn: seriesActors.name,
+            mediaIdColumn: seriesActors.mediaId,
         },
         [JobType.CREATOR]: {
-            mediaIdColumn: schema.series.id,
-            sourceTable: schema.series,
-            nameColumn: schema.series.createdBy,
+            mediaIdColumn: series.id,
+            sourceTable: series,
+            nameColumn: series.createdBy,
             postProcess: (results: { name: string | null }[]) => {
                 return Array.from(
                     new Map(results
@@ -108,11 +108,11 @@ export const seriesConfig: SeriesSchemaConfig = {
             },
         },
         [JobType.PLATFORM]: {
-            sourceTable: schema.seriesNetwork,
-            nameColumn: schema.seriesNetwork.name,
-            mediaIdColumn: schema.seriesNetwork.mediaId,
+            sourceTable: seriesNetwork,
+            nameColumn: seriesNetwork.name,
+            mediaIdColumn: seriesNetwork.mediaId,
         }
     },
-    tablesForDeletion: [schema.seriesActors, schema.seriesGenre, schema.seriesLabels],
+    tablesForDeletion: [seriesActors, seriesGenre, seriesLabels],
     achievements: seriesAchievements,
 };

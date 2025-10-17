@@ -1,56 +1,56 @@
-import * as schema from "@/lib/server/database/schema";
 import {JobType, Status} from "@/lib/utils/enums";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
 import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {booksAchievements} from "@/lib/server/domain/media/books/achievements.seed";
+import {books, booksAuthors, booksGenre, booksLabels, booksList} from "@/lib/server/database/schema/books.schema";
 
 
 export type MangaSchemaConfig = MediaSchemaConfig<
-    typeof schema.books,
-    typeof schema.booksList,
-    typeof schema.booksGenre,
-    typeof schema.booksLabels
+    typeof books,
+    typeof booksList,
+    typeof booksGenre,
+    typeof booksLabels
 >;
 
 
 export const booksConfig: MangaSchemaConfig = {
-    mediaTable: schema.books,
-    listTable: schema.booksList,
-    genreTable: schema.booksGenre,
-    labelTable: schema.booksLabels,
+    mediaTable: books,
+    listTable: booksList,
+    genreTable: booksGenre,
+    labelTable: booksLabels,
     mediaList: {
         baseSelection: {
-            pages: schema.books.pages,
-            mediaName: schema.books.name,
-            imageCover: schema.books.imageCover,
-            ...getTableColumns(schema.booksList),
+            pages: books.pages,
+            mediaName: books.name,
+            imageCover: books.imageCover,
+            ...getTableColumns(booksList),
         },
         filterDefinitions: {
             langs: createArrayFilterDef({
                 argName: "langs",
-                mediaTable: schema.books,
-                filterColumn: schema.books.language,
+                mediaTable: books,
+                filterColumn: books.language,
             }),
             authors: createArrayFilterDef({
                 argName: "authors",
-                mediaTable: schema.books,
-                entityTable: schema.booksAuthors,
-                filterColumn: schema.booksAuthors.name,
+                mediaTable: books,
+                entityTable: booksAuthors,
+                filterColumn: booksAuthors.name,
             }),
         },
         defaultStatus: Status.READING,
         defaultSortName: "Title A-Z",
         availableSorts: {
-            "Title A-Z": asc(schema.books.name),
-            "Title Z-A": desc(schema.books.name),
-            "Rating +": [desc(schema.booksList.rating), asc(schema.books.name)],
-            "Rating -": [asc(schema.booksList.rating), asc(schema.books.name)],
-            "Published Date +": [desc(schema.books.releaseDate), asc(schema.books.name)],
-            "Published Date -": [asc(schema.books.releaseDate), asc(schema.books.name)],
-            "Re-Read": [desc(schema.booksList.redo), asc(schema.books.name)],
-            "Pages +": [desc(schema.books.pages), asc(schema.books.name)],
-            "Pages -": [asc(schema.books.pages), asc(schema.books.name)],
+            "Title A-Z": asc(books.name),
+            "Title Z-A": desc(books.name),
+            "Rating +": [desc(booksList.rating), asc(books.name)],
+            "Rating -": [asc(booksList.rating), asc(books.name)],
+            "Published Date +": [desc(books.releaseDate), asc(books.name)],
+            "Published Date -": [asc(books.releaseDate), asc(books.name)],
+            "Re-Read": [desc(booksList.redo), asc(books.name)],
+            "Pages +": [desc(books.pages), asc(books.name)],
+            "Pages -": [asc(books.pages), asc(books.name)],
         },
     },
     apiProvider: {
@@ -59,11 +59,11 @@ export const booksConfig: MangaSchemaConfig = {
     editableFields: ["name", "releaseDate", "pages", "language", "publishers", "synopsis"],
     jobDefinitions: {
         [JobType.CREATOR]: {
-            sourceTable: schema.booksAuthors,
-            nameColumn: schema.booksAuthors.name,
-            mediaIdColumn: schema.booksAuthors.mediaId,
+            sourceTable: booksAuthors,
+            nameColumn: booksAuthors.name,
+            mediaIdColumn: booksAuthors.mediaId,
         },
     },
-    tablesForDeletion: [schema.booksAuthors, schema.booksGenre, schema.booksLabels],
+    tablesForDeletion: [booksAuthors, booksGenre, booksLabels],
     achievements: booksAchievements,
 };

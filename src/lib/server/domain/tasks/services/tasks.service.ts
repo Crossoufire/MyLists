@@ -49,7 +49,7 @@ export class TasksService {
             addMediaNotifications: this.runAddMediaNotifications.bind(this),
             removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
             deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
-            addGenresToBooksUsingLLM: this.runAddGenresToBooksUsingLLM.bind(this),
+            addGenresToBooksUsingLlm: this.runAddGenresToBooksUsingLlm.bind(this),
         };
     }
 
@@ -306,7 +306,7 @@ export class TasksService {
         this.logger.info("Completed: MaintenanceTasks execution.");
     }
 
-    protected async runAddGenresToBooksUsingLLM() {
+    protected async runAddGenresToBooksUsingLlm() {
         this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
         this.logger.info(`Using: ${serverEnv.LLM_MODEL_ID}, from: ${serverEnv.LLM_BASE_URL}`);
 
