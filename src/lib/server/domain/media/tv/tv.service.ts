@@ -253,21 +253,21 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
         const logPayload = { oldValue: currentState.status, newValue: payload.status };
 
         if (specialStatuses.includes(currentState.status) && !specialStatuses.includes(newState.status)) {
-            newState.lastEpisodeWatched = 1;
+            newState.currentEpisode = 1;
         }
 
         if (payload.status === Status.COMPLETED) {
             const sumEpisodesTv = epsPerSeason.reduce((a, b) => a + b.episodes, 0);
             const sumOldRedoEps = currentState.redo2.reduce((a, b, i) => a + b * epsPerSeason[i].episodes, 0);
-            
+
             newState.total = sumEpisodesTv + sumOldRedoEps;
             newState.currentSeason = epsPerSeason.at(-1)!.season;
-            newState.lastEpisodeWatched = epsPerSeason.at(-1)!.episodes;
+            newState.currentEpisode = epsPerSeason.at(-1)!.episodes;
         }
         else if (specialStatuses.includes(payload.status)) {
             newState.total = 0;
             newState.currentSeason = 1;
-            newState.lastEpisodeWatched = 0;
+            newState.currentEpisode = 0;
             newState.redo2 = Array(epsPerSeason.length).fill(0);
         }
 
@@ -285,7 +285,7 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
 
             const newState = { ...currentState, currentSeason: payload.currentSeason };
             const logPayload = {
-                oldValue: [currentState.currentSeason, currentState.lastEpisodeWatched],
+                oldValue: [currentState.currentSeason, currentState.currentEpisode],
                 newValue: [payload.currentSeason, 1],
             }
 
@@ -293,25 +293,25 @@ export class TvService extends BaseService<AnimeSchemaConfig | SeriesSchemaConfi
             const newTotal = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
 
             newState.total = newTotal
-            newState.lastEpisodeWatched = 1;
+            newState.currentEpisode = 1;
 
             return [newState, logPayload] as [TvList, LogPayload];
         }
 
-        if (payload.lastEpisodeWatched) {
-            if (payload.lastEpisodeWatched > epsPerSeason[currentState.currentSeason - 1].episodes) {
+        if (payload.currentEpisode) {
+            if (payload.currentEpisode > epsPerSeason[currentState.currentSeason - 1].episodes) {
                 throw new FormattedError("Invalid episode");
             }
 
-            const newState = { ...currentState, lastEpisodeWatched: payload.lastEpisodeWatched };
+            const newState = { ...currentState, currentEpisode: payload.currentEpisode };
             const logPayload = {
-                oldValue: [currentState.currentSeason, currentState.lastEpisodeWatched],
-                newValue: [currentState.currentSeason, payload.lastEpisodeWatched],
+                oldValue: [currentState.currentSeason, currentState.currentEpisode],
+                newValue: [currentState.currentSeason, payload.currentEpisode],
             }
 
             const newWatched = epsPerSeasList
                 .slice(0, currentState.currentSeason - 1)
-                .reduce((a, b) => a + b, 0) + payload.lastEpisodeWatched;
+                .reduce((a, b) => a + b, 0) + payload.currentEpisode;
 
             newState.total = newWatched + currentState.redo2.reduce((a, b, i) => a + b * epsPerSeasList[i], 0);
 

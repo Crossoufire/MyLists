@@ -22,7 +22,7 @@ export const TvListItem = (props: TvListItemProps<typeof MediaType.SERIES | type
                 <DisplayEpsAndSeasons
                     status={props.userMedia.status}
                     currentSeason={props.userMedia.currentSeason}
-                    currentEpisode={props.userMedia.lastEpisodeWatched}
+                    currentEpisode={props.userMedia.currentEpisode}
                 />
             }
         />

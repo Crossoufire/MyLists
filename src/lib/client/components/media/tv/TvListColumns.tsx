@@ -17,7 +17,7 @@ export const getTvColumns = (props: ColumnConfigProps): ColumnDef<ExtractListByT
             <DisplayEpsAndSeasons
                 status={original.status}
                 currentSeason={original.currentSeason}
-                currentEpisode={original.lastEpisodeWatched}
+                currentEpisode={original.currentEpisode}
             />
         )
     });

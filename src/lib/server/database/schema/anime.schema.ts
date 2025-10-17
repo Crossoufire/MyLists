@@ -38,7 +38,7 @@ export const animeList = sqliteTable("anime_list", {
     userId: integer().notNull().references(() => user.id, { onDelete: "cascade" }),
     mediaId: integer().notNull().references(() => anime.id),
     currentSeason: integer().notNull(),
-    lastEpisodeWatched: integer().notNull(),
+    currentEpisode: integer().notNull(),
     status: text().$type<Status>().notNull(),
     favorite: integer({ mode: "boolean" }),
     redo: integer().default(0).notNull(),

@@ -15,6 +15,13 @@
       "when": 1760467690548,
       "tag": "0001_youthful_union_jack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760698635863,
+      "tag": "0002_premium_white_queen",
+      "breakpoints": true
     }
   ]
 }

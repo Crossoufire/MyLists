@@ -26,8 +26,8 @@ export const notifications = sqliteTable("notifications", {
         mediaType: text().$type<MediaType>(),
         mediaId: integer(),
         payload: customJson<Record<string, any>>("payload").notNull(),
-        timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
         notificationType: text().$type<NotificationType>(),
+        timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     },
     (table) => [index("ix_notifications_timestamp").on(table.timestamp)]);
 
@@ -40,7 +40,7 @@ export const userMediaUpdate = sqliteTable("user_media_update", {
         mediaType: text().$type<MediaType>().notNull(),
         updateType: text().$type<UpdateType>().notNull(),
         payload: customJson<{ old_value: any, new_value: any }>("payload"),
-        timestamp: text().notNull(),
+        timestamp: text().default(sql`(CURRENT_TIMESTAMP)`).notNull(),
     },
     (table) => [
         index("ix_user_media_update_media_id").on(table.mediaId),

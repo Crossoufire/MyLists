@@ -261,7 +261,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                 mediaId: media.id,
                 status: newStatus,
                 currentSeason: newSeason,
-                lastEpisodeWatched: newEpisode,
+                currentEpisode: newEpisode,
                 redo2: Array(epsPerSeason.length).fill(0),
             })
             .returning();
@@ -398,7 +398,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
     async updateUsersWithMedia(mediaId: number, seasonsData: EpsPerSeasonType[]) {
         const { listTable } = this.config;
         const oldSeasonsData = await this.getMediaEpsPerSeason(mediaId);
-        
+
         // If nothing changed, do nothing
         if (JSON.stringify(oldSeasonsData) === JSON.stringify(seasonsData)) return;
 
@@ -419,7 +419,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
             const updatePromises = batch.map(async (userMedia) => {
                 const totEpsWatched = oldSeasonsData
                     .slice(0, userMedia.currentSeason - 1)
-                    .reduce((a, b) => a + b.episodes, 0) + userMedia.lastEpisodeWatched;
+                    .reduce((a, b) => a + b.episodes, 0) + userMedia.currentEpisode;
 
                 const newPosition = this.reorderSeasEps(totEpsWatched, newEpsList)!;
 
@@ -445,7 +445,7 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                         total: newTotal,
                         redo2: newRedo2,
                         currentSeason: newPosition.season,
-                        lastEpisodeWatched: newPosition.episode,
+                        currentEpisode: newPosition.episode,
                     })
                     .where(and(eq(listTable.userId, userMedia.userId), eq(listTable.mediaId, mediaId)));
             });

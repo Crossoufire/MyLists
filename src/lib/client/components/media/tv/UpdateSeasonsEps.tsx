@@ -19,7 +19,7 @@ export const UpdateSeasonsEps = ({ onUpdateMutation, epsPerSeason, currentSeason
     };
 
     const handleEpisodeUpdate = (episode: string) => {
-        onUpdateMutation.mutate({ payload: { lastEpisodeWatched: parseInt(episode), type: UpdateType.TV } });
+        onUpdateMutation.mutate({ payload: { currentEpisode: parseInt(episode), type: UpdateType.TV } });
     };
 
     return (

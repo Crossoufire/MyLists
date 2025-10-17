@@ -1,8 +1,8 @@
+import {RoleType} from "@/lib/utils/enums";
 import {auth} from "@/lib/server/core/auth";
 import {redirect} from "@tanstack/react-router";
-import {RoleType} from "@/lib/utils/enums";
-import {createMiddleware} from "@tanstack/react-start";
 import {updateLastSeen} from "@/lib/utils/last-seen";
+import {createMiddleware} from "@tanstack/react-start";
 import {verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {getCookie, getRequest} from "@tanstack/react-start/server";
 

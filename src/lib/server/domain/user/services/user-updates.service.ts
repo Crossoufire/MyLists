@@ -1,10 +1,10 @@
-import {and, desc, eq, sql} from "drizzle-orm";
-import {userMediaUpdate} from "@/lib/server/database/schema";
-import {MediaType, UpdateType} from "@/lib/utils/enums";
-import {getDbClient} from "@/lib/server/database/async-storage";
+import {and, desc, eq} from "drizzle-orm";
 import {LogPayloadDb} from "@/lib/types/base.types";
-import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
+import {MediaType, UpdateType} from "@/lib/utils/enums";
+import {userMediaUpdate} from "@/lib/server/database/schema";
 import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
 
 
 interface LogUpdateParams {
@@ -76,15 +76,24 @@ export class UserUpdatesService {
             updateType,
             mediaId: media.id,
             mediaName: media.name,
-            timestamp: sql<string>`datetime('now')`,
         };
 
         if (timeDifference > this.updateThresholdSec) {
-            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
+            await getDbClient()
+                .insert(userMediaUpdate)
+                .values(newUpdateData)
+                .execute();
         }
         else {
-            await getDbClient().delete(userMediaUpdate).where(eq(userMediaUpdate.id, previousEntry.id)).execute();
-            await getDbClient().insert(userMediaUpdate).values(newUpdateData).execute();
+            await getDbClient()
+                .delete(userMediaUpdate)
+                .where(eq(userMediaUpdate.id, previousEntry.id))
+                .execute();
+
+            await getDbClient()
+                .insert(userMediaUpdate)
+                .values(newUpdateData)
+                .execute();
         }
     }
 }

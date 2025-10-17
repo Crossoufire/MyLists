@@ -6,15 +6,6 @@ import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types"
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
 
 
-type AdminUserStats = {
-    now: string;
-    threeMonthsAgo: string;
-    currentMonthStart: string;
-    twoMonthsAgoStart: string;
-    previousMonthStart: string;
-}
-
-
 export class UserRepository {
     static async deleteNonActivatedOldUsers() {
         const result = await getDbClient()
@@ -52,7 +43,7 @@ export class UserRepository {
 
     static async getAdminCumulativeUsersPerMonth(months?: number) {
         const results = await getDbClient()
-            .run(sql`
+            .all<{ month: string, count: number }>(sql`
                 WITH monthly_buckets AS (
                     SELECT 
                         strftime('%Y-%m', created_at) as month,
@@ -71,7 +62,7 @@ export class UserRepository {
                 )
                 SELECT
                     month,
-                    cum_count
+                    cum_count as count
                 FROM (
                     SELECT *
                     FROM monthly_agg
@@ -81,9 +72,9 @@ export class UserRepository {
                 ORDER BY month_start ASC
             `);
 
-        return results.rows.map((row) => ({
-            count: row.cum_count,
-            month: new Date(row.month as string).toLocaleString("en-US", { month: "short", year: "numeric" }),
+        return results.map((row) => ({
+            count: row.count,
+            month: new Date(row.month).toLocaleString("en-US", { month: "short", year: "numeric" }),
         }));
     }
 

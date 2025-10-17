@@ -42,7 +42,7 @@ export const TvUserDetails = ({ userMedia, mediaType, queryKey }: TvUserDetailsP
                     epsPerSeason={mediaData.epsPerSeason}
                     currentSeason={userMedia.currentSeason}
                     onUpdateMutation={updateUserMediaMutation}
-                    currentEpisode={userMedia.lastEpisodeWatched}
+                    currentEpisode={userMedia.currentEpisode}
                 />
             }
             {userMedia.status !== Status.PLAN_TO_WATCH &&

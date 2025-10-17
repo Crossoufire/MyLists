@@ -61,7 +61,7 @@ export type RedoTvPayload = {
 
 export type EpsSeasonPayload = {
     currentSeason?: number,
-    lastEpisodeWatched?: number,
+    currentEpisode?: number,
 }
 
 export type UserMediaStats = {

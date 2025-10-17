@@ -22,7 +22,7 @@ export const TvFollowCard = ({ followData, rating }: TvFollowCardProps<typeof Me
                 <DisplayEpsAndSeasons
                     status={followData.userMedia.status}
                     currentSeason={followData.userMedia.currentSeason}
-                    currentEpisode={followData.userMedia.lastEpisodeWatched}
+                    currentEpisode={followData.userMedia.currentEpisode}
                 />
             }
         />
