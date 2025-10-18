@@ -1,6 +1,6 @@
-import {getTableName, sql} from "drizzle-orm";
 import {db} from "@/lib/server/database/db";
 import {MediaType} from "@/lib/utils/enums";
+import {getTableName, sql} from "drizzle-orm";
 import {animeList, booksList, gamesList, mangaList, moviesList, seriesList} from "@/lib/server/database/schema";
 
 
@@ -41,9 +41,11 @@ export const backPopulateMediaListTimestamps = async () => {
                     AND media_id = ${sql.identifier(tableName)}.media_id
                     AND media_type = ${mediaType}
             )
-    `);
+        `);
+
         console.log(`✓ ${mediaType} complete`);
     }
+
     console.log("\n✓ Done!");
 };
 
