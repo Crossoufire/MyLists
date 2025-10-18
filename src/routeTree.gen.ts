@@ -26,6 +26,7 @@ import { Route as MainPublicForgotPasswordRouteImport } from "./routes/_main/_pu
 import { Route as AdminAdminUsersRouteImport } from "./routes/_admin/admin/users";
 import { Route as AdminAdminTasksRouteImport } from "./routes/_admin/admin/tasks";
 import { Route as AdminAdminMediadleRouteImport } from "./routes/_admin/admin/mediadle";
+import { Route as AdminAdminMediaOverviewRouteImport } from "./routes/_admin/admin/media-overview";
 import { Route as AdminAdminDashboardRouteImport } from "./routes/_admin/admin/dashboard";
 import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
 import { Route as MainPrivateTrendsRouteRouteImport } from "./routes/_main/_private/trends/route";
@@ -122,6 +123,11 @@ const AdminAdminTasksRoute = AdminAdminTasksRouteImport.update({
 const AdminAdminMediadleRoute = AdminAdminMediadleRouteImport.update({
   id: "/admin/mediadle",
   path: "/admin/mediadle",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminMediaOverviewRoute = AdminAdminMediaOverviewRouteImport.update({
+  id: "/admin/media-overview",
+  path: "/admin/media-overview",
   getParentRoute: () => AdminRoute,
 } as any);
 const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/admin/tasks": typeof AdminAdminTasksRoute;
   "/admin/users": typeof AdminAdminUsersRoute;
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/admin/tasks": typeof AdminAdminTasksRoute;
   "/admin/users": typeof AdminAdminUsersRoute;
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   "/_main/_private/trends": typeof MainPrivateTrendsRouteRoute;
   "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/_admin/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/_admin/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/_admin/admin/mediadle": typeof AdminAdminMediadleRoute;
   "/_admin/admin/tasks": typeof AdminAdminTasksRoute;
   "/_admin/admin/users": typeof AdminAdminUsersRoute;
@@ -362,6 +371,7 @@ export interface FileRouteTypes {
     | "/trends"
     | "/admin/achievements"
     | "/admin/dashboard"
+    | "/admin/media-overview"
     | "/admin/mediadle"
     | "/admin/tasks"
     | "/admin/users"
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | "/trends"
     | "/admin/achievements"
     | "/admin/dashboard"
+    | "/admin/media-overview"
     | "/admin/mediadle"
     | "/admin/tasks"
     | "/admin/users"
@@ -431,6 +442,7 @@ export interface FileRouteTypes {
     | "/_main/_private/trends"
     | "/_admin/admin/achievements"
     | "/_admin/admin/dashboard"
+    | "/_admin/admin/media-overview"
     | "/_admin/admin/mediadle"
     | "/_admin/admin/tasks"
     | "/_admin/admin/users"
@@ -567,6 +579,13 @@ declare module "@tanstack/react-router" {
       path: "/admin/mediadle";
       fullPath: "/admin/mediadle";
       preLoaderRoute: typeof AdminAdminMediadleRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/media-overview": {
+      id: "/_admin/admin/media-overview";
+      path: "/admin/media-overview";
+      fullPath: "/admin/media-overview";
+      preLoaderRoute: typeof AdminAdminMediaOverviewRouteImport;
       parentRoute: typeof AdminRoute;
     };
     "/_admin/admin/dashboard": {
@@ -722,6 +741,7 @@ declare module "@tanstack/react-router" {
 interface AdminRouteChildren {
   AdminAdminAchievementsRoute: typeof AdminAdminAchievementsRoute;
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute;
+  AdminAdminMediaOverviewRoute: typeof AdminAdminMediaOverviewRoute;
   AdminAdminMediadleRoute: typeof AdminAdminMediadleRoute;
   AdminAdminTasksRoute: typeof AdminAdminTasksRoute;
   AdminAdminUsersRoute: typeof AdminAdminUsersRoute;
@@ -731,6 +751,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminAchievementsRoute: AdminAdminAchievementsRoute,
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminMediaOverviewRoute: AdminAdminMediaOverviewRoute,
   AdminAdminMediadleRoute: AdminAdminMediadleRoute,
   AdminAdminTasksRoute: AdminAdminTasksRoute,
   AdminAdminUsersRoute: AdminAdminUsersRoute,

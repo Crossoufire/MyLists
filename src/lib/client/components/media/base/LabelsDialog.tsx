@@ -144,7 +144,7 @@ export const LabelsDialog = ({ mediaType, mediaId, mediaLabels, updateUserMediaL
                             value={inputAddNewLabel}
                             placeholder={"Create a new label"}
                             disabled={editUserLabelMutation.isPending}
-                            onChange={(ev) => setInputAddNewLabel(ev.target.value.trim())}
+                            onChange={(ev) => setInputAddNewLabel(ev.target.value)}
                             onKeyDown={(ev) => {
                                 if (ev.key === "Enter") {
                                     const value = ev.currentTarget.value.trim();

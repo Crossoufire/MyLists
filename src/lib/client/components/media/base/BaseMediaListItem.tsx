@@ -1,8 +1,8 @@
 import {useState} from "react";
 import {Settings2} from "lucide-react";
+import {MediaType, Status} from "@/lib/utils/enums";
 import {Badge} from "@/lib/client/components/ui/badge";
 import {UserMediaItem} from "@/lib/types/query.options.types";
-import {MediaType, Status} from "@/lib/utils/enums";
 import {MediaCard} from "@/lib/client/components/media/base/MediaCard";
 import {QuickAddMedia} from "@/lib/client/components/media/base/QuickAddMedia";
 import {DisplayRating} from "@/lib/client/components/media/base/DisplayRating";
@@ -73,7 +73,7 @@ export const BaseMediaListItem = (props: BaseMediaListItemProps) => {
                         </Badge>
                         <div className="flex flex-shrink-0 items-center gap-2">
                             {userMedia.favorite &&
-                                <DisplayFavorite isFavorite={userMedia.favorite}/>
+                                <DisplayFavorite isFavorite={userMedia.favorite} size={16}/>
                             }
                             {userMedia.comment &&
                                 <DisplayComment content={userMedia.comment}/>

@@ -50,7 +50,9 @@ export const TiersDetails = ({ achievement }: TierDetailsProps) => {
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-end">{tier.rarity.toFixed(1)}%</TableCell>
+                                    <TableCell className="text-end">
+                                        {tier.rarity ? tier.rarity.toFixed(1) : "- "}%
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}

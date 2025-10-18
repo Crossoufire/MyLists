@@ -17,8 +17,11 @@
         "cli": "bun --env-file=.env src/cli/index.ts",
         "build:cli": "vite build --config vite.cli.config.ts",
         "email": "email dev -d src/lib/client/components/emails",
+        "seed:achievements": "bun run cli -- seedAchievements -d",
         "build:worker": "vite build --config vite.worker.config.ts",
+        "compute:achievements": "bun run cli -- calculateAchievements -d",
         "build": "bun run build:server && bun run build:worker && bun run build:cli",
+        "new:db": "bun run dk push --force && bun run seed:achievements && bun run compute:achievements",
         "auth:generate": "bunx @better-auth/cli@latest generate --y --output src/lib/server/database/schema/auth.schema.ts"
     },
     "dependencies": {

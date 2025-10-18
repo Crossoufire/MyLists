@@ -24,8 +24,8 @@ function DashboardPage() {
     return (
         <DashboardShell>
             <DashboardHeader
-                heading="Dashboard"
-                description="Overview of your platform's performance and user statistics."
+                heading="Users Overview"
+                description="Overview of the user statistics and growth of MyLists."
             />
             <div className="grid gap-4 grid-cols-5 max-sm:grid-cols-2 max-sm:gap-3">
                 <UserStats

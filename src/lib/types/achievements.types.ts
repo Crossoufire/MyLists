@@ -31,9 +31,9 @@ export type UserAchievementDetails = {
     tiers: {
         id: number;
         count: number;
-        rarity: number;
         progress: number;
         completed: boolean;
+        rarity: number | null;
         completedAt: string | null;
         criteria: { count: number };
         difficulty: AchievementDifficulty;

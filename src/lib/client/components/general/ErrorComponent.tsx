@@ -10,7 +10,7 @@ interface ErrorComponentProps {
     text: string;
     title: string;
     footerText: string;
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
 }
 
 

@@ -12,6 +12,7 @@ export const getDailyMediadle = createServerFn({ method: "GET" })
         const container = await getContainer();
         const mediadleService = container.services.mediadle;
         const moviesService = container.registries.mediaService.getService(MediaType.MOVIES);
+
         return mediadleService.getDailyMediadleData(currentUser.id, moviesService);
     });
 

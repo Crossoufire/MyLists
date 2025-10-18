@@ -1,4 +1,4 @@
-import {ApiProviderType, MediaType} from "@/lib/utils/enums";
+import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
 import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
@@ -7,6 +7,8 @@ import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.
 
 
 export class UserRepository {
+    // --- Tasks Maintenance ----------------------------------------------------
+
     static async deleteNonActivatedOldUsers() {
         const result = await getDbClient()
             .delete(user)
@@ -15,6 +17,8 @@ export class UserRepository {
 
         return result.length;
     }
+
+    // --- Admin Stats ----------------------------------------------------
 
     static async getAdminUserStats() {
         const now = new Date();
@@ -96,15 +100,23 @@ export class UserRepository {
     }
 
     static async getAdminUsersPerPrivacyValue() {
-        return getDbClient()
+        const implementedPrivacyValues = Object.values(PrivacyType).filter((p) => p !== PrivacyType.PRIVATE);
+
+        const result = await getDbClient()
             .select({
                 count: count(),
                 privacy: user.privacy,
             })
             .from(user)
-            .groupBy(user.privacy)
-            .execute();
+            .groupBy(user.privacy);
+
+        return implementedPrivacyValues.map((privacy) => ({
+            privacy,
+            count: result.find((r) => r.privacy === privacy)?.count ?? 0,
+        }));
     }
+
+    // --------------------------------------------------------------------
 
     static async findUserByName(name: string) {
         return getDbClient()

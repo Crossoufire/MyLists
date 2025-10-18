@@ -1,5 +1,5 @@
 import React from "react";
-import {Skull, X} from "lucide-react";
+import {Skull} from "lucide-react";
 import {type ErrorComponentProps,} from "@tanstack/react-router";
 import {ErrorComponent} from "@/lib/client/components/general/ErrorComponent";
 
@@ -20,7 +20,6 @@ export function ErrorCatchBoundary({ error }: Readonly<ErrorComponentProps>) {
         <ErrorComponent
             text={error.message}
             title="An Error Occurred"
-            icon={<X className="size-9"/>}
             footerText="If this keeps happening, we probably broke something important."
         />
     );

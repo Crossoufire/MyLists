@@ -33,7 +33,7 @@ export const HofRanking = ({ userRanks }: HofRankingProps) => {
                                     value={100 - (rank.percent ? rank.percent : 100)}
                                 />
                                 <div className="text-xs font-semibold text-gray-400">
-                                    {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top --</>}
+                                    {rank.percent ? <>Top {rank.percent.toFixed(1)}%</> : <>Top - %</>}
                                 </div>
                             </CardContent>
                             :

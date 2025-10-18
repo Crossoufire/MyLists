@@ -234,7 +234,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .where(and(forUser, ne(gamesList.status, Status.PLAN_TO_PLAY), isNotNull(games.gameModes)))
             .execute();
 
-        const gameModes = data.flatMap(r => (r.modes ? r.modes.split(",") : []));
+        const gameModes = data.flatMap((r) => (r.modes ? r.modes.split(",") : []));
 
         const modeCounts: Record<string, number> = {};
         for (const mode of gameModes) {
@@ -242,7 +242,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
         }
         const topValuesResult = Object.entries(modeCounts).map(([name, value]) => ({ name, value: Number(value) || 0 }));
 
-        return { topValues: topValuesResult || { name: "-", value: 0 } };
+        return { topValues: topValuesResult.length > 0 ? topValuesResult : [{ name: "-", value: 0 }] };
     }
 
     // --- Implemented Methods ----------------------------------------------

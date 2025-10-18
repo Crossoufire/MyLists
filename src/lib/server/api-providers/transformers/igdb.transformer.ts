@@ -40,7 +40,7 @@ export class IgdbTransformer {
             voteCount: rawData?.total_rating_count ?? 0,
             gameEngine: rawData?.game_engines?.[0]?.name,
             playerPerspective: rawData?.player_perspectives?.[0]?.name,
-            gameModes: rawData?.game_modes?.map((mode: any) => mode?.name).join(","),
+            gameModes: rawData?.game_modes?.map((mode) => mode?.name).join(","),
             releaseDate: rawData.first_release_date ? new Date(rawData.first_release_date * 1000).toISOString() : null,
             hltbMainTime: null,
             hltbMainAndExtraTime: null,

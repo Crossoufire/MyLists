@@ -96,6 +96,16 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     });
 
 
+export const getAdminMediaOverview = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        const userService = await getContainer().then((c) => c.services.user);
+        const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
+
+        return userService.getAdminMediaOverview(mediaServiceRegistry);
+    });
+
+
 export const getAdminAllUsers = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(searchTypeAdminSchema)

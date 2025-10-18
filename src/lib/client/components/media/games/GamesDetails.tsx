@@ -12,7 +12,7 @@ type GamesDetailsProps<T extends MediaType> = Parameters<MediaConfiguration[T]["
 
 
 export const GamesDetails = ({ mediaType, mediaData }: GamesDetailsProps<typeof MediaType.GAMES>) => {
-    const gameModes = mediaData.gameModes?.split(",").map(m => ({ name: m })) || [];
+    const gameModes = mediaData.gameModes?.split(",").map((m) => ({ name: m })) || [];
     const developers = mediaData.companies ? mediaData.companies.filter(c => c.developer) : [];
     const publishers = mediaData.companies ? mediaData.companies.filter(c => c.publisher) : [];
 

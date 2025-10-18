@@ -101,7 +101,7 @@ export class AchievementsService {
                     tiers: [],
                     id: achievement.id,
                     name: achievement.name,
-                    mediaType: achievement.mediaType!,
+                    mediaType: achievement.mediaType,
                     description: achievement.description,
                 };
                 achievementsMap.set(achievement.id, achievementEntry);
@@ -109,7 +109,7 @@ export class AchievementsService {
 
             const tierProgress = {
                 id: tier.id,
-                rarity: tier.rarity!,
+                rarity: tier.rarity,
                 criteria: tier.criteria,
                 difficulty: tier.difficulty,
                 count: userProgress?.count ?? 0,

@@ -5,7 +5,7 @@ import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
-import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
+import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
     ExpandedListFilters,
@@ -637,7 +637,42 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
         });
     }
 
-    // --- Achievements ----------------------------------------------------------
+    // --- Admin Functions -------------------------------------------------
+
+    async getAdminUserMediaAddedAndUpdated() {
+        const { listTable } = this.config;
+
+        const [addedThisMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.id) })
+            .from(listTable)
+            .where(gte(listTable.addedAt, sql`date('now', 'start of month')`));
+
+        const [addedLastMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.id) })
+            .from(listTable)
+            .where(and(
+                gte(listTable.addedAt, sql`date('now', '-1 month', 'start of month')`),
+                lt(listTable.addedAt, sql`date('now', 'start of month')`)
+            ));
+
+        const [updatedThisMonth] = await getDbClient()
+            .select({ count: countDistinct(listTable.mediaId) })
+            .from(listTable)
+            .where(gte(listTable.lastUpdated, sql`date('now', 'start of month')`));
+
+        return {
+            added: {
+                thisMonth: addedThisMonth?.count || 0,
+                lastMonth: addedLastMonth?.count || 0,
+                comparedToLastMonth: (addedThisMonth?.count || 0) - (addedLastMonth?.count || 0),
+            },
+            updated: {
+                thisMonth: updatedThisMonth?.count || 0,
+            }
+        };
+    }
+
+    // --- Achievements ----------------------------------------------------
 
     specificGenreAchievementCte(achievement: Achievement, userId?: number) {
         const { mediaTable, listTable, genreTable } = this.config;

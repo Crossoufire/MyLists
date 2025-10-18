@@ -1,12 +1,22 @@
 import {queryOptions} from "@tanstack/react-query";
-import {getAdminAchievements, getAdminAllUsers, getAdminJobLogs, getAdminJobs, getAdminMediadleStats, getAdminOverview, getAdminTasks} from "@/lib/server/functions/admin";
 import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {
+    getAdminAchievements,
+    getAdminAllUsers,
+    getAdminJobLogs,
+    getAdminJobs,
+    getAdminMediadleStats,
+    getAdminMediaOverview,
+    getAdminOverview,
+    getAdminTasks
+} from "@/lib/server/functions/admin";
 
 
 export const adminQueryKeys = {
     adminAchievementsKey: () => ["admin", "achievements"] as const,
     adminMediadleKey: (search: SearchType) => ["admin", "mediadle", search] as const,
     adminOverviewKey: () => ["admin", "overview"] as const,
+    adminMediaOverviewKey: () => ["admin", "media-overview"] as const,
     adminTasksKey: () => ["admin", "tasks"] as const,
     adminUsersKeys: (search: SearchTypeAdmin) => ["admin", "updateUsers", search] as const,
     adminJobsKey: () => ["admin", "jobs"] as const,
@@ -24,6 +34,12 @@ export const userAdminOptions = (search: SearchTypeAdmin) => queryOptions({
 export const adminOverviewOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminOverviewKey(),
     queryFn: () => getAdminOverview(),
+});
+
+
+export const adminMediaOverviewOptions = () => queryOptions({
+    queryKey: adminQueryKeys.adminMediaOverviewKey(),
+    queryFn: () => getAdminMediaOverview(),
 });
 
 

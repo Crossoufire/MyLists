@@ -7,7 +7,14 @@ import {SearchComponent} from "@/lib/client/components/media/base/SearchComponen
 import {ListPagination, ListUserData} from "@/lib/types/query.options.types";
 import {Popover, PopoverContent, PopoverTrigger} from "@/lib/client/components/ui/popover";
 import {ArrowUpDown, Award, ChartLine, EllipsisVertical, Filter, Grid2X2, List, User} from "lucide-react";
-import {DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger} from "@/lib/client/components/ui/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger
+} from "@/lib/client/components/ui/dropdown-menu";
 import React from "react";
 
 
@@ -58,8 +65,8 @@ export const Header = (props: HeaderProps) => {
                     allSorting={pagination.availableSorting}
                 />
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" onClick={onGridClick}>
-                        {isGrid ? <List className="size-4"/> : <Grid2X2 className="size-4"/>}
+                    <Button variant="outline" onClick={onGridClick} title="Toggle grid view">
+                        {isGrid ? <><List className="size-4"/> List</> : <><Grid2X2 className="size-4"/> Grid</>}
                     </Button>
                 </div>
                 <DotsOthers/>
@@ -145,7 +152,7 @@ const DotsOthers = () => {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" className="px-2">
+                <Button variant="outline" size="icon">
                     <EllipsisVertical className="size-4"/>
                 </Button>
             </PopoverTrigger>

@@ -215,7 +215,13 @@ export abstract class BaseService<
         return this.repository.config.achievements;
     }
 
-    // --- Abstract Methods --------------------------------------------------------------------
+    // --- Admin Methods ---------------------------------------------------
+
+    async getAdminUserMediaAddedAndUpdated() {
+        return this.repository.getAdminUserMediaAddedAndUpdated();
+    }
+
+    // --- Abstract Methods ------------------------------------------------
 
     abstract getMediaEditableFields(mediaId: number): Promise<{ fields: Record<string, any> }>
 

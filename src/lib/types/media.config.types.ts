@@ -9,6 +9,7 @@ type MediaTableColumns = {
     id: Column<any, any, any>;
     name: Column<any, any, any>;
     apiId: Column<any, any, any>;
+    addedAt: Column<any, any, any>;
     synopsis: Column<any, any, any>;
     imageCover: Column<any, any, any>;
     releaseDate: Column<any, any, any>;

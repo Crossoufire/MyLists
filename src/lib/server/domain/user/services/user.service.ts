@@ -3,11 +3,14 @@ import {user} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
+import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
+
+    // --- Admin functions --------------------------------------------
 
     async getAdminPaginatedUsers(data: SearchTypeAdmin) {
         return this.userRepository.getAdminPaginatedUsers(data);
@@ -35,14 +38,6 @@ export class UserService {
         await this.userRepository.adminUpdateUser(userId, payload);
     }
 
-    async deleteUserAccount(userId: number) {
-        return this.userRepository.deleteUserAccount(userId);
-    }
-
-    async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
-        await this.userRepository.updateUserSettings(userId, payload);
-    }
-
     async getAdminOverview() {
         const userStats = await this.userRepository.getAdminUserStats();
         const recentUsers = await this.userRepository.getAdminRecentUsers(20);
@@ -55,6 +50,46 @@ export class UserService {
             usersPerPrivacy,
             cumulativeUsersPerMonth,
         };
+    }
+
+    async getAdminMediaOverview(mediaServiceRegistry: typeof MediaServiceRegistry) {
+        const mediaStats = await Promise.all(Object.values(MediaType).map(async (mediaType) => {
+            const mediaService = mediaServiceRegistry.getService(mediaType);
+            const { added, updated } = await mediaService.getAdminUserMediaAddedAndUpdated();
+            return { mediaType, added, updated };
+        }));
+
+        const addedThisMonth = mediaStats.reduce((sum, { added }) => sum + added.thisMonth, 0);
+        const addedLastMonth = mediaStats.reduce((sum, { added }) => sum + added.lastMonth, 0);
+        const updatedThisMonth = mediaStats.reduce((sum, { updated }) => sum + updated.thisMonth, 0);
+
+        console.log({
+            addedThisMonth,
+            addedLastMonth,
+            updatedThisMonth,
+            addedComparedToLastMonth: addedThisMonth - addedLastMonth,
+            addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
+            updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
+        });
+        
+        return {
+            addedThisMonth,
+            addedLastMonth,
+            updatedThisMonth,
+            addedComparedToLastMonth: addedThisMonth - addedLastMonth,
+            addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
+            updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
+        };
+    }
+
+    // ----------------------------------------------------------------
+
+    async deleteUserAccount(userId: number) {
+        return this.userRepository.deleteUserAccount(userId);
+    }
+
+    async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
+        await this.userRepository.updateUserSettings(userId, payload);
     }
 
     async isFollowing(userId: number, followedId: number) {

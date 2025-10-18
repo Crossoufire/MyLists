@@ -213,7 +213,7 @@ const CheckboxGroup = ({ title, items, onChange, defaultChecked, renderLabel }: 
             </h3>
             <div className="grid grid-cols-2 gap-2">
                 {visibleItems.length === 0 ?
-                    <MutedText>Nothing to display.</MutedText>
+                    <MutedText className="text-sm">Nothing to display.</MutedText>
                     :
                     visibleItems.map(item =>
                         <div key={item.name} className="flex items-center space-x-2">
