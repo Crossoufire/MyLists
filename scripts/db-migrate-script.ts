@@ -6,6 +6,7 @@ import {db} from "@/lib/server/database/db";
 import {account, user} from "@/lib/server/database/schema";
 import {backPopulateMediaListTimestamps} from "./back-populate";
 import {existsSync, readdirSync, readFileSync, rmSync, writeFileSync} from "fs";
+import {backPopulateCollectionIdsAndCompositorsForMovies} from "./back-populate-movies";
 
 
 const PROJECT_ROOT = process.cwd();
@@ -287,6 +288,9 @@ const runAutomatedMigration = async () => {
 
         console.log("Running `back-populate.ts` script...");
         backPopulateMediaListTimestamps();
+
+        console.log("Running `back-populate-movies.ts` script...");
+        backPopulateCollectionIdsAndCompositorsForMovies();
     }
     catch (err) {
         console.error("Migration failed:", err);

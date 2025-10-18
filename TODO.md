@@ -7,6 +7,7 @@
 
 ## TODO/FIXES
 
+- FIX: New user added with SSO login can create a non-unique username!
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...
 
 ## TODO AFTER PROD

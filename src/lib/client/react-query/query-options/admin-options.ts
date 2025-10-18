@@ -1,5 +1,5 @@
-import {queryOptions} from "@tanstack/react-query";
 import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
+import {experimental_streamedQuery as streamedQuery, queryOptions} from "@tanstack/react-query";
 import {
     getAdminAchievements,
     getAdminAllUsers,
@@ -8,7 +8,8 @@ import {
     getAdminMediadleStats,
     getAdminMediaOverview,
     getAdminOverview,
-    getAdminTasks
+    getAdminTasks,
+    streamAdminJobs
 } from "@/lib/server/functions/admin";
 
 
@@ -62,12 +63,23 @@ export const adminTasksOptions = () => queryOptions({
 });
 
 
-export const adminJobsOptions = (pollingRateSec: number = 10) => queryOptions({
+// export const adminJobsOptions = (pollingRateSec: number = 10) => queryOptions({
+//     queryKey: adminQueryKeys.adminJobsKey(),
+//     queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
+//     meta: { displayErrorMsg: true },
+//     refetchInterval: pollingRateSec * 1000,
+//     placeholderData: (previousData) => previousData,
+// });
+
+
+export const adminJobsOptions = () => queryOptions({
     queryKey: adminQueryKeys.adminJobsKey(),
-    queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
+    queryFn: streamedQuery({
+        streamFn: streamAdminJobs,
+        reducer: (_previousData, newData) => newData,
+        initialValue: [] as Awaited<ReturnType<typeof getAdminJobs>>,
+    }),
     meta: { displayErrorMsg: true },
-    refetchInterval: pollingRateSec * 1000,
-    placeholderData: (previousData) => previousData,
 });
 
 

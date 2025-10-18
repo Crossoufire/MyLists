@@ -1,10 +1,11 @@
+import EventEmitter from "events";
 import {serverEnv} from "@/env/server";
-import {JobType as MqJobType} from "bullmq";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
 import {FormattedError} from "@/lib/utils/error-classes";
-import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {JobType as MqJobType, QueueEvents} from "bullmq";
+import {getCookie, getRequest, setCookie} from "@tanstack/react-start/server";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
@@ -24,7 +25,7 @@ const ADMIN_COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
-    maxAge: 5 * 60 * 1000, // 5 minutes
+    maxAge: serverEnv.ADMIN_VALID_COOKIE_TIME * 60 * 1000,
     path: "/"
 };
 
@@ -45,6 +46,7 @@ const getQueue = async () => {
     if (!redisConnection) {
         throw new FormattedError("Could not connect to Redis for queue operations.");
     }
+
     return initializeQueue(redisConnection);
 };
 
@@ -224,6 +226,83 @@ export const getAdminJobs = createServerFn({ method: "GET" })
         }
         catch {
             throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
+        }
+    });
+
+
+export const streamAdminJobs = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async function* () {
+        const queue = await getQueue();
+        if (!queue) {
+            yield [];
+            return;
+        }
+
+        const getJobs = async () => {
+            const types: MqJobType[] = ["wait", "active"];
+            const jobs = await queue.getJobs(types);
+            return jobs.map((job) => ({
+                id: job.id,
+                name: job.name,
+                data: job.data,
+                progress: job.progress,
+                timestamp: job.timestamp,
+                finishedOn: job.finishedOn,
+                stacktrace: job.stacktrace,
+                returnValue: job.returnvalue,
+                processedOn: job.processedOn,
+                failedReason: job.failedReason,
+                attemptsMade: job.attemptsMade,
+                status: job.failedReason ? "failed" : job.finishedOn ? "completed" : job.processedOn ? "active" : "waiting"
+            }));
+        };
+
+        try {
+            yield await getJobs();
+        }
+        catch (err) {
+            console.error("Failed to get initial jobs", err);
+            yield [];
+        }
+
+        const request = getRequest();
+        const signal = request.signal;
+        const events = new EventEmitter();
+        const client = await queue.client;
+        const queueEvents = new QueueEvents(queue.name, { connection: client.duplicate() });
+        const eventNames = ["active", "completed", "failed", "progress", "removed", "waiting", "added"] as const;
+
+        const listener = () => events.emit("update");
+        eventNames.forEach((name) => queueEvents.on(name, listener));
+
+        const cleanup = () => {
+            eventNames.forEach((name) => queueEvents.off(name, listener));
+            queueEvents.close();
+        };
+
+        signal.addEventListener("abort", cleanup, { once: true });
+
+        try {
+            yield await getJobs();
+
+            while (!signal.aborted) {
+                await new Promise((res) => events.once("update", res));
+                if (signal.aborted) break;
+
+                try {
+                    yield await getJobs();
+                }
+                catch (err) {
+                    console.error("Failed to get jobs on update", err);
+                }
+            }
+        }
+        catch (err) {
+            console.error("Stream error", err);
+        }
+        finally {
+            cleanup();
         }
     });
 
