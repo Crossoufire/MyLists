@@ -62,7 +62,7 @@ export const adminTasksOptions = () => queryOptions({
 });
 
 
-export const adminJobsOptions = (pollingRateSec: number = 10) => queryOptions({
+export const adminJobsOptions = (pollingRateSec: number = 5) => queryOptions({
     queryKey: adminQueryKeys.adminJobsKey(),
     queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
     meta: { displayErrorMsg: true },
