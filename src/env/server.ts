@@ -16,7 +16,6 @@ export const serverEnv = createEnv({
         ADMIN_TOKEN_SECRET: z.string().min(20),
         ADMIN_MAIL_USERNAME: z.email(),
         ADMIN_MAIL_PASSWORD: z.string().min(8),
-        ADMIN_VALID_COOKIE_TIME: z.coerce.number().int().default(10), // in minutes
 
         // DemoProfile
         DEMO_PASSWORD: z.string().min(8),
