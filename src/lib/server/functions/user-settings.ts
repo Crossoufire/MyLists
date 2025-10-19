@@ -130,7 +130,10 @@ const csvFileZodSchema = z.object({
 
 export const postProcessCsvFile = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .inputValidator(csvFileZodSchema)
+    .inputValidator((data) => {
+        if (!(data instanceof FormData)) throw new Error();
+        return tryFormZodError(csvFileZodSchema, Object.fromEntries(data.entries()));
+    })
     .handler(async ({ data, context: { currentUser } }) => {
         const mylistsTaskQueue = await getQueue();
 

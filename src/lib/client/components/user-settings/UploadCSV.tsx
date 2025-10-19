@@ -14,7 +14,7 @@ export const UploadCSV = () => {
 
     const uploadMutation = useMutation({
         mutationFn: postProcessCsvFile,
-        onError: () => toast.error("Failed to upload CSV"),
+        onError: (error) => toast.error(error.message || "An error occurred while uploading the CSV."),
         onSuccess: (data) => {
             setFile(null);
             setJobId(data.jobId)
@@ -30,7 +30,7 @@ export const UploadCSV = () => {
     });
 
     const progress = (data?.progress && typeof data.progress === "object") ?
-        JSON.stringify(data.progress) : `Progress: ${data?.progress ?? 0}%`;
+        JSON.stringify(data.progress) : `Progress: ${data?.progress ?? 0}`;
 
     const handleSubmit = (ev: React.FormEvent) => {
         ev.preventDefault();
@@ -38,7 +38,11 @@ export const UploadCSV = () => {
             toast.error("Please select a file");
             return;
         }
-        uploadMutation.mutate({ data: { file } });
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        uploadMutation.mutate({ data: formData });
     };
 
     return (
@@ -55,21 +59,21 @@ export const UploadCSV = () => {
                 <Button type="submit" disabled={!file || uploadMutation.isPending}>
                     Upload Movies CSV
                 </Button>
+                {!!jobId &&
+                    <div className="space-y-2 mt-6">
+                        <div className="flex justify-between text-sm">
+                            <span>Processing...</span>
+                            <span>{progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                                style={{ width: `${progress}%` }}
+                                className="bg-blue-500 h-2 rounded-full transition-all"
+                            />
+                        </div>
+                    </div>
+                }
             </form>
-            {!!jobId &&
-                <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span>Processing...</span>
-                        <span>{progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                            style={{ width: `${progress}%` }}
-                            className="bg-blue-500 h-2 rounded-full transition-all"
-                        />
-                    </div>
-                </div>
-            }
         </>
     );
 };
