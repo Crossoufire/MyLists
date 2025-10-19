@@ -1,5 +1,6 @@
 import {toast} from "sonner";
 import {useState} from "react";
+import {JobProgress} from "@/lib/types/tasks.types";
 import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Input} from "@/lib/client/components/ui/input";
 import {Button} from "@/lib/client/components/ui/button";
@@ -29,8 +30,27 @@ export const UploadCSV = () => {
         enabled: !!jobId,
     });
 
-    const progress = (data?.progress && typeof data.progress === "object") ?
-        JSON.stringify(data.progress) : `Progress: ${data?.progress ?? 0}`;
+    const getProgress = () => {
+        if (!data || !data.progress) {
+            return {
+                total: 0,
+                current: 0,
+                percentage: 0,
+                message: "No progress available",
+            };
+        }
+
+        const progress = data.progress as JobProgress;
+
+        return {
+            total: progress.total,
+            current: progress.current,
+            message: progress.message,
+            percentage: progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0,
+        };
+    }
+
+    const progress = getProgress();
 
     const handleSubmit = (ev: React.FormEvent) => {
         ev.preventDefault();
@@ -62,12 +82,12 @@ export const UploadCSV = () => {
                 {!!jobId &&
                     <div className="space-y-2 mt-6">
                         <div className="flex justify-between text-sm">
-                            <span>Processing...</span>
-                            <span>{progress}%</span>
+                            <span>{progress.message}</span>
+                            <span>{progress.percentage}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                                style={{ width: `${progress}%` }}
+                                style={{ width: `${progress.percentage}%` }}
                                 className="bg-blue-500 h-2 rounded-full transition-all"
                             />
                         </div>

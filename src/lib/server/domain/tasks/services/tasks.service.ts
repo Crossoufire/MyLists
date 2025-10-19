@@ -9,14 +9,13 @@ import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
-import {BaseJobData, CsvJobData, TaskJobData, TasksName} from "@/lib/types/tasks.types";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
+import {BaseJobData, CsvJobData, ProgressCallback, TaskJobData, TasksName} from "@/lib/types/tasks.types";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
-type ProgressCallback = (progress: number | object) => Promise<void>;
 type TaskHandler = (data: TaskJobData, onProgress?: ProgressCallback) => Promise<void>;
 
 
@@ -362,7 +361,11 @@ ${booksGenres.join(", ")}.
             const totalRows = records.length;
             this.logger.info(`Found ${totalRows} rows to process.`);
             if (onProgress) {
-                await onProgress({ current: 0, total: totalRows, message: `Found ${totalRows} rows.` });
+                await onProgress({
+                    current: 0,
+                    total: totalRows,
+                    message: `Found ${totalRows} rows.`,
+                });
             }
 
             for (let i = 0; i < totalRows; i++) {
@@ -381,12 +384,14 @@ ${booksGenres.join(", ")}.
 
                 this.logger.info(`Processing row ${currentRow}/${totalRows}: ${record.title} (${record.year})`);
                 if (onProgress) {
-                    await onProgress({ current: currentRow, total: totalRows, message: `Processing: ${record.title}` });
+                    await onProgress({
+                        total: totalRows,
+                        current: currentRow,
+                        message: `Processing: ${record.title}`,
+                    });
                 }
 
-                // 5. HERE IS YOUR BUSINESS LOGIC
-                // This is where you would find the movie and add it to the user's list.
-                // For example:
+                // BUSINESS LOGIC
                 // const movie = await this.mediaServiceRegistry.get(MediaType.MOVIE).findMediaByTitleAndYear(record.title, year);
                 // if (movie) {
                 //     await this.userUpdatesService.addMediaToList(userId, movie.id);
@@ -396,7 +401,7 @@ ${booksGenres.join(", ")}.
                 // }
 
                 // Simulate work
-                await new Promise((resolve) => setTimeout(resolve, 50));
+                await new Promise((resolve) => setTimeout(resolve, 2000));
             }
 
             this.logger.info("CSV processing completed successfully.");

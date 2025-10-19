@@ -3,7 +3,7 @@ import Redis from "ioredis";
 import {Job, Queue, Worker} from "bullmq";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
-import {TaskJobData, TasksName} from "@/lib/types/tasks.types";
+import {ProgressCallback, TaskJobData, TasksName} from "@/lib/types/tasks.types";
 
 
 type TypedJob = Job<TaskJobData, any, TasksName>;
@@ -79,9 +79,9 @@ const taskProcessor = async (job: TypedJob) => {
         const tasksService = container.services.tasks;
 
         // Create progress callback to updates job
-        const onProgress = async (progress: number | object) => {
+        const onProgress: ProgressCallback = async (progress) => {
             await job.updateProgress(progress);
-            await job.log(typeof progress === "object" ? JSON.stringify(progress) : `Progress: ${progress}%`);
+            await job.log(JSON.stringify(progress));
         };
 
         await tasksService.runTask(taskName, jobData, onProgress);

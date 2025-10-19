@@ -3,7 +3,7 @@ import pinoLogger from "@/lib/server/core/pino-logger";
 import {initializeQueue} from "@/lib/server/core/bullmq";
 import {getContainer} from "@/lib/server/core/container";
 import {connectRedis} from "@/lib/server/core/redis-client";
-import {TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
+import {ProgressCallback, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
 
 
 export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
@@ -27,10 +27,10 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
         if (directExecution) {
             cliLogger.info(`Running ${task.name} task directly via CLI...`);
             try {
-                const onProgress = async (progress: number | object) => {
+                const onProgress: ProgressCallback = async (progress) => {
                     cliLogger.info({ progress }, "Task progress update");
                 };
-                
+
                 await taskService.runTask(task.name, jobData, onProgress);
                 cliLogger.info(`Task ${task.name} completed directly via CLI.`);
             }
