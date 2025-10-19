@@ -5,17 +5,17 @@ export const useHashTab = <T>(defaultTab: T) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab ?? "");
 
     useEffect(() => {
-        const hash = window.location.hash.replace("#", "");
+        const hash = decodeURIComponent(window.location.hash.replace("#", ""));
         if (hash) {
-            window.history.replaceState(null, "", `#${hash}`);
+            window.history.replaceState(null, "", `#${encodeURIComponent(hash)}`);
             setSelectedTab(hash);
         }
         else {
-            window.history.replaceState(null, "", `#${defaultTab}`);
+            window.history.replaceState(null, "", `#${encodeURIComponent(String(defaultTab))}`);
         }
 
         const handleHashChange = () => {
-            const newHash = window.location.hash.replace("#", "");
+            const newHash = decodeURIComponent(window.location.hash.replace("#", ""));
             setSelectedTab(newHash);
         };
 
@@ -26,7 +26,7 @@ export const useHashTab = <T>(defaultTab: T) => {
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab);
-        window.history.pushState(null, "", `#${tab}`);
+        window.history.pushState(null, "", `#${encodeURIComponent(tab)}`);
     };
 
     return [selectedTab, handleTabChange] as [string, (tab: string) => void];

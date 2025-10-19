@@ -8,7 +8,7 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {getProgressOnCsvFile, postProcessCsvFile} from "@/lib/server/functions/user-settings";
 
 
-export const UploadCSV = () => {
+export const UploadCsv = () => {
     const { currentUser } = useAuth();
     const [file, setFile] = useState<File | null>(null);
     const [jobId, setJobId] = useState<string | undefined | null>(null);
