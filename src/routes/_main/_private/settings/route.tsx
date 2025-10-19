@@ -1,6 +1,7 @@
-import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {createFileRoute} from "@tanstack/react-router";
+import {useHashTab} from "@/lib/client/hooks/use-hash-tab";
 import {PageTitle} from "@/lib/client/components/general/PageTitle";
+import {UploadCSV} from "@/lib/client/components/user-settings/UploadCSV";
 import {DangerForm} from "@/lib/client/components/user-settings/DangerForm";
 import {Sidebar, SideBarItem} from "@/lib/client/components/general/Sidebar";
 import {GeneralForm} from "@/lib/client/components/user-settings/GeneralForm";
@@ -17,6 +18,7 @@ const tabConfig = [
     { sidebarTitle: "General", component: <GeneralForm/> },
     { sidebarTitle: "MediaList", component: <MediaListForm/> },
     { sidebarTitle: "Password", component: <PasswordForm/> },
+    { sidebarTitle: "Upload CSV", component: <UploadCSV/> },
     { sidebarTitle: "Advanced", component: <DangerForm/> },
 ] as const;
 type TabConfigTypes = typeof tabConfig[number]["sidebarTitle"];
@@ -25,10 +27,7 @@ type TabConfigTypes = typeof tabConfig[number]["sidebarTitle"];
 function SettingsPage() {
     const [selectedTabTitle, handleTabChange] = useHashTab<TabConfigTypes>("General");
     const selectedItem = tabConfig.find((tab) => tab.sidebarTitle === selectedTabTitle);
-
-    const sidebarItems: SideBarItem<typeof tabConfig[number]>[] = tabConfig.map(
-        (tab) => ({ is: "tab", data: tab })
-    );
+    const sidebarItems: SideBarItem<typeof tabConfig[number]>[] = tabConfig.map((tab) => ({ is: "tab", data: tab }));
 
     const handleSidebarChange = (tab: typeof tabConfig[number]) => {
         handleTabChange(tab.sidebarTitle);

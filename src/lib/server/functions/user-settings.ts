@@ -120,8 +120,7 @@ export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
     });
 
 
-export const csvFileZodSchema = z.object({
-    taskName: z.literal("processCsv"),
+const csvFileZodSchema = z.object({
     file: z
         .instanceof(File)
         .refine((file) => file.size <= 5 * 1024 * 1024, `File size must be less than 5MB.`)
@@ -136,11 +135,7 @@ export const postProcessCsvFile = createServerFn({ method: "POST" })
         const mylistsTaskQueue = await getQueue();
 
         if (!mylistsTaskQueue) {
-            return {
-                success: true,
-                jobId: "dev-mode-job",
-                message: "processCsv is disabled in dev mode.",
-            };
+            return { jobId: "dev-mode-job" };
         }
 
         try {
@@ -166,22 +161,62 @@ export const postProcessCsvFile = createServerFn({ method: "POST" })
             const filePath = path.join(tempDir, `${currentUser.id}-${Date.now()}.csv`);
             await writeFile(filePath, buffer);
 
-            const job = await mylistsTaskQueue.add(data.taskName, {
+            const job = await mylistsTaskQueue.add("processCsv", {
                 filePath: filePath,
                 triggeredBy: "user",
                 userId: currentUser.id,
             });
 
-            return {
-                jobId: job.id,
-                success: true,
-                message: "Processing your CSV file...",
-            };
+            return { jobId: job.id };
         }
         catch (error) {
             if (error instanceof FormattedError) {
                 throw error;
             }
             throw new FormattedError("Sorry, failed to process the CSV.");
+        }
+    });
+
+
+const progressCsvSchema = z.object({
+    jobId: z.string(),
+});
+
+
+export const getProgressOnCsvFile = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .inputValidator(progressCsvSchema)
+    .handler(async ({ data, context: { currentUser } }) => {
+        const mylistsTaskQueue = await getQueue();
+
+        if (!mylistsTaskQueue) {
+            return null;
+        }
+
+        try {
+            const job = await mylistsTaskQueue.getJob(data.jobId);
+            if (!job) return null;
+            if ("userId" in job.data && currentUser.id !== Number(job.data.userId)) {
+                return null;
+            }
+
+            return {
+                id: job.id,
+                name: job.name,
+                data: job.data,
+                progress: job.progress,
+                timestamp: job.timestamp,
+                finishedOn: job.finishedOn,
+                stacktrace: job.stacktrace,
+                returnValue: job.returnvalue,
+                processedOn: job.processedOn,
+                failedReason: job.failedReason,
+                attemptsMade: job.attemptsMade,
+                status: job.failedReason ? "failed" : job.finishedOn ? "completed"
+                    : job.processedOn ? "active" : job.timestamp ? "waiting" : "unknown"
+            };
+        }
+        catch {
+            throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
         }
     });
