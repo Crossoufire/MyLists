@@ -1,5 +1,6 @@
 import {serverEnv} from "@/env/server";
 import {JobType as MqJobType} from "bullmq";
+import {getQueue} from "@/lib/utils/get-queue";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
@@ -26,26 +27,6 @@ const ADMIN_COOKIE_OPTIONS = {
     sameSite: "lax" as const,
     maxAge: 5 * 60 * 1000, // 5 minutes
     path: "/"
-};
-
-
-const getQueue = async () => {
-    if (process.env.NODE_ENV !== "production") {
-        return null;
-    }
-
-    const { connectRedis } = await import("@/lib/server/core/redis-client");
-    const { mylistsTaskQueue, initializeQueue } = await import("@/lib/server/core/bullmq");
-
-    if (mylistsTaskQueue) {
-        return mylistsTaskQueue;
-    }
-
-    const redisConnection = await connectRedis();
-    if (!redisConnection) {
-        throw new FormattedError("Could not connect to Redis for queue operations.");
-    }
-    return initializeQueue(redisConnection);
 };
 
 
@@ -168,9 +149,9 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(postTriggerLongTasksSchema)
     .handler(async ({ data: { taskName } }) => {
-        const mylistsLongTaskQueue = await getQueue();
+        const mylistsTaskQueue = await getQueue();
 
-        if (!mylistsLongTaskQueue) {
+        if (!mylistsTaskQueue) {
             return {
                 success: true,
                 jobId: "dev-mode-job",
@@ -179,7 +160,7 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
         }
 
         try {
-            const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
+            const job = await mylistsTaskQueue.add(taskName, { triggeredBy: "dashboard" });
             return {
                 jobId: job.id,
                 success: true,
@@ -196,14 +177,14 @@ export const getAdminJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(getAdminJobsSchema)
     .handler(async ({ data: { types } }) => {
-        const mylistsLongTaskQueue = await getQueue();
+        const mylistsTaskQueue = await getQueue();
 
-        if (!mylistsLongTaskQueue) {
+        if (!mylistsTaskQueue) {
             return [];
         }
 
         try {
-            const jobs = await mylistsLongTaskQueue.getJobs(types satisfies MqJobType[]);
+            const jobs = await mylistsTaskQueue.getJobs(types satisfies MqJobType[]);
             return jobs.map((job) => ({
                 id: job.id,
                 name: job.name,
@@ -232,14 +213,14 @@ export const getAdminJobLogs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(getAdminJobSchema)
     .handler(async ({ data: { jobId } }) => {
-        const mylistsLongTaskQueue = await getQueue();
+        const mylistsTaskQueue = await getQueue();
 
-        if (!mylistsLongTaskQueue) {
+        if (!mylistsTaskQueue) {
             return { count: 1, logs: ["Job logging is disabled in dev mode."] };
         }
 
         try {
-            return mylistsLongTaskQueue.getJobLogs(jobId);
+            return mylistsTaskQueue.getJobLogs(jobId);
         }
         catch {
             throw new FormattedError("Failed to fetch job logs.");

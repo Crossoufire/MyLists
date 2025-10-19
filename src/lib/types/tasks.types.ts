@@ -2,12 +2,12 @@ import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 
 
 export type BaseJobData = {
-    triggeredBy: string;
+    triggeredBy: "user" | "cron/cli" | "dashboard";
 };
 
 
 export type CsvJobData = BaseJobData & {
-    userId: string;
+    userId: number;
     filePath: string;
 };
 

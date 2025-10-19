@@ -77,7 +77,14 @@ const taskProcessor = async (job: TypedJob) => {
     try {
         const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
         const tasksService = container.services.tasks;
-        await tasksService.runTask(taskName, jobData);
+
+        // Create progress callback to updates job
+        const onProgress = async (progress: number | object) => {
+            await job.updateProgress(progress);
+            await job.log(typeof progress === "object" ? JSON.stringify(progress) : `Progress: ${progress}%`);
+        };
+
+        await tasksService.runTask(taskName, jobData, onProgress);
 
         taskExecutionLogger.info("Task completed successfully.");
         await job.log("Task completed successfully.");

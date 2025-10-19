@@ -1,8 +1,10 @@
 import pino from "pino";
 import path from "path";
 import * as fs from "fs";
+import Papa from "papaparse";
 import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
+import {readFile, unlink} from "fs/promises";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
@@ -14,7 +16,8 @@ import {NotificationsService} from "@/lib/server/domain/user/services/notificati
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
-type TaskHandler = (data: TaskJobData) => Promise<void>;
+type ProgressCallback = (progress: number | object) => Promise<void>;
+type TaskHandler = (data: TaskJobData, onProgress?: ProgressCallback) => Promise<void>;
 
 
 export class TasksService {
@@ -54,7 +57,7 @@ export class TasksService {
         };
     }
 
-    async runTask(taskName: TasksName, data: TaskJobData) {
+    async runTask(taskName: TasksName, data: TaskJobData, onProgress?: ProgressCallback) {
         const taskLogger = this.logger.child({ taskName, triggeredBy: data.triggeredBy });
         taskLogger.info({ data }, "Received the request to run this task");
 
@@ -67,7 +70,7 @@ export class TasksService {
         }
 
         try {
-            await taskHandler(data);
+            await taskHandler(data, onProgress);
         }
         catch (err: any) {
             taskLogger.error({ err }, "Task execution failed");
@@ -348,14 +351,65 @@ ${booksGenres.join(", ")}.
         }
     }
 
-    protected async runProcessCsv(data: TaskJobData) {
-        const csvData = data as CsvJobData;
-        this.logger.info({ userId: csvData.userId, filePath: csvData.filePath }, "Starting CSV processing...");
+    protected async runProcessCsv(data: TaskJobData, onProgress?: ProgressCallback) {
+        const { userId, filePath } = data as CsvJobData;
+        this.logger.info({ userId, filePath }, "Starting CSV processing...");
 
-        // CSV PROCESSING LOGIC HERE
-        // e.g., fs.readFileSync(csvData.filePath), parse it, and use csvData.userId
+        try {
+            const fileContent = await readFile(filePath, "utf-8");
+            const records = Papa.parse<{ title: string, year: number }>(fileContent, { header: true }).data;
 
-        this.logger.info("CSV processing completed successfully.");
+            const totalRows = records.length;
+            this.logger.info(`Found ${totalRows} rows to process.`);
+            if (onProgress) {
+                await onProgress({ current: 0, total: totalRows, message: `Found ${totalRows} rows.` });
+            }
+
+            for (let i = 0; i < totalRows; i++) {
+                const record = records[i];
+                const currentRow = i + 1;
+
+                if (!record.title || !record.year) {
+                    this.logger.warn({ row: currentRow, record }, "Skipping invalid row: 'title' and 'year' required.");
+                    continue;
+                }
+                const year = Number(record.year);
+                if (isNaN(year)) {
+                    this.logger.warn({ row: currentRow, record }, "Skipping invalid row: 'year' is not a valid number.");
+                    continue;
+                }
+
+                this.logger.info(`Processing row ${currentRow}/${totalRows}: ${record.title} (${record.year})`);
+                if (onProgress) {
+                    await onProgress({ current: currentRow, total: totalRows, message: `Processing: ${record.title}` });
+                }
+
+                // 5. HERE IS YOUR BUSINESS LOGIC
+                // This is where you would find the movie and add it to the user's list.
+                // For example:
+                // const movie = await this.mediaServiceRegistry.get(MediaType.MOVIE).findMediaByTitleAndYear(record.title, year);
+                // if (movie) {
+                //     await this.userUpdatesService.addMediaToList(userId, movie.id);
+                //     csvLogger.info(`Added '${movie.title}' to user ${userId}'s list.`);
+                // } else {
+                //     csvLogger.warn(`Movie not found: ${record.title} (${record.year})`);
+                // }
+
+                // Simulate work
+                await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+
+            this.logger.info("CSV processing completed successfully.");
+        }
+        finally {
+            try {
+                await unlink(filePath);
+                this.logger.info(`Successfully deleted temporary file: ${filePath}`);
+            }
+            catch (err) {
+                this.logger.error({ err }, `Failed to delete temporary file: ${filePath}`);
+            }
+        }
     }
 
     private async _updateEnvFile(key: string, value: string) {

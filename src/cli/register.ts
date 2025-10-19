@@ -27,7 +27,11 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
         if (directExecution) {
             cliLogger.info(`Running ${task.name} task directly via CLI...`);
             try {
-                await taskService.runTask(task.name, jobData);
+                const onProgress = async (progress: number | object) => {
+                    cliLogger.info({ progress }, "Task progress update");
+                };
+                
+                await taskService.runTask(task.name, jobData, onProgress);
                 cliLogger.info(`Task ${task.name} completed directly via CLI.`);
             }
             catch (error) {
