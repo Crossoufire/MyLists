@@ -1,25 +1,24 @@
 import pino from "pino";
 import Redis from "ioredis";
 import {Job, Queue, Worker} from "bullmq";
-import {TasksName} from "@/lib/types/base.types";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
+import {TaskJobData, TasksName} from "@/lib/types/tasks.types";
 
 
-type LongTaskJobData = { triggeredBy: string };
-type TypedJob = Job<LongTaskJobData, any, TasksName>;
+type TypedJob = Job<TaskJobData, any, TasksName>;
 
 
-const QUEUE_NAME = "mylists-long-tasks";
-export let mylistsLongTaskQueue: Queue<LongTaskJobData, any, TasksName>;
+const QUEUE_NAME = "mylists-tasks";
+export let mylistsTaskQueue: Queue<TaskJobData, any, TasksName>;
 
 
 export const initializeQueue = (connection: Redis) => {
-    if (mylistsLongTaskQueue) {
-        return mylistsLongTaskQueue;
+    if (mylistsTaskQueue) {
+        return mylistsTaskQueue;
     }
 
-    mylistsLongTaskQueue = new Queue(QUEUE_NAME, {
+    mylistsTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),
         defaultJobOptions: {
             attempts: 2,
@@ -30,12 +29,12 @@ export const initializeQueue = (connection: Redis) => {
 
     pinoLogger.info("BullMQ queue initialized.");
 
-    return mylistsLongTaskQueue;
+    return mylistsTaskQueue;
 };
 
 
 export const createWorker = (connection: Redis) => {
-    const worker = new Worker<LongTaskJobData, any, TasksName>(QUEUE_NAME, taskProcessor, {
+    const worker = new Worker<TaskJobData, any, TasksName>(QUEUE_NAME, taskProcessor, {
         connection: connection.duplicate(),
         concurrency: 1,
     });
@@ -57,37 +56,28 @@ export const createWorker = (connection: Redis) => {
 
 
 const taskProcessor = async (job: TypedJob) => {
-    const { name: taskName } = job;
-    const { triggeredBy } = job.data;
+    const { name: taskName, data: jobData, id: jobId } = job;
 
-    const baseJobLogger = pinoLogger.child({ jobId: job.id, taskName, triggeredBy });
-    const taskExecutionLogger = pino({
+    const baseJobLogger = pinoLogger.child({ jobId, taskName, triggeredBy: jobData.triggeredBy });
+    const jobLogStream = { write: (msg: string) => job.log(msg.replace(/\n$/, "")) };
+    const taskExecutionLogger = pino(
+        {
             level: baseJobLogger.level,
-            base: {
-                taskName,
-                triggeredBy,
-                jobId: job.id,
-            },
+            base: { jobId, taskName, triggeredBy: jobData.triggeredBy },
         },
         pino.multistream([
-            {
-                stream: process.stdout,
-                level: baseJobLogger.level,
-            },
-            {
-                stream: { write: (msg: string) => job.log(msg.replace(/\n$/, "")) },
-                level: "info",
-            }
+            { stream: jobLogStream, level: "info" },
+            { stream: process.stdout, level: baseJobLogger.level },
         ]),
     );
 
     taskExecutionLogger.info("Starting task processing...");
-    await job.log(`Starting task processing triggered by ${triggeredBy}...`);
+    await job.log(`Starting task processing triggered by ${jobData.triggeredBy}...`);
 
     try {
         const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
         const tasksService = container.services.tasks;
-        await tasksService.runTask(taskName);
+        await tasksService.runTask(taskName, jobData);
 
         taskExecutionLogger.info("Task completed successfully.");
         await job.log("Task completed successfully.");

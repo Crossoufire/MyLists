@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {Loader2, Play} from "lucide-react";
 import {useQuery} from "@tanstack/react-query";
-import {TasksName} from "@/lib/types/base.types";
+import {TasksName} from "@/lib/types/tasks.types";
 import {Button} from "@/lib/client/components/ui/button";
 import {JobCard} from "@/lib/client/components/admin/JobCard";
 import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";

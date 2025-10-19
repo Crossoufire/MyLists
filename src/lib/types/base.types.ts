@@ -3,7 +3,6 @@ import {DeltaStats} from "@/lib/types/stats.types";
 import {MediaTable} from "@/lib/types/media.config.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {SQLiteColumn, SQLiteTable} from "drizzle-orm/sqlite-core";
-import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {ListFiltersOptionsType} from "@/lib/types/query.options.types";
 import {GamesPlatformsEnum, JobType, MediaType, NotificationType, RatingSystemType, Status, UpdateType} from "@/lib/utils/enums";
 
@@ -227,8 +226,6 @@ export type AdvancedMediaStats = {
 }
 
 export type LogPayload = { oldValue: any; newValue: any } | null;
-
-export type TasksName = (typeof taskDefinitions)[number]["name"];
 
 export type StatsCTE = any;
 

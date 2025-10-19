@@ -13,6 +13,22 @@ export const taskDefinitions = [
     { name: "bulkMediaRefresh", description: "Bulk refresh media data from APIs provider" },
     { name: "removeUnusedMediaCovers", description: "Remove unused media covers from the database" },
     { name: "deleteNonActivatedUsers", description: "Delete non-activated users older than a week" },
+    {
+        name: "processCsv",
+        description: "Process a CSV file for a specific user.",
+        options: [
+            {
+                required: true,
+                flags: "-u, --userId <userId>",
+                description: "The ID of the user to process the CSV for",
+            },
+            {
+                required: true,
+                flags: "-f, --filePath <filePath>",
+                description: "Path to the CSV file",
+            },
+        ],
+    },
 ] as const;
 
 

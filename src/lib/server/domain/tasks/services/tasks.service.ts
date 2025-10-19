@@ -3,18 +3,18 @@ import path from "path";
 import * as fs from "fs";
 import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
-import {TasksName} from "@/lib/types/base.types";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
+import {BaseJobData, CsvJobData, TaskJobData, TasksName} from "@/lib/types/tasks.types";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
-type TaskHandler = () => Promise<void>;
+type TaskHandler = (data: TaskJobData) => Promise<void>;
 
 
 export class TasksService {
@@ -50,12 +50,13 @@ export class TasksService {
             removeUnusedMediaCovers: this.runRemoveUnusedMediaCovers.bind(this),
             deleteNonActivatedUsers: this.runDeleteNonActivatedUsers.bind(this),
             addGenresToBooksUsingLlm: this.runAddGenresToBooksUsingLlm.bind(this),
+            processCsv: this.runProcessCsv.bind(this),
         };
     }
 
-    async runTask(taskName: TasksName) {
-        const taskLogger = this.logger.child({ taskName });
-        taskLogger.info("Received the request to run this task");
+    async runTask(taskName: TasksName, data: TaskJobData) {
+        const taskLogger = this.logger.child({ taskName, triggeredBy: data.triggeredBy });
+        taskLogger.info({ data }, "Received the request to run this task");
 
         const startTime = Date.now();
 
@@ -66,7 +67,7 @@ export class TasksService {
         }
 
         try {
-            await taskHandler();
+            await taskHandler(data);
         }
         catch (err: any) {
             taskLogger.error({ err }, "Task execution failed");
@@ -77,7 +78,7 @@ export class TasksService {
         taskLogger.info({ durationMs: duration }, "Task completed");
     }
 
-    protected async runBulkMediaRefresh() {
+    protected async runBulkMediaRefresh(_data: BaseJobData) {
         this.logger.info("Starting: bulkMediaRefresh execution.");
 
         for (const mediaType of this.mediaTypes) {
@@ -102,19 +103,19 @@ export class TasksService {
         this.logger.info("Completed: bulkMediaRefresh execution.");
     }
 
-    protected async runVacuumDB() {
+    protected async runVacuumDB(_data: BaseJobData) {
         this.logger.info("Starting: VacuumDB execution.");
         getDbClient().run("VACUUM");
         this.logger.info("Completed: VacuumDB execution.");
     }
 
-    protected async runAnalyzeDB() {
+    protected async runAnalyzeDB(_data: BaseJobData) {
         this.logger.info("Starting: AnalyzeDB execution.");
         getDbClient().run("ANALYZE");
         this.logger.info("Completed: AnalyzeDB execution.");
     }
 
-    protected async runRemoveUnusedMediaCovers() {
+    protected async runRemoveUnusedMediaCovers(_data: BaseJobData) {
         this.logger.info("Starting: RemoveUnusedMediaCovers execution.");
 
         const baseUploadsLocation = serverEnv.BASE_UPLOADS_LOCATION;
@@ -167,7 +168,7 @@ export class TasksService {
         this.logger.info("Completed: RemoveUnusedMediaCovers execution.");
     }
 
-    protected async runLockOldMovies() {
+    protected async runLockOldMovies(_data: BaseJobData) {
         this.logger.info(`Starting locking movies older than 6 months...`);
 
         const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
@@ -177,7 +178,7 @@ export class TasksService {
         this.logger.info("Completed: LockOldMovies execution.");
     }
 
-    protected async runSeedAchievements() {
+    protected async runSeedAchievements(_data: BaseJobData) {
         this.logger.info("Starting seeding achievements...");
 
         for (const mediaType of this.mediaTypes) {
@@ -193,7 +194,7 @@ export class TasksService {
         this.logger.info("Completed: SeedAchievements execution.");
     }
 
-    protected async runCalculateAchievements() {
+    protected async runCalculateAchievements(_data: BaseJobData) {
         this.logger.info("Starting calculating all achievements...");
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
@@ -209,7 +210,7 @@ export class TasksService {
         this.logger.info("Completed: CalculateAchievements execution.");
     }
 
-    protected async runRemoveNonListMedia() {
+    protected async runRemoveNonListMedia(_data: BaseJobData) {
         this.logger.info(`Removing non-list media...`);
 
         for (const mediaType of this.mediaTypes) {
@@ -234,7 +235,7 @@ export class TasksService {
         this.logger.info("Completed: RemoveNonListMedia execution.");
     }
 
-    protected async runAddMediaNotifications() {
+    protected async runAddMediaNotifications(_data: BaseJobData) {
         this.logger.info("Starting: AddMediaNotifications execution.");
 
         const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES];
@@ -251,7 +252,7 @@ export class TasksService {
         this.logger.info("Completed: AddMediaNotifications execution.");
     }
 
-    protected async runComputeAllUsersStats() {
+    protected async runComputeAllUsersStats(_data: BaseJobData) {
         this.logger.info("Starting: ComputeAllUsersStats execution.");
 
         for (const mediaType of this.mediaTypes) {
@@ -267,7 +268,7 @@ export class TasksService {
         this.logger.info("Completed: ComputeAllUsersStats execution.");
     }
 
-    protected async runUpdateIgdbToken() {
+    protected async runUpdateIgdbToken(_data: BaseJobData) {
         this.logger.info("Starting: UpdateIgdbToken execution.");
 
         const gamesProviderService = this.mediaProviderRegistry.getService(MediaType.GAMES);
@@ -280,7 +281,7 @@ export class TasksService {
         this.logger.info("Completed: UpdateIgdbToken execution.");
     }
 
-    protected async runDeleteNonActivatedUsers() {
+    protected async runDeleteNonActivatedUsers(_data: BaseJobData) {
         this.logger.info("Starting: DeleteNonActivatedUsers execution.");
 
         const deletedCount = await this.userRepository.deleteNonActivatedOldUsers();
@@ -289,24 +290,24 @@ export class TasksService {
         this.logger.info("Completed: DeleteNonActivatedUsers execution.");
     }
 
-    protected async runMaintenanceTasks() {
+    protected async runMaintenanceTasks(data: BaseJobData) {
         this.logger.info("Starting: MaintenanceTasks execution.");
 
-        await this.runDeleteNonActivatedUsers();
-        await this.runRemoveNonListMedia();
-        await this.runRemoveUnusedMediaCovers();
-        await this.runBulkMediaRefresh();
-        await this.runAddMediaNotifications();
-        await this.runLockOldMovies();
-        await this.runComputeAllUsersStats();
-        await this.runCalculateAchievements();
-        await this.runVacuumDB();
-        await this.runAnalyzeDB();
+        await this.runDeleteNonActivatedUsers(data);
+        await this.runRemoveNonListMedia(data);
+        await this.runRemoveUnusedMediaCovers(data);
+        await this.runBulkMediaRefresh(data);
+        await this.runAddMediaNotifications(data);
+        await this.runLockOldMovies(data);
+        await this.runComputeAllUsersStats(data);
+        await this.runCalculateAchievements(data);
+        await this.runVacuumDB(data);
+        await this.runAnalyzeDB(data);
 
         this.logger.info("Completed: MaintenanceTasks execution.");
     }
 
-    protected async runAddGenresToBooksUsingLlm() {
+    protected async runAddGenresToBooksUsingLlm(_data: BaseJobData) {
         this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
         this.logger.info(`Using: ${serverEnv.LLM_MODEL_ID}, from: ${serverEnv.LLM_BASE_URL}`);
 
@@ -345,6 +346,16 @@ ${booksGenres.join(", ")}.
                 this.logger.error({ err }, "Error while applying genres");
             }
         }
+    }
+
+    protected async runProcessCsv(data: TaskJobData) {
+        const csvData = data as CsvJobData;
+        this.logger.info({ userId: csvData.userId, filePath: csvData.filePath }, "Starting CSV processing...");
+
+        // CSV PROCESSING LOGIC HERE
+        // e.g., fs.readFileSync(csvData.filePath), parse it, and use csvData.userId
+
+        this.logger.info("CSV processing completed successfully.");
     }
 
     private async _updateEnvFile(key: string, value: string) {

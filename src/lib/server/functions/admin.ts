@@ -35,10 +35,10 @@ const getQueue = async () => {
     }
 
     const { connectRedis } = await import("@/lib/server/core/redis-client");
-    const { mylistsLongTaskQueue, initializeQueue } = await import("@/lib/server/core/bullmq");
+    const { mylistsTaskQueue, initializeQueue } = await import("@/lib/server/core/bullmq");
 
-    if (mylistsLongTaskQueue) {
-        return mylistsLongTaskQueue;
+    if (mylistsTaskQueue) {
+        return mylistsTaskQueue;
     }
 
     const redisConnection = await connectRedis();
