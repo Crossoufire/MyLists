@@ -1,13 +1,14 @@
-import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
+import {Job} from "bullmq";
+import {taskNames} from "@/lib/server/domain/tasks/tasks-config";
 
 
-export interface TaskContext {
-    data: TaskJobData;
-    taskName: TasksName;
-    triggeredBy: string;
-    cancelCallback?: CancelCallback;
-    progressCallback?: ProgressCallback;
-}
+export type TaskContext = {
+    data: TaskJobData,
+    taskName: TaskName,
+    triggeredBy: string,
+    cancelCallback?: CancelCallback,
+    progressCallback?: ProgressCallback,
+};
 
 
 export type JobProgress = {
@@ -18,19 +19,32 @@ export type JobProgress = {
 
 
 export type BaseJobData = {
-    triggeredBy: "user" | "cron/cli" | "dashboard";
+    triggeredBy: "user" | "cron/cli" | "dashboard",
 };
 
 
 export type CsvJobData = BaseJobData & {
-    userId: number;
-    fileName: string;
-    filePath: string;
+    userId: number,
+    fileName: string,
+    filePath: string,
 };
 
+
+export type TaskDefinition = {
+    name: TaskName,
+    description: string,
+    visibility?: "user" | "admin",
+    options?: {
+        flags: string,
+        required: boolean,
+        description: string,
+    }[],
+}
+
 export type CancelCallback = () => Promise<void>;
+export type TaskName = (typeof taskNames)[number];
 export type TaskJobData = BaseJobData | CsvJobData;
-export type TaskDefinition = (typeof taskDefinitions)[number];
-export type TasksName = (typeof taskDefinitions)[number]["name"];
+export type TypedJob = Job<TaskJobData, TaskReturnType, TaskName>;
 export type ProgressCallback = (progress: Progress) => Promise<void>;
 export type Progress = { current: number, total: number, message: string };
+export type TaskReturnType = { result: "success" | "cancelled" | "failed" };

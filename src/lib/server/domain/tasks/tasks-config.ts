@@ -1,4 +1,26 @@
-export const taskDefinitions = [
+import {TaskDefinition} from "@/lib/types/tasks.types";
+
+
+export const taskNames = [
+    "vacuumDb",
+    "analyzeDb",
+    "updateIgdbToken",
+    "computeAllUsersStats",
+    "lockOldMovies",
+    "calculateAchievements",
+    "addMediaNotifications",
+    "maintenanceTasks",
+    "addGenresToBooksUsingLlm",
+    "seedAchievements",
+    "removeNonListMedia",
+    "bulkMediaRefresh",
+    "removeUnusedMediaCovers",
+    "deleteNonActivatedUsers",
+    "processCsv",
+] as const;
+
+
+export const taskDefinitions: TaskDefinition[] = [
     { name: "vacuumDb", description: "Vacuum the database" },
     { name: "analyzeDb", description: "Analyze the database" },
     { name: "updateIgdbToken", description: "Update the IGDB API token" },
@@ -15,6 +37,7 @@ export const taskDefinitions = [
     { name: "deleteNonActivatedUsers", description: "Delete non-activated users older than a week" },
     {
         name: "processCsv",
+        visibility: "user",
         description: "Process a CSV file for a specific user.",
         options: [
             {
@@ -29,7 +52,4 @@ export const taskDefinitions = [
             },
         ],
     },
-] as const;
-
-
-export const taskNames = taskDefinitions.map((task) => task.name);
+];

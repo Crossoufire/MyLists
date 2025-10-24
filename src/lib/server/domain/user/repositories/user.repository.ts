@@ -1,9 +1,9 @@
-import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, asc, count, desc, eq, like, sql} from "drizzle-orm";
-import {followers, user, userMediaSettings} from "@/lib/server/database/schema";
+import {ApiProviderType, MediaType, PrivacyType} from "@/lib/utils/enums";
 import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {ProviderSearchResult, ProviderSearchResults} from "@/lib/types/provider.types";
+import {followers, jobHistory, user, userMediaSettings} from "@/lib/server/database/schema";
 
 
 export class UserRepository {
@@ -114,6 +114,13 @@ export class UserRepository {
             privacy,
             count: result.find((r) => r.privacy === privacy)?.count ?? 0,
         }));
+    }
+
+    static async getAdminArchivedTasks() {
+        return getDbClient()
+            .select()
+            .from(jobHistory)
+            .orderBy(desc(jobHistory.finishedOn));
     }
 
     // --------------------------------------------------------------------

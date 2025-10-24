@@ -24,10 +24,12 @@ import { Route as MainUniversalAboutRouteImport } from "./routes/_main/_universa
 import { Route as MainPublicResetPasswordRouteImport } from "./routes/_main/_public/reset-password";
 import { Route as MainPublicForgotPasswordRouteImport } from "./routes/_main/_public/forgot-password";
 import { Route as AdminAdminUsersRouteImport } from "./routes/_admin/admin/users";
-import { Route as AdminAdminTasksRouteImport } from "./routes/_admin/admin/tasks";
+import { Route as AdminAdminOverviewRouteImport } from "./routes/_admin/admin/overview";
 import { Route as AdminAdminMediadleRouteImport } from "./routes/_admin/admin/mediadle";
 import { Route as AdminAdminMediaOverviewRouteImport } from "./routes/_admin/admin/media-overview";
-import { Route as AdminAdminDashboardRouteImport } from "./routes/_admin/admin/dashboard";
+import { Route as AdminAdminArchivedTasksRouteImport } from "./routes/_admin/admin/archived-tasks";
+import { Route as AdminAdminAdminTasksRouteImport } from "./routes/_admin/admin/admin-tasks";
+import { Route as AdminAdminActiveTasksRouteImport } from "./routes/_admin/admin/active-tasks";
 import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
 import { Route as MainPrivateTrendsRouteRouteImport } from "./routes/_main/_private/trends/route";
 import { Route as MainPrivateSearchRouteRouteImport } from "./routes/_main/_private/search/route";
@@ -116,9 +118,9 @@ const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
   path: "/admin/users",
   getParentRoute: () => AdminRoute,
 } as any);
-const AdminAdminTasksRoute = AdminAdminTasksRouteImport.update({
-  id: "/admin/tasks",
-  path: "/admin/tasks",
+const AdminAdminOverviewRoute = AdminAdminOverviewRouteImport.update({
+  id: "/admin/overview",
+  path: "/admin/overview",
   getParentRoute: () => AdminRoute,
 } as any);
 const AdminAdminMediadleRoute = AdminAdminMediadleRouteImport.update({
@@ -131,9 +133,19 @@ const AdminAdminMediaOverviewRoute = AdminAdminMediaOverviewRouteImport.update({
   path: "/admin/media-overview",
   getParentRoute: () => AdminRoute,
 } as any);
-const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
-  id: "/admin/dashboard",
-  path: "/admin/dashboard",
+const AdminAdminArchivedTasksRoute = AdminAdminArchivedTasksRouteImport.update({
+  id: "/admin/archived-tasks",
+  path: "/admin/archived-tasks",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminAdminTasksRoute = AdminAdminAdminTasksRouteImport.update({
+  id: "/admin/admin-tasks",
+  path: "/admin/admin-tasks",
+  getParentRoute: () => AdminRoute,
+} as any);
+const AdminAdminActiveTasksRoute = AdminAdminActiveTasksRouteImport.update({
+  id: "/admin/active-tasks",
+  path: "/admin/active-tasks",
   getParentRoute: () => AdminRoute,
 } as any);
 const AdminAdminAchievementsRoute = AdminAdminAchievementsRouteImport.update({
@@ -267,10 +279,12 @@ export interface FileRoutesByFullPath {
   "/search": typeof MainPrivateSearchRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
+  "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
+  "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
-  "/admin/tasks": typeof AdminAdminTasksRoute;
+  "/admin/overview": typeof AdminAdminOverviewRoute;
   "/admin/users": typeof AdminAdminUsersRoute;
   "/forgot-password": typeof MainPublicForgotPasswordRoute;
   "/reset-password": typeof MainPublicResetPasswordRoute;
@@ -302,10 +316,12 @@ export interface FileRoutesByTo {
   "/search": typeof MainPrivateSearchRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
+  "/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
+  "/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/admin/mediadle": typeof AdminAdminMediadleRoute;
-  "/admin/tasks": typeof AdminAdminTasksRoute;
+  "/admin/overview": typeof AdminAdminOverviewRoute;
   "/admin/users": typeof AdminAdminUsersRoute;
   "/forgot-password": typeof MainPublicForgotPasswordRoute;
   "/reset-password": typeof MainPublicResetPasswordRoute;
@@ -341,10 +357,12 @@ export interface FileRoutesById {
   "/_main/_private/search": typeof MainPrivateSearchRouteRoute;
   "/_main/_private/trends": typeof MainPrivateTrendsRouteRoute;
   "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
-  "/_admin/admin/dashboard": typeof AdminAdminDashboardRoute;
+  "/_admin/admin/active-tasks": typeof AdminAdminActiveTasksRoute;
+  "/_admin/admin/admin-tasks": typeof AdminAdminAdminTasksRoute;
+  "/_admin/admin/archived-tasks": typeof AdminAdminArchivedTasksRoute;
   "/_admin/admin/media-overview": typeof AdminAdminMediaOverviewRoute;
   "/_admin/admin/mediadle": typeof AdminAdminMediadleRoute;
-  "/_admin/admin/tasks": typeof AdminAdminTasksRoute;
+  "/_admin/admin/overview": typeof AdminAdminOverviewRoute;
   "/_admin/admin/users": typeof AdminAdminUsersRoute;
   "/_main/_public/forgot-password": typeof MainPublicForgotPasswordRoute;
   "/_main/_public/reset-password": typeof MainPublicResetPasswordRoute;
@@ -379,10 +397,12 @@ export interface FileRouteTypes {
     | "/search"
     | "/trends"
     | "/admin/achievements"
-    | "/admin/dashboard"
+    | "/admin/active-tasks"
+    | "/admin/admin-tasks"
+    | "/admin/archived-tasks"
     | "/admin/media-overview"
     | "/admin/mediadle"
-    | "/admin/tasks"
+    | "/admin/overview"
     | "/admin/users"
     | "/forgot-password"
     | "/reset-password"
@@ -414,10 +434,12 @@ export interface FileRouteTypes {
     | "/search"
     | "/trends"
     | "/admin/achievements"
-    | "/admin/dashboard"
+    | "/admin/active-tasks"
+    | "/admin/admin-tasks"
+    | "/admin/archived-tasks"
     | "/admin/media-overview"
     | "/admin/mediadle"
-    | "/admin/tasks"
+    | "/admin/overview"
     | "/admin/users"
     | "/forgot-password"
     | "/reset-password"
@@ -452,10 +474,12 @@ export interface FileRouteTypes {
     | "/_main/_private/search"
     | "/_main/_private/trends"
     | "/_admin/admin/achievements"
-    | "/_admin/admin/dashboard"
+    | "/_admin/admin/active-tasks"
+    | "/_admin/admin/admin-tasks"
+    | "/_admin/admin/archived-tasks"
     | "/_admin/admin/media-overview"
     | "/_admin/admin/mediadle"
-    | "/_admin/admin/tasks"
+    | "/_admin/admin/overview"
     | "/_admin/admin/users"
     | "/_main/_public/forgot-password"
     | "/_main/_public/reset-password"
@@ -580,11 +604,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAdminUsersRouteImport;
       parentRoute: typeof AdminRoute;
     };
-    "/_admin/admin/tasks": {
-      id: "/_admin/admin/tasks";
-      path: "/admin/tasks";
-      fullPath: "/admin/tasks";
-      preLoaderRoute: typeof AdminAdminTasksRouteImport;
+    "/_admin/admin/overview": {
+      id: "/_admin/admin/overview";
+      path: "/admin/overview";
+      fullPath: "/admin/overview";
+      preLoaderRoute: typeof AdminAdminOverviewRouteImport;
       parentRoute: typeof AdminRoute;
     };
     "/_admin/admin/mediadle": {
@@ -601,11 +625,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof AdminAdminMediaOverviewRouteImport;
       parentRoute: typeof AdminRoute;
     };
-    "/_admin/admin/dashboard": {
-      id: "/_admin/admin/dashboard";
-      path: "/admin/dashboard";
-      fullPath: "/admin/dashboard";
-      preLoaderRoute: typeof AdminAdminDashboardRouteImport;
+    "/_admin/admin/archived-tasks": {
+      id: "/_admin/admin/archived-tasks";
+      path: "/admin/archived-tasks";
+      fullPath: "/admin/archived-tasks";
+      preLoaderRoute: typeof AdminAdminArchivedTasksRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/admin-tasks": {
+      id: "/_admin/admin/admin-tasks";
+      path: "/admin/admin-tasks";
+      fullPath: "/admin/admin-tasks";
+      preLoaderRoute: typeof AdminAdminAdminTasksRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/_admin/admin/active-tasks": {
+      id: "/_admin/admin/active-tasks";
+      path: "/admin/active-tasks";
+      fullPath: "/admin/active-tasks";
+      preLoaderRoute: typeof AdminAdminActiveTasksRouteImport;
       parentRoute: typeof AdminRoute;
     };
     "/_admin/admin/achievements": {
@@ -760,20 +798,24 @@ declare module "@tanstack/react-router" {
 
 interface AdminRouteChildren {
   AdminAdminAchievementsRoute: typeof AdminAdminAchievementsRoute;
-  AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute;
+  AdminAdminActiveTasksRoute: typeof AdminAdminActiveTasksRoute;
+  AdminAdminAdminTasksRoute: typeof AdminAdminAdminTasksRoute;
+  AdminAdminArchivedTasksRoute: typeof AdminAdminArchivedTasksRoute;
   AdminAdminMediaOverviewRoute: typeof AdminAdminMediaOverviewRoute;
   AdminAdminMediadleRoute: typeof AdminAdminMediadleRoute;
-  AdminAdminTasksRoute: typeof AdminAdminTasksRoute;
+  AdminAdminOverviewRoute: typeof AdminAdminOverviewRoute;
   AdminAdminUsersRoute: typeof AdminAdminUsersRoute;
   AdminAdminIndexRoute: typeof AdminAdminIndexRoute;
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminAchievementsRoute: AdminAdminAchievementsRoute,
-  AdminAdminDashboardRoute: AdminAdminDashboardRoute,
+  AdminAdminActiveTasksRoute: AdminAdminActiveTasksRoute,
+  AdminAdminAdminTasksRoute: AdminAdminAdminTasksRoute,
+  AdminAdminArchivedTasksRoute: AdminAdminArchivedTasksRoute,
   AdminAdminMediaOverviewRoute: AdminAdminMediaOverviewRoute,
   AdminAdminMediadleRoute: AdminAdminMediadleRoute,
-  AdminAdminTasksRoute: AdminAdminTasksRoute,
+  AdminAdminOverviewRoute: AdminAdminOverviewRoute,
   AdminAdminUsersRoute: AdminAdminUsersRoute,
   AdminAdminIndexRoute: AdminAdminIndexRoute,
 };

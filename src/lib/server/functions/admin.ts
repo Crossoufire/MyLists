@@ -1,5 +1,4 @@
 import {serverEnv} from "@/env/server";
-import {JobType as MqJobType} from "bullmq";
 import {getQueue} from "@/lib/utils/bullmq";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
@@ -10,12 +9,10 @@ import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 import {createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
 import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
 import {
+    adminTriggerTaskSchema,
     adminUpdateAchievementSchema,
-    getAdminJobSchema,
-    getAdminJobsSchema,
     postAdminUpdateTiersSchema,
     postAdminUpdateUserSchema,
-    postTriggerLongTasksSchema,
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
@@ -142,30 +139,20 @@ export const postAdminUpdateTiers = createServerFn({ method: "POST" })
 
 export const getAdminTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .handler(async () => taskDefinitions);
+    .handler(async () => {
+        return taskDefinitions.filter((task) => task.visibility !== "user");
+    });
 
 
-export const postTriggerLongTasks = createServerFn({ method: "POST" })
+export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .inputValidator(postTriggerLongTasksSchema)
+    .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName } }) => {
         const mylistsTaskQueue = await getQueue();
-
-        if (!mylistsTaskQueue) {
-            return {
-                success: true,
-                jobId: "dev-mode-job",
-                message: "Tasks are disabled in development mode.",
-            };
-        }
+        if (!mylistsTaskQueue) return;
 
         try {
-            const job = await mylistsTaskQueue.add(taskName, { triggeredBy: "dashboard" });
-            return {
-                jobId: job.id,
-                success: true,
-                message: "Task enqueued.",
-            };
+            await mylistsTaskQueue.add(taskName, { triggeredBy: "dashboard" });
         }
         catch {
             throw new FormattedError("Failed to enqueue task.");
@@ -173,18 +160,14 @@ export const postTriggerLongTasks = createServerFn({ method: "POST" })
     });
 
 
-export const getAdminJobs = createServerFn({ method: "GET" })
+export const getAdminActiveJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .inputValidator(getAdminJobsSchema)
-    .handler(async ({ data: { types } }) => {
+    .handler(async () => {
         const mylistsTaskQueue = await getQueue();
-
-        if (!mylistsTaskQueue) {
-            return [];
-        }
+        if (!mylistsTaskQueue) return [];
 
         try {
-            const jobs = await mylistsTaskQueue.getJobs(types satisfies MqJobType[]);
+            const jobs = await mylistsTaskQueue.getJobs(["active", "waiting", "delayed"]);
             return jobs.map((job) => ({
                 id: job.id,
                 name: job.name,
@@ -192,15 +175,10 @@ export const getAdminJobs = createServerFn({ method: "GET" })
                 progress: job.progress,
                 timestamp: job.timestamp,
                 finishedOn: job.finishedOn,
-                stacktrace: job.stacktrace,
                 returnValue: job.returnvalue,
                 processedOn: job.processedOn,
                 failedReason: job.failedReason,
-                attemptsMade: job.attemptsMade,
-                status: job.failedReason ? "failed"
-                    : job.finishedOn ? "completed"
-                        : job.processedOn ? "active"
-                            : job.timestamp ? "waiting" : "unknown"
+                status: job.processedOn ? "active" : "waiting"
             }));
         }
         catch {
@@ -209,20 +187,9 @@ export const getAdminJobs = createServerFn({ method: "GET" })
     });
 
 
-export const getAdminJobLogs = createServerFn({ method: "GET" })
+export const getAdminArchivedTasks = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
-    .inputValidator(getAdminJobSchema)
-    .handler(async ({ data: { jobId } }) => {
-        const mylistsTaskQueue = await getQueue();
-
-        if (!mylistsTaskQueue) {
-            return { count: 1, logs: ["Job logging is disabled in dev mode."] };
-        }
-
-        try {
-            return mylistsTaskQueue.getJobLogs(jobId);
-        }
-        catch {
-            throw new FormattedError("Failed to fetch job logs.");
-        }
+    .handler(async () => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.getAdminArchivedTasks();
     });

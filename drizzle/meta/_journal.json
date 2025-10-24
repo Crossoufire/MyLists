@@ -29,6 +29,20 @@
       "when": 1760709691396,
       "tag": "0003_rapid_frank_castle",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1761311778508,
+      "tag": "0004_perpetual_inertia",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1761322025955,
+      "tag": "0005_known_skullbuster",
+      "breakpoints": true
     }
   ]
 }

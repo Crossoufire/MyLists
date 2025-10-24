@@ -2,9 +2,9 @@ import {queryOptions} from "@tanstack/react-query";
 import {SearchType, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {
     getAdminAchievements,
+    getAdminActiveJobs,
     getAdminAllUsers,
-    getAdminJobLogs,
-    getAdminJobs,
+    getAdminArchivedTasks,
     getAdminMediadleStats,
     getAdminMediaOverview,
     getAdminOverview,
@@ -19,9 +19,9 @@ export const adminQueryKeys = {
     adminMediaOverviewKey: () => ["admin", "media-overview"] as const,
     adminTasksKey: () => ["admin", "tasks"] as const,
     adminUsersKeys: (search: SearchTypeAdmin) => ["admin", "updateUsers", search] as const,
-    adminJobsKey: () => ["admin", "jobs"] as const,
+    adminCheckActiveJobs: () => ["admin", "jobs", "active"] as const,
     adminJobLogsKey: (jobId: string | null | undefined) => ["admin", "jobs", jobId, "Logs"] as const,
-    adminJobCompletedKey: () => ["admin", "jobs", "Completed"] as const,
+    adminJobArchivedKey: () => ["admin", "jobs", "archived"] as const,
 };
 
 
@@ -62,25 +62,24 @@ export const adminTasksOptions = () => queryOptions({
 });
 
 
-export const adminJobsOptions = (pollingRateSec: number = 5) => queryOptions({
-    queryKey: adminQueryKeys.adminJobsKey(),
-    queryFn: () => getAdminJobs({ data: { types: ["wait", "active"] } }),
+export const adminCheckActiveJobs = (pollingRateSec: number = 3) => queryOptions({
+    queryKey: adminQueryKeys.adminCheckActiveJobs(),
+    queryFn: getAdminActiveJobs,
     meta: { displayErrorMsg: true },
-    refetchInterval: pollingRateSec * 1000,
+    refetchInterval: (query) => {
+        const data = query.state.data;
+        if (!data || data.length === 0) return false;
+        if (data.some((job) => job.status === "active" || job.status === "waiting")) {
+            return pollingRateSec * 1000;
+        }
+        return false;
+    },
     placeholderData: (previousData) => previousData,
 });
 
 
-export const adminJobLogsOptions = (jobId: string | null | undefined, isEnabled: boolean) => queryOptions({
-    queryKey: adminQueryKeys.adminJobLogsKey(jobId),
-    queryFn: () => getAdminJobLogs({ data: { jobId: jobId! } }),
-    meta: { displayErrorMsg: true },
-    enabled: isEnabled,
-});
-
-
-export const adminJobCompletedOptions = () => queryOptions({
-    queryKey: adminQueryKeys.adminJobCompletedKey(),
-    queryFn: () => getAdminJobs({ data: { types: ["completed", "failed"] } }),
+export const adminArchivedTasksOptions = () => queryOptions({
+    queryKey: adminQueryKeys.adminJobArchivedKey(),
+    queryFn: getAdminArchivedTasks,
     meta: { displayErrorMsg: true },
 });

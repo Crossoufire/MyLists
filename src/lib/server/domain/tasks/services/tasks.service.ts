@@ -6,7 +6,7 @@ import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
 import {readFile, unlink} from "fs/promises";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
-import {CsvJobData, TaskContext, TasksName} from "@/lib/types/tasks.types";
+import {CsvJobData, TaskContext, TaskName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
@@ -22,7 +22,7 @@ type TaskHandler = (ctx: TaskContext) => Promise<void>;
 export class TasksService {
     private logger: pino.Logger;
     private mediaTypes: MediaType[];
-    private readonly taskHandlers: Record<TasksName, TaskHandler>;
+    private readonly taskHandlers: Record<TaskName, TaskHandler>;
 
     constructor(
         logger: pino.Logger,

@@ -1,7 +1,7 @@
 import {toast} from "sonner";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {adminQueryKeys} from "@/lib/client/react-query/query-options/admin-options";
-import {postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser, postTriggerLongTasks} from "@/lib/server/functions/admin";
+import {postAdminTriggerTask, postAdminUpdateAchievement, postAdminUpdateTiers, postAdminUpdateUser} from "@/lib/server/functions/admin";
 import {SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 
 
@@ -46,14 +46,8 @@ export const useAdminUpdateTiersMutation = () => {
 
 
 export const useAdminTriggerTaskMutation = () => {
-    const queryClient = useQueryClient();
-
     return useMutation({
-        mutationFn: postTriggerLongTasks,
+        mutationFn: postAdminTriggerTask,
         onError: (error) => toast.error(error.message),
-        onSuccess: () => {
-            // Invalidate `adminJobsKey`, `adminJobLogsKey`, `adminJobCompletedKey` (contain ["admin", "Jobs"] in key definition)
-            return queryClient.invalidateQueries({ queryKey: ["admin", "jobs"] });
-        },
     });
 };

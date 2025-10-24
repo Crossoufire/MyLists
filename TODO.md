@@ -7,8 +7,13 @@
 
 ## TODO/FIXES
 
+- TODO: Finish consolidate task interface between admin and users
 - TODO: Continue implementation of upload CSV
+
+- TODO: Finish User Media display in admin dashboard
+- TODO: Add a command to create a user programmatically
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...
+- TODO: Put the createUser command in the admin dashboard, but in a new menu that can take arguments
 
 ## TODO AFTER PROD
 

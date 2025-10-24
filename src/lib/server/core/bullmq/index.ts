@@ -1,19 +1,15 @@
 import pino from "pino";
 import Redis from "ioredis";
-import {Job, Queue, Worker} from "bullmq";
-import {isJobCancelled} from "@/lib/utils/bullmq";
+import {Queue, Worker} from "bullmq";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
 import {CancelJobError} from "@/lib/utils/error-classes";
-import {Progress, TaskContext, TaskJobData, TasksName} from "@/lib/types/tasks.types";
-
-
-type TypedJob = Job<TaskJobData, TaskReturnType, TasksName>;
-type TaskReturnType = { result: "success" | "cancelled" | "failed" };
+import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
+import {Progress, TaskContext, TaskJobData, TaskName, TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
 
 
 const QUEUE_NAME = "mylists-tasks";
-export let mylistsTaskQueue: Queue<TaskJobData, TaskReturnType, TasksName>;
+export let mylistsTaskQueue: Queue<TaskJobData, TaskReturnType, TaskName>;
 
 
 export const initializeQueue = (connection: Redis) => {
@@ -37,26 +33,30 @@ export const initializeQueue = (connection: Redis) => {
 
 
 export const createWorker = (connection: Redis) => {
-    const worker = new Worker<TaskJobData, TaskReturnType, TasksName>(QUEUE_NAME, taskProcessor, {
+    const worker = new Worker<TaskJobData, TaskReturnType, TaskName>(QUEUE_NAME, taskProcessor, {
         concurrency: 1,
         connection: connection.duplicate(),
     });
 
-    worker.on("completed", (job, returnValue) => {
+    worker.on("error", (err) => {
+        pinoLogger.error({ err }, "Worker encountered an error");
+    });
+
+    worker.on("failed", async (job, error) => {
+        pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed task");
+
+        await saveJobToDb(job, "failed");
+    });
+
+    worker.on("completed", async (job, returnValue) => {
         if (returnValue.result === "cancelled") {
             pinoLogger.info({ jobId: job.id, taskName: job.name }, "Worker task cancelled");
         }
         else {
             pinoLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed task");
         }
-    });
 
-    worker.on("failed", (job: TypedJob | undefined, error: Error) => {
-        pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed task");
-    });
-
-    worker.on("error", (err) => {
-        pinoLogger.error({ err }, "Worker encountered an error");
+        await saveJobToDb(job, "completed", returnValue);
     });
 
     pinoLogger.info("Worker instance created and listeners attached.");

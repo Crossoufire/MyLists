@@ -1,5 +1,8 @@
+import {jobHistory} from "@/lib/server/database/schema";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {createServerOnlyFn} from "@tanstack/react-start";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
 
 
 export const getQueue = createServerOnlyFn(() => async () => {
@@ -48,3 +51,33 @@ export const isJobCancelled = async (jobId: string) => {
 
     return result === "1";
 };
+
+
+export const saveJobToDb = async (job: TypedJob | undefined, from: "completed" | "failed", returnValue?: TaskReturnType) => {
+    try {
+        if (!job) return;
+
+        const status = returnValue?.result ?? from === "completed" ? "completed" : "failed";
+
+        await getDbClient()
+            .insert(jobHistory)
+            .values({
+                id: job.id!,
+                data: job.data,
+                status: status,
+                name: job.name,
+                timestamp: job.timestamp,
+                finishedOn: job.finishedOn,
+                processedOn: job.processedOn,
+                returnValue: returnValue ?? null,
+                triggeredBy: job.data.triggeredBy,
+                failedReason: job.failedReason ?? null,
+                userId: "userId" in job.data ? job.data.userId : null,
+            });
+
+        await job.remove();
+    }
+    catch (err) {
+        console.error("Failed to save job to database:", err);
+    }
+}

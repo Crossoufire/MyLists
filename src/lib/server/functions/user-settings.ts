@@ -2,7 +2,6 @@ import z from "zod";
 import path from "path";
 import {auth} from "@/lib/server/core/auth";
 import {MediaType} from "@/lib/utils/enums";
-import {JobType as MqJobType} from "bullmq";
 import {mkdir, writeFile} from "fs/promises";
 import {getQueue, signalJobCancellation} from "@/lib/utils/bullmq";
 import {createServerFn} from "@tanstack/react-start";
@@ -192,8 +191,7 @@ export const getUserUploads = createServerFn({ method: "GET" })
         }
 
         try {
-            const jobTypes: MqJobType[] = ["active", "waiting", "completed", "failed", "delayed"];
-            const allJobs = await mylistsTaskQueue.getJobs(jobTypes);
+            const allJobs = await mylistsTaskQueue.getJobs(["active", "waiting", "delayed"]);
 
             const userJobs = allJobs.filter((job) => {
                 if ("userId" in job.data) {
@@ -208,14 +206,11 @@ export const getUserUploads = createServerFn({ method: "GET" })
                 progress: job.progress,
                 timestamp: job.timestamp,
                 finishedOn: job.finishedOn,
-                stacktrace: job.stacktrace,
                 data: job.data as CsvJobData,
                 returnValue: job.returnvalue,
                 processedOn: job.processedOn,
                 failedReason: job.failedReason,
-                attemptsMade: job.attemptsMade,
-                status: job.failedReason ? "failed" : job.finishedOn ? "completed" :
-                    job.processedOn ? "active" : job.timestamp ? "waiting" : "unknown"
+                status: job.processedOn ? "active" : "waiting",
             }));
         }
         catch (err) {

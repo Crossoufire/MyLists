@@ -1,6 +1,6 @@
-import {useAuth} from "@/lib/client/hooks/use-auth";
 import {Link} from "@tanstack/react-router";
-import {Award, CheckCheck, Film, Home, Play, Settings, Users} from "lucide-react";
+import {useAuth} from "@/lib/client/hooks/use-auth";
+import {Activity, Archive, Award, Film, Home, ListCheck, Play, Settings, Users} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -31,7 +31,7 @@ export function AdminSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Overview</SidebarGroupLabel>
+                    <SidebarGroupLabel>Main & Users</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
@@ -54,7 +54,7 @@ export function AdminSidebar() {
                                 <SidebarMenuButton asChild>
                                     <Link to="/admin/users">
                                         <Users className="size-4"/>
-                                        <span>Users</span>
+                                        <span>Users Management</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -90,9 +90,25 @@ export function AdminSidebar() {
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
-                                    <Link to="/admin/tasks">
-                                        <CheckCheck className="size-4"/>
-                                        <span>Long Running Tasks</span>
+                                    <Link to="/admin/admin-tasks">
+                                        <ListCheck className="size-4"/>
+                                        <span>Admin Tasks</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link to="/admin/active-tasks">
+                                        <Activity className="size-4"/>
+                                        <span>Active Tasks</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton asChild>
+                                    <Link to="/admin/archived-tasks">
+                                        <Archive className="size-4"/>
+                                        <span>Archived Tasks</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

@@ -11,7 +11,7 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 export const Route = createFileRoute("/_admin/admin/")({
     beforeLoad: async ({ context: { queryClient } }) => {
         if (await checkAdminAuth()) {
-            throw redirect({ to: "/admin/dashboard" });
+            throw redirect({ to: "/admin/overview" });
         }
         else {
             queryClient.removeQueries({ queryKey: ["admin"], exact: false });
@@ -39,7 +39,7 @@ function AdminStepUpPage() {
         adminAuthMutation.mutate({ data: { password: data.password } }, {
             onSuccess: async (response) => {
                 if (response?.success) {
-                    await navigate({ to: "/admin/dashboard" });
+                    await navigate({ to: "/admin/overview" });
                 }
                 else if (response?.message) {
                     form.setError("password", { message: response.message });

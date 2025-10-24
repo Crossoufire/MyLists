@@ -71,7 +71,7 @@ export class UserService {
             addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
             updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
         });
-        
+
         return {
             addedThisMonth,
             addedLastMonth,
@@ -80,6 +80,10 @@ export class UserService {
             addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
             updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
         };
+    }
+
+    async getAdminArchivedTasks() {
+        return this.userRepository.getAdminArchivedTasks();
     }
 
     // ----------------------------------------------------------------

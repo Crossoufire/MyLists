@@ -268,7 +268,7 @@ export const postAdminUpdateTiersSchema = z.object({
     tiers: z.array(tierAchievementSchema),
 });
 
-export const postTriggerLongTasksSchema = z.object({
+export const adminTriggerTaskSchema = z.object({
     taskName: z.enum(taskNames),
 });
 
