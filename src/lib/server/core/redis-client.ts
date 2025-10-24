@@ -7,10 +7,6 @@ let connectionPromise: Promise<Redis> | null = null;
 
 
 export const connectRedis = () => {
-    if (process.env.NODE_ENV !== "production") {
-        return Promise.resolve(null);
-    }
-
     if (redisInstance?.status === "ready" || redisInstance?.status === "connecting") {
         return connectionPromise || Promise.resolve(redisInstance);
     }

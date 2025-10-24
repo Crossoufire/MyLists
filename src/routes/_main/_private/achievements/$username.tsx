@@ -11,12 +11,12 @@ import {AchievementSummary} from "@/lib/client/components/achievements/Achieveme
 
 
 export const Route = createFileRoute("/_main/_private/achievements/$username")({
-    loader: async ({ context: { queryClient }, params: { username } }) => queryClient.ensureQueryData(achievementOptions(username)),
+    loader: async ({ context: { queryClient }, params: { username } }) => {
+        return queryClient.ensureQueryData(achievementOptions(username));
+    },
     component: AchievementPage,
 });
 
-// max-sm:flex max-sm:gap-x-2 max-sm:justify-start max-sm:flex-wrap max-sm:h-auto max-sm:space-y-1
-// max-sm:px-2 px-4 flex items-center gap-2
 
 function AchievementPage() {
     const { username } = Route.useParams();

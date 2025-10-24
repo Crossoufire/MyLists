@@ -1,4 +1,4 @@
-import z from "zod/v4";
+import z from "zod";
 import {notFound} from "@tanstack/react-router";
 import {FormZodError} from "@/lib/utils/error-classes";
 

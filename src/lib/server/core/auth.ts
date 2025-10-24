@@ -8,8 +8,8 @@ import {createServerOnlyFn} from "@tanstack/react-start";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
 import {userMediaSettings} from "@/lib/server/database/schema";
-import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
 const getAuthConfig = createServerOnlyFn(() => betterAuth({

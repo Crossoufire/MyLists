@@ -1,6 +1,5 @@
 import {serverEnv} from "@/env/server";
 import {RateLimiterAbstract} from "rate-limiter-flexible";
-import {connectRedis} from "@/lib/server/core/redis-client";
 import {createRateLimiter} from "@/lib/server/core/rate-limiter";
 import {BaseClient} from "@/lib/server/api-providers/clients/base.client";
 import {
@@ -66,6 +65,8 @@ export class TmdbClient extends BaseClient {
     }
 
     async getTvChangedIds() {
+        const { connectRedis } = await import("@/lib/server/core/redis-client");
+
         const redisConnection = await connectRedis();
         const cached = await redisConnection?.get(TmdbClient.tvChangedIdsCacheKey);
         if (cached) {

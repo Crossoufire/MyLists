@@ -2,8 +2,7 @@ import {Command} from "commander";
 import pinoLogger from "@/lib/server/core/pino-logger";
 import {initializeQueue} from "@/lib/server/core/bullmq";
 import {getContainer} from "@/lib/server/core/container";
-import {connectRedis} from "@/lib/server/core/redis-client";
-import {ProgressCallback, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
+import {TaskContext, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
 
 
 export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
@@ -27,11 +26,13 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
         if (directExecution) {
             cliLogger.info(`Running ${task.name} task directly via CLI...`);
             try {
-                const onProgress: ProgressCallback = async (progress) => {
-                    cliLogger.info({ progress }, "Task progress update");
-                };
+                const context: TaskContext = {
+                    data: jobData,
+                    taskName: task.name,
+                    triggeredBy: jobData.triggeredBy,
+                }
 
-                await taskService.runTask(task.name, jobData, onProgress);
+                await taskService.runTask(context);
                 cliLogger.info(`Task ${task.name} completed directly via CLI.`);
             }
             catch (error) {
@@ -41,6 +42,8 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
         }
         else {
             cliLogger.info(`Enqueueing ${task.name} task via CLI...`);
+
+            const { connectRedis } = await import("@/lib/server/core/redis-client");
 
             const redisConnection = await connectRedis();
             if (!redisConnection) {

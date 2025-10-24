@@ -30,14 +30,15 @@ import { Route as AdminAdminMediaOverviewRouteImport } from "./routes/_admin/adm
 import { Route as AdminAdminDashboardRouteImport } from "./routes/_admin/admin/dashboard";
 import { Route as AdminAdminAchievementsRouteImport } from "./routes/_admin/admin/achievements";
 import { Route as MainPrivateTrendsRouteRouteImport } from "./routes/_main/_private/trends/route";
-import { Route as MainPrivateSettingsRouteRouteImport } from "./routes/_main/_private/settings/route";
 import { Route as MainPrivateSearchRouteRouteImport } from "./routes/_main/_private/search/route";
 import { Route as MainPrivatePlatformStatsRouteRouteImport } from "./routes/_main/_private/platform-stats/route";
 import { Route as MainPrivateMoviedleRouteRouteImport } from "./routes/_main/_private/moviedle/route";
 import { Route as MainPrivateHallOfFameRouteRouteImport } from "./routes/_main/_private/hall-of-fame/route";
 import { Route as MainPrivateComingNextRouteRouteImport } from "./routes/_main/_private/coming-next/route";
+import { Route as MainPrivateSettingsIndexRouteImport } from "./routes/_main/_private/settings/index";
 import { Route as MainPrivateStatsUsernameRouteImport } from "./routes/_main/_private/stats/$username";
 import { Route as MainPrivateAchievementsUsernameRouteImport } from "./routes/_main/_private/achievements/$username";
+import { Route as MainPrivateSettingsUploadsRouteRouteImport } from "./routes/_main/_private/settings/uploads/route";
 import { Route as MainPrivateProfileUsernameHeaderRouteImport } from "./routes/_main/_private/profile/$username/_header";
 import { Route as MainPrivateDetailsMediaTypeMediaIdRouteImport } from "./routes/_main/_private/details/$mediaType/$mediaId";
 import { Route as MainPrivateListMediaTypeUsernameRouteRouteImport } from "./routes/_main/_private/list/$mediaType/$username.route";
@@ -145,12 +146,6 @@ const MainPrivateTrendsRouteRoute = MainPrivateTrendsRouteRouteImport.update({
   path: "/trends",
   getParentRoute: () => MainPrivateRoute,
 } as any);
-const MainPrivateSettingsRouteRoute =
-  MainPrivateSettingsRouteRouteImport.update({
-    id: "/settings",
-    path: "/settings",
-    getParentRoute: () => MainPrivateRoute,
-  } as any);
 const MainPrivateSearchRouteRoute = MainPrivateSearchRouteRouteImport.update({
   id: "/search",
   path: "/search",
@@ -186,6 +181,12 @@ const MainPrivateProfileUsernameRoute =
     path: "/profile/$username",
     getParentRoute: () => MainPrivateRoute,
   } as any);
+const MainPrivateSettingsIndexRoute =
+  MainPrivateSettingsIndexRouteImport.update({
+    id: "/settings/",
+    path: "/settings/",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
 const MainPrivateStatsUsernameRoute =
   MainPrivateStatsUsernameRouteImport.update({
     id: "/stats/$username",
@@ -196,6 +197,12 @@ const MainPrivateAchievementsUsernameRoute =
   MainPrivateAchievementsUsernameRouteImport.update({
     id: "/achievements/$username",
     path: "/achievements/$username",
+    getParentRoute: () => MainPrivateRoute,
+  } as any);
+const MainPrivateSettingsUploadsRouteRoute =
+  MainPrivateSettingsUploadsRouteRouteImport.update({
+    id: "/settings/uploads",
+    path: "/settings/uploads",
     getParentRoute: () => MainPrivateRoute,
   } as any);
 const MainPrivateProfileUsernameHeaderRoute =
@@ -258,7 +265,6 @@ export interface FileRoutesByFullPath {
   "/moviedle": typeof MainPrivateMoviedleRouteRoute;
   "/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
   "/search": typeof MainPrivateSearchRouteRoute;
-  "/settings": typeof MainPrivateSettingsRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/dashboard": typeof AdminAdminDashboardRoute;
@@ -274,8 +280,10 @@ export interface FileRoutesByFullPath {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/admin": typeof AdminAdminIndexRoute;
   "/": typeof MainPublicIndexRoute;
+  "/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/settings": typeof MainPrivateSettingsIndexRoute;
   "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
   "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/profile/$username": typeof MainPrivateProfileUsernameHeaderRouteWithChildren;
@@ -292,7 +300,6 @@ export interface FileRoutesByTo {
   "/moviedle": typeof MainPrivateMoviedleRouteRoute;
   "/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
   "/search": typeof MainPrivateSearchRouteRoute;
-  "/settings": typeof MainPrivateSettingsRouteRoute;
   "/trends": typeof MainPrivateTrendsRouteRoute;
   "/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/admin/dashboard": typeof AdminAdminDashboardRoute;
@@ -308,8 +315,10 @@ export interface FileRoutesByTo {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/admin": typeof AdminAdminIndexRoute;
   "/": typeof MainPublicIndexRoute;
+  "/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/settings": typeof MainPrivateSettingsIndexRoute;
   "/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
   "/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/profile/$username": typeof MainPrivateProfileUsernameHeaderIndexRoute;
@@ -330,7 +339,6 @@ export interface FileRoutesById {
   "/_main/_private/moviedle": typeof MainPrivateMoviedleRouteRoute;
   "/_main/_private/platform-stats": typeof MainPrivatePlatformStatsRouteRoute;
   "/_main/_private/search": typeof MainPrivateSearchRouteRoute;
-  "/_main/_private/settings": typeof MainPrivateSettingsRouteRoute;
   "/_main/_private/trends": typeof MainPrivateTrendsRouteRoute;
   "/_admin/admin/achievements": typeof AdminAdminAchievementsRoute;
   "/_admin/admin/dashboard": typeof AdminAdminDashboardRoute;
@@ -346,8 +354,10 @@ export interface FileRoutesById {
   "/api/auth/$": typeof ApiAuthSplatRoute;
   "/_admin/admin/": typeof AdminAdminIndexRoute;
   "/_main/_public/": typeof MainPublicIndexRoute;
+  "/_main/_private/settings/uploads": typeof MainPrivateSettingsUploadsRouteRoute;
   "/_main/_private/achievements/$username": typeof MainPrivateAchievementsUsernameRoute;
   "/_main/_private/stats/$username": typeof MainPrivateStatsUsernameRoute;
+  "/_main/_private/settings/": typeof MainPrivateSettingsIndexRoute;
   "/_main/_private/list/$mediaType/$username": typeof MainPrivateListMediaTypeUsernameRouteRoute;
   "/_main/_private/details/$mediaType/$mediaId": typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   "/_main/_private/profile/$username": typeof MainPrivateProfileUsernameRouteWithChildren;
@@ -367,7 +377,6 @@ export interface FileRouteTypes {
     | "/moviedle"
     | "/platform-stats"
     | "/search"
-    | "/settings"
     | "/trends"
     | "/admin/achievements"
     | "/admin/dashboard"
@@ -383,8 +392,10 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/admin"
     | "/"
+    | "/settings/uploads"
     | "/achievements/$username"
     | "/stats/$username"
+    | "/settings"
     | "/list/$mediaType/$username"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
@@ -401,7 +412,6 @@ export interface FileRouteTypes {
     | "/moviedle"
     | "/platform-stats"
     | "/search"
-    | "/settings"
     | "/trends"
     | "/admin/achievements"
     | "/admin/dashboard"
@@ -417,8 +427,10 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/admin"
     | "/"
+    | "/settings/uploads"
     | "/achievements/$username"
     | "/stats/$username"
+    | "/settings"
     | "/list/$mediaType/$username"
     | "/details/$mediaType/$mediaId"
     | "/profile/$username"
@@ -438,7 +450,6 @@ export interface FileRouteTypes {
     | "/_main/_private/moviedle"
     | "/_main/_private/platform-stats"
     | "/_main/_private/search"
-    | "/_main/_private/settings"
     | "/_main/_private/trends"
     | "/_admin/admin/achievements"
     | "/_admin/admin/dashboard"
@@ -454,8 +465,10 @@ export interface FileRouteTypes {
     | "/api/auth/$"
     | "/_admin/admin/"
     | "/_main/_public/"
+    | "/_main/_private/settings/uploads"
     | "/_main/_private/achievements/$username"
     | "/_main/_private/stats/$username"
+    | "/_main/_private/settings/"
     | "/_main/_private/list/$mediaType/$username"
     | "/_main/_private/details/$mediaType/$mediaId"
     | "/_main/_private/profile/$username"
@@ -609,13 +622,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof MainPrivateTrendsRouteRouteImport;
       parentRoute: typeof MainPrivateRoute;
     };
-    "/_main/_private/settings": {
-      id: "/_main/_private/settings";
-      path: "/settings";
-      fullPath: "/settings";
-      preLoaderRoute: typeof MainPrivateSettingsRouteRouteImport;
-      parentRoute: typeof MainPrivateRoute;
-    };
     "/_main/_private/search": {
       id: "/_main/_private/search";
       path: "/search";
@@ -658,6 +664,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof MainPrivateProfileUsernameRouteImport;
       parentRoute: typeof MainPrivateRoute;
     };
+    "/_main/_private/settings/": {
+      id: "/_main/_private/settings/";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof MainPrivateSettingsIndexRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
     "/_main/_private/stats/$username": {
       id: "/_main/_private/stats/$username";
       path: "/stats/$username";
@@ -670,6 +683,13 @@ declare module "@tanstack/react-router" {
       path: "/achievements/$username";
       fullPath: "/achievements/$username";
       preLoaderRoute: typeof MainPrivateAchievementsUsernameRouteImport;
+      parentRoute: typeof MainPrivateRoute;
+    };
+    "/_main/_private/settings/uploads": {
+      id: "/_main/_private/settings/uploads";
+      path: "/settings/uploads";
+      fullPath: "/settings/uploads";
+      preLoaderRoute: typeof MainPrivateSettingsUploadsRouteRouteImport;
       parentRoute: typeof MainPrivateRoute;
     };
     "/_main/_private/profile/$username/_header": {
@@ -805,10 +825,11 @@ interface MainPrivateRouteChildren {
   MainPrivateMoviedleRouteRoute: typeof MainPrivateMoviedleRouteRoute;
   MainPrivatePlatformStatsRouteRoute: typeof MainPrivatePlatformStatsRouteRoute;
   MainPrivateSearchRouteRoute: typeof MainPrivateSearchRouteRoute;
-  MainPrivateSettingsRouteRoute: typeof MainPrivateSettingsRouteRoute;
   MainPrivateTrendsRouteRoute: typeof MainPrivateTrendsRouteRoute;
+  MainPrivateSettingsUploadsRouteRoute: typeof MainPrivateSettingsUploadsRouteRoute;
   MainPrivateAchievementsUsernameRoute: typeof MainPrivateAchievementsUsernameRoute;
   MainPrivateStatsUsernameRoute: typeof MainPrivateStatsUsernameRoute;
+  MainPrivateSettingsIndexRoute: typeof MainPrivateSettingsIndexRoute;
   MainPrivateListMediaTypeUsernameRouteRoute: typeof MainPrivateListMediaTypeUsernameRouteRoute;
   MainPrivateDetailsMediaTypeMediaIdRoute: typeof MainPrivateDetailsMediaTypeMediaIdRoute;
   MainPrivateProfileUsernameRoute: typeof MainPrivateProfileUsernameRouteWithChildren;
@@ -822,10 +843,11 @@ const MainPrivateRouteChildren: MainPrivateRouteChildren = {
   MainPrivateMoviedleRouteRoute: MainPrivateMoviedleRouteRoute,
   MainPrivatePlatformStatsRouteRoute: MainPrivatePlatformStatsRouteRoute,
   MainPrivateSearchRouteRoute: MainPrivateSearchRouteRoute,
-  MainPrivateSettingsRouteRoute: MainPrivateSettingsRouteRoute,
   MainPrivateTrendsRouteRoute: MainPrivateTrendsRouteRoute,
+  MainPrivateSettingsUploadsRouteRoute: MainPrivateSettingsUploadsRouteRoute,
   MainPrivateAchievementsUsernameRoute: MainPrivateAchievementsUsernameRoute,
   MainPrivateStatsUsernameRoute: MainPrivateStatsUsernameRoute,
+  MainPrivateSettingsIndexRoute: MainPrivateSettingsIndexRoute,
   MainPrivateListMediaTypeUsernameRouteRoute:
     MainPrivateListMediaTypeUsernameRouteRoute,
   MainPrivateDetailsMediaTypeMediaIdRoute:

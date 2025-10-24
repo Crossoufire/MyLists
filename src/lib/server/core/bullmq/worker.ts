@@ -1,5 +1,4 @@
 import pinoLogger from "@/lib/server/core/pino-logger";
-import {connectRedis} from "@/lib/server/core/redis-client";
 import {createWorker, initializeQueue} from "@/lib/server/core/bullmq/index";
 
 
@@ -7,6 +6,8 @@ async function startWorker() {
     pinoLogger.info("Starting worker process...");
 
     try {
+        const { connectRedis } = await import("@/lib/server/core/redis-client");
+
         // Connect to Redis
         const redisConnection = await connectRedis();
         if (!redisConnection) {
@@ -28,19 +29,20 @@ async function startWorker() {
             process.exit(0);
         };
 
-        process.on("SIGTERM", shutdown);
         process.on("SIGINT", shutdown);
         process.on("SIGHUP", shutdown);
+        process.on("SIGTERM", shutdown);
+
         process.on("unhandledRejection", (reason, promise) => {
             pinoLogger.fatal({ reason, promise }, "Unhandled Rejection at Worker");
         });
+
         process.on("uncaughtException", (error) => {
             pinoLogger.fatal({ err: error }, "Uncaught Exception at Worker");
             process.exit(1);
         });
 
         pinoLogger.info("Worker process started and listening for jobs.");
-
     }
     catch (error) {
         pinoLogger.fatal({ err: error }, "A fatal error occurred during worker startup.");

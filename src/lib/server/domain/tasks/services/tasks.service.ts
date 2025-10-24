@@ -6,17 +6,17 @@ import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
 import {readFile, unlink} from "fs/promises";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
+import {CsvJobData, TaskContext, TasksName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
-import {BaseJobData, CsvJobData, ProgressCallback, TaskJobData, TasksName} from "@/lib/types/tasks.types";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
-type TaskHandler = (data: TaskJobData, onProgress?: ProgressCallback) => Promise<void>;
+type TaskHandler = (ctx: TaskContext) => Promise<void>;
 
 
 export class TasksService {
@@ -56,31 +56,25 @@ export class TasksService {
         };
     }
 
-    async runTask(taskName: TasksName, data: TaskJobData, onProgress?: ProgressCallback) {
-        const taskLogger = this.logger.child({ taskName, triggeredBy: data.triggeredBy });
-        taskLogger.info({ data }, "Received the request to run this task");
+    async runTask(ctx: TaskContext) {
+        const taskLogger = this.logger.child({ taskName: ctx.taskName, triggeredBy: ctx.triggeredBy });
+        taskLogger.info({ data: ctx.data }, "Received the request to run this task");
 
         const startTime = Date.now();
 
-        const taskHandler = this.taskHandlers[taskName];
+        const taskHandler = this.taskHandlers[ctx.taskName];
         if (!taskHandler) {
-            taskLogger.error(`Unknown task name: ${taskName}`);
-            throw new Error(`Unknown task name: ${taskName}`);
+            taskLogger.error(`Unknown task name: ${ctx.taskName}`);
+            throw new Error(`Unknown task name: ${ctx.taskName}`);
         }
 
-        try {
-            await taskHandler(data, onProgress);
-        }
-        catch (err: any) {
-            taskLogger.error({ err }, "Task execution failed");
-            throw err;
-        }
+        await taskHandler(ctx);
 
         const duration = (Date.now() - startTime);
         taskLogger.info({ durationMs: duration }, "Task completed");
     }
 
-    protected async runBulkMediaRefresh(_data: BaseJobData) {
+    protected async runBulkMediaRefresh(_ctx: TaskContext) {
         this.logger.info("Starting: bulkMediaRefresh execution.");
 
         for (const mediaType of this.mediaTypes) {
@@ -105,19 +99,19 @@ export class TasksService {
         this.logger.info("Completed: bulkMediaRefresh execution.");
     }
 
-    protected async runVacuumDB(_data: BaseJobData) {
+    protected async runVacuumDB(_ctx: TaskContext) {
         this.logger.info("Starting: VacuumDB execution.");
         getDbClient().run("VACUUM");
         this.logger.info("Completed: VacuumDB execution.");
     }
 
-    protected async runAnalyzeDB(_data: BaseJobData) {
+    protected async runAnalyzeDB(_ctx: TaskContext) {
         this.logger.info("Starting: AnalyzeDB execution.");
         getDbClient().run("ANALYZE");
         this.logger.info("Completed: AnalyzeDB execution.");
     }
 
-    protected async runRemoveUnusedMediaCovers(_data: BaseJobData) {
+    protected async runRemoveUnusedMediaCovers(_ctx: TaskContext) {
         this.logger.info("Starting: RemoveUnusedMediaCovers execution.");
 
         const baseUploadsLocation = serverEnv.BASE_UPLOADS_LOCATION;
@@ -152,9 +146,9 @@ export class TasksService {
                     this.logger.info(`Deleted: ${cover}`);
                     deletionCount += 1;
                 }
-                catch (error) {
-                    console.warn(`Failed to delete ${cover}:`, error);
+                catch (err) {
                     failedCount += 1;
+                    this.logger.warn({ err }, `Failed to delete ${cover}`);
                 }
             }
 
@@ -170,7 +164,7 @@ export class TasksService {
         this.logger.info("Completed: RemoveUnusedMediaCovers execution.");
     }
 
-    protected async runLockOldMovies(_data: BaseJobData) {
+    protected async runLockOldMovies(_ctx: TaskContext) {
         this.logger.info(`Starting locking movies older than 6 months...`);
 
         const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
@@ -180,7 +174,7 @@ export class TasksService {
         this.logger.info("Completed: LockOldMovies execution.");
     }
 
-    protected async runSeedAchievements(_data: BaseJobData) {
+    protected async runSeedAchievements(_ctx: TaskContext) {
         this.logger.info("Starting seeding achievements...");
 
         for (const mediaType of this.mediaTypes) {
@@ -196,7 +190,7 @@ export class TasksService {
         this.logger.info("Completed: SeedAchievements execution.");
     }
 
-    protected async runCalculateAchievements(_data: BaseJobData) {
+    protected async runCalculateAchievements(_ctx: TaskContext) {
         this.logger.info("Starting calculating all achievements...");
 
         const allAchievements = await this.achievementsService.allUsersAchievements();
@@ -212,7 +206,7 @@ export class TasksService {
         this.logger.info("Completed: CalculateAchievements execution.");
     }
 
-    protected async runRemoveNonListMedia(_data: BaseJobData) {
+    protected async runRemoveNonListMedia(_ctx: TaskContext) {
         this.logger.info(`Removing non-list media...`);
 
         for (const mediaType of this.mediaTypes) {
@@ -237,7 +231,7 @@ export class TasksService {
         this.logger.info("Completed: RemoveNonListMedia execution.");
     }
 
-    protected async runAddMediaNotifications(_data: BaseJobData) {
+    protected async runAddMediaNotifications(_ctx: TaskContext) {
         this.logger.info("Starting: AddMediaNotifications execution.");
 
         const mediaTypes = [MediaType.SERIES, MediaType.ANIME, MediaType.MOVIES];
@@ -254,7 +248,7 @@ export class TasksService {
         this.logger.info("Completed: AddMediaNotifications execution.");
     }
 
-    protected async runComputeAllUsersStats(_data: BaseJobData) {
+    protected async runComputeAllUsersStats(_ctx: TaskContext) {
         this.logger.info("Starting: ComputeAllUsersStats execution.");
 
         for (const mediaType of this.mediaTypes) {
@@ -270,7 +264,7 @@ export class TasksService {
         this.logger.info("Completed: ComputeAllUsersStats execution.");
     }
 
-    protected async runUpdateIgdbToken(_data: BaseJobData) {
+    protected async runUpdateIgdbToken(_ctx: TaskContext) {
         this.logger.info("Starting: UpdateIgdbToken execution.");
 
         const gamesProviderService = this.mediaProviderRegistry.getService(MediaType.GAMES);
@@ -283,7 +277,7 @@ export class TasksService {
         this.logger.info("Completed: UpdateIgdbToken execution.");
     }
 
-    protected async runDeleteNonActivatedUsers(_data: BaseJobData) {
+    protected async runDeleteNonActivatedUsers(_ctx: TaskContext) {
         this.logger.info("Starting: DeleteNonActivatedUsers execution.");
 
         const deletedCount = await this.userRepository.deleteNonActivatedOldUsers();
@@ -292,24 +286,24 @@ export class TasksService {
         this.logger.info("Completed: DeleteNonActivatedUsers execution.");
     }
 
-    protected async runMaintenanceTasks(data: BaseJobData) {
+    protected async runMaintenanceTasks(ctx: TaskContext) {
         this.logger.info("Starting: MaintenanceTasks execution.");
 
-        await this.runDeleteNonActivatedUsers(data);
-        await this.runRemoveNonListMedia(data);
-        await this.runRemoveUnusedMediaCovers(data);
-        await this.runBulkMediaRefresh(data);
-        await this.runAddMediaNotifications(data);
-        await this.runLockOldMovies(data);
-        await this.runComputeAllUsersStats(data);
-        await this.runCalculateAchievements(data);
-        await this.runVacuumDB(data);
-        await this.runAnalyzeDB(data);
+        await this.runDeleteNonActivatedUsers(ctx);
+        await this.runRemoveNonListMedia(ctx);
+        await this.runRemoveUnusedMediaCovers(ctx);
+        await this.runBulkMediaRefresh(ctx);
+        await this.runAddMediaNotifications(ctx);
+        await this.runLockOldMovies(ctx);
+        await this.runComputeAllUsersStats(ctx);
+        await this.runCalculateAchievements(ctx);
+        await this.runVacuumDB(ctx);
+        await this.runAnalyzeDB(ctx);
 
         this.logger.info("Completed: MaintenanceTasks execution.");
     }
 
-    protected async runAddGenresToBooksUsingLlm(_data: BaseJobData) {
+    protected async runAddGenresToBooksUsingLlm(_ctx: TaskContext) {
         this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
         this.logger.info(`Using: ${serverEnv.LLM_MODEL_ID}, from: ${serverEnv.LLM_BASE_URL}`);
 
@@ -350,8 +344,8 @@ ${booksGenres.join(", ")}.
         }
     }
 
-    protected async runProcessCsv(data: TaskJobData, onProgress?: ProgressCallback) {
-        const { userId, filePath } = data as CsvJobData;
+    protected async runProcessCsv(ctx: TaskContext) {
+        const { userId, filePath } = ctx.data as CsvJobData;
         this.logger.info({ userId, filePath }, "Starting CSV processing...");
 
         try {
@@ -360,8 +354,8 @@ ${booksGenres.join(", ")}.
 
             const totalRows = records.length;
             this.logger.info(`Found ${totalRows} rows to process.`);
-            if (onProgress) {
-                await onProgress({
+            if (ctx.progressCallback) {
+                await ctx.progressCallback({
                     current: 0,
                     total: totalRows,
                     message: `Found ${totalRows} rows.`,
@@ -369,6 +363,10 @@ ${booksGenres.join(", ")}.
             }
 
             for (let i = 0; i < totalRows; i++) {
+                if (ctx.cancelCallback) {
+                    await ctx.cancelCallback();
+                }
+
                 const record = records[i];
                 const currentRow = i + 1;
 
@@ -383,8 +381,8 @@ ${booksGenres.join(", ")}.
                 }
 
                 this.logger.info(`Processing row ${currentRow}/${totalRows}: ${record.title} (${record.year})`);
-                if (onProgress) {
-                    await onProgress({
+                if (ctx.progressCallback) {
+                    await ctx.progressCallback({
                         total: totalRows,
                         current: currentRow,
                         message: `Processing: ${record.title}`,
@@ -401,7 +399,7 @@ ${booksGenres.join(", ")}.
                 // }
 
                 // Simulate work
-                await new Promise((resolve) => setTimeout(resolve, 2000));
+                await new Promise((resolve) => setTimeout(resolve, 3000));
             }
 
             this.logger.info("CSV processing completed successfully.");
@@ -409,10 +407,10 @@ ${booksGenres.join(", ")}.
         finally {
             try {
                 await unlink(filePath);
-                this.logger.info(`Successfully deleted temporary file: ${filePath}`);
+                this.logger.info(`Successfully deleted temp file: ${filePath}`);
             }
             catch (err) {
-                this.logger.error({ err }, `Failed to delete temporary file: ${filePath}`);
+                this.logger.error({ err }, `Failed to delete temp file: ${filePath}`);
             }
         }
     }
@@ -434,7 +432,7 @@ ${booksGenres.join(", ")}.
         }
 
         if (!keyFound) {
-            throw new Error(`Key ${key} not found in .env file.`);
+            throw new Error(`Key ${key} not found in '.env' file.`);
         }
 
         await fs.promises.writeFile(envPath, lines.join("\n"));

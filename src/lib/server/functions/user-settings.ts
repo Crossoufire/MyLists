@@ -1,7 +1,10 @@
 import z from "zod";
+import path from "path";
 import {auth} from "@/lib/server/core/auth";
 import {MediaType} from "@/lib/utils/enums";
-import {getQueue} from "@/lib/utils/get-queue";
+import {JobType as MqJobType} from "bullmq";
+import {mkdir, writeFile} from "fs/promises";
+import {getQueue, signalJobCancellation} from "@/lib/utils/bullmq";
 import {createServerFn} from "@tanstack/react-start";
 import {user} from "@/lib/server/database/schema/index";
 import {getContainer} from "@/lib/server/core/container";
@@ -11,8 +14,7 @@ import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
-import path from "path";
-import {mkdir, writeFile} from "fs/promises";
+import {CsvJobData} from "@/lib/types/tasks.types";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
@@ -128,7 +130,7 @@ const csvFileZodSchema = z.object({
 });
 
 
-export const postProcessCsvFile = createServerFn({ method: "POST" })
+export const postUploadsCsvFile = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
     .inputValidator((data) => {
         if (!(data instanceof FormData)) throw new Error();
@@ -136,9 +138,8 @@ export const postProcessCsvFile = createServerFn({ method: "POST" })
     })
     .handler(async ({ data, context: { currentUser } }) => {
         const mylistsTaskQueue = await getQueue();
-
         if (!mylistsTaskQueue) {
-            return { jobId: "dev-mode-job" };
+            return;
         }
 
         try {
@@ -164,62 +165,108 @@ export const postProcessCsvFile = createServerFn({ method: "POST" })
             const filePath = path.join(tempDir, `${currentUser.id}-${Date.now()}.csv`);
             await writeFile(filePath, buffer);
 
-            const job = await mylistsTaskQueue.add("processCsv", {
+            await mylistsTaskQueue.add("processCsv", {
                 filePath: filePath,
                 triggeredBy: "user",
                 userId: currentUser.id,
+                fileName: data.file.name,
             });
 
-            return { jobId: job.id };
+            return;
         }
-        catch (error) {
-            if (error instanceof FormattedError) {
-                throw error;
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
             }
             throw new FormattedError("Sorry, failed to process the CSV.");
         }
     });
 
 
-const progressCsvSchema = z.object({
-    jobId: z.string(),
-});
-
-
-export const getProgressOnCsvFile = createServerFn({ method: "POST" })
+export const getUserUploads = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .inputValidator(progressCsvSchema)
-    .handler(async ({ data, context: { currentUser } }) => {
+    .handler(async ({ context: { currentUser } }) => {
         const mylistsTaskQueue = await getQueue();
-
         if (!mylistsTaskQueue) {
-            return null;
+            return [];
         }
 
         try {
-            const job = await mylistsTaskQueue.getJob(data.jobId);
-            if (!job) return null;
-            if ("userId" in job.data && currentUser.id !== Number(job.data.userId)) {
-                return null;
-            }
+            const jobTypes: MqJobType[] = ["active", "waiting", "completed", "failed", "delayed"];
+            const allJobs = await mylistsTaskQueue.getJobs(jobTypes);
 
-            return {
+            const userJobs = allJobs.filter((job) => {
+                if ("userId" in job.data) {
+                    return job.data.userId === currentUser.id;
+                }
+                return false;
+            });
+
+            return userJobs.map((job) => ({
                 id: job.id,
                 name: job.name,
-                data: job.data,
                 progress: job.progress,
                 timestamp: job.timestamp,
                 finishedOn: job.finishedOn,
                 stacktrace: job.stacktrace,
+                data: job.data as CsvJobData,
                 returnValue: job.returnvalue,
                 processedOn: job.processedOn,
                 failedReason: job.failedReason,
                 attemptsMade: job.attemptsMade,
-                status: job.failedReason ? "failed" : job.finishedOn ? "completed"
-                    : job.processedOn ? "active" : job.timestamp ? "waiting" : "unknown"
-            };
+                status: job.failedReason ? "failed" : job.finishedOn ? "completed" :
+                    job.processedOn ? "active" : job.timestamp ? "waiting" : "unknown"
+            }));
         }
-        catch {
-            throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
+            }
+
+            throw new FormattedError("Failed to fetch your uploads.");
+        }
+    });
+
+
+const uploadJobIdSchema = z.object({
+    jobId: z.string(),
+});
+
+
+export const cancelUserUpload = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .inputValidator(uploadJobIdSchema)
+    .handler(async ({ data: { jobId }, context: { currentUser } }) => {
+        const mylistsTaskQueue = await getQueue();
+        if (!mylistsTaskQueue) {
+            return;
+        }
+
+        try {
+            const job = await mylistsTaskQueue.getJob(jobId);
+
+            if (!job || ("userId" in job.data && job.data.userId !== currentUser.id)) {
+                throw new FormattedError("Upload not found.");
+            }
+
+            const isActive = await job.isActive();
+            if (!isActive) {
+                await job.remove();
+                return;
+            }
+
+            const isFinished = await job.isCompleted() || await job.isFailed();
+            if (isFinished) {
+                throw new FormattedError("Upload already finished.");
+            }
+
+            await signalJobCancellation(job.id!);
+        }
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
+            }
+
+            throw new FormattedError("Failed to cancel the job.");
         }
     });

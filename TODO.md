@@ -7,6 +7,7 @@
 
 ## TODO/FIXES
 
+- TODO: Continue implementation of upload CSV
 - TODO: Check how the bulk media refresh happens with new formatted errors etc...
 
 ## TODO AFTER PROD

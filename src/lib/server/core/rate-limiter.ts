@@ -1,10 +1,11 @@
-import {connectRedis} from "./redis-client";
 import {IRateLimiterOptions, RateLimiterMemory, RateLimiterRedis} from "rate-limiter-flexible";
 
 
 export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) => {
     if (process.env.NODE_ENV === "production") {
         try {
+            const { connectRedis } = await import("@/lib/server/core/redis-client");
+
             const redisInstance = await connectRedis();
 
             console.log(`Creating Redis rate limiter with options:`, options);

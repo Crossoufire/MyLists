@@ -9,7 +9,7 @@ import {PasswordForm} from "@/lib/client/components/user-settings/PasswordForm";
 import {MediaListForm} from "@/lib/client/components/user-settings/MediaListForm";
 
 
-export const Route = createFileRoute("/_main/_private/settings")({
+export const Route = createFileRoute("/_main/_private/settings/")({
     component: SettingsPage,
 });
 

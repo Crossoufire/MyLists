@@ -1,6 +1,6 @@
 import {serverEnv} from "@/env/server";
 import {JobType as MqJobType} from "bullmq";
-import {getQueue} from "@/lib/utils/get-queue";
+import {getQueue} from "@/lib/utils/bullmq";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";

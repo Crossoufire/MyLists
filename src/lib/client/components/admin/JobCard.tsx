@@ -15,17 +15,20 @@ type AdminJobCompleted = Awaited<ReturnType<NonNullable<ReturnType<typeof adminJ
 export function JobCard({ job }: { job: AdminJobCompleted }) {
     const [showLogs, setShowLogs] = useState(false);
     const { data: logsData, isLoading, error, isFetching } = useQuery(adminJobLogsOptions(job.id, showLogs && !!job.id));
+    const jobStatus = job.returnValue?.result === "cancelled" ? "cancelled" : job.status;
 
     const getJobStatusColor = (jobStatus: string) => {
         switch (jobStatus) {
             case "active":
-                return "bg-blue-900 text-blue-200";
+                return "bg-blue-900";
             case "waiting":
-                return "bg-yellow-900 text-yellow-200";
+                return "bg-yellow-900";
             case "completed":
-                return "bg-green-900 text-green-200";
+                return "bg-green-900";
             case "failed":
-                return "bg-red-900 text-red-200";
+                return "bg-red-900";
+            case "cancelled":
+                return "bg-gray-700";
         }
     };
 
@@ -40,8 +43,8 @@ export function JobCard({ job }: { job: AdminJobCompleted }) {
                         </Badge>
                     </div>
                 </div>
-                <Badge className={`${getJobStatusColor(job.status)} text-white font-medium px-3 py-1`}>
-                    {capitalize(job.status)}
+                <Badge className={`${getJobStatusColor(jobStatus)} text-white font-medium px-3 py-1`}>
+                    {capitalize(jobStatus)}
                 </Badge>
             </CardHeader>
             <CardContent>
@@ -52,7 +55,7 @@ export function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Queued</span>
                         </div>
                         <div className="text-zinc-200">
-                            {formatDateTime(job.timestamp)}
+                            {formatDateTime(job.timestamp / 1000)}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -61,7 +64,7 @@ export function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Started</span>
                         </div>
                         <div className="text-zinc-200">
-                            {formatDateTime(job.processedOn)}
+                            {formatDateTime(job.processedOn ? job.processedOn / 1000 : job.processedOn)}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -70,7 +73,7 @@ export function JobCard({ job }: { job: AdminJobCompleted }) {
                             <span>Finished</span>
                         </div>
                         <div className="text-zinc-200">
-                            {formatDateTime(job.finishedOn)}
+                            {formatDateTime(job.finishedOn ? job.finishedOn / 1000 : job.finishedOn)}
                         </div>
                     </div>
                 </div>

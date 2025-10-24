@@ -142,7 +142,7 @@ export const mediadleSuggestionsOptions = (query: string) => queryOptions({
 
 export const notificationsCountOptions = () => queryOptions({
     queryKey: queryKeys.notificationCountKey(),
-    queryFn: () => getNotificationsCount(),
+    queryFn: getNotificationsCount,
     meta: { errorMessage: "An error occurred fetching the notifications count" },
 });
 
