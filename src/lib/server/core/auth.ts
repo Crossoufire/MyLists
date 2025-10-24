@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import {eq} from "drizzle-orm";
 import {clientEnv} from "@/env/client";
 import {serverEnv} from "@/env/server";
 import {betterAuth} from "better-auth";
@@ -7,8 +9,8 @@ import {sendEmail} from "@/lib/utils/mail-sender";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
-import {userMediaSettings} from "@/lib/server/database/schema";
 import {getDbClient} from "@/lib/server/database/async-storage";
+import {user as userTable, userMediaSettings} from "@/lib/server/database/schema";
 import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
@@ -25,7 +27,19 @@ const getAuthConfig = createServerOnlyFn(() => betterAuth({
     databaseHooks: {
         user: {
             create: {
-                after: async (user, _context) => {
+                before: async (user) => {
+                    const usernameExist = await getDbClient()
+                        .select()
+                        .from(userTable)
+                        .where(eq(userTable.name, user.name));
+
+                    if (!usernameExist) {
+                        return { data: user };
+                    }
+
+                    return { data: { ...user, name: `${user.name}-${crypto.randomBytes(4).toString("hex")}` } };
+                },
+                after: async (user) => {
                     const mediaTypes = Object.values(MediaType);
 
                     const userMediaSettingsData = mediaTypes.map((mt) => ({

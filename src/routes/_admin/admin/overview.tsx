@@ -11,13 +11,13 @@ import {adminOverviewOptions} from "@/lib/client/react-query/query-options/admin
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/lib/client/components/ui/card";
 
 
-export const Route = createFileRoute("/_admin/admin/dashboard")({
+export const Route = createFileRoute("/_admin/admin/overview")({
     loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(adminOverviewOptions()),
-    component: DashboardPage,
+    component: OverviewPage,
 });
 
 
-function DashboardPage() {
+function OverviewPage() {
     const apiData = useSuspenseQuery(adminOverviewOptions()).data;
     const newUsers = apiData.newUsers.comparedToLastMonth > 0;
 
