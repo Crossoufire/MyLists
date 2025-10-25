@@ -120,7 +120,7 @@ export class UserRepository {
         return getDbClient()
             .select()
             .from(jobHistory)
-            .orderBy(desc(jobHistory.finishedOn));
+            .orderBy(desc(jobHistory.timestamp));
     }
 
     // --------------------------------------------------------------------

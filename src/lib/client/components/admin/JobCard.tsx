@@ -27,7 +27,7 @@ export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) 
     const jobStatus = job.returnValue?.result === "cancelled" ? "cancelled" : job.status;
 
     const handleCancel = () => {
-        cancelUploadsMutation.mutate({ data: { jobId: job.id! } }, {
+        cancelUploadsMutation.mutate({ data: { jobId: job.jobId! } }, {
             onSuccess: () => toast.success("Upload cancelled successfully"),
         });
     }
@@ -70,7 +70,7 @@ export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) 
                     </h2>
                     {isAdmin &&
                         <Badge variant="outline" className="border-zinc-700 text-zinc-400">
-                            JobId: {job.id} {(job.data && "userId" in job.data) && `- UserId: ${job.data.userId}`}
+                            JobId: {job.jobId} {(job.data && "userId" in job.data) && `- UserId: ${job.data.userId}`}
                         </Badge>
                     }
                 </div>
@@ -140,6 +140,12 @@ export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) 
                 {jobStatus === "failed" &&
                     <div className="mt-2 text-red-700 truncate">
                         <strong>Failed</strong> - Sorry the job failed. Please try again later.
+                    </div>
+                }
+
+                {"logs" in job && job.logs &&
+                    <div className="mt-2 ">
+                        {job.logs.logs}
                     </div>
                 }
             </CardContent>

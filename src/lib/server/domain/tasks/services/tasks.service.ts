@@ -131,6 +131,7 @@ export class TasksService {
 
     protected async runVacuumDB(_ctx: TaskContext) {
         this.logger.info("Starting: VacuumDB execution.");
+        throw new Error("Not implemented");
         getDbClient().run("VACUUM");
         this.logger.info("Completed: VacuumDB execution.");
     }
@@ -333,14 +334,14 @@ export class TasksService {
         this.logger.info("Completed: MaintenanceTasks execution.");
     }
 
-    protected async runAddGenresToBooksUsingLlm(_ctx: TaskContext) {
+    protected async runAddGenresToBooksUsingLlm(ctx: TaskContext) {
         this.logger.info("Starting: AddGenresToBooksUsingLLM execution.");
         this.logger.info(`Using: ${serverEnv.LLM_MODEL_ID}, from: ${serverEnv.LLM_BASE_URL}`);
 
         const booksService = this.mediaServiceRegistry.getService(MediaType.BOOKS);
         const booksProvider = this.mediaProviderRegistry.getService(MediaType.BOOKS);
 
-        const booksGenres = booksService.getAvailableGenres().map((g) => g.name);
+        const booksGenres = booksService.getAvailableGenres();
         const batchedBooks = await booksService.batchBooksWithoutGenres(5);
         this.logger.info(`${batchedBooks.length} batches of books to treat.`);
 
@@ -350,7 +351,22 @@ For each book, choose the top genres for this book (MAX 4) from this list:
 ${booksGenres.join(", ")}.
 `;
 
-        for (const booksBatch of batchedBooks.slice(0, 1)) {
+        let progressCount = 0;
+        for (const booksBatch of batchedBooks) {
+            progressCount += 1;
+
+            if (ctx.cancelCallback) {
+                await ctx.cancelCallback();
+            }
+
+            if (ctx.progressCallback) {
+                await ctx.progressCallback({
+                    current: progressCount,
+                    total: batchedBooks.length,
+                    message: `Adding genres to books: ${progressCount}/${batchedBooks.length}`,
+                });
+            }
+
             const promptToSend = `${mainPrompt}\n${booksBatch.join("\n")}`;
 
             try {
@@ -359,6 +375,7 @@ ${booksGenres.join(", ")}.
 
                 for (const item of result) {
                     const validGenres = item.genres.filter((g) => booksGenres.includes(g)).slice(0, 4);
+
                     if (!item.bookApiId || validGenres.length === 0) {
                         this.logger.warn(`Skipping invalid/empty-bookApiId/genres: ${JSON.stringify(item)}`);
                         continue;

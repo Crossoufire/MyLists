@@ -1,0 +1,1 @@
+ALTER TABLE `job_history` ADD `logs` text;

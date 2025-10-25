@@ -37,7 +37,7 @@ export const useCancelUploadsMutation = (queryKey: QKeyCancelUploads) => {
             context.client.setQueryData(queryKey, (oldData) => {
                 if (!oldData) return;
                 return oldData.map((job) =>
-                    job.id === jobId ? { ...job, status: "completed", returnValue: { result: "cancelled" } } : job
+                    job.jobId === jobId ? { ...job, status: "completed", returnValue: { result: "cancelled" } } : job
                 );
             });
 
@@ -71,7 +71,7 @@ function UserUploadsPage() {
                             {userJobs.map((job) =>
                                 <JobCard
                                     job={job}
-                                    key={job.id}
+                                    key={job.jobId}
                                     isAdmin={false}
                                     queryKey={uploadsOptions.queryKey}
                                     title={`Upload: ${job.data.fileName}`}

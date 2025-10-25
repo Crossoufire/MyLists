@@ -3,6 +3,7 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
+import {mylistsTaskQueue} from "@/lib/server/core/bullmq";
 
 
 export const getQueue = createServerOnlyFn(() => async () => {
@@ -57,12 +58,16 @@ export const saveJobToDb = async (job: TypedJob | undefined, from: "completed" |
     try {
         if (!job) return;
 
-        const status = returnValue?.result ?? from === "completed" ? "completed" : "failed";
+        const { mylistsTaskQueue } = await import("@/lib/server/core/bullmq");
+
+        const logs = await mylistsTaskQueue.getJobLogs(job.id!);
+        const status = from === "failed" ? "failed" : returnValue?.result === "cancelled" ? "cancelled" : "completed";
 
         await getDbClient()
             .insert(jobHistory)
             .values({
-                id: job.id!,
+                logs: logs,
+                jobId: job.id!,
                 data: job.data,
                 status: status,
                 name: job.name,

@@ -11,7 +11,15 @@ export abstract class BaseProviderService<
     }
 
     async* bulkProcessAndRefreshMedia() {
-        const mediaIds = await this._getMediaIdsForBulkRefresh();
+        let mediaIds: (number | string)[] = [];
+
+        try {
+            mediaIds = await this._getMediaIdsForBulkRefresh();
+        }
+        catch (err) {
+            yield { apiId: undefined, state: "rejected", reason: err as Error };
+            return;
+        }
 
         for (const apiId of mediaIds) {
             try {

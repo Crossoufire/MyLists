@@ -81,7 +81,8 @@ export const userMediaSettings = sqliteTable("user_media_settings", {
 
 
 export const jobHistory = sqliteTable("job_history", {
-    id: text("id").primaryKey().notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
+    jobId: text("job_id").notNull(),
     userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
     status: text("status").notNull(),
     name: text("task_name").notNull(),
@@ -92,8 +93,9 @@ export const jobHistory = sqliteTable("job_history", {
     timestamp: integer("timestamp").notNull(),
     triggeredBy: text("triggered_by").notNull(),
     returnValue: customJson<TaskReturnType>("return_value"),
+    logs: customJson<{ logs: string[], count: number }>("logs"),
 }, (table) => [
-    index("ix_job_history_job_id").on(table.id),
+    index("ix_job_history_job_id").on(table.jobId),
     index("ix_job_history_user_id").on(table.userId),
     index("ix_job_history_job_status").on(table.status),
 ]);

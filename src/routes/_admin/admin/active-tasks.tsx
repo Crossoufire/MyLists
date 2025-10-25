@@ -33,7 +33,7 @@ function AdminActiveTasksPage() {
                         {activeJobs.map((job) =>
                             <JobCard
                                 job={job}
-                                key={job.id}
+                                key={job.jobId}
                                 title={formatCamelCase(job.name)}
                                 queryKey={adminCheckActiveJobs().queryKey}
                             />

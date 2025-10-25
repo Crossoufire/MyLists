@@ -201,7 +201,7 @@ export const getUserUploads = createServerFn({ method: "GET" })
             });
 
             return userJobs.map((job) => ({
-                id: job.id,
+                jobId: job.id,
                 name: job.name,
                 progress: job.progress,
                 timestamp: job.timestamp,

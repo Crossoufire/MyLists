@@ -152,7 +152,7 @@ description: ${book.synopsis}
             "Dystopian", "Essay", "Fantastic", "Fantasy", "Historical Fiction", "History", "Humor", "Horror",
             "Literary Novel", "Memoirs", "Mystery", "Paranormal", "Philosophy", "Poetry", "Romance", "Science",
             "Science-Fiction", "Short story", "Suspense", "Testimony", "Thriller", "Western", "Young adult"
-        ].map((name) => ({ name }));
+        ];
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<BooksList> | null, newState: BooksList | null, _media: Book) {

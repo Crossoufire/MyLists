@@ -20,9 +20,9 @@ export const initializeQueue = (connection: Redis) => {
     mylistsTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),
         defaultJobOptions: {
-            attempts: 2,
-            removeOnComplete: { count: 25 },
+            attempts: 1,
             removeOnFail: { count: 25 },
+            removeOnComplete: { count: 25 },
         },
     });
 

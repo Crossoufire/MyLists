@@ -169,7 +169,7 @@ export const getAdminActiveJobs = createServerFn({ method: "GET" })
         try {
             const jobs = await mylistsTaskQueue.getJobs(["active", "waiting", "delayed"]);
             return jobs.map((job) => ({
-                id: job.id,
+                jobId: job.id,
                 name: job.name,
                 data: job.data,
                 progress: job.progress,
