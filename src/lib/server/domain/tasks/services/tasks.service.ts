@@ -74,14 +74,32 @@ export class TasksService {
         taskLogger.info({ durationMs: duration }, "Task completed");
     }
 
-    protected async runBulkMediaRefresh(_ctx: TaskContext) {
+    protected async runBulkMediaRefresh(ctx: TaskContext) {
         this.logger.info("Starting: bulkMediaRefresh execution.");
 
         for (const mediaType of this.mediaTypes) {
             this.logger.info({ mediaType }, `Refreshing media for ${mediaType}...`);
 
             const mediaProviderService = this.mediaProviderRegistry.getService(mediaType);
+
+            let processedCount = 0;
+            const startTime = Date.now();
+
             for await (const result of mediaProviderService.bulkProcessAndRefreshMedia()) {
+                processedCount += 1;
+
+                if (ctx.cancelCallback) {
+                    await ctx.cancelCallback();
+                }
+
+                if (ctx.progressCallback) {
+                    await ctx.progressCallback({
+                        total: Infinity,
+                        current: processedCount,
+                        message: `Refreshing ${mediaType} with apiId: ${result.apiId}`,
+                    });
+                }
+
                 if (result.state === "fulfilled") {
                     this.logger.info(`Refreshed ${mediaType} with apiId: ${result.apiId}`);
                 }
@@ -93,7 +111,19 @@ export class TasksService {
                 }
             }
 
-            this.logger.info({ mediaType }, `Refreshing ${mediaType} completed.`);
+            const endTime = Date.now();
+            const durationSecs = (endTime - startTime) / 1000;
+            const rps = durationSecs > 0 ? processedCount / durationSecs : 0;
+
+            this.logger.info(
+                {
+                    mediaType,
+                    processedCount,
+                    requestsPerSecond: rps.toFixed(2),
+                    durationSeconds: durationSecs.toFixed(2),
+                },
+                `Refreshing ${mediaType} completed.`
+            );
         }
 
         this.logger.info("Completed: bulkMediaRefresh execution.");

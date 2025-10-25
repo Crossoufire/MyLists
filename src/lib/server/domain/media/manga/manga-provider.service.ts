@@ -28,6 +28,6 @@ export class MangaProviderService extends BaseProviderService<
     }
 
     protected _getMediaIdsForBulkRefresh() {
-        return Promise.all([]);
+        return this.repository.getMediaIdsToBeRefreshed();
     }
 }

@@ -1,12 +1,12 @@
 import {Status} from "@/lib/utils/enums";
-import {getDbClient} from "@/lib/server/database/async-storage";
-import {Achievement} from "@/lib/types/achievements.types";
-import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {AddedMediaDetails} from "@/lib/types/base.types";
+import {Achievement} from "@/lib/types/achievements.types";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {BaseRepository} from "@/lib/server/domain/media/base/base.repository";
 import {manga, mangaAuthors, mangaGenre, mangaList} from "@/lib/server/database/schema";
 import {Manga, UpsertMangaWithDetails} from "@/lib/server/domain/media/manga/manga.types";
 import {mangaConfig, MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
-import {and, asc, count, eq, getTableColumns, gte, isNotNull, lte, max, ne, sql, sum} from "drizzle-orm";
+import {and, asc, count, eq, getTableColumns, gte, inArray, isNotNull, isNull, lte, max, ne, or, sql, sum} from "drizzle-orm";
 
 
 export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
@@ -15,6 +15,19 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
     constructor() {
         super(mangaConfig);
         this.config = mangaConfig;
+    }
+
+    async getMediaIdsToBeRefreshed() {
+        const results = await getDbClient()
+            .select({ apiId: manga.apiId })
+            .from(manga)
+            .where(and(
+                lte(manga.lastApiUpdate, sql`datetime('now', '-6 days')`),
+                inArray(manga.prodStatus, ["Publishing", "On Hiatus"]),
+                or(gte(manga.releaseDate, sql`datetime('now')`), isNull(manga.releaseDate)),
+            ));
+
+        return results.map((r) => r.apiId);
     }
 
     // --- Achievements ----------------------------------------------------------
