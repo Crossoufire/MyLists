@@ -180,8 +180,8 @@ export class TmdbTransformer {
                 posterPath: result?.poster_path ? `${this.imageBaseUrl}${result.poster_path}` : getImageUrl("series-covers"),
             }
 
-            const isJap = result?.origin_country.find((c: string) => c.toLowerCase() === "jp" || c.toLowerCase() === "ja") ?? false;
-            const isAnimation = result?.genre_ids.find((g: number) => g === 16) ?? false;
+            const isJap = result?.origin_country.find((c) => c.toLowerCase() === "jp" || c.toLowerCase() === "ja") ?? false;
+            const isAnimation = result?.genre_ids.find((g) => g === 16) ?? false;
             if (isJap && isAnimation) {
                 mediaData.mediaType = MediaType.ANIME;
             }

@@ -15,8 +15,8 @@ export class JikanClient extends BaseClient {
     }
 
     public static async create() {
-        const tmdbLimiter = await createRateLimiter(JikanClient.throttleOptions);
-        return new JikanClient(tmdbLimiter, JikanClient.consumeKey);
+        const jikanLimiter = await createRateLimiter(JikanClient.throttleOptions);
+        return new JikanClient(jikanLimiter, JikanClient.consumeKey);
     }
 
     async search(query: string, page: number = 1): Promise<SearchData<JikanMangaSearchResponse>> {

@@ -43,9 +43,9 @@ interface IdNamePair {
 // --- IGDB Provider Types --------------------------------------------------------------
 
 export interface IgdbTokenResponse {
-    access_token?: string,
     expires_in: number,
     token_type: string,
+    access_token?: string,
 }
 
 

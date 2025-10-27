@@ -75,8 +75,8 @@ export class IgdbClient extends BaseClient {
     }
 
     async fetchNewIgdbToken(): Promise<IgdbTokenResponse> {
-        const url = `https://id.twitch.tv/oauth2/token?client_id=${this.clientId}&client_secret=${this.secretId}&grant_type=client_credentials`
-        const response = await this.call(url)
+        const url = `https://id.twitch.tv/oauth2/token?client_id=${this.clientId}&client_secret=${this.secretId}&grant_type=client_credentials`;
+        const response = await this.call(url, "post");
         return response.json();
     }
 }

@@ -98,7 +98,7 @@ export class TmdbClient extends BaseClient {
                 page += 1;
             }
             catch {
-                break;
+                continue;
             }
         }
 
