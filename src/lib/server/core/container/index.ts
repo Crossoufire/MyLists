@@ -6,7 +6,7 @@ import {setupMediaModule} from "@/lib/server/core/container/media.module";
 import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
 import {TasksService} from "@/lib/server/domain/tasks/services/tasks.service";
 import {setupUserModule, UserModule} from "@/lib/server/core/container/user.module";
-import {ProviderModule, setupApiModule} from "@/lib/server/core/container/provider.module";
+import {ProviderModule, setupProviderModule} from "@/lib/server/core/container/provider.module";
 import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
@@ -32,7 +32,7 @@ let containerPromise: Promise<AppContainer> | null = null;
 
 async function initContainer(options: ContainerOptions = {}): Promise<AppContainer> {
     const cacheManager = await initCacheManager();
-    const apiModule = await setupApiModule();
+    const apiModule = await setupProviderModule();
     const mediaModule = setupMediaModule(apiModule);
     const userModule = setupUserModule(mediaModule.mediaServiceRegistry);
     const tasksService = setupTasksModule({

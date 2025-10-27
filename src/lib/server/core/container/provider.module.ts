@@ -1,16 +1,16 @@
+import {LlmClient} from "@/lib/server/api-providers/clients/llm.client";
 import {IgdbClient} from "@/lib/server/api-providers/clients/igdb.client";
 import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
 import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
 import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
-import {LlmClient} from "@/lib/server/api-providers/clients/llm.client";
 import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
 import {JikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
 import {GBooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
 
 
-export async function setupApiModule() {
+export async function setupProviderModule() {
     // API Transformers
     const igdbTransformer = new IgdbTransformer();
     const tmdbTransformer = new TmdbTransformer();
@@ -46,4 +46,4 @@ export async function setupApiModule() {
 }
 
 
-export type ProviderModule = Awaited<ReturnType<typeof setupApiModule>>;
+export type ProviderModule = Awaited<ReturnType<typeof setupProviderModule>>;

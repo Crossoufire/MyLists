@@ -11,8 +11,8 @@ import {seriesConfig} from "@/lib/server/domain/media/tv/series/series.config";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
 import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provider.service";
 import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
@@ -23,47 +23,42 @@ import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegis
 export function setupMediaModule(apiModule: ProviderModule) {
     const { clients, transformers } = apiModule;
 
-    // Media Repositories
-    const seriesRepository = new TvRepository(seriesConfig);
-    const animeRepository = new TvRepository(animeConfig);
-    const moviesRepository = new MoviesRepository();
-    const gamesRepository = new GamesRepository();
-    const booksRepository = new BooksRepository();
-    const mangaRepository = new MangaRepository();
-    MediaRepositoryRegistry.registerRepository(MediaType.SERIES, seriesRepository);
-    MediaRepositoryRegistry.registerRepository(MediaType.ANIME, animeRepository);
-    MediaRepositoryRegistry.registerRepository(MediaType.MOVIES, moviesRepository);
-    MediaRepositoryRegistry.registerRepository(MediaType.GAMES, gamesRepository);
-    MediaRepositoryRegistry.registerRepository(MediaType.BOOKS, booksRepository);
-    MediaRepositoryRegistry.registerRepository(MediaType.MANGA, mangaRepository);
+    const repositories = {
+        series: new TvRepository(seriesConfig),
+        anime: new TvRepository(animeConfig),
+        movies: new MoviesRepository(),
+        games: new GamesRepository(),
+        books: new BooksRepository(),
+        manga: new MangaRepository()
+    };
+    Object.entries(repositories).forEach(([key, repo]) => {
+        MediaRepositoryRegistry.registerRepository(key as MediaType, repo);
+    });
 
-    // Media Services
-    const seriesService = new TvService(seriesRepository);
-    const animeService = new TvService(animeRepository);
-    const moviesService = new MoviesService(moviesRepository);
-    const gamesService = new GamesService(gamesRepository);
-    const bookService = new BooksService(booksRepository);
-    const mangaService = new MangaService(mangaRepository);
-    MediaServiceRegistry.registerService(MediaType.SERIES, seriesService);
-    MediaServiceRegistry.registerService(MediaType.ANIME, animeService);
-    MediaServiceRegistry.registerService(MediaType.MOVIES, moviesService);
-    MediaServiceRegistry.registerService(MediaType.GAMES, gamesService);
-    MediaServiceRegistry.registerService(MediaType.BOOKS, bookService);
-    MediaServiceRegistry.registerService(MediaType.MANGA, mangaService);
+    const services = {
+        series: new TvService(repositories.series),
+        anime: new TvService(repositories.anime),
+        movies: new MoviesService(repositories.movies),
+        games: new GamesService(repositories.games),
+        books: new BooksService(repositories.books),
+        manga: new MangaService(repositories.manga)
+    };
+    Object.entries(services).forEach(([key, service]) => {
+        MediaServiceRegistry.registerService(key as MediaType, service);
+    })
 
-    // Media Providers Services
-    const seriesProviderService = new TvProviderService(clients.tmdb, transformers.tmdb, seriesRepository, clients.jikan);
-    const animeProviderService = new TvProviderService(clients.tmdb, transformers.tmdb, animeRepository, clients.jikan);
-    const moviesProviderService = new MoviesProviderService(clients.tmdb, transformers.tmdb, moviesRepository);
-    const gamesProviderService = new GamesProviderService(clients.igdb, transformers.igdb, gamesRepository, clients.hltb);
-    const booksProviderService = new BooksProviderService(clients.gBook, clients.llmClient, transformers.gBook, booksRepository);
-    const mangaProviderService = new MangaProviderService(clients.jikan, transformers.jikan, mangaRepository);
-    MediaProviderServiceRegistry.registerService(MediaType.SERIES, seriesProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.ANIME, animeProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.MOVIES, moviesProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.GAMES, gamesProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.BOOKS, booksProviderService);
-    MediaProviderServiceRegistry.registerService(MediaType.MANGA, mangaProviderService);
+    // Create and register provider services
+    const providerServices = {
+        series: new TvProviderService(clients.tmdb, transformers.tmdb, repositories.series, clients.jikan),
+        anime: new TvProviderService(clients.tmdb, transformers.tmdb, repositories.anime, clients.jikan),
+        movies: new MoviesProviderService(clients.tmdb, transformers.tmdb, repositories.movies),
+        games: new GamesProviderService(clients.igdb, transformers.igdb, repositories.games, clients.hltb),
+        books: new BooksProviderService(clients.gBook, clients.llmClient, transformers.gBook, repositories.books),
+        manga: new MangaProviderService(clients.jikan, transformers.jikan, repositories.manga)
+    };
+    Object.entries(providerServices).forEach(([key, service]) => {
+        MediaProviderServiceRegistry.registerService(key as MediaType, service);
+    })
 
     return {
         mediaRepoRegistry: MediaRepositoryRegistry,
