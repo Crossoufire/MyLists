@@ -3,7 +3,6 @@ import {FormattedError} from "@/lib/utils/error-classes";
 import {createServerOnlyFn} from "@tanstack/react-start";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
-import {mylistsTaskQueue} from "@/lib/server/core/bullmq";
 
 
 export const getQueue = createServerOnlyFn(() => async () => {

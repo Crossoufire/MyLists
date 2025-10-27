@@ -9,7 +9,7 @@ export type Manga = typeof manga.$inferSelect;
 export type MangaList = typeof mangaList.$inferSelect;
 
 
-exporttype MangaAchCodeName = typeof mangaAchievements[number]["codeName"];
+export type MangaAchCodeName = typeof mangaAchievements[number]["codeName"];
 
 
 export type MangaTopMetricStats = {

@@ -30,9 +30,9 @@ export const imageUrl = (name: string, coverType: CoverType) => customType<{ dat
 
 
 /**
- * When better-auth create a the new user in the `user` table, `createdAt` and `updatedAt` are given as Date (timestamp in ms)
- * but my app needs ISO string (UTC) but in the SQLite format, This is a custom type to convert Date to string and return it as string.
- **/
+ * Converts better-auth's Date objects (for user `createdAt`/`updatedAt`) to UTC ISO strings in SQLite text format.
+ * Handles Date-to-string conversion (replacing 'T' with space, 'Z' with '.000') and string-to-string passthrough.
+ */
 export const dateAsString = (name: string) => customType<{ data: string; driverData: string }>({
     dataType() {
         return "text";
