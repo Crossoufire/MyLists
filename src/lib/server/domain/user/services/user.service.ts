@@ -63,15 +63,6 @@ export class UserService {
         const addedLastMonth = mediaStats.reduce((sum, { added }) => sum + added.lastMonth, 0);
         const updatedThisMonth = mediaStats.reduce((sum, { updated }) => sum + updated.thisMonth, 0);
 
-        console.log({
-            addedThisMonth,
-            addedLastMonth,
-            updatedThisMonth,
-            addedComparedToLastMonth: addedThisMonth - addedLastMonth,
-            addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
-            updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
-        });
-
         return {
             addedThisMonth,
             addedLastMonth,

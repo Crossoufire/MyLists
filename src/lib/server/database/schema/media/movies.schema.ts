@@ -16,7 +16,7 @@ export const movies = sqliteTable("movies", {
     budget: real(),
     revenue: real(),
     tagline: text(),
-    apiId: integer().notNull(),
+    apiId: integer().unique().notNull(),
     collectionId: integer(),
     directorName: text(),
     compositorName: text(),

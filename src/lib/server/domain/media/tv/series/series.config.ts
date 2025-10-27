@@ -73,6 +73,7 @@ export const seriesConfig: SeriesSchemaConfig = {
             "Release Date -": [asc(series.releaseDate), asc(series.name)],
             "TMDB Rating +": [desc(series.voteAverage), asc(series.name)],
             "TMDB Rating -": [asc(series.voteAverage), asc(series.name)],
+            "Recently Added": [desc(seriesList.addedAt), asc(series.name)],
             "Rating +": [desc(seriesList.rating), asc(series.name)],
             "Rating -": [asc(seriesList.rating), asc(series.name)],
             "Re-watched": [desc(seriesList.redo), asc(series.name)],

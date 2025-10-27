@@ -311,7 +311,11 @@ export class TvRepository extends BaseRepository<AnimeSchemaConfig | SeriesSchem
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
-            .returning()
+            .onConflictDoUpdate({
+                target: mediaTable.apiId,
+                set: { lastApiUpdate: sql`datetime('now')` },
+            })
+            .returning();
 
         const mediaId = media.id;
         if (actorsData && actorsData.length > 0) {

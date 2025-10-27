@@ -20,7 +20,7 @@ export const series = sqliteTable("series", {
     voteAverage: real(),
     voteCount: real(),
     popularity: real(),
-    apiId: integer().notNull(),
+    apiId: integer().unique().notNull(),
     episodeToAir: integer(),
     seasonToAir: integer(),
     nextEpisodeToAir: text(),

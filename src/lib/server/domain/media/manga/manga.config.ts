@@ -48,6 +48,7 @@ export const mangaConfig: MangaSchemaConfig = {
             "Rating -": [asc(mangaList.rating), asc(manga.name)],
             "Published Date +": [desc(manga.releaseDate), asc(manga.name)],
             "Published Date -": [asc(manga.releaseDate), asc(manga.name)],
+            "Recently Added": [desc(mangaList.addedAt), asc(manga.name)],
             "Re-Read": [desc(mangaList.redo), asc(manga.name)],
             "Chapters +": [desc(manga.chapters), asc(manga.name)],
             "Chapters -": [asc(manga.chapters), asc(manga.name)],

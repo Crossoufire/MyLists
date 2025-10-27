@@ -465,6 +465,10 @@ export abstract class BaseRepository<TConfig extends MediaSchemaConfig<MediaTabl
     }
 
     async getUpcomingMedia(userId?: number, maxAWeek?: boolean): Promise<UpComingMedia[]> {
+        // If userId undefined, returns all media requiring notification to be sent to their respective users.
+        // If userId is defined, returns upcoming media from that user's media list.
+        // `maxAWeek` should be true only for userId undefined -> media releasing in next 7 days.
+
         const { listTable, mediaTable } = this.config;
 
         return getDbClient()

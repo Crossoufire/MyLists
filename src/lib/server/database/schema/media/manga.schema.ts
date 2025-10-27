@@ -16,7 +16,7 @@ export const manga = sqliteTable("manga", {
     voteCount: real(),
     popularity: real(),
     publishers: text(),
-    apiId: integer().notNull(),
+    apiId: integer().unique().notNull(),
     ...communMediaCols(MediaType.MANGA),
 });
 

@@ -9,7 +9,7 @@ export const books = sqliteTable("books", {
     pages: integer().notNull(),
     language: text(),
     publishers: text(),
-    apiId: text().notNull(),
+    apiId: text().unique().notNull(),
     ...communMediaCols(MediaType.BOOKS),
 });
 

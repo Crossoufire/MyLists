@@ -64,6 +64,7 @@ export const animeConfig: AnimeSchemaConfig = {
             "Release Date -": [asc(anime.releaseDate), asc(anime.name)],
             "TMDB Rating +": [desc(anime.voteAverage), asc(anime.name)],
             "TMDB Rating -": [asc(anime.voteAverage), asc(anime.name)],
+            "Recently Added": [desc(animeList.addedAt), asc(anime.name)],
             "Rating +": [desc(animeList.rating), asc(anime.name)],
             "Rating -": [asc(animeList.rating), asc(anime.name)],
             "Re-watched": [desc(animeList.redo), asc(anime.name)],

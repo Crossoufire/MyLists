@@ -206,6 +206,10 @@ export class BooksRepository extends BaseRepository<MangaSchemaConfig> {
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
+            .onConflictDoUpdate({
+                target: books.apiId,
+                set: { lastApiUpdate: sql`datetime('now')` },
+            })
             .returning();
 
         const mediaId = media.id;

@@ -23,8 +23,11 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             .from(manga)
             .where(and(
                 lte(manga.lastApiUpdate, sql`datetime('now', '-6 days')`),
-                inArray(manga.prodStatus, ["Publishing", "On Hiatus"]),
-                or(gte(manga.releaseDate, sql`datetime('now')`), isNull(manga.releaseDate)),
+                or(
+                    isNull(manga.releaseDate),
+                    gte(manga.releaseDate, sql`datetime('now')`),
+                    inArray(manga.prodStatus, ["Publishing", "On Hiatus"]),
+                ),
             ));
 
         return results.map((r) => r.apiId);
@@ -214,6 +217,10 @@ export class MangaRepository extends BaseRepository<MangaSchemaConfig> {
             .values({
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
+            })
+            .onConflictDoUpdate({
+                target: manga.apiId,
+                set: { lastApiUpdate: sql`datetime('now')` },
             })
             .returning();
 

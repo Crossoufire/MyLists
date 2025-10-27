@@ -47,6 +47,7 @@ export const gamesConfig: GamesSchemaConfig = {
             "Release Date -": [asc(games.releaseDate), asc(games.name)],
             "IGDB Rating +": [desc(games.voteAverage), asc(games.name)],
             "IGDB Rating -": [asc(games.voteAverage), asc(games.name)],
+            "Recently Added": [desc(gamesList.addedAt), asc(games.name)],
             "Rating +": [desc(gamesList.rating), asc(games.name)],
             "Rating -": [asc(gamesList.rating), asc(games.name)],
             "Playtime +": [desc(gamesList.playtime), asc(games.name)],

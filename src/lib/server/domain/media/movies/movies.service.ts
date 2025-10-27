@@ -45,6 +45,10 @@ export class MoviesService extends BaseService<MovieSchemaConfig, MoviesReposito
         return this.repository.lockOldMovies();
     }
 
+    async findByTitleAndYear(title: string, year: number) {
+        return this.repository.findByTitleAndYear(title, year);
+    }
+
     async calculateAdvancedMediaStats(userId?: number) {
         // If userId not provided, calculations are platform-wide
 

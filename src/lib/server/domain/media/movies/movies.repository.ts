@@ -6,7 +6,7 @@ import {AddedMediaDetails} from "@/lib/types/base.types";
 import {movies, moviesActors, moviesGenre, moviesList} from "@/lib/server/database/schema";
 import {Movie, UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
 import {MovieSchemaConfig, moviesConfig} from "@/lib/server/domain/media/movies/movies.config";
-import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, or, sql} from "drizzle-orm";
+import {and, asc, count, countDistinct, eq, getTableColumns, gte, isNotNull, lte, max, ne, sql} from "drizzle-orm";
 import {getImageUrl} from "@/lib/utils/image-url";
 
 
@@ -34,16 +34,25 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         return count;
     }
 
+    async findByTitleAndYear(title: string, year: number) {
+        return getDbClient()
+            .select()
+            .from(movies)
+            .where(and(
+                eq(movies.name, title),
+                eq(sql`strftime('%Y', ${movies.releaseDate})`, String(year)),
+            ))
+            .get();
+    }
+
     async getMediaIdsToBeRefreshed() {
         const results = await getDbClient()
             .select({ apiId: movies.apiId })
             .from(movies)
             .where(and(
                 lte(movies.lastApiUpdate, sql`datetime('now', '-2 days')`),
-                or(
-                    gte(movies.releaseDate, sql`datetime('now')`),
-                    gte(movies.releaseDate, sql`datetime('now', '-6 months')`),
-                )));
+                gte(movies.releaseDate, sql`datetime('now', '-6 months')`)
+            ));
 
         return results.map((r) => r.apiId);
     }
@@ -241,8 +250,8 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
         const details = await getDbClient()
             .select({
                 ...getTableColumns(movies),
-                actors: sql`json_group_array(DISTINCT json_object('id', ${moviesActors.id}, 'name', ${moviesActors.name}))`.mapWith(JSON.parse),
                 genres: sql`json_group_array(DISTINCT json_object('id', ${moviesGenre.id}, 'name', ${moviesGenre.name}))`.mapWith(JSON.parse),
+                actors: sql`json_group_array(DISTINCT json_object('id', ${moviesActors.id}, 'name', ${moviesActors.name}))`.mapWith(JSON.parse),
                 collection: sql`
                     CASE 
                         WHEN ${movies.collectionId} IS NULL 
@@ -292,7 +301,11 @@ export class MoviesRepository extends BaseRepository<MovieSchemaConfig> {
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
-            .returning()
+            .onConflictDoUpdate({
+                target: movies.apiId,
+                set: { lastApiUpdate: sql`datetime('now')` },
+            })
+            .returning();
 
         const mediaId = media.id;
         if (actorsData && actorsData.length > 0) {

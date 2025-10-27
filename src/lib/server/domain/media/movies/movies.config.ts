@@ -54,6 +54,7 @@ export const moviesConfig: MovieSchemaConfig = {
             "TMDB Rating -": [asc(movies.voteAverage), asc(movies.name)],
             "Release Date +": [desc(movies.releaseDate), asc(movies.name)],
             "Release Date -": [asc(movies.releaseDate), asc(movies.name)],
+            "Recently Added": [desc(moviesList.addedAt), asc(movies.name)],
             "Re-Watched": [desc(moviesList.redo), asc(movies.name)],
         },
     },

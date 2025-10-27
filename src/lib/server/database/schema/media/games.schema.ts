@@ -15,7 +15,7 @@ export const games = sqliteTable("games", {
     hltbMainTime: real(),
     hltbMainAndExtraTime: real(),
     hltbTotalCompleteTime: real(),
-    apiId: integer().notNull(),
+    apiId: integer().unique().notNull(),
     ...communMediaCols(MediaType.GAMES),
 });
 

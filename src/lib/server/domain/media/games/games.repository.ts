@@ -23,7 +23,10 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
             .from(games)
             .where(and(
                 lte(games.lastApiUpdate, sql`datetime('now', '-6 days')`),
-                or(gte(games.releaseDate, sql`datetime('now')`), isNull(games.releaseDate))
+                or(
+                    isNull(games.releaseDate),
+                    gte(games.releaseDate, sql`datetime('now')`),
+                ),
             ));
 
         return results.map((r) => r.apiId);
@@ -104,7 +107,7 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
     }
 
     getCompanyAchievementCte(achievement: Achievement, userId?: number) {
-        const isDevCompany = achievement.value = "developer";
+        const isDevCompany = achievement.value == "developer";
 
         const subQ = getDbClient()
             .select({
@@ -305,7 +308,11 @@ export class GamesRepository extends BaseRepository<GamesSchemaConfig> {
                 ...mediaData,
                 lastApiUpdate: sql`datetime('now')`,
             })
-            .returning()
+            .onConflictDoUpdate({
+                target: games.apiId,
+                set: { lastApiUpdate: sql`datetime('now')` },
+            })
+            .returning();
 
         const mediaId = media.id;
         if (companiesData && companiesData.length > 0) {
