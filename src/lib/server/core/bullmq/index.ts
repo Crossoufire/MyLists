@@ -1,9 +1,9 @@
 import Redis from "ioredis";
 import {Queue, Worker} from "bullmq";
-import {getContainer} from "@/lib/server/core/container";
 import {CancelJobError} from "@/lib/utils/error-classes";
 import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
 import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
+import {executeTask} from "@/lib/server/core/task-runner";
 import {Progress, TaskContext, TaskJobData, TaskName, TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
 
 
@@ -71,9 +71,6 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
     taskLogger.info(`Starting task processing triggered by ${jobData.triggeredBy}...`);
 
     try {
-        const container = await getContainer({ tasksServiceLogger: taskLogger });
-        const tasksService = container.services.tasks;
-
         const cancelCallback = async () => {
             if (await isJobCancelled(job.id!)) {
                 throw new CancelJobError("Canceled");
@@ -93,7 +90,7 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
             triggeredBy: jobData.triggeredBy,
         };
 
-        await tasksService.runTask(context);
+        await executeTask(context, taskLogger);
         taskLogger.info("Task completed successfully.");
 
         return { result: "success" };

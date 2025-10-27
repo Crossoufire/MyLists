@@ -1,8 +1,8 @@
 import {Command} from "commander";
-import {getContainer} from "@/lib/server/core/container";
 import {initializeQueue} from "@/lib/server/core/bullmq";
 import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {TaskContext, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
+import {executeTask} from "@/lib/server/core/task-runner";
 
 
 export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
@@ -24,8 +24,6 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
             cliLogger.info(`Running ${task.name} task directly via CLI...`);
             try {
                 const taskLogger = createTaskLogger({ taskName: task.name, ...jobData });
-                const container = await getContainer({ tasksServiceLogger: taskLogger });
-                const taskService = container.services.tasks;
 
                 const context: TaskContext = {
                     data: jobData,
@@ -33,7 +31,7 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
                     triggeredBy: jobData.triggeredBy,
                 }
 
-                await taskService.runTask(context);
+                await executeTask(context, taskLogger);
                 cliLogger.info(`Task ${task.name} completed directly via CLI.`);
             }
             catch (error) {
