@@ -1,11 +1,10 @@
 import z from "zod";
 import {GBooksDetails} from "@/lib/types/provider.types";
-import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
+import {GBooksTransformer} from "@/lib/server/api-providers/transformers";
+import {GBooksClient, LlmClient} from "@/lib/server/api-providers/clients";
 import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
 import {UpsertBooksWithDetails} from "@/lib/server/domain/media/books/books.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {LlmClient} from "@/lib/server/api-providers/clients/llm.client";
-import {GBooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
 
 
 export class BooksProviderService extends BaseProviderService<

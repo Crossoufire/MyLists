@@ -5,9 +5,12 @@ import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.
 
 export type Movie = typeof movies.$inferSelect;
 
+
 export type MoviesList = typeof moviesList.$inferSelect;
 
+
 export type MoviesAchCodeName = typeof moviesAchievements[number]["codeName"];
+
 
 export type MoviesTopMetricStats = {
     langsStats: TopMetricStats;
@@ -15,11 +18,13 @@ export type MoviesTopMetricStats = {
     directorsStats: TopMetricStats;
 };
 
+
 export type UpsertMovieWithDetails = {
     mediaData: typeof movies.$inferInsert,
     actorsData?: { name: string }[],
     genresData?: { name: string }[],
 };
+
 
 export type MoviesAdvancedStats = AdvancedMediaStats & {
     langsStats: TopMetricStats;

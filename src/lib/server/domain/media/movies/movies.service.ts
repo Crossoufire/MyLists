@@ -1,5 +1,6 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/save-image";
 import {Achievement} from "@/lib/types/achievements.types";
@@ -8,7 +9,6 @@ import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config"
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
 import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
-import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {

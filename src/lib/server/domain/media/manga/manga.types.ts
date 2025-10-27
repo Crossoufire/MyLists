@@ -5,20 +5,25 @@ import {mangaAchievements} from "@/lib/server/domain/media/manga/achievements.se
 
 export type Manga = typeof manga.$inferSelect;
 
+
 export type MangaList = typeof mangaList.$inferSelect;
 
-export type MangaAchCodeName = typeof mangaAchievements[number]["codeName"];
+
+exporttype MangaAchCodeName = typeof mangaAchievements[number]["codeName"];
+
 
 export type MangaTopMetricStats = {
     authorsStats: TopMetricStats;
     publishersStats: TopMetricStats;
 };
 
+
 export type UpsertMangaWithDetails = {
     mediaData: typeof manga.$inferInsert,
     genresData?: { name: string }[],
     authorsData?: { name: string }[],
 };
+
 
 export type MangaAdvancedStats = AdvancedMediaStats & {
     authorsStats: TopMetricStats;

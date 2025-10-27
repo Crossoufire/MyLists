@@ -1,6 +1,6 @@
 import {db} from "@/lib/server/database/db";
-import {alias} from "drizzle-orm/sqlite-core";
 import {MediaType} from "@/lib/utils/enums";
+import {alias} from "drizzle-orm/sqlite-core";
 import {DeltaStats} from "@/lib/types/stats.types";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";

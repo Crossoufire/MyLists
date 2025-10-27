@@ -1,10 +1,10 @@
 import {notFound} from "@tanstack/react-router";
-import {followers, user} from "@/lib/server/database/schema";
 import {Achievement} from "@/lib/types/achievements.types";
 import {MediaListArgs} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {JobType, LabelAction, MediaType, Status} from "@/lib/utils/enums";
 import {GenreTable, LabelTable, ListTable, MediaSchemaConfig, MediaTable} from "@/lib/types/media.config.types";
+import {animeList, booksList, followers, gamesList, mangaList, moviesList, seriesList, user} from "@/lib/server/database/schema";
 import {and, asc, avgDistinct, count, countDistinct, desc, eq, getTableColumns, gte, inArray, isNotNull, isNull, like, lt, lte, ne, notInArray, SQL, sql} from "drizzle-orm";
 import {
     AddedMediaDetails,
@@ -20,12 +20,6 @@ import {
     UserMediaStats,
     UserMediaWithLabels,
 } from "@/lib/types/base.types";
-import {seriesList} from "@/lib/server/database/schema/media/series.schema";
-import {moviesList} from "@/lib/server/database/schema/media/movies.schema";
-import {animeList} from "@/lib/server/database/schema/media/anime.schema";
-import {gamesList} from "@/lib/server/database/schema/media/games.schema";
-import {booksList} from "@/lib/server/database/schema/media/books.schema";
-import {mangaList} from "@/lib/server/database/schema/media/manga.schema";
 
 
 const DEFAULT_PER_PAGE = 25;

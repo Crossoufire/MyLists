@@ -1,19 +1,9 @@
 import {MediaType} from "@/lib/utils/enums";
-import {TvService} from "@/lib/server/domain/media/tv/tv.service";
-import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {BooksService} from "@/lib/server/domain/media/books/books.service";
-import {GamesService} from "@/lib/server/domain/media/games/games.service";
-import {MangaService} from "@/lib/server/domain/media/manga/manga.service";
-import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
-import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
-import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {BooksRepository} from "@/lib/server/domain/media/books/books.repository";
-import {TvProviderService} from "@/lib/server/domain/media/tv/tv.provider.service";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {BooksProviderService} from "@/lib/server/domain/media/books/books-provider.service";
-import {GamesProviderService} from "@/lib/server/domain/media/games/games-provider.service";
-import {MangaProviderService} from "@/lib/server/domain/media/manga/manga-provider.service";
-import {MoviesProviderService} from "@/lib/server/domain/media/movies/movies-provider.service";
+import {TvProviderService, TvRepository, TvService} from "@/lib/server/domain/media/tv";
+import {GamesProviderService, GamesRepository, GamesService} from "@/lib/server/domain/media/games";
+import {MangaProviderService, MangaRepository, MangaService} from "@/lib/server/domain/media/manga";
+import {BooksProviderService, BooksRepository, BooksService} from "@/lib/server/domain/media/books";
+import {MoviesProviderService, MoviesRepository, MoviesService} from "@/lib/server/domain/media/movies";
 
 
 interface MediaRepositoryMap {

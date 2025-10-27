@@ -1,10 +1,9 @@
 import {IgdbGameDetails} from "@/lib/types/provider.types";
-import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
-import {IgdbClient} from "@/lib/server/api-providers/clients/igdb.client";
+import {IgdbTransformer} from "@/lib/server/api-providers/transformers";
+import {HltbClient, IgdbClient} from "@/lib/server/api-providers/clients";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
 import {UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
 import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
-import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
 
 
 export class GamesProviderService extends BaseProviderService<

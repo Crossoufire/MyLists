@@ -1,7 +1,7 @@
 import {JobType, Status} from "@/lib/utils/enums";
-import {createArrayFilterDef} from "../base/base.repository";
 import {asc, desc, getTableColumns} from "drizzle-orm";
 import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
 import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
 import {movies, moviesActors, moviesGenre, moviesLabels, moviesList} from "@/lib/server/database/schema/media/movies.schema";
 

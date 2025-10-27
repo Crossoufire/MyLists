@@ -5,9 +5,12 @@ import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.se
 
 export type Game = typeof games.$inferSelect;
 
+
 export type GamesList = typeof gamesList.$inferSelect;
 
+
 export type GamesAchCodeName = typeof gamesAchievements[number]["codeName"];
+
 
 export type UpsertGameWithDetails = {
     mediaData: typeof games.$inferInsert,
@@ -15,6 +18,7 @@ export type UpsertGameWithDetails = {
     platformsData?: { name: string }[],
     companiesData?: { name: string, developer: boolean, publisher: boolean }[],
 };
+
 
 export type GamesAdvancedStats = AdvancedMediaStats & {
     enginesStats: TopMetricStats;

@@ -1,13 +1,5 @@
-import {LlmClient} from "@/lib/server/api-providers/clients/llm.client";
-import {IgdbClient} from "@/lib/server/api-providers/clients/igdb.client";
-import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
-import {HltbClient} from "@/lib/server/api-providers/clients/hltb.client";
-import {JikanClient} from "@/lib/server/api-providers/clients/jikan.client";
-import {GBooksClient} from "@/lib/server/api-providers/clients/gbooks.client";
-import {IgdbTransformer} from "@/lib/server/api-providers/transformers/igdb.transformer";
-import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
-import {JikanTransformer} from "@/lib/server/api-providers/transformers/jikan.transformer";
-import {GBooksTransformer} from "@/lib/server/api-providers/transformers/gbook.transformer";
+import {GBooksClient, HltbClient, IgdbClient, JikanClient, LlmClient, TmdbClient,} from "@/lib/server/api-providers/clients";
+import {GBooksTransformer, IgdbTransformer, JikanTransformer, TmdbTransformer,} from "@/lib/server/api-providers/transformers";
 
 
 export async function setupProviderModule() {
@@ -17,7 +9,7 @@ export async function setupProviderModule() {
     const gBookTransformer = new GBooksTransformer();
     const jikanTransformer = new JikanTransformer();
 
-    // API Clients (Initialized concurrently with Promise.all)
+    // API Clients
     const [hltbClient, igdbClient, tmdbClient, jikanClient, gBookClient, llmClient] = await Promise.all([
         HltbClient.create(),
         IgdbClient.create(),

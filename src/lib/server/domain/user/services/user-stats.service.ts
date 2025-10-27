@@ -1,8 +1,8 @@
 import {statusUtils} from "@/lib/utils/functions";
 import {DeltaStats} from "@/lib/types/stats.types";
+import {MediaType, Status} from "@/lib/utils/enums";
 import {UserMediaStats} from "@/lib/types/base.types";
 import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
-import {MediaType, Status} from "@/lib/utils/enums";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
 import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";

@@ -7,14 +7,11 @@ import {MediaType} from "@/lib/utils/enums";
 import {readFile, unlink} from "fs/promises";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
+import {UserRepository} from "@/lib/server/domain/user/repositories";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
-import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
-import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
 import {CsvJobData, TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
-import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
-import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
-import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
+import {AchievementsService, NotificationsService, UserStatsService, UserUpdatesService,} from "@/lib/server/domain/user/services";
 
 
 export class TasksService {

@@ -1,5 +1,6 @@
 import {eq, isNotNull} from "drizzle-orm";
 import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
 import {Status, UpdateType} from "@/lib/utils/enums";
 import {saveImageFromUrl} from "@/lib/utils/save-image";
 import {FormattedError} from "@/lib/utils/error-classes";
@@ -9,7 +10,6 @@ import {MangaSchemaConfig} from "@/lib/server/domain/media/manga/manga.config";
 import {MangaRepository} from "@/lib/server/domain/media/manga/manga.repository";
 import {Manga, MangaAchCodeName, MangaList} from "@/lib/server/domain/media/manga/manga.types";
 import {ChapterPayload, LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
-import {DeltaStats} from "@/lib/types/stats.types";
 
 
 export class MangaService extends BaseService<MangaSchemaConfig, MangaRepository> {

@@ -1,8 +1,8 @@
+import {SearchType} from "@/lib/types/zod.schema.types";
 import {FormattedError} from "@/lib/utils/error-classes";
 import {pixelateImage} from "@/lib/utils/image-pixelation";
 import {MoviesService} from "@/lib/server/domain/media/movies/movies.service";
 import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
-import {SearchType} from "@/lib/types/zod.schema.types";
 
 
 export class MediadleService {

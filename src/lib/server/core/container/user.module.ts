@@ -1,16 +1,13 @@
-import {UserService} from "@/lib/server/domain/user/services/user.service";
-import {MediadleService} from "@/lib/server/domain/user/services/mediadle.service";
-import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
-import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
-import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
-import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
-import {MediadleRepository} from "@/lib/server/domain/user/repositories/mediadle.repository";
-import {UserStatsRepository} from "@/lib/server/domain/user/repositories/user-stats.repository";
-import {UserUpdatesRepository} from "@/lib/server/domain/user/repositories/user-updates.repository";
-import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-import {NotificationsRepository} from "@/lib/server/domain/user/repositories/notifications.repository";
+import {AchievementsService, MediadleService, NotificationsService, UserService, UserStatsService, UserUpdatesService} from "@/lib/server/domain/user/services";
+import {
+    AchievementsRepository,
+    MediadleRepository,
+    NotificationsRepository,
+    UserRepository,
+    UserStatsRepository,
+    UserUpdatesRepository
+} from "@/lib/server/domain/user/repositories";
 
 
 export function setupUserModule(mediaServiceRegistry: typeof MediaServiceRegistry) {
