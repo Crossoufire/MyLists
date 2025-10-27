@@ -1,7 +1,7 @@
 import {sql} from "drizzle-orm";
 import {relations} from "drizzle-orm/relations";
 import {customJson} from "@/lib/server/database/custom-types";
-import {TaskJobData, TaskReturnType} from "@/lib/types/tasks.types";
+import {TaskJobData, TaskLogs, TaskReturnType} from "@/lib/types/tasks.types";
 import {index, integer, real, sqliteTable, text} from "drizzle-orm/sqlite-core";
 import {MediaType, NotificationType, Status, UpdateType} from "@/lib/utils/enums";
 import {
@@ -86,6 +86,7 @@ export const jobHistory = sqliteTable("job_history", {
     userId: integer("user_id").references(() => user.id, { onDelete: "cascade" }),
     status: text("status").notNull(),
     name: text("task_name").notNull(),
+    logs: customJson<TaskLogs>("logs"),
     finishedOn: integer("finished_on"),
     failedReason: text("failed_reason"),
     processedOn: integer("processed_on"),
@@ -93,7 +94,6 @@ export const jobHistory = sqliteTable("job_history", {
     timestamp: integer("timestamp").notNull(),
     triggeredBy: text("triggered_by").notNull(),
     returnValue: customJson<TaskReturnType>("return_value"),
-    logs: customJson<{ logs: string[], count: number }>("logs"),
 }, (table) => [
     index("ix_job_history_job_id").on(table.jobId),
     index("ix_job_history_user_id").on(table.userId),

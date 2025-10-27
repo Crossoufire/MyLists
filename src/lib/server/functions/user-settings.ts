@@ -191,7 +191,7 @@ export const getUserUploads = createServerFn({ method: "GET" })
         }
 
         try {
-            const allJobs = await mylistsTaskQueue.getJobs(["active", "waiting", "delayed"]);
+            const allJobs = await mylistsTaskQueue.getJobs(["active", "waiting"]);
 
             const userJobs = allJobs.filter((job) => {
                 if ("userId" in job.data) {

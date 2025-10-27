@@ -6,17 +6,15 @@ import {serverEnv} from "@/env/server";
 import {MediaType} from "@/lib/utils/enums";
 import {readFile, unlink} from "fs/promises";
 import {llmResponseSchema} from "@/lib/types/zod.schema.types";
-import {CsvJobData, TaskContext, TaskName} from "@/lib/types/tasks.types";
 import {getDbClient, withTransaction} from "@/lib/server/database/async-storage";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
 import {UserStatsService} from "@/lib/server/domain/user/services/user-stats.service";
+import {CsvJobData, TaskContext, TaskHandler, TaskName} from "@/lib/types/tasks.types";
 import {UserUpdatesService} from "@/lib/server/domain/user/services/user-updates.service";
 import {AchievementsService} from "@/lib/server/domain/user/services/achievements.service";
 import {NotificationsService} from "@/lib/server/domain/user/services/notifications.service";
 import {MediaProviderServiceRegistry, MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
-
-
-type TaskHandler = (ctx: TaskContext) => Promise<void>;
+import {FormattedError} from "@/lib/utils/error-classes";
 
 
 export class TasksService {
@@ -131,7 +129,6 @@ export class TasksService {
 
     protected async runVacuumDB(_ctx: TaskContext) {
         this.logger.info("Starting: VacuumDB execution.");
-        throw new Error("Not implemented");
         getDbClient().run("VACUUM");
         this.logger.info("Completed: VacuumDB execution.");
     }
@@ -409,6 +406,14 @@ ${booksGenres.join(", ")}.
                 });
             }
 
+            const result = {
+                total: totalRows,
+                totalSuccess: 0,
+                totalFailed: 0,
+                totalSkipped: 0,
+                items: [],
+            };
+
             for (let i = 0; i < totalRows; i++) {
                 if (ctx.cancelCallback) {
                     await ctx.cancelCallback();
@@ -436,20 +441,33 @@ ${booksGenres.join(", ")}.
                     });
                 }
 
-                // BUSINESS LOGIC
-                // const movie = await this.mediaServiceRegistry.get(MediaType.MOVIE).findMediaByTitleAndYear(record.title, year);
-                // if (movie) {
-                //     await this.userUpdatesService.addMediaToList(userId, movie.id);
-                //     csvLogger.info(`Added '${movie.title}' to user ${userId}'s list.`);
-                // } else {
-                //     csvLogger.warn(`Movie not found: ${record.title} (${record.year})`);
-                // }
+                const moviesService = this.mediaServiceRegistry.getService(MediaType.MOVIES);
+                const metadata = { name: record.title, releaseDate: String(record.year) }
+                try {
+                    const movie = await moviesService.findByTitleAndYear(record.title, year);
+                    if (!movie) {
+                        this._logItem({ result, metadata, status: "failed", reason: "Movie not found" });
+                        continue;
+                    }
 
-                // Simulate work
-                await new Promise((resolve) => setTimeout(resolve, 3000));
+                    try {
+                        const { delta } = await moviesService.addMediaToUserList(userId, movie.id);
+                        await this.userStatsService.updateUserPreComputedStatsWithDelta(MediaType.MOVIES, userId, delta);
+                        this._logItem({ result, status: "success", metadata: { name: movie.name, releaseDate: movie.releaseDate } });
+                    }
+                    catch (err: any) {
+                        this._logItem({ result, metadata, status: err instanceof FormattedError ? "skipped" : "failed", reason: err.message });
+                    }
+                }
+                catch (err: any) {
+                    this._logItem({ result, metadata, status: "failed", reason: err.message });
+                }
+
+                // await new Promise((resolve) => setTimeout(resolve, 3000));
             }
 
             this.logger.info("CSV processing completed successfully.");
+            this.logger.info({ result }, "CSV processing result added");
         }
         finally {
             try {
@@ -484,4 +502,35 @@ ${booksGenres.join(", ")}.
 
         await fs.promises.writeFile(envPath, lines.join("\n"));
     }
+
+    private _logItem({ result, status, reason, metadata }: LogItem) {
+        if (status === "success") {
+            result.totalSuccess += 1;
+        }
+        else if (status === "failed") {
+            result.totalFailed += 1;
+        }
+        else if (status === "skipped") {
+            result.totalSkipped += 1;
+        }
+
+        result.items.push({ status, reason, metadata });
+    }
+}
+
+
+type LogItem = {
+    reason?: string,
+    result: CsvResult,
+    metadata?: Record<string, string | null>,
+    status: "success" | "failed" | "skipped",
+};
+
+
+type CsvResult = {
+    total: number,
+    totalSuccess: number,
+    totalFailed: number,
+    totalSkipped: number,
+    items: Array<object>,
 }

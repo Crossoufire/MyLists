@@ -8,21 +8,21 @@ import {cancelUserUpload, getUserUploads} from "@/lib/server/functions/user-sett
 import {adminCheckActiveJobs} from "@/lib/client/react-query/query-options/admin-options";
 
 
-const uploadsOptions = queryOptions({
+const uploadsOptions = (pollingSec = 3) => queryOptions({
     queryKey: ["uploads"],
     queryFn: getUserUploads,
     refetchInterval: (query) => {
         const data = query.state.data;
         if (!data || data.length === 0) return false;
-        if (data.some((job) => job.status === "active")) {
-            return 3000;
+        if (data.some((job) => job.status === "active" || job.status === "waiting")) {
+            return pollingSec * 1000;
         }
         return false;
     },
 });
 
 
-type QKeyCancelUploads = typeof uploadsOptions.queryKey | ReturnType<typeof adminCheckActiveJobs>["queryKey"];
+type QKeyCancelUploads = ReturnType<typeof uploadsOptions>["queryKey"] | ReturnType<typeof adminCheckActiveJobs>["queryKey"];
 
 
 export const useCancelUploadsMutation = (queryKey: QKeyCancelUploads) => {
@@ -52,13 +52,13 @@ export const useCancelUploadsMutation = (queryKey: QKeyCancelUploads) => {
 
 
 export const Route = createFileRoute("/_main/_private/settings/uploads")({
-    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(uploadsOptions),
+    loader: async ({ context: { queryClient } }) => queryClient.ensureQueryData(uploadsOptions()),
     component: UserUploadsPage,
 });
 
 
 function UserUploadsPage() {
-    const userJobs = useSuspenseQuery(uploadsOptions).data;
+    const userJobs = useSuspenseQuery(uploadsOptions()).data;
 
     return (
         <PageTitle title="Your Uploads" subtitle="View and manage your CSV uploads.">
@@ -73,7 +73,7 @@ function UserUploadsPage() {
                                     job={job}
                                     key={job.jobId}
                                     isAdmin={false}
-                                    queryKey={uploadsOptions.queryKey}
+                                    queryKey={uploadsOptions().queryKey}
                                     title={`Upload: ${job.data.fileName}`}
                                 />
                             )}

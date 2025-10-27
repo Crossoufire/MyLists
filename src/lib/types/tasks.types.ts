@@ -40,10 +40,11 @@ export type TaskDefinition = {
         description: string,
     }[],
 }
-
 export type CancelCallback = () => Promise<void>;
 export type TaskName = (typeof taskNames)[number];
 export type TaskJobData = BaseJobData | CsvJobData;
+export type TaskLogs = { logs: string[], count: number };
+export type TaskHandler = (ctx: TaskContext) => Promise<void>;
 export type TypedJob = Job<TaskJobData, TaskReturnType, TaskName>;
 export type ProgressCallback = (progress: Progress) => Promise<void>;
 export type Progress = { current: number, total: number, message: string };

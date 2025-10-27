@@ -143,7 +143,7 @@ export function JobCard({ job, title, queryKey, isAdmin = true }: JobCardProps) 
                     </div>
                 }
 
-                {"logs" in job && job.logs &&
+                {isAdmin && "logs" in job && job.logs &&
                     <div className="mt-2 ">
                         {job.logs.logs}
                     </div>
