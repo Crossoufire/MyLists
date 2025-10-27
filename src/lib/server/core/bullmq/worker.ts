@@ -17,20 +17,19 @@ async function startWorker() {
 
         // Create worker and init Queue
         const worker = createWorker(redisConnection);
-        const mylistsLongTaskQueue = initializeQueue(redisConnection);
+        const queue = initializeQueue(redisConnection);
 
         // Setup graceful shutdown
         const shutdown = async () => {
             pinoLogger.info("Shutting down worker...");
+            await queue.close();
             await worker.close();
-            await mylistsLongTaskQueue.close();
             await redisConnection.quit();
             pinoLogger.info("Worker shut down gracefully.");
             process.exit(0);
         };
 
         process.on("SIGINT", shutdown);
-        process.on("SIGHUP", shutdown);
         process.on("SIGTERM", shutdown);
 
         process.on("unhandledRejection", (reason, promise) => {

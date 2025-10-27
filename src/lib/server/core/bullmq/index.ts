@@ -68,21 +68,22 @@ export const createWorker = (connection: Redis) => {
 const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
     const { name: taskName, data: jobData, id: jobId } = job;
 
-    const baseJobLogger = pinoLogger.child({ jobId, taskName, triggeredBy: jobData.triggeredBy });
-    const jobLogStream = { write: (msg: string) => job.log(msg.replace(/\n$/, "")) };
+    // On each task create logger which log to stdout and to current bullMQ job
     const taskExecutionLogger = pino(
         {
-            level: baseJobLogger.level,
-            base: { jobId, taskName, triggeredBy: jobData.triggeredBy },
+            base: {
+                jobId,
+                taskName,
+                triggeredBy: jobData.triggeredBy,
+            },
         },
         pino.multistream([
-            { stream: jobLogStream, level: "info" },
-            { stream: process.stdout, level: baseJobLogger.level },
+            { stream: process.stdout },
+            { stream: { write: (msg: string) => job.log(msg.replace(/\n$/, "")) } },
         ]),
     );
 
-    taskExecutionLogger.info("Starting task processing...");
-    await job.log(`Starting task processing triggered by ${jobData.triggeredBy}...`);
+    taskExecutionLogger.info(`Starting task processing triggered by ${jobData.triggeredBy}...`);
 
     try {
         const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
@@ -108,20 +109,16 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
         };
 
         await tasksService.runTask(context);
-
-        await job.log("Task completed successfully.");
         taskExecutionLogger.info("Task completed successfully.");
 
         return { result: "success" };
     }
     catch (error: any) {
         if (error instanceof CancelJobError) {
-            await job.log("Task cancelled");
             taskExecutionLogger.warn("Task cancelled");
             return { result: "cancelled" };
         }
 
-        await job.log(`Task failed: ${error.message}`);
         taskExecutionLogger.error({ err: error }, "Task failed.");
 
         throw error;
