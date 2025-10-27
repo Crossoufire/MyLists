@@ -1,6 +1,6 @@
 import pino from "pino";
 import {Cache} from "cache-manager";
-import pinoLogger from "@/lib/server/core/pino-logger";
+import {rootLogger} from "@/lib/server/core/logger";
 import {initCacheManager} from "@/lib/server/core/cache-manager";
 import {setupMediaModule} from "@/lib/server/core/container/media.module";
 import {setupTasksModule} from "@/lib/server/core/container/tasks.module";
@@ -13,11 +13,9 @@ import {MediaProviderServiceRegistry, MediaRepositoryRegistry, MediaServiceRegis
 interface AppContainer {
     cacheManager: Cache;
     clients: ProviderModule["clients"];
-    transformers: ProviderModule["transformers"];
     repositories: UserModule["repositories"];
-    services: UserModule["services"] & {
-        tasks: TasksService;
-    };
+    transformers: ProviderModule["transformers"];
+    services: UserModule["services"] & { tasks: TasksService };
     registries: {
         mediaRepo: typeof MediaRepositoryRegistry;
         mediaService: typeof MediaServiceRegistry;
@@ -39,7 +37,7 @@ async function initContainer(options: ContainerOptions = {}): Promise<AppContain
     const userModule = setupUserModule(mediaModule.mediaServiceRegistry);
     const tasksService = setupTasksModule({
         userModule,
-        logger: options.tasksServiceLogger || pinoLogger,
+        logger: options.tasksServiceLogger || rootLogger,
         mediaServiceRegistry: mediaModule.mediaServiceRegistry,
         mediaProviderServiceRegistry: mediaModule.mediaProviderServiceRegistry,
     });

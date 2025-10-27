@@ -1,9 +1,9 @@
-import pinoLogger from "@/lib/server/core/pino-logger";
+import {rootLogger} from "@/lib/server/core/logger";
 import {createWorker, initializeQueue} from "@/lib/server/core/bullmq/index";
 
 
 async function startWorker() {
-    pinoLogger.info("Starting worker process...");
+    rootLogger.info("Starting worker process...");
 
     try {
         const { connectRedis } = await import("@/lib/server/core/redis-client");
@@ -13,19 +13,19 @@ async function startWorker() {
         if (!redisConnection) {
             throw new Error("Worker failed to connect to Redis.");
         }
-        pinoLogger.info("Redis connection established for worker.");
+        rootLogger.info("Redis connection established for worker.");
 
         // Create worker and init Queue
         const worker = createWorker(redisConnection);
         const queue = initializeQueue(redisConnection);
 
-        // Setup graceful shutdown
+        // Setup shutdown
         const shutdown = async () => {
-            pinoLogger.info("Shutting down worker...");
+            rootLogger.info("Shutting down worker...");
             await queue.close();
             await worker.close();
             await redisConnection.quit();
-            pinoLogger.info("Worker shut down gracefully.");
+            rootLogger.info("Worker shut down gracefully.");
             process.exit(0);
         };
 
@@ -33,18 +33,18 @@ async function startWorker() {
         process.on("SIGTERM", shutdown);
 
         process.on("unhandledRejection", (reason, promise) => {
-            pinoLogger.fatal({ reason, promise }, "Unhandled Rejection at Worker");
+            rootLogger.fatal({ reason, promise }, "Unhandled Rejection at Worker");
         });
 
         process.on("uncaughtException", (error) => {
-            pinoLogger.fatal({ err: error }, "Uncaught Exception at Worker");
+            rootLogger.fatal({ err: error }, "Uncaught Exception at Worker");
             process.exit(1);
         });
 
-        pinoLogger.info("Worker process started and listening for jobs.");
+        rootLogger.info("Worker process started and listening for jobs.");
     }
     catch (error) {
-        pinoLogger.fatal({ err: error }, "A fatal error occurred during worker startup.");
+        rootLogger.fatal({ err: error }, "A fatal error occurred during worker startup.");
         process.exit(1);
     }
 }

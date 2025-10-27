@@ -1,10 +1,9 @@
-import pino from "pino";
 import Redis from "ioredis";
 import {Queue, Worker} from "bullmq";
-import pinoLogger from "@/lib/server/core/pino-logger";
 import {getContainer} from "@/lib/server/core/container";
 import {CancelJobError} from "@/lib/utils/error-classes";
 import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
+import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {Progress, TaskContext, TaskJobData, TaskName, TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
 
 
@@ -26,7 +25,7 @@ export const initializeQueue = (connection: Redis) => {
         },
     });
 
-    pinoLogger.info("BullMQ queue initialized.");
+    rootLogger.info("BullMQ queue initialized.");
 
     return mylistsTaskQueue;
 };
@@ -39,58 +38,44 @@ export const createWorker = (connection: Redis) => {
     });
 
     worker.on("error", (err) => {
-        pinoLogger.error({ err }, "Worker encountered an error");
+        rootLogger.error({ err }, "Worker encountered an error");
     });
 
     worker.on("failed", async (job, error) => {
-        pinoLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed task");
+        rootLogger.error({ jobId: job?.id, taskName: job?.name, err: error }, "Worker failed task");
 
         await saveJobToDb(job, "failed");
     });
 
     worker.on("completed", async (job, returnValue) => {
         if (returnValue.result === "cancelled") {
-            pinoLogger.info({ jobId: job.id, taskName: job.name }, "Worker task cancelled");
+            rootLogger.info({ jobId: job.id, taskName: job.name }, "Worker task cancelled");
         }
         else {
-            pinoLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed task");
+            rootLogger.info({ jobId: job.id, taskName: job.name, returnValue }, "Worker completed task");
         }
 
         await saveJobToDb(job, "completed", returnValue);
     });
 
-    pinoLogger.info("Worker instance created and listeners attached.");
+    rootLogger.info("Worker instance created and listeners attached.");
 
     return worker;
 };
 
 
 const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
-    const { name: taskName, data: jobData, id: jobId } = job;
+    const { name: taskName, data: jobData } = job;
 
-    // On each task create logger which log to stdout and to current bullMQ job
-    const taskExecutionLogger = pino(
-        {
-            base: {
-                jobId,
-                taskName,
-                triggeredBy: jobData.triggeredBy,
-            },
-        },
-        pino.multistream([
-            { stream: process.stdout },
-            { stream: { write: (msg: string) => job.log(msg.replace(/\n$/, "")) } },
-        ]),
-    );
-
-    taskExecutionLogger.info(`Starting task processing triggered by ${jobData.triggeredBy}...`);
+    const taskLogger = createTaskLogger({ job, taskName, ...jobData });
+    taskLogger.info(`Starting task processing triggered by ${jobData.triggeredBy}...`);
 
     try {
-        const container = await getContainer({ tasksServiceLogger: taskExecutionLogger });
+        const container = await getContainer({ tasksServiceLogger: taskLogger });
         const tasksService = container.services.tasks;
 
         const cancelCallback = async () => {
-            if (await isJobCancelled(jobId!)) {
+            if (await isJobCancelled(job.id!)) {
                 throw new CancelJobError("Canceled");
             }
         };
@@ -109,18 +94,17 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
         };
 
         await tasksService.runTask(context);
-        taskExecutionLogger.info("Task completed successfully.");
+        taskLogger.info("Task completed successfully.");
 
         return { result: "success" };
     }
     catch (error: any) {
         if (error instanceof CancelJobError) {
-            taskExecutionLogger.warn("Task cancelled");
+            taskLogger.warn("Task cancelled");
             return { result: "cancelled" };
         }
 
-        taskExecutionLogger.error({ err: error }, "Task failed.");
-
+        taskLogger.error({ err: error }, "Task failed.");
         throw error;
     }
 };

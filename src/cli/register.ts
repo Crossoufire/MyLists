@@ -1,7 +1,7 @@
 import {Command} from "commander";
-import pinoLogger from "@/lib/server/core/pino-logger";
-import {initializeQueue} from "@/lib/server/core/bullmq";
 import {getContainer} from "@/lib/server/core/container";
+import {initializeQueue} from "@/lib/server/core/bullmq";
+import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {TaskContext, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
 
 
@@ -17,15 +17,16 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
 
     command.action(async (options) => {
         const { direct: directExecution, ...taskArgs } = options;
-        const cliLogger = pinoLogger.child({ command: task.name });
+        const cliLogger = rootLogger.child({ command: task.name });
         const jobData: TaskJobData = { ...taskArgs, triggeredBy: "cron/cli" };
-
-        const container = await getContainer({ tasksServiceLogger: pinoLogger });
-        const taskService = container.services.tasks;
 
         if (directExecution) {
             cliLogger.info(`Running ${task.name} task directly via CLI...`);
             try {
+                const taskLogger = createTaskLogger({ taskName: task.name, ...jobData });
+                const container = await getContainer({ tasksServiceLogger: taskLogger });
+                const taskService = container.services.tasks;
+
                 const context: TaskContext = {
                     data: jobData,
                     taskName: task.name,
@@ -51,9 +52,9 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
                 process.exit(1);
             }
 
-            const mylistsTaskQueue = initializeQueue(redisConnection);
+            const queue = initializeQueue(redisConnection);
             try {
-                const job = await mylistsTaskQueue.add(task.name, jobData);
+                const job = await queue.add(task.name, jobData);
                 cliLogger.info({ jobId: job.id }, `Task ${task.name} enqueued successfully via CLI.`);
             }
             catch (error) {
@@ -61,7 +62,7 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
                 process.exit(1);
             }
             finally {
-                await mylistsTaskQueue.close();
+                await queue.close();
                 await redisConnection.quit();
             }
         }
