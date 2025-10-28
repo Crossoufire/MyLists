@@ -49,3 +49,14 @@ export const connectRedis = () => {
 
     return connectionPromise;
 };
+
+
+export const getRedisConnection = async () => {
+    const { connectRedis } = await import("@/lib/server/core/redis-client");
+    const redisConnection = await connectRedis();
+    if (!redisConnection) {
+        throw new Error("Failed to connect to Redis.");
+    }
+
+    return redisConnection;
+};

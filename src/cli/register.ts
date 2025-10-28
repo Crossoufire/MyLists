@@ -1,8 +1,9 @@
 import {Command} from "commander";
-import {initializeQueue} from "@/lib/server/core/bullmq";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
+import {executeTask} from "@/lib/server/core/task-runner";
+import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {TaskContext, TaskDefinition, TaskJobData} from "@/lib/types/tasks.types";
-import {executeTask} from "@/lib/server/core/task-runner";
 
 
 export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
@@ -42,15 +43,8 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
         else {
             cliLogger.info(`Enqueueing ${task.name} task via CLI...`);
 
-            const { connectRedis } = await import("@/lib/server/core/redis-client");
-
-            const redisConnection = await connectRedis();
-            if (!redisConnection) {
-                cliLogger.fatal("Failed to connect to Redis from CLI.");
-                process.exit(1);
-            }
-
-            const queue = initializeQueue(redisConnection);
+            const queue = await createOrGetQueue();
+            const connection = await getRedisConnection();
             try {
                 const job = await queue.add(task.name, jobData);
                 cliLogger.info({ jobId: job.id }, `Task ${task.name} enqueued successfully via CLI.`);
@@ -61,7 +55,7 @@ export const registerTaskCommand = (program: Command, task: TaskDefinition) => {
             }
             finally {
                 await queue.close();
-                await redisConnection.quit();
+                await connection.quit();
             }
         }
     });

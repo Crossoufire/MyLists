@@ -1,30 +1,30 @@
+import {serverEnv} from "@/env/server";
 import {rootLogger} from "@/lib/server/core/logger";
-import {createWorker, initializeQueue} from "@/lib/server/core/bullmq/index";
+import {getRedisConnection} from "@/lib/server/core/redis-client";
+import {createOrGetQueue, createWorker} from "@/lib/server/core/bullmq/index";
+
+
+startWorker();
 
 
 async function startWorker() {
+    if (!serverEnv.REDIS_ENABLED) {
+        throw new Error("Redis is not enabled.");
+    }
+
     rootLogger.info("Starting worker process...");
 
     try {
-        const { connectRedis } = await import("@/lib/server/core/redis-client");
-
-        // Connect to Redis
-        const redisConnection = await connectRedis();
-        if (!redisConnection) {
-            throw new Error("Worker failed to connect to Redis.");
-        }
-        rootLogger.info("Redis connection established for worker.");
-
-        // Create worker and init Queue
-        const worker = createWorker(redisConnection);
-        const queue = initializeQueue(redisConnection);
+        const connection = await getRedisConnection();
+        const queue = await createOrGetQueue();
+        const worker = createWorker(connection);
 
         // Setup shutdown
         const shutdown = async () => {
             rootLogger.info("Shutting down worker...");
             await queue.close();
             await worker.close();
-            await redisConnection.quit();
+            await connection.quit();
             rootLogger.info("Worker shut down gracefully.");
             process.exit(0);
         };
@@ -48,6 +48,3 @@ async function startWorker() {
         process.exit(1);
     }
 }
-
-
-startWorker();

@@ -1,23 +1,21 @@
+import {serverEnv} from "@/env/server";
+import {getRedisConnection} from "@/lib/server/core/redis-client";
 import {IRateLimiterOptions, RateLimiterMemory, RateLimiterRedis} from "rate-limiter-flexible";
 
 
 export const createRateLimiter = async (options: Partial<IRateLimiterOptions>) => {
-    if (process.env.NODE_ENV === "production") {
-        try {
-            const { connectRedis } = await import("@/lib/server/core/redis-client");
-
-            const redisInstance = await connectRedis();
-
-            console.log(`Creating Redis rate limiter with options:`, options);
-            return new RateLimiterRedis({ ...options, storeClient: redisInstance });
-        }
-        catch (error) {
-            console.error("Error during Redis connection or limiter creation:", error);
-            throw error;
-        }
-    }
-    else {
+    if (!serverEnv.REDIS_ENABLED) {
         console.log(`Creating In-Memory rate limiter with options:`, options);
         return new RateLimiterMemory(options);
+    }
+    else {
+        try {
+            const connection = await getRedisConnection();
+            console.log(`Creating Redis rate limiter with options:`, options);
+            return new RateLimiterRedis({ ...options, storeClient: connection });
+        }
+        catch (err) {
+            throw new Error(`Failed to create rate limiter: ${err}`);
+        }
     }
 };

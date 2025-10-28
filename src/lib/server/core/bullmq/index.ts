@@ -1,20 +1,31 @@
 import Redis from "ioredis";
 import {Queue, Worker} from "bullmq";
+import {serverEnv} from "@/env/server";
 import {CancelJobError} from "@/lib/utils/error-classes";
-import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
-import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {executeTask} from "@/lib/server/core/task-runner";
+import {isJobCancelled, saveJobToDb} from "@/lib/utils/bullmq";
+import {createDummyQueue} from "@/lib/server/core/bullmq/dummy";
+import {getRedisConnection} from "@/lib/server/core/redis-client";
+import {createTaskLogger, rootLogger} from "@/lib/server/core/logger";
 import {Progress, TaskContext, TaskJobData, TaskName, TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
 
 
 const QUEUE_NAME = "mylists-tasks";
-export let mylistsTaskQueue: Queue<TaskJobData, TaskReturnType, TaskName>;
+let mylistsTaskQueue: Queue<TaskJobData, TaskReturnType, TaskName>;
 
 
-export const initializeQueue = (connection: Redis) => {
+export const createOrGetQueue = async () => {
     if (mylistsTaskQueue) {
         return mylistsTaskQueue;
     }
+
+    if (!serverEnv.REDIS_ENABLED) {
+        rootLogger.info("Redis not Enabled. Using Dummy Queue.");
+        mylistsTaskQueue = createDummyQueue();
+        return mylistsTaskQueue;
+    }
+
+    const connection = await getRedisConnection();
 
     mylistsTaskQueue = new Queue(QUEUE_NAME, {
         connection: connection.duplicate(),
@@ -25,8 +36,7 @@ export const initializeQueue = (connection: Redis) => {
         },
     });
 
-    rootLogger.info("BullMQ queue initialized.");
-
+    rootLogger.info("Mylists-tasks queue initialized.");
     return mylistsTaskQueue;
 };
 
@@ -91,6 +101,7 @@ const taskProcessor = async (job: TypedJob): Promise<TaskReturnType> => {
         };
 
         await executeTask(context, taskLogger);
+
         taskLogger.info("Task completed successfully.");
 
         return { result: "success" };

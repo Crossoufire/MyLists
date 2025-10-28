@@ -3,7 +3,7 @@ import path from "path";
 import {auth} from "@/lib/server/core/auth";
 import {MediaType} from "@/lib/utils/enums";
 import {mkdir, writeFile} from "fs/promises";
-import {getQueue, signalJobCancellation} from "@/lib/utils/bullmq";
+import {signalJobCancellation} from "@/lib/utils/bullmq";
 import {createServerFn} from "@tanstack/react-start";
 import {user} from "@/lib/server/database/schema/index";
 import {getContainer} from "@/lib/server/core/container";
@@ -14,6 +14,7 @@ import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
 import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
 import {CsvJobData} from "@/lib/types/tasks.types";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
@@ -136,13 +137,10 @@ export const postUploadsCsvFile = createServerFn({ method: "POST" })
         return tryFormZodError(csvFileZodSchema, Object.fromEntries(data.entries()));
     })
     .handler(async ({ data, context: { currentUser } }) => {
-        const mylistsTaskQueue = await getQueue();
-        if (!mylistsTaskQueue) {
-            return;
-        }
+        const queue = await createOrGetQueue();
 
         try {
-            const existingJobs = await mylistsTaskQueue.getJobs(["waiting", "active", "delayed"]);
+            const existingJobs = await queue.getJobs(["waiting", "active", "delayed"]);
             const hasActiveCsvJob = existingJobs.some((job) => {
                 if ("userId" in job.data) {
                     return job.data?.userId === currentUser.id;
@@ -164,7 +162,7 @@ export const postUploadsCsvFile = createServerFn({ method: "POST" })
             const filePath = path.join(tempDir, `${currentUser.id}-${Date.now()}.csv`);
             await writeFile(filePath, buffer);
 
-            await mylistsTaskQueue.add("processCsv", {
+            await queue.add("processCsv", {
                 filePath: filePath,
                 triggeredBy: "user",
                 userId: currentUser.id,
@@ -185,13 +183,10 @@ export const postUploadsCsvFile = createServerFn({ method: "POST" })
 export const getUserUploads = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
     .handler(async ({ context: { currentUser } }) => {
-        const mylistsTaskQueue = await getQueue();
-        if (!mylistsTaskQueue) {
-            return [];
-        }
+        const queue = await createOrGetQueue();
 
         try {
-            const allJobs = await mylistsTaskQueue.getJobs(["active", "waiting"]);
+            const allJobs = await queue.getJobs(["active", "waiting"]);
 
             const userJobs = allJobs.filter((job) => {
                 if ("userId" in job.data) {
@@ -232,13 +227,10 @@ export const cancelUserUpload = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
     .inputValidator(uploadJobIdSchema)
     .handler(async ({ data: { jobId }, context: { currentUser } }) => {
-        const mylistsTaskQueue = await getQueue();
-        if (!mylistsTaskQueue) {
-            return;
-        }
+        const queue = await createOrGetQueue();
 
         try {
-            const job = await mylistsTaskQueue.getJob(jobId);
+            const job = await queue.getJob(jobId);
 
             if (!job || ("userId" in job.data && job.data.userId !== currentUser.id)) {
                 throw new FormattedError("Upload not found.");

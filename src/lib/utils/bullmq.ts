@@ -1,25 +1,9 @@
+import {serverEnv} from "@/env/server";
 import {jobHistory} from "@/lib/server/database/schema";
-import {FormattedError} from "@/lib/utils/error-classes";
-import {createServerOnlyFn} from "@tanstack/react-start";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {TaskReturnType, TypedJob} from "@/lib/types/tasks.types";
-
-
-export const getQueue = createServerOnlyFn(() => async () => {
-    const { connectRedis } = await import("@/lib/server/core/redis-client");
-    const { mylistsTaskQueue, initializeQueue } = await import("@/lib/server/core/bullmq");
-
-    if (mylistsTaskQueue) {
-        return mylistsTaskQueue;
-    }
-
-    const redisConnection = await connectRedis();
-    if (!redisConnection) {
-        throw new FormattedError("Could not connect to Redis for queue operations.");
-    }
-
-    return initializeQueue(redisConnection);
-})();
+import {getRedisConnection} from "@/lib/server/core/redis-client";
 
 
 const getCancelKey = (jobId: string) => {
@@ -28,26 +12,16 @@ const getCancelKey = (jobId: string) => {
 
 
 export const signalJobCancellation = async (jobId: string) => {
-    const { connectRedis } = await import("@/lib/server/core/redis-client");
-
-    const redisConnection = await connectRedis();
-    if (!redisConnection) {
-        throw new Error("Failed to connect to Redis.");
-    }
-
-    await redisConnection.set(getCancelKey(jobId), "1", "EX", 3600);
+    if (!serverEnv.REDIS_ENABLED) return;
+    const connection = await getRedisConnection()
+    await connection.set(getCancelKey(jobId), "1", "EX", 3600);
 };
 
 
 export const isJobCancelled = async (jobId: string) => {
-    const { connectRedis } = await import("@/lib/server/core/redis-client");
-
-    const redisConnection = await connectRedis();
-    if (!redisConnection) {
-        throw new Error("Failed to connect to Redis.");
-    }
-
-    const result = await redisConnection.get(getCancelKey(jobId));
+    if (!serverEnv.REDIS_ENABLED) return false;
+    const connection = await getRedisConnection();
+    const result = await connection.get(getCancelKey(jobId));
 
     return result === "1";
 };
@@ -57,9 +31,8 @@ export const saveJobToDb = async (job: TypedJob | undefined, from: "completed" |
     try {
         if (!job) return;
 
-        const { mylistsTaskQueue } = await import("@/lib/server/core/bullmq");
-
-        const logs = await mylistsTaskQueue.getJobLogs(job.id!);
+        const queue = await createOrGetQueue();
+        const logs = await queue.getJobLogs(job.id!);
         const status = from === "failed" ? "failed" : returnValue?.result === "cancelled" ? "cancelled" : "completed";
 
         await getDbClient()

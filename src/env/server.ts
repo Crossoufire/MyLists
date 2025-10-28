@@ -16,13 +16,15 @@ export const serverEnv = createEnv({
         ADMIN_TOKEN_SECRET: z.string().min(20),
         ADMIN_MAIL_USERNAME: z.email(),
         ADMIN_MAIL_PASSWORD: z.string().min(8),
-        ADMIN_VALID_COOKIE_TIME: z.coerce.number().int().default(10), // in minutes
+        ADMIN_TTL_COOKIE_MIN: z.coerce.number().int().default(10),
 
         // DemoProfile
         DEMO_PASSWORD: z.string().min(8),
 
         // Redis
+        CACHE_TTL_MIN: z.coerce.number().int().default(5),
         REDIS_URL: z.url().default("redis://localhost:6379"),
+        REDIS_ENABLED: z.string().transform((s) => s !== "false" && s !== "0").default(false),
 
         // Better-Auth
         BETTER_AUTH_SECRET: z.string().min(20),
@@ -47,3 +49,8 @@ export const serverEnv = createEnv({
     },
     runtimeEnv: process.env,
 });
+
+
+if (process.env.NODE_ENV === "production" && !serverEnv.REDIS_ENABLED) {
+    throw new Error("REDIS_ENABLED must be enabled in production");
+}

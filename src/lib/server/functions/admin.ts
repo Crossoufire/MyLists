@@ -1,5 +1,4 @@
 import {serverEnv} from "@/env/server";
-import {getQueue} from "@/lib/utils/bullmq";
 import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
@@ -16,6 +15,7 @@ import {
     searchTypeAdminSchema,
     searchTypeSchema
 } from "@/lib/types/zod.schema.types";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
 
 
 const ADMIN_COOKIE_OPTIONS = {
@@ -148,11 +148,10 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName } }) => {
-        const mylistsTaskQueue = await getQueue();
-        if (!mylistsTaskQueue) return;
+        const queue = await createOrGetQueue();
 
         try {
-            await mylistsTaskQueue.add(taskName, { triggeredBy: "dashboard" });
+            await queue.add(taskName, { triggeredBy: "dashboard" });
         }
         catch {
             throw new FormattedError("Failed to enqueue task.");
@@ -163,11 +162,10 @@ export const postAdminTriggerTask = createServerFn({ method: "POST" })
 export const getAdminActiveJobs = createServerFn({ method: "GET" })
     .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        const mylistsTaskQueue = await getQueue();
-        if (!mylistsTaskQueue) return [];
+        const queue = await createOrGetQueue();
 
         try {
-            const jobs = await mylistsTaskQueue.getJobs(["active", "waiting", "delayed"]);
+            const jobs = await queue.getJobs(["active", "waiting", "delayed"]);
             return jobs.map((job) => ({
                 jobId: job.id,
                 name: job.name,

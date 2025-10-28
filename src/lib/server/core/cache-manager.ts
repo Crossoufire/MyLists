@@ -4,28 +4,26 @@ import {serverEnv} from "@/env/server";
 import {createCache} from "cache-manager";
 
 
-const DEFAULT_TTL_MS = 5 * 60 * 1000;
-
-
 export async function initCacheManager() {
     let cache;
 
-    if (process.env.NODE_ENV === "production") {
+    const cache_ttl_ms = serverEnv.CACHE_TTL_MIN * 60 * 1000;
+
+    if (!serverEnv.REDIS_ENABLED) {
+        const memoryKeyv = new Keyv();
+        cache = createCache({ stores: [memoryKeyv], ttl: cache_ttl_ms });
+        console.log(`In-memory cache init via cache-manager. Default TTL: ${cache_ttl_ms / 1000}s`);
+    }
+    else {
         try {
             const redisKeyvStore = new KeyvRedis(serverEnv.REDIS_URL);
             const keyvInstance = new Keyv({ store: redisKeyvStore });
-            cache = createCache({ stores: [keyvInstance], ttl: DEFAULT_TTL_MS });
-            console.log(`Redis cache store initialized via cache-manager. Default TTL: ${DEFAULT_TTL_MS / 1000}s`);
+            cache = createCache({ stores: [keyvInstance], ttl: cache_ttl_ms });
+            console.log(`Redis cache init via cache-manager. Default TTL: ${cache_ttl_ms / 1000}s`);
         }
-        catch (err) {
-            console.error("FATAL: Failed to initialize Redis cache store", err);
-            throw new Error("Redis cache initialization failed");
+        catch {
+            throw new Error("Redis cache init failed. Please check your Redis connection.");
         }
-    }
-    else {
-        const memoryKeyv = new Keyv();
-        cache = createCache({ stores: [memoryKeyv], ttl: DEFAULT_TTL_MS });
-        console.log(`In-memory cache initialized via cache-manager. Default TTL: ${DEFAULT_TTL_MS / 1000}s`);
     }
 
     return cache;
