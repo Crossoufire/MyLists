@@ -1,0 +1,75 @@
+import {JobType, Status} from "@/lib/utils/enums";
+import {asc, desc, getTableColumns} from "drizzle-orm";
+import {MediaSchemaConfig} from "@/lib/types/media.config.types";
+import {createArrayFilterDef} from "@/lib/server/domain/media/base/base.repository";
+import {mangaAchievements} from "@/lib/server/domain/media/manga/achievements.seed";
+import {manga, mangaAuthors, mangaGenre, mangaLabels, mangaList} from "@/lib/server/database/schema/media/manga.schema";
+
+
+export type MangaSchemaConfig = MediaSchemaConfig<
+    typeof manga,
+    typeof mangaList,
+    typeof mangaGenre,
+    typeof mangaLabels
+>;
+
+
+export const mangaConfig: MangaSchemaConfig = {
+    mediaTable: manga,
+    listTable: mangaList,
+    genreTable: mangaGenre,
+    labelTable: mangaLabels,
+    mediaList: {
+        baseSelection: {
+            mediaName: manga.name,
+            chapters: manga.chapters,
+            imageCover: manga.imageCover,
+            ...getTableColumns(mangaList),
+        },
+        filterDefinitions: {
+            authors: createArrayFilterDef({
+                argName: "authors",
+                mediaTable: manga,
+                entityTable: mangaAuthors,
+                filterColumn: mangaAuthors.name,
+            }),
+            publishers: createArrayFilterDef({
+                argName: "publishers",
+                mediaTable: manga,
+                filterColumn: manga.publishers,
+            }),
+        },
+        defaultStatus: Status.READING,
+        defaultSortName: "Title A-Z",
+        availableSorts: {
+            "Title A-Z": asc(manga.name),
+            "Title Z-A": desc(manga.name),
+            "Rating +": [desc(mangaList.rating), asc(manga.name)],
+            "Rating -": [asc(mangaList.rating), asc(manga.name)],
+            "Published Date +": [desc(manga.releaseDate), asc(manga.name)],
+            "Published Date -": [asc(manga.releaseDate), asc(manga.name)],
+            "Recently Added": [desc(mangaList.addedAt), asc(manga.name)],
+            "Re-Read": [desc(mangaList.redo), asc(manga.name)],
+            "Chapters +": [desc(manga.chapters), asc(manga.name)],
+            "Chapters -": [asc(manga.chapters), asc(manga.name)],
+        },
+    },
+    apiProvider: {
+        maxGenres: 5,
+    },
+    editableFields: ["name", "releaseDate", "chapters", "publishers", "synopsis"],
+    jobDefinitions: {
+        [JobType.CREATOR]: {
+            sourceTable: mangaAuthors,
+            nameColumn: mangaAuthors.name,
+            mediaIdColumn: mangaAuthors.mediaId,
+        },
+        [JobType.PUBLISHER]: {
+            sourceTable: manga,
+            mediaIdColumn: manga.id,
+            nameColumn: manga.publishers,
+        },
+    },
+    tablesForDeletion: [mangaAuthors, mangaGenre, mangaLabels],
+    achievements: mangaAchievements,
+};

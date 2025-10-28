@@ -1,11 +1,11 @@
 import {FaAngry, FaFrown, FaGrinAlt, FaGrinStars, FaPoop, FaSmile} from "react-icons/fa";
-import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/server/utils/enums";
+import {AchievementDifficulty, MediaType, RatingSystemType, Status} from "@/lib/utils/enums";
 
 
 // --- Ratings / Redo / Playtime ----------------------------------------------------------------------------
 
 
-export const StatusUtils = {
+export const statusUtils = {
     getNoPlanTo: () => [Status.PLAN_TO_WATCH, Status.PLAN_TO_PLAY, Status.PLAN_TO_READ] as Partial<Status>[],
     byMediaType: (mediaType: MediaType) => {
         switch (mediaType) {
@@ -43,12 +43,12 @@ export const formatRating = (system: RatingSystemType, rating: number | null, re
         return rating === null ? null : rating.toFixed(1);
     }
 
-    return (rating === null) ? "--" : rating.toFixed(1);
+    return (rating === null) ? "-" : rating.toFixed(1);
 }
 
 
 export const getFeelingIcon = (value: number | null, { className, size, valueOnly }: FeelIconProps = {}) => {
-    if (!value || value < 0 || value > 10) return "--";
+    if (!value || value < 0 || value > 10) return "-";
 
     const feelValues = getFeelingList({ className, size });
 
@@ -72,7 +72,7 @@ export const getFeelingIcon = (value: number | null, { className, size, valueOnl
 
 export const getFeelingList = ({ className, size = 20 }: FeelListProps) => {
     return [
-        { value: null, component: "--" },
+        { value: null, component: "-" },
         { value: 0, component: <FaPoop className={className} color="saddlebrown" size={size}/> },
         { value: 2, component: <FaAngry className={className} color="indianred" size={size}/> },
         { value: 4, component: <FaFrown className={className} color="#d0a141" size={size}/> },
@@ -91,7 +91,7 @@ export const getScoreList = () => {
     const scores = Array.from({ length: (MAX_SCORE - MIN_SCORE) / STEP + 1 }, (_, i) => MIN_SCORE + i * STEP);
 
     return [
-        { value: null, component: "--" },
+        { value: null, component: "-" },
         ...scores.map(value => ({ value, component: value === MAX_SCORE ? value : value.toFixed(1) }))
     ];
 };
@@ -130,7 +130,7 @@ export const getRedoList = () => {
 // --- Icons & Colors ---------------------------------------------------------------------------------------
 
 export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
-    if (!mediaType) return "#868686";
+    if (!mediaType) return "#575757";
 
     const colors = {
         user: "#6e6e6e",
@@ -142,7 +142,7 @@ export const getMediaColor = (mediaType: MediaType | "user" | undefined) => {
         manga: "#a04646",
     };
 
-    return colors[mediaType];
+    return colors[mediaType] ?? "#989898";
 };
 
 
@@ -225,13 +225,13 @@ export const globalStatsTimeFormat = (minutes: number) => {
 
 export const formatMinutes = (minutes: number | string | null | undefined, onlyHours = false) => {
     if (minutes === null || minutes === undefined) {
-        return "--";
+        return "-";
     }
 
     const minutesAsNumber = Number(minutes);
 
     if (isNaN(minutesAsNumber) || minutesAsNumber <= 0) {
-        return "--";
+        return "-";
     }
 
     const hours = Math.floor(minutesAsNumber / 60);
@@ -274,20 +274,6 @@ export const computeLevel = (totalTime: number) => {
 }
 
 
-export const genreListsToListsOfDict = (stringList: string[]) => {
-    if (!Array.isArray(stringList)) return [];
-
-    const listDict: Array<{ value: string, label: string }> = [];
-    stringList.forEach((str) => {
-        if (str === "All") return;
-        const dict = { value: str, label: str };
-        listDict.push(dict);
-    });
-
-    return listDict;
-};
-
-
 export const sliceIntoParts = (array: [string, any][], slices: number) => {
     const len = array.length;
     const partSize = Math.floor(len / slices);
@@ -305,14 +291,17 @@ export const sliceIntoParts = (array: [string, any][], slices: number) => {
 };
 
 
-export const getLangCountryName = (name: string, type: LangType) => {
-    let languageNames = new Intl.DisplayNames(["en"], { type });
+export const getLangCountryName = (name: string | undefined | null, type: LangType) => {
+    if (!name) return "-";
+
+    const languageNames = new Intl.DisplayNames(["en"], { type });
     if (name === "cn") return "Chinese";
+
     return languageNames.of(name.trim()) || "N/A";
 };
 
 
-export const zeroPad = (value: number | string | undefined) => {
+export const zeroPad = (value: number | string | undefined | null) => {
     if (value) {
         return String(value).padStart(2, "0");
     }
@@ -320,20 +309,22 @@ export const zeroPad = (value: number | string | undefined) => {
 };
 
 
-export const capitalize = (str: string | undefined) => {
+export const capitalize = (str: string | undefined | null) => {
     if (str) return str.charAt(0).toUpperCase() + str.slice(1);
     return str;
 };
 
 
-export const formatNumberWithKM = (value: number) => {
+export const formatNumberWithKM = (value: number | null) => {
+    if (!value) return "-";
+
     if (value >= 1_000_000) {
         return (value / 1_000_000).toFixed(2) + "M";
     }
     else if (value >= 1_000) {
         return (value / 1_000).toFixed(2) + "k";
     }
-    return value.toFixed(0).toString();
+    return value.toFixed(0);
 };
 
 
@@ -343,24 +334,64 @@ export const formatNumberWithSpaces = (value: number) => {
 };
 
 
-export const formatDateTime = (dateInput: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
-    if (!dateInput) return "--";
+export const formatRelativeTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "Never";
 
-    let date = new Date(dateInput);
-    if (typeof dateInput === "number" && dateInput.toString().length === 10) {
+    const date = new Date(dateString.replace(" ", "T") + "Z");
+    if (isNaN(date.getTime())) return "Never";
+
+    const now = Date.now();
+    const diff = Math.floor((now - date.getTime()) / 1000);
+
+    if (diff < 60) return "Just now";
+    if (diff < 3600) {
+        const mins = Math.floor(diff / 60);
+        return mins === 1 ? "1 minute ago" : `${mins} minutes ago`;
+    }
+    if (diff < 86400) {
+        const hours = Math.floor(diff / 3600);
+        return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+    }
+    if (diff < 2592000) {
+        const days = Math.floor(diff / 86400);
+        return days === 1 ? "1 day ago" : `${days} days ago`;
+    }
+    if (diff < 31536000) {
+        const months = Math.floor(diff / 2592000);
+        return months === 1 ? "1 month ago" : `${months} months ago`;
+    }
+    const years = Math.floor(diff / 31536000);
+
+    return years === 1 ? "1 year ago" : `${years} years ago`;
+};
+
+
+export const formatDateTime = (dateInput: string | number | null | undefined, options: FormatDateTimeOptions = {}) => {
+    if (!dateInput) return "-";
+
+    let date: Date;
+    if (typeof dateInput === "number") {
         date = new Date(dateInput * 1000);
     }
+    else {
+        if (dateInput.includes("T")) {
+            date = new Date(dateInput);
+        }
+        else {
+            date = new Date(dateInput.replace(" ", "T") + "Z");
+        }
+    }
 
-    if (isNaN(date.getTime())) return "--";
+    if (isNaN(date.getTime())) return "-";
 
     const formatOptions: Intl.DateTimeFormatOptions = {
-        timeZone: options.useLocalTz ? new Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
+        hour12: false,
         year: "numeric",
         month: options.onlyYear ? undefined : "short",
         day: options.onlyYear ? undefined : "numeric",
-        hour: options.includeTime ? "numeric" : undefined,
-        minute: options.includeTime ? "numeric" : undefined,
-        hour12: false,
+        hour: options.noTime ? undefined : "numeric",
+        minute: options.noTime ? undefined : "numeric",
+        timeZone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
     if (options.onlyYear) {
@@ -396,16 +427,13 @@ export function jsonToCsv(items: any[]) {
 }
 
 
+type LangType = "language" | "region";
 type Variant = "text" | "border" | "bg";
 
 
-type LangType = "language" | "region" | "script" | "currency"
-
-
 interface FormatDateTimeOptions {
-    useLocalTz?: boolean;
+    noTime?: boolean;
     onlyYear?: boolean;
-    includeTime?: boolean;
 }
 
 

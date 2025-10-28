@@ -1,29 +1,25 @@
-import {imageUrl} from "@/lib/server/database/custom-types";
 import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core";
-import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
-
-
-const BASE_PROFILE_PATH = `${process.env.VITE_BASE_URL}/static/profile-covers`;
-const BASE_BACK_IMAGE_PATH = `${process.env.VITE_BASE_URL}/static/back-covers`;
+import {dateAsString, imageUrl} from "@/lib/server/database/custom-types";
+import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
 export const user = sqliteTable("user", {
     id: integer("id").$type<number>().primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
-    emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
-    image: imageUrl("image", BASE_PROFILE_PATH).default("default.jpg").notNull(),
-    createdAt: text("created_at").notNull(),
-    updatedAt: text("updated_at").notNull(),
-    profileViews: integer("profile_views").default(0).notNull(),
-    backgroundImage: imageUrl("background_image", BASE_BACK_IMAGE_PATH).default("default.jpg").notNull(),
-    role: text("role").$type<RoleType>().default(RoleType.USER).notNull(),
+    createdAt: dateAsString("created_at").notNull(),
+    updatedAt: dateAsString("updated_at").notNull(),
     lastNotifReadTime: text("last_notif_read_time"),
-    showUpdateModal: integer("show_update_modal", { mode: "boolean" }).default(true).notNull(),
-    gridListView: integer("grid_list_view", { mode: "boolean" }).default(true).notNull(),
+    profileViews: integer("profile_views").default(0).notNull(),
+    role: text("role").$type<RoleType>().default(RoleType.USER).notNull(),
+    emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
     privacy: text("privacy").$type<PrivacyType>().default(PrivacyType.RESTRICTED).notNull(),
-    searchSelector: text("search_selector").$type<ApiProviderType>().default(ApiProviderType.TMDB).notNull(),
+    gridListView: integer("grid_list_view", { mode: "boolean" }).default(true).notNull(),
+    image: imageUrl("image", "profile-covers").default("default.jpg").notNull(),
+    showUpdateModal: integer("show_update_modal", { mode: "boolean" }).default(true).notNull(),
     ratingSystem: text("rating_system").$type<RatingSystemType>().default(RatingSystemType.SCORE).notNull(),
+    searchSelector: text("search_selector").$type<ApiProviderType>().default(ApiProviderType.TMDB).notNull(),
+    backgroundImage: imageUrl("background_image", "profile-back-covers").default("default.jpg").notNull(),
 });
 
 

@@ -1,8 +1,8 @@
 import {notifications} from "@/lib/server/database/schema";
+import {MediaType, NotificationType} from "@/lib/utils/enums";
+import {UpdateMediaNotification} from "@/lib/types/base.types";
 import {and, count, desc, eq, inArray, sql} from "drizzle-orm";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaType, NotificationType} from "@/lib/server/utils/enums";
-import {UpdateMediaNotification} from "@/lib/server/types/base.types";
 
 
 export class NotificationsRepository {
@@ -53,6 +53,17 @@ export class NotificationsRepository {
         await getDbClient()
             .delete(notifications)
             .where(and(eq(notifications.mediaType, mediaType), inArray(notifications.mediaId, mediaIds)))
+            .execute();
+    }
+
+    static async deleteUserMediaNotifications(userId: number, mediaType: MediaType, mediaId: number) {
+        await getDbClient()
+            .delete(notifications)
+            .where(and(
+                eq(notifications.userId, userId),
+                eq(notifications.mediaId, mediaId),
+                eq(notifications.mediaType, mediaType),
+            ))
             .execute();
     }
 }

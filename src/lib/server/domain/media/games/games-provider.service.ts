@@ -1,53 +1,49 @@
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IProviderService} from "@/lib/server/types/provider.types";
-import {HltbClient} from "@/lib/server/media-providers/clients/hltb.client";
-import {IgdbClient} from "@/lib/server/media-providers/clients/igdb.client";
+import {IgdbGameDetails} from "@/lib/types/provider.types";
+import {IgdbTransformer} from "@/lib/server/api-providers/transformers";
+import {HltbClient, IgdbClient} from "@/lib/server/api-providers/clients";
 import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {IgdbTransformer} from "@/lib/server/media-providers/transformers/igdb.transformer";
+import {UpsertGameWithDetails} from "@/lib/server/domain/media/games/games.types";
+import {BaseProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class GamesProviderService implements IProviderService {
+export class GamesProviderService extends BaseProviderService<
+    GamesRepository,
+    IgdbGameDetails,
+    UpsertGameWithDetails
+> {
     constructor(
-        private readonly client: IgdbClient,
+        private client: IgdbClient,
+        private transformer: IgdbTransformer,
+        repository: GamesRepository,
         private readonly hltbClient: HltbClient,
-        private readonly transformer: IgdbTransformer,
-        private readonly repository: GamesRepository
     ) {
+        super(repository);
     }
 
-    async fetchAndStoreMediaDetails(apiId: number, isBulk: boolean = false) {
-        const details = await this._getMediaDetails(apiId, isBulk);
-        return this.repository.storeMediaWithDetails(details);
+    async fetchNewIgdbToken() {
+        const response = await this.client.fetchNewIgdbToken();
+        return response?.access_token;
     }
 
-    async fetchAndRefreshMediaDetails(apiId: number, isBulk: boolean = false) {
-        try {
-            const details = await this._getMediaDetails(apiId, isBulk);
-            return this.repository.updateMediaWithDetails(details);
-        }
-        catch (err: any) {
-            throw new FormattedError(`Game can't be refreshed`);
-        }
+    protected _fetchRawDetails(apiId: number) {
+        return this.client.getGameDetails(apiId);
     }
 
-    async bulkProcessAndRefreshMedia() {
-        const mediaIdsToBeRefreshed = await this.repository.getMediaIdsToBeRefreshed();
-        const promises = mediaIdsToBeRefreshed.map((apiId) => this.fetchAndRefreshMediaDetails(apiId, true));
-
-        return Promise.allSettled(promises);
+    protected _transformDetails(rawData: IgdbGameDetails) {
+        return this.transformer.transformGamesDetailsResults(rawData);
     }
 
-    private async _getMediaDetails(apiId: number, isBulk: boolean) {
-        const rawData = await this.client.getGameDetails(apiId);
-        const { mediaData, genresData, companiesData, platformsData } = await this.transformer.transformGamesDetailsResults(rawData);
+    protected _getMediaIdsForBulkRefresh(): Promise<(number | string)[]> {
+        return this.repository.getMediaIdsToBeRefreshed();
+    }
 
-        let extendedMediaData = mediaData;
+    protected async _enhanceDetails(details: UpsertGameWithDetails, isBulk: boolean) {
         if (!isBulk) {
-            const hltbData = await this.hltbClient.search(mediaData.name);
-            console.log({ hltbData });
-            extendedMediaData = this.transformer.addHLTBDataToMainDetails(hltbData, mediaData);
+            const hltbData = await this.hltbClient.search(details.mediaData.name);
+            const extendedMediaData = this.transformer.addHLTBDataToMainDetails(hltbData, details.mediaData);
+            return { ...details, mediaData: extendedMediaData };
         }
 
-        return { mediaData: extendedMediaData, companiesData, platformsData, genresData };
+        return details;
     }
 }

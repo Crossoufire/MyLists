@@ -1,6 +1,6 @@
-import {AllUpdatesSearch} from "@/lib/server/types/base.types";
+import {MediaType, PrivacyType} from "@/lib/utils/enums";
+import {AllUpdatesSearch} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
-import {MediaType, PrivacyType} from "@/lib/server/utils/enums";
 import {followers, user, userMediaUpdate} from "@/lib/server/database/schema";
 import {and, count, desc, eq, getTableColumns, inArray, like, sql} from "drizzle-orm";
 
@@ -98,9 +98,9 @@ export class UserUpdatesRepository {
         const totalUpdates = monthlyCounts.reduce((a, c) => a + c.value, 0);
 
         return {
-            updatesDistribution: monthlyCounts,
-            avgUpdates: monthlyCounts.length > 0 ? (totalUpdates / monthlyCounts.length).toFixed(1) : "--",
             totalUpdates,
+            updatesDistribution: monthlyCounts,
+            avgUpdates: monthlyCounts.length ? (totalUpdates / monthlyCounts.length) : null,
         };
     }
 

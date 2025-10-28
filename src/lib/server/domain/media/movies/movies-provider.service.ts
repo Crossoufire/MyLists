@@ -1,50 +1,41 @@
-import {ITrendsProviderService} from "@/lib/server/types/provider.types";
-import {TmdbClient} from "@/lib/server/media-providers/clients/tmdb.client";
+import {TmdbClient} from "@/lib/server/api-providers/clients/tmdb.client";
 import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {TmdbTransformer} from "@/lib/server/media-providers/transformers/tmdb.transformer";
+import {UpsertMovieWithDetails} from "@/lib/server/domain/media/movies/movies.types";
+import {TmdbMovieDetails, TmdbTrendingMoviesResponse} from "@/lib/types/provider.types";
+import {TmdbTransformer} from "@/lib/server/api-providers/transformers/tmdb.transformer";
+import {BaseTrendsProviderService} from "@/lib/server/domain/media/base/provider.service";
 
 
-export class MoviesProviderService implements ITrendsProviderService {
+export class MoviesProviderService extends BaseTrendsProviderService<
+    MoviesRepository,
+    TmdbMovieDetails,
+    UpsertMovieWithDetails
+> {
     constructor(
         private client: TmdbClient,
         private transformer: TmdbTransformer,
-        private repository: MoviesRepository,
+        repository: MoviesRepository,
     ) {
+        super(repository);
     }
 
-    async fetchAndStoreMediaDetails(apiId: number) {
-        const rawData = await this.client.getMovieDetails(apiId);
-        const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
-        return this.repository.storeMediaWithDetails({ mediaData, actorsData, genresData });
+    protected _fetchRawDetails(apiId: number) {
+        return this.client.getMovieDetails(apiId);
     }
 
-    async fetchAndRefreshMediaDetails(apiId: number) {
-        try {
-            const rawData = await this.client.getMovieDetails(apiId);
-            const { mediaData, actorsData, genresData } = await this.transformer.transformMoviesDetailsResults(rawData);
-            return this.repository.updateMediaWithDetails({ mediaData, actorsData, genresData });
-        }
-        catch (err: any) {
-            err.message = `Error refreshing movie with apiId ${apiId}: ${err.message}`;
-            throw err;
-        }
+    protected _transformDetails(rawData: TmdbMovieDetails) {
+        return this.transformer.transformMoviesDetailsResults(rawData);
     }
 
-    async bulkProcessAndRefreshMedia() {
-        const mediaIdsToBeRefreshed = await this.repository.getMediaIdsToBeRefreshed();
-
-        // const apiIds = [157336, 157336]
-        const promises = [];
-        for (const apiId of mediaIdsToBeRefreshed) {
-            promises.push(this.fetchAndRefreshMediaDetails(apiId));
-        }
-
-        return Promise.allSettled(promises);
+    protected _getMediaIdsForBulkRefresh() {
+        return this.repository.getMediaIdsToBeRefreshed();
     }
 
-    async fetchAndFormatTrends() {
-        const rawData = await this.client.getMoviesTrending();
-        const moviesTrends = this.transformer.transformMoviesTrends(rawData);
-        return moviesTrends;
+    protected _fetchRawTrends() {
+        return this.client.getMoviesTrending();
+    }
+
+    protected _transformTrends(rawData: TmdbTrendingMoviesResponse) {
+        return this.transformer.transformMoviesTrends(rawData);
     }
 }

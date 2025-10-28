@@ -1,14 +1,12 @@
 import {db} from "@/lib/server/database/db";
+import {MediaType} from "@/lib/utils/enums";
 import {alias} from "drizzle-orm/sqlite-core";
-import {MediaType} from "@/lib/server/utils/enums";
-import {DeltaStats} from "@/lib/server/types/stats.types";
-import {SearchTypeHoF, UserMediaStats} from "@/lib/server/types/base.types";
-import {and, eq, gt, inArray, ne, SQL, sql} from "drizzle-orm";
+import {DeltaStats} from "@/lib/types/stats.types";
+import {UserMediaStats} from "@/lib/types/base.types";
+import {SearchTypeHoF} from "@/lib/types/zod.schema.types";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {user, userMediaSettings} from "@/lib/server/database/schema";
-
-
-export type SettingTable = typeof userMediaSettings.$inferSelect;
+import {and, count, countDistinct, eq, gt, inArray, ne, SQL, sql, sum} from "drizzle-orm";
 
 
 export class UserStatsRepository {
@@ -78,29 +76,6 @@ export class UserStatsRepository {
             .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
     }
 
-    static async specificUserMediaSetting(userId: number, mediaType: MediaType) {
-        return getDbClient()
-            .select()
-            .from(userMediaSettings)
-            .where(and(eq(userMediaSettings.userId, userId), eq(userMediaSettings.mediaType, mediaType)))
-            .get();
-    }
-
-    static async allUsersAllMediaSettings() {
-        return getDbClient()
-            .select()
-            .from(userMediaSettings)
-            .execute()!;
-    }
-
-    static async allUsersMediaSettings(mediaType: MediaType) {
-        return getDbClient()
-            .select()
-            .from(userMediaSettings)
-            .where(eq(userMediaSettings.mediaType, mediaType))
-            .execute()!;
-    }
-
     static async userHallofFameData(userId: number, filters: SearchTypeHoF) {
         const { sorting = "normalized", search = "", page = 1, perPage = 10 } = filters;
 
@@ -132,7 +107,8 @@ export class UserStatsRepository {
                 CASE 
                     WHEN ${umsAlias.mediaType} = ${mt} AND ${umsAlias.active} = 1 AND ${maxTimePerMedia.maxTime} > 0 
                     THEN CAST(${umsAlias.timeSpent} AS REAL) / ${maxTimePerMedia.maxTime} 
-                ELSE 0 END
+                ELSE 0 
+                END
             `,
         ).reduce((acc, curr) => sql`${acc} + ${curr}`);
 
@@ -197,12 +173,20 @@ export class UserStatsRepository {
         }
 
         // Final Query Construction with Search and Pagination
-        const finalQueryBase = getDbClient().with(allUsersRanked).select().from(allUsersRanked);
+        const finalQueryBase = getDbClient()
+            .with(allUsersRanked)
+            .select()
+            .from(allUsersRanked);
+
         if (search)
             finalQueryBase.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
         // Get Total Count for Pagination
-        const totalCounter = getDbClient().with(allUsersRanked).select({ count: sql<number>`count(*)` }).from(allUsersRanked);
+        const totalCounter = getDbClient()
+            .with(allUsersRanked)
+            .select({ count: sql<number>`count(*)` })
+            .from(allUsersRanked);
+
         if (search)
             totalCounter.where(sql`lower(${allUsersRanked.name}) LIKE lower(${`%${search}%`})`);
 
@@ -284,19 +268,124 @@ export class UserStatsRepository {
                     .update(userMediaSettings)
                     .set({
                         mediaType: mediaType,
-                        timeSpent: stat.timeSpent,
-                        totalRedo: stat.totalRedo,
-                        statusCounts: stat.statusCounts,
-                        totalEntries: stat.totalEntries,
-                        entriesRated: stat.entriesRated,
-                        totalSpecific: stat.totalSpecific,
-                        averageRating: stat.averageRating,
-                        sumEntriesRated: stat.sumEntriesRated,
-                        entriesFavorites: stat.entriesFavorites,
-                        entriesCommented: stat.entriesCommented,
+                        ...userStats,
                     })
-                    .where(and(eq(userMediaSettings.userId, stat.userId), eq(userMediaSettings.mediaType, mediaType)));
+                    .where(and(
+                        eq(userMediaSettings.userId, stat.userId),
+                        eq(userMediaSettings.mediaType, mediaType)
+                    ));
             }
         });
+    }
+
+    static async getAggregatedMediaStats({ userId, mediaType }: { userId?: number, mediaType: MediaType }) {
+        const conditions = [eq(userMediaSettings.mediaType, mediaType)];
+        if (userId) {
+            conditions.push(eq(userMediaSettings.userId, userId));
+        }
+
+        const stats = await db
+            .select({
+                totalEntries: sum(userMediaSettings.totalEntries).mapWith(Number),
+                totalRedo: sum(userMediaSettings.totalRedo).mapWith(Number),
+                timeSpentHours: sql<number>`SUM(${userMediaSettings.timeSpent}) / 60.0`.mapWith(Number),
+                totalRated: sum(userMediaSettings.entriesRated).mapWith(Number),
+                sumOfAllRatings: sum(userMediaSettings.sumEntriesRated).mapWith(Number),
+                totalFavorites: sum(userMediaSettings.entriesFavorites).mapWith(Number),
+                totalComments: sum(userMediaSettings.entriesCommented).mapWith(Number),
+                totalSpecific: sum(userMediaSettings.totalSpecific).mapWith(Number),
+            })
+            .from(userMediaSettings)
+            .where(and(...conditions))
+            .get();
+        if (!stats) {
+            throw new Error("No stats found");
+        }
+
+        const statusCountsResult = await db
+            .select({ statusCounts: userMediaSettings.statusCounts })
+            .from(userMediaSettings)
+            .where(and(...conditions));
+
+        const totalStatusCounts = statusCountsResult.reduce((acc: Record<string, number>, setting) => {
+            for (const [status, count] of Object.entries(setting.statusCounts)) {
+                acc[status] = (acc[status] || 0) + count;
+            }
+            return acc;
+        }, {});
+        const statusesCounts = Object.entries(totalStatusCounts).map(([status, count]) => ({ status, count }));
+
+        return {
+            statusesCounts,
+            totalRedo: stats.totalRedo ?? 0,
+            totalRated: stats.totalRated ?? 0,
+            totalEntries: stats.totalEntries ?? 0,
+            totalComments: stats.totalComments ?? 0,
+            totalSpecific: stats.totalSpecific ?? 0,
+            timeSpentHours: stats.timeSpentHours ?? 0,
+            totalFavorites: stats.totalFavorites ?? 0,
+            timeSpentDays: (stats.timeSpentHours ?? 0) / 24,
+            avgRated: (!stats.totalRated || stats.totalRated === 0) ? null : (stats.sumOfAllRatings / stats.totalRated),
+        };
+    }
+
+    static async getPreComputedStatsSummary({ userId }: { userId?: number }) {
+        const forUser = userId ? eq(userMediaSettings.userId, userId) : undefined;
+
+        const preComputedStats = await getDbClient()
+            .select({
+                totalRedo: sum(userMediaSettings.totalRedo).mapWith(Number),
+                distinctMediaTypes: countDistinct(userMediaSettings.mediaType),
+                totalRated: sum(userMediaSettings.entriesRated).mapWith(Number),
+                totalEntries: sum(userMediaSettings.totalEntries).mapWith(Number),
+                totalComments: sum(userMediaSettings.entriesCommented).mapWith(Number),
+                totalFavorites: sum(userMediaSettings.entriesFavorites).mapWith(Number),
+                sumOfAllRatings: sum(userMediaSettings.sumEntriesRated).mapWith(Number),
+                totalHours: sql<number>`sum(${userMediaSettings.timeSpent}) / 60.0`.mapWith(Number),
+            })
+            .from(userMediaSettings)
+            .where(forUser)
+            .get();
+
+        if (!preComputedStats) throw new Error("No stats found");
+
+        const statusCountsList = await getDbClient()
+            .select({ statusCounts: userMediaSettings.statusCounts })
+            .from(userMediaSettings)
+            .where(forUser);
+
+        const mediaTimeDistribution = await getDbClient()
+            .select({
+                name: userMediaSettings.mediaType,
+                value: sql`sum(${userMediaSettings.timeSpent}) / 60.0`.mapWith(Number),
+            })
+            .from(userMediaSettings)
+            .where(forUser)
+            .groupBy(userMediaSettings.mediaType);
+
+        let totalUsers = 0;
+        if (!userId) {
+            const userCountResult = await getDbClient()
+                .select({ count: count() })
+                .from(user)
+                .get();
+            totalUsers = userCountResult?.count ?? 0;
+        }
+
+        return {
+            preComputedStats: {
+                totalRedo: preComputedStats?.totalRedo ?? 0,
+                totalRated: preComputedStats?.totalRated ?? 0,
+                totalHours: preComputedStats?.totalHours ?? 0,
+                totalEntries: preComputedStats?.totalEntries ?? 0,
+                totalComments: preComputedStats?.totalComments ?? 0,
+                totalFavorites: preComputedStats?.totalFavorites ?? 0,
+                sumOfAllRatings: preComputedStats?.sumOfAllRatings ?? 0,
+                distinctMediaTypes: preComputedStats?.distinctMediaTypes ?? 0,
+            },
+            totalUsers,
+            statusCountsList,
+            mediaTimeDistribution,
+        };
     }
 }

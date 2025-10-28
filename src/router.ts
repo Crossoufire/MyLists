@@ -1,17 +1,20 @@
-import "./global-middleware";
 import {toast} from "sonner";
 import {routeTree} from "@/routeTree.gen";
-import {NotFound} from "@/lib/components/general/NotFound";
-import {routerWithQueryClient} from "@tanstack/react-router-with-query";
-import {createRouter as createTanStackRouter} from "@tanstack/react-router";
+import {createRouter} from "@tanstack/react-router";
+import {NotFound} from "@/lib/client/components/general/NotFound";
+import {InitialLoader} from "@/lib/client/components/general/InitialLoader";
 import {MutationCache, QueryCache, QueryClient} from "@tanstack/react-query";
-import {ErrorCatchBoundary} from "@/lib/components/general/ErrorCatchBoundary";
+import {setupRouterSsrQueryIntegration} from "@tanstack/react-router-ssr-query";
+import {ErrorCatchBoundary} from "@/lib/client/components/general/ErrorCatchBoundary";
 
 
-export function createRouter() {
+export function getRouter() {
     const queryClient = new QueryClient({
         queryCache: new QueryCache({
-            onError: (_error, query) => {
+            onError: (error, query) => {
+                if (query?.meta?.displayErrorMsg) {
+                    toast.error(error.message);
+                }
                 if (query?.meta?.errorMessage) {
                     toast.error(query.meta.errorMessage.toString());
                 }
@@ -38,25 +41,41 @@ export function createRouter() {
         },
     });
 
-    return routerWithQueryClient(
-        createTanStackRouter({
-            routeTree,
-            context: { queryClient },
-            defaultPreload: false,
-            defaultPreloadStaleTime: 0,
-            defaultErrorComponent: ErrorCatchBoundary,
-            defaultNotFoundComponent: NotFound,
-            scrollRestoration: true,
-            defaultStructuralSharing: true,
-            defaultSsr: false,
-        }),
+    const router = createRouter({
+        routeTree,
+        context: { queryClient },
+        defaultPreload: false,
+        defaultPreloadStaleTime: 0,
+        defaultErrorComponent: ErrorCatchBoundary,
+        defaultNotFoundComponent: NotFound,
+        defaultPendingComponent: InitialLoader,
+        defaultPendingMs: 1000,
+        defaultPendingMinMs: 500,
+        scrollRestoration: true,
+        defaultStructuralSharing: true,
+        notFoundMode: "root",
+    });
+
+    setupRouterSsrQueryIntegration({
+        router,
         queryClient,
-    );
+        handleRedirects: true,
+        wrapQueryClient: true,
+    });
+
+    return router;
 }
 
 
-declare module "@tanstack/react-router" {
+declare module "@tanstack/react-query" {
     interface Register {
-        router: ReturnType<typeof createRouter>;
+        queryMeta: {
+            errorMessage?: string,
+            displayErrorMsg?: boolean,
+        },
+        mutationMeta: {
+            errorMessage?: string,
+            successMessage?: string,
+        }
     }
 }

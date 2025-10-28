@@ -1,17 +1,12 @@
-import dotenv from "dotenv";
 import {Redis} from "ioredis";
-
-
-dotenv.config();
+import {serverEnv} from "@/env/server";
 
 
 let redisInstance: Redis | null = null;
 let connectionPromise: Promise<Redis> | null = null;
 
 
-export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}) => {
-    const nodeEnv = process.env.NODE_ENV;
-
+export const connectRedis = () => {
     if (redisInstance?.status === "ready" || redisInstance?.status === "connecting") {
         return connectionPromise || Promise.resolve(redisInstance);
     }
@@ -19,11 +14,7 @@ export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}
         return connectionPromise || Promise.resolve(redisInstance);
     }
 
-    if (!bypassEnv && nodeEnv !== "production") {
-        return Promise.resolve(null);
-    }
-
-    const redisUrl = process.env.REDIS_URL;
+    const redisUrl = serverEnv.REDIS_URL;
     if (!redisUrl) {
         return Promise.reject(new Error("REDIS_URL environment variable not set."));
     }
@@ -57,4 +48,15 @@ export const connectRedis = ({ bypassEnv = false }: { bypassEnv?: boolean } = {}
     }
 
     return connectionPromise;
+};
+
+
+export const getRedisConnection = async () => {
+    const { connectRedis } = await import("@/lib/server/core/redis-client");
+    const redisConnection = await connectRedis();
+    if (!redisConnection) {
+        throw new Error("Failed to connect to Redis.");
+    }
+
+    return redisConnection;
 };

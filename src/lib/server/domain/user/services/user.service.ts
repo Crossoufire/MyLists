@@ -1,73 +1,90 @@
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
+import {user} from "@/lib/server/database/schema";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {AdminUpdatePayload, SearchTypeAdmin} from "@/lib/types/zod.schema.types";
 import {UserRepository} from "@/lib/server/domain/user/repositories/user.repository";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
+import {MediaServiceRegistry} from "@/lib/server/domain/media/registries/registries";
 
 
 export class UserService {
     constructor(private userRepository: typeof UserRepository) {
     }
 
+    // --- Admin functions --------------------------------------------
+
     async getAdminPaginatedUsers(data: SearchTypeAdmin) {
         return this.userRepository.getAdminPaginatedUsers(data);
     }
 
-    async adminUpdateUser(userId: number | undefined, payload: Record<string, any>) {
+    async adminUpdateUser(userId: number | undefined, payload: AdminUpdatePayload) {
         if (!userId && payload.showUpdateModal) {
-            await this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
-            return;
+            return this.userRepository.adminUpdateFeaturesFlag(payload.showUpdateModal);
         }
 
-        if (payload.delete && userId) {
-            await this.deleteUserAccount(userId);
-            return;
+        if (!userId) return;
+
+        if (payload.deleteUser) {
+            return this.deleteUserAccount(userId);
         }
 
-        const availablePayloads = ["privacy", "role", "emailVerified"];
+        const allowedKeys = new Set<keyof AdminUpdatePayload>(["emailVerified", "role", "privacy"]);
+        const isValidPayload = Object.keys(payload).every((k) =>
+            allowedKeys.has(k as keyof AdminUpdatePayload) || ["deleteUser", "showUpdateModal"].includes(k));
 
-        const isValidPayload = Object.keys(payload).every(key => availablePayloads.includes(key));
         if (!isValidPayload) {
             throw new FormattedError("Invalid payload");
         }
 
-        await this.userRepository.adminUpdateUser(userId!, payload);
+        await this.userRepository.adminUpdateUser(userId, payload);
     }
+
+    async getAdminOverview() {
+        const userStats = await this.userRepository.getAdminUserStats();
+        const recentUsers = await this.userRepository.getAdminRecentUsers(20);
+        const usersPerPrivacy = await this.userRepository.getAdminUsersPerPrivacyValue();
+        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth();
+
+        return {
+            ...userStats,
+            recentUsers,
+            usersPerPrivacy,
+            cumulativeUsersPerMonth,
+        };
+    }
+
+    async getAdminMediaOverview(mediaServiceRegistry: typeof MediaServiceRegistry) {
+        const mediaStats = await Promise.all(Object.values(MediaType).map(async (mediaType) => {
+            const mediaService = mediaServiceRegistry.getService(mediaType);
+            const { added, updated } = await mediaService.getAdminUserMediaAddedAndUpdated();
+            return { mediaType, added, updated };
+        }));
+
+        const addedThisMonth = mediaStats.reduce((sum, { added }) => sum + added.thisMonth, 0);
+        const addedLastMonth = mediaStats.reduce((sum, { added }) => sum + added.lastMonth, 0);
+        const updatedThisMonth = mediaStats.reduce((sum, { updated }) => sum + updated.thisMonth, 0);
+
+        return {
+            addedThisMonth,
+            addedLastMonth,
+            updatedThisMonth,
+            addedComparedToLastMonth: addedThisMonth - addedLastMonth,
+            addedPerMediaType: mediaStats.map(({ mediaType, added }) => ({ mediaType, ...added })),
+            updatedPerMediaType: mediaStats.map(({ mediaType, updated }) => ({ mediaType, ...updated })),
+        };
+    }
+
+    async getAdminArchivedTasks() {
+        return this.userRepository.getAdminArchivedTasks();
+    }
+
+    // ----------------------------------------------------------------
 
     async deleteUserAccount(userId: number) {
         return this.userRepository.deleteUserAccount(userId);
     }
 
-    async updateUserSettings(userId: number, payload: Record<string, any>) {
+    async updateUserSettings(userId: number, payload: Partial<typeof user.$inferInsert>) {
         await this.userRepository.updateUserSettings(userId, payload);
-    }
-
-    async getAdminOverview() {
-        const now = new Date();
-        const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-        const twoMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString();
-        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString();
-
-        const recentUsers = await this.userRepository.getAdminRecentUsers(10);
-        const usersPerPrivacy = await this.userRepository.getAdminUsersPerPrivacyValue();
-        const cumulativeUsersPerMonth = await this.userRepository.getAdminCumulativeUsersPerMonth(12);
-
-        const userStats = await this.userRepository.getAdminUserStatistics({
-            now: now.toISOString(),
-            currentMonthStart,
-            previousMonthStart,
-            twoMonthsAgoStart,
-            threeMonthsAgo,
-        });
-
-        return {
-            totalUsers: userStats.totalUsers,
-            activeUsers: userStats.activeUsers,
-            newUsers: userStats.newUsers,
-            cumulativeUsersPerMonth,
-            recentUsers,
-            usersPerPrivacy,
-        };
     }
 
     async isFollowing(userId: number, followedId: number) {
@@ -92,7 +109,10 @@ export class UserService {
     }
 
     async findUserByName(name: string) {
-        return this.userRepository.findUserByName(name);
+        const isUsernameTaken = await this.userRepository.findUserByName(name);
+        if (isUsernameTaken) {
+            throw new FormattedError("Invalid username. Please select another one.");
+        }
     }
 
     async updateFeatureFlag(userId: number) {

@@ -1,3 +1,4 @@
+import {serverEnv} from "@/env/server";
 import type {Config} from "drizzle-kit";
 
 
@@ -10,6 +11,6 @@ export default {
     dialect: "sqlite",
     casing: "snake_case",
     dbCredentials: {
-        url: process.env.DATABASE_URL as string,
+        url: serverEnv.DATABASE_URL,
     },
 } satisfies Config;

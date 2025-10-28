@@ -1,38 +1,38 @@
-import {MediaType} from "@/lib/server/utils/enums";
-import {IProviderService, ITrendsProviderService} from "@/lib/server/types/provider.types";
-import {TvRepository} from "@/lib/server/domain/media/tv/tv.repository";
-import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {IGamesService, IMoviesService, ITvService} from "@/lib/server/types/services.types";
+import {MediaType} from "@/lib/utils/enums";
+import {TvProviderService, TvRepository, TvService} from "@/lib/server/domain/media/tv";
+import {GamesProviderService, GamesRepository, GamesService} from "@/lib/server/domain/media/games";
+import {MangaProviderService, MangaRepository, MangaService} from "@/lib/server/domain/media/manga";
+import {BooksProviderService, BooksRepository, BooksService} from "@/lib/server/domain/media/books";
+import {MoviesProviderService, MoviesRepository, MoviesService} from "@/lib/server/domain/media/movies";
 
 
-export interface MediaRepositoryMap {
+interface MediaRepositoryMap {
     [MediaType.SERIES]: TvRepository;
     [MediaType.ANIME]: TvRepository;
     [MediaType.MOVIES]: MoviesRepository;
     [MediaType.GAMES]: GamesRepository;
-    [MediaType.BOOKS]: MoviesRepository;
-    [MediaType.MANGA]: MoviesRepository;
+    [MediaType.BOOKS]: BooksRepository;
+    [MediaType.MANGA]: MangaRepository;
 }
 
 
-export interface MediaServiceMap {
-    [MediaType.SERIES]: ITvService;
-    [MediaType.ANIME]: ITvService;
-    [MediaType.MOVIES]: IMoviesService;
-    [MediaType.GAMES]: IGamesService;
-    [MediaType.BOOKS]: IMoviesService;
-    [MediaType.MANGA]: IMoviesService;
+interface MediaServiceMap {
+    [MediaType.SERIES]: TvService;
+    [MediaType.ANIME]: TvService;
+    [MediaType.MOVIES]: MoviesService;
+    [MediaType.GAMES]: GamesService;
+    [MediaType.BOOKS]: BooksService;
+    [MediaType.MANGA]: MangaService;
 }
 
 
-export interface MediaProviderServiceMap {
-    [MediaType.SERIES]: ITrendsProviderService;
-    [MediaType.ANIME]: IProviderService;
-    [MediaType.MOVIES]: ITrendsProviderService;
-    [MediaType.GAMES]: IProviderService;
-    [MediaType.BOOKS]: IProviderService;
-    [MediaType.MANGA]: IProviderService;
+interface MediaProviderServiceMap {
+    [MediaType.SERIES]: TvProviderService;
+    [MediaType.ANIME]: TvProviderService;
+    [MediaType.MOVIES]: MoviesProviderService;
+    [MediaType.GAMES]: GamesProviderService;
+    [MediaType.BOOKS]: BooksProviderService;
+    [MediaType.MANGA]: MangaProviderService;
 }
 
 

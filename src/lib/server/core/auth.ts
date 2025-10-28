@@ -1,20 +1,61 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import {eq} from "drizzle-orm";
+import {clientEnv} from "@/env/client";
+import {serverEnv} from "@/env/server";
 import {betterAuth} from "better-auth";
 import {db} from "@/lib/server/database/db";
-import {sendEmail} from "@/lib/server/utils/mail-sender";
+import {sendEmail} from "@/lib/utils/mail-sender";
+import {createServerOnlyFn} from "@tanstack/react-start";
 import {reactStartCookies} from "better-auth/react-start";
 import {drizzleAdapter} from "better-auth/adapters/drizzle";
-import {ApiProviderType, PrivacyType, RatingSystemType, RoleType} from "@/lib/server/utils/enums";
+import {getDbClient} from "@/lib/server/database/async-storage";
+import {user as userTable, userMediaSettings} from "@/lib/server/database/schema";
+import {ApiProviderType, MediaType, PrivacyType, RatingSystemType, RoleType} from "@/lib/utils/enums";
 
 
-export const auth = betterAuth({
+const getAuthConfig = createServerOnlyFn(() => betterAuth({
     appName: "MyLists",
-    baseURL: process.env.VITE_BASE_URL,
-    secret: process.env.BETTER_AUTH_SECRET,
+    baseURL: clientEnv.VITE_BASE_URL,
+    secret: serverEnv.BETTER_AUTH_SECRET,
+    telemetry: {
+        enabled: false,
+    },
     database: drizzleAdapter(db, {
         provider: "sqlite",
-
     }),
+    databaseHooks: {
+        user: {
+            create: {
+                before: async (user) => {
+                    const usernameExist = await getDbClient()
+                        .select()
+                        .from(userTable)
+                        .where(eq(userTable.name, user.name));
+
+                    if (!usernameExist) {
+                        return { data: user };
+                    }
+
+                    return { data: { ...user, name: `${user.name}-${crypto.randomBytes(4).toString("hex")}` } };
+                },
+                after: async (user) => {
+                    const mediaTypes = Object.values(MediaType);
+
+                    const userMediaSettingsData = mediaTypes.map((mt) => ({
+                        mediaType: mt,
+                        userId: Number(user.id),
+                        active: (mt === MediaType.MOVIES || mt === MediaType.SERIES),
+                    }));
+
+                    await getDbClient()
+                        .insert(userMediaSettings)
+                        .values(userMediaSettingsData)
+                        .onConflictDoNothing();
+                },
+            }
+        },
+    },
     user: {
         additionalFields: {
             profileViews: {
@@ -80,12 +121,12 @@ export const auth = betterAuth({
     },
     socialProviders: {
         github: {
-            clientId: process.env.GITHUB_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+            clientId: serverEnv.GITHUB_CLIENT_ID,
+            clientSecret: serverEnv.GITHUB_CLIENT_SECRET,
         },
         google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: serverEnv.GOOGLE_CLIENT_ID,
+            clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
         },
     },
     emailAndPassword: {
@@ -94,36 +135,32 @@ export const auth = betterAuth({
         minPasswordLength: 8,
         maxPasswordLength: 50,
         requireEmailVerification: true,
-        resetPasswordTokenExpiresIn: 1800,
+        resetPasswordTokenExpiresIn: 3600,
         sendResetPassword: async ({ user, url }) => {
             await sendEmail({
                 link: url,
                 to: user.email,
                 username: user.name,
-                template: "password_reset",
-                subject: "MyLists - Reset your password",
+                template: "resetPassword",
+                subject: "MyLists - Reset Your Password",
             });
         },
         password: {
-            hash: async (password: string) => {
-                return bcrypt.hash(password, 12);
-            },
-            verify: async ({ hash, password }) => {
-                const stringifyHash = Buffer.from(hash);
-                return bcrypt.compare(password, stringifyHash.toString());
-            },
+            hash: async (password: string) => bcrypt.hash(password, 12),
+            verify: async ({ hash, password }) => bcrypt.compare(password, Buffer.from(hash).toString()),
         },
     },
     emailVerification: {
-        sendOnSignUp: true,
-        autoSignInAfterVerification: false,
         expiresIn: 3600,
+        sendOnSignUp: true,
+        sendOnSignIn: true,
+        autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
             await sendEmail({
-                link: url,
                 to: user.email,
                 username: user.name,
                 template: "register",
+                link: url + `profile/${user.name}`,
                 subject: "MyLists - Verify your email address",
             });
         },
@@ -137,4 +174,7 @@ export const auth = betterAuth({
     plugins: [
         reactStartCookies(),
     ]
-});
+}));
+
+
+export const auth = getAuthConfig();

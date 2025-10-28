@@ -1,23 +1,30 @@
-#!/usr/bin/env node
 import {Command} from "commander";
-import {registerAllCommands} from "@/cli/commands";
+import {registerTaskCommand} from "@/cli/register";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
 
 
 const program = new Command();
 
 
+const description = `
+CLI commands for MyLists.
+To execute a command:
+'bun run cli -- <command> -<option1> -<option2> ...'
+`;
+
+
 program
     .name("mylists-cli")
-    .description("CLI tools for MyLists")
-    .version("0.0.1");
+    .description(description)
+    .version("1.0.0");
 
 
-registerAllCommands(program);
-
-
-program.parse(process.argv);
+taskDefinitions.forEach((task) => registerTaskCommand(program, task));
 
 
 if (!process.argv.slice(2).length) {
     program.outputHelp();
+}
+else {
+    program.parse(process.argv);
 }

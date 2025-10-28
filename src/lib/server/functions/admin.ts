@@ -1,24 +1,83 @@
-import {JobType} from "bullmq";
+import {serverEnv} from "@/env/server";
+import {redirect} from "@tanstack/react-router";
 import {createServerFn} from "@tanstack/react-start";
-import {deriveMQJobStatus} from "@/lib/utils/helpers";
 import {getContainer} from "@/lib/server/core/container";
-import {taskDefinitions, TasksName} from "@/cli/commands";
-import {SearchTypeAdmin} from "@/lib/server/types/base.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
+import {getCookie, setCookie} from "@tanstack/react-start/server";
+import {taskDefinitions} from "@/lib/server/domain/tasks/tasks-config";
+import {adminCookieOptions, createAdminToken, verifyAdminToken} from "@/lib/utils/jwt-utils";
+import {ADMIN_COOKIE_NAME, adminAuthMiddleware, managerAuthMiddleware} from "@/lib/server/middlewares/authentication";
+import {
+    adminTriggerTaskSchema,
+    adminUpdateAchievementSchema,
+    postAdminUpdateTiersSchema,
+    postAdminUpdateUserSchema,
+    searchTypeAdminSchema,
+    searchTypeSchema
+} from "@/lib/types/zod.schema.types";
+
+
+export const checkAdminAuth = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware])
+    .handler(async () => {
+        const adminToken = getCookie(ADMIN_COOKIE_NAME);
+
+        if (!adminToken || !verifyAdminToken(adminToken)) {
+            return false;
+        }
+
+        return true;
+    });
+
+
+export const adminAuth = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware])
+    .inputValidator((data) => data as { password: string })
+    .handler(async ({ data }) => {
+        if (data.password === serverEnv.ADMIN_PASSWORD) {
+            const adminToken = createAdminToken();
+            setCookie(ADMIN_COOKIE_NAME, adminToken, adminCookieOptions);
+
+            return { success: true };
+        }
+
+        return {
+            success: false,
+            message: "Incorrect Password",
+        };
+    });
+
+
+export const adminLogout = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware])
+    .handler(async () => {
+        setCookie(ADMIN_COOKIE_NAME, "", { ...adminCookieOptions, maxAge: 0 });
+        throw redirect({ to: "/" });
+    });
 
 
 export const getAdminOverview = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminOverview();
     });
 
 
+export const getAdminMediaOverview = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        const userService = await getContainer().then((c) => c.services.user);
+        const mediaServiceRegistry = await getContainer().then((c) => c.registries.mediaService);
+
+        return userService.getAdminMediaOverview(mediaServiceRegistry);
+    });
+
+
 export const getAdminAllUsers = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as SearchTypeAdmin)
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(searchTypeAdminSchema)
     .handler(async ({ data }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.getAdminPaginatedUsers(data);
@@ -26,7 +85,7 @@ export const getAdminAllUsers = createServerFn({ method: "GET" })
 
 
 export const getAdminAchievements = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
         return achievementService.allUsersAchievements();
@@ -34,8 +93,8 @@ export const getAdminAchievements = createServerFn({ method: "GET" })
 
 
 export const getAdminMediadleStats = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data)
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(searchTypeSchema)
     .handler(async ({ data }) => {
         const mediadleService = await getContainer().then((c) => c.services.mediadle);
         return mediadleService.getAdminAllUsersStats(data);
@@ -43,8 +102,8 @@ export const getAdminMediadleStats = createServerFn({ method: "GET" })
 
 
 export const postAdminUpdateUser = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { userId: number, payload: Record<string, any> })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(postAdminUpdateUserSchema)
     .handler(async ({ data: { userId, payload } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.adminUpdateUser(userId, payload);
@@ -52,93 +111,74 @@ export const postAdminUpdateUser = createServerFn({ method: "POST" })
 
 
 export const postAdminUpdateAchievement = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as {
-        achievementId: number,
-        payload: Record<string, any>,
-    })
-    .handler(async ({ data: { achievementId, payload } }) => {
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(adminUpdateAchievementSchema)
+    .handler(async ({ data: { achievementId, name, description } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateAchievement(achievementId, payload);
+        return achievementService.adminUpdateAchievement(achievementId, name, description);
     });
 
 
 export const postAdminUpdateTiers = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as {
-        payloads: Record<string, any>[],
-    })
-    .handler(async ({ data: { payloads } }) => {
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(postAdminUpdateTiersSchema)
+    .handler(async ({ data: { tiers } }) => {
         const achievementService = await getContainer().then((c) => c.services.achievements);
-        return achievementService.adminUpdateTiers(payloads);
+        return achievementService.adminUpdateTiers(tiers);
     });
 
 
 export const getAdminTasks = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
     .handler(async () => {
-        return taskDefinitions;
+        return taskDefinitions.filter((task) => task.visibility !== "user");
     });
 
 
-export const postTriggerLongTasks = createServerFn({ method: "POST" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { taskName: TasksName })
+export const postAdminTriggerTask = createServerFn({ method: "POST" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .inputValidator(adminTriggerTaskSchema)
     .handler(async ({ data: { taskName } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+        const queue = await createOrGetQueue();
 
         try {
-            const job = await mylistsLongTaskQueue.add(taskName, { triggeredBy: "dashboard" });
-            return { success: true, jobId: job.id, message: "Task enqueued." };
+            await queue.add(taskName, { triggeredBy: "dashboard" });
         }
-        catch (error) {
+        catch {
             throw new FormattedError("Failed to enqueue task.");
         }
     });
 
 
-export const getAdminJobs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { types: JobType[] })
-    .handler(async ({ data: { types } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
+export const getAdminActiveJobs = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        const queue = await createOrGetQueue();
 
         try {
-            const jobs = await mylistsLongTaskQueue.getJobs(types);
+            const jobs = await queue.getJobs(["active", "waiting", "delayed"]);
             return jobs.map((job) => ({
-                id: job.id,
+                jobId: job.id,
                 name: job.name,
                 data: job.data,
                 progress: job.progress,
                 timestamp: job.timestamp,
                 finishedOn: job.finishedOn,
-                stacktrace: job.stacktrace,
                 returnValue: job.returnvalue,
                 processedOn: job.processedOn,
                 failedReason: job.failedReason,
-                attemptsMade: job.attemptsMade,
-                status: deriveMQJobStatus(job),
+                status: job.processedOn ? "active" : "waiting"
             }));
         }
-        catch (error) {
-            throw new FormattedError("Failed to fetch jobs.");
+        catch {
+            throw new FormattedError("Failed to fetch jobs. Check Worker is Active.");
         }
     });
 
 
-export const getAdminJobLogs = createServerFn({ method: "GET" })
-    .middleware([managerAuthMiddleware])
-    .validator((data: any) => data as { jobId: string })
-    .handler(async ({ data: { jobId } }) => {
-        const { mylistsLongTaskQueue } = await import("@/lib/server/core/bullMQ-queue");
-
-        try {
-            return mylistsLongTaskQueue.getJobLogs(jobId);
-        }
-        catch (error) {
-            throw new FormattedError("Failed to fetch job logs.");
-        }
+export const getAdminArchivedTasks = createServerFn({ method: "GET" })
+    .middleware([managerAuthMiddleware, adminAuthMiddleware])
+    .handler(async () => {
+        const userService = await getContainer().then((c) => c.services.user);
+        return userService.getAdminArchivedTasks();
     });
-
-
-

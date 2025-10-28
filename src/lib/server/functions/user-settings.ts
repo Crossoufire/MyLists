@@ -1,35 +1,41 @@
+import z from "zod";
+import path from "path";
 import {auth} from "@/lib/server/core/auth";
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
+import {mkdir, writeFile} from "fs/promises";
+import {signalJobCancellation} from "@/lib/utils/bullmq";
 import {createServerFn} from "@tanstack/react-start";
+import {user} from "@/lib/server/database/schema/index";
 import {getContainer} from "@/lib/server/core/container";
-import {saveUploadedImage} from "@/lib/server/utils/save-image";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {tryFormZodError} from "@/lib/server/utils/try-not-found";
+import {saveUploadedImage} from "@/lib/utils/save-image";
+import {FormattedError} from "@/lib/utils/error-classes";
+import {tryFormZodError} from "@/lib/utils/try-not-found";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {transactionMiddleware} from "@/lib/server/middlewares/transaction";
-import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/server/types/base.types";
+import {downloadListAsCsvSchema, generalSettingsSchema, mediaListSettingsSchema, passwordSettingsSchema} from "@/lib/types/zod.schema.types";
+import {CsvJobData} from "@/lib/types/tasks.types";
+import {createOrGetQueue} from "@/lib/server/core/bullmq";
 
 
 export const postGeneralSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => {
-        if (!(data instanceof FormData)) throw new Error("Expected FormData");
-        return tryFormZodError(() => generalSettingsSchema.parse(Object.fromEntries(data.entries())));
+    .inputValidator((data) => {
+        if (!(data instanceof FormData)) throw new Error();
+        return tryFormZodError(generalSettingsSchema, Object.fromEntries(data.entries()));
     })
     .handler(async ({ data, context: { currentUser } }) => {
-        const userService = await getContainer().then(c => c.services.user);
-        const updatesToApply: Record<string, string> = { privacy: data.privacy };
+        const userService = await getContainer().then((c) => c.services.user);
+        const updatesToApply: Partial<typeof user.$inferInsert> = { privacy: data.privacy };
 
         if (data.username !== currentUser.name.trim()) {
-            const isUsernameTaken = await userService.findUserByName(data.username);
-            if (isUsernameTaken) throw new FormattedError("Username invalid. Please select another one.");
+            await userService.findUserByName(data.username);
             updatesToApply.name = data.username;
         }
 
         if (data.profileImage) {
             const profileImageName = await saveUploadedImage({
                 file: data.profileImage,
-                saveLocation: "./public/static/profile-covers",
+                dirSaveName: "profile-covers",
                 resize: { width: 300, height: 300 },
             });
             updatesToApply.image = profileImageName;
@@ -38,7 +44,7 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
         if (data.backgroundImage) {
             const backgroundImageName = await saveUploadedImage({
                 file: data.backgroundImage,
-                saveLocation: "./public/static/back-covers",
+                dirSaveName: "profile-back-covers",
                 resize: { width: 1304, height: 288 },
             });
             updatesToApply.backgroundImage = backgroundImageName;
@@ -50,16 +56,16 @@ export const postGeneralSettings = createServerFn({ method: "POST" })
 
 export const postMediaListSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware, transactionMiddleware])
-    .validator(data => tryFormZodError(() => mediaListSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(mediaListSettingsSchema, data))
     .handler(async ({ data, context: { currentUser } }) => {
         const userService = await getContainer().then(c => c.services.user);
         const userStatsService = await getContainer().then(c => c.services.userStats);
 
-        const toUpdateinUserStats: Partial<Record<MediaType, boolean>> = {
+        const toUpdateInUserStats: Partial<Record<MediaType, boolean>> = {
             anime: data.anime,
-            manga: data.manga,
             games: data.games,
             books: data.books,
+            manga: data.manga,
         }
 
         const toUpdateInUser = {
@@ -69,13 +75,13 @@ export const postMediaListSettings = createServerFn({ method: "POST" })
         }
 
         await userService.updateUserSettings(currentUser.id, toUpdateInUser);
-        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateinUserStats);
+        await userStatsService.updateUserMediaListSettings(currentUser.id, toUpdateInUserStats);
     });
 
 
 export const getDownloadListAsCSV = createServerFn({ method: "GET" })
     .middleware([authMiddleware])
-    .validator(data => tryFormZodError(() => downloadListAsCsvSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(downloadListAsCsvSchema, data))
     .handler(async ({ data: { selectedList }, context: { currentUser } }) => {
         const container = await getContainer();
         const mediaService = container.registries.mediaService.getService(selectedList);
@@ -85,7 +91,7 @@ export const getDownloadListAsCSV = createServerFn({ method: "GET" })
 
 export const postPasswordSettings = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(data => tryFormZodError(() => passwordSettingsSchema.parse(data)))
+    .inputValidator((data) => tryFormZodError(passwordSettingsSchema, data))
     .handler(async ({ data: { newPassword, currentPassword }, context: { currentUser } }) => {
         const ctx = await auth.$context;
         const userAccount = await ctx.internalAdapter.findAccount(currentUser.id.toString());
@@ -113,4 +119,141 @@ export const postUpdateFeatureFlag = createServerFn({ method: "POST" })
     .handler(async ({ context: { currentUser } }) => {
         const userService = await getContainer().then((c) => c.services.user);
         return userService.updateFeatureFlag(currentUser.id);
+    });
+
+
+const csvFileZodSchema = z.object({
+    file: z
+        .instanceof(File)
+        .refine((file) => file.size <= 5 * 1024 * 1024, `File size must be less than 5MB.`)
+        .refine((file) => ["text/csv"].includes(file.type), "File must be a .csv file."),
+});
+
+
+export const postUploadsCsvFile = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .inputValidator((data) => {
+        if (!(data instanceof FormData)) throw new Error();
+        return tryFormZodError(csvFileZodSchema, Object.fromEntries(data.entries()));
+    })
+    .handler(async ({ data, context: { currentUser } }) => {
+        const queue = await createOrGetQueue();
+
+        try {
+            const existingJobs = await queue.getJobs(["waiting", "active", "delayed"]);
+            const hasActiveCsvJob = existingJobs.some((job) => {
+                if ("userId" in job.data) {
+                    return job.data?.userId === currentUser.id;
+                }
+                return false;
+            });
+
+            if (hasActiveCsvJob) {
+                throw new FormattedError(
+                    "You already have a CSV processing job running. " +
+                    "Please wait for it to complete before starting a new one."
+                );
+            }
+
+            // Save file to tmp location
+            const buffer = Buffer.from(await data.file.arrayBuffer());
+            const tempDir = path.join(process.cwd(), "tmp", "csv-uploads");
+            await mkdir(tempDir, { recursive: true });
+            const filePath = path.join(tempDir, `${currentUser.id}-${Date.now()}.csv`);
+            await writeFile(filePath, buffer);
+
+            await queue.add("processCsv", {
+                filePath: filePath,
+                triggeredBy: "user",
+                userId: currentUser.id,
+                fileName: data.file.name,
+            });
+
+            return;
+        }
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
+            }
+            throw new FormattedError("Sorry, failed to process the CSV.");
+        }
+    });
+
+
+export const getUserUploads = createServerFn({ method: "GET" })
+    .middleware([authMiddleware])
+    .handler(async ({ context: { currentUser } }) => {
+        const queue = await createOrGetQueue();
+
+        try {
+            const allJobs = await queue.getJobs(["active", "waiting"]);
+
+            const userJobs = allJobs.filter((job) => {
+                if ("userId" in job.data) {
+                    return job.data.userId === currentUser.id;
+                }
+                return false;
+            });
+
+            return userJobs.map((job) => ({
+                jobId: job.id,
+                name: job.name,
+                progress: job.progress,
+                timestamp: job.timestamp,
+                finishedOn: job.finishedOn,
+                data: job.data as CsvJobData,
+                returnValue: job.returnvalue,
+                processedOn: job.processedOn,
+                failedReason: job.failedReason,
+                status: job.processedOn ? "active" : "waiting",
+            }));
+        }
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
+            }
+
+            throw new FormattedError("Failed to fetch your uploads.");
+        }
+    });
+
+
+const uploadJobIdSchema = z.object({
+    jobId: z.string(),
+});
+
+
+export const cancelUserUpload = createServerFn({ method: "POST" })
+    .middleware([authMiddleware])
+    .inputValidator(uploadJobIdSchema)
+    .handler(async ({ data: { jobId }, context: { currentUser } }) => {
+        const queue = await createOrGetQueue();
+
+        try {
+            const job = await queue.getJob(jobId);
+
+            if (!job || ("userId" in job.data && job.data.userId !== currentUser.id)) {
+                throw new FormattedError("Upload not found.");
+            }
+
+            const isActive = await job.isActive();
+            if (!isActive) {
+                await job.remove();
+                return;
+            }
+
+            const isFinished = await job.isCompleted() || await job.isFailed();
+            if (isFinished) {
+                throw new FormattedError("Upload already finished.");
+            }
+
+            await signalJobCancellation(job.id!);
+        }
+        catch (err) {
+            if (err instanceof FormattedError) {
+                throw err;
+            }
+
+            throw new FormattedError("Failed to cancel the job.");
+        }
     });

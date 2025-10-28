@@ -1,23 +1,17 @@
-import {Status} from "@/lib/server/utils/enums";
-import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IMoviesService} from "@/lib/server/types/services.types";
-import {IProviderService} from "@/lib/server/types/provider.types";
-import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {IMoviesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
-import {moviesAchievements} from "@/lib/server/domain/media/movies/achievements.seed";
-import {MoviesAdvancedStats, UserMediaWithLabels} from "@/lib/server/types/base.types";
-import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
 import {eq, isNotNull} from "drizzle-orm";
+import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
+import {Status, UpdateType} from "@/lib/utils/enums";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {Achievement} from "@/lib/types/achievements.types";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {MovieSchemaConfig} from "@/lib/server/domain/media/movies/movies.config";
+import {MoviesRepository} from "@/lib/server/domain/media/movies/movies.repository";
+import {Movie, MoviesAchCodeName, MoviesList} from "@/lib/server/domain/media/movies/movies.types";
+import {LogPayload, RedoPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 
 
-export class MoviesService extends BaseService<
-    Movie, MoviesList, MoviesAdvancedStats, MoviesAchCodeName, IMoviesRepository
-> implements IMoviesService {
+export class MoviesService extends BaseService<MovieSchemaConfig, MoviesRepository> {
     readonly achievementHandlers: Record<MoviesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: MoviesRepository) {
@@ -39,10 +33,20 @@ export class MoviesService extends BaseService<
             sci_genre_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
             animation_movies: this.repository.specificGenreAchievementCte.bind(this.repository),
         };
+
+        this.updateHandlers = {
+            ...this.updateHandlers,
+            [UpdateType.REDO]: this.updateRedoHandler.bind(this),
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
+        }
     }
 
     async lockOldMovies() {
         return this.repository.lockOldMovies();
+    }
+
+    async findByTitleAndYear(title: string, year: number) {
+        return this.repository.findByTitleAndYear(title, year);
     }
 
     async calculateAdvancedMediaStats(userId?: number) {
@@ -71,46 +75,18 @@ export class MoviesService extends BaseService<
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
-        const media = external ?
-            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
-
-        let internalMediaId = media?.id;
-        if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) throw new Error("Failed to fetch media details");
-        }
-
-        if (internalMediaId) {
-            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw notFound();
-
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id);
-            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-            return {
-                media: mediaWithDetails,
-                userMedia,
-                followsData,
-                similarMedia,
-            };
-        }
-
-        throw notFound();
-    }
-
     async getMediaEditableFields(mediaId: number) {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields = editableFields.reduce((acc, field) => {
+        const fields: Record<string, any> = {};
+
+        editableFields.forEach((field) => {
             if (field in media) {
-                (acc as any)[field] = media[field];
+                fields[field] = media[field as keyof typeof media];
             }
-            return acc;
-        }, {} as Pick<typeof media, typeof editableFields[number]>);
+        });
 
         return { fields };
     }
@@ -125,10 +101,8 @@ export class MoviesService extends BaseService<
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/movies-covers",
+                dirSaveName: "movies-covers",
             });
             fields.imageCover = imageName;
             delete payload.imageCover;
@@ -141,68 +115,6 @@ export class MoviesService extends BaseService<
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
-    }
-
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const userMedia = await this.repository.findUserMedia(userId, mediaId);
-        if (userMedia) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState, media);
-
-        return { newState, media, delta };
-    }
-
-    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState, media);
-
-        return {
-            os: oldState,
-            ns: newState,
-            media,
-            delta,
-            updateData: completeUpdateData,
-        };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null, media);
-
-        return delta;
-    }
-
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: MoviesList) {
-        const completeUpdateData = { ...partialUpdateData };
-
-        if (completeUpdateData.status) {
-            return { ...completeUpdateData, redo: 0 };
-        }
-
-        return completeUpdateData;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<MoviesList> | null, newState: MoviesList | null, media: Movie) {
@@ -228,12 +140,12 @@ export class MoviesService extends BaseService<
         const newRedo = newState?.redo ?? 0;
         const newComment = newState?.comment;
         const newFavorite = newState?.favorite ?? false;
+        const newTotalSpecificValue = newState?.total ?? 0;
+        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
         const isCompleted = newStatus === Status.COMPLETED;
         const isFavorited = isCompleted && newFavorite;
         const isCommented = isCompleted && !!newComment;
         const isRated = isCompleted && newRating != null;
-        const newTotalSpecificValue = newState ? (isCompleted ? 1 : 0) + newRedo : 0;
-        const newTotalTimeSpent = newTotalSpecificValue * media.duration;
 
         // --- Calculate Deltas ----------------------------------------------------------------
 
@@ -309,7 +221,27 @@ export class MoviesService extends BaseService<
         return delta;
     }
 
-    getAchievementsDefinition() {
-        return moviesAchievements as unknown as AchievementData[];
-    }
+    updateStatusHandler(currentState: MoviesList, payload: StatusPayload, _media: Movie): [MoviesList, LogPayload] {
+        const newState = { ...currentState, status: payload.status };
+        const logPayload = { oldValue: currentState.status, newValue: payload.status };
+
+        newState.redo = 0;
+        if (payload.status === Status.COMPLETED) {
+            newState.total = 1;
+        }
+        else {
+            newState.total = 0;
+        }
+
+        return [newState, logPayload];
+    };
+
+    updateRedoHandler(currentState: MoviesList, payload: RedoPayload, _media: Movie): [MoviesList, LogPayload] {
+        const newState = { ...currentState, redo: payload.redo };
+        const logPayload = { oldValue: currentState.redo, newValue: payload.redo };
+
+        newState.total = payload.redo + 1;
+
+        return [newState, logPayload];
+    };
 }

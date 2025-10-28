@@ -482,32 +482,6 @@
         }
       }
     },
-    "alembic_version": {
-      "name": "alembic_version",
-      "columns": {
-        "version_num": {
-          "autoincrement": false,
-          "name": "version_num",
-          "type": "text(32)",
-          "primaryKey": true,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
     "user_media_update": {
       "name": "user_media_update",
       "columns": {
@@ -626,103 +600,6 @@
         }
       }
     },
-    "token": {
-      "name": "token",
-      "columns": {
-        "id": {
-          "autoincrement": false,
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "autoincrement": false,
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "access_token": {
-          "autoincrement": false,
-          "name": "access_token",
-          "type": "text(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "access_expiration": {
-          "autoincrement": false,
-          "name": "access_expiration",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refresh_token": {
-          "autoincrement": false,
-          "name": "refresh_token",
-          "type": "text(64)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "refresh_expiration": {
-          "autoincrement": false,
-          "name": "refresh_expiration",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {
-        "ix_token_user_id": {
-          "name": "ix_token_user_id",
-          "columns": [
-            "user_id"
-          ],
-          "isUnique": false
-        },
-        "ix_token_access_token": {
-          "name": "ix_token_access_token",
-          "columns": [
-            "access_token"
-          ],
-          "isUnique": false
-        },
-        "ix_token_refresh_token": {
-          "name": "ix_token_refresh_token",
-          "columns": [
-            "refresh_token"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "token_user_id_user_id_fk": {
-          "name": "token_user_id_user_id_fk",
-          "tableFrom": "token",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
     "books": {
       "name": "books",
       "columns": {
@@ -800,6 +677,173 @@
           "autoincrement": false,
           "name": "last_api_update",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
+    "movies": {
+      "name": "movies",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_name": {
+          "autoincrement": false,
+          "name": "original_name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "release_date": {
+          "autoincrement": false,
+          "name": "release_date",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "homepage": {
+          "autoincrement": false,
+          "name": "homepage",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration": {
+          "autoincrement": false,
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "original_language": {
+          "autoincrement": false,
+          "name": "original_language",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "synopsis": {
+          "autoincrement": false,
+          "name": "synopsis",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_average": {
+          "autoincrement": false,
+          "name": "vote_average",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vote_count": {
+          "autoincrement": false,
+          "name": "vote_count",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "popularity": {
+          "autoincrement": false,
+          "name": "popularity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "budget": {
+          "autoincrement": false,
+          "name": "budget",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "revenue": {
+          "autoincrement": false,
+          "name": "revenue",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tagline": {
+          "autoincrement": false,
+          "name": "tagline",
+          "type": "text(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_cover": {
+          "autoincrement": false,
+          "name": "image_cover",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_id": {
+          "autoincrement": false,
+          "name": "api_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "director_name": {
+          "autoincrement": false,
+          "name": "director_name",
+          "type": "text(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lock_status": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "lock_status",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_api_update": {
+          "autoincrement": false,
+          "name": "last_api_update",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "compositor_name": {
+          "autoincrement": false,
+          "name": "compositor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "collection_id": {
+          "autoincrement": false,
+          "name": "collection_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         }
@@ -2092,9 +2136,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "IGDB_url": {
+        "igdb_url": {
           "autoincrement": false,
-          "name": "IGDB_url",
+          "name": "igdb_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3873,173 +3917,6 @@
         }
       }
     },
-    "movies": {
-      "name": "movies",
-      "columns": {
-        "id": {
-          "autoincrement": false,
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "autoincrement": false,
-          "name": "name",
-          "type": "text(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "original_name": {
-          "autoincrement": false,
-          "name": "original_name",
-          "type": "text(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "release_date": {
-          "autoincrement": false,
-          "name": "release_date",
-          "type": "text(30)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "homepage": {
-          "autoincrement": false,
-          "name": "homepage",
-          "type": "text(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "duration": {
-          "autoincrement": false,
-          "name": "duration",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "original_language": {
-          "autoincrement": false,
-          "name": "original_language",
-          "type": "text(20)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "synopsis": {
-          "autoincrement": false,
-          "name": "synopsis",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "vote_average": {
-          "autoincrement": false,
-          "name": "vote_average",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "vote_count": {
-          "autoincrement": false,
-          "name": "vote_count",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "popularity": {
-          "autoincrement": false,
-          "name": "popularity",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "budget": {
-          "autoincrement": false,
-          "name": "budget",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revenue": {
-          "autoincrement": false,
-          "name": "revenue",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "tagline": {
-          "autoincrement": false,
-          "name": "tagline",
-          "type": "text(30)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "image_cover": {
-          "autoincrement": false,
-          "name": "image_cover",
-          "type": "text(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "api_id": {
-          "autoincrement": false,
-          "name": "api_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "director_name": {
-          "autoincrement": false,
-          "name": "director_name",
-          "type": "text(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lock_status": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "lock_status",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last_api_update": {
-          "autoincrement": false,
-          "name": "last_api_update",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "collection_id": {
-          "autoincrement": false,
-          "name": "collection_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "compositor_name": {
-          "autoincrement": false,
-          "name": "compositor_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
     "account": {
       "name": "account",
       "columns": {
@@ -4261,6 +4138,154 @@
         }
       }
     },
+    "user": {
+      "name": "user",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "autoincrement": false,
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "autoincrement": false,
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "autoincrement": false,
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "autoincrement": false,
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_notif_read_time": {
+          "autoincrement": false,
+          "name": "last_notif_read_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "profile_views": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "profile_views",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "default": "'user'",
+          "autoincrement": false,
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified": {
+          "autoincrement": false,
+          "name": "email_verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "privacy": {
+          "default": "'restricted'",
+          "autoincrement": false,
+          "name": "privacy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grid_list_view": {
+          "default": true,
+          "autoincrement": false,
+          "name": "grid_list_view",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image": {
+          "default": "'default.jpg'",
+          "autoincrement": false,
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "show_update_modal": {
+          "default": true,
+          "autoincrement": false,
+          "name": "show_update_modal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rating_system": {
+          "default": "'score'",
+          "autoincrement": false,
+          "name": "rating_system",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_selector": {
+          "default": "'tmdb'",
+          "autoincrement": false,
+          "name": "search_selector",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "background_image": {
+          "default": "'default.jpg'",
+          "autoincrement": false,
+          "name": "background_image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "games_companies_check_1": {
+          "name": "games_companies_check_1",
+          "value": "publisher IN (0, 1"
+        },
+        "games_companies_check_2": {
+          "name": "games_companies_check_2",
+          "value": "developer IN (0, 1"
+        }
+      }
+    },
     "verification": {
       "name": "verification",
       "columns": {
@@ -4309,152 +4334,6 @@
       },
       "compositePrimaryKeys": {},
       "indexes": {},
-      "foreignKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "games_companies_check_1": {
-          "name": "games_companies_check_1",
-          "value": "publisher IN (0, 1"
-        },
-        "games_companies_check_2": {
-          "name": "games_companies_check_2",
-          "value": "developer IN (0, 1"
-        }
-      }
-    },
-    "user": {
-      "name": "user",
-      "columns": {
-        "id": {
-          "autoincrement": false,
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "autoincrement": false,
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "autoincrement": false,
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email_verified": {
-          "autoincrement": false,
-          "name": "email_verified",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "image": {
-          "default": "'default.jpg'",
-          "autoincrement": false,
-          "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "autoincrement": false,
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "autoincrement": false,
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "profile_views": {
-          "default": 0,
-          "autoincrement": false,
-          "name": "profile_views",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "background_image": {
-          "default": "'default.jpg'",
-          "autoincrement": false,
-          "name": "background_image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "role": {
-          "default": "'user'",
-          "autoincrement": false,
-          "name": "role",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last_notif_read_time": {
-          "autoincrement": false,
-          "name": "last_notif_read_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "show_update_modal": {
-          "autoincrement": false,
-          "name": "show_update_modal",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "grid_list_view": {
-          "autoincrement": false,
-          "name": "grid_list_view",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "privacy": {
-          "default": "'restricted'",
-          "autoincrement": false,
-          "name": "privacy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "search_selector": {
-          "default": "'tmdb'",
-          "autoincrement": false,
-          "name": "search_selector",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rating_system": {
-          "default": "'score'",
-          "autoincrement": false,
-          "name": "rating_system",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "compositePrimaryKeys": {},
-      "indexes": {
-        "user_email_unique": {
-          "name": "user_email_unique",
-          "columns": [
-            "email"
-          ],
-          "isUnique": true
-        }
-      },
       "foreignKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {

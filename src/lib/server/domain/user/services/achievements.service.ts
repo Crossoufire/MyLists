@@ -1,25 +1,26 @@
 import {sql} from "drizzle-orm";
 import {userAchievement} from "@/lib/server/database/schema";
-import {MediaService} from "@/lib/server/types/services.types";
-import {AchievementDifficulty, MediaType} from "@/lib/server/utils/enums";
+import {AchievementTier} from "@/lib/types/zod.schema.types";
+import {AchievementDifficulty, MediaType} from "@/lib/utils/enums";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
 import {AchievementsRepository} from "@/lib/server/domain/user/repositories/achievements.repository";
-import {Achievement, AchievementData, AchievementStats, TierStat, UserAchievementDetails, UserTierProgress} from "@/lib/server/types/achievements.types";
+import {Achievement, AchievementSeedData, UserAchievementDetails} from "@/lib/types/achievements.types";
 
 
 export class AchievementsService {
     constructor(private repository: typeof AchievementsRepository) {
     }
 
-    async seedAchievements(achievements: AchievementData[]) {
+    async seedAchievements(achievements: readonly AchievementSeedData[]) {
         return this.repository.seedAchievements(achievements);
     }
 
-    async adminUpdateAchievement(achievementId: number, payload: Record<string, any>) {
-        await this.repository.adminUpdateAchievement(achievementId, payload);
+    async adminUpdateAchievement(achievementId: number, name: string, description: string) {
+        await this.repository.adminUpdateAchievement(achievementId, name, description);
     }
 
-    async adminUpdateTiers(payloads: Record<string, any>[]) {
-        return this.repository.adminUpdateTiers(payloads);
+    async adminUpdateTiers(tiers: AchievementTier[]) {
+        return this.repository.adminUpdateTiers(tiers);
     }
 
     async getDifficultySummary(userId: number) {
@@ -42,20 +43,21 @@ export class AchievementsService {
 
         const totalAchievementsMap = new Map(totalAchievementsResult.map((item) => [item.mediaType, item.total]));
         const completedCountsMap = new Map(completedResult.map((item) => [`${item.mediaType}-${item.difficulty}`, item.count]));
-        const allDifficultySums = Object.fromEntries(
-            difficulties.map((diff) => [diff, 0])
-        ) as Record<AchievementDifficulty, number>;
+        const allDifficultySums = Object.fromEntries(difficulties.map((diff) => [diff, 0]));
 
-        const results = {
-            all: [] as TierStat[],
-            ...Object.fromEntries(mediaTypes.map((mt) => [mt, [] as TierStat[]])),
-        } as AchievementStats;
+        type TierStat = { count: number | string; tier: AchievementDifficulty | "total" };
+
+        const mediaTypeEntries = {} as Record<MediaType, TierStat[]>;
+        for (const mt of mediaTypes) {
+            mediaTypeEntries[mt] = [] as TierStat[];
+        }
+        const results = { all: [] as TierStat[], ...mediaTypeEntries };
 
         let grandTotal = 0;
         let grandTotalGained = 0;
         for (const mediaType of mediaTypes) {
-            const mediaTypeStats: TierStat[] = [];
             let mediaTypeTotalGained = 0;
+            const mediaTypeStats: TierStat[] = [];
 
             for (const difficulty of difficulties) {
                 const count = completedCountsMap.get(`${mediaType}-${difficulty}`) || 0;
@@ -90,34 +92,33 @@ export class AchievementsService {
         const achievementsMap = new Map<number, UserAchievementDetails>();
         for (const row of results) {
             const tier = row.tier;
-            const ach = row.achievement;
-            const progress = row.userProgress;
+            const achievement = row.achievement;
+            const userProgress = row.userProgress;
 
-            let achievementEntry = achievementsMap.get(ach.id);
+            let achievementEntry = achievementsMap.get(achievement.id);
             if (!achievementEntry) {
                 achievementEntry = {
                     tiers: [],
-                    id: ach.id,
-                    name: ach.name,
-                    mediaType: ach.mediaType!,
-                    description: ach.description,
+                    id: achievement.id,
+                    name: achievement.name,
+                    mediaType: achievement.mediaType,
+                    description: achievement.description,
                 };
-                achievementsMap.set(ach.id, achievementEntry);
+                achievementsMap.set(achievement.id, achievementEntry);
             }
 
-            const tierProgress: UserTierProgress = {
+            const tierProgress = {
                 id: tier.id,
-                rarity: tier.rarity!,
+                rarity: tier.rarity,
                 criteria: tier.criteria,
                 difficulty: tier.difficulty,
-                count: progress?.count ?? 0,
-                progress: progress?.progress ?? 0,
-                completed: progress?.completed ?? false,
-                completedAt: progress?.completedAt ?? null,
+                count: userProgress?.count ?? 0,
+                progress: userProgress?.progress ?? 0,
+                completed: userProgress?.completed ?? false,
+                completedAt: userProgress?.completedAt ?? null,
             };
 
             achievementEntry.tiers.push(tierProgress);
-
         }
 
         const finalAchievements = Array.from(achievementsMap.values());
@@ -135,7 +136,7 @@ export class AchievementsService {
         return this.repository.getMediaAchievements(mediaType);
     }
 
-    async calculateAchievement(achievement: Achievement, mediaService: MediaService) {
+    async calculateAchievement(achievement: Achievement, mediaService: BaseService<any, any>) {
         const achievementCTE = mediaService.getAchievementCte(achievement);
 
         for (const tier of achievement.tiers) {

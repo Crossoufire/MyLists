@@ -1,11 +1,11 @@
 import {notFound} from "@tanstack/react-router";
+import {NotificationType} from "@/lib/utils/enums";
 import {createServerFn} from "@tanstack/react-start";
 import {getContainer} from "@/lib/server/core/container";
-import {NotificationType} from "@/lib/server/utils/enums";
-import {FormattedError} from "@/lib/server/utils/error-classes";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {authMiddleware} from "@/lib/server/middlewares/authentication";
 import {authorizationMiddleware} from "@/lib/server/middlewares/authorization";
-import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/server/types/base.types";
+import {allUpdatesHistorySchema, updateFollowStatusSchema} from "@/lib/types/zod.schema.types";
 
 
 export const getUserProfile = createServerFn({ method: "GET" })
@@ -48,7 +48,7 @@ export const getUserProfile = createServerFn({ method: "GET" })
 
 export const postUpdateFollowStatus = createServerFn({ method: "POST" })
     .middleware([authMiddleware])
-    .validator(data => updateFollowStatusSchema.parse(data))
+    .inputValidator(updateFollowStatusSchema)
     .handler(async ({ data: { followId, followStatus }, context: { currentUser } }) => {
         const container = await getContainer();
         const userService = container.services.user;
@@ -67,7 +67,7 @@ export const postUpdateFollowStatus = createServerFn({ method: "POST" })
 
         if (followStatus) {
             const payload = { username: currentUser.name, message: `${currentUser.name} is following you` }
-            notificationsService.sendNotification(currentUser.id, NotificationType.FOLLOW, payload);
+            await notificationsService.sendNotification(targetUser.id, NotificationType.FOLLOW, payload);
         }
     });
 
@@ -90,8 +90,8 @@ export const getUsersFollows = createServerFn({ method: "GET" })
 
 export const getAllUpdatesHistory = createServerFn({ method: "GET" })
     .middleware([authorizationMiddleware])
-    .validator(data => allUpdatesHistorySchema.parse(data))
-    .handler(async ({ context: { user }, data }) => {
+    .inputValidator(allUpdatesHistorySchema)
+    .handler(async ({ data, context: { user } }) => {
         const userUpdatesService = await getContainer().then(c => c.services.userUpdates);
         return userUpdatesService.getUserUpdatesPaginated(user.id, data);
     });

@@ -1,30 +1,24 @@
-import {Status} from "@/lib/server/utils/enums";
-import {notFound} from "@tanstack/react-router";
-import {saveImageFromUrl} from "@/lib/server/utils/save-image";
-import type {DeltaStats} from "@/lib/server/types/stats.types";
-import {FormattedError} from "@/lib/server/utils/error-classes";
-import {IGamesService} from "@/lib/server/types/services.types";
-import {IProviderService} from "@/lib/server/types/provider.types";
-import {BaseService} from "@/lib/server/domain/media/base/base.service";
-import {IGamesRepository, StatsCTE} from "@/lib/server/types/repositories.types";
-import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
-import {Achievement, AchievementData} from "@/lib/server/types/achievements.types";
-import {gamesAchievements} from "@/lib/server/domain/media/games/achievements.seed";
-import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
-import {GamesAdvancedStats, MediaAndUserDetails, UserMediaWithLabels} from "@/lib/server/types/base.types";
 import {eq, isNotNull} from "drizzle-orm";
+import {notFound} from "@tanstack/react-router";
+import {DeltaStats} from "@/lib/types/stats.types";
+import {Status, UpdateType} from "@/lib/utils/enums";
+import {saveImageFromUrl} from "@/lib/utils/save-image";
+import {Achievement} from "@/lib/types/achievements.types";
+import {BaseService} from "@/lib/server/domain/media/base/base.service";
+import {GamesSchemaConfig} from "@/lib/server/domain/media/games/games.config";
+import {GamesRepository} from "@/lib/server/domain/media/games/games.repository";
+import {Game, GamesAchCodeName, GamesList} from "@/lib/server/domain/media/games/games.types";
+import {LogPayload, StatsCTE, StatusPayload, UserMediaWithLabels} from "@/lib/types/base.types";
 
 
-export class GamesService extends BaseService<
-    Game, GamesList, GamesAdvancedStats, GamesAchCodeName, IGamesRepository
-> implements IGamesService {
+export class GamesService extends BaseService<GamesSchemaConfig, GamesRepository> {
     readonly achievementHandlers: Record<GamesAchCodeName, (achievement: Achievement, userId?: number) => StatsCTE>;
 
     constructor(repository: GamesRepository) {
         super(repository);
 
         const { listTable } = this.repository.config;
-        
+
         this.achievementHandlers = {
             completed_games: this.repository.countAchievementCte.bind(this.repository, eq(listTable.status, Status.COMPLETED)),
             rated_games: this.repository.countAchievementCte.bind(this.repository, isNotNull(listTable.rating)),
@@ -39,6 +33,13 @@ export class GamesService extends BaseService<
             developer_games: this.repository.getCompanyAchievementCte.bind(this.repository),
             publisher_games: this.repository.getCompanyAchievementCte.bind(this.repository),
             first_person_games: this.repository.getPerspectiveAchievementCte.bind(this.repository),
+        };
+
+        this.updateHandlers = {
+            ...this.updateHandlers,
+            [UpdateType.STATUS]: this.updateStatusHandler.bind(this),
+            [UpdateType.PLAYTIME]: this.createSimpleUpdateHandler("playtime"),
+            [UpdateType.PLATFORM]: this.createSimpleUpdateHandler("platform"),
         };
     }
 
@@ -71,46 +72,18 @@ export class GamesService extends BaseService<
         };
     }
 
-    async getMediaAndUserDetails(userId: number, mediaId: number | string, external: boolean, providerService: IProviderService) {
-        const media = external ?
-            await this.repository.findByApiId(mediaId) : await this.repository.findById(mediaId as number);
-
-        let internalMediaId = media?.id;
-        if (external && !internalMediaId) {
-            internalMediaId = await providerService.fetchAndStoreMediaDetails(mediaId as unknown as number);
-            if (!internalMediaId) throw new Error("Failed to fetch media details");
-        }
-
-        if (internalMediaId) {
-            const mediaWithDetails = await this.repository.findAllAssociatedDetails(internalMediaId);
-            if (!mediaWithDetails) throw notFound();
-
-            const similarMedia = await this.repository.findSimilarMedia(mediaWithDetails.id)
-            const userMedia = await this.repository.findUserMedia(userId, mediaWithDetails.id);
-            const followsData = await this.repository.getUserFollowsMediaData(userId, mediaWithDetails.id);
-
-            return {
-                media: mediaWithDetails,
-                userMedia,
-                followsData,
-                similarMedia,
-            } as MediaAndUserDetails<Game, GamesList>;
-        }
-
-        throw notFound();
-    }
-
     async getMediaEditableFields(mediaId: number) {
         const media = await this.repository.findById(mediaId);
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        const fields = editableFields.reduce((acc, field) => {
+        const fields: Record<string, any> = {};
+
+        editableFields.forEach((field) => {
             if (field in media) {
-                (acc as any)[field] = media[field];
+                fields[field] = media[field as keyof typeof media];
             }
-            return acc;
-        }, {} as Pick<typeof media, typeof editableFields[number]>);
+        });
 
         return { fields };
     }
@@ -120,91 +93,25 @@ export class GamesService extends BaseService<
         if (!media) throw notFound();
 
         const editableFields = this.repository.config.editableFields;
-        type FieldsType = typeof editableFields[number];
-        const fields: Partial<Record<FieldsType, any>> & { apiId: typeof media.apiId; } = { apiId: media.apiId };
+        const fields = {} as Record<Partial<keyof Game>, any>;
+        fields.apiId = media.apiId;
 
         if (payload?.imageCover) {
             const imageName = await saveImageFromUrl({
-                defaultName: "default.jpg",
                 imageUrl: payload.imageCover,
-                resize: { width: 300, height: 450 },
-                saveLocation: "public/static/covers/games-covers",
+                dirSaveName: "games-covers",
             });
-            if (editableFields.includes("imageCover" as FieldsType)) {
-                fields.imageCover = imageName;
-            }
+            fields.imageCover = imageName;
             delete payload.imageCover;
         }
 
         for (const key in payload) {
-            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as FieldsType)) {
-                fields[key as FieldsType] = payload[key];
+            if (Object.prototype.hasOwnProperty.call(payload, key) && editableFields.includes(key as keyof Game)) {
+                fields[key as keyof typeof media] = payload[key as keyof typeof media];
             }
         }
 
         await this.repository.updateMediaWithDetails({ mediaData: fields });
-    }
-
-    async getComingNext(userId: number) {
-        return this.repository.getComingNext(userId);
-    }
-
-    async addMediaToUserList(userId: number, mediaId: number, status?: Status) {
-        const newStatus = status ?? this.repository.config.mediaList.defaultStatus;
-
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (oldState) throw new FormattedError("Media already in your list");
-
-        const newState = await this.repository.addMediaToUserList(userId, media, newStatus);
-        const delta = this.calculateDeltaStats(null, newState);
-
-        return { newState, media, delta };
-    }
-
-    async updateUserMediaDetails(userId: number, mediaId: number, partialUpdateData: Record<string, any>) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        const completeUpdateData = this.completePartialUpdateData(partialUpdateData);
-        const newState = await this.repository.updateUserMediaDetails(userId, mediaId, completeUpdateData);
-        const delta = this.calculateDeltaStats(oldState, newState);
-
-        return {
-            os: oldState,
-            ns: newState,
-            media,
-            delta,
-            updateData: completeUpdateData,
-        };
-    }
-
-    async removeMediaFromUserList(userId: number, mediaId: number) {
-        const media = await this.repository.findById(mediaId);
-        if (!media) throw notFound();
-
-        const oldState = await this.repository.findUserMedia(userId, mediaId);
-        if (!oldState) throw new FormattedError("Media not in your list");
-
-        await this.repository.removeMediaFromUserList(userId, mediaId);
-        const delta = this.calculateDeltaStats(oldState, null);
-
-        return delta;
-    }
-
-    completePartialUpdateData(partialUpdateData: Record<string, any>, _userMedia?: GamesList) {
-        const completeUpdateData = { ...partialUpdateData };
-
-        if (completeUpdateData.status && completeUpdateData.status === Status.PLAN_TO_PLAY) {
-            return { ...completeUpdateData, playtime: 0 };
-        }
-
-        return completeUpdateData;
     }
 
     calculateDeltaStats(oldState: UserMediaWithLabels<GamesList> | null, newState: GamesList | null) {
@@ -307,7 +214,14 @@ export class GamesService extends BaseService<
         return delta;
     }
 
-    getAchievementsDefinition() {
-        return gamesAchievements as unknown as AchievementData[];
-    }
+    updateStatusHandler(currentState: GamesList, payload: StatusPayload, _media: Game): [GamesList, LogPayload] {
+        const newState = { ...currentState, status: payload.status };
+        const logPayload = { oldValue: currentState.status, newValue: payload.status };
+
+        if (payload.status === Status.PLAN_TO_PLAY) {
+            newState.playtime = 0;
+        }
+
+        return [newState, logPayload];
+    };
 }

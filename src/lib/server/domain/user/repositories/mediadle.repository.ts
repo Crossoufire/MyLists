@@ -1,15 +1,17 @@
-import {MediaType} from "@/lib/server/utils/enums";
+import {MediaType} from "@/lib/utils/enums";
+import {SearchType} from "@/lib/types/zod.schema.types";
+import {FormattedError} from "@/lib/utils/error-classes";
 import {getDbClient} from "@/lib/server/database/async-storage";
 import {and, count, desc, eq, getTableColumns, gte, isNotNull, like, notInArray, sql} from "drizzle-orm";
 import {dailyMediadle, mediadleStats, movies, user, userMediadleProgress} from "@/lib/server/database/schema";
 
 
 export class MediadleRepository {
-    static async getAdminAllUsersStats(data: Record<string, any>) {
-        const page = data.pageIndex ?? 0;
+    static async getAdminAllUsersStats(data: SearchType) {
+        const page = data.page ?? 1;
         const search = data.search ?? "";
-        const perPage = data.pageSize ?? 25;
-        const offset = page * perPage;
+        const perPage = data.perPage ?? 25;
+        const offset = (page - 1) * perPage;
 
         const totalResult = await getDbClient()
             .select({ count: count() })
@@ -69,7 +71,7 @@ export class MediadleRepository {
             .get();
 
         if (!selectedMovie) {
-            throw new Error("No new movies found to create a daily mediadle.");
+            throw new FormattedError("No movies found to create a daily mediadle.");
         }
 
         const [newMoviedle] = await getDbClient()
