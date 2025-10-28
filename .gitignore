@@ -32,6 +32,5 @@ dist
 !**/public/static/manga-covers/default.jpg
 !**/public/static/profile-covers/default.jpg
 !**/public/static/profile-back-covers/default.jpg
-tsconfig.tsbuildinfo
 
 .tanstack
