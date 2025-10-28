@@ -22,18 +22,15 @@ dist
 **/site.db
 /instance/**
 
-**/public/static/covers
-**/public/static/profile-covers
-**/public/static/back-covers
+**/public/static
 
-!**/public/static/covers/series-covers/default.jpg
-!**/public/static/covers/anime-covers/default.jpg
-!**/public/static/covers/movies-covers/default.jpg
-!**/public/static/covers/games-covers/default.jpg
-!**/public/static/covers/books-covers/default.jpg
-!**/public/static/covers/manga-covers/default.jpg
+!**/public/static/series-covers/default.jpg
+!**/public/static/anime-covers/default.jpg
+!**/public/static/movies-covers/default.jpg
+!**/public/static/games-covers/default.jpg
+!**/public/static/books-covers/default.jpg
+!**/public/static/manga-covers/default.jpg
 !**/public/static/profile-covers/default.jpg
-!**/public/static/back-covers/default.jpg
-tsconfig.tsbuildinfo
+!**/public/static/profile-back-covers/default.jpg
 
 .tanstack
